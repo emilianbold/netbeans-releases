@@ -93,6 +93,7 @@ import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
@@ -207,7 +208,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
      * @param sourceWidget - message from this widget
      * @param targetWidget - message to this widget
      * @param sourcePoint - message from this point on source point in scene coordinates
-     * @param targetPoint - message to this point on target widget in scene coordinates
+     * @param targetPoint - message to this point on target widget in scene coordinates, in general isn't used much and may be the same as source often
      * @return accept if connection is possible
      */
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget,Point sourcePoint,Point targetPoint)
@@ -267,14 +268,14 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                     if(targetWidget instanceof LifelineWidget)
                     {
                         LifelineWidget tmp=(LifelineWidget) targetWidget;
-                        if(tmp.isCreated())
+                        if(tmp.isCreated() || targetWidget==sourceWidget)
                         {
-                            //can't draw second create messsage
+                            //can't draw second create messsage or create message to self
                             retVal=ConnectorState.REJECT;
                         }
                         else
                         {
-                            //TBD how to check if there any messages which prevent creation, should it be as in previous release when any message block creation?
+                            //TODO how to check if there any messages which prevent creation, should it be as in previous release when any message block creation?
                             Lifeline tmpE=(Lifeline) target.getFirstSubject();
                             if(tmpE.getEvents().size()>1)retVal=ConnectorState.REJECT;//TBD, not perfect, need separate check if 1 event is destroy or receive of asycnh message
                         }
@@ -649,10 +650,10 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             Point scenePoint=startingPoint;
             int y1=0;
             if(sourceLine!=null)y1=convertSceneToLocal(sourceLine,scenePoint).y;//incoming corrdinates in LifelineWidget coordinates, we adds child to LifelineLineWidget
-            else y1=convertSceneToLocal(sourceCF,scenePoint).y;
+            else y1=sourceCF.getMainWidget().convertSceneToLocal(scenePoint).y;
             int y2=0;
             if(targetLine!=null)y2=convertSceneToLocal(targetLine,scenePoint).y;//
-            else y2=convertSceneToLocal(targetCF,scenePoint).y;
+            else y2=targetCF.getMainWidget().convertSceneToLocal(scenePoint).y;
             
             GraphScene scene=(GraphScene) source.getScene();
            
@@ -715,17 +716,17 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             else if(!sourceNested)//from clear line
             {
                 sourceExWidget=new ExecutionSpecificationThinWidget(scene);
-                sourceExWidget.setPreferredLocation(new Point(0,0));//y1));
-                sourceCallPin.setPreferredLocation(new Point(0,y1+10));
-                targetReturnPin.setPreferredLocation(new Point(0,y1+40));
+                sourceExWidget.setPreferredLocation(new Point(0,0));
+                sourceCallPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()));
+                targetReturnPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()+30));
                 call.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceCallPin,sourceExWidget.width/2));
                 result.setTargetAnchor(AnchorFactory.createCircularAnchor(targetReturnPin,sourceExWidget.width/2));
             }
             else// from within existed spec
             {
                 //from existent use existent execution specification
-                sourceCallPin.setPreferredLocation(new Point(0,y1+10));
-                targetReturnPin.setPreferredLocation(new Point(0,y1+40));
+                sourceCallPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()));
+                targetReturnPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()+30));
                 call.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceCallPin,sourcePreexistentSpec.width/2));
                 result.setTargetAnchor(AnchorFactory.createCircularAnchor(targetReturnPin,sourcePreexistentSpec.width/2));
             }
@@ -739,9 +740,9 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             {
                 targetExWidget=new ExecutionSpecificationThinWidget(scene);
                 targetExWidget.setPreferredLocation(new Point(0,0));//y2+10));
-                targetCallPin.setPreferredLocation(new Point(0,y2+10));
+                targetCallPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()));
                 //return message/hardcoded position for now
-                sourceReturnPin.setPreferredLocation(new Point(0,y2+40));
+                sourceReturnPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()+30));
                 result.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceReturnPin,targetExWidget.width/2));
                 call.setTargetAnchor(AnchorFactory.createCircularAnchor(targetCallPin,targetExWidget.width/2));
             }
@@ -750,9 +751,9 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                 //to existent need to create target execution specification
                 targetExWidget=new ExecutionSpecificationThinWidget(scene);
                 targetExWidget.setPreferredLocation(new Point(0,0));//y2+10));
-                targetCallPin.setPreferredLocation(new Point(0,y2+10));
+                targetCallPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()));
                 //return message/hardcoded position for now
-                sourceReturnPin.setPreferredLocation(new Point(0,y2+40));
+                sourceReturnPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()+30));
                 result.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceReturnPin,targetExWidget.width/2));
                 call.setTargetAnchor(AnchorFactory.createCircularAnchor(targetCallPin,targetExWidget.width/2));
             }
@@ -787,7 +788,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             else
             {
                 //from combinedfragment, do not order for now (at least before implementation of separate containers for left and right messages)
-                Point start=convertSceneToLocal(sourceCF.getMainWidget(),scenePoint);
+                Point start=sourceCF.getMainWidget().convertSceneToLocal(scenePoint);
                 start.x=(start.x<(sourceCF.getMainWidget().getBounds().x+sourceCF.getMainWidget().getBounds().width/2)) ? (0) : (sourceCF.getMainWidget().getBounds().width);
                 sourceCallPin.setPreferredLocation(new Point(start.x,start.y+10));
                 targetReturnPin.setPreferredLocation(new Point(start.x,start.y+40));//TBD, hardcoded
@@ -844,10 +845,10 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                 targetCF.getMainWidget().addChild(targetCallPin);
                 targetCF.getMainWidget().addChild(sourceReturnPin);
                 Point finish=convertSceneToLocal(targetCF.getMainWidget(),finishPoint);
-                Point start=convertSceneToLocal(targetCF.getMainWidget(),scenePoint);
+                Point start=targetCF.getMainWidget().convertSceneToLocal(scenePoint);
                 finish.x=(finish.x<targetCF.getMainWidget().getBounds().width/2) ? (0) : (targetCF.getMainWidget().getBounds().width);
                 targetCallPin.setPreferredLocation(new Point(finish.x,start.y+sourceCallPin.getMarginBefore()));//margin shift is get from source pin, the same as y position from staring point
-                sourceReturnPin.setPreferredLocation(new Point(finish.x,start.y+40));//TBD, hardcoded 40
+                sourceReturnPin.setPreferredLocation(new Point(finish.x,start.y+sourceCallPin.getMarginBefore()+30));//TBD, hardcoded 40
             }
             //if result points are specified correct calculated points to specified
             if(resultFinishPoint!=null)
@@ -886,10 +887,10 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             Point scenePoint=startingPoint;
             int y1=0;
             if(sourceLine!=null)y1=convertSceneToLocal(sourceLine,scenePoint).y;//incoming corrdinates in LifelineWidget coordinates, we adds child to LifelineLineWidget
-            else y1=convertSceneToLocal(sourceCF,scenePoint).y;
+            else y1=sourceCF.getMainWidget().convertSceneToLocal(scenePoint).y;
             int y2=0;
-            if(targetLine!=null)y2=convertSceneToLocal(targetLine,scenePoint).y;//
-            else y2=convertSceneToLocal(targetCF,scenePoint).y;
+            if(targetLine!=null)y2=convertSceneToLocal(targetLine,scenePoint).y;
+            else y2=targetCF.getMainWidget().convertSceneToLocal(scenePoint).y;
             
             GraphScene scene=(GraphScene) source.getScene();
             ExecutionSpecificationThinWidget sourcePreexistentSpec=getExSpecification(sourceLine, y1);
@@ -942,14 +943,14 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             else if(!sourceNested)//clear source
             {
                 sourceExWidget=new ExecutionSpecificationThinWidget(scene);
-                sourceExWidget.setPreferredLocation(new Point(0,0));//y1));
-                sourceCallPin.setPreferredLocation(new Point(0,y1+10));
+                sourceExWidget.setPreferredLocation(new Point(0,0));
+                sourceCallPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()));
                 call.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceCallPin,sourceExWidget.width/2));
             }
             else//from existent ex specification
             {
                 //from existent use existent execution specification
-                sourceCallPin.setPreferredLocation(new Point(0,y1+10));
+                sourceCallPin.setPreferredLocation(new Point(0,y1+sourceCallPin.getMarginBefore()));
                 call.setSourceAnchor(AnchorFactory.createCircularAnchor(sourceCallPin,sourcePreexistentSpec.width/2));
             }
             
@@ -960,8 +961,8 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             else if(!targetNested)
             {
                 targetExWidget=new ExecutionSpecificationThinWidget(scene);
-                targetExWidget.setPreferredLocation(new Point(0,0));//y2+10));
-                targetCallPin.setPreferredLocation(new Point(0,y2+10));
+                targetExWidget.setPreferredLocation(new Point(0,0));
+                targetCallPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()));
                 call.setTargetAnchor(AnchorFactory.createCircularAnchor(targetCallPin,targetExWidget.width/2));
             }
             else
@@ -969,7 +970,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                 //to existent need to create target execution specification
                 targetExWidget=new ExecutionSpecificationThinWidget(scene);
                 targetExWidget.setPreferredLocation(new Point(0,0));
-                targetCallPin.setPreferredLocation(new Point(0,y2+10));
+                targetCallPin.setPreferredLocation(new Point(0,y2+sourceCallPin.getMarginBefore()));
                 //return message/hardcoded position for now
                 call.setTargetAnchor(AnchorFactory.createCircularAnchor(targetCallPin,targetExWidget.width/2));
             }
@@ -998,7 +999,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             else
             {
                 sourceCF.getMainWidget().addChild(sourceCallPin);
-                Point start=convertSceneToLocal(sourceCF.getMainWidget(),scenePoint);
+                Point start=sourceCF.getMainWidget().convertSceneToLocal(scenePoint);
                 start.x=(start.x<(sourceCF.getMainWidget().getBounds().x+sourceCF.getMainWidget().getBounds().width/2)) ? (0) : (sourceCF.getMainWidget().getBounds().width);
                 sourceCallPin.setPreferredLocation(new Point(start.x,start.y+sourceCallPin.getMarginBefore()));
             }
@@ -1038,7 +1039,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             {
                 targetCF.getMainWidget().addChild(targetCallPin);
                 Point finish=convertSceneToLocal(targetCF.getMainWidget(),finishPoint);
-                Point start=convertSceneToLocal(targetCF.getMainWidget(),scenePoint);
+                Point start=targetCF.getMainWidget().convertSceneToLocal(scenePoint);
                 finish.x=(finish.x<targetCF.getMainWidget().getBounds().width/2) ? (0) : (targetCF.getMainWidget().getBounds().width);
                 targetCallPin.setPreferredLocation(new Point(finish.x,start.y+sourceCallPin.getMarginBefore()));
             }
@@ -1064,7 +1065,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             LifelineBoxWidget targetBox=target.getBox();
             int y1=0;
             if(sourceLine!=null)y1=convertSceneToLocal(sourceLine,startingPoint).y;//incoming corrdinates in LifelineWidget coordinates, we adds child to LifelineLineWidget
-            else y1=convertSceneToLocal(sourceCF,startingPoint).y;
+            else y1=convertSceneToLocal(sourceCF.getMainWidget(),startingPoint).y;
             //set position of target lifeline
             Point boxCenter=new Point(targetBox.getPreferredBounds().x+targetBox.getPreferredBounds().width/2,targetBox.getPreferredBounds().y+targetBox.getPreferredBounds().height/2);//x doen't matter, in box coordinates
             boxCenter=targetBox.convertLocalToScene(boxCenter);//in scene coordinats
@@ -1149,12 +1150,13 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             }
             target.setPreferredLocation(targetLoc);
             
-            new AfterValidationExecutor(new ActionProvider() {
-            public void perfomeAction() {
-                SequenceDiagramEngine  engine=(SequenceDiagramEngine) scene.getEngine();
-                engine.normalizeLifelines(false, false, null);//align to minimum after create message
-            }
-            },scene);
+            if(!PersistenceUtil.isDiagramLoading())
+                new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() {
+                    SequenceDiagramEngine  engine=(SequenceDiagramEngine) scene.getEngine();
+                    engine.normalizeLifelines(false, false, null);//align to minimum after create message
+                }
+                },scene);
     }
     
         

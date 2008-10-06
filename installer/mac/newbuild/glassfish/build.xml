@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Executing pack200 in ${appdir}"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value='sh ${basedir}/../pack200.sh ${appdir}'/>
+            <arg value='sh ${basedir}/../pack200.sh ${appdir} ${VerifyFile.class.name} ${VerifyFile.classpath}'/>
         </exec>
 
         
@@ -80,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/env.sh" tofile="${basedir}/pkg/scripts/env.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${basedir}/pkg/scripts/addproduct_id.sh"/>          
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_gf.sh" tofile="${basedir}/pkg/scripts/add_gf.sh"/>

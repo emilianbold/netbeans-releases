@@ -177,19 +177,19 @@ public class DirectoryDeployment extends IncrementalDeployment {
      */
     final public ProgressObject  incrementalDeploy( final TargetModuleID tmid, AppChangeDescriptor aCD) {
         ProgressObject retVal = null;
+        Thread holder = Thread.currentThread();
         try {
-            
-            dm.grabInnerDM(false);
+            dm.grabInnerDM(holder,false);
             DirectoryDeploymentFacility ddf = 
                     new DirectoryDeploymentFacility(dm.getHost(),dm.getPort(),
                     dm.getUserName(),dm.getPassword(),dm.isSecure());
             retVal = ddf.incrementalDeploy(tmid);
             if (null != retVal) {
-                retVal.addProgressListener(new Releaser(dm));
+                retVal.addProgressListener(new Releaser(dm,holder));
             }
         } finally {
             if (null == retVal) {
-                dm.releaseInnerDM();
+                dm.releaseInnerDM(holder);
             }
         }
         return retVal; //ddf. incrementalDeploy( tmid);
@@ -362,6 +362,9 @@ public class DirectoryDeployment extends IncrementalDeployment {
             // to register the module, so replace additional special
             // characters , =  used in property parsing with -
             moduleID = moduleID.replace(',', '_').replace('=', '_');
+
+            // parens are illegal in the object name, too. IZ 143389
+            moduleID = moduleID.replace('(', '_').replace(')', '_');
         }
         return moduleID;
     }
@@ -417,17 +420,18 @@ public class DirectoryDeployment extends IncrementalDeployment {
         ContextRootConfiguration crp = (ContextRootConfiguration) configuration.getLookup().lookup(ContextRootConfiguration.class);
         String moduleID= computeModuleID(app,dir);
         ProgressObject retVal = null;
+        Thread holder = Thread.currentThread();
         try {
             
-            dm.grabInnerDM(false);
+            dm.grabInnerDM(holder, false);
             DirectoryDeploymentFacility ddf = 
                     new DirectoryDeploymentFacility(dm.getHost(),dm.getPort(),
                     dm.getUserName(),dm.getPassword(),dm.isSecure());
             retVal = ddf.initialDeploy( target,    dir , moduleID);
-            retVal.addProgressListener(new Releaser(dm));
+            retVal.addProgressListener(new Releaser(dm,holder));
         } finally {
             if (null == retVal) {
-                dm.releaseInnerDM();
+                dm.releaseInnerDM(holder);
             }
         }
         return retVal;
@@ -529,14 +533,16 @@ public class DirectoryDeployment extends IncrementalDeployment {
     
     private static class Releaser implements ProgressListener {
         SunDeploymentManagerInterface dm;
-        Releaser(SunDeploymentManagerInterface dm) {
+        Thread holder;
+        Releaser(SunDeploymentManagerInterface dm, Thread holder) {
             this.dm = dm;
+            this.holder = holder;
         }
         
         public void handleProgressEvent(ProgressEvent progressEvent) {
             DeploymentStatus dms = progressEvent.getDeploymentStatus();
             if (!dms.isRunning()) {
-                dm.releaseInnerDM();
+                dm.releaseInnerDM(holder);
             }
         }
     }

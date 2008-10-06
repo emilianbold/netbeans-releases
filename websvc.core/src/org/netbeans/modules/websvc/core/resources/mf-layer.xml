@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
             <file name="WebServiceFromWSDL.java">
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="200"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
@@ -151,7 +152,7 @@ made subject to such option by the copyright holder.
         <!-- populate J2SE Project Lookup with WS Client Support -->
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.core.jaxws.projects.J2SEWSSupportLookupProvider.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-projects-J2SEWSSupportLookupProvider.instance"/>
             </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
@@ -161,7 +162,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.core.jaxws.projects.JavaEEWSSupportLookupProvider.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
             </folder>  
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
@@ -171,7 +172,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.core.jaxws.projects.JavaEEWSSupportLookupProvider.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
             </folder>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-core-ProjectWebServiceNodeFactory.instance">
@@ -181,7 +182,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-j2ee-clientproject">
             <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.core.jaxws.projects.JavaEEWSSupportLookupProvider.instance"/>
+                <file name="org-netbeans-modules-websvc-core-jaxws-projects-JavaEEWSSupportLookupProvider.instance"/>
             </folder>
         </folder>
     </folder>

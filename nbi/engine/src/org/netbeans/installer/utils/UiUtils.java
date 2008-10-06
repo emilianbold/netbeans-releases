@@ -42,7 +42,10 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -94,12 +97,15 @@ public final class UiUtils {
                 } else if (messageType == MessageType.CRITICAL) {
                     intMessageType = JOptionPane.ERROR_MESSAGE;
                 }
-                
+                LogManager.logIndent("... show message dialog");
+                LogManager.log("title: "+ title);
+                LogManager.log("message: " + message);                
                 JOptionPane.showMessageDialog(
                         null,
                         message,
                         title,
                         intMessageType);
+                LogManager.logUnindent("... dialog closed");
                 break;
             case SILENT:
                 LogManager.log(message);
@@ -132,11 +138,15 @@ public final class UiUtils {
         
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
+                LogManager.logIndent("... showing Yes/No dialog");
+                LogManager.log("title: " + title);
+                LogManager.log("message: " + message);
                 final int result = JOptionPane.showConfirmDialog(
                         null,
                         message,
                         title,
                         YES_NO_OPTION);
+                LogManager.logUnindent("... dialog closed, choice : " + (result == YES_OPTION ? "yes" : (result == NO_OPTION ? "no" : "closed")));
                 return result == YES_OPTION;
                 
             case SILENT:
@@ -168,11 +178,16 @@ public final class UiUtils {
         
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
-                return JOptionPane.showConfirmDialog(
+                LogManager.logIndent("... show Yes/No/Cancel dialog");
+                LogManager.log("title: " + title);
+                LogManager.log("message: " + message);
+                int result = JOptionPane.showConfirmDialog(
                         null,
                         message,
                         title,
-                        YES_NO_CANCEL_OPTION);                
+                        YES_NO_CANCEL_OPTION);
+                LogManager.logUnindent("... dialog closed, choice : " + (result == YES_OPTION ? "yes" : (result == NO_OPTION ? "no" : (result==CANCEL_OPTION ? "cancel" : "closed"))));
+                return result;
                 
             case SILENT:
                 LogManager.log(message);               
@@ -218,6 +233,8 @@ public final class UiUtils {
                     if (className == null) {
                         LogManager.log("... custom look and feel class name was not specified, using system default");
                         className = UiUtils.getDefaultLookAndFeelClassName();
+                    } else if(!className.contains(StringUtils.DOT)) {//short name of the L&F class
+                        className = UiUtils.getLookAndFeelClassNameByShortName(className);
                     }
                     
                     LogManager.log("... class name: " + className);
@@ -374,6 +391,23 @@ public final class UiUtils {
         } finally {
             LogManager.unindent();
             LogManager.log("... initializing L&F finished");
+            
+            if (Boolean.getBoolean("nbi.look.and.feel.dump.defaults")) {
+                try {
+                    LogManager.logIndent("... dumping UIManger L&F defaults: ");
+                    Hashtable hash = (Hashtable) UIManager.getLookAndFeelDefaults();
+                    Enumeration keys = hash.keys();
+                    while (keys.hasMoreElements()) {
+                        Object key = keys.nextElement();
+                        LogManager.log("" + key + " = " + hash.get(key));
+                    }
+                } catch (Exception e) {
+                    LogManager.log(e);
+                } finally {
+                    LogManager.unindent();
+                }
+            }
+            
             lookAndFeelInitialized = true;
             lookAndFeelType = getLAF();
         }
@@ -398,9 +432,9 @@ public final class UiUtils {
                             // check whether the GTK look and feel class is
                             // available -- we'll get CNFE if it is not and it will
                             // not be set
-                            Class.forName("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+                            Class.forName(LookAndFeelType.GTK.getClassName());
                             
-                            className = "com.sun.java.swing.plaf.gtk.GTKLookAndFeel";
+                            className = LookAndFeelType.GTK.getClassName();
                         }
                     } catch (ClassNotFoundException e) {
                         ErrorManager.notifyDebug(ResourceUtils.getString(UiUtils.class,
@@ -413,6 +447,21 @@ public final class UiUtils {
                 return null;
         }
     }
+    
+    public static final String getLookAndFeelClassNameByShortName(String name) {
+        if(name == null) {
+            return null;
+        }
+        for(LookAndFeelType lafType : LookAndFeelType.values()) {
+            if(lafType.getId()!=null && lafType.getClassName()!=null) {
+                if(name.toLowerCase(Locale.ENGLISH).equals(lafType.getId().toLowerCase(Locale.ENGLISH))) {
+                    return lafType.getClassName();
+                }
+            }
+        }
+        return name;
+    }
+    
     public static final LookAndFeelType getLAF() {
         if(lookAndFeelType==null) {
             try {
@@ -421,29 +470,26 @@ public final class UiUtils {
                 LogManager.log(e);
             }
             lookAndFeelType = LookAndFeelType.DEFAULT;
-            
-            if(UiMode.getCurrentUiMode() == UiMode.SWING) {
+
+            if (UiMode.getCurrentUiMode() == UiMode.SWING) {
                 LookAndFeel laf = UIManager.getLookAndFeel();
-                if(laf!=null) {
+                if (laf != null) {
                     String id = laf.getID();
-                    if(id.equals("Windows")) {
-                        final Object object = Toolkit.
-                                getDefaultToolkit().
-                                getDesktopProperty(WINDOWS_XP_THEME_MARKER_PROPERTY);
-                        boolean xpThemeActive = false;
-                        if (object != null) {
-                            xpThemeActive = (Boolean) object;
+                    for (LookAndFeelType type : LookAndFeelType.values()) {
+                        if (id.equals(LookAndFeelType.WINDOWS_XP.getId()) ||
+                                id.equals(LookAndFeelType.WINDOWS_CLASSIC.getId())) {
+                            final Object object = Toolkit.getDefaultToolkit().
+                                    getDesktopProperty(WINDOWS_XP_THEME_MARKER_PROPERTY);
+                            boolean xpThemeActive = false;
+                            if (object != null) {
+                                xpThemeActive = (Boolean) object;
+                            }
+                            lookAndFeelType = (xpThemeActive) ? LookAndFeelType.WINDOWS_XP : LookAndFeelType.WINDOWS_CLASSIC;
+                            break;
+                        } else if (id.equals(type.getId())) {
+                            lookAndFeelType = type;
+                            break;
                         }
-                        lookAndFeelType = (xpThemeActive) ? LookAndFeelType.WINDOWS_XP :
-                            LookAndFeelType.WINDOWS_CLASSIC;
-                    } else if(id.equals("GTK")){
-                        lookAndFeelType = LookAndFeelType.GTK;
-                    } else if(id.equals("Motif")){
-                        lookAndFeelType = LookAndFeelType.MOTIF;
-                    }else if(id.equals("Metal")){
-                        lookAndFeelType = LookAndFeelType.METAL;
-                    } else if(id.equals("Aqua")){
-                        lookAndFeelType = LookAndFeelType.AQUA;
                     }
                 }
             }
@@ -467,21 +513,33 @@ public final class UiUtils {
     }
     
     public enum LookAndFeelType {
-        WINDOWS_XP("win.xp"),
-        WINDOWS_CLASSIC("win.classic"),
-        MOTIF("motif"),
-        GTK("gtk"),
-        METAL("metal"),
-        AQUA("aqua"),
-        DEFAULT("default");
+        WINDOWS_XP("win.xp", "Windows", "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"),
+        WINDOWS_CLASSIC("win.classic", "Windows", "com.sun.java.swing.plaf.windows.WindowsLookAndFeel"),
+        MOTIF("motif", "Motif", "com.sun.java.swing.plaf.motif.MotifLookAndFeel"),
+        GTK("gtk", "GTK", "com.sun.java.swing.plaf.gtk.GTKLookAndFeel"),
+        METAL("metal", "Metal", "javax.swing.plaf.metal.MetalLookAndFeel"),
+        AQUA("aqua", "Aqua", "apple.laf.AquaLookAndFeel"),
+        NIMBUS("nimbus", "Nimbus", "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"),
+        DEFAULT("default", null, null);
         
         private String name;
+        private String className;
+        private String id;
+        
         @Override
         public String toString() {
             return name;
         }
-        private LookAndFeelType(String name) {
+        private LookAndFeelType(String name, String id, String className) {
             this.name = name;
+            this.id = id;
+            this.className = className;
+        }
+        public String getId() {
+            return id;
+        }
+        public String getClassName() {
+            return className;
         }
     };
     

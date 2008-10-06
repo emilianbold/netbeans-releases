@@ -27,9 +27,9 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
-public class AddViewDDLTest extends DBTestBase {
+public class AddViewDDLTest extends DDLTestBase {
 
     public AddViewDDLTest(String name) {
         super(name);
@@ -41,7 +41,7 @@ public class AddViewDDLTest extends DBTestBase {
         
         String viewname = "testview";
         String query = "SELECT * FROM " + table1;
-        boolean wasException = AddViewDDL.addView(spec, SCHEMA, viewname, query);
+        boolean wasException = AddViewDDL.addView(getSpecification(), getSchema(), viewname, query);
         
         assertFalse(wasException);
         

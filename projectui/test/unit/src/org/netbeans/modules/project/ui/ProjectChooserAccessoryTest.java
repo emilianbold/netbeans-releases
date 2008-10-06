@@ -71,7 +71,7 @@ public class ProjectChooserAccessoryTest extends NbTestCase {
 
     /**The cycles in project dependencies should be handled gracefully:
      */
-    public void testAddSubprojects() {
+    public void testAddSubprojects() throws Exception {
         ChangeableLookup l1 = new ChangeableLookup();
         ChangeableLookup l2 = new ChangeableLookup();
         Project p1 = new TestProject(l1);

@@ -171,7 +171,7 @@ ObjectVariable {
             // no local variable visible in this case
         }
         
-        // 3) try tu set as a field
+        // 3) try to set as a field
         ReferenceType clazz = frame.getStackFrame().location().declaringType();
         Field field = clazz.fieldByName(getExpression());
         if (field == null) {

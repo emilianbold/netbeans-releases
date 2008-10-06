@@ -16,7 +16,7 @@ Macros:
 #define 'Q_DECL_IMPORT' [1:1/0-1:44/43]
 #define 'Q_GUI_EXPORT' [2:1/44-2:35/78]
 #define '__declspec[x]' [24:1/302-24:41/342]
-CLASS A (A ) [4:1/80-7:3/147] lcurly=101 SCOPE: $Global$ 
+CLASS A (A ) [4:1/80-7:2/146] lcurly=101 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
     FRIENDS:
@@ -27,7 +27,7 @@ CLASS A (A ) [4:1/80-7:3/147] lcurly=101 SCOPE: $Global$
             REFERENCED FRIEND FUNCTION: getA  [6:4/114-6:34/144]
             PARAMETERS:
             RETURNS *A TEXT=A*  [6:24/134-6:26/136]
-CLASS QWidgetData (QWidgetData ) [9:1/149-12:3/200] lcurly=167 SCOPE: $Global$ 
+CLASS QWidgetData (QWidgetData ) [9:1/149-12:2/199] lcurly=167 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QWidgetData  [11:5/181-11:21/197] ConstructorDDImpl SCOPE: QWidgetData 
@@ -37,7 +37,7 @@ CLASS QWidgetData (QWidgetData ) [9:1/149-12:3/200] lcurly=167 SCOPE: $Global$
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [11:19/195-11:21/197] SCOPE: QWidgetData 
-CLASS QObject (QObject ) [14:1/202-17:3/245] lcurly=216 SCOPE: $Global$ 
+CLASS QObject (QObject ) [14:1/202-17:2/244] lcurly=216 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QObject  [16:5/230-16:17/242] ConstructorDDImpl SCOPE: QObject 
@@ -47,7 +47,7 @@ CLASS QObject (QObject ) [14:1/202-17:3/245] lcurly=216 SCOPE: $Global$
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [16:15/240-16:17/242] SCOPE: QObject 
-CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:3/300] lcurly=266 SCOPE: $Global$ 
+CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:2/299] lcurly=266 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QPaintDevice  [21:5/280-21:22/297] ConstructorDDImpl SCOPE: QPaintDevice 
@@ -57,7 +57,7 @@ CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:3/300] lcurly=266 SCOPE: $Global
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [21:20/295-21:22/297] SCOPE: QPaintDevice 
-CLASS QWidget (QWidget ) [26:1/344-30:3/503] lcurly=409 SCOPE: $Global$ 
+CLASS QWidget (QWidget ) [26:1/344-30:2/502] lcurly=409 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=QObject VISIBILITY==PUBLIC virtual==false text='public QObject'
         CLASS=QPaintDevice VISIBILITY==PUBLIC virtual==false text='public QPaintDevice'
@@ -74,7 +74,7 @@ CLASS QWidget (QWidget ) [26:1/344-30:3/503] lcurly=409 SCOPE: $Global$
             RETURNS *QWidgetData TEXT=QWidgetData*  [29:25/454-29:38/467]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [4:1/80-7:3/147] lcurly=101 SCOPE: $Global$ 
+CLASS A (A ) [4:1/80-7:2/146] lcurly=101 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
     FRIENDS:
@@ -92,7 +92,7 @@ FUNCTION getA [6:4/114-6:34/144] FriendFunctionImpl SCOPE: $Global$
     REFERENCED FRIEND FUNCTION: getA  [6:4/114-6:34/144]
     PARAMETERS:
     RETURNS *A TEXT=A*  [6:24/134-6:26/136]
-CLASS QWidgetData (QWidgetData ) [9:1/149-12:3/200] lcurly=167 SCOPE: $Global$ 
+CLASS QWidgetData (QWidgetData ) [9:1/149-12:2/199] lcurly=167 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QWidgetData  [11:5/181-11:21/197] ConstructorDDImpl SCOPE: QWidgetData 
@@ -102,7 +102,7 @@ CLASS QWidgetData (QWidgetData ) [9:1/149-12:3/200] lcurly=167 SCOPE: $Global$
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [11:19/195-11:21/197] SCOPE: QWidgetData 
-CLASS QObject (QObject ) [14:1/202-17:3/245] lcurly=216 SCOPE: $Global$ 
+CLASS QObject (QObject ) [14:1/202-17:2/244] lcurly=216 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QObject  [16:5/230-16:17/242] ConstructorDDImpl SCOPE: QObject 
@@ -112,7 +112,7 @@ CLASS QObject (QObject ) [14:1/202-17:3/245] lcurly=216 SCOPE: $Global$
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [16:15/240-16:17/242] SCOPE: QObject 
-CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:3/300] lcurly=266 SCOPE: $Global$ 
+CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:2/299] lcurly=266 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION QPaintDevice  [21:5/280-21:22/297] ConstructorDDImpl SCOPE: QPaintDevice 
@@ -122,7 +122,7 @@ CLASS QPaintDevice (QPaintDevice ) [19:1/247-22:3/300] lcurly=266 SCOPE: $Global
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [21:20/295-21:22/297] SCOPE: QPaintDevice 
-CLASS QWidget (QWidget ) [26:1/344-30:3/503] lcurly=409 SCOPE: $Global$ 
+CLASS QWidget (QWidget ) [26:1/344-30:2/502] lcurly=409 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=QObject VISIBILITY==PUBLIC virtual==false text='public QObject'
         CLASS=QPaintDevice VISIBILITY==PUBLIC virtual==false text='public QPaintDevice'

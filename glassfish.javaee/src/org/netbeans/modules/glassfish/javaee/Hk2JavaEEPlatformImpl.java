@@ -44,7 +44,9 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -53,13 +55,16 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
     
-    /**
+/**
  *
  * @author Ludo
  */
@@ -128,7 +133,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = properties.getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt");
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt" + ServerUtilities.GFV3_VERSION_MATCHER);
             jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
@@ -190,9 +195,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                                              "webservices-rt", 
                                              "webservices-tools", 
                                              "jsr109-impl"};
-            ArrayList<File> cPath = new ArrayList<File>();
-            for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry);
+            List<File> cPath = new ArrayList<File>();
+            List<String> entryList = Arrays.asList(entries);
+            File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
+            if (null == f) {
+                // Prelude release hack
+                entryList = ServerUtilities.filterByManifest(entryList, 
+                        new File(gfRootStr, "modules"), 0, true);
+            }
+            for (String entry : entryList) {
+                f = ServerUtilities.getJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }
@@ -203,7 +215,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         File domainDir = null;
         File gfRoot = new File(gfRootStr);
         if ((gfRoot != null) && (gfRoot.exists())) {
-            domainDir = new File(gfRoot, "/domains/domain1"); // TODO - find domain correctly
+            String domainDirName = properties.getDomainDir();
+            domainDir = new File(domainDirName);
         }
         
         if (TOOL_KEYSTORE.equals(toolName) || TOOL_KEYSTORECLIENT.equals(toolName)) {
@@ -220,7 +233,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         return new File[0];
     }
-/**
+
+    /**
      * 
      * @return 
      */
@@ -238,6 +252,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Set getSupportedModuleTypes() {
         Set<Object> result = new HashSet<Object>();
         result.add(J2eeModule.WAR);
+        if("true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"))) {
+            result.add(J2eeModule.EJB);
+        }
         return result;
     }
     
@@ -301,10 +318,19 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     }
     
     private void initLibraries() {
-
         LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
         lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
         libraries = new LibraryImplementation[] {lib};
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        String gfRootStr = properties.getGlassfishRoot();
+        Lookup baseLookup = Lookups.fixed(gfRootStr);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/gfv3/Lookup"); //NOI18N
+//
+//        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
+//        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
 }

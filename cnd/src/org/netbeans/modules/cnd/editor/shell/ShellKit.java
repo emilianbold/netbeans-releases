@@ -46,7 +46,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.*;
 import org.netbeans.modules.editor.*;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
 * Shell editor kit with appropriate document

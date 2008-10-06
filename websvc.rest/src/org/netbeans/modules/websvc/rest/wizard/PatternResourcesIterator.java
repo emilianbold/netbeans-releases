@@ -56,7 +56,9 @@ import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -89,6 +91,12 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
                     try {
                         for (GenericResourceBean bean : resourceBeans) {
                             result.addAll(new GenericResourceGenerator(targetFolder, bean).generate(pHandle));
+                        }
+                        
+                        for (FileObject fobj : result) {
+                            DataObject dobj = DataObject.find(fobj);
+                            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+                            cookie.open();
                         }
                     } catch(Exception iox) {
                         Exceptions.printStackTrace(iox);

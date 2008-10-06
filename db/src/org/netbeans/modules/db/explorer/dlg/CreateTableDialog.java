@@ -44,22 +44,24 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.text.MessageFormat;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
+import org.netbeans.lib.ddl.DDLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.util.CommandBuffer;
-import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.util.PListReader;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
@@ -101,7 +103,7 @@ public class CreateTableDialog {
         return dlgtab;
     }
 
-    public CreateTableDialog(final Specification spe, DatabaseNodeInfo nfo) throws java.sql.SQLException {
+    public CreateTableDialog(final Specification spe, DatabaseNodeInfo nfo) {
         spec = spe;
         try {
             JLabel label;
@@ -272,50 +274,54 @@ public class CreateTableDialog {
                     if (table.getCellEditor() != null) {
                         table.getCellEditor().stopCellEditing();
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run () {
-                          if (evt.getSource() == DialogDescriptor.OK_OPTION) {
-                              result = validate();
+                    if (evt.getSource() == DialogDescriptor.OK_OPTION) {
+                        result = CreateTableDialog.this.validate();
 
-                              CommandBuffer cbuff = new CommandBuffer();
-                              Vector idxCommands = new Vector();
+                        CommandBuffer cbuff = new CommandBuffer();
+                        Vector idxCommands = new Vector();
 
-                              if (! result) {
-                                  String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
-                                  DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                              }
-                                  try {
-                                      String tablename = getTableName();
-                                      DataModel dataModel = (DataModel)table.getModel();
-                                      Vector data = dataModel.getData();
-                                      String owner = ((String)ownercombo.getSelectedItem()).trim();
-                                      
-                                      CreateTableDDL ddl = new CreateTableDDL(
-                                              spec, owner, tablename);
-                                      
-                                      boolean wasException =
-                                          ddl.execute(data, dataModel.getTablePrimaryKeys());
+                        if (! result) {
+                            String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                            return;
+                        }
+                        try {
+                            final String tablename = getTableName();
+                            final DataModel dataModel = (DataModel)table.getModel();
+                            final Vector data = dataModel.getData();
+                            final String owner = ((String)ownercombo.getSelectedItem()).trim();
 
-                                      //bugfix for #31064
-                                      combo.setSelectedItem(combo.getSelectedItem());
+                            boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                public Boolean call() throws Exception {
+                                    CreateTableDDL ddl = new CreateTableDDL(
+                                            spec, owner, tablename);
 
-                                      // was execution of commands with or without exception?
-                                      if(!wasException) {
-                                          // dialog is closed after successfully create table
-                                          dialog.setVisible(false);
-                                          dialog.dispose();
-                                      }
-                                      //dialog is not closed after unsuccessfully create table
+                                    return ddl.execute(data, dataModel.getTablePrimaryKeys());
+                                }
+                            });
 
-                                  } catch (Exception e) {
-                                      e.printStackTrace();
+                            //bugfix for #31064
+                            combo.setSelectedItem(combo.getSelectedItem());
 
-                                  }
-                              } else {
-                              }
-                          }
-                    }, 0);       
-               }
+                            // was execution of commands with or without exception?
+                            if(!wasException) {
+                                // dialog is closed after successfully create table
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            }
+                            //dialog is not closed after unsuccessfully create table
+
+                        } catch (InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof DDLException) {
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            } else {
+                                LOGGER.log(Level.INFO, null, cause);
+                                DbUtilities.reportError(bundle.getString("ERR_UnableToCreateTable"), e.getMessage());
+                            }
+                        }
+                    }
+                }
             };
 
             pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableDialogA11yDesc"));

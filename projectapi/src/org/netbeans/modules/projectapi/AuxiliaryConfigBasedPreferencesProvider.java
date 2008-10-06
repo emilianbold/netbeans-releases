@@ -693,7 +693,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
 
         @Override
         public Preferences node(final String path) {
-            return ProjectManager.mutex().writeAccess(new Action<Preferences>() {
+            return ProjectManager.mutex().readAccess(new Action<Preferences>() {
                 public Preferences run() {
                     return AuxiliaryConfigBasedPreferences.super.node(path);
                 }

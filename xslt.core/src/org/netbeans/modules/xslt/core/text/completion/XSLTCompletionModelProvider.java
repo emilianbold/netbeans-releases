@@ -40,7 +40,6 @@
 package org.netbeans.modules.xslt.core.text.completion;
 
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,15 +82,26 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider impleme
     }
     
     public List<CompletionModel> getModels(CompletionContext context) {
+        return null; // <- don't use this statement when parsing of 
+                     //    XSL schema is used for code completion in NB 6.5
+        // use the code below when parsing of XSL schema is used 
+        // for code completion in NB 6.5
+        /*
         if (! isXsltFile(context)) return null; // fix for IZ bug #93505
         
         CompletionModel completionModel = getCompletionModel();
         List<CompletionModel> emptyList = Collections.emptyList();
         return (completionModel == null ? emptyList :
             Collections.singletonList(completionModel));
+        */
     }
 
     public CompletionModel getCompletionModel() {
+        return null; // <- don't use this statement when parsing of 
+                     //    XSL schema is used for code completion in NB 6.5
+        // use the code below when parsing of XSL schema is used 
+        // for code completion in NB 6.5
+        /*
         SchemaModel xsltSchemaModel = getXSLTSchemaModel();
         if (xsltSchemaModel == null) {
             return null;
@@ -102,6 +112,7 @@ public class XSLTCompletionModelProvider extends CompletionModelProvider impleme
             mapCompletionModels.put(xsltSchemaModel, completionModel);
         }
         return completionModel;
+        */
     }
 
     private SchemaModel getXSLTSchemaModel() {

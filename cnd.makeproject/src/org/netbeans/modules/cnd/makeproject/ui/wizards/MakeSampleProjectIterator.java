@@ -89,7 +89,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.Iterator {
     public void initialize(TemplateWizard templateWizard) {
         int i = 0;
         this.wiz = templateWizard;
-        String name = templateWizard.getTemplate().getNodeDelegate().getDisplayName();
+        String name = templateWizard.getTemplate().getNodeDelegate().getName();
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }

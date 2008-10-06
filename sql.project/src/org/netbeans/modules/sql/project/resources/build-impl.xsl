@@ -144,12 +144,12 @@ is divided into following sections:
             
             <target name="init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath.models">
-                    <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-nodes.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform8/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform9/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform9/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform9/modules/org-openide-nodes.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform9/core/org-openide-filesystems.jar"/>
                     <pathelement location="${{netbeans.home}}/../enterprise5/modules/org-netbeans-modules-derby.jar"/>                    
-                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-db.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide10/modules/org-netbeans-modules-db.jar"/>
                     <pathelement location="${{module.install.dir}}/org-netbeans-modules-sql-project.jar"/>
                     <pathelement location="${{module.install.dir}}/../ant/nblib/org-netbeans-modules-sql-project.jar"/>
                 </path>                                

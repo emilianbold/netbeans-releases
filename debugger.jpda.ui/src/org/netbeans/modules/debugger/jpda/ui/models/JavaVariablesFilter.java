@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
@@ -52,7 +53,7 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -65,6 +66,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return new String[] {
             "java.lang.String",
             "java.lang.StringBuffer",
+            "java.lang.StringBuilder",
             
             "java.lang.Character",
             "java.lang.Integer",
@@ -76,6 +78,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             "java.lang.Short",
             
             "java.lang.ref.WeakReference",
+            "java.lang.ref.SoftReference",
+            "java.lang.ref.PhantomReference",
             
             "java.util.ArrayList",
             "java.util.HashSet",
@@ -118,111 +122,98 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      *
      * @return  children for given parent on given indexes
      */
+    @Override
     public Object[] getChildren (
         TreeModel original, 
         Variable variable, 
         int from, 
         int to
     ) throws UnknownTypeException {
+
+        if (variable instanceof ObjectVariable) {
+            ObjectVariable ov = (ObjectVariable) variable;
+            JPDAClassType ct = ov.getClassType();
+
+            if (isToArrayType (ct)) {
+                try {
+                    ov = (ObjectVariable) ov.invokeMethod (
+                        "toArray",
+                        "()[Ljava/lang/Object;",
+                        new Variable [0]
+                    );
+                    if (ov == null) {
+                        return new Object[] {};
+                    }
+                    return original.getChildren(ov, from, to);
+                } catch (NoSuchMethodException e) {
+                    Field elementData = ov.getField("elementData");
+                    if (elementData != null) {
+                        return original.getChildren(elementData, from, to);
+                    }
+                } catch (InvalidExpressionException e) {
+                    // Not a supported operation (e.g. J2ME, see #45543)
+                    // Or missing context or any other reason
+                    Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(toArray) "+e.getLocalizedMessage());
+                    return original.getChildren (variable, from, to);
+                }
+            }
+
+            if (isMapMapType (ct)) {
+                try {
+                    ov = (ObjectVariable) ov.invokeMethod (
+                        "entrySet",
+                        "()Ljava/util/Set;",
+                        new Variable [0]
+                    );
+                    if (ov != null) {
+                        ov = (ObjectVariable) ov.invokeMethod (
+                            "toArray",
+                            "()[Ljava/lang/Object;",
+                            new Variable [0]
+                        );
+                        if (ov != null) {
+                            return original.getChildren(ov, from, to);
+                        }
+                    }
+                } catch (NoSuchMethodException e) {
+                    // Nothing to do. Return the original children.
+                } catch (InvalidExpressionException e) {
+                    // Not a supported operation (e.g. J2ME, see #45543)
+                    // Or missing context or any other reason
+                    Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(entrySet) "+e.getLocalizedMessage());
+                }
+            }
+
+            if (isMapEntryType (ct)) {
+                Field[] fs = new Field [2];
+                // Read fields from AbstractMap.SimpleEntry
+                fs [0] = ov.getField ("key");
+                fs [1] = ov.getField ("value");
+                return fs;
+            }
+
+            if (isInstanceOf(ct, "java.lang.ref.Reference")) {
+                return new Object [] { ov.getField ("referent"), ov.getField("queue") };
+            }
+
+            String type = ct.getName();
+            if ("java.beans.PropertyChangeSupport".equals(type)) {
+                try {
+                    return ((ObjectVariable) ov.invokeMethod (
+                        "getPropertyChangeListeners",
+                        "()[Ljava/beans/PropertyChangeListener;",
+                        new Variable [0]
+                    )).getFields (from, to);
+                } catch (InvalidExpressionException e) {
+                    // Not a supported operation (e.g. J2ME, see #45543)
+                    // Or missing context or any other reason
+                    Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
+                } catch (NoSuchMethodException e) {
+                    Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
+                }
+            }
+        }
         
-        String type = variable.getType ();
-        
-        if (isToArrayType (type)) {
-            ObjectVariable ov = (ObjectVariable) variable;
-            try {
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "toArray",
-                    "()[Ljava/lang/Object;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return new Object[] {};
-                }
-                return original.getChildren(ov, from, to);
-            } catch (NoSuchMethodException e) {
-                Field elementData = ov.getField("elementData");
-                if (elementData != null) {
-                    return original.getChildren(elementData, from, to);
-                } else {
-                    ErrorManager.getDefault().notify(e);
-                }
-            } catch (InvalidExpressionException e) {
-                // Not a supported operation (e.g. J2ME, see #45543)
-                // Or missing context or any other reason
-                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(toArray) "+e.getLocalizedMessage());
-                return original.getChildren (variable, from, to);
-            }
-        }
-        if (isMapMapType (type)) 
-            try {
-                ObjectVariable ov = (ObjectVariable) variable;
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "entrySet",
-                    "()Ljava/util/Set;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return new Object[] {};
-                }
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "toArray",
-                    "()[Ljava/lang/Object;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return new Object[] {};
-                }
-                return original.getChildren(ov, from, to);
-            } catch (InvalidExpressionException e) {
-                // Not a supported operation (e.g. J2ME, see #45543)
-                // Or missing context or any other reason
-                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(entrySet) "+e.getLocalizedMessage());
-                return original.getChildren (variable, from, to);
-            } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        if ( isMapEntryType (type)
-        ) {
-            ObjectVariable ov = (ObjectVariable) variable;
-            Field[] fs = new Field [2];
-            fs [0] = ov.getField ("key");
-            fs [1] = ov.getField ("value");
-            return fs;
-        }
-        if ( "java.beans.PropertyChangeSupport".equals (type)
-        ) 
-            try {
-                ObjectVariable ov = (ObjectVariable) variable;
-                return ((ObjectVariable) ov.invokeMethod (
-                    "getPropertyChangeListeners",
-                    "()[Ljava/beans/PropertyChangeListener;",
-                    new Variable [0]
-                )).getFields (from, to);
-            } catch (InvalidExpressionException e) {
-                // Not a supported operation (e.g. J2ME, see #45543)
-                // Or missing context or any other reason
-                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
-                return original.getChildren (variable, from, to);
-            } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-//        if ( type.equals ("java.lang.ref.WeakReference")
-//        ) 
-//            try {
-//                ObjectVariable ov = (ObjectVariable) variable;
-//                return new Object [] {ov.invokeMethod (
-//                    "get",
-//                    "()Ljava/lang/Object;",
-//                    new Variable [0]
-//                )};
-//            } catch (NoSuchMethodException e) {
-//                e.printStackTrace ();
-//            }
-        if ( "java.lang.ref.WeakReference".equals (type)
-        ) {
-            ObjectVariable ov = (ObjectVariable) variable;
-            return new Object [] {ov.getField ("referent")};
-        }
         return original.getChildren (variable, from, to);
     }
 
@@ -241,6 +232,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      *
      * @return  number of filtered children for given variable
      */
+    @Override
     public int getChildrenCount (TreeModel original, Variable variable) 
     throws UnknownTypeException {
         
@@ -255,6 +247,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      *          able to resolve dchildren for given node type
      * @return  true if node is leaf
      */
+    @Override
     public boolean isLeaf (TreeModel original, Variable variable) 
     throws UnknownTypeException {
         String type = variable.getType ();
@@ -265,6 +258,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return original.isLeaf (variable);
     }
     
+    @Override
     public Object getValueAt (
         TableModel original, 
         Variable variable, 
@@ -276,7 +270,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         }
         String type = variable.getType ();
         ObjectVariable ov = (ObjectVariable) variable;
-        if ( isMapEntryType (type) &&
+        if ( isMapEntryType (ov.getClassType()) &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
@@ -312,6 +306,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return original.getValueAt (variable, columnID);
     }
 
+    @Override
     public void setValueAt(TableModel original, Variable variable,
                            String columnID, Object value) throws UnknownTypeException {
         String type = variable.getType();
@@ -402,53 +397,34 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         if (toStringValueType == null) {
             toStringValueType = new HashSet ();
             toStringValueType.add ("java.lang.StringBuffer");
+            toStringValueType.add ("java.lang.StringBuilder");
         }
         return toStringValueType.contains (type);
     }
     
-    private static HashSet mapEntryType;
-    private static boolean isMapEntryType (String type) {
-        if (mapEntryType == null) {
-            mapEntryType = new HashSet ();
-            mapEntryType.add ("java.util.HashMap$Entry");
-            mapEntryType.add ("java.util.Hashtable$Entry");
-            mapEntryType.add ("java.util.AbstractMap$SimpleEntry");
-            mapEntryType.add ("java.util.LinkedHashMap$Entry");
-            mapEntryType.add ("java.util.TreeMap$Entry");
-        }
-        return mapEntryType.contains (type);
+    private static boolean isToArrayType(JPDAClassType ct) {
+        // Instanceof Collection
+        return isInstanceOf(ct, "java.util.Collection");
     }
-    
-    private static HashSet mapMapType;
-    private static boolean isMapMapType (String type) {
-        if (mapMapType == null) {
-            mapMapType = new HashSet ();
-            mapMapType.add ("java.util.HashMap");
-            mapMapType.add ("java.util.IdentityHashMap");
-            mapMapType.add ("java.util.Hashtable");
-            mapMapType.add ("java.util.TreeMap");
-            mapMapType.add ("java.util.WeakHashMap");
-            mapMapType.add ("java.util.LinkedHashMap");
-            mapMapType.add ("java.util.concurrent.ConcurrentHashMap");
-            mapMapType.add ("java.util.EnumMap");
-        }
-        return mapMapType.contains (type);
+
+    private static boolean isMapMapType (JPDAClassType ct) {
+        // Instanceof Map
+        return isInstanceOf(ct, "java.util.Map");
     }
-    
-    private static HashSet toArrayType;
-    private static boolean isToArrayType (String type) {
-        if (toArrayType == null) {
-            toArrayType = new HashSet ();
-            toArrayType.add ("java.util.ArrayList");
-            toArrayType.add ("java.util.HashSet");
-            toArrayType.add ("java.util.LinkedHashSet");
-            toArrayType.add ("java.util.LinkedList");
-            toArrayType.add ("java.util.Stack");
-            toArrayType.add ("java.util.TreeSet");
-            toArrayType.add ("java.util.Vector");
-            toArrayType.add ("java.util.concurrent.CopyOnWriteArraySet");
-            toArrayType.add ("java.util.EnumSet");
-        }
-        return toArrayType.contains (type);
+
+    private static boolean isMapEntryType (JPDAClassType ct) {
+        // Instanceof Map.Entry
+        return isInstanceOf(ct, "java.util.Map$Entry");
     }
+
+    private static boolean isInstanceOf(JPDAClassType ct, String className) {
+        try {
+            java.lang.reflect.Method isInstanceOfMethod = ct.getClass().getMethod("isInstanceOf", String.class);
+            return (Boolean) isInstanceOfMethod.invoke(ct, className);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+
 }

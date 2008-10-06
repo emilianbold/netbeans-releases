@@ -79,7 +79,7 @@ public class LibrariesManager extends PerformanceTestCase {
         
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle","CTL_LibrariesManager");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle","CTL_LibrariesManager");
         TITLE = Bundle.getStringTrimmed("org.netbeans.api.project.libraries.Bundle","TXT_LibrariesManager");
     }
     

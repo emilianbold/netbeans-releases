@@ -89,6 +89,12 @@ public final class PositionBounds {
                     ? this.delegate.getOffset() + 1
                     : this.delegate.getOffset() - 1;
         }
+
+        void resolve(StyledDocument doc) throws BadLocationException {
+            if (delegate instanceof UnresolvedPosition) {
+                delegate = doc.createPosition(delegate.getOffset());
+            }
+        }
     }
 
     /** Creates new <code>PositionBounds</code>.
@@ -99,6 +105,7 @@ public final class PositionBounds {
         this.begin = begin;
         this.end = end;
         this.guards = guards;
+        assertPositionBounds();
     }
     
     public static PositionBounds create(int begin, int end, GuardedSectionsImpl guards) throws BadLocationException {
@@ -141,18 +148,19 @@ public final class PositionBounds {
     
     public void resolvePositions() throws BadLocationException {
         StyledDocument doc = guards.getDocument();
-        Position b, e;
-        if (end instanceof UnresolvedPosition) {
-            if (begin instanceof BiasedPosition) {
-                b = ((BiasedPosition) begin).delegate = doc.createPosition(
-                        ((BiasedPosition) begin).delegate.getOffset());
-            } else {
-                b = doc.createPosition(begin.getOffset());
-            }
-            e = doc.createPosition(end.getOffset());
-            this.begin = b;
-            this.end = e;
+
+        if (begin instanceof UnresolvedPosition) {
+            begin = doc.createPosition(begin.getOffset());
+        } else if (begin instanceof BiasedPosition) {
+            ((BiasedPosition) begin).resolve(doc);
         }
+
+        if (end instanceof UnresolvedPosition) {
+            end = doc.createPosition(end.getOffset());
+        } else if (end instanceof BiasedPosition) {
+            ((BiasedPosition) end).resolve(doc);
+        }
+        assertPositionBounds();
     }
 
     /**
@@ -225,6 +233,7 @@ public final class PositionBounds {
                                 if ((end.getOffset() - p1) != len) {
                                     end = doc.createPosition(p1 + len);
                                 }
+                                assertPositionBounds();
                             }
                         }
                     } catch (BadLocationException e) {
@@ -248,8 +257,14 @@ public final class PositionBounds {
         StyledDocument doc = this.guards.getDocument();
         int p1 = begin.getOffset();
         int p2 = end.getOffset();
+        // #148542 - hotfix for negative length when p2 > p1 => return ""
+        return (p1 <= p2) ? doc.getText(p1, p2 - p1) : "";
+    }
 
-        return doc.getText(p1, p2 - p1);
+    private void assertPositionBounds() {
+        // Disabled due to #148542 until a cleaner design will be implemented
+//        assert (begin.getOffset() <= end.getOffset()) :
+//            "Invalid position bounds: begin-offset=" + begin.getOffset() + " > end-offset=" + end.getOffset();
     }
 
     /* @return the bounds as the string. */

@@ -282,7 +282,7 @@ made subject to such option by the copyright holder.
                 
     <folder name="SVGXMLPalette">
         <folder name="BasicShapes">
-            <attr name="SystemFileSystem.localizingBundle"  stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
             
             <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
             <file name="rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/rectangle.xml"/>
@@ -297,7 +297,7 @@ made subject to such option by the copyright holder.
         </folder>        
             <!--  form elements -->
         <folder name="FormComponents">
-            <attr name="SystemFileSystem.localizingBundle"  stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.resources.Bundle"/>
 
             <file name="button.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/button.xml"/>
             <file name="check_box.xml" url="/org/netbeans/modules/mobility/svgcore/items/form/check_box.xml"/>
@@ -343,7 +343,9 @@ made subject to such option by the copyright holder.
         <folder name="image">
             <folder name="svg+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-mobility-svgcore-SVGDataLoader.instance"/>
+                    <file name="org-netbeans-modules-mobility-svgcore-SVGDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -406,7 +408,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-svg-palette-item">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-mobility-svgcore-palette-SVGPaletteItemDataLoader.instance"/>
+                    <file name="org-netbeans-modules-mobility-svgcore-palette-SVGPaletteItemDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">

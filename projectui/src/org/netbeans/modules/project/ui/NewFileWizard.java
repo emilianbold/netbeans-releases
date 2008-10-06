@@ -40,35 +40,20 @@
  */
 package org.netbeans.modules.project.ui;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.loaders.TemplateWizard;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 public final class NewFileWizard extends TemplateWizard {
@@ -160,187 +145,8 @@ public final class NewFileWizard extends TemplateWizard {
         Sources c = ProjectUtils.getSources(getCurrentProject());
         return Templates.createSimpleTargetChooser(getCurrentProject(), c.getSourceGroups(Sources.TYPE_GENERIC));
     }
-
-    @Override
-    protected Iterator createDefaultIterator() {
-        // If the template has Page Layouts then use extended iterator
-        // else use the default iterator
-        if (hasPageLayouts(getTemplate().getPrimaryFile())) {
-            return new DefaultIteratorExt();
-        } else {
-            return super.createDefaultIterator();
-        }
-    }
-
-    /**
-     * Check if any Page Layouts available associated with this template
-     * @param template
-     * @return
-     */
-    private boolean hasPageLayouts(FileObject template) {
-        String pageLayoutsFolderName = "PageLayouts/" + template.getName(); // NOI18N
-        FileObject pageLayoutsFolder = Repository.getDefault().getDefaultFileSystem().findResource(pageLayoutsFolderName);
-        if (pageLayoutsFolder != null) {
-            return pageLayoutsFolder.getChildren().length > 0;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Default iterator extended for optional Page Layout Chooser Panel
-     */
-    private final class DefaultIteratorExt implements Iterator {
-
-        private PageLayoutChooserPanel pageLayoutChooserPanel = new PageLayoutChooserPanel(getTemplate().getPrimaryFile());
-        private WizardDescriptor.Panel<WizardDescriptor> targetChooserPanel = targetChooser();
-        private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
-        private int index;
-
-        DefaultIteratorExt() {
-        }
-
-        /** Name */
-        public String name() {
-            return ""; // NOI18N
-        }
-
-        /** Instantiates the template using informations provided by
-         * the wizard.
-         *
-         * @param wiz the wizard
-         * @return set of data objects that has been created (should contain
-         *   at least one) 
-         * @exception IOException if the instantiation fails
-         */
-        public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
-            String n = wiz.getTargetName();
-            DataFolder folder = wiz.getTargetFolder();
-            DataObject template = wiz.getTemplate();
-           
-            Map<String, Object> wizardProps = new HashMap<String, Object>();
-            for (Map.Entry<String, ? extends Object> entry : wiz.getProperties().entrySet()) {
-                wizardProps.put("wizard." + entry.getKey(), entry.getValue()); // NOI18N
-            }
-            if (panels[index] == pageLayoutChooserPanel) {
-                PageLayoutData selectedPageLayout = pageLayoutChooserPanel.getSelectedPageLayout();
-                FileObject resourceFolder = FileUtil.createFolder(folder.getPrimaryFile(), pageLayoutChooserPanel.getResourceFolder()); 
-                selectedPageLayout.copyResources(resourceFolder, pageLayoutChooserPanel.canOverwrite());
-                template = DataObject.find(selectedPageLayout.getFileObject());
-                wizardProps.put("folder", pageLayoutChooserPanel.getResourceFolder());
-            }
-
-            DataObject obj = template.createFromTemplate(folder, n, wizardProps);
-
-            // run default action (hopefully should be here)
-            final Node node = obj.getNodeDelegate();
-            final Action a = node.getPreferredAction();
-            if (a != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
-                    }
-                });
-            }
-
-            return Collections.singleton(obj);
-        }
-
-        /** No-op implementation.
-         */
-        @SuppressWarnings("unchecked") 
-        public void initialize(TemplateWizard wiz) {
-            panels = new WizardDescriptor.Panel[]{targetChooserPanel, pageLayoutChooserPanel};
-            // Make sure list of steps is accurate.
-            String[] beforeSteps = (String[]) wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
-            int beforeStepLength = beforeSteps.length - 1;
-            String[] steps = createSteps(beforeSteps);
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i + beforeStepLength - 1));
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                }
-            }
-        }
-
-        private String[] createSteps(String[] beforeSteps) {
-            int beforeStepLength = beforeSteps.length - 1;
-            String[] res = new String[beforeStepLength + panels.length];
-            for (int i = 0; i < res.length; i++) {
-                if (i < (beforeStepLength)) {
-                    res[i] = beforeSteps[i];
-                } else {
-                    res[i] = panels[i - beforeStepLength].getComponent().getName();
-                }
-            }
-            return res;
-        }
-
-        /** No-op implementation.
-         */
-        public void uninitialize(TemplateWizard wiz) {
-        }
-
-        /** Get the current panel.
-         * @return the panel
-         */
-        public Panel<WizardDescriptor> current() {
-            return panels[index];
-        }
-
-        /** Test whether there is a next panel.
-         * @return <code>true</code> if so
-         */
-        public boolean hasNext() {
-            return index < panels.length - 1;
-        }
-
-        /** Test whether there is a previous panel.
-         * @return <code>true</code> if so
-         */
-        public boolean hasPrevious() {
-            return index > 0;
-        }
-
-        /** Move to the next panel.
-         * I.e. increment its index, need not actually change any GUI itself.
-         * @exception NoSuchElementException if the panel does not exist
-         */
-        public void nextPanel() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            index++;
-        }
-
-        /** Move to the previous panel.
-         * I.e. decrement its index, need not actually change any GUI itself.
-         * @exception NoSuchElementException if the panel does not exist
-         */
-        public void previousPanel() {
-            if (!hasPrevious()) {
-                throw new NoSuchElementException();
-            }
-            index--;
-        }
-
-        /** Add a listener to changes of the current panel.
-         * The listener is notified when the possibility to move forward/backward changes.
-         * @param l the listener to add
-         */
-        public void addChangeListener(javax.swing.event.ChangeListener l) {
-        }
-
-        /** Remove a listener to changes of the current panel.
-         * @param l the listener to remove
-         */
-        public void removeChangeListener(javax.swing.event.ChangeListener l) {
-        }
-    }
 }
+ 
 /** Old impl might be usefull later in Wizards API
 
 ///** Wizard for creating new files in a project.

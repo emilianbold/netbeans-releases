@@ -152,7 +152,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCode.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        List<? extends StructureItem> structures = analyzer.scan(info);
         assertEquals("two methods", 3, structures.size());
         StructureItem twoParams = structures.get(0);
         StructureItem oneParamA = structures.get(1);
@@ -168,7 +168,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         CompilationInfo info = getInfo("testfiles/testRubyStructureItemEqualsAndHashCodeForOptionalParams.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        List<? extends StructureItem> structures = analyzer.scan(info);
         assertEquals("two methods", 2, structures.size());
         StructureItem first = structures.get(0);
         StructureItem second = structures.get(1);
@@ -181,7 +181,7 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
         CompilationInfo info = getInfo("testfiles/testRubyStructureItemNotEqualsStaticVsInstance.rb");
         RubyStructureAnalyzer analyzer = new RubyStructureAnalyzer();
 
-        List<? extends StructureItem> structures = analyzer.scan(info, null);
+        List<? extends StructureItem> structures = analyzer.scan(info);
         assertEquals("one class", 1, structures.size());
         StructureItem clazz = structures.get(0);
         assertEquals("Foo class", ElementKind.CLASS, clazz.getKind());
@@ -230,10 +230,30 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     }
 
     public void testTestStructure8() throws Exception {
+        checkStructure("testfiles/test8_spec.rb");
+    }
+
+    public void testTestStructure9() throws Exception {
         checkStructure("testfiles/bowling_spec.rb");
     }
 
-    public void testTestStructure8b() throws Exception {
+    public void testTestStructure9b() throws Exception {
         checkFolds("testfiles/bowling_spec.rb");
+    }
+
+    public void testEmpty1() throws Exception {
+        checkStructure("testfiles/empty.rb");
+    }
+
+    public void testEmpty2() throws Exception {
+        checkFolds("testfiles/empty.rb");
+    }
+
+    public void testLocals() throws Exception {
+        checkStructure("testfiles/locals.rb");
+    }
+
+    public void testGlobals() throws Exception {
+        checkStructure("testfiles/globals.rb");
     }
 }

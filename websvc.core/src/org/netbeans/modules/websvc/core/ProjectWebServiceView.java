@@ -38,16 +38,18 @@
  */
 package org.netbeans.modules.websvc.core;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.netbeans.api.project.Project;
 import org.openide.util.LookupEvent;
@@ -61,7 +63,7 @@ public final class ProjectWebServiceView {
 
     private static final Lookup.Result<ProjectWebServiceViewProvider> implementations;
     private static final LookupListener lookupListener;
-    private static Hashtable<Project, ProjectWebServiceView> views;
+    private static Map<Project, ProjectWebServiceView> views;
     
 
     static {
@@ -80,6 +82,13 @@ public final class ProjectWebServiceView {
         implementations.addLookupListener(lookupListener);
     }
 
+    /**
+     * @return the project
+     */
+    private Project getProject() {
+        return project.get();
+    }
+
     /** 
      * View Type: Service or Client
      */
@@ -87,13 +96,13 @@ public final class ProjectWebServiceView {
 
         SERVICE, CLIENT
     }
-    private Project project;
+    private Reference<Project> project;
     private List<ProjectWebServiceViewImpl> impls;
     private List<ChangeListener> serviceListeners,  clientListeners;
     private ChangeListener serviceListener,  clientListener;
 
     private ProjectWebServiceView(Project project) {
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
         serviceListener = new ChangeListenerDelegate(ViewType.SERVICE);
         clientListener = new ChangeListenerDelegate(ViewType.CLIENT);
     }
@@ -188,9 +197,9 @@ public final class ProjectWebServiceView {
      */
     void addNotify() {
         if (views == null) {
-            views = new Hashtable<Project, ProjectWebServiceView>();
+            views = new WeakHashMap<Project, ProjectWebServiceView>();
         }
-        views.put(project, this);
+        views.put(getProject(),this);
         initImpls();
         for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
             impl.addNotify();
@@ -204,8 +213,8 @@ public final class ProjectWebServiceView {
      * Subclasses may remove listeners here.
      */
     void removeNotify() {
-        if (views != null && views.get(project) == this) {
-            views.remove(project);
+        if (views != null && views.get(getProject()) == this) {
+            views.remove(getProject());
         }
         if (getWebServiceViews() != null) {
             for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
@@ -230,7 +239,7 @@ public final class ProjectWebServiceView {
 
     private void initImpls() {
         if (getWebServiceViews() == null) {
-            impls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(project));
+            impls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(getProject()));
         }
     }
 
@@ -247,7 +256,7 @@ public final class ProjectWebServiceView {
             return;
         }
         List<ProjectWebServiceViewImpl> oldImpls = new ArrayList<ProjectWebServiceViewImpl>(getWebServiceViews());
-        List<ProjectWebServiceViewImpl> newImpls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(project));
+        List<ProjectWebServiceViewImpl> newImpls = new ArrayList<ProjectWebServiceViewImpl>(createWebServiceViews(getProject()));
         if (oldImpls.containsAll(newImpls)) {
             oldImpls.removeAll(newImpls);
             for (ProjectWebServiceViewImpl impl : oldImpls) {

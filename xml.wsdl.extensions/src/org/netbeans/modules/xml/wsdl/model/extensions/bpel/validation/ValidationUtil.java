@@ -106,12 +106,14 @@ public final class ValidationUtil {
         if (schemaComponent == null) {
             return null;
         }
-        if (isBuiltInSimpleType(schemaComponent)) {
+        GlobalSimpleType globalSimpleType = findBuiltInType(schemaComponent);
+        if (globalSimpleType != null) {
 //System.out.println("  !!!!! SIMPLE !!!!!!!!");
-            return (GlobalSimpleType) schemaComponent;
+            return globalSimpleType;
         }
-        String baseTypeName = schemaComponent.getAnyAttribute(new QName(SCHEMA_COMPONENT_ATTRIBUTE_BASE));
-        GlobalSimpleType globalSimpleType = null;
+        String baseTypeName = schemaComponent.getAnyAttribute(new QName(
+            SCHEMA_COMPONENT_ATTRIBUTE_BASE));
+        globalSimpleType = null;
 
 //System.out.println("baseTypeName: " + baseTypeName);
         // # 130281
@@ -164,12 +166,23 @@ public final class ValidationUtil {
         }
         return null;
     }
-
-    public static boolean isBuiltInSimpleType(SchemaComponent component) {
-        if ( !(component instanceof GlobalSimpleType)) {
+    
+    public static GlobalSimpleType findBuiltInType(SchemaComponent schemaComponent) {
+        String typeName = getSchemaComponentTypeName(schemaComponent);
+        GlobalSimpleType builtInType = findGlobalSimpleType(typeName, 
+            BUILT_IN_SIMPLE_TYPES);
+        return builtInType;
+    }
+    
+    public static boolean isBuiltInSimpleType(SchemaComponent schemaComponent) {
+        /*
+        if ( !(schemaComponent instanceof GlobalSimpleType)) {
             return false;
         }
-        return findGlobalSimpleType(getSchemaComponentTypeName(component), BUILT_IN_SIMPLE_TYPES) != null;
+        return (findGlobalSimpleType(getSchemaComponentTypeName(schemaComponent), 
+                BUILT_IN_SIMPLE_TYPES) != null);
+        */
+        return (findBuiltInType(schemaComponent) != null);
     }
 
     public static GlobalSimpleType findGlobalSimpleType(String typeName, Collection<GlobalSimpleType> globalSimpleTypes) {

@@ -43,17 +43,12 @@ package org.openide.util.lookup;
 
 import org.openide.util.*;
 
-import java.util.*;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
 public class AbstractLookupArrayStorageTest extends AbstractLookupBaseHid {
     public AbstractLookupArrayStorageTest(java.lang.String testName) {
         super(testName, null);
-    }
-
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite ());
     }
 
     public static TestSuite suite () {
@@ -69,7 +64,7 @@ public class AbstractLookupArrayStorageTest extends AbstractLookupBaseHid {
         return suite;
     }
 
-    public static final class AL extends ArrayTestSuite {
+    static final class AL extends ArrayTestSuite {
         public AL (int trash) {
             super (trash);
         }
@@ -83,7 +78,7 @@ public class AbstractLookupArrayStorageTest extends AbstractLookupBaseHid {
         
     }
     
-    public static final class PL extends ArrayTestSuite {
+    static final class PL extends ArrayTestSuite {
         public PL (int trash) {
             super (trash);
         }

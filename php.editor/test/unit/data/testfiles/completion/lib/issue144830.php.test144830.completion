@@ -1,0 +1,5 @@
+Code completion result for source line:
+echo ++$this->|myfld."\n";//not working
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     echome()                        [PUBLIC]   ClsFromFactory
+VARIABLE   ? myfld                         [PRIVATE]  ClsFromFactory

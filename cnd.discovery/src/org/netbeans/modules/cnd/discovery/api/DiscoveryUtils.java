@@ -95,7 +95,7 @@ public class DiscoveryUtils {
     public static final boolean ignoreFolder(File file){
         if (file.isDirectory()) {
             String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache"); // NOI18N
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
         }
         return false;
     }
@@ -263,8 +263,8 @@ public class DiscoveryUtils {
             option = st.next();
             boolean isQuote = false;
             if (isScriptOutput) {
-                if (option.startsWith("'") && option.endsWith("'") ||
-                    option.startsWith("\"") && option.endsWith("\"")){
+                if (option.startsWith("'") && option.endsWith("'") || // NOI18N
+                    option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
                     option = option.substring(1,option.length()-1);
                     isQuote = true;
                 }

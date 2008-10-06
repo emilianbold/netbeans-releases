@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -66,20 +65,20 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Kvashin
  */
 public final class ProjectImpl extends ProjectBase {
-    
+
     private ProjectImpl(ModelImpl model, Object platformProject, String name) {
         super(model, platformProject, name);
         // RepositoryUtils.put(this);
     }
-    
+
     public static ProjectImpl createInstance(ModelImpl model, String platformProject, String name) {
         return createInstance(model, (Object) platformProject, name);
     }
-    
+
     public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
         return createInstance(model, (Object) platformProject, name);
     }
-    
+
     private static ProjectImpl createInstance(ModelImpl model, Object platformProject, String name) {
 	ProjectBase instance = null;
 	if( TraceFlags.PERSISTENT_REPOSITORY ) {
@@ -94,14 +93,14 @@ public final class ProjectImpl extends ProjectBase {
 	    }
 	}
 	if( instance == null ) {
-	   instance = new ProjectImpl(model, platformProject, name); 
+	   instance = new ProjectImpl(model, platformProject, name);
 	}
 	return (ProjectImpl) instance;
     }
-    
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
-        // add project's file to the head
-        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.HEAD);
+
+    @Override
+    protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
+        return ParserQueue.Position.HEAD;
     }
     
     public @Override void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
@@ -111,7 +110,7 @@ public final class ProjectImpl extends ProjectBase {
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
 	final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            impl.setBuffer(buf); 
+            impl.setBuffer(buf);
             synchronized( editedFiles ) {
                 editedFiles.add(impl);
             }
@@ -150,7 +149,7 @@ public final class ProjectImpl extends ProjectBase {
             }
         }
     }
-    
+
     private void addToQueue(FileBuffer buf, FileImpl file) {
         if( isDisposing() ) {
             return;
@@ -161,7 +160,7 @@ public final class ProjectImpl extends ProjectBase {
             DiagnosticExceptoins.register(ex);
         }
     }
-    
+
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
         if( ! acceptNativeItem(nativeFile)) {
             return;
@@ -169,13 +168,13 @@ public final class ProjectImpl extends ProjectBase {
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); // NOI18N
         DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
     }
-    
+
     public void onFilePropertyChanged(List<NativeFileItem> items) {
         if (items.size()>0){
             DeepReparsingUtils.reparseOnPropertyChanged(items, this);
         }
     }
-    
+
     public void onFileRemoved(FileImpl impl) {
         try {
             //Notificator.instance().startTransaction();
@@ -269,7 +268,7 @@ public final class ProjectImpl extends ProjectBase {
             ParserQueue.instance().onEndAddingProjectFiles(this);
         }
     }
-    
+
     protected @Override void ensureChangedFilesEnqueued() {
         synchronized( editedFiles ) {
             super.ensureChangedFilesEnqueued();
@@ -282,7 +281,7 @@ public final class ProjectImpl extends ProjectBase {
         }
         //N.B. don't clear list of editedFiles here.
     }
-    
+
     protected @Override boolean hasChangedFiles(CsmFile skipFile) {
         if (skipFile == null) {
             return false;
@@ -297,10 +296,10 @@ public final class ProjectImpl extends ProjectBase {
         }
         return false;
     }
-    
-    
-    private Set<CsmFile> editedFiles = new HashSet<CsmFile>();
-    
+
+
+    private final Set<CsmFile> editedFiles = new HashSet<CsmFile>();
+
     public @Override ProjectBase findFileProject(CharSequence absPath) {
         ProjectBase retValue = super.findFileProject(absPath);
         // trick for tracemodel. We should accept all not registered files as well, till it is not system one.
@@ -333,15 +332,15 @@ public final class ProjectImpl extends ProjectBase {
     protected void clearNativeFileContainer() {
         nativeFiles.clear();
     }
-    
+
     private NativeFileContainer nativeFiles = new NativeFileContainer();
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    
+
     public @Override void write(DataOutput aStream) throws IOException {
         super.write(aStream);
-	// we don't need this since ProjectBase persists fqn 
+	// we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
         LibraryManager.getInstance().writeProjectLibraries(getUID(),aStream);
@@ -349,35 +348,35 @@ public final class ProjectImpl extends ProjectBase {
 
     public ProjectImpl(DataInput input) throws IOException {
         super(input);
-	// we don't need this since ProjectBase persists fqn 
+	// we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
 	LibraryManager.getInstance().readProjectLibraries(getUID(), input);
         //nativeFiles = new NativeFileContainer();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     private RequestProcessor.Task task = null;
     private final static int DELAY = 1001;
-    
-    public void schedule(final FileBuffer buf, final FileImpl file) {
-        if (task==null) {
-            task = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    try {
-                        addToQueue(buf, file);
-                    } catch (AssertionError ex) {
-                        DiagnosticExceptoins.register(ex);
-                    } catch (Exception ex) {
-                        DiagnosticExceptoins.register(ex);
-                    }
-                }
-            }, true);
-            task.setPriority(Thread.MIN_PRIORITY);
+
+    public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
+        if (task != null) {
+            task.cancel();
         }
-        task.cancel();
-        task.schedule(DELAY);        
+        task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                try {
+                    addToQueue(buf, file);
+                } catch (AssertionError ex) {
+                    DiagnosticExceptoins.register(ex);
+                } catch (Exception ex) {
+                    DiagnosticExceptoins.register(ex);
+                }
+            }
+        }, true);
+        task.setPriority(Thread.MIN_PRIORITY);
+        task.schedule(DELAY);
     }
 
     @Override
@@ -387,5 +386,5 @@ public final class ProjectImpl extends ProjectBase {
             task.cancel();
         }
     }
-    
+
 }

@@ -38,9 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.test.mobility;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +55,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -69,61 +67,74 @@ import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JDialogOperator;
 //import org.netbeans.jemmy.operators.JToggleButtonOperator;
+
 /**
  */
 public class NewProjectFileTest extends JellyTestCase {
-    
+
     public static final String ITEM_VISUALMIDLET = Bundle.getStringTrimmed("org.netbeans.modules.vmd.midp.resources.Bundle", "Templates/MIDP/VisualMIDlet.java");
     public static final String ITEM_MIDLET = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/Midlet.java");
     public static final String ITEM_MIDPCANVAS = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/MIDPCanvas.java");
     public static final String ITEM_LOCALIZATIONSUPPORTCLASS = "Localization Support Class";
     //public static final String ITEM_HELLOVISUALMIDLET = "Hello Visual Midlet"; //template removed
-    
     public static final String CATEGORY_MIDP = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP");
     public static final String CATEGORY_CDC = "CDC"; //TODO I18N
-    
     public static final String PROJECT_MOBILE_APP = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/Project/J2ME/MobileApplication");
     public static final String PROJECT_CDC_APP = "CDC Application";//Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/Project/J2ME/MobileApplication");
-        
     public static final HashSet disabledNodes = new HashSet();
     private static String projectDirectory;
-    
     public static final String SAMPLE_MOBILE_PROJECT = "SampleMobileApplication";
     public static final String PROJECT_TO_BE_CREATED = "NewCreatedMobileProject";
-    public static final String PROJECT_TO_BE_CLOSED = "ProjectToBeClosedMobile";
+    public static final String PROJECT_TO_BE_CLOSED = "NewCreatedMobileProject";
     public static final String PROJECT_TO_BE_OPENED = "OpenMobileProject";
-    public static final String PROJECT_FOR_NEW_FILES = "CreateNewFilesMobile";
+    public static final String PROJECT_FOR_NEW_FILES = "NewCreatedMobileProject";
     public static final String PROJECT_OPENED = "MobileApplicationVisualMIDlet";
-    
+    static final String[] tests = {
+        "testNewProject",
+        "testCreateNewFiles",
+        "testCreateNewProjectIssue95668",
+        "testVMClosesImmediatellyIssue101539",
+//        "testOpenProject",
+        "testCloseProject",
+        "testCreateNewMobileApplication",
+        "testCreateNewMIDPFilesValidation",
+        "testCompileMobileMIDPProject",
+        "testCreateNewMIDPCanvas"
+    };
+
     public NewProjectFileTest(String name) {
         super(name);
     }
-    
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(NewProjectFileTest.class).addTest(tests).clusters(".*").enableModules(".*").gui(true));
+    }
+
     /*
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new NewProjectFileTest("testNewProject"));//TODO can be used only when a J2ME platform is available
-        suite.addTest(new NewProjectFileTest("testCreateNewFiles"));
-        suite.addTest(new NewProjectFileTest("testOpenProject"));
-        suite.addTest(new NewProjectFileTest("testCloseProject")); //must be last. It close the SampleMobileApplication project that is used in other tests.
-        return suite;
+    NbTestSuite suite = new NbTestSuite();
+    //suite.addTest(new NewProjectFileTest("testNewProject"));//TODO can be used only when a J2ME platform is available
+    suite.addTest(new NewProjectFileTest("testCreateNewFiles"));
+    suite.addTest(new NewProjectFileTest("testOpenProject"));
+    suite.addTest(new NewProjectFileTest("testCloseProject")); //must be last. It close the SampleMobileApplication project that is used in other tests.
+    return suite;
     }
      */
-    
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
-        
-        junit.textui.TestRunner.run(new NewProjectFileTest("testCreateNewMIDPFilesValidation"));
+
+       // junit.textui.TestRunner.run( new NewProjectFileTest(""));
+         junit.textui.TestRunner.run( NewProjectFileTest.suite());
     }
-    
+
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
-    
+
     public void tearDown() {
     }
-    
-    
+
     public void testNewProject() throws IOException {
         //TODO it's necessary to have a J2ME platform to be able create Mobile Project
         //TODO we need a fake platform that can be used even when the mobility pack is built from sources and no regular platform is available
@@ -131,26 +142,28 @@ public class NewProjectFileTest extends JellyTestCase {
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED);
     }
-    
+
     public String createNewFile(String category, String template, String name, String packageName) {
-        NewFileWizardOperator newFile = NewFileWizardOperator.invoke(); 
+        NewFileWizardOperator newFile = NewFileWizardOperator.invoke();
+  //      sleep(2000);
         newFile.selectCategory(category);
         newFile.selectFileType(template);
         newFile.next();
         NewFileNameLocationStepOperator op = new NewFileNameLocationStepOperator();
         op.setObjectName(name); //TODO doesn't work with New > MIDP Canvas. It doesn;t change the name
-        if(packageName != null) 
+        if (packageName != null) {
             op.setPackage(packageName);
+        }
         String fileLocation = op.txtCreatedFile().getText();
         op.finish();
         return fileLocation;
     }
-    
+
     public String createNewProject(String projectType, String projectName) {
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         NewProjectWizardOperator npwop = NewProjectWizardOperator.invoke();
-        npwop.selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/Project/J2ME")); 
-        npwop.selectProject(projectType); 
+        npwop.selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/Project/J2ME"));
+        npwop.selectProject(projectType);
         npwop.next();
         NewProjectNameLocationStepOperator step = new NewProjectNameLocationStepOperator();
         step.txtProjectLocation().setText(getWorkDirPath());
@@ -160,7 +173,7 @@ public class NewProjectFileTest extends JellyTestCase {
         step.finish();
         return projectLocation;
     }
-    
+
     public void testCloseProject() {
         //EditorOperator.closeDiscardAll();
         //select projects tab
@@ -170,44 +183,44 @@ public class NewProjectFileTest extends JellyTestCase {
         Node projectNode = pto.getProjectRootNode(PROJECT_TO_BE_CLOSED);
         projectNode.select();
         //close it
-        projectNode.performPopupAction("Close Project"); //TODO - I18N - get it from bundle
+        projectNode.performPopupAction("Close"); //TODO - I18N - get it from bundle
         //check that project is closed
         pto.getProjectRootNode(PROJECT_TO_BE_CLOSED);
-        
+
     }
-    
+
     public void testOpenProject() throws IOException {
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
-        mainWindow.getToolbarButton(mainWindow.getToolbar("File"),"Open Project").push();//TODO I18N
-        
+        mainWindow.getToolbarButton(mainWindow.getToolbar("File"), "Open Project").push();//TODO I18N
+
         DialogOperator dia = new DialogOperator("Open Project"); //TODO I18N
         JTextFieldOperator text = new JTextFieldOperator(dia, 1);
-        text.setText(getDataDir().getPath() +File.separator+PROJECT_TO_BE_OPENED);
+        text.setText(getDataDir().getPath() + File.separator + PROJECT_TO_BE_OPENED);
         new JButtonOperator(dia, "Open Project Folder").push();//TODO I18N
         sleep(2000);
         JDialog resolveDialog = NbDialogOperator.findJDialog("Open Project", true, true);//TODO I18N
         if (resolveDialog != null) {
             new JButtonOperator(new JDialogOperator(resolveDialog), "Close").push();//TODO I18N
         }
-        
+
         JMenuBarOperator menubar = mainWindow.menuBar();
-        
+
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        
+
         // get the tree if needed
         JTreeOperator tree = pto.tree();
-        
+
         // Open HelloMidlet and Inspector
         Node projectNode = pto.getProjectRootNode("MobileApplication|hello|HelloMidlet.java");
         projectNode.select();
         projectNode.performPopupActionNoBlock("Open");
         sleep(2000);
-        
+
         new PropertySheetOperator().close();
         EditorOperator.closeDiscardAll();
-        
+
     }
-    
+
     public void testCreateNewFiles() {
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode(PROJECT_FOR_NEW_FILES).select();
@@ -215,16 +228,16 @@ public class NewProjectFileTest extends JellyTestCase {
         createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "NewVisualMidlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "myPackage"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "MIDPCanvas", "myPackage"); // NOI18N
-        
-        
+
+
         //test that files are created and opened in editor
         new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
         new EditorOperator("MIDPCanvas.java").close();    // NOI18N    
-        
+
     }
-    
-    public void testCreateNewMobileApplication(){
+
+    public void testCreateNewMobileApplication() {
         //by default is the "Create HelloMidlet" checked when creating new project 
         String projectName = "NewMobileApplication"; // NOI18N
         //create
@@ -233,7 +246,7 @@ public class NewProjectFileTest extends JellyTestCase {
         //check
         new ProjectsTabOperator().getProjectRootNode(projectName);
     }
-    
+
     public void testCreateNewCDCApplication() {
         String projectName = "NewCDCApplication"; // NOI18N
         //create
@@ -242,9 +255,8 @@ public class NewProjectFileTest extends JellyTestCase {
         //check
         new ProjectsTabOperator().getProjectRootNode(projectName);
     }
-    
+
 ////------------------------------------- validation --------------
-    
     public void testCreateNewMIDPFilesValidation() {
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode("NewMobileApplication").select(); // NOI18N
@@ -253,13 +265,13 @@ public class NewProjectFileTest extends JellyTestCase {
         createNewFile(CATEGORY_MIDP, ITEM_MIDLET, "NewMIDlet", "validation"); // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "NewMIDPCanvas", "validation");    // NOI18N
         createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "NewVisualMidlet", "validation"); // NOI18N
-        
+
         //test that files are created and opened in editor
         new EditorOperator("NewMIDlet.java").close(); // NOI18N
         new EditorOperator("MIDPCanvas.java").close();  // NOI18N  //TODO: workaround for unchanged canvas name
         new TopComponentOperator("NewVisualMidlet.java").close(); // NOI18N //TODO: seems that this doesn't work :(
     }
-    
+
     public void testCompileMobileMIDPProject() {
         // start to track Main Window status bar
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
@@ -274,26 +286,28 @@ public class NewProjectFileTest extends JellyTestCase {
         stt.stop();
     }
 ////---------------------------------------------------------------
+
     public void testCreateNewMIDPCanvas() {
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode("NewMobileApplication").select(); // NOI18N
         //create new Canvas in the project
 
         createNewFile(CATEGORY_MIDP, ITEM_MIDPCANVAS, "NewMIDPCanvas", "validation");    // NOI18N
-        
+
         //test that files are created and opened in editor
         new EditorOperator("NewMIDPCanvas.java").close();  // NOI18N
     }
+
     public void testCreateNewProjectIssue95668() {
-        String projectName = PROJECT_TO_BE_CREATED + System.currentTimeMillis() ;
+        String projectName = PROJECT_TO_BE_CREATED + System.currentTimeMillis();
         System.out.println("creating project " + projectName); // NOI18N
         System.out.println("project created " + createNewProject(PROJECT_MOBILE_APP, projectName)); // NOI18N
-        for(int i=0;i<50;i++) {
-           new ProjectsTabOperator().getProjectRootNode(projectName).select();
-           createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "file"+i, "issue95668"); // NOI18N
+        for (int i = 0; i < 50; i++) {
+            new ProjectsTabOperator().getProjectRootNode(projectName).select();
+            createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "file" + i, "issue95668"); // NOI18N
         }
     }
-    
+
 //        public void testCreateNewProjectIssue95668() {
 //        String projectName = PROJECT_TO_BE_CREATED + System.currentTimeMillis() ;
 //        System.out.println("creating project " + projectName);
@@ -303,14 +317,14 @@ public class NewProjectFileTest extends JellyTestCase {
 //           createNewFile(ITEM_VISUALMIDLET, "file"+i);
 //        }
 //    }
-    
     public void testVMClosesImmediatellyIssue101539() {
         createNewProject(PROJECT_MOBILE_APP, "issue101539"); // NOI18N
         for (int i = 0; i < 20; i++) {
-            createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "issue101539_"+i, "testing"); // NOI18N
+            createNewFile(CATEGORY_MIDP, ITEM_VISUALMIDLET, "issue101539_" + i, "testing"); // NOI18N
         }
-        //EditorOperator.
+    //EditorOperator.
     }
+
     public void sleep(int millis) {
         try {
             Thread.sleep(millis);

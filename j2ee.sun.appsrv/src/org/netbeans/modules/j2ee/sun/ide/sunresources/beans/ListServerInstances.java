@@ -56,22 +56,19 @@ import java.awt.GridBagConstraints;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import javax.management.ObjectName;
 
-import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.BaseResourceNode;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 

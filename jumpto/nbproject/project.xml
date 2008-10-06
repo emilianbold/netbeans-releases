@@ -161,7 +161,7 @@ Contributor(s): Andrei Badea
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -175,13 +175,8 @@ Contributor(s): Andrei Badea
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
-                <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.gsf</friend>
-                <friend>org.netbeans.modules.gsf.api</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
-                <friend>org.netbeans.modules.javascript.editing</friend>
-                <friend>org.netbeans.modules.php.editor</friend>
-                <friend>org.netbeans.modules.ruby</friend>
                 <friend>org.netbeans.modules.spring.beans</friend>
                 <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.symbol</package>

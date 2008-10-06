@@ -39,22 +39,19 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author nam
  */
-public class SaasGroup {
+public class SaasGroup implements Comparable<SaasGroup> {
     public static final String PROP_GROUP_NAME = "groupName";
 
     private final Group delegate;
@@ -80,7 +77,7 @@ public class SaasGroup {
     }
 
     public List<Saas> getServices() {
-        return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
+        return new ArrayList<Saas>(services.values());
     }
 
     public Saas getChildService(String name) {
@@ -188,7 +185,7 @@ public class SaasGroup {
                 children.put(sg.getName(), sg);
             }
         }
-        return Collections.unmodifiableList(new ArrayList<SaasGroup>(children.values()));
+        return new ArrayList<SaasGroup>(children.values());
     }
 
     public SaasGroup getChildGroup(String name) {
@@ -279,6 +276,38 @@ public class SaasGroup {
     }
 
     /**
+     * Check to see if a web service with the given url already exists under
+     * the web service manager
+     * 
+     * TODO: For now, we will only support one service per unique url for the
+     * entire web service manager regardless of the group.
+     * 
+     * @param url url for the service
+     * @return true if the service already exists, false otherwise.
+     */
+    public boolean serviceExists(String url) {
+        SaasGroup root = getRoot();
+        
+        return serviceExists(root, url);
+    }
+    
+    private boolean serviceExists(SaasGroup group, String url) {
+        for (Saas service : group.getServices()) {
+            if (url.equals(service.getUrl())) {
+                return true;
+            }
+        }
+        
+        for (SaasGroup g : group.getChildrenGroups()) {
+            if (serviceExists(g, url)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * Just create a child group node with given name and back parent pointer.
      * Caller should explicitly mutate model, flush, persist and fire event
      * 
@@ -286,6 +315,14 @@ public class SaasGroup {
      * @return created group
      */
     protected SaasGroup createGroup(String name) {
+        List<SaasGroup> childGroups = this.getChildrenGroups();
+        
+        for (SaasGroup g : childGroups) {
+            if (g.getName().equals(name)) {
+                throw new IllegalArgumentException(NbBundle.getMessage(SaasGroup.class, "MSG_GroupAlreadyExists"));
+            }
+        }
+        
         Group g = new Group();
         g.setName(name);
         SaasGroup child = new SaasGroup(this, g);
@@ -293,8 +330,22 @@ public class SaasGroup {
         return child;
     }
     
+    private SaasGroup getRoot() {
+        SaasGroup root = this;
+        SaasGroup parent = this;
+        
+        while ((parent = parent.getParent()) != null) {
+            root = parent;
+        }
+        
+        return root;
+    }
+    
     public String toString() {
         return getName();
     }
 
+    public int compareTo(SaasGroup group) {
+        return getName().compareTo(group.getName());
+    }
 }

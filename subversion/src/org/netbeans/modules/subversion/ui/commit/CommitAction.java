@@ -232,8 +232,33 @@ public class CommitAction extends ContextAction {
                     }
                 }                
             }
-        }   
+        }
+
+        fileList.addAll(getUnversionedParents(fileList, true));
         return fileList;
+    }
+
+    private static Set<File> getUnversionedParents(List<File> fileList, boolean onlyCached) {
+        Set<File> checked = new HashSet<File>();
+        Set<File> ret = new HashSet<File>();
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for (File file : fileList) {
+            File parent = null;;
+            while((parent = file.getParentFile()) != null) {
+                if(checked.contains(parent)) break;                
+                checked.add(parent);
+                if(fileList.contains(parent)) break;
+                if(!SvnUtils.isManaged(parent)) break;
+                FileInformation info = onlyCached ? cache.getCachedStatus(parent) : cache.getStatus(parent);
+                if(info == null) continue;
+                if(info.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY ||
+                   info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)
+                {
+                    ret.add(parent);
+                }
+            }
+        }
+        return ret;
     }
     
     /**
@@ -388,7 +413,7 @@ public class CommitAction extends ContextAction {
                     if(fileList.size()==0) {
                         return; 
                     }  
-
+                    fileList.addAll(getUnversionedParents(fileList, false));
                     ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(fileList.size());
                     SvnFileNode[] nodes;
                     for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
@@ -574,8 +599,18 @@ public class CommitAction extends ContextAction {
             performAdds(client, support, addCandidates);
             if(support.isCanceled()) {
                 return;
-            }                    
+            }
             
+            // ensure all ignored properties are set.
+            // This is more a hack than a clean solution but still seems to be
+            // more reasonable than changing Subverion.isIgnored due to:
+            // 1.) we didn't need it until now
+            // 2.) the hilarious potential of Subverion.isIgnored and SQ to cause trouble ...
+            setIgnoredProperties(client, support, addCandidates);
+            if(support.isCanceled()) {
+                return;
+            }
+
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
@@ -734,7 +769,6 @@ public class CommitAction extends ContextAction {
             }
         }
         if(dirsToAdd.size() > 0) {
-            // XXX JAVAHL client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
             for (File file : dirsToAdd) {
                 client.addFile(file);
             }
@@ -744,13 +778,43 @@ public class CommitAction extends ContextAction {
         }
 
         if(addFiles.size() > 0) {
-            // XXX JAVAHL client.addFile(addFiles.toArray(new File[addFiles.size()]), false);
             for (File file : addFiles) {
                 client.addFile(file);
             }
         }
     }
-    
+
+    /**
+     * In case a newly added file contains a ignored file, this mothod ensures the ignored property is also set.
+     * Couldn't be done earlier as the file might have been unversioned (no svn add was invoked yet) until this moment.
+     *
+     * @param client
+     * @param support
+     * @param addCandidates
+     */
+    private static void setIgnoredProperties(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) {
+        for (SvnFileNode fileNode : addCandidates) {
+            File file = fileNode.getFile();
+            if(file.isDirectory()) {
+                File[] children = file.listFiles();
+                if(children != null || children.length > 0) {
+                    for (File child : children) {
+                        final FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                        FileInformation info = cache.getStatus(child);
+                        if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                            File parent = child.getParentFile();
+                            if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                                // ensure parents added status is set
+                                cache.refresh(parent, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                            }
+                            cache.refresh(child, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Returns all files which have to be commited recursively (deleted and copied folders)
      */ 

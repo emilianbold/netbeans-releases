@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.game.integration;
 
+import com.sun.source.util.TreePath;
 import org.netbeans.modules.vmd.api.codegen.CodeClassLevelPresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeWriter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -49,17 +50,56 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.model.*;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.api.java.source.JavaSource;
 
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
+import org.openide.util.Exceptions;
 
 /**
  * @author David Kaspar, Karel Herink
  */
 public class GameCodeSupport {
-	
+
+    public static Presenter createAddImportPresenter(final List<String> fqns) {
+        return new CodeGlobalLevelPresenter() {
+
+            @Override
+            protected void performGlobalGeneration(StyledDocument styledDocument) {
+                addImports(styledDocument);
+            }
+
+            private void addImports(final StyledDocument styledDocument ) {
+                try {
+                    JavaSource.forDocument(styledDocument).runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                        public void cancel() {
+                        }
+
+                        public void run(WorkingCopy parameter) throws Exception {
+                            parameter.toPhase(JavaSource.Phase.PARSED);
+                            for (String fqn : fqns) {
+                                SourceUtils.resolveImport(parameter,
+                                        new TreePath(parameter.getCompilationUnit()),
+                                        fqn);
+                            }
+                        }
+                    }).commit();
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        };
+
+    }
+
 	
 	public static Presenter createSequenceCodePresenter() {
 		return new CodeClassLevelPresenter.Adapter() {
@@ -86,13 +126,15 @@ public class GameCodeSupport {
 		};
 	}
 	
-	public static Presenter createImageResourceCodePresenter() {
+	public static Presenter createImageResourceCodePresenter( final List<String> fqns ) {
 		return new CodeClassLevelPresenter.Adapter() {
 			protected void generateFieldSectionCode(MultiGuardedSection section) {
 				CodeWriter writer = section.getWriter();
 				DesignComponent component = getComponent();
 				String name = MidpTypes.getString(component.readProperty(ImageResourceCD.PROPERTY_NAME));
 				writer.write("private Image " + name + ";\n"); // NOI18N
+
+                                fqns.add( "javax.microedition.lcdui.Image");   // NOI18N
 			}
 			protected void generateClassBodyCode(StyledDocument document) {
 				DesignComponent component = getComponent();
@@ -128,7 +170,7 @@ public class GameCodeSupport {
 		};
 	}
 		
-	public static Presenter createSceneCodePresenter() {
+	public static Presenter createSceneCodePresenter( final List<String> fqns) {
 		return new CodeClassLevelPresenter.Adapter() {
 			protected void generateClassBodyCode(StyledDocument document) {
 				DesignComponent component = getComponent();
@@ -136,6 +178,7 @@ public class GameCodeSupport {
 				String sceneName = MidpTypes.getString(component.readProperty(SceneCD.PROPERTY_NAME));
 				
 				section.getWriter().write("public void updateLayerManagerFor" + CodeUtils.capitalize(sceneName) + "(LayerManager lm) throws java.io.IOException {\n"); // NOI18N
+                                fqns.add("javax.microedition.lcdui.game.LayerManager");// NOI18N
 				
 				section.getWriter().commit();
 				section.switchToEditable(getComponent().getComponentID() + "-preUpdate"); // NOI18N
@@ -184,13 +227,15 @@ public class GameCodeSupport {
 		};
 	}
 	
-	public static Presenter createSpriteCodePresenter() {
+	public static Presenter createSpriteCodePresenter( final List<String> fqns ) {
 		return new CodeClassLevelPresenter.Adapter() {
 			
 			protected void generateFieldSectionCode(MultiGuardedSection section) {
 				DesignComponent component = getComponent();
 				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
 				section.getWriter().write("private Sprite " + layerName + ";\n"); // NOI18N
+
+                                fqns.add("javax.microedition.lcdui.game.Sprite");// NOI18N
 			}
 			
 			protected void generateClassBodyCode(StyledDocument document) {
@@ -268,7 +313,7 @@ public class GameCodeSupport {
 		return finalSet;
 	}
 	
-	public static Presenter createTiledLayerCodePresenter() {
+	public static Presenter createTiledLayerCodePresenter( final List<String> fqns ) {
 		return new CodeClassLevelPresenter.Adapter() {
 			
 			protected void generateFieldSectionCode(MultiGuardedSection section) {
@@ -277,6 +322,8 @@ public class GameCodeSupport {
 				//define the layer
 				String layerName = MidpTypes.getString(component.readProperty(LayerCD.PROPERTY_NAME));
 				section.getWriter().write("private TiledLayer " + layerName + ";\n"); // NOI18N
+
+                                fqns.add( "javax.microedition.lcdui.game.TiledLayer"); // NOI18N
 				
 				Set<DesignComponent> ats = getAnimatedTilesFromTiledLayer(component);
 				for (DesignComponent animtile : ats) {
@@ -304,9 +351,14 @@ public class GameCodeSupport {
 				section.switchToEditable(getComponent().getComponentID() + "-preInit"); // NOI18N
 				section.getWriter().write(" // write pre-init user code here\n").commit(); // NOI18N
 				section.switchToGuarded();
-				
+
+                //Fix for #145509 - [65cat] ArrayIndexOutOfBoundsException: 0
+                int cols = 0;
+                if ( tiles.length >0 ){
+                    cols = tiles[0].length;
+                }
 				section.getWriter().write(layerName + " = new TiledLayer(" // NOI18N
-						+ tiles[0].length + ", " + tiles.length + ", " + CodeUtils.createGetterMethodName(imageName) // NOI18N
+						+ cols + ", " + tiles.length + ", " + CodeUtils.createGetterMethodName(imageName) // NOI18N
 						+ "(), " + tileWidth + ", " + tileHeight + ");\n"); // NOI18N
 				
 				//init animated tiles
@@ -353,7 +405,7 @@ public class GameCodeSupport {
 				section.switchToGuarded();
 				
 				section.getWriter().write("for (int row = 0; row < " + tiles.length + "; row++) {\n"); // NOI18N
-				section.getWriter().write("for (int col = 0; col < " + tiles[0].length + "; col++) {\n"); // NOI18N
+				section.getWriter().write("for (int col = 0; col < " + cols + "; col++) {\n"); // NOI18N
 				section.getWriter().write(layerName + ".setCell(col, row, tiles[row][col]);\n"); // NOI18N
 				section.getWriter().write("}\n"); // NOI18N
 				section.getWriter().write("}\n"); // NOI18N

@@ -59,7 +59,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -201,7 +200,6 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             panel.proxySettingsButton.addActionListener(this);
             panel.savePasswordCheckBox.addActionListener(this);
 
-            panel.savePasswordCheckBox.setSelected(SvnModuleConfig.getDefault().getSavePassword());
             addSelectOnFocusFields(panel.userPasswordField);
             panel.browseButton.addActionListener(this);
 

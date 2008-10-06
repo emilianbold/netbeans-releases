@@ -39,17 +39,11 @@
 
 package org.netbeans.modules.web.client.tools.common.dbgp;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import org.w3c.dom.Node;
-
 /**
  *
  * @author jdeva
  */
 public class Extension {
-    static final String FILE_URI    = "fileuri";        // NOI18N
     public static class OpenURICommand extends Command {
         String fileURI;
         public OpenURICommand(int transactionId, String fileURI) {
@@ -70,85 +64,4 @@ public class Extension {
             return builder.toString();
         }        
     }
-    
-    public static class OpenURIResponse extends ResponseMessage {
-        public OpenURIResponse(Node node) {
-            super(node);
-        }
-    }
-    
-    public static class Source extends BaseMessageChildElement {
-        public Source(Node node) {
-            super(node);
-        }
-        
-        public String getURI() {
-            return getAttribute(FILE_URI);
-        }        
-    }
-    
-    public static class SourceGetCommand extends Command {
-        public SourceGetCommand(int transactionId) {
-            super(CommandMap.SOURCE_GET.getCommand(), transactionId);
-        }
-        
-    }
-    
-    public static class SourceGetResponse extends ResponseMessage {
-        private static final String SOURCE = "source";        // NOI18N
-
-        SourceGetResponse(Node node) {
-            super(node);
-        }
-
-        public List<Source> getSources() {
-            List<Source> result = new LinkedList<Source>();
-            List<Node> nodes = getChildren(getNode(), SOURCE);
-            for (Node node : nodes) {
-                result.add(new Source(node));
-            }
-            return result;
-        }
-    }
-    
-    public static class Window extends BaseMessageChildElement {
-        static final String WINDOW = "window";        // NOI18N
-        public Window(Node node) {
-            super(node);
-        }
-        
-        public String getURI() {
-            return getAttribute(FILE_URI);
-        }
-        
-        public List<Window> getChildren() {
-            List<Node> nodes = getChildren(WINDOW);
-            List<Window> result = new ArrayList<Window>(nodes.size());
-            for (Node node : nodes) {
-                result.add(new Window(node));
-            }
-            return result;
-        }        
-    }
-    
-   public static class WindowGetCommand extends Command {
-        public WindowGetCommand(int transactionId) {
-            super(CommandMap.WINDOW_GET.getCommand(), transactionId);
-        }
-    }
-   
-   public static class WindowGetResponse extends ResponseMessage {
-        WindowGetResponse(Node node) {
-            super(node);
-        }
-
-        public List<Window> getWindows() {
-            List<Window> result = new LinkedList<Window>();
-            List<Node> nodes = getChildren(getNode(), Window.WINDOW);
-            for (Node node : nodes) {
-                result.add(new Window(node));
-            }
-            return result;
-        }
-    }   
 }

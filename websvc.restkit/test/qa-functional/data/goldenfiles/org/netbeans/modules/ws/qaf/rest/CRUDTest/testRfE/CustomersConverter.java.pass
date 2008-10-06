@@ -1,9 +1,5 @@
 /*
- *  CustomersConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -18,7 +14,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import java.util.ArrayList;
 import o.n.m.ws.qaf.rest.crud.Customer;
 
-
 /**
  *
  * @author lukas
@@ -30,7 +25,7 @@ public class CustomersConverter {
     private Collection<CustomerConverter> items;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of CustomersConverter */
     public CustomersConverter() {
     }
@@ -46,6 +41,7 @@ public class CustomersConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getCustomer();
     }
 
     /**
@@ -95,7 +91,7 @@ public class CustomersConverter {
         entities = new ArrayList<Customer>();
         if (items != null) {
             for (CustomerConverter item : items) {
-                entities.add(item.resolveEntity());
+                entities.add(item.getEntity());
             }
         }
         return entities;

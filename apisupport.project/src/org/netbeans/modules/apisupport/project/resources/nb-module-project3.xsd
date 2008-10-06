@@ -97,9 +97,8 @@ made subject to such option by the copyright holder.
     </xsd:complexType>
 
     <xsd:simpleType name="javaPackageType">
-        <xsd:restriction base="xsd:NCName">
-            <!-- XXX should also handle Unicode I suppose -->
-            <xsd:pattern value="[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)*"/>
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[\p{L}\p{Nl}\p{Sc}\p{Pc}][\p{L}\p{N}\p{Sc}\p{Pc}\p{Cc}\p{Cf}\p{Mn}\p{Mc}]*(\.[\p{L}\p{Nl}\p{Sc}\p{Pc}][\p{L}\p{N}\p{Sc}\p{Pc}\p{Cc}\p{Cf}\p{Mn}\p{Mc}]*)*"/>
         </xsd:restriction>
     </xsd:simpleType>
 

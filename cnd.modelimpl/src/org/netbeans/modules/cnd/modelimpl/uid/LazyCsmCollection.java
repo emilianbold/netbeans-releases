@@ -145,11 +145,15 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
     public boolean addAll(Collection<? extends Tfact> c) {
 	boolean modified = false;
-	Iterator<? extends Tfact> it = c.iterator();
-	while (it.hasNext()) {
-	    if (add(it.next()))
-		modified = true;
-	}
+    if (c instanceof LazyCsmCollection) {
+        return uids.addAll(((LazyCsmCollection)c).uids);
+    } else {
+        Iterator<? extends Tfact> it = c.iterator();
+        while (it.hasNext()) {
+            if (add(it.next()))
+            modified = true;
+        }
+    }
 	return modified;
     }
 

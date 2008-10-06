@@ -47,8 +47,10 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -65,10 +67,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
     private boolean qualifiedNameIsFake = false;
-    private final CharSequence[] classOrNspNames;
+    private final CharSequence[] classOrNspNames;   
+    private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
+    }
+
+    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean likeVariable) throws AstRendererException {
+        this(ast, file, scope, register);
+        if(likeVariable) {
+            fixFakeRegistrationAst = ast;
+        }
     }
     
     protected  FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
@@ -86,9 +96,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
-		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
-		    return (CsmClass) obj;
-		}
+                return (CsmClass) obj;
 	    }
 	    else if( obj instanceof CsmNamespace ) {
 		return (CsmNamespace) obj;
@@ -167,14 +175,53 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     public void fixFakeRegistration() {
-	CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
-	if( !newQname.equals(qualifiedName) ) {
-	    ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
-            aProject.unregisterDeclaration(this);
-            this.cleanUID();
-	    qualifiedName = newQname;
-	    aProject.registerDeclaration(this);
-	}
+        if (fixFakeRegistrationAst != null) {
+            CsmObject owner = findOwner(null);
+            if (CsmKindUtilities.isClass(owner)) {
+                CsmClass cls = (CsmClass) owner;
+                for (CsmMember member : cls.getMembers()) {
+                    if (member.isStatic() && member.getName().equals(getName())) {
+                        VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
+                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
+                        ((FileImpl) getContainingFile()).addDeclaration(var);
+                        fixFakeRegistrationAst = null;
+                        return;
+                    }
+                }
+            } else if (CsmKindUtilities.isNamespace(owner)) {
+                CsmNamespace ns = (CsmNamespace) owner;
+                for (CsmDeclaration decl : ns.getDeclarations()) {
+                    if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
+                        VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
+                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
+                        ((FileImpl) getContainingFile()).addDeclaration(var);
+                        fixFakeRegistrationAst = null;
+                        return;
+                    }
+                }
+            }                        
+            try {
+                FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope());
+                fixFakeRegistrationAst = null;
+                ((FileImpl) getContainingFile()).addDeclaration(fi);
+                if (NamespaceImpl.isNamespaceScope(fi)) {
+                    if (CsmKindUtilities.isNamespace(this.getScope())) {
+                        ((NamespaceImpl) this.getScope()).addDeclaration(fi);
+                    }
+                }
+            } catch (AstRendererException e) {
+                DiagnosticExceptoins.register(e);
+            }
+        } else {
+            CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
+            if (!newQname.equals(qualifiedName)) {
+                ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl(true);
+                aProject.unregisterDeclaration(this);
+                this.cleanUID();
+                qualifiedName = newQname;
+                aProject.registerDeclaration(this);
+            }
+        }
     }
     
     private CsmNamespaceDefinition findNamespaceDefinition() {

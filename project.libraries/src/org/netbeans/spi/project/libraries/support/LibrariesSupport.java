@@ -50,6 +50,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -176,14 +177,26 @@ public final class LibrariesSupport {
             }
             File libBase = libLocation.getParentFile();
             /* Do not use URI.resolve because of http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4723726 (URI.normalize() ruins URI built from UNC File) */
-            String basePath = libBase.toURI().toString();
-            if(!basePath.endsWith("/")) {  // NOI18N
-                basePath += "/";  // NOI18N
-            }
-            if (libraryEntry.getPath().contains("!/")) { // NOI18N
-                return URI.create("jar:"+basePath+libraryEntry.getRawPath()); // NOI18N
+            String jarFolder = null;
+            String libEntryPath = libraryEntry.getPath();
+            int index = libEntryPath.indexOf("!/");
+            if (index != -1) { // NOI18N
+                libEntryPath = libEntryPath.substring(0, index);
+                // use raw path instead because it will be append to URI as is:
+                jarFolder = libraryEntry.getRawPath().substring(libraryEntry.getRawPath().indexOf("!/")+2);
+            }            
+            URI resolvedPath = FileUtil.normalizeFile(new File(libBase, libEntryPath)).toURI();
+            if (jarFolder != null) { // NOI18N
+                return URI.create("jar:"+resolvedPath.toString()+"!/"+jarFolder); // NOI18N
             } else {
-                return URI.create(basePath+libraryEntry.getRawPath());
+                //If the original was a folder but translated not (non existing file) preserve /
+                final boolean relativeEndsWithSlash = libEntryPath.endsWith("/");     //NOI18N
+                final String suri = resolvedPath.toString();
+                final boolean absoluteEndsWithSlash = suri.endsWith("/");  //NOI18N
+                if (relativeEndsWithSlash && !absoluteEndsWithSlash) {
+                    resolvedPath = URI.create (suri+'/');    //NOI18N
+                }
+                return resolvedPath;
             }
         }
     }

@@ -95,7 +95,7 @@ public class CvsVersioningSystem {
      * Extensions to be treated as text although MIME type may suggest otherwise.
      */ 
     private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "txt", "xml", "html", "properties", "mf", "jhm", "hs", "form" })); // NOI18N
-    
+    public static Logger LOG = Logger.getLogger(CvsVersioningSystem.class.getName());
     private final Map<String, ClientRuntime> clientsCache = new HashMap<String, ClientRuntime>();
     private final Map params = new HashMap();
 
@@ -118,6 +118,8 @@ public class CvsVersioningSystem {
 
     private final Set<File> alreadyGeneratedFiles = new HashSet<File>(5);
 
+    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    
     public static synchronized CvsVersioningSystem getInstance() {
         if (instance == null) {
             instance = new CvsVersioningSystem();
@@ -409,9 +411,10 @@ public class CvsVersioningSystem {
     }
 
     public void versionedFilesChanged() {
+        unversionedParents.clear();        
         listenerSupport.fireVersioningEvent(EVENT_VERSIONED_FILES_CHANGED);
     }
-        
+
     /**
      * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
      * parent of the file that is still versioned.
@@ -420,20 +423,48 @@ public class CvsVersioningSystem {
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
     File getTopmostManagedParent(File file) {
+        long t = System.currentTimeMillis();
+        LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            LOG.fine(" cached as unversioned");
+            return null;
+        }
         if (Utils.isPartOfCVSMetadata(file)) {
+            LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
                 if (file.getName().equals(FILENAME_CVS) && (file.isDirectory() || !file.exists())) {
                     file = file.getParentFile();
+                    LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
                     break;
                 }
             }
         }
+
+        Set<File> done = new HashSet<File>();
         File topmost = null;
         for (; file != null; file = file.getParentFile()) {
+            if(unversionedParents.contains(file)) {
+                LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             if (Utils.containsMetadata(file)) {
+                LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by CVS
+            } else {
+                LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
             }
+        }
+        if(done.size() > 0) {
+            LOG.log(Level.FINE, " storing unversioned");
+            unversionedParents.addAll(done);
+        }
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, " getTopmostManagedParent returns {0} after {1} millis", new Object[] { topmost, System.currentTimeMillis() - t });
         }
         return topmost;
     }
@@ -747,7 +778,7 @@ public class CvsVersioningSystem {
             if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (Exception e) {
-            Logger.getLogger(CvsVersioningSystem.class.getName()).log(Level.INFO, "Unable to get original file", e);
+            LOG.log(Level.INFO, "Unable to get original file", e);
         }
     }
 

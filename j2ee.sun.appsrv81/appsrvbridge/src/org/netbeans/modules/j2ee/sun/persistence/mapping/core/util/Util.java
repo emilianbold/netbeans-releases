@@ -54,7 +54,7 @@ public class Util extends Object
 	/** A special message used where an exception must be thrown (ie. to 
 	 * veto a model change), but the user should not be shown an error.
 	 */
-	public static final String SUPPRESS_MESSAGE = "suppressDialog";	// NOI8N
+	public static final String SUPPRESS_MESSAGE = "suppressDialog";	// NOI18N
 
 	private static final String ICON_ROOT =
 		"org/netbeans/modules/j2ee/sun/persistence/mapping/core/resources/"; //NOI18N

@@ -201,12 +201,14 @@ public class Installer implements FinishHandler {
     
     private void initializeErrorHandler() {
         // initialize the error manager
+        LogManager.logEntry("... initializing ErrorHandler");
         ErrorManager.setFinishHandler(this);
         ErrorManager.setExceptionHandler(new ErrorManager.ExceptionHandler());
         
         // attach a handler for uncaught exceptions in the main thread
         Thread.currentThread().setUncaughtExceptionHandler(
                 ErrorManager.getExceptionHandler());
+        LogManager.logExit("... end of ErrorHandler initialization"); // NOI18N
     }
     
     private void initializePlatform() {
@@ -224,22 +226,28 @@ public class Installer implements FinishHandler {
     }
     
     private void initializeDownloadManager() {
+        LogManager.logEntry("... initializing DownloadManager");
         final DownloadManager downloadManager = DownloadManager.getInstance();
         downloadManager.setLocalDirectory(getLocalDirectory());
         downloadManager.setFinishHandler(this);
         downloadManager.init();
+        LogManager.logExit("... end of initializing DownloadManager");
     }
     
     private void initializeRegistry() {
+        LogManager.logEntry("... initializing Registry");
         final Registry registry = Registry.getInstance();
         registry.setLocalDirectory(getLocalDirectory());
         registry.setFinishHandler(this);
+        LogManager.logExit("... end of initializing ErrorHandler");
     }
     
     private void initializeWizard() {
+        LogManager.logEntry("... initializing Wizard");
         final Wizard wizard = Wizard.getInstance();
         wizard.setFinishHandler(this);
         wizard.getContext().put(Registry.getInstance());
+        LogManager.logExit("... end of initializing Wizard");
     }
     
     // private //////////////////////////////////////////////////////////////////////

@@ -78,7 +78,7 @@ public class CLD_AbstractionLinkTests extends ClassDiagramTestCase {
     private static String prName = "UMLProjectForAbstractionLink";
     private static String dpdName = "ClassDiagramForAbstractionLink";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     //private static final String workDir = "I:/UML_TEMP";
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";

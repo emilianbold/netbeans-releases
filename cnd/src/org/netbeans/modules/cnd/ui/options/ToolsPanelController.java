@@ -64,7 +64,7 @@ public final class ToolsPanelController extends OptionsPanelController {
     }
     
     public boolean isValid() {
-        return panel.dataValid();
+        return !panel.isChanged() || panel.dataValid();
     }
     
     public boolean isChanged() {

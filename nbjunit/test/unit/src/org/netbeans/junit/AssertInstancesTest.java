@@ -41,17 +41,10 @@
 
 package org.netbeans.junit;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ResourceBundle;
+import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
-import junit.framework.TestFailure;
-import junit.framework.TestResult;
 
 /** Checks that we can do proper logging.
  *
@@ -75,7 +68,7 @@ public class AssertInstancesTest extends NbTestCase {
     protected void setUp() throws Exception {
         LOG = Logger.getLogger("test." + getName());
     }
-    
+
     public void testCannotGC() throws Throwable {
         String s = new String("Ahoj");
         hold = s;
@@ -90,6 +83,27 @@ public class AssertInstancesTest extends NbTestCase {
             return;
         }
         
+        fail("The unreleased reference shall be spotted");
+    }
+
+    public void testCannotGCWithAWrongAndRightName() throws Throwable {
+        String s = new String("Ahoj");
+        hold = s;
+
+        Log.enableInstances(LOG, "NoText", Level.FINEST);
+        Log.enableInstances(LOG, "3rdText", Level.FINEST);
+
+
+        LOG.log(Level.FINE, "3rdText", s);
+        LOG.log(Level.FINE, "NoText", new String("OK"));
+
+        Log.assertInstances("OK, GC as nothing holds OK", "NoText");
+        try {
+            Log.assertInstances("Cannot GC", "3rdText");
+        } catch (AssertionFailedError ex) {
+            // ok
+            return;
+        }
         fail("The unreleased reference shall be spotted");
     }
     

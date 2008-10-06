@@ -44,20 +44,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -108,42 +98,4 @@ public class RecurrentSuiteFactory {
         return suite;
     }
 
-    public static void resolveServer(String projectName) {
-        ProjectSupport.waitScanFinished();
-        Logger log = Logger.getLogger(RecurrentSuiteFactory.class.getName());
-        String openProjectTitle = Bundle.getString("org.netbeans.modules.j2ee.common.ui.Bundle", "MSG_Broken_Server_Title");
-        if (JDialogOperator.findJDialog(openProjectTitle, true, true) != null) {
-            new NbDialogOperator(openProjectTitle).close();
-            log.info("Resolving server");
-            // open project properties
-            ProjectsTabOperator.invoke().getProjectRootNode(projectName).properties();
-            // "Project Properties"
-            String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
-            NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-            // select "Run" category
-            new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
-            // set default server
-            new JComboBoxOperator(propertiesDialogOper).setSelectedIndex(0);
-            propertiesDialogOper.ok();
-            // if setting default server, it scans server jars; otherwise it continues immediatelly
-            ProjectSupport.waitScanFinished();
-        }
-        String editPropertiesTitle = "Edit Project Properties";
-        int count = 0;
-        while ((JDialogOperator.findJDialog(editPropertiesTitle, true, true) != null) && (count < 10)) {
-            count++;
-            JDialogOperator dialog = new NbDialogOperator(editPropertiesTitle);
-            JButtonOperator butt = new JButtonOperator(dialog, "Regenerate");
-            butt.push();
-            log.info("Closing buildscript regeneration");
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException exc) {
-                log.log(Level.INFO, "interrupt exception", exc);
-            }
-            if (dialog.isVisible()){
-                dialog.close();
-            }
-        }
-    }
 }

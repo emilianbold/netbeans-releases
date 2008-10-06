@@ -94,19 +94,19 @@ class Ordering {
         while (it.hasNext()) {
             FileObject child = it.next();
             if (childrenByName.put(child.getNameExt(), child) != null) {
-                throw new IllegalArgumentException("Duplicate in children list: " + child.getPath()); // NOI18N
+                throw new IllegalArgumentException("Duplicate in children list: " + child.getPath() + "\nChildren: " + children); // NOI18N
             }
             Object pos = child.getAttribute(ATTR_POSITION);
             if (pos instanceof Number) {
                 childrenByPosition.add(new ChildAndPosition(child, (Number) pos));
             } else if (logWarnings && pos != null) {
-                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath());
+                LOG.warning("Encountered nonnumeric position attribute " + pos + " of " + pos.getClass() + " for " + child.getPath()  + "\nChildren: " + children);
             }
             if (parent == null) {
                 parent = child.getParent();
             } else {
                 if (child.getParent() != parent) {
-                    throw new IllegalArgumentException("All children must have the same parent: " + child.getParent().getPath() + " vs. " + parent.getPath()); // NOI18N
+                    throw new IllegalArgumentException("All children must have the same parent: " + child.getParent().getPath() + " vs. " + parent.getPath() + "\nChildren: " + children); // NOI18N
                 }
             }
         }
@@ -188,6 +188,7 @@ class Ordering {
     }
 
     static void setOrder(List<FileObject> children) throws IllegalArgumentException, IOException {
+        boolean oneNewChild = false;
         boolean fullySpecified = true;
         for (FileObject f : children) {
             if (findPosition(f) == null) {
@@ -273,6 +274,7 @@ class Ordering {
                 }
             }
             if (nue != null) {
+                oneNewChild = true;
                 toBeMoved = nue;
                 int idx = children.indexOf(nue);
                 before = (idx == 0) ? null : children.get(idx - 1);
@@ -304,6 +306,12 @@ class Ordering {
                 pos += 100;
             }
         }
+        if(oneNewChild && toBeMoved != null) {
+            // #131021 - If just one new child added and its position attr is set,
+            // call setOrder again to potentially reorder others.
+            setOrder(children);
+            return;
+        }
         // Kill off any old relative ordering attributes.
         FileObject d = children.get(0).getParent();
         for (String attr : NbCollections.iterable(d.getAttributes())) {
@@ -318,6 +326,7 @@ class Ordering {
             assert actual.equals(children) : "setOrder(" + children + ") -> " + actual;
         }
     }
+
     private static Float findPosition(FileObject f) {
         Object o = f.getAttribute(ATTR_POSITION);
         if (o instanceof Number) {

@@ -51,6 +51,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import javax.swing.AbstractAction;
@@ -62,11 +64,9 @@ import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 /**
  * Represents Popup for "Keyboard document switching" which is shown after
@@ -127,6 +127,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     private static int triggerKey; // e.g. TAB
     private static int reverseKey = KeyEvent.VK_SHIFT;
     private static int releaseKey; // e.g. CTRL
+
+    private static boolean cancelOnFocusLost = true;
     
     private int x;
     private int y;
@@ -195,6 +197,24 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      */
     public static void selectItem(SwitcherTableItem items[], int releaseKey,
             int triggerKey, boolean forward) {
+        selectItem(items, releaseKey, triggerKey, forward, true);
+    }
+
+    /**
+     * Creates and shows the popup with given <code>items</code>. When user
+     * selects an item <code>SwitcherTableItem.Activatable.activate()</code> is
+     * called. So what exactly happens depends on the concrete
+     * <code>SwitcherTableItem.Activatable</code> implementation.
+     * Selection is made when user releases a <code>releaseKey</code> passed on
+     * as a parameter. If user releases the <code>releaseKey</code> before a
+     * specified time (<code>TIME_TO_SHOW</code>) expires the popup won't show
+     * at all and switch to the last used document will be performed
+     * immediately.
+     *
+     * A popup appears on <code>x</code>, <code>y</code> coordinates.
+     */
+    public static void selectItem(SwitcherTableItem items[], int releaseKey,
+            int triggerKey, boolean forward, boolean cancelOnFocusLost) {
         // reject multiple invocations
         if (invokerTimerRunning) {
             return;
@@ -202,6 +222,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         KeyboardPopupSwitcher.items = items;
         KeyboardPopupSwitcher.releaseKey = releaseKey;
         KeyboardPopupSwitcher.triggerKey = triggerKey;
+        KeyboardPopupSwitcher.cancelOnFocusLost = cancelOnFocusLost;
         invokerTimer = new Timer(TIME_TO_SHOW, new PopupInvoker(forward));
         invokerTimer.setRepeats(false);
         invokerTimer.start();
@@ -282,26 +303,24 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             // set popup to be always on top to be in front of all
             // floating separate windows
             
-            String title = NbBundle.getMessage(KeyboardPopupSwitcher.class, "CTL_THREADS_CHOOSER");
-            DialogDescriptor descr = new DialogDescriptor(pTable, title);
-            descr.setOptions(new Object[0]);
-            descr.setClosingOptions(new Object [0]);
-            
             InputMap inputMap = pTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_DOWN_MASK, true), "escape");
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, true), "escape");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.ALT_DOWN_MASK, true), "escape");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, true), "escape");
             inputMap.put(KeyStroke.getKeyStroke(releaseKey, 0, true), "close");
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false), "close");
             inputMap.put(KeyStroke.getKeyStroke(releaseKey, KeyEvent.SHIFT_DOWN_MASK, true), "close");
-            inputMap.put(KeyStroke.getKeyStroke(triggerKey, KeyEvent.CTRL_DOWN_MASK), "triggerKeyPressed");
-            inputMap.put(KeyStroke.getKeyStroke(triggerKey, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "triggerKeyPressed");
-            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.CTRL_DOWN_MASK, true), "reverseKeyReleased");
-            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.CTRL_DOWN_MASK, false), "reverseKeyPressed");
-            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, false), "reverseKeyPressed");
+            inputMap.put(KeyStroke.getKeyStroke(triggerKey, KeyEvent.ALT_DOWN_MASK), "triggerKeyPressed");
+            inputMap.put(KeyStroke.getKeyStroke(triggerKey, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), "triggerKeyPressed");
+            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.ALT_DOWN_MASK, true), "reverseKeyReleased");
+            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.ALT_DOWN_MASK, false), "reverseKeyPressed");
+            inputMap.put(KeyStroke.getKeyStroke(reverseKey, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, false), "reverseKeyPressed");
+            pTable.setInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW, inputMap);
+            pTable.setInputMap(JComponent.WHEN_FOCUSED, inputMap);
             
             Action closeAction = new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     processShortcut(new KeyEvent((JComponent)e.getSource(), KeyEvent.KEY_RELEASED,
-                            e.getWhen(), e.getModifiers(), KeyEvent.VK_CONTROL, (char)0));
+                            e.getWhen(), e.getModifiers(), releaseKey, (char)0));
                 }
             };
             Action escapeAction = new AbstractAction() {
@@ -329,15 +348,33 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                 }
             };
             
-            ActionMap actionMap = pTable.getActionMap();
+            final ActionMap actionMap = pTable.getActionMap();
             actionMap.put("close", closeAction);
             actionMap.put("escape", escapeAction);
             actionMap.put("triggerKeyPressed", nextAction);
             actionMap.put("reverseKeyPressed", previousAction);
             actionMap.put("reverseKeyReleased", previous2Action);
+            actionMap.remove("selectNextRow");
+            pTable.addMouseListener(new MouseListener() {
+                public void mouseClicked(MouseEvent e) {
+                    int b = e.getButton();
+                    int c = e.getClickCount();
+                    if (b == e.BUTTON1 && c == 2) { // Double-click
+                        actionMap.get("close").actionPerformed(new ActionEvent(e.getSource(), e.getID(), "close"));
+                    }
+                }
+                public void mousePressed(MouseEvent e) {}
+                public void mouseReleased(MouseEvent e) {}
+                public void mouseEntered(MouseEvent e) {}
+                public void mouseExited(MouseEvent e) {}
+            });
             
-            shown = true;
-            popup = (JDialog)DialogDisplayer.getDefault().createDialog(descr);
+            popup = new JDialog(WindowManager.getDefault().getMainWindow());
+            popup.setUndecorated(true);
+            popup.getContentPane().add(pTable);
+            popup.setLocation(x, y);
+            popup.pack();
+
             SwingUtilities.invokeLater(new Runnable() {
                 public void run () {
                     //WindowManager.getDefault().getMainWindow().addWindowFocusListener(KeyboardPopupSwitcher.this);
@@ -345,17 +382,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                 }
             });
             popup.setVisible(true);
-            shown = false;
+            shown = true;
 
-            /*
-            popup = new JDialog(); // new JWindow();
-            popup.setAlwaysOnTop(true);
-            popup.getContentPane().add(pTable);
-            popup.setLocation(x, y);
-            popup.pack();
-            popup.setVisible(true);
-             */
-            
             // #82743 - on JDK 1.5 popup steals focus from main window for a millisecond,
             // so we have to delay attaching of focus listener
 //            SwingUtilities.invokeLater(new Runnable() {
@@ -506,7 +534,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
     public void windowLostFocus(WindowEvent e) {
         //remove the switcher when the main window is deactivated, 
         //e.g. user pressed Ctrl+Esc on MS Windows which opens the Start menu
-        if (e.getOppositeWindow() != popup) {
+        if (cancelOnFocusLost && e.getOppositeWindow() != popup) {
             cancelSwitching();
         }
     }
@@ -541,7 +569,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
                 return;
             }
             KeyEvent keyEvent = (KeyEvent)event;
-            if (keyEvent.getKeyCode() == KeyEvent.VK_CONTROL) {
+            if (keyEvent.getKeyCode() == KeyEvent.VK_ALT) {
                 Toolkit.getDefaultToolkit().removeAWTEventListener(this);
                 KeyEvent kev = new KeyEvent(
                     (Component)keyEvent.getSource(), KeyEvent.KEY_RELEASED, keyEvent.getWhen(),

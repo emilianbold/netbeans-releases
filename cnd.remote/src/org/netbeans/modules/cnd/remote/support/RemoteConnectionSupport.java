@@ -40,11 +40,17 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,43 +59,65 @@ import java.util.logging.Logger;
 public abstract class RemoteConnectionSupport {
     
     private JSch jsch;
-    protected String key;
+    protected final String key;
     protected Session session;
     protected Channel channel;
-    private String user;
+    private final String user;
+    private final String host;
     private int exit_status;
     private boolean cancelled = false;
+    private boolean failed = false;
+    private String failureReason;
+    private Integer timeout = Integer.getInteger("cnd.remote.timeout"); // NOI18N
     protected static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public RemoteConnectionSupport(String key, int port) {
         this.key = key;
         int pos = key.indexOf('@');
         user = key.substring(0, pos);
-        String host = key.substring(pos + 1);
+        host = key.substring(pos + 1);
         exit_status = -1; // this is what JSch initializes it to...
+        failureReason = "";
+        boolean retry = false;
+        log.finest("RCS<Init>: Starting " + getClass().getName() + " on " + key);
         
-        try {
-            jsch = new JSch();
-            jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts");
-            session = jsch.getSession(user, host, port);
+        do {
+            try {
+                jsch = new JSch();
+                jsch.setKnownHosts(System.getProperty("user.home") + "/.ssh/known_hosts"); // NOI18N
+                session = jsch.getSession(user, host, port);
 
-            RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key);
-            session.setUserInfo(ui);
-            session.connect();
-            if (!session.isConnected()) {
-                System.err.println("");
+                RemoteUserInfo ui = RemoteUserInfo.getUserInfo(key, retry);
+                retry = false;
+                session.setUserInfo(ui);
+                session.connect(timeout == null ? 30000 : timeout.intValue());
+                if (!session.isConnected()) {
+                    log.fine("RCS<Init>: Connection failed on " + key);
+                }
+            } catch (JSchException jsce) {
+                log.warning("RCS<Init>: Got JSchException [" + jsce.getMessage() + "]");
+                String msg = jsce.getMessage();
+                if (msg.equals("Auth cancel")) { // NOI18N
+                    cancelled = true;
+                } else if (msg.equals("Auth fail")) { // NOI18N
+                    JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
+                    NotifyDescriptor d = new NotifyDescriptor(
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
+                    if (DialogDisplayer.getDefault().notify(d) == btRetry) {
+                         retry = true;
+                    } else {
+                        failed = true;
+                        failureReason = msg;
+                    }
+                } else {
+                    failed = true;
+                    failureReason = msg;
+                }
             }
-        } catch (JSchException jsce) {
-            log.warning("RPB<Init>: Got JSchException [" + jsce.getMessage() + "]");
-            String msg = jsce.getMessage();
-            if (msg.equals("Auth cancel")) {
-                cancelled = true;
-            }
-        }
-    }
-    
-    public RemoteConnectionSupport(String key) {
-        this(key, 22);
+        } while (retry);
     }
     
     public Channel getChannel() {
@@ -100,7 +128,13 @@ public abstract class RemoteConnectionSupport {
         this.channel = channel;
     }
     
-    protected abstract Channel createChannel() throws JSchException;
+    protected Channel createChannel(InputStream in, OutputStream out) throws JSchException {
+        return (ChannelExec) session.openChannel("exec"); // NOI18N
+    }
+    
+    protected Channel createChannel() throws JSchException {
+        return createChannel(null, null);
+    }
     
     public int getExitStatus() {
         return !cancelled && channel != null ? channel.getExitStatus() : -1; // JSch initializes exit status to -1
@@ -110,16 +144,42 @@ public abstract class RemoteConnectionSupport {
         return cancelled;
     }
     
+    public String getFailureReason() {
+        return failureReason;
+    }
+    
+    public void setFailed(String reason) {
+        failed = true;
+        failureReason = reason;
+    }
+    
+    public boolean isFailed() {
+        return failed;
+    }
+
+    public boolean isFailedOrCancelled() {
+        return failed || cancelled;
+    }
+    
     protected void setExitStatus(int exit_status) {
         this.exit_status = exit_status;
     }
     
-    protected void disconnect() {
-        channel.disconnect();
-        session.disconnect();
+    public void disconnect() {
+        if (channel != null && channel.isConnected()) {
+            channel.disconnect();
+        }
+        if (session != null) {
+            session.disconnect();
+            session = null;
+        }
     }
     
     public String getUser() {
         return user;
+    }
+
+    public String getHost() {
+        return host;
     }
 }

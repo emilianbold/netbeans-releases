@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -89,7 +90,7 @@ public class AddParameterOrLocalFix implements Fix {
     private String name;
     private boolean parameter;
     
-    private int /*!!!Position*/ unresolvedVariable;
+    private TreePathHandle[] tpHandle;
     
     public AddParameterOrLocalFix(CompilationInfo info,
                                   TypeMirror type, String name,
@@ -102,7 +103,10 @@ public class AddParameterOrLocalFix implements Fix {
         this.type = TypeMirrorHandle.create(type);
         this.name = name;
         this.parameter = parameter;
-        this.unresolvedVariable = unresolvedVariable;
+
+        TreePath treePath = info.getTreeUtilities().pathFor(unresolvedVariable + 1);
+        tpHandle = new TreePathHandle[1];
+        tpHandle[0] = TreePathHandle.create(treePath, info);
     }
 
     public String getText() {
@@ -127,8 +131,12 @@ public class AddParameterOrLocalFix implements Fix {
                 }
 
                 TreeMaker make = working.getTreeMaker();
-                TreePath tp = working.getTreeUtilities().pathFor(unresolvedVariable + 1);
 
+                //TreePath tp = working.getTreeUtilities().pathFor(unresolvedVariable + 1);
+                //Use TreePathHandle instead of position supplied as field (#143318)
+                TreePath tp = tpHandle[0].resolve(working);
+                if (tp.getLeaf().getKind() != Kind.IDENTIFIER)
+                    return;
                 assert tp.getLeaf().getKind() == Kind.IDENTIFIER;
 
                 TreePath targetPath = findMethod(tp);

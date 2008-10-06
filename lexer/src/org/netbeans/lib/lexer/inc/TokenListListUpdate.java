@@ -43,9 +43,12 @@ package org.netbeans.lib.lexer.inc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinTokenList;
+import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.TokenListList;
 
 /**
@@ -55,6 +58,9 @@ import org.netbeans.lib.lexer.TokenListList;
  */
 
 final class TokenListListUpdate<T extends TokenId> {
+
+    // -J-Dorg.netbeans.lib.lexer.inc.TokenListListUpdate.level=FINE
+    private static final Logger LOG = Logger.getLogger(TokenListListUpdate.class.getName());
     
     /**
      * Token list list for the case when the particular language path
@@ -145,15 +151,27 @@ final class TokenListListUpdate<T extends TokenId> {
         EmbeddedTokenList<T> markedForRemoveTokenList = tokenListList.getOrNull(modTokenListIndex + removedTokenListCount);
         if (markedForRemoveTokenList != removedTokenList) {
             int realIndex = tokenListList.indexOf(removedTokenList);
-            modTokenListIndex = tokenListList.findIndexDuringUpdate(removedTokenList, eventInfo);
-            throw new IllegalStateException("Removing at tokenListIndex=" + modTokenListIndex + // NOI18N
+            String msg = "\n\nLEXER-INTERNAL-ERROR: Removing at tokenListIndex=" + modTokenListIndex + // NOI18N
                     " but real tokenListIndex is " + realIndex + // NOI18N
                     " (indexWasMinusOne=" + indexWasMinusOne + ").\n" + // NOI18N
-                    "Wishing to remove tokenList\n" + removedTokenList + // NOI18N
-                    "\nbut marked-for-remove tokenList is \n" + markedForRemoveTokenList + // NOI18N
+                    "Wishing to remove tokenList\n" + // NOI18N
+                    ((removedTokenList != null) ? removedTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
+                    "\nbut marked-for-remove tokenList is \n" + // NOI18N
+                    ((markedForRemoveTokenList != null) ? markedForRemoveTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
                     "\nfrom tokenListList\n" + tokenListList + // NOI18N
-                    "\n\nModification description:\n" + eventInfo.modificationDescription(true) // NOI18N
-                    );
+                    "\nModification description:\n" + eventInfo.modificationDescription(true); // NOI18N
+            if (LOG.isLoggable(Level.WARNING)) {
+                LOG.warning(msg);
+            }
+            if (indexWasMinusOne) {
+                modTokenListIndex = realIndex; // Fix the index
+                if (TokenList.LOG.isLoggable(Level.FINE)) {
+                    // Notify an exception when running tests
+                    throw new IllegalStateException("Invalid modTokenListIndex");
+                }
+            } else { // Cannot fix the index
+                throw new IllegalStateException("Cannot fix modTokenListIndex");
+            }
         }
         removedTokenListCount++;
     }
@@ -208,6 +226,7 @@ final class TokenListListUpdate<T extends TokenId> {
         
         if (becomeJoining) {
             // Create JTL to init tokens
+            tokenListList.setJoinSections(true);
             JoinTokenList.create(tokenListList, 0, tokenListList.size());
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {
@@ -216,7 +235,7 @@ final class TokenListListUpdate<T extends TokenId> {
                 addedEtl.initAllTokens();
             }
             if (tokenListList.hasChildren()) {
-                updateItem.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent());
+                updateItem.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent(), updateItem.childrenLanguages);
             }
         }
     }
@@ -244,10 +263,16 @@ final class TokenListListUpdate<T extends TokenId> {
 
     @Override
     public String toString() {
-        return " modTokenListIndex=" + modTokenListIndex + // NOI18N
-                "; Rem:" + removedTokenListCount + // NOI18N
-                " Add:" + addedTokenLists.size() + // NOI18N
-                " Size:" + tokenListList.size(); // NOI18N
+        StringBuilder sb = new StringBuilder(80);
+        sb.append(" modTokenListIndex=").append(modTokenListIndex).append("; "); // NOI18N
+        if (isTokenListsMod()) {
+            sb.append("Rem:").append(removedTokenListCount); // NOI18N
+            sb.append(" Add:").append(addedTokenLists.size()); // NOI18N
+        } else { // no TL mod
+            sb.append("NoTLMod");
+        }
+        sb.append(" Size:").append(tokenListList.size()); // NOI18N
+        return sb.toString();
     }
 
 }

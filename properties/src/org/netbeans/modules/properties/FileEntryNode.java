@@ -79,9 +79,9 @@ public class FileEntryNode extends AbstractNode {
      * @param ch children container for the node
      */
     public FileEntryNode (PresentableFileEntry entry, Children ch) {
-        super (ch);
+        super(ch);
         this.entry = entry;
-        
+
         PropL propListener = new PropL ();
         entry.addPropertyChangeListener(
                 WeakListeners.propertyChange(propListener, entry));
@@ -89,11 +89,23 @@ public class FileEntryNode extends AbstractNode {
         
         super.setName (entry.getName ());
     }
-    
+
     private String getBundleString(String s){
         return NbBundle.getMessage(FileEntryNode.class, s);
     }
 
+    /**
+     * Get a cookie. Delegated to {@link PresentableFileEntry#getCookie}. is
+     * @return the cookie or <code>null</code>
+     */
+    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
+        T c = entry.getCookie(cl);
+        if (c != null) {
+            return c;
+        } else {
+            return super.getCookie (cl);
+        }
+    }
 
     /** Gets the represented entry.
      * @return the entry
@@ -170,21 +182,6 @@ public class FileEntryNode extends AbstractNode {
         }
     }
     
-    /** Get a cookie.
-     * First of all {@link PresentableFileEntry#getCookie} is
-     * called. If it produces non-<code>null</code> result, that is returned.
-     * Otherwise the superclass is tried.
-     * @return the cookie or <code>null</code>
-     */
-    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
-        T c = entry.getCookie(cl);
-        if (c != null) {
-            return c;
-        } else {
-            return super.getCookie (cl);
-        }
-    }
-
     /** Initializes sheet of properties. Allows subclasses to
      * overwrite it.
      * @return the default sheet to use

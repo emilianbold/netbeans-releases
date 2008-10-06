@@ -74,7 +74,7 @@ public class PhpSources implements Sources, ChangeListener, PropertyChangeListen
     public static final String TYPE_PHP = "PHPSOURCE"; // NOI18N
 
     private final AntProjectHelper helper;
-    private PropertyEvaluator evaluator;
+    private final PropertyEvaluator evaluator;
 
     private SourcesHelper sourcesHelper;
     private Sources delegate;

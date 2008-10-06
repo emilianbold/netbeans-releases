@@ -51,11 +51,13 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.options.CodeStyle;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.util.Exceptions;
 
 
@@ -76,7 +78,7 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     private int rightMarginOverride = -1;
 
     public Formatter() {
-        this.codeStyle = CodeStyle.getDefault(null);
+        this.codeStyle = null;
     }
     
     public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
@@ -90,20 +92,38 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    public void reindent(Document doc, int startOffset, int endOffset) {
-        reindent(doc, startOffset, endOffset, null, true);
+    public void reindent(Context context) {
+        if (codeStyle != null) {
+            reindent(context, null, true);
+        } else {
+            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            f.reindent(context, null, true);
+        }
     }
 
-    public void reformat(Document doc, int startOffset, int endOffset, CompilationInfo compilationInfo) {
-        reindent(doc, startOffset, endOffset, compilationInfo, false);
+    public void reformat(Context context, CompilationInfo compilationInfo) {
+        if (codeStyle != null) {
+            reindent(context, compilationInfo, false);
+        } else {
+            Formatter f = new Formatter(CodeStyle.get(context.document()), -1);
+            f.reindent(context, compilationInfo, false);
+        }
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getIndentSize();
+        }
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getContinuationIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getContinuationIndentSize();
+        }
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -434,26 +454,24 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
+    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+        assert codeStyle != null;
+        
+        Document document = context.document();
+        final int endOffset = Math.min(context.endOffset(), document.getLength());
         isGspDocument = false;
 
         try {
-            BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
+            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-            syncOptions(doc, codeStyle);
-
-            if (endOffset > doc.getLength()) {
-                endOffset = doc.getLength();
-            }
-            
-            startOffset = Utilities.getRowStart(doc, startOffset);
-            int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
+            final int startOffset = Utilities.getRowStart(doc, context.startOffset());
+            final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
             int initialIndent = 0;
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
             
             // Build up a set of offsets and indents for lines where I know I need
@@ -463,8 +481,8 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
             // a lot of things will work better: breakpoints and other line annotations
             // will be left in place, semantic coloring info will not be temporarily
             // damaged, and the caret will stay roughly where it belongs.
-            List<Integer> offsets = new ArrayList<Integer>();
-            List<Integer> indents = new ArrayList<Integer>();
+            final List<Integer> offsets = new ArrayList<Integer>();
+            final List<Integer> indents = new ArrayList<Integer>();
 
             // When we're formatting sections, include whitespace on empty lines; this
             // is used during live code template insertions for example. However, when
@@ -476,58 +494,59 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
             // TODO - remove initialbalance etc.
             computeIndents(doc, initialIndent, initialOffset, endOffset, info, 
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
-            
-            try {
-                doc.atomicLock();
 
-                // Iterate in reverse order such that offsets are not affected by our edits
-                assert indents.size() == offsets.size();
-                org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
-                for (int i = indents.size() - 1; i >= 0; i--) {
-                    int indent = indents.get(i);
-                    int lineBegin = offsets.get(i);
-                    
-                    if (lineBegin < lineStart) {
-                        // We're now outside the region that the user wanted reformatting;
-                        // these offsets were computed to get the correct continuation context etc.
-                        // for the formatter
-                        break;
-                    }
-                    
-                    if (lineBegin == lineStart && i > 0) {
-                        // Look at the previous line, and see how it's indented
-                        // in the buffer.  If it differs from the computed position,
-                        // offset my computed position (thus, I'm only going to adjust
-                        // the new line position relative to the existing editing.
-                        // This avoids the situation where you're inserting a newline
-                        // in the middle of "incorrectly" indented code (e.g. different
-                        // size than the IDE is using) and the newline position ending
-                        // up "out of sync"
-                        int prevOffset = offsets.get(i-1);
-                        int prevIndent = indents.get(i-1);
-                        int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
-                        if (actualPrevIndent != prevIndent) {
-                            // For blank lines, indentation may be 0, so don't adjust in that case
-                            if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
-                                indent = actualPrevIndent + (indent-prevIndent);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        // Iterate in reverse order such that offsets are not affected by our edits
+                        assert indents.size() == offsets.size();
+                        for (int i = indents.size() - 1; i >= 0; i--) {
+                            int indent = indents.get(i);
+                            int lineBegin = offsets.get(i);
+
+                            if (lineBegin < lineStart) {
+                                // We're now outside the region that the user wanted reformatting;
+                                // these offsets were computed to get the correct continuation context etc.
+                                // for the formatter
+                                break;
+                            }
+
+                            if (lineBegin == lineStart && i > 0) {
+                                // Look at the previous line, and see how it's indented
+                                // in the buffer.  If it differs from the computed position,
+                                // offset my computed position (thus, I'm only going to adjust
+                                // the new line position relative to the existing editing.
+                                // This avoids the situation where you're inserting a newline
+                                // in the middle of "incorrectly" indented code (e.g. different
+                                // size than the IDE is using) and the newline position ending
+                                // up "out of sync"
+                                int prevOffset = offsets.get(i-1);
+                                int prevIndent = indents.get(i-1);
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
+                                if (actualPrevIndent != prevIndent) {
+                                    // For blank lines, indentation may be 0, so don't adjust in that case
+                                    if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                                        indent = actualPrevIndent + (indent-prevIndent);
+                                    }
+                                }
+                            }
+
+                            // Adjust the indent at the given line (specified by offset) to the given indent
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
+
+                            if (currentIndent != indent) {
+                                context.modifyIndent(lineBegin, indent);
                             }
                         }
-                    }
 
-                    // Adjust the indent at the given line (specified by offset) to the given indent
-                    int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
-
-                    if (currentIndent != indent) {
-                        editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                        if (!indentOnly && codeStyle.reformatComments()) {
+                            reformatComments(doc, startOffset, endOffset);
+                        }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
                     }
                 }
-                
-                if (!indentOnly && codeStyle.reformatComments()) {
-                    reformatComments(doc, startOffset, endOffset);
-                }
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -591,12 +610,12 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (isGspDocument && !indentOnly) {
                     // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = LexUtilities.getLineIndent(doc, offset);
+                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
                 }
                 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
-                    indent = LexUtilities.getLineIndent(doc, offset);
+                    indent = GsfUtilities.getLineIndent(doc, offset);
 
                     if (isGspDocument && indentHtml && balance > 0) {
                         indent += balance * indentSize;
@@ -643,30 +662,10 @@ public class Formatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     void reformatComments(BaseDocument doc, int start, int end) {
-        int rightMargin = rightMarginOverride;
-        if (rightMargin == -1) {
-            CodeStyle style = codeStyle;
-            if (style == null) {
-                style = CodeStyle.getDefault(null);
-            }
-
-            rightMargin = style.getRightMargin();
-        }
+        int rightMargin = rightMarginOverride != -1 ? rightMarginOverride : codeStyle.getRightMargin();
 
 //        ReflowParagraphAction action = new ReflowParagraphAction();
 //        action.reflowComments(doc, start, end, rightMargin);
-    }
-    
-    /**
-     * Ensure that the editor-settings for tabs match our code style, since the
-     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-     * those settings
-     */
-    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-            formatter.setSpacesPerTab(style.getIndentSize());
-        }
     }
 
 }

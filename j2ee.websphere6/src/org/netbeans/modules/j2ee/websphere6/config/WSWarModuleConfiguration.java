@@ -74,7 +74,11 @@ import org.openide.filesystems.FileObject;
 public class WSWarModuleConfiguration extends WSModuleConfiguration
         implements ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
 
-    public static final String WEB_APP_ID = "WebApp";
+    public static final String WEB_APP_ID = "WebApp"; // NOI18N
+
+    private static final String WEB_APP_TAG_OPEN = "<web-app"; // NOI18N
+
+    private static final String WEB_APP_TAG_CLOSE = ">"; // NOI18N
 
     private final File wsWebBndFile;
 
@@ -113,30 +117,33 @@ public class WSWarModuleConfiguration extends WSModuleConfiguration
             webExtDO.addPropertyChangeListener(this);
 
             dataObjects = new DataObject[] {webBndDO, webExtDO};
-        } catch(DataObjectNotFoundException donfe) {
+        } catch (DataObjectNotFoundException donfe) {
             dataObjects = new DataObject[] {};
             Exceptions.printStackTrace(donfe);
         }
 
         // FIXME we have to create id attribute in webapp element of web.xml
         File webInfFile = j2eeModule.getDeploymentConfigurationFile("WEB-INF/web.xml");
-        if(webInfFile.exists()) {
-            String contents = WSUtil.readFile(webInfFile );
-            String ID = "id=\""+WEB_APP_ID+"\"";
-            if(contents!=null && contents.indexOf(ID)==-1) {
-                String WebAppTagOpen = "<web-app";
-                String WebAppTagClose = ">";
-                int startIndex = contents.indexOf(WebAppTagOpen);
-                if(startIndex!=-1) {
-                    String afterTageOpen = contents.substring(startIndex + WebAppTagOpen.length());
-                    String tag = afterTageOpen.substring(0,afterTageOpen.indexOf(WebAppTagClose));
-                    if(tag.indexOf(ID)==-1) {
-                        WSUtil.writeFile(webInfFile , contents.replaceFirst(WebAppTagOpen + " ",
-                                WebAppTagOpen + " " + ID +" \n        "));
+        if (webInfFile.exists()) {
+            String contents = WSUtil.readFile(webInfFile);
+            String id = "id=\"" + WEB_APP_ID + "\""; // NOI18N
+            if (contents != null && contents.indexOf(id) == -1) {
+                int startIndex = contents.indexOf(WEB_APP_TAG_OPEN);
+                if (startIndex != -1) {
+                    String afterTageOpen = contents.substring(startIndex + WEB_APP_TAG_OPEN.length());
+                    String tag = afterTageOpen.substring(0, afterTageOpen.indexOf(WEB_APP_TAG_CLOSE));
+                    if (tag.indexOf(id) == -1) {
+                        StringBuilder replacement = new StringBuilder(WEB_APP_TAG_OPEN);
+                        replacement.append(" ").append(id);
+                        if (tag.length() != 0) {
+                            replacement.append(" \n        ");
+                        }
+                        WSUtil.writeFile(webInfFile , contents.replaceFirst(WEB_APP_TAG_OPEN,
+                                replacement.toString()));
                     }
                 }
             }
-            final WarSynchronizer webSync = new WarSynchronizer (webInfFile, wsWebBndFile);
+            final WarSynchronizer webSync = new WarSynchronizer(webInfFile, wsWebBndFile);
             webSync.addSyncFile(webInfFile);
         }
     }
@@ -213,16 +220,18 @@ public class WSWarModuleConfiguration extends WSModuleConfiguration
     // SOLUTION could be - save application.xml here and get it in deployment manager - creating the ear
     public void save(OutputStream os) throws ConfigurationException {
         // TODO I18N messages, escape char entities
-	System.out.println("WSwarModuleconfig.save");
         try {
             FileObject file = getJ2eeModule().getArchive();
-	    System.out.println("file: " +file);
             if (file == null) {
                 throw new ConfigurationException("Unknow war name to deploy");
             }
             String name = file.getNameExt();
             StringBuffer appXml = new StringBuffer("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-            appXml.append("<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"Application_ID\" version=\"1.4\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\">");
+            if (J2eeModule.J2EE_13.equals(getJ2eeModule().getModuleVersion())) {
+                appXml.append("<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"Application_ID\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\">");
+            } else {
+                appXml.append("<application xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"Application_ID\" version=\"1.4\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/application_1_4.xsd\">");
+            }
             appXml.append("<display-name>").append(name.replace('.', '_')).append("</display-name>");
             appXml.append("<module>");
             appXml.append("<web>");
@@ -230,7 +239,7 @@ public class WSWarModuleConfiguration extends WSModuleConfiguration
             appXml.append("<context-root>").append(contextRoot).append("</context-root>");
             appXml.append("</web>");
             appXml.append("</module>");
-            appXml.append("</application>");            
+            appXml.append("</application>");
             os.write(appXml.toString().getBytes("UTF-8")); // NOI18N
         } catch (IOException ex) {
 		ex.printStackTrace();

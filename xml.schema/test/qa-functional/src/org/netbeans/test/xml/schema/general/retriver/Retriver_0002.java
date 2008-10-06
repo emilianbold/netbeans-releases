@@ -41,57 +41,17 @@
 
 package org.netbeans.test.xml.schema.general.retriver;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-import org.netbeans.jellytools.actions.AttachWindowAction;
-
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
-import javax.swing.ListModel;
-import org.netbeans.jellytools.TopComponentOperator;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -103,7 +63,7 @@ import junit.framework.Test;
 public class Retriver_0002 extends Retriver {
     
     static final String TEST_BPEL_APP_NAME = "TravelReservationService_retriver_0002";
-    static final String TEST_BPEL_MODULE_NAME = "BpelModule_retruver_0002";
+    static final String TEST_BPEL_MODULE_NAME = "BpelModule_retriver_0002";
     static final String SCHEMA_NAME = "OTA_TravelItinerary.xsd";
 
     static final String [] m_aTestMethods = {
@@ -170,6 +130,12 @@ public class Retriver_0002 extends Retriver {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "External XML Schema Document(s)" );
@@ -186,12 +152,12 @@ public class Retriver_0002 extends Retriver {
       JFileChooserOperator opFileChooser = new JFileChooserOperator( );
 
       String sPathSrc = GetWorkDir( )
-          + File.separator + TEST_BPEL_APP_NAME
+          + TEST_BPEL_APP_NAME
           + File.separator + TEST_BPEL_APP_NAME
           + File.separator + "src";
 
       String sPathDst = GetWorkDir( )
-          + File.separator + TEST_BPEL_MODULE_NAME
+          + TEST_BPEL_MODULE_NAME
           + File.separator + "src";
 
 
@@ -200,6 +166,8 @@ public class Retriver_0002 extends Retriver {
 
       fwNew.finish( );
 
+      Sleep( 10000 );
+
       // Check tree
       pto = new ProjectsTabOperator( );
       prn = pto.getProjectRootNode(
@@ -207,20 +175,28 @@ public class Retriver_0002 extends Retriver {
         );
       prn.select( );
 
+      Sleep( 10000 );
+
       // Check outpupt
       OutputOperator out = OutputOperator.invoke( );
       String sText = out.getText( );
 
       String[] asIdeal =
       {
-        "List of files retrieved :",
-        "From: " + sPathSrc + File.separator + SCHEMA_NAME,
-        "Copied To: " + sPathDst + File.separator + SCHEMA_NAME
+        //"List of files retrieved :",
+        " : Retrieving Location: file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        "Retrieved :    file:/" + sPathSrc.replaceAll( "\\\\", "/" ) + "/" + SCHEMA_NAME,
+        "Saved at: " + sPathDst + File.separator + SCHEMA_NAME
       };
 
       for( String sIdeal : asIdeal )
+      {
         if( -1 == sText.indexOf( sIdeal ) )
+        {
+          System.out.println( sText );
           fail( "Unable to check retriver output: \"" + sIdeal + "\"" );
+        }
+      }
 
       out.close( );
 

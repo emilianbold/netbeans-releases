@@ -42,13 +42,13 @@
 package org.netbeans.modules.web.core.syntax;
 
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
@@ -78,36 +78,51 @@ public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
     
     //use two searches to find the original area :-|
     public int[] findOrigin() throws InterruptedException, BadLocationException {
-        JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(context.getDocument());
-        int searchOffset = context.getSearchOffset();
-        int[] found = syntaxSupport.findMatchingBlock(searchOffset, false);
-        if(found == null) {
-            return null;
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(context.getDocument());
+            int searchOffset = context.getSearchOffset();
+            int[] found = syntaxSupport.findMatchingBlock(searchOffset, false);
+            if(found == null) {
+                return null;
+            }
+            int[] opposite = syntaxSupport.findMatchingBlock(found[0], false);
+            return opposite;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        int[] opposite = syntaxSupport.findMatchingBlock(found[0], false);
-        return opposite;
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(context.getDocument());
-        int searchOffset = context.getSearchOffset();
-        return syntaxSupport.findMatchingBlock(searchOffset, false);
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            JspSyntaxSupport syntaxSupport = JspSyntaxSupport.get(context.getDocument());
+            int searchOffset = context.getSearchOffset();
+            return syntaxSupport.findMatchingBlock(searchOffset, false);
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
+        }
     }
     
     //BracesMatcherFactory implementation
-    public BracesMatcher createMatcher(MatcherContext context) {
-        TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
-        for(TokenSequence ts : ets) {
-            Language language = ts.language();
-            if(language == JspTokenId.language()) {
-                return new JspBracesMatching(context, ts.languagePath());
+    public BracesMatcher createMatcher(final MatcherContext context) {
+        final JspBracesMatching[] ret = { null };
+        context.getDocument().render(new Runnable() {
+            public void run() {
+                TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
+                List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
+                for (TokenSequence ts : ets) {
+                    Language language = ts.language();
+                    if (language == JspTokenId.language()) {
+                        ret[0] = new JspBracesMatching(context, ts.languagePath());
+                    }
+                }
+                // We might be trying to search at the end or beginning of a document. In which
+                // case there is nothing to find and/or search through, so don't create a matcher.
+                //        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
             }
-        }
-        return null;
-// We might be trying to search at the end or beginning of a document. In which
-// case there is nothing to find and/or search through, so don't create a matcher.
-//        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
+        });
+        return ret[0];
     }
     
 }

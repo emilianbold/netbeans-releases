@@ -86,7 +86,7 @@ public class CreateClassDiagramTests extends UMLTestCase {
     /******************const section*************************/
     private String PROJECT_NAME = "CDFS_uml_Class";
     private String JAVA_PROJECT_NAME = "CDFS_java";
-    private final static String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final static String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     
     /********************************************************/
     

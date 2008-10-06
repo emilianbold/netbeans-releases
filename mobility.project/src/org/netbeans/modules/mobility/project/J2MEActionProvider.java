@@ -48,7 +48,6 @@ import java.net.URLEncoder;
 import java.util.*;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -60,8 +59,8 @@ import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -248,7 +247,14 @@ public class J2MEActionProvider implements ActionProvider {
                     } else return;
                 }
                 try {
-                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                    FileObject buildScript = findBuildXml();
+                    if (buildScript != null) {
+                        ActionUtils.runTarget(buildScript, targetNames, p);
+                    } else {
+                        StatusDisplayer.getDefault().setStatusText(
+                                NbBundle.getMessage(J2MEActionProvider.class,
+                                "MSG_NO_BUILD_SCRIPT")); //NOI18N
+                    }
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }
@@ -273,6 +279,10 @@ public class J2MEActionProvider implements ActionProvider {
                 EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 String selectedCfg = priv.getProperty(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS);
                 CfgSelectionPanel panel = new CfgSelectionPanel(allCfg, selectedCfg);
+                panel.getAccessibleContext().setAccessibleName(
+                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command) );//NOI18N
+                panel.getAccessibleContext().setAccessibleDescription(
+                        NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command));//NOI18N
                 if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(new DialogDescriptor(panel, NbBundle.getMessage(CfgSelectionPanel.class, "Title_CfgSelection_" + command), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CfgSelectionPanel.class), null)))) { //NOI18N
                     String newSel = panel.getSelectedConfigurations();
                     if (selectedCfg != null && selectedCfg.equals(newSel)) return true;

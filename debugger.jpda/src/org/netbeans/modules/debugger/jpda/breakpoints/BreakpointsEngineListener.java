@@ -59,6 +59,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -67,6 +68,7 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -222,11 +224,29 @@ implements PropertyChangeListener, DebuggerManagerListener {
     private void removeBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
         int i, k = bs.length;
-        for (i = 0; i < k; i++)
-            removeBreakpointImpl (bs [i]);
+        for (i = 0; i < k; i++) {
+            boolean removed = removeBreakpointImpl (bs [i]);
+            if (removed && bs[i] instanceof JPDABreakpoint) {
+                JPDABreakpoint jb = (JPDABreakpoint) bs[i];
+                // TODO: JPDADebugger bDebugger = jb.getSession();
+                JPDADebugger bDebugger;
+                try {
+                    java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
+                    getSessionMethod.setAccessible(true);
+                    bDebugger = (JPDADebugger) getSessionMethod.invoke(jb);
+                } catch (Exception ex) {
+                    bDebugger = null;
+                    Exceptions.printStackTrace(ex);
+                }
+                if (bDebugger != null && bDebugger.equals(debugger)) {
+                    // A hidden breakpoint submitted just for this one session. Remove it with the end of the session.
+                    DebuggerManager.getDebuggerManager ().removeBreakpoint(jb);
+                }
+            }
+        }
     }
     
-    public void fixBreakpointImpls () {
+    public synchronized void fixBreakpointImpls () {
         Iterator<BreakpointImpl> i = breakpointToImpl.values ().iterator ();
         while (i.hasNext ())
             i.next ().fixed ();
@@ -234,6 +254,20 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     private synchronized void createBreakpointImpl (Breakpoint b) {
         if (breakpointToImpl.containsKey (b)) return;
+        if (!(b instanceof JPDABreakpoint)) return ;
+        JPDADebugger bDebugger;
+        try {
+            // TODO: bDebugger = ((JPDADebugger) b).getSession();
+            java.lang.reflect.Method getSessionMethod = JPDABreakpoint.class.getDeclaredMethod("getSession");
+            getSessionMethod.setAccessible(true);
+            bDebugger = (JPDADebugger) getSessionMethod.invoke(b);
+        } catch (Exception ex) {
+            bDebugger = null;
+            Exceptions.printStackTrace(ex);
+        }
+        if (bDebugger != null && !bDebugger.equals(debugger)) {
+            return ;
+        }
         if (b instanceof LineBreakpoint) {
             breakpointToImpl.put (
                 b,
@@ -299,11 +333,14 @@ implements PropertyChangeListener, DebuggerManagerListener {
         logger.finer("BreakpointsEngineListener: created impl "+breakpointToImpl.get(b)+" for "+b);
     }
 
-    private synchronized void removeBreakpointImpl (Breakpoint b) {
-        BreakpointImpl impl = breakpointToImpl.get (b);
-        if (impl == null) return;
+    private boolean removeBreakpointImpl (Breakpoint b) {
+        BreakpointImpl impl;
+        synchronized (this) {
+            impl = breakpointToImpl.remove(b);
+            if (impl == null) return false;
+        }
         logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
         impl.remove ();
-        breakpointToImpl.remove (b);
+        return true;
     }
 }

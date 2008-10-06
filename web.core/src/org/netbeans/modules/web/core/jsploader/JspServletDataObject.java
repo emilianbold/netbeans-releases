@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
+import org.openide.util.Lookup;
 import org.openide.util.Task;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -68,8 +68,6 @@ public final class JspServletDataObject extends MultiDataObject {
 
     public static final String EA_ORIGIN_JSP_PAGE = "NetBeansAttrOriginJspPage"; // NOI18N
 
-    private transient ServletEditorCookie servletEditor;
-    
     public JspServletDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
     }
@@ -80,19 +78,10 @@ public final class JspServletDataObject extends MultiDataObject {
     }
 
     @Override
-    public Cookie getCookie(Class type) {
-        if (type.isAssignableFrom(ServletEditorCookie.class)) {
-            if (servletEditor == null) {
-                EditorCookie ed = (EditorCookie) super.getCookie(EditorCookie.class);
-                if (ed != null)
-                    servletEditor = new ServletEditorCookie(ed, this);
-            }
-            if (servletEditor != null)
-                return servletEditor;
-        }
-        return super.getCookie(type);
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
-    
+
     /** Get the name of the data object.
     * Uses the name of the source JSP
     * @return the name

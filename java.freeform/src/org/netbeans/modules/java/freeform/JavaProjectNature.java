@@ -43,9 +43,7 @@ package org.netbeans.modules.java.freeform;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
@@ -70,8 +68,6 @@ public class JavaProjectNature implements ProjectNature {
     public static final String NS_JAVA_1 = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
     public static final String NS_JAVA_2 = "http://www.netbeans.org/ns/freeform-project-java/2"; // NOI18N
     public static final String EL_JAVA = "java-data"; // NOI18N
-    private static final String SCHEMA_1 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java.xsd"; // NOI18N
-    private static final String SCHEMA_2 = "nbres:/org/netbeans/modules/java/freeform/resources/freeform-project-java-2.xsd"; // NOI18N
     public static final String STYLE_PACKAGES = "packages"; // NOI18N
     
     
@@ -79,10 +75,6 @@ public class JavaProjectNature implements ProjectNature {
     
     public List<TargetDescriptor> getExtraTargets(Project project, AntProjectHelper projectHelper, PropertyEvaluator projectEvaluator, AuxiliaryConfiguration aux) {
         return new ArrayList<TargetDescriptor>();
-    }
-
-    public Set<String> getSchemas() {
-        return new HashSet<String>(Arrays.asList(SCHEMA_1, SCHEMA_2));
     }
 
     public Set<String> getSourceFolderViewStyles() {
@@ -113,7 +105,9 @@ public class JavaProjectNature implements ProjectNature {
                 }
                 public boolean contains(FileObject file) throws IllegalArgumentException {
                     String path = FileUtil.getRelativePath(folder, file);
-                    assert path != null : file + " not in " + folder;
+                    if (path == null) {
+                        throw new IllegalArgumentException(file + " not in " + folder);
+                    }
                     if (file.isFolder()) {
                         path += "/"; // NOI18N
                     }

@@ -43,6 +43,8 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -498,27 +500,47 @@ public class ColumnModels {
 
     private static class LanguagePropertyEditor extends PropertyEditorSupport {
         
+        @Override
         public void setValue(Object value) {
             if (value != null && !(value instanceof Session)) {
                 ErrorManager.getDefault().notify(
                         new IllegalArgumentException("Value "+value+" is not an instance of Session!"));
             }
-            super.setValue(value);
+            super.setValue(new WeakReference(value));
         }
 
+        private Session getSession() {
+            Reference<Session> sRef = (Reference<Session>) getValue();
+            Session s = (sRef != null) ? sRef.get() : null;
+            return s;
+        }
+
+        @Override
         public String[] getTags () {
-            if (getValue () == null) return new String [0];
-            String[] s = ((Session) getValue ()).getSupportedLanguages ();
-            return s;
+            Session s = getSession();
+            if (s == null) {
+                return new String [0];
+            } else {
+                return s.getSupportedLanguages ();
+            }
         }
         
+        @Override
         public String getAsText () {
-            String s = ((Session) getValue ()).getCurrentLanguage ();
-            return s;
+            Session s = getSession();
+            if (s == null) {
+                return "null";
+            } else {
+                return s.getCurrentLanguage();
+            }
         }
         
+        @Override
         public void setAsText (String text) {
-            ((Session) getValue ()).setCurrentLanguage (text);
+            Session s = getSession();
+            if (s != null) {
+                s.setCurrentLanguage (text);
+            }
         }
     }
 }

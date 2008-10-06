@@ -60,7 +60,7 @@ import java.net.UnknownHostException;
  * SystemEnvironment class collects the environment data with the
  * best effort from the underlying platform.
  */
-public class SystemEnvironment {
+class SystemEnvironment {
     private String hostname;
     private String hostId;
     private String osName;

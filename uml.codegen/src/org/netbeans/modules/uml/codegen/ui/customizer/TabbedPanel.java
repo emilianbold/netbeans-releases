@@ -223,6 +223,12 @@ public class TabbedPanel extends JPanel
             {
                 selectedComponent = model.getPanel(categories.get(i));
                 add(selectedComponent, constraints);
+                
+                if (comp instanceof JLabel)
+                {
+                    JLabel lable = (JLabel) comp;
+                    lable.setLabelFor(selectedComponent);
+                }
             }
         }
 

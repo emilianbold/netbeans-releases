@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator;
 
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
@@ -51,6 +54,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeControl;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IDiagramCallback;
 import org.netbeans.modules.uml.ui.support.helpers.ETSmartWaitCursor;
+import org.netbeans.modules.uml.ui.support.helpers.ProgressBarHelper;
 
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeModel;
@@ -62,6 +66,9 @@ import org.openide.util.Exceptions;
  */
 public class DiagramHandler implements IDiagramCallback
 {
+   private static final String BUNDLE_NAME = "org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.Bundle"; //NOI18N
+   private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+
    // The diagCreator that needs to be called back
    private DiagCreatorAddIn m_rawDiagCreatorAddIn = null;
 
@@ -158,6 +165,8 @@ public class DiagramHandler implements IDiagramCallback
    protected void processDiagramReturned(IDiagram pDiagram)
    {
       ETSmartWaitCursor wait = new ETSmartWaitCursor();
+      ProgressBarHelper progress = new ProgressBarHelper(loadString("IDS_PROGRESS_DESCRIPTION"), 0); //NOI18N
+
       try
       {
          // Operations may need to be reverse engineered
@@ -253,6 +262,7 @@ public class DiagramHandler implements IDiagramCallback
       finally
       {
          wait.stop();
+         progress.stop();
       }
    }
 
@@ -334,6 +344,21 @@ public class DiagramHandler implements IDiagramCallback
    public void setDiagCreatorAddIn(DiagCreatorAddIn addin)
    {
       m_rawDiagCreatorAddIn = addin;
+   }
+
+   /**
+    * Retrieves a resource string.
+    */
+   public static String loadString(String key)
+   {
+      try
+      {
+         return RESOURCE_BUNDLE.getString(key);
+      }
+      catch (MissingResourceException e)
+      {
+         return '!' + key + '!';
+      }
    }
 
 }

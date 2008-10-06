@@ -42,10 +42,12 @@ package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.EventListener;
 import java.util.EventObject;
 import javax.swing.AbstractAction;
@@ -57,10 +59,14 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
@@ -356,8 +362,18 @@ public class ZoomManager implements Scene.SceneListener
         
         JViewport viewport = pane.getViewport();
         Rectangle visRect = viewport.getViewRect();
-        Rectangle compRect = scene.getPreferredBounds();
-        
+        if(pane.getVerticalScrollBar()!=null && !pane.getVerticalScrollBar().isVisible())//if scroll isn't visible add some space because it may appear after zoom
+        {
+            visRect.width-=20;
+        }
+        if(pane.getHorizontalScrollBar()!=null && !pane.getHorizontalScrollBar().isVisible())
+        {
+            visRect.height-=20;
+        }
+        Rectangle compRect = null;
+        Rectangle clientArea = getSceneContentRect();
+        if(clientArea!=null)compRect=clientArea;
+        else compRect=new Rectangle();
         
         if((compRect.width > 0) && (compRect.height > 0))
         {
@@ -365,7 +381,32 @@ public class ZoomManager implements Scene.SceneListener
             int zoomY = visRect.height * 100 / compRect.height;
             int zoom = Math.min(zoomX, zoomY);
             setZoom(zoom);
+            //
+            scene.getView().scrollRectToVisible(scene.convertSceneToView(compRect));
         }
+    }
+    
+    private Rectangle getSceneContentRect()
+    {
+        Insets insets = scene.getBorder().getInsets ();
+        Rectangle clientArea = null;//calculate real bounds of scene content (withou 0-0 point)
+        for (Widget child0 : scene.getChildren()) {
+            if (! child0.isVisible ())
+                continue;
+            for(Widget child:child0.getChildren())//first layer is layers, also may count 0-0 point
+            {
+                Point location = child.getLocation ();
+                Rectangle bounds = child.getBounds ();
+                bounds.translate (location.x, location.y);
+                if(clientArea==null)clientArea=new Rectangle(bounds);
+                else clientArea.add (bounds);
+            }
+        }
+        clientArea.x -= insets.left;
+        clientArea.y -= insets.top;
+        clientArea.width += insets.left + insets.right;
+        clientArea.height += insets.top + insets.bottom;
+        return clientArea;
     }
 
 /**
@@ -623,6 +664,8 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(FitDiagramAction.class, "LBL_FitDiagramAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift F"));
         }
 
         public void actionPerformed(ActionEvent e)
@@ -636,7 +679,7 @@ public class ZoomManager implements Scene.SceneListener
      * show the Scene contents at the largest percentage while still
      * fitting within the width of the available scroll area.
      */
-    private static class FitWidthAction extends AbstractAction
+    private class FitWidthAction extends AbstractAction
     {
 
         /** The associated ZoomManager. */
@@ -659,6 +702,7 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(FitWidthAction.class, "LBL_FitWidthAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift L"));
         }
 
         public void actionPerformed(ActionEvent e)
@@ -673,9 +717,25 @@ public class ZoomManager implements Scene.SceneListener
             }
             JViewport viewport = pane.getViewport();
             Rectangle visRect = viewport.getViewRect();
-            Rectangle compRect = scene.getPreferredBounds();
-            int zoom = visRect.width * 100 / compRect.width;
-            manager.setZoom(zoom);
+            if(pane.getVerticalScrollBar()!=null && !pane.getVerticalScrollBar().isVisible())//if scroll isn't visible add some space because it may appear after zoom
+            {
+                visRect.width-=20;
+            }
+            if(pane.getHorizontalScrollBar()!=null && !pane.getHorizontalScrollBar().isVisible())
+            {
+                visRect.height-=20;
+            }
+            Rectangle compRect = null;
+            Rectangle clientArea = getSceneContentRect();
+            if(clientArea!=null)compRect=clientArea;
+            else compRect=new Rectangle();
+            if(compRect.width>0)
+            {
+                int zoom = visRect.width * 100 / compRect.width;
+                manager.setZoom(zoom);
+                //
+                scene.getView().scrollRectToVisible(scene.convertSceneToView(compRect));
+            }
         }
     }
 
@@ -706,6 +766,7 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomDefaultAction.class, "LBL_ZoomDefaultAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift D"));
         }
 
         public void actionPerformed(ActionEvent e)
@@ -741,6 +802,30 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomInAction.class, "LBL_ZoomInAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            
+            KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,
+                                                         KeyEvent.CTRL_MASK);
+            KeyStroke macStroke = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,
+                                                         KeyEvent.META_MASK);
+            
+            KeyStroke[] additionalKeystrokes = 
+            {
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
+            };
+            
+            KeyStroke[] additionalMacKeystrokes = 
+            {
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
+            };          
+
+            putValue(Action.ACCELERATOR_KEY, keystroke);
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macStroke);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_ACCELERATORS, additionalKeystrokes);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_MAC_ACCELERATORS, additionalMacKeystrokes);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -784,6 +869,28 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomOutAction.class, "LBL_ZoomOutAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+                        
+            KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,
+                                                         KeyEvent.CTRL_MASK);
+            KeyStroke macStroke = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,
+                                                         KeyEvent.META_MASK);
+            
+            KeyStroke[] additionalKeystrokes = 
+            {
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_MASK)
+            };
+            
+            KeyStroke[] additionalMacKeystrokes = 
+            {
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.META_MASK)
+            };
+            
+            putValue(Action.ACCELERATOR_KEY, keystroke);
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macStroke);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_ACCELERATORS, additionalKeystrokes);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_MAC_ACCELERATORS, additionalMacKeystrokes);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -834,7 +941,7 @@ public class ZoomManager implements Scene.SceneListener
         if (zoomCursor == null)
         {
             zoomCursor = Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom");
+                        ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom");
         }
         return zoomCursor;
     }
@@ -844,7 +951,7 @@ public class ZoomManager implements Scene.SceneListener
         if (zoomStopCursor == null)
         {
             zoomStopCursor = Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom-stop.gif")), "MarqueeZoomStop");
+                        ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom-stop.gif")), "MarqueeZoomStop");
         }
         return zoomStopCursor;
     }

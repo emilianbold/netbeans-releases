@@ -5,28 +5,26 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>JUnit Test Results Window</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>JUnit Test Results Window</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp;</small>
-<p>This window displays the results of JUnit tests in the IDE. When you run a 
-  test, the IDE displays output in two tabs:</p>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>JUnit test results are displayed in the JUnit Test Results window. 
+When you run a test, the IDE automatically opens the window and displays the results in two tabs:</p>
 <ul>
-  <li>The output from the Ant process that builds and runs the test is displayed 
-    in the Output window.</li>
-  <li>The output from the JUnit tests themselves is displayed in the JUnit Test 
-    Results window. </li>
+  <li>A summary of the passed and failed tests and the description of failed tests 
+    are displayed in the left pane of the window. 
+    Click the filter button (&nbsp;<img src="../images/junit_filter.gif" width="20" height="18">&nbsp;) 
+     to switch between viewing all test results and viewing only the failed tests.</li>
+  <li>The textual output from the JUnit tests themselves is displayed in the right pane of the window.</li>
 </ul>
-<p>To work with the JUnit test window:</p>
-<ul>
-  <li>Double-click any error to jump to the line in the code where the error occurred.</li>
-  <li>Click the Output button to view the textual JUnit output.</li>
-  <li>Click the <img src="../images/junit_filter.gif" width="20" height="18"> 
-    button to filter switch between viewing all test results and viewing only 
-    failures.</li>
-</ul>
+
+<p>After you run a JUnit test class you can right-click any test method displayed in the
+JUnit Test Results and choose Run Again from the popup menu to run the individual test method again. </p>
+
 <dl> 
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="junit_creatingtests.html">Creating a JUnit Test</a></dd>

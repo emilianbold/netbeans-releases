@@ -46,8 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import javax.xml.namespace.QName;
-import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.ExactlyOne;
@@ -103,7 +101,7 @@ public class PolicyModelHelper {
      * @param c
      * @return
      */
-    private static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
+    public static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
         Policy p = getPolicyForElement(c);
         if (p != null) {
             return PolicyQName.getConfigVersion(p.getQName());
@@ -228,7 +226,7 @@ public class PolicyModelHelper {
 
         All all = createTopExactlyOneAll(policy);
         if ((c instanceof Binding) && (addressing)) {
-            AddressingModelHelper.getInstance(configVersion).enableAddressing(all);
+            AddressingModelHelper.getInstance(configVersion).enableAddressing(all, false);
         }
         return all;
     }
@@ -343,6 +341,7 @@ public class PolicyModelHelper {
     }
 
     static void removePolicyForElement(WSDLComponent c) {
+        assert (c != null);
         WSDLModel model = c.getModel();
         if (model != null) {
             String policyUri = getPolicyUriForElement(c);

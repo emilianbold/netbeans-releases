@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -100,18 +101,18 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         Token<CppTokenId> jumpToken = getJumpToken();
-        CsmOffsetable item = findTargetObject(target, doc, jumpToken, offset);
+        CsmOffsetable item = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, true);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    /*package*/ CsmOffsetable findTargetObject(final JTextComponent target, final Document doc, final Token jumpToken, final int offset) {
-        CsmOffsetable item = null;
+    /*package*/ CsmObject findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toOffsetable) {
+        CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
         if (csmObject != null) {
             // convert to jump object
-            item = toJumpObject(csmObject, file, offset);
+            item = toOffsetable ? toJumpObject(csmObject, file, offset) : csmObject;
         }
         return item;
     }
@@ -191,4 +192,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return item;
     }
+    
+    protected String getTooltipText(Document doc, Token token, int offset) {
+        CsmObject item = findTargetObject(doc, token, offset, false);
+        CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
+        return msg == null ? null : msg.toString();
+    }    
 }

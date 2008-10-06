@@ -24,7 +24,7 @@ edit database information. The example illustrates the full range of GUI Builder
 features, including alignment, anchoring, sizing, indentation, and runtime 
 auto-resizing behavior. To view a detailed tutorial including flash 
 demonstrations showing how to build this form, copy and paste the following link 
-into your web browser http://netbeans.org/kb/50/quickstart-gui.html.
+into your web browser http://netbeans.org/kb/60/java/quickstart-gui.html.
 
 Antenna Preferences
 -------------------
@@ -32,10 +32,8 @@ Antenna Preferences
 This example illustrates a type of table-based form commonly used to display 
 related information in visually coherent groups. The GUI Builder's advanced 
 alignment features enable you to group and size non-adjacent components (such as 
-labels, textfields, and buttons) consistently without the need to merge cells 
-manually. To view a flash demonstration showing how to build this form, copy and 
-paste the following link into your web browser 
-http://netbeans.org/kb/50/gui_sample_project/antenna_form.html.
+labels, text fields, and buttons) consistently without the need to merge cells
+manually. 
 
 Find
 ----
@@ -43,7 +41,5 @@ Find
 This simple form illustrates a straight-forward layout often used in various 
 applications requiring basic search functionality. The GUI Builder's alignment 
 and sizing features enable you to quickly construct such forms while ensuring 
-that they localize predictably. To view a flash demonstration showing how to 
-build this form, copy and paste the following link into your web browser 
-http://netbeans.org/kb/50/gui_sample_project/find_form.html. 
+that they localize predictably. 
 

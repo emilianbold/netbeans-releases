@@ -48,7 +48,7 @@ import org.netbeans.editor.Formatter;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.openide.util.HelpCtx;
 

@@ -181,7 +181,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.db.mysql.sakila</friend>
                 <package>org.netbeans.modules.db.mysql</package>
+                <package>org.netbeans.modules.db.mysql.spi.sample</package>
                 <package>org.netbeans.modules.db.mysql.ui</package>
                 <package>org.netbeans.modules.db.mysql.util</package>
             </friend-packages>

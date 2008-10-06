@@ -56,6 +56,31 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void test142903_1() throws Exception {
+        // IZ#142903: Code completion does not work immediately after "{" or "}"
+        super.performTest("file.cc", 44, 35);
+    }
+    
+    public void test142903_2() throws Exception {
+        // IZ#142903: Code completion does not work immediately after "{" or "}"
+        super.performTest("file.cc", 46, 6);
+    }
+
+    public void testIZ109010() throws Exception {
+        // IZ#109010: Code completion listbox doesn't appear after "flag ? static_cast<int>(remainder) :" expression
+        super.performTest("file.cc", 45, 54);
+    }
+    
+    public void testIZ131568() throws Exception {
+        // IZ#131568: Completion doubles some static functions
+        super.performTest("iz131568.cc", 4, 5, "Re");
+    }
+
+    public void testIZ131283() throws Exception {
+        // IZ#131283: Code Completion works wrongly in some casses
+        super.performTest("file.h", 28, 9, "st");
+    }
+
     public void testIZ119041() throws Exception {
         super.performTest("file.cc", 9, 5, "str[]", -1);
     }
@@ -279,5 +304,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
 
     public void testCast4() throws Exception {
         super.performTest("cast.cc", 20, 33);
+    }
+
+    // IZ#148011 : Unable to resolve identifier when strings are involved
+    public void testStringLiteral() throws Exception {
+        super.performTest("iz148011.cc", 12, 25);
     }
 }

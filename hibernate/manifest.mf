@@ -4,16 +4,3 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/hibernate/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hibernate/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
-
-Name: org/netbeans/modules/hibernate/loaders/cfg/HibernateCfgDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/hibernate/loaders/mapping/HibernateMappingDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-
-Name: org/netbeans/modules/hibernate/loaders/reveng/HibernateRevengDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
-OpenIDE-Module-Class: Loader
-

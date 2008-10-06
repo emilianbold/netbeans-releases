@@ -1,0 +1,53 @@
+<g id="%%COMPONENT_ID%%"  transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+	<!-- Metadata information. Please don't edit. -->
+	<text display="none">type=spinner</text>
+
+        <rect x="0" y="-5" rx="5" ry="5" width="44" height="30" fill="none" stroke="rgb(255,165,0)" 
+                      stroke-width="2" visibility="hidden">
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+            <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
+        </rect>
+        <rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
+	<g id="%%COMPONENT_ID%%_editor" >
+		<!-- this editor is SVGTextField component -->
+
+		<!-- metadata definition-->
+	        <text display="none">type=editor</text>
+		<text display="none">editable=false</text>
+		<text display="none">enabled=true</text>
+
+                <g>
+		     <text id="%%COMPONENT_ID%%_editor_text" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">
+                      0</text>
+                     <!-- Metadata information. Please don't edit. -->
+			<text display="none">type=text</text>
+                </g>
+
+
+		<rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
+	</g>
+	<g>
+	    	<!-- Metadata information. Please don't edit. -->
+		<text display="none">type=up_button</text>
+
+		<rect id="%%COMPONENT_ID%%_up_button" x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+			<animate id="%%COMPONENT_ID%%_up_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                  fill="freeze" to="rgb(170,170,170)"/>
+			<animate id="%%COMPONENT_ID%%_up_button_realeased" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                  fill="freeze" to="rgb(220,220,220)"/>
+		</rect>
+	</g>
+	<g>
+	    	<!-- Metadata information. Please don't edit. -->
+		<text display="none">type=down_button</text>
+
+		<rect id="%%COMPONENT_ID%%_down_button" x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+			<animate id="%%COMPONENT_ID%%_down_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                   fill="freeze" to="rgb(170,170,170)"/>
+			<animate id="%%COMPONENT_ID%%_down_button_realeased" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                   fill="freeze" to="rgb(220,220,220)"/>
+		</rect>
+	</g>
+	<polygon transform="translate(28,6)"  points="0,0 2,0 1,-2" fill="blue" stroke="black" stroke-width="2"/>
+	<polygon transform="translate(28,14)"  points="0,0 2,0 1,2" fill="blue" stroke="black" stroke-width="2"/>
+    </g>

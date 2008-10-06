@@ -48,6 +48,7 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import org.netbeans.core.UIExceptions;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
@@ -230,10 +231,12 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
         JTextField tfFont, tfStyle, tfSize;
         JList lFont, lStyle, lSize;
+        boolean dontSetValue = false;
 
         static final long serialVersionUID =8377025140456676594L;
 
         FontPanel () {
+            dontSetValue = false;
             setLayout (new BorderLayout ());
             setBorder(new EmptyBorder(12, 12, 0, 11));
             
@@ -308,15 +311,28 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             tfSize.addKeyListener( new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    if ( e.getKeyCode() == KeyEvent.VK_ENTER )
+                    dontSetValue = true;
+                    if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
                         setValue ();
+                    }
                 }
             });
             
             tfSize.addFocusListener (new FocusAdapter () {
                 @Override
                  public void focusLost (FocusEvent evt) {
-                     setValue ();
+                    if (dontSetValue) {
+                        dontSetValue = false;
+                        return ;
+                    }
+                    Component c = evt.getOppositeComponent ();
+                    if (c != null && c instanceof JButton) {
+                        if (((JButton) c).getText ().equals (NbBundle.getMessage (FontEditor.class, "CTL_OK"))) { // NOI18N
+                            setValue ();
+                        }
+                    } else {
+                        setValue ();
+                    }
                  }
             });
             la.setConstraints (tfSize, c);
@@ -419,13 +435,24 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 lSize.clearSelection();
         }
 
-        void setValue () {
+        private void setValue () {
             int size = 12;
             try {
                 size = Integer.parseInt (tfSize.getText ());
+                if (size <= 0) {
+                    IllegalArgumentException iae = new IllegalArgumentException ();
+                    UIExceptions.annotateUser (iae, null,
+                            size == 0 ? NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithParam", tfSize.getText ()) : // NOI18N
+                                NbBundle.getMessage (FontEditor.class, "CTL_NegativeSize"), // NOI18N
+                            null, null);
+                    throw iae;
+                }
                 updateSizeList(size);
             } catch (NumberFormatException e) {
-                return;
+                UIExceptions.annotateUser (e, null,
+                        NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithExc", e), // NOI18N
+                        null, null);
+                throw e;
             }
             int i = lStyle.getSelectedIndex (), ii = Font.PLAIN;
             switch (i) {

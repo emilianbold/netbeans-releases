@@ -45,8 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Index;
@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.util.Exceptions;
@@ -188,7 +189,7 @@ public class JsParseResult extends ParserResult {
                         @Override
                         public Document getDocument() {
                             if (doc == null) {
-                                doc = NbUtilities.getDocument(getFileObject(), true);
+                                doc = GsfUtilities.getDocument(getFileObject(), true);
                             }
                             
                             return doc;

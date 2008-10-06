@@ -103,6 +103,9 @@ public final class DocumentListenerPriority {
     public static final DocumentListenerPriority AFTER_CARET_UPDATE
             = new DocumentListenerPriority(0, "after-caret-update"); // NOI18N
 
+    static final DocumentListenerPriority[] PRIORITIES = new DocumentListenerPriority[] {
+        AFTER_CARET_UPDATE, CARET_UPDATE, VIEW, DEFAULT, FOLD_UPDATE, LEXER, FIRST
+    };
     
     private int priority;
     

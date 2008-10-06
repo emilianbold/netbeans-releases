@@ -5,13 +5,14 @@
 select * from customer cus inner join customer inner join accounting.invoice where |
 
 --
-customers*
-  customer
-    customer_id
-    address_line
-accounting
-  invoice
-    invoice_id
-  purchase_order
-    order_id
-unused
+<unknown>
+  customers*
+    customer
+      customer_id
+      address_line
+  accounting
+    invoice
+      invoice_id
+    purchase_order
+      order_id
+  unused

@@ -51,11 +51,15 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,7 +79,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
         delegate = MainProjectSensitiveActions.mainProjectCommandAction(
                 ActionProvider.COMMAND_DEBUG,
                 NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugMainProjectAction_Name" ),
-                new ImageIcon(Utilities.loadImage( "org/netbeans/modules/debugger/resources/debugProject.png" ))); // NOI18N
+                new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/debugger/resources/debugProject.png" ))); // NOI18N
         delegate.putValue("iconBase","org/netbeans/modules/debugger/resources/debugProject.png"); //NOI18N
     }
     
@@ -104,6 +108,8 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
     }
 
     public void actionPerformed(ActionEvent arg0) {
+        Project p = OpenProjects.getDefault().getMainProject();
+        GestureSubmitter.logDebugProject(p);
         delegate.actionPerformed(arg0);
     }
 

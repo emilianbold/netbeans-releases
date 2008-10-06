@@ -91,5 +91,25 @@ made subject to such option by the copyright holder.
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>
+        <zip zipfile="${sample-dist}/lexyacc.zip" >
+            <fileset dir="${sample-src}/lexyacc">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/fractal.zip" >
+            <fileset dir="${sample-src}/fractal">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/hello.zip" >
+            <fileset dir="${sample-src}/hello">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
+        <zip zipfile="${sample-dist}/pi.zip" >
+            <fileset dir="${sample-src}/pi">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
     </target>
 </project>

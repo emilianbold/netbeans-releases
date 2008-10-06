@@ -216,7 +216,7 @@ public class EditorView extends ViewElement {
             // PENDING Adding image into empty area.
             String imageSource = Constants.SWITCH_IMAGE_SOURCE; // NOI18N
             if(imageSource != null) {
-                Image image = Utilities.loadImage(imageSource);
+                Image image = ImageUtilities.loadImage(imageSource);
                 if(image != null) {
                     JLabel label = new JLabel(new ImageIcon(image));
                     label.setMinimumSize(new Dimension(0, 0)); // XXX To be able shrink the area.
@@ -243,14 +243,17 @@ public class EditorView extends ViewElement {
                     }
                 }
                 public void drop(DropTargetDropEvent dtde) {
-                    ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
-                    if( handler.canDrop( dtde ) ) {
-                        //file is being dragged over
-                        dtde.acceptDrop( DnDConstants.ACTION_COPY );
-                        //let the handler to take care of it
-                        dtde.dropComplete( handler.handleDrop( dtde ) );
-                    } else {
-                        dtde.dropComplete( false );
+                    boolean dropRes = false;
+                    try {
+                        ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+                        if( handler.canDrop( dtde ) ) {
+                            //file is being dragged over
+                            dtde.acceptDrop( DnDConstants.ACTION_COPY );
+                            //let the handler to take care of it
+                            dropRes = handler.handleDrop( dtde );
+                        }
+                    } finally {
+                        dtde.dropComplete( dropRes );
                     }
                 }
                 public void dropActionChanged(DropTargetDragEvent dtde) {

@@ -61,6 +61,8 @@ import java.util.Collections;
 import java.io.IOException;
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.nodes.Children;
 
@@ -83,6 +85,10 @@ final class ProjectUtilities {
             final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
 
             public void run () {
+                if (ptLogial == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Cannot find Project widnow, aborting.");
+                    return;
+                }
                 Node root = ptLogial.getExplorerManager ().getRootContext ();                
                 for(Node projNode : root.getChildren().getNodes()) {
                     Project p = (Project) projNode.getLookup().lookup(Project.class);

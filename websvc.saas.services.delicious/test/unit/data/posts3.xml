@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<posts tag="" user="user">
+    <post href="http://www.weather.com/" description="weather.com"
+  hash="6cfedbe75f413c56b6ce79e6fa102aba" tag="weather reference"
+  time="2005-11-29T20:30:47Z" />
+    <post href="http://www.nytimes.com/"
+  description="The New York Times - Breaking News, World News &amp; Multimedia"
+  extended="requires login" hash="ca1e6357399774951eed4628d69eb84b"
+  tag="news media" time="2005-11-29T20:30:05Z" />
+</posts>

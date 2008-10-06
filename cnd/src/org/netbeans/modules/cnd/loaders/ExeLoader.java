@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *  Recognizes EXE files (Windows, Linux, and Solaris executables, shared objects and

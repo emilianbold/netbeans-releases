@@ -55,48 +55,43 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
         super(testName);
     }
 
-    private static String source = "markocc.cc"; // NOI18N
-
-    private void doTest(String name, int pos) throws Exception {
-        performTest(source, source + "." + name + ".dat", source + ".err", new Integer(pos)); // NOI18N
-    }
+    private static final String SOURCE = "markocc.cc"; // NOI18N
 
     public void testMacro() throws Exception {
         // FOO 
-        doTest("macro", 214); // NOI18N
+        performTest(SOURCE, 214);
     }
 
     public void testLocalVariable() throws Exception {
-        // int moo 
-        doTest("localvar", 236); // NOI18N
+        performTest(SOURCE, 236);
     }
 
     public void testGlobalVariable() throws Exception {
         // int bar
-        doTest("globalvar", 264); // NOI18N
+        performTest(SOURCE, 264);
     }
 
     public void testField() throws Exception {
         //boo 
-        doTest("field", 122); // NOI18N
+        performTest(SOURCE, 122);
     }
 
     public void testCtor() throws Exception {
         // Foo() 
-        doTest("ctor", 115); // NOI18N
+        performTest(SOURCE, 115);
     }
 
     public void testCtor2() throws Exception {
         // Foo(int) 
-        doTest("ctor2", 138); // NOI18N
+        performTest(SOURCE, 138);
     }
 
     public void testClassName() throws Exception {
         // class Foo 
-        doTest("classname", 110); // NOI18N
+        performTest(SOURCE, 110);
     }
     
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset);
+        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset, null);
     }
 }

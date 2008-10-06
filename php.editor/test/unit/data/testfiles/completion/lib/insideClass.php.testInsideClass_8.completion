@@ -1,0 +1,5 @@
+Code completion result for source line:
+InsideClass::|$stfld;
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $stfld                        [STATIC]   InsideClass
+CONSTANT   ? INS_CONST                                InsideClass

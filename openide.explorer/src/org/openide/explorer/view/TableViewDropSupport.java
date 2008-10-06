@@ -177,49 +177,54 @@ final class TableViewDropSupport implements DropTargetListener, Runnable {
     * right node and target node agrees.
     */
     public void drop(DropTargetDropEvent dtde) {
-        // obtain the node we have cursor on
-        int index = table.rowAtPoint(dtde.getLocation());
-        Node dropNode = view.getNodeFromRow(index);
+        boolean dropResult = true;
+        try {
+            // obtain the node we have cursor on
+            int index = table.rowAtPoint(dtde.getLocation());
+            Node dropNode = view.getNodeFromRow(index);
 
-        int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
-                dtde.getDropAction(), view.getAllowedDropActions()
-            );
+            int dropAction = ExplorerDnDManager.getDefault().getAdjustedDropAction(
+                    dtde.getDropAction(), view.getAllowedDropActions()
+                );
 
-        // return if conditions are not satisfied
-        if ((index < 0) || !canDrop(dropNode, dropAction)) {
-            dtde.rejectDrop();
+            // return if conditions are not satisfied
+            if ((index < 0) || !canDrop(dropNode, dropAction)) {
+                dtde.rejectDrop();
 
-            return;
-        }
+                return;
+            }
 
-        // get paste types for given transferred transferable
-        PasteType pt = null;
-        //TODO dnd
-//                DragDropUtilities.getDropType(
-//                dropNode,
-//                ExplorerDnDManager.getDefault().getDraggedTransferable((DnDConstants.ACTION_MOVE & dropAction) != 0),
-//                dropAction
-//            );
+            // get paste types for given transferred transferable
+            PasteType pt = null;
+            //TODO dnd
+    //                DragDropUtilities.getDropType(
+    //                dropNode,
+    //                ExplorerDnDManager.getDefault().getDraggedTransferable((DnDConstants.ACTION_MOVE & dropAction) != 0),
+    //                dropAction
+    //            );
 
-        if (pt == null) {
-            dtde.dropComplete(false);
+            if (pt == null) {
+                dropResult = false;
 
-            // something is wrong, notify user
-            // ugly hack, but if we don't wait, deadlock will come
-            // (sun's issue....)
-            RequestProcessor.getDefault().post(this, 500);
+                // something is wrong, notify user
+                // ugly hack, but if we don't wait, deadlock will come
+                // (sun's issue....)
+                RequestProcessor.getDefault().post(this, 500);
 
-            return;
-        }
+                return;
+            }
 
-        // finally perform the drop
-        dtde.acceptDrop(dropAction);
+            // finally perform the drop
+            dtde.acceptDrop(dropAction);
 
-        if (dropAction == DnDConstants.ACTION_LINK) {
-            // show popup menu to the user
-            // PENDING
-        } else {
-            DragDropUtilities.performPaste(pt, null);
+            if (dropAction == DnDConstants.ACTION_LINK) {
+                // show popup menu to the user
+                // PENDING
+            } else {
+                DragDropUtilities.performPaste(pt, null);
+            }
+        } finally {
+            dtde.dropComplete(dropResult);
         }
     }
 

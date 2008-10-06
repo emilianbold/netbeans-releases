@@ -321,7 +321,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -349,15 +349,17 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.dataconnectivity.naming</friend>
                 <friend>org.netbeans.modules.visualweb.dataprovider</friend>
                 <friend>org.netbeans.modules.visualweb.dataprovider.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
-                <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.sql</friend>
                 <package>org.netbeans.modules.visualweb.dataconnectivity</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.datasource</package>
-                <package>org.netbeans.modules.visualweb.dataconnectivity.designtime</package>
+                <package>org.netbeans.modules.visualweb.dataconnectivity.explorer</package>
+                <package>org.netbeans.modules.visualweb.dataconnectivity.ui</package>
                 <package>org.netbeans.modules.visualweb.dataconnectivity.utils</package>
             </friend-packages>
         </data>

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,8 +65,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
@@ -82,73 +83,88 @@ import org.openide.NotifyDescriptor;
  *
  * @author mkrauskopf
  */
-final class ProjectSelectionPanel extends JPanel {
+public final class ProjectSelectionPanel extends JPanel {
     
     /**
      * Logger for this class
      */
     private static final Logger logger = Logger.getLogger(ProjectSelectionPanel.class.getName());
 
-    /** Renderer for projects */
-    private class ProjectCellRenderer extends AbstractCellEditor
+    private ProjectWizardPanel wizard;
+    
+    private class ProjectCheckboxEditorAndRenderer extends AbstractCellEditor
             implements TableCellEditor, TableCellRenderer {
-        
+
         private JCheckBox checkbox;
         
-        private Component createComponent(JTable table, Object value,
+        public Object getCellEditorValue() {
+            return Boolean.valueOf(checkbox.isSelected());
+        }
+
+        private JCheckBox createComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             EclipseProject project = projects[row];
-            JLabel label = new JLabel();
-            checkbox = new JCheckBox();
-            JPanel p = new JPanel();
-            p.setLayout(new BorderLayout());
-            p.add(checkbox, BorderLayout.WEST);
-            p.add(label, BorderLayout.CENTER);
-            if (project.isImportSupported()) {
-                label.setText(project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"); // NOI18N
-                label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
-            } else {
-                label.setText(project.getName() + " (unknown project type)"); // NOI18N
-            }
-            checkbox.setSelected(selectedProjects.contains(project) ||
+            JCheckBox chb = new JCheckBox();
+            chb.setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
-            checkbox.setToolTipText(null);
-            label.setToolTipText(null);
+            chb.setToolTipText(null);
             if (project.isImportSupported() && !requiredProjects.contains(project)) {
-                checkbox.setEnabled(true);
-                label.setEnabled(true);
+                chb.setEnabled(true);
             } else {
                 // required and non-java project are disabled
-                checkbox.setEnabled(false);
-                //label.setEnabled(false);
+                chb.setEnabled(false);
                 if (!project.isImportSupported()) {
-                    checkbox.setToolTipText(ProjectImporterWizard.getMessage(
-                            "MSG_NonJavaProject", project.getName())); // NOI18N
-                    label.setToolTipText(ProjectImporterWizard.getMessage(
+                    chb.setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
                 }
             }
-            return p;
+            if (isSelected) {
+                chb.setOpaque(true);
+                chb.setForeground(table.getSelectionForeground());
+                chb.setBackground(table.getSelectionBackground());
+            } else {
+                chb.setOpaque(false);
+                chb.setForeground(table.getForeground());
+                chb.setBackground(table.getBackground());
+            }
+            return chb;
         }
         
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            return createComponent(table, value, isSelected, hasFocus, row, column);
-        
-        }
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                boolean isSelected, int row, int column) {
-            Component c = createComponent(table, value, isSelected, isSelected, row, column);
+        public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
+            checkbox = createComponent(table, value, isSelected, isSelected, row, column);
             checkbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     fireEditingStopped();
                 }
             });
-            return c;
+            return checkbox;
         }
 
-        public Object getCellEditorValue() {
-            return Boolean.valueOf(checkbox.isSelected());
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            checkbox = createComponent(table, value, isSelected, isSelected, row, column);
+            return checkbox;
+        }
+        
+    }
+    
+    /** Renderer for projects */
+    private class ProjectNameRenderer extends DefaultTableCellRenderer implements TableCellRenderer {
+        
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (c instanceof JLabel) {
+                JLabel label = (JLabel)c;
+                label.setOpaque(isSelected);
+                EclipseProject project = projects[row];
+                if (project.isImportSupported()) {
+                    label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
+                } else {
+                    label.setIcon(null);
+                }
+            }
+            return c;
         }
         
     }
@@ -169,16 +185,22 @@ final class ProjectSelectionPanel extends JPanel {
      * All projects we need to import (involving projects which selected
      * projects depend on.
      */
-    private Set requiredProjects;
-    
-    /** Error message displayed by wizard. */
-    private String errorMessage;
+    private Set<EclipseProject> requiredProjects;
     
     private class ProjectTableModel extends AbstractTableModel {
+        
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
-            return Boolean.valueOf(selectedProjects.contains(project) ||
+            if (columnIndex == 0) {
+                return Boolean.valueOf(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
+            } else {
+                if (project.isImportSupported()) {
+                    return project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"; // NOI18N
+                } else {
+                    return project.getName() + " (unknown project type)"; // NOI18N
+                }
+            }
         }
         
         public int getRowCount() {
@@ -186,18 +208,25 @@ final class ProjectSelectionPanel extends JPanel {
         }
         
         public int getColumnCount() {
-            return 1;
+            return 2;
         }
         
+        @Override
         public Class getColumnClass(int columnIndex) {
-            return Boolean.class;
+            if (columnIndex == 0) {
+                return Boolean.class;
+            } else {
+                return String.class;
+            }
         }
         
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (projects[rowIndex].isImportSupported() &&
+            return (columnIndex == 0 && projects[rowIndex].isImportSupported() &&
                     !requiredProjects.contains(projects[rowIndex]));
         }
         
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
             assert projects != null;
@@ -207,33 +236,60 @@ final class ProjectSelectionPanel extends JPanel {
                 selectedProjects.remove(project);
             }
             solveDependencies();
-            fireTableDataChanged();
-            projectTable.getSelectionModel().setLeadSelectionIndex(rowIndex);
+            fireColumnDataChanged();
             updateValidity();
+            wizard.fireProjectListChanged();
         }
+        
+        private void fireColumnDataChanged() {
+            for (int i=0; i<getRowCount(); i++) {
+                fireTableCellUpdated(i, 0);
+            }
+        }
+    
     }
     
     /** Updates panel validity. */
     public void updateValidity() {
-        note.setVisible(projects == null || projects.length == 0 || !destination.getText().equals(projects[0].getWorkspace().getDirectory().getAbsolutePath()));
         if (selectedProjects == null || selectedProjects.isEmpty()) {
             // user has to select at least one project
-            setErrorMessage(ProjectImporterWizard.getMessage(
+            wizard.setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ProjectIsNotChosed")); // NOI18N
             return;
         }
-        String parent = destination.getText();
-        if (!parent.equals(projects[0].getWorkspace().getDirectory().getAbsolutePath())) {
+        boolean exists = false;
+        if (jRadioInsideEclipse.isSelected()) {
             for (EclipseProject prj : allProjects()) {
-                String destDir = parent + "/" + prj.getDirectory().getName(); // NOI18N
-                if (new File(destDir).exists()) {
-                    setErrorMessage(ProjectImporterWizard.getMessage(
-                            "MSG_ProjectExist", prj.getName())); // NOI18N
-                    return;
+                if (new File(prj.getDirectory(), "nbproject").exists()) { // NOI18N
+                    exists = true;
+                    break;
+                }
+            }
+        } else {
+            if (destination.getText().length() == 0) {
+                wizard.setErrorMessage(ProjectImporterWizard.getMessage(
+                        "MSG_DestinationIsEmpty")); // NOI18N
+                return;
+            }
+            File f = new File(destination.getText());
+            if (f.exists()) {
+                for (EclipseProject prj : allProjects()) {
+                    if (new File(f, prj.getDirectory().getName()).exists()) {
+                        exists = true;
+                        break;
+                    }
                 }
             }
         }
-        setErrorMessage(null);
+        if (exists) {
+            wizard.setErrorMessage(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "MSG_AlreadyImportedProjects"), true);
+        } else {
+            wizard.setErrorMessage(null);
+        }
+    }
+    
+    public boolean isSeparateFolder() {
+        return jRadioSeparate.isSelected();
     }
     
     /** Returns both selected and required projects */
@@ -243,59 +299,57 @@ final class ProjectSelectionPanel extends JPanel {
         return all;
     }
     
-    // Helper for recursion check
-    private final Stack/*<EclipseProject>*/ solved = new Stack();
-    private EclipseProject currentRoot;
-    
     /**
      * Solves project dependencies. Fills up <code>requiredProjects</code> as
      * needed.
      */
     private void solveDependencies() {
         requiredProjects.clear();
+        requiredProjects.addAll(getFlattenedRequiredProjects(selectedProjects));
+    }
+    
+    public static Set<EclipseProject> getFlattenedRequiredProjects(Set<EclipseProject> selectedProjects) {
+        EclipseProject currentRoot;
+        Stack<EclipseProject> solved = new Stack<EclipseProject>();
+        Set<EclipseProject> requiredProjects = new HashSet<EclipseProject>();
         if (selectedProjects == null || selectedProjects.isEmpty()) {
-            return;
+            return requiredProjects;
         }
         for (EclipseProject selProject : selectedProjects) {
             assert selProject != null;
             solved.push(selProject);
             currentRoot = selProject;
-            fillUpRequiredProjects(selProject);
-            EclipseProject poped = (EclipseProject) solved.pop();
+            fillUpRequiredProjects(selProject, solved, requiredProjects);
+            EclipseProject poped = solved.pop();
             assert poped.equals(currentRoot);
             assert solved.isEmpty();
             currentRoot = null;
         }
+        return requiredProjects;
     }
     
-    private void fillUpRequiredProjects(EclipseProject project) {
-        Set children = project.getProjects();
-        if (children == null || children.isEmpty()) {
-            return;
-        }
-        for (Iterator it = children.iterator(); it.hasNext(); ) {
-            EclipseProject child = (EclipseProject) it.next();
+    private static void fillUpRequiredProjects(EclipseProject project, Stack<EclipseProject> solved, Set<EclipseProject> requiredProjects) {
+        for (EclipseProject child : project.getProjects()) {
             assert child != null;
             if (solved.contains(child)) {
-                recursionDetected(child);
+                recursionDetected(child, solved);
                 return;
             }
             requiredProjects.add(child);
             solved.push(child);
-            fillUpRequiredProjects(child);
-            EclipseProject poped = (EclipseProject) solved.pop();
-            assert poped.equals(child);
+            fillUpRequiredProjects(child, solved, requiredProjects);
+            EclipseProject popped = solved.pop();
+            assert popped.equals(child);
         }
     }
     
-    private void recursionDetected(EclipseProject start) {
+    private static void recursionDetected(EclipseProject start, Stack<EclipseProject> solved) {
         int where = solved.search(start);
         assert where != -1 : "Cannot find start of the cycle."; // NOI18N
-        EclipseProject rootOfCycle =
-                (EclipseProject) solved.get(solved.size() - where);
+        EclipseProject rootOfCycle = solved.get(solved.size() - where);
         StringBuffer cycle = new StringBuffer();
-        for (Iterator it = solved.iterator(); it.hasNext(); ) {
-            cycle.append(((EclipseProject)it.next()).getName()).append(" --> "); // NOI18N
+        for (EclipseProject p : solved) {
+            cycle.append(p.getName()).append(" --> "); // NOI18N
         }
         cycle.append(rootOfCycle.getName()).append(" --> ..."); // NOI18N
         logger.warning("Cycle dependencies was detected. Detected cycle: " + cycle); // NOI18N
@@ -306,7 +360,8 @@ final class ProjectSelectionPanel extends JPanel {
     }
     
     /** Creates new form ProjectSelectionPanel */
-    public ProjectSelectionPanel() {
+    ProjectSelectionPanel(ProjectWizardPanel wizard) {
+        this.wizard = wizard;
         initComponents();
         init();
         destination.getDocument().addDocumentListener(new DocumentListener() {
@@ -315,39 +370,42 @@ final class ProjectSelectionPanel extends JPanel {
             public void changedUpdate(DocumentEvent e) {}
         });
         updateValidity();
+        jRadioInsideEclipse.setSelected(true);
+        enableLocation(false);
+        TableColumn column = projectTable.getColumnModel().getColumn(0);
+        column.setMaxWidth(25);
+        column.setMinWidth(25);
     }
     
     private void init() {
         projectTable.setModel(new ProjectTableModel());
         projectTable.setTableHeader(null);
         projectTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
-        projectTable.setDefaultEditor(Boolean.class, new ProjectCellRenderer());
+        projectTable.getColumnModel().getColumn(0).setCellRenderer(new ProjectCheckboxEditorAndRenderer());
+        projectTable.getColumnModel().getColumn(1).setCellRenderer(new ProjectNameRenderer());
+        projectTable.setDefaultEditor(Boolean.class, new ProjectCheckboxEditorAndRenderer());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
         destination.setText(ProjectChooser.getProjectsFolder().getPath()); // NOI18N
     }
     
     /** Loads project from workspace in the given <code>workspaceDir</code>. */
     void loadProjects(File workspaceDir) {
+        WorkspaceFactory.getInstance().resetCache();
         Workspace workspace = null;
         try {
             workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         } catch (ProjectImporterException e) {
-            setErrorMessage(ProjectImporterWizard.getMessage(
+            wizard.setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsInvalid", workspaceDir)); // NOI18N
             logger.log(Level.FINE, "ProjectImporterException catched", e); // NOI18N
             return;
         }
-        Set wsPrjs = new TreeSet(workspace.getProjects());
-        projects = new EclipseProject[wsPrjs.size()];
-        int i = 0;
-        for (Iterator it = wsPrjs.iterator(); it.hasNext(); ) {
-            projects[i++] = (EclipseProject) it.next();
-        }
+        Set<EclipseProject> wsPrjs = new TreeSet<EclipseProject>(workspace.getProjects());
+        projects = wsPrjs.toArray(new EclipseProject[wsPrjs.size()]);
         selectedProjects = new HashSet<EclipseProject>();
-        requiredProjects = new HashSet();
+        requiredProjects = new HashSet<EclipseProject>();
         if (projects.length == 0) {
-            setErrorMessage(ProjectImporterWizard.getMessage(
+            wizard.setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsEmpty", workspaceDir)); // NOI18N
         } else {
             updateValidity();
@@ -358,6 +416,12 @@ final class ProjectSelectionPanel extends JPanel {
      *  projects are created first.
      */
     List<EclipseProject> getProjects() {
+        return getFlattenedProjects(selectedProjects);
+    }
+    
+    /** Returns projects ordered so that required projects are listed first.
+     */
+    public static List<EclipseProject> getFlattenedProjects(Set<EclipseProject> selectedProjects) {
         List<EclipseProject> list = new ArrayList<EclipseProject>();
         addProjects(selectedProjects, list);
         Iterator<EclipseProject> it = list.iterator();
@@ -370,7 +434,7 @@ final class ProjectSelectionPanel extends JPanel {
         return list;
     }
     
-    private void addProjects(Set<EclipseProject> projects, List<EclipseProject> list) {
+    private static void addProjects(Set<EclipseProject> projects, List<EclipseProject> list) {
         for (EclipseProject p : projects) {
             if (list.contains(p)) {
                 continue;
@@ -399,17 +463,11 @@ final class ProjectSelectionPanel extends JPanel {
      * as Eclipse projects.
      */
     String getDestination() {
-        if (destination.getText().equals(projects[0].getWorkspace().getDirectory().getAbsolutePath())) {
-            return null;
-        } else {
+        if (isSeparateFolder()) {
             return destination.getText();
+        } else {
+            return null;
         }
-    }
-    
-    void setErrorMessage(String newMessage) {
-        String oldMessage = this.errorMessage;
-        this.errorMessage = newMessage;
-        firePropertyChange("errorMessage", oldMessage, newMessage); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -420,25 +478,30 @@ final class ProjectSelectionPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         projectListLabel = new javax.swing.JLabel();
         projectTableSP = new javax.swing.JScrollPane();
         projectTable = new javax.swing.JTable();
         prjLocationLBL = new javax.swing.JLabel();
         destination = new javax.swing.JTextField();
         chooseDestButton = new javax.swing.JButton();
-        note = new javax.swing.JLabel();
+        jRadioInsideEclipse = new javax.swing.JRadioButton();
+        jRadioSeparate = new javax.swing.JRadioButton();
+        prjLocationLBL1 = new javax.swing.JLabel();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        setBorder(null);
 
         projectListLabel.setLabelFor(projectTable);
         org.openide.awt.Mnemonics.setLocalizedText(projectListLabel, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_ProjectsToImport")); // NOI18N
         projectListLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
+        projectTable.setOpaque(false);
         projectTable.setShowHorizontalLines(false);
         projectTable.setShowVerticalLines(false);
         projectTableSP.setViewportView(projectTable);
+        projectTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
 
-        prjLocationLBL.setLabelFor(destination);
+        prjLocationLBL.setLabelFor(jRadioInsideEclipse);
         org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseDestButton, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "CTL_BrowseButton_B")); // NOI18N
@@ -448,55 +511,114 @@ final class ProjectSelectionPanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(note, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "MSG_Project_Location_Note")); // NOI18N
+        buttonGroup1.add(jRadioInsideEclipse);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioInsideEclipse, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "RADIO_LOCATION_ECLIPSE")); // NOI18N
+        jRadioInsideEclipse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioInsideEclipseActionPerformed(evt);
+            }
+        });
+
+        buttonGroup1.add(jRadioSeparate);
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioSeparate, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "RADIO_LOCATION_SEPARATE")); // NOI18N
+        jRadioSeparate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioSeparateActionPerformed(evt);
+            }
+        });
+
+        prjLocationLBL1.setLabelFor(destination);
+        org.openide.awt.Mnemonics.setLocalizedText(prjLocationLBL1, org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "LBL_LocationOfNBProjects2")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(projectListLabel)
-            .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(prjLocationLBL)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(34, 34, 34)
+                .add(prjLocationLBL1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(note, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(destination, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(chooseDestButton))))
+                .add(destination, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chooseDestButton))
+            .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jRadioInsideEclipse, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jRadioSeparate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(projectListLabel)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(projectListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                .add(projectTableSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(prjLocationLBL)
-                        .add(destination, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(chooseDestButton))
+                .add(prjLocationLBL)
+                .add(0, 0, 0)
+                .add(jRadioInsideEclipse)
+                .add(0, 0, 0)
+                .add(jRadioSeparate)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(note))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(prjLocationLBL1)
+                    .add(chooseDestButton)
+                    .add(destination, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        projectListLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        projectTableSP.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        projectTableSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        prjLocationLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        destination.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        chooseDestButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        jRadioInsideEclipse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        jRadioSeparate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        prjLocationLBL1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectSelectionPanel.class, "ACSD_ProjectSelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDestButtonActionPerformed
+    private void chooseDestButtonActionPerformed(java.awt.event.ActionEvent evt) {                                                 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             destination.setText(chooser.getSelectedFile().getAbsolutePath());
         }
-    }//GEN-LAST:event_chooseDestButtonActionPerformed
-        
+    }                                                     
+
+private void jRadioInsideEclipseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioInsideEclipseActionPerformed
+    enableLocation(false);
+}//GEN-LAST:event_jRadioInsideEclipseActionPerformed
+
+private void jRadioSeparateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioSeparateActionPerformed
+    enableLocation(true);
+}//GEN-LAST:event_jRadioSeparateActionPerformed
+
+    private void enableLocation(boolean enable) {
+        prjLocationLBL1.setEnabled(enable);
+        destination.setEnabled(enable);
+        chooseDestButton.setEnabled(enable);
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton chooseDestButton;
     private javax.swing.JTextField destination;
-    private javax.swing.JLabel note;
+    private javax.swing.JRadioButton jRadioInsideEclipse;
+    private javax.swing.JRadioButton jRadioSeparate;
     private javax.swing.JLabel prjLocationLBL;
+    private javax.swing.JLabel prjLocationLBL1;
     private javax.swing.JLabel projectListLabel;
     private javax.swing.JTable projectTable;
     private javax.swing.JScrollPane projectTableSP;

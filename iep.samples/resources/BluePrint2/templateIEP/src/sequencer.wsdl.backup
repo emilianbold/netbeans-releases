@@ -1,0 +1,196 @@
+<definitions targetNamespace="sequencer_iep"
+    xmlns:tns="sequencer_iep"
+    xmlns:typens="sequencer_iep"
+    xmlns:defns="sequencer_iep"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:file="http://schemas.sun.com/jbi/wsdl-extensions/file/"
+    xmlns:jms="http://schemas.sun.com/jbi/wsdl-extensions/jms/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/">
+<types>
+    <xsd:schema targetNamespace="sequencer_iep" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <xsd:element name="DeviceAlerts_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="deviceID" type="xsd:string"/>
+                    <xsd:element name="sequenceNum" type="xsd:int"/>
+                    <xsd:element name="message" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="DeviceAlertsBatch_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element name="DeviceAlerts_MsgObj" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="deviceID" type="xsd:string"/>
+                                <xsd:element name="sequenceNum" type="xsd:int"/>
+                                <xsd:element name="message" type="xsd:string"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="SortedAlerts_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                   <xsd:element name="deviceID" type="xsd:string"/>
+                   <xsd:element name="sequenceNum" type="xsd:int"/>
+                   <xsd:element name="message" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="MissingAlertRequests_MsgObj">
+            <xsd:complexType>
+                <xsd:sequence>
+                   <xsd:element name="deviceID" type="xsd:string"/>
+                   <xsd:element name="sequenceNum" type="xsd:int"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+</types>
+
+<message name="DeviceAlerts_Msg">
+    <part name="input" element="typens:DeviceAlerts_MsgObj"/>
+</message>
+<message name="DeviceAlertsBatch_Msg">
+    <part name="input" element="typens:DeviceAlertsBatch_MsgObj"/>
+</message>
+<message name="SortedAlerts_Msg">
+    <part name="output" element="typens:SortedAlerts_MsgObj"/>
+</message>
+<message name="MissingAlertRequests_Msg">
+    <part name="output" element="typens:MissingAlertRequests_MsgObj"/>
+</message>
+
+<portType name="InputPt">
+    <operation name="DeviceAlerts">
+        <input message="tns:DeviceAlerts_Msg"/>
+    </operation>
+    <operation name="DeviceAlertsBatch">
+        <input message="tns:DeviceAlertsBatch_Msg"/>
+    </operation>
+</portType>
+<portType name="OutputPt_SortedAlerts">
+    <operation name="SortedAlerts">
+        <input message="tns:SortedAlerts_Msg"/>
+    </operation>
+</portType>
+<portType name="OutputPt_MissingAlertRequests">
+    <operation name="MissingAlertRequests">
+        <input message="tns:MissingAlertRequests_Msg"/>
+    </operation>
+</portType>
+
+<plnk:partnerLinkType name="InputPlt" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "InputRn" portType="tns:InputPt"/>
+</plnk:partnerLinkType>
+<plnk:partnerLinkType name="OutputPlt_SortedAlerts" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "OutputRn_SortedAlerts" portType="tns:OutputPt_SortedAlerts"/>
+</plnk:partnerLinkType>
+<plnk:partnerLinkType name="OutputPlt_MissingAlertRequests" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <plnk:role name = "OutputRn_MissingAlertRequests" portType="tns:OutputPt_MissingAlertRequests"/>
+</plnk:partnerLinkType>
+<!-- input binding -->
+<binding name="InputBinding"
+         type="defns:InputPt">
+    <jms:binding></jms:binding>
+    <operation name="DeviceAlerts">
+        <jms:operation destinationType="Queue"
+                       maxConcurrentConsumers="32"
+                       destination="sequencer_DeviceAlerts" 
+                       transaction="NoTransaction">
+        </jms:operation>
+        <input>
+            <jms:message textPart="input"
+                         messageType="TextMessage">
+            </jms:message>
+        </input>
+    </operation>
+</binding>
+<!-- input service -->
+<service name="InputService">
+    <port name="InputPort" binding="tns:InputBinding">
+        <jms:address password="admin" username="admin"
+            connectionURL="mq://localhost:7676" />
+    </port>
+</service>
+            
+<!-- http output binding and service
+<binding name="OutputBinding_SortedAlerts" type="defns:OutputPt_SortedAlerts">
+    <operation name="SortedAlerts">
+        <soap:operation soapAction="SortedAlerts"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<binding name="OutputBinding_MissingAlertRequests" type="defns:OutputPt_MissingAlertRequests">
+    <operation name="MissingAlertRequests">
+        <soap:operation soapAction="MissingAlertRequests"/>
+        <input>
+            <soap:body use="literal"/>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_SortedAlerts">
+    <port name="OutputPort_SortedAlerts" binding="tns:OutputBinding_SortedAlerts">
+        <soap:address location="http://localhost:12100/service/sequencer_iep_SortedAlerts_callee"/>
+    </port>
+</service>
+<service name="OutputService_MissingAlertRequests">
+    <port name="OutputPort_MissingAlertRequests" binding="tns:OutputBinding_MissingAlertRequests">
+        <soap:address location="http://localhost:12100/service/sequencer_iep_MissingAlertRequests_callee"/>
+    </port>
+</service>
+ end of http output binding and service -->
+
+<!-- file output binding and service -->
+<binding name="OutputBinding_SortedAlerts" type="defns:OutputPt_SortedAlerts">
+    <file:binding/>
+    <operation name="SortedAlerts">
+        <file:operation/>
+        <input>
+            <file:message fileName="SortedAlerts.txt"
+                    fileNameIsPattern="false"
+                    addEOL="false"
+                    multipleRecordsPerFile="true"
+                    use="literal"/>
+        </input>
+    </operation>
+</binding>
+<binding name="OutputBinding_MissingAlertRequests"
+         type="defns:OutputPt_MissingAlertRequests">
+    <jms:binding></jms:binding>
+    <operation name="MissingAlertRequests">
+        <jms:operation deliveryMode="NON_PERSISTENT"
+                       disableMessageTimeStamp="true"
+                       disableMessageID="true"
+                       transaction="NoTransaction"
+                       destinationType="Queue"
+                       destination="sequencer_MissingAlertRequests"/>
+        <input>
+            <jms:message messageType="TextMessage"
+                         textPart="output">
+            </jms:message>
+        </input>
+    </operation>
+</binding>
+<service name="OutputService_SortedAlerts">
+    <port name="OutputPort_SortedAlerts" binding="tns:OutputBinding_SortedAlerts">
+        <file:address fileDirectory="C:/temp/sequencer_iep"/>
+<!--        <file:address fileDirectory="/home/blu/J1HOL2008/intelligent-event-processor/solutions/exercise2"/> -->
+    </port>
+</service>
+<service name="OutputService_MissingAlertRequests">
+    <port name="OutputPort_MissingAlertRequests"
+          binding="tns:OutputBinding_MissingAlertRequests">
+        <jms:address password="admin"
+                     username="admin"
+                     connectionURL="mq://localhost:7676" />
+    </port>
+</service>
+<!-- end of file output binding and service -->
+</definitions>

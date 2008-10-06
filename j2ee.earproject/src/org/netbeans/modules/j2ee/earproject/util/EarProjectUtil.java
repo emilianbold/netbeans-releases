@@ -46,8 +46,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -57,7 +60,8 @@ import org.openide.util.Parameters;
  */
 public final class EarProjectUtil {
     
-    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.j2ee.earproject"); // NOI18N    
+    private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.j2ee.earproject"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.earproject"); // NOI18N    
 
     private EarProjectUtil() {}
 
@@ -142,4 +146,38 @@ public final class EarProjectUtil {
         }
         UI_LOGGER.log(logRecord);
     }    
+    
+    /**
+     * Logs feature usage.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message);
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
+    }        
+    
+    /**
+     * Check whether the project is Java EE module (e.g. EJB but not EAR).
+     * @param project project to check, can be <code>null</code>.
+     * @return <code>true</code> if the project is Java EE module, <code>false</code> otherwise.
+     */
+    public static boolean isJavaEEModule(Project project) {
+        if (project != null
+                && project.getLookup().lookup(J2eeModuleProvider.class) != null
+                && project.getLookup().lookup(J2eeApplicationProvider.class) == null) {
+            return true;
+        }
+        return false;
+    }
 }

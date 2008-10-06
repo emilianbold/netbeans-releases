@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.db.sql.analyzer;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,75 +48,23 @@ import java.util.Set;
  */
 public class FromClause {
 
-    private final List<FromTable> tables;
+    private final Set<QualIdent> unaliasedTableNames;
+    private final Map<String, QualIdent> aliasedTableNames;
 
-    public FromClause(List<FromTable> tables) {
-        this.tables = tables;
-    }
-
-    public FromTable get(int index) {
-        return tables.get(index);
-    }
-
-    public int size() {
-        return tables.size();
-    }
-
-    public Map<String, QualIdent> getAliases() {
-        Map<String, QualIdent> result = new HashMap<String, QualIdent>();
-        for (FromTable table : tables) {
-            String alias = table.getAlias();
-            if (alias != null) {
-                result.put(alias, new QualIdent(table.getParts()));
-            }
-        }
-        return result;
+    public FromClause(Set<QualIdent> unaliasedTableNames, Map<String, QualIdent> aliasedTableNames) {
+        this.unaliasedTableNames = unaliasedTableNames;
+        this.aliasedTableNames = aliasedTableNames;
     }
 
     public Set<QualIdent> getUnaliasedTableNames() {
-        Set<QualIdent> result = new HashSet<QualIdent>();
-        for (FromTable table : tables) {
-            String alias = table.getAlias();
-            if (alias == null) {
-                result.add(new QualIdent(table.getParts()));
-            }
-        }
-        return result;
+        return unaliasedTableNames;
+    }
+
+    public Map<String, QualIdent> getAliasedTableNames() {
+        return aliasedTableNames;
     }
 
     public QualIdent getTableNameByAlias(String alias) {
-        for (FromTable table : tables) {
-            String tableAlias = table.getAlias();
-            if (alias.equals(tableAlias)) {
-                return new QualIdent(table.getParts());
-            }
-        }
-        return null;
-    }
-
-    public boolean unaliasedTableNameExists(QualIdent name) {
-        for (FromTable table : tables) {
-            if (table.getAlias() != null) {
-                continue;
-            }
-            QualIdent tableName = new QualIdent(table.getParts());
-            if (tableName.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean prefixedTableNameExists(QualIdent prefix) {
-        for (FromTable table : tables) {
-            if (table.getAlias() != null) {
-                continue;
-            }
-            QualIdent tableName = new QualIdent(table.getParts());
-            if (tableName.isPrefixedBy(prefix)) {
-                return true;
-            }
-        }
-        return false;
+        return aliasedTableNames.get(alias);
     }
 }

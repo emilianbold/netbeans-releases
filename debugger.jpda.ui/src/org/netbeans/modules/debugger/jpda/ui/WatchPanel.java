@@ -67,16 +67,22 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.IOException;
+import javax.naming.event.EventDirContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -84,6 +90,8 @@ import org.openide.text.NbDocument;
  * @author Maros Sandor
  */
 public class WatchPanel {
+
+    private static RequestProcessor contextRetrievalRP;
 
     private JPanel panel;
     private JEditorPane editorPane;
@@ -93,20 +101,66 @@ public class WatchPanel {
         this.expression = expression;
     }
     
-    public static void setupContext(JEditorPane editorPane) {
+    public static void setupContext(final JEditorPane editorPane) {
         EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         editorPane.setEditorKit(kit);
+        if (EventQueue.isDispatchThread()) {
+            synchronized (WatchPanel.class) {
+                if (contextRetrievalRP == null) {
+                    contextRetrievalRP = new RequestProcessor("Context Retrieval", 1);
+                }
+                contextRetrievalRP.post(new Runnable() {
+                    public void run() {
+                        final Context c = retrieveContext();
+                        if (c != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    setupContext(editorPane, c.url, c.line);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            setupUI(editorPane);
+        } else {
+            Context c = retrieveContext();
+            if (c != null) {
+                setupContext(editorPane, c.url, c.line);
+            } else {
+                setupUI(editorPane);
+            }
+        }
+    }
+
+    private static Context retrieveContext() {
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
-        JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
-        CallStackFrame csf = d.getCurrentCallStackFrame();
+        CallStackFrame csf = null;
+        if (en != null) {
+            JPDADebugger d = en.lookupFirst(null, JPDADebugger.class);
+            csf = d.getCurrentCallStackFrame();
+        }
         if (csf != null) {
             String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();
             SourcePath sp = en.lookupFirst(null, SourcePath.class);
-            String url = sp.getURL(csf, language);
-            int line = csf.getLineNumber(language);
-            setupContext(editorPane, url, line);
+            Context c = new Context();
+            c.url = sp.getURL(csf, language);
+            c.line = csf.getLineNumber(language);
+            return c;
         } else {
-            setupUI(editorPane);
+            EditorContext context = EditorContextBridge.getContext();
+            String url = context.getCurrentURL();
+            if (url != null) {
+                Context c = new Context();
+                c.url = url;
+                c.line = context.getCurrentLineNumber();
+                if (c.line == -1) {
+                    c.line = 0;
+                }
+                return c;
+            } else {
+                return null;
+            }
         }
     }
     
@@ -149,9 +203,8 @@ public class WatchPanel {
     }
     
     private static void setupUI(final JEditorPane editorPane) {
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
-                // do not highlight current row
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
                 eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
                 // Do not draw text limit line
@@ -161,7 +214,12 @@ public class WatchPanel {
                     textLimitLineField.set(eui, false);
                 } catch (Exception ex) {}
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     public JComponent getPanel() {
@@ -182,8 +240,12 @@ public class WatchPanel {
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
         int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
-        editorPane.setPreferredSize(new Dimension(30*size, (int) (1*size)));
-        sp.setPreferredSize(new Dimension(30*size, (int) (1*size) + 2));
+        Insets eInsets = editorPane.getInsets();
+        Insets spInsets = sp.getInsets();
+        sp.setPreferredSize(new Dimension(30*size,
+                size + 2 +
+                eInsets.bottom + eInsets.top +
+                spInsets.bottom + spInsets.top));
         
         textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
@@ -196,6 +258,7 @@ public class WatchPanel {
         editorPane.selectAll ();
 
         textLabel.setLabelFor (editorPane);
+        HelpCtx.setHelpIDString(editorPane, "debug.customize.watch");
         editorPane.requestFocus ();
         
         return panel;
@@ -215,7 +278,7 @@ public class WatchPanel {
             new EmptyBorder (0, 0, 0, 0))
         );
         
-        JTextField referenceTextField = new JTextField();
+        JTextField referenceTextField = new JTextField("M");
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(referenceTextField.getBackground());
         sp.setBorder(referenceTextField.getBorder());
@@ -241,6 +304,11 @@ public class WatchPanel {
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
         return sp;
+    }
+
+    private static final class Context {
+        public String url;
+        public int line;
     }
     
 }

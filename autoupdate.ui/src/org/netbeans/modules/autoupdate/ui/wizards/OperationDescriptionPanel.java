@@ -87,8 +87,9 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryPlugins.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });
@@ -122,32 +123,36 @@ public class OperationDescriptionPanel extends javax.swing.JPanel {
         tpPrimaryPlugins.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });
         tpDependingPlugins.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });
         tpPrimaryTitle.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });
         tpDependingTitle.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });

@@ -45,6 +45,7 @@ package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.menus.ScriptingNodePopup;
 import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
 
@@ -54,10 +55,14 @@ import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
  */
 public class ScriptingMeasureMenusTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
-        
-        suite.addTest(NbModuleSuite.create(ScriptingProjectNodePopup.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(ScriptingNodePopup.class, ".*", ".*"));
+        System.setProperty("suitename", ScriptingMeasureMenusTest.class.getCanonicalName());
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingProjectNodePopup.class)
+        .addTest(ScriptingNodePopup.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;
     }

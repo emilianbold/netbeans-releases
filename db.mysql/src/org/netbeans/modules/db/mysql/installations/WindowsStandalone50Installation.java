@@ -66,11 +66,11 @@ public class WindowsStandalone50Installation implements Installation {
     }
     
     public String[] getStartCommand() {
-        return new String[] { basePath + "/bin/mysqld-nt.exe", ""}; // NOI18N
+        return new String[] { basePath + "/bin/mysqld-nt.exe", "--console"}; // NOI18N
     }
 
     public String[] getStopCommand() {
-        return new String[] { basePath + "/bin/mysql.exe", "-u root stop"}; // NOI18N
+        return new String[] { basePath + "/bin/mysqladmin.exe", "-u root shutdown"}; // NOI18N
     }
     
     public boolean isInstalled() {
@@ -87,7 +87,7 @@ public class WindowsStandalone50Installation implements Installation {
     }
 
     public String getDefaultPort() {
-        return "3306"; // NOI8N
+        return "3306"; // NOI18N
     }
 
     public Installation getInstallation(String command, Command cmdType) {

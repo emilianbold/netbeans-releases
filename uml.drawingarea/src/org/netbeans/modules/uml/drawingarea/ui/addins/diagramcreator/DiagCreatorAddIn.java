@@ -45,6 +45,7 @@ package org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -54,6 +55,8 @@ import javax.swing.JComponent;
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
@@ -69,6 +72,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reintegration.IUMLParsingIntegrator;
@@ -116,12 +120,17 @@ import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import org.netbeans.modules.uml.ui.swing.projecttree.JProjectTree;
 import org.openide.util.Exceptions;
 import java.awt.Point;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
+import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
+import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
+import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UIDiagram;
+import org.openide.windows.TopComponent;
 
 /**
  * @author sumitabhk
@@ -649,28 +658,45 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
          }
          else if (pElement instanceof IState)
          {
-            IState cpState = (IState) pElement;
-            ETList < IRegion > cpRegions = cpState.getContents();
-            if (cpRegions != null)
-            {
-               int count = cpRegions.size();
-               for (int i = 0; i < count; i++)
-               {
-                  IRegion cpRegion = cpRegions.get(i);
-                  ETList < INamedElement > elems = cpRegion.getOwnedElements();
-                  if (elems != null)
-                  {
-                     if (retObj != null)
-                     {
-                        retObj.addAll(elems);
-                     }
-                     else
-                     {
-                        retObj = elems;
-                     }
-                  }
-               }
-            }
+             // Since the composite state will include the children naturally
+             // we can not include them as part of the CDFS.  
+         }
+         else if(pElement instanceof IActivityGroup)
+         {
+             // Since activity group and partion nodes include the children 
+             // naturally we can not include them as part of the CDFS.
+         }
+         else if(pElement instanceof IActivity)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IActivity activity = (IActivity)pElement;
+             List<IActivityNode> nodes = activity.getNodes();
+             for(IActivityNode node : nodes)
+             {
+                 if(node.getGroups().size() == 0)
+                 {
+                     retObj.add(node);
+                 }
+             }
+             
+         }
+         else if(pElement instanceof IClassifier)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IClassifier classifier = (IClassifier)pElement;
+             List<INamedElement> children = classifier.getOwnedElements();
+             for(INamedElement child : children)
+             {
+                 // using IClassifier is not exclusive enought because it will 
+                 // pick up ISourceFileArtifacts as well.  
+                 if ((child instanceof IClassifier) && 
+                     !(child instanceof ISourceFileArtifact))
+                 {
+                     retObj.add((IClassifier) child);
+                 }
+             }
          }
          else if (pElement instanceof INamespace)
          {
@@ -855,50 +881,65 @@ catch (IOException ex) {
       }
       
       ETList < INamedElement > ownedElements = getOwnedElements(pOwnerElement);
-      if (ownedElements != null)
+      if (ownedElements != null) 
       {
          ETArrayList<IElement> elements = new ETArrayList<IElement>(ownedElements.size());
          elements.addAll(ownedElements);
          ETList < IElement > validElems = validateElementsForDiagram(pDiagram, elements);
          if (validElems != null)
          {
-            int count = validElems.size();
-            if (count > 0)
-            {
-               if (pOwnerElement instanceof IInteraction || pOwnerElement instanceof IActivity || pOwnerElement instanceof IStateMachine)
-               {
-                  pElements.remove(pOwnerElement);
-               }
-               else
-               {
-                  //ask the user
-                  IQuestionDialog dialog = new SwingQuestionDialogImpl();
-                  String title = loadString("IDS_DEPTHDIALOGTITLE");
-                  String message = loadString("IDS_DEPTHDIALOGMSG");
-                  dialog.setDefaultButton(IQuestionDialog.IDOK);
-                  QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, message, "", title, MessageResultKindEnum.SQDRK_RESULT_YES, false);
-                  
-                  if (result.getResult() == MessageResultKindEnum.SQDRK_RESULT_NO)
-                  {
+             // IZ 139502 We should always remove theses objects from the list, 
+             // since they are not model elements that have presentation.
+             boolean prompt = true;
+             if (pOwnerElement instanceof IInteraction || 
+                 pOwnerElement instanceof IActivity || 
+                 pOwnerElement instanceof IStateMachine)
+             {
+                 pElements.remove(pOwnerElement);
+                 prompt = false;
+             }
+
+             int count = validElems.size();
+             if (count > 0)
+             {
+                 //ask the user
+                 int toInclude = MessageResultKindEnum.SQDRK_RESULT_YES;
+                 if(prompt == true)
+                 {
+                     IQuestionDialog dialog = new SwingQuestionDialogImpl();
+                     String title = loadString("IDS_DEPTHDIALOGTITLE");
+                     String message = loadString("IDS_DEPTHDIALOGMSG");
+                     dialog.setDefaultButton(IQuestionDialog.IDOK);
+                     QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, 
+                                                                             MessageIconKindEnum.EDIK_ICONWARNING, 
+                                                                             message, 
+                                                                             "", 
+                                                                             title, 
+                                                                             MessageResultKindEnum.SQDRK_RESULT_YES, 
+                                                                             false);
+                     toInclude = result.getResult();
+                 }
+
+                 if (toInclude == MessageResultKindEnum.SQDRK_RESULT_NO)
+                 {
                      // Don't include the child elements
                      count = 0;
-                  }
-                  else
-                  {
+                 }
+                 else
+                 {
                      // Remove the owner so we don't get so many nested links, if that owner
                      // is an IPackage
                      if (pOwnerElement instanceof IPackage)
                      {
-                        pElements.remove(pOwnerElement);
+                         pElements.remove(pOwnerElement);
                      }
-                  }
-               }
+                 }
 
-               for (int i = 0; i < count; i++)
-               {
-                  pElements.add(validElems.get(i));
-               }
-            }
+                 for (int i = 0; i < count; i++)
+                 {
+                     pElements.add(validElems.get(i));
+                 }
+             }
          }
       }
       return pElements;
@@ -1051,35 +1092,66 @@ catch (IOException ex) {
                                                               ETList < IElement > pElements, 
                                                               ETList<IPresentationElement> newPES)
 	{
+          DesignerScene scene=null;
+          DiagramEngine engine = null;
+
+          if(pDiagram instanceof UIDiagram)
+          {
+              scene=((UIDiagram)pDiagram).getScene();
+              engine = scene.getEngine();
+          }
 		// We need to stagger the nodes so nested links work, 
 		// if we don't layout here the nodes are on top of each other and the
 		// Relationship discovery thinks the packages are contained. Bug DT 2533 reported by Sun
                 if(pDiagram.getDiagramKind()==IDiagramKind.DK_SEQUENCE_DIAGRAM)
                 {
-                    //we do not have specific sqd layeot, may be yet
+                    //we do not have specific sqd layeot, may be yet, so all necessary layout is here
+                    Point lifelinePoint=null;
+                    for(int i=0;i<newPES.size();i++)
+                    {
+                        IPresentationElement pe=newPES.get(i);
+                        if(pe.getFirstSubject() instanceof ILifeline)
+                        {
+                            ILifeline ll=(ILifeline) pe.getFirstSubject();
+                            System.out.println("REP CL:"+ll.getRepresentingClassifier().getName());
+                            Widget w=scene.findWidget(pe);
+                            if(lifelinePoint==null)
+                            {
+                                lifelinePoint=w.getPreferredLocation();
+                            }
+                            else
+                            {
+                                w.setPreferredLocation(new Point(lifelinePoint.x-w.getBounds().x,lifelinePoint.y));
+                            }
+                            System.out.println("POINT:"+lifelinePoint);
+                            lifelinePoint.x=w.getPreferredLocation().x+w.getBounds().x+w.getBounds().width+30;//right side+30
+                        }
+                    }
+                    scene.validate();
+                    for(int i=0;i<newPES.size();i++)
+                    {
+                        IPresentationElement pe=newPES.get(i);
+                        if(pe.getFirstSubject() instanceof ILifeline)
+                        {
+                            TopComponent tc=scene.getTopComponent();
+                            if(tc instanceof SQDDiagramTopComponent)
+                            {
+                                ((SQDDiagramTopComponent)tc).getTrackBar().addPresentationElement(pe);
+                            }
+                        }
+                    }
                 }
                 else 
                 {
                     performLayout(pDiagram, false);
                 }
 		
-		// process post drop handling
-//		IDiagramEngine diaEngine = TypeConversions.getDiagramEngine(pDiagram);
-//		if (diaEngine != null)
-//		{
-//			// This discovers relationships.
-//			diaEngine.postOnDrop(pElements, false);
-//		}
-                
-                DiagramEngine engine = null;
-
                 if (pDiagram instanceof UIDiagram)
                 {
-                    DesignerScene scene = ((UIDiagram) pDiagram).getScene();
                     engine = scene.getEngine();
                     engine.postDrop(pElements);
                 }
-		
+                
 		IPresentationElement lastPresEle = newPES != null && newPES.size() > 0 ? newPES.get(newPES.size() -1) : null;
 		if (lastPresEle != null)
 		{
@@ -1125,14 +1197,11 @@ catch (IOException ex) {
                   ensureEnd.beginProgress(message, 0, count, 0);
                   int i = 0;
                   ETList < IElement > pOrginalElements = new ETArrayList < IElement > ();
-                  if(pDiagram.getDiagramKind()!=IDiagramKind.DK_SEQUENCE_DIAGRAM)pOrginalElements.addAll(pElements);
-                  else
-                  {
-                        //use reverse oprder of elements on sqd, so it will not require layout efforts, all will be done by trackbar bumping (old elements are bumped by new one, so first should be added last)
-                        for(int k=pElements.size()-1;k>=0;k--)pOrginalElements.add(pElements.get(k));
-                  }
+                  pOrginalElements.addAll(pElements);
+
                   ETList<IPresentationElement> newPES = new ETArrayList<IPresentationElement>();
 						
+                  Point point=new Point(60,60);
 	          for (Iterator < IElement > iter = pOrginalElements.iterator(); iter.hasNext(); i++)
                   {
                      IElement cpElem = iter.next();
@@ -1140,17 +1209,19 @@ catch (IOException ex) {
                      IPresentationElement pEle = createPresentationElement(cpElem, engine);
                      if(pEle==null)continue;
                      
-                     Point point=new Point(60,60);
-//                     Widget addedW=
-                     scene.getEngine().addWidget(pEle, point);
-//                     if(addedW  instanceof UMLNodeWidget)
-//                     {
-//                         ((UMLNodeWidget)addedW).initializeNode(pEle);
-//                     }
-                     
+                      if(pDiagram.getDiagramKind()==IDiagramKind.DK_SEQUENCE_DIAGRAM)
+                      {
+                            ((SQDDiagramEngineExtension)engine).doNotUseTrackbar();//if cast fails smth wrong with engine usege on sqd
+                      }
+                     Widget addedW=scene.getEngine().addWidget(pEle, point);
+                     if(addedW!=null)newPES.add(pEle);
+                     else
+                     {
+                         cpElem.removePresentationElement(pEle);//widget wasn't added, need to remove pres element
+                     }
                      // TODO: Able to show things in the icon state.
                      
-                      // Fix J543:  Attempting to free more memory by removing elements from the list
+                     // Fix J543:  Attempting to free more memory by removing elements from the list
                      iter.remove();
 
                      ensureEnd.setPos(i);
@@ -1236,7 +1307,7 @@ catch (IOException ex) {
          // Deselect everything
          pDiagram.selectAll(false);
          
-         engine.layout();
+         engine.layout(true);
          
 //         // Set the default mode to be selection
 //         // TODO: Do we still need to set the mode to perform layout.

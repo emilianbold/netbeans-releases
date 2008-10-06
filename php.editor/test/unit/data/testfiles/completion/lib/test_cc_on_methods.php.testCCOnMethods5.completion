@@ -1,0 +1,5 @@
+Code completion result for source line:
+foo_TestCCOnMethods()->|newInstance()->newInstance();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     newInstance()                   [PUBLIC]   TestCCOnMethods
+METHOD     parentInstance()                [PUBLIC]   TestCCOnMethodsParentClass

@@ -93,27 +93,10 @@ public class PatternsTest extends RestTestBase {
         public int getResourcePackageJComboIndex() {
             switch (this) {
                 case Singleton:
-                    return 1;
+                    return 2;
                 case ContainerItem:
                 case CcContainerItem:
                     return 0;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
-         * Method for getting correct index of the resource name txt field in the new RESTful
-         * web service from patterns wizard for given type of the resource
-         *
-         * @return index of the resource name txt field
-         */
-        public int getResourceNameTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return 4;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 1;
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -128,7 +111,7 @@ public class PatternsTest extends RestTestBase {
         public int getResourceClassNameTxtIndex() {
             switch (this) {
                 case Singleton:
-                    return 3;
+                    return 0;
                 case ContainerItem:
                 case CcContainerItem:
                     return 2;
@@ -137,13 +120,13 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the resource URI template txt field
+         * Method for getting correct index of the resource Path txt field
          * in the new RESTful web service from patterns wizard for given type
          * of the resource
          *
-         * @return index of the resource URI template txt field
+         * @return index of the resource Path txt field
          */
-        public int getResourceURITemplateTxtIndex() {
+        public int getResourcePathTxtIndex() {
             switch (this) {
                 case Singleton:
                     return 2;
@@ -173,13 +156,13 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the container resource URI template txt field
+         * Method for getting correct index of the container resource Path txt field
          * in the new RESTful web service from patterns wizard for given type
          * of the resource
          *
-         * @return index of the container resource URI template txt field
+         * @return index of the container resource Path txt field
          */
-        public int getContainerResourceURITemplateTxtIndex() {
+        public int getContainerResourcePathTxtIndex() {
             switch (this) {
                 case Singleton:
                     return -1;
@@ -200,7 +183,7 @@ public class PatternsTest extends RestTestBase {
         public int getResourceMimeTypeJComboIndex() {
             switch (this) {
                 case Singleton:
-                    return 2;
+                    return 0;
                 case ContainerItem:
                 case CcContainerItem:
                     return 2;
@@ -218,7 +201,7 @@ public class PatternsTest extends RestTestBase {
         public int getRepresentationClassTxtIndex() {
             switch (this) {
                 case Singleton:
-                    return 5;
+                    return 1;
                 case ContainerItem:
                 case CcContainerItem:
                     return 6;
@@ -236,7 +219,7 @@ public class PatternsTest extends RestTestBase {
         public int getRepresentationClassSelectIndex() {
             switch (this) {
                 case Singleton:
-                    return 2;
+                    return 1;
                 case ContainerItem:
                 case CcContainerItem:
                     return 3;
@@ -365,10 +348,8 @@ public class PatternsTest extends RestTestBase {
      * Test default setting for Client Controlled Container Item pattern
      */
     public void testCcContainerIDef() {
-        //TODO: have to set name because of issue 112610
-        // http://www.netbeans.org/issues/show_bug.cgi?id=122610
         String name = "Item1"; //NOI18N
-        Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, null);
+        Set<File> files = createWsFromPatterns(null, Pattern.CcContainerItem, null);
     }
 
     /**
@@ -415,16 +396,13 @@ public class PatternsTest extends RestTestBase {
         wo = new WizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, pattern.getResourcePackageJComboIndex());
+        jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
         if (name != null) {
             //we're not using Defs when name != null !!!
-            //set resource name
-            JTextFieldOperator jtfo = new JTextFieldOperator(wo, pattern.getResourceNameTxtIndex());
-            jtfo.clearText();
-            jtfo.typeText(name + "Rs"); //NOI18N
             //set resource class name
-            jtfo = new JTextFieldOperator(wo, pattern.getResourceClassNameTxtIndex());
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, pattern.getResourceClassNameTxtIndex());
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
@@ -446,21 +424,21 @@ public class PatternsTest extends RestTestBase {
                 nbo.ok();
             }
             if (Pattern.Singleton.equals(pattern)) {
-                //set resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getResourceURITemplateTxtIndex());
+                //set resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
-                //set resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getResourceURITemplateTxtIndex());
+                //set resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
                 jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceClassNameTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
-                //set container resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceURITemplateTxtIndex());
+                //set container resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
@@ -491,13 +469,21 @@ public class PatternsTest extends RestTestBase {
                 }
                 break;
             case ContainerItem:
-            case CcContainerItem:
                 if (name != null) {
                     createdFiles.add(getFileFromProject(name + "Cl")); //NOI18N
                     createdFiles.add(getFileFromProject(name + "CClass")); //NOI18N
                 } else {
                     createdFiles.add(getFileFromProject("ItemResource")); //NOI18N
                     createdFiles.add(getFileFromProject("ItemsResource")); //NOI18N
+                }
+                break;
+            case CcContainerItem:
+                if (name != null) {
+                    createdFiles.add(getFileFromProject(name + "Cl")); //NOI18N
+                    createdFiles.add(getFileFromProject(name + "CClass")); //NOI18N
+                } else {
+                    createdFiles.add(getFileFromProject("ItemResource_1")); //NOI18N
+                    createdFiles.add(getFileFromProject("ItemsResource_1")); //NOI18N
                 }
                 break;
         }
@@ -525,21 +511,21 @@ public class PatternsTest extends RestTestBase {
      */
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(PatternsTest.class),
-                "testSingletonDef",
-                "testContainerIDef",
-                "testCcContainerIDef",
-                "testSingleton1",
-                "testCcContainerI1",
-                "testSingleton2",
-                "testContainerI1",
-                "testContainerI2",
-                "testSingleton3",
-                "testContainerI3",
-                "testCcContainerI2",
-                "testCcContainerI3",
-                "testNodes",
-                "testDeploy",
-                "testUndeploy"
-                ).enableModules(".*").clusters(".*"));
+                "testSingletonDef", //NOI18N
+                "testContainerIDef", //NOI18N
+                "testCcContainerIDef", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
+                "testSingleton2", //NOI18N
+                "testContainerI1", //NOI18N
+                "testContainerI2", //NOI18N
+                "testSingleton3", //NOI18N
+                "testContainerI3", //NOI18N
+                "testCcContainerI2", //NOI18N
+                "testCcContainerI3", //NOI18N
+                "testNodes", //NOI18N
+                "testDeploy", //NOI18N
+                "testUndeploy" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

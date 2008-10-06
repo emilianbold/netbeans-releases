@@ -40,6 +40,8 @@
  */
 package org.openide.nodes;
 
+import java.util.List;
+
 
 /** Event describing change in the list of a node's children.
 *
@@ -51,6 +53,9 @@ public final class NodeReorderEvent extends NodeEvent {
     /** list of new nodes indexes on the original positions */
     private int[] newIndices;
 
+    /** current snapshot */
+    private final List<Node> currSnapshot;    
+
     /** Package private constructor to allow construction only
     * @param node the node that has changed
     * @param newIndices new indexes of the nodes
@@ -58,8 +63,18 @@ public final class NodeReorderEvent extends NodeEvent {
     NodeReorderEvent(Node n, int[] newIndices) {
         super(n);
         this.newIndices = newIndices;
+        this.currSnapshot = n.getChildren().entrySupport().createSnapshot();
     }
-
+    
+    /** Provides static and immmutable info about the number, and instances of
+     * nodes available during the time the event was emited.
+     * @return immutable and unmodifiable list of nodes
+     * @since 7.7
+     */
+    public final List<Node> getSnapshot() {
+        return currSnapshot;
+    }
+    
     /** Get the new position of the child that had been at a given position.
     * @param i the original position of the child
     * @return the new position of the child

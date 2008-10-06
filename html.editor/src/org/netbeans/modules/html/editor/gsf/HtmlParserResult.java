@@ -53,7 +53,7 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 
 /**
  *
@@ -103,8 +103,7 @@ public class HtmlParserResult extends ParserResult {
 
                 public void visit(AstNode node) {
                     if (node.type() == AstNode.NodeType.DECLARATION) {
-                        SyntaxElement.Declaration declaration = (SyntaxElement.Declaration) node.element();
-                        String publicID = declaration.getPublicIdentifier();
+                        String publicID = (String)node.getAttribute("public_id"); //NOI18N
                         if (publicID != null) {
                             DTD dtd = org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicID, null);
                             if (dtd != null) {

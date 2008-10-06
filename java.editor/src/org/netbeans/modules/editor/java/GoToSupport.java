@@ -56,12 +56,16 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.awt.Dialog;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -76,6 +80,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.AbstractElementVisitor6;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -98,12 +103,18 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -130,11 +141,59 @@ public class GoToSupport {
     }
     
     private static String performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc) {
+        if (!tooltip && !javadoc && SourceUtils.isScanInProgress()) {
+            final AtomicBoolean cancel = new AtomicBoolean(false);
+            final Dialog[] d = new Dialog[1];
+            String warning = NbBundle.getMessage(GoToSupport.class, "LBL_ScanInProgress");
+            String caption = NbBundle.getMessage(GoToSupport.class, "CAP_ScanInProgress");
+            String cancelButton = NbBundle.getMessage(GoToSupport.class, "BTN_ScanInProgress_Cancel");
+            DialogDescriptor nd = new DialogDescriptor(warning, caption, true, new Object[] {cancelButton}, cancelButton, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    cancel.set(true);
+                    d[0].setVisible(false);
+                }
+            });
+
+            nd.setMessageType(NotifyDescriptor.INFORMATION_MESSAGE);
+
+            d[0] = DialogDisplayer.getDefault().createDialog(nd);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    performGoToImpl(doc, offset, goToSource, tooltip, javadoc, new Action<Boolean>() {
+                        public Boolean run() {
+                            return !cancel.get();
+                        }
+                    });
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            d[0].setVisible(false);
+                        }
+                    });
+                }
+            });
+
+            d[0].setVisible(true);
+            
+            return null;
+        } else {
+            return performGoToImpl(doc, offset, goToSource, tooltip, javadoc, null);
+        }
+    }
+
+    private static String performGoToImpl(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
         try {
             final FileObject fo = getFileObject(doc);
             
             if (fo == null)
                 return null;
+            
+            final JavaSource js = JavaSource.forFileObject(fo);
+            
+            if (js == null) { //#123488
+                return null;
+            }
             
             final String[] result = new String[1];
             final int[] offsetToOpen = new int[] {-1};
@@ -146,6 +205,8 @@ public class GoToSupport {
             ParserManager.parse(Source.create(doc), new UserTask() {
                 @Override
                 public void run(Result res, Snapshot snapshot) throws Exception {
+                    if (atStart != null && atStart.run() == Boolean.FALSE)
+                        return ;
                     CompilationController controller = CompilationController.get(res);
                     if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                         return;
@@ -336,19 +397,26 @@ public class GoToSupport {
             }, offset);
             
             if (tryToOpen[0]) {
-                boolean openSucceeded = false;
-                
-                if (offsetToOpen[0] >= 0) {
-                    openSucceeded = CALLER.open(fo, offsetToOpen[0]);
-                } else {
-                    if (elementToOpen[0] != null) {
-                        openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
+                assert result[0] == null;
+
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        boolean openSucceeded = false;
+
+                        if (offsetToOpen[0] >= 0) {
+                            openSucceeded = CALLER.open(fo, offsetToOpen[0]);
+                        } else {
+                            if (elementToOpen[0] != null) {
+                                openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                            }
+                        }
+                        if (!openSucceeded) {
+                            CALLER.warnCannotOpen(displayNameForError[0]);
+                        }
                     }
-                }
-                if (!openSucceeded) {
-                    CALLER.warnCannotOpen(displayNameForError[0]);
-                }
+                });
             }
+            
             return result[0];
         } catch (ParseException ex) {
             throw new IllegalStateException(ex);

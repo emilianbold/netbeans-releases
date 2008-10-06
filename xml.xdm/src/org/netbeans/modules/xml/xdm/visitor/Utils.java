@@ -143,7 +143,7 @@ public class Utils {
     }
 
     public static BaseDocument loadDocument(String text) throws IOException {
-        BaseDocument sd = new BaseDocument(BaseKit.class, false);
+        BaseDocument sd = new BaseDocument(true, "text/xml"); //NOI18N
         sd.putProperty(Language.class, XMLTokenId.language());
         try {
             sd.insertString(0, text, null);

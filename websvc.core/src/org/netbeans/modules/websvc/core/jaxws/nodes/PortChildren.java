@@ -47,15 +47,16 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
-public class PortChildren extends Children.Keys<WsdlOperation> {
-    WsdlPort wsdlPort;
+public class PortChildren extends Children.Keys<WSOperation> {
+    WSPort wsdlPort;
     
-    public PortChildren(WsdlPort wsdlPort) {
+    public PortChildren(WSPort wsdlPort) {
         this.wsdlPort=wsdlPort;
     }
     
@@ -67,17 +68,17 @@ public class PortChildren extends Children.Keys<WsdlOperation> {
     
     @Override
     protected void removeNotify() {
-        setKeys(Collections.<WsdlOperation>emptyList());
+        setKeys(Collections.<WSOperation>emptyList());
         super.removeNotify();
     }
        
     private void updateKeys() {
-        List<WsdlOperation> keys =  wsdlPort.getOperations();
-        setKeys(keys == null ? new ArrayList<WsdlOperation>() : keys);
+        List<WSOperation> keys =  wsdlPort.getOperations();
+        setKeys(keys == null ? new ArrayList<WSOperation>() : keys);
     }
 
-    protected Node[] createNodes(WsdlOperation key) {
-        return new Node[] {new OperationNode(key)};
+    protected Node[] createNodes(WSOperation key) {
+        return new Node[] {new OperationNode((WsdlOperation) key)};
     }
 
 }

@@ -56,6 +56,7 @@ public class SQLOptions  {
     private static final String PROP_MAX_ROWS = "maxRows";
     private static final int DEFAULT_MAX_ROWS = 200000;
 
+    public static final String PROP_KEEP_OLD_RESULT_TABS = "keepOldResultTabs"; // NOI18N
 
     public static SQLOptions getDefault() {
         return INSTANCE;
@@ -83,6 +84,13 @@ public class SQLOptions  {
     
     public void setMaxRows(int rows) {
         getPreferences().putInt(PROP_MAX_ROWS, rows);
+    }
+    public boolean isKeepOldResultTabs() {
+        return getPreferences().getBoolean(PROP_KEEP_OLD_RESULT_TABS, false);
+    }
+
+    public void setKeepOldResultTabs(boolean keepOldTabs) {
+        getPreferences().putBoolean(PROP_KEEP_OLD_RESULT_TABS, keepOldTabs);
     }
 
 }

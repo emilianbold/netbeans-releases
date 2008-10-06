@@ -54,7 +54,8 @@ package org.netbeans.modules.websvc.core.jaxws.projects;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 
 /**
  *
@@ -70,7 +71,7 @@ public class JavaEEJAXWSVersionProvider implements JAXWSVersionProvider{
     
     public String getJAXWSVersion() {
         WSStackUtils stackUtils = new WSStackUtils(project);
-        WSStack wsStack = stackUtils.getWsStack(WSStack.STACK_JAX_WS);
-        return wsStack == null ? null:wsStack.getVersion();
+        WSStack wsStack = stackUtils.getWsStack(JaxWs.class);
+        return wsStack == null ? null:wsStack.getVersion().toString();
     }
 }

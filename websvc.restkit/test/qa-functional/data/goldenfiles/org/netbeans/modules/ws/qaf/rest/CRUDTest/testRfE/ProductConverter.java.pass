@@ -1,9 +1,5 @@
 /*
- *  ProductConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -11,14 +7,17 @@ package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.Product;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import o.n.m.ws.qaf.rest.crud.Product;
-import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
-
+import javax.persistence.EntityManager;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import java.util.Collection;
 
 /**
  *
@@ -30,9 +29,10 @@ public class ProductConverter {
     private Product entity;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of ProductConverter */
     public ProductConverter() {
+        entity = new Product();
     }
 
     /**
@@ -46,6 +46,9 @@ public class ProductConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getProductId() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getManufacturerId();
+        getProductCode();
+        getPurchaseOrderCollection();
     }
 
     /**
@@ -66,7 +69,7 @@ public class ProductConverter {
      */
     @XmlElement
     public Integer getProductId() {
-        return (expandLevel > 0) ? getEntity().getProductId() : null;
+        return (expandLevel > 0) ? entity.getProductId() : null;
     }
 
     /**
@@ -75,7 +78,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setProductId(Integer value) {
-        getEntity().setProductId(value);
+        entity.setProductId(value);
     }
 
     /**
@@ -85,7 +88,7 @@ public class ProductConverter {
      */
     @XmlElement
     public BigDecimal getPurchaseCost() {
-        return (expandLevel > 0) ? getEntity().getPurchaseCost() : null;
+        return (expandLevel > 0) ? entity.getPurchaseCost() : null;
     }
 
     /**
@@ -94,7 +97,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setPurchaseCost(BigDecimal value) {
-        getEntity().setPurchaseCost(value);
+        entity.setPurchaseCost(value);
     }
 
     /**
@@ -104,7 +107,7 @@ public class ProductConverter {
      */
     @XmlElement
     public Integer getQuantityOnHand() {
-        return (expandLevel > 0) ? getEntity().getQuantityOnHand() : null;
+        return (expandLevel > 0) ? entity.getQuantityOnHand() : null;
     }
 
     /**
@@ -113,7 +116,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setQuantityOnHand(Integer value) {
-        getEntity().setQuantityOnHand(value);
+        entity.setQuantityOnHand(value);
     }
 
     /**
@@ -123,7 +126,7 @@ public class ProductConverter {
      */
     @XmlElement
     public BigDecimal getMarkup() {
-        return (expandLevel > 0) ? getEntity().getMarkup() : null;
+        return (expandLevel > 0) ? entity.getMarkup() : null;
     }
 
     /**
@@ -132,7 +135,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setMarkup(BigDecimal value) {
-        getEntity().setMarkup(value);
+        entity.setMarkup(value);
     }
 
     /**
@@ -142,7 +145,7 @@ public class ProductConverter {
      */
     @XmlElement
     public String getAvailable() {
-        return (expandLevel > 0) ? getEntity().getAvailable() : null;
+        return (expandLevel > 0) ? entity.getAvailable() : null;
     }
 
     /**
@@ -151,7 +154,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setAvailable(String value) {
-        getEntity().setAvailable(value);
+        entity.setAvailable(value);
     }
 
     /**
@@ -161,7 +164,7 @@ public class ProductConverter {
      */
     @XmlElement
     public String getDescription() {
-        return (expandLevel > 0) ? getEntity().getDescription() : null;
+        return (expandLevel > 0) ? entity.getDescription() : null;
     }
 
     /**
@@ -170,7 +173,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setDescription(String value) {
-        getEntity().setDescription(value);
+        entity.setDescription(value);
     }
 
     /**
@@ -181,8 +184,8 @@ public class ProductConverter {
     @XmlElement
     public ManufacturerConverter getManufacturerId() {
         if (expandLevel > 0) {
-            if (getEntity().getManufacturerId() != null) {
-                return new ManufacturerConverter(getEntity().getManufacturerId(), uri.resolve("manufacturerId/"), expandLevel - 1, false);
+            if (entity.getManufacturerId() != null) {
+                return new ManufacturerConverter(entity.getManufacturerId(), uri.resolve("manufacturerId/"), expandLevel - 1, false);
             }
         }
         return null;
@@ -194,7 +197,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setManufacturerId(ManufacturerConverter value) {
-        getEntity().setManufacturerId((value != null) ? value.resolveEntity() : null);
+        entity.setManufacturerId((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -205,8 +208,8 @@ public class ProductConverter {
     @XmlElement
     public ProductCodeConverter getProductCode() {
         if (expandLevel > 0) {
-            if (getEntity().getProductCode() != null) {
-                return new ProductCodeConverter(getEntity().getProductCode(), uri.resolve("productCode/"), expandLevel - 1, false);
+            if (entity.getProductCode() != null) {
+                return new ProductCodeConverter(entity.getProductCode(), uri.resolve("productCode/"), expandLevel - 1, false);
             }
         }
         return null;
@@ -218,7 +221,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setProductCode(ProductCodeConverter value) {
-        getEntity().setProductCode((value != null) ? value.resolveEntity() : null);
+        entity.setProductCode((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -229,8 +232,8 @@ public class ProductConverter {
     @XmlElement
     public PurchaseOrdersConverter getPurchaseOrderCollection() {
         if (expandLevel > 0) {
-            if (getEntity().getPurchaseOrderCollection() != null) {
-                return new PurchaseOrdersConverter(getEntity().getPurchaseOrderCollection(), uri.resolve("purchaseOrderCollection/"), expandLevel - 1);
+            if (entity.getPurchaseOrderCollection() != null) {
+                return new PurchaseOrdersConverter(entity.getPurchaseOrderCollection(), uri.resolve("purchaseOrderCollection/"), expandLevel - 1);
             }
         }
         return null;
@@ -242,7 +245,7 @@ public class ProductConverter {
      * @param value the value to set
      */
     public void setPurchaseOrderCollection(PurchaseOrdersConverter value) {
-        getEntity().setPurchaseOrderCollection((value != null) ? value.getEntities() : null);
+        entity.setPurchaseOrderCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -270,8 +273,11 @@ public class ProductConverter {
      */
     @XmlTransient
     public Product getEntity() {
-        if (entity == null) {
-            entity = new Product();
+        if (entity.getProductId() == null) {
+            ProductConverter converter = UriResolver.getInstance().resolve(ProductConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -281,11 +287,21 @@ public class ProductConverter {
      *
      * @return an resolved entity
      */
-    public Product resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(Product.class, entity.getProductId());
-        } else {
-            return (Product) UriResolver.getInstance().resolve(ProductConverter.class, uri);
+    public Product resolveEntity(EntityManager em) {
+        Manufacturer manufacturerId = entity.getManufacturerId();
+        if (manufacturerId != null) {
+            entity.setManufacturerId(em.getReference(Manufacturer.class, manufacturerId.getManufacturerId()));
         }
+        ProductCode productCode = entity.getProductCode();
+        if (productCode != null) {
+            entity.setProductCode(em.getReference(ProductCode.class, productCode.getProdCode()));
+        }
+        Collection<PurchaseOrder> purchaseOrderCollection = entity.getPurchaseOrderCollection();
+        Collection<PurchaseOrder> newpurchaseOrderCollection = new java.util.ArrayList<PurchaseOrder>();
+        for (PurchaseOrder item : purchaseOrderCollection) {
+            newpurchaseOrderCollection.add(em.getReference(PurchaseOrder.class, item.getOrderNum()));
+        }
+        entity.setPurchaseOrderCollection(newpurchaseOrderCollection);
+        return entity;
     }
 }

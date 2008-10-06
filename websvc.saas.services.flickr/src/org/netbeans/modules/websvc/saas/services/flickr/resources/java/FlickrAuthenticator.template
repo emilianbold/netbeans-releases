@@ -1,14 +1,14 @@
-/*
- * __NAME__
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
+import flickr.photoservice.flickrresponse.Rsp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -21,28 +21,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.netbeans.saas.RestConnection;
+import org.netbeans.saas.RestResponse;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ {
+public class ${name} {
 
     private static String apiKey;
     private static String secret;
     private static String authToken;
+    private static String authUser;
     private static boolean readOnly = false;
-    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+    private static final String PROP_FILE = ${name}.class.getSimpleName().toLowerCase() + ".properties";
     
 
     static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+            props.load(${name}.class.getResourceAsStream(PROP_FILE));
             apiKey = props.getProperty("api_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -67,6 +69,13 @@ public class __NAME__ {
         return authToken;
     }
 
+    public static String getAuthUser() throws IOException {
+        if (authUser == null || authUser.length() == 0) {
+            throw new IOException("Failed to get a valid authentication token.");
+        }
+        return authUser;
+    }
+
     public static void login() throws IOException {
         if (authToken == null) {
             String frob = getFrob();
@@ -87,13 +96,14 @@ public class __NAME__ {
                         {"api_sig", apiSig},
                         {"frob", frob}
                     });
-            String result = conn.get().getDataAsString();
+             RestResponse response = conn.get();
 
             try {
-                authToken = result.substring(result.indexOf("<token>") + 7,
-                        result.indexOf("</token>"));
+                Rsp rsp = response.getDataAsObject(Rsp.class);
+                authToken = rsp.getAuth().getToken();
+                authUser = rsp.getAuth().getUser().getNsid();
             } catch (Exception ex) {
-                throw new IOException("Failed to get authentication token: " + result);
+                throw new IOException("Failed to get authentication token: " + response.getDataAsString() +", cause: "+ ex.getMessage());
             }
         }
     }

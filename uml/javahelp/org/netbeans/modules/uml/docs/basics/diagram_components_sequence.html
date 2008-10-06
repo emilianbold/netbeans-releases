@@ -5,13 +5,14 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
 <title>Sequence Diagram Elements (UML Modeling)</title>
 </head>
 <body>
 <h2>Sequence Diagram Elements</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The following table describes the elements that you can add to Sequence diagrams. The elements are grouped by <a href="palette.html">Modeling Palette</a> section.</p>
+<p>The following table describes the elements that you can add to Sequence diagrams. The elements are grouped by Context Palette and <a href="palette.html">Modeling Palette </a> section.</p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tr valign="top">
 <th scope="col" align="left">Element</th>
@@ -36,7 +37,10 @@
 <td>A role played by users in your system.</td>
 </tr>
 <tr valign="top">
-<td>Synchronous Message</td>
+  <td colspan="3"><strong>Context Palette</strong></td>
+  </tr>
+<tr valign="top">
+<td>Synchronous Message </td>
 <td><img src="../images/resources/images/synchronous-message.png"></td>
 <td>A message that does not return to its sender until the target process completes.</td>
 </tr>
@@ -56,12 +60,17 @@
 <td>A message intended for the calling object.</td>
 </tr>
 <tr valign="top">
-<th colspan="3" scope="col" align="left">Control Section</th>
+  <td>Destroy Lifeline</td>
+  <td><img src="../images/resources/images/destroy-lifeline.png"></td>
+  <td>The destruction of an object, located at the bottom of the object's lifeline. Objects can be designed to self-destruct, or you can use messages to trigger the destruction.</td>
 </tr>
 <tr valign="top">
-<td>Destroy Lifeline</td>
-<td><img src="../images/resources/images/destroy-lifeline.png"></td>
-<td>The destruction of an object, located at the bottom of the object's lifeline. Objects can be designed to self-destruct, or you can use messages to trigger the destruction.</td>
+  <td>Link Comment</td>
+  <td><img src="../images/resources/images/note-link.png"></td>
+  <td>The connection between the comment element and the associated element.</td>
+</tr>
+<tr valign="top">
+<th colspan="3" scope="col" align="left">Control Section</th>
 </tr>
 <tr valign="top">
 <td>Combined Fragment</td>
@@ -75,11 +84,6 @@
 <td>Comment</td>
 <td><img src="../images/resources/images/notepad.png"></td>
 <td>A Notepad notation. Use Comments to record information for an element or link in a diagram. This information is not included in generated code but is for information only. Each Comment can contain unlimited text, and can be numbered. You can also define a stereotype, and enter a noted element.</td>
-</tr>
-<tr valign="top">
-<td>Link Comment</td>
-<td><img src="../images/resources/images/note-link.png"></td>
-<td>The connection between the comment element and the associated element.</td>
 </tr>
 </table>
 <dl>

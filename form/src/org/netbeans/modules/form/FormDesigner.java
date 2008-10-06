@@ -161,7 +161,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // constructors and setup
 
     FormDesigner(FormEditor formEditor) {
-        setIcon(Utilities.loadImage(iconURL));
+        setIcon(ImageUtilities.loadImage(iconURL));
         setLayout(new BorderLayout());
 
         FormLoaderSettings settings = FormLoaderSettings.getInstance();
@@ -198,6 +198,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             formToolBar = new FormToolBar(this);
         }
+        
+        setMinimumSize(new Dimension(10, 10));
     }
     
     void initialize() {
@@ -1037,7 +1039,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = layoutDesigner.canAlign(selectedIds);;
+        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);;
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
@@ -2426,7 +2428,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 code = (horizontal ? (leading ? "l" : "r") : (leading ? "u" : "d")); // NOI18N
             }
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(iconResource)));
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(iconResource)));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_AlignAction_" + code)); // NOI18N
             setEnabled(false);
         }
@@ -2467,7 +2469,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             this.dimension = dimension;
             String code = (dimension == LayoutConstants.HORIZONTAL) ? "h" : "v"; // NOI18N
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
-            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(iconResource)));
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(iconResource)));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_ResizeButton_" + code)); // NOI18N
             setEnabled(false);
         }

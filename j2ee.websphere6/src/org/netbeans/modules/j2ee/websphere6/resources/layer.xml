@@ -183,7 +183,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-appbnd+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appbnd-WSAppBndDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appbnd-WSAppBndDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -233,7 +235,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-appext+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appext-WSAppExtDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-appext-WSAppExtDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -283,7 +287,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-ejbbnd+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbbnd-WSEjbBndDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbbnd-WSEjbBndDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -333,7 +339,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-ejbext+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbext-WSEjbExtDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-ejbext-WSEjbExtDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -383,7 +391,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-webbnd+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webbnd-WSWebBndDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webbnd-WSWebBndDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
@@ -433,7 +443,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-webext+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webext-WSWebExtDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-websphere6-dd-loaders-webext-WSWebExtDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.websphere6.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">

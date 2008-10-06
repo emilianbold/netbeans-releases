@@ -60,8 +60,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.RegistrationUtils;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
+import org.netbeans.modules.j2ee.sun.api.restricted.RegistrationUtils;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;

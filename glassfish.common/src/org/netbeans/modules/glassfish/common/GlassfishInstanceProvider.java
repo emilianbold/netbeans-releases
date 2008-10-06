@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -53,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -73,9 +75,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String DIR_GLASSFISH_INSTANCES = "/GlassFish/Instances"; //NOI18N
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
-    static final String PROP_FIRST_RUN = "first_run";
-    
-    private static final GlassfishInstanceProvider singleton = new GlassfishInstanceProvider();
+    private static GlassfishInstanceProvider singleton;
     
     private final Map<String, GlassfishInstance> instanceMap = 
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
@@ -90,7 +90,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
     }
 
-    public static GlassfishInstanceProvider getDefault() {
+    public static synchronized boolean initialized() {
+        return singleton != null;
+    }
+
+    public static synchronized GlassfishInstanceProvider getDefault() {
+        if(singleton == null) {
+            singleton = new GlassfishInstanceProvider();
+        }
         return singleton;
     }
 
@@ -197,6 +204,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return instance == null ? null : instance.getCommonInstance();
     }
 
+    // ------------------------------------------------------------------------
+    // Internal use only.  Used by Installer.close() to quickly identify and
+    // shutdown any instances we started during this IDE session.
+    // ------------------------------------------------------------------------
+    Collection<GlassfishInstance> getInternalInstances() {
+        return instanceMap.values();
+    }
+    
     // ------------------------------------------------------------------------
     // Persistence for server instances.
     // ------------------------------------------------------------------------
@@ -382,7 +397,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     private void registerDefaultInstance() {
         final boolean needToRegisterDefaultServer =
-                !NbPreferences.forModule(this.getClass()).getBoolean(PROP_FIRST_RUN, false);
+                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
         if (needToRegisterDefaultServer) {
             try {
@@ -406,42 +421,23 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                     Integer.toString(4848));
                             GlassfishInstance gi = GlassfishInstance.create(ip);
                             addServerInstance(gi);
-                            NbPreferences.forModule(this.getClass()).putBoolean(PROP_FIRST_RUN, true);
+                            NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
                         } else {
-                            Map<String, String> createProps = new HashMap<String, String>();
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
                                 NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N
                             String domainsFolderValue = System.getProperty("netbeans.user"); // NOI18N
                             String domainNameValue = "GlassfishV3Domain";    // NOI18N
                             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsFolderValue);
                             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainNameValue);
-                            createProps.putAll(ip);
-                            // compute ports
-                            computePorts(ip,createProps);
-                            // Now add the other values that the create domain process needs
                             
-                            CreateDomain cd = new CreateDomain("admin", "adminadmin", new File(f,"glassfish"), createProps, ip);
+                            CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip);
                             cd.start();
                         }
                     }
                 }
-            } catch (IOException ioe) {
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }
-
-    private void computePorts(Map<String, String> ip, Map<String, String> createProps) {
-        int portBase = 8900;
-        int kicker = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR).hashCode() % 50000;
-        kicker = kicker < 0 ? -kicker : kicker;
-        
-        int httpPort = portBase + kicker + 80;
-        int adminPort = portBase + kicker + 48;
-        ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
-        ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        createProps.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
-        createProps.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
-        createProps.put(CreateDomain.PORTBASE, Integer.toString(portBase+kicker));
-    }
-
 }

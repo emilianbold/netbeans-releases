@@ -39,13 +39,17 @@
 
 package org.netbeans.modules.java.source.usages;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
@@ -64,6 +68,20 @@ public class ExecutableFilesIndex {
         ensureLoad(root);
         
         return mainSources.contains(source.toExternalForm());
+    }
+    
+    public synchronized Iterable<? extends URL> getMainClasses (URL root) {
+        ensureLoad(root);
+        List<URL> result = new ArrayList(mainSources.size());
+        for (String surl : mainSources) {
+            try {
+                result.add(new URL(surl));
+            } catch (MalformedURLException ex) {
+                //Report and ignore broken url
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
     }
     
     public synchronized void setMainClass(URL root, URL source, boolean value) {

@@ -78,7 +78,6 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IImplementation;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.INavigableEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
@@ -98,6 +97,7 @@ import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.core.support.umlsupport.Log;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.openide.util.NbPreferences;
 
@@ -228,21 +228,32 @@ public class JavaChangeHandlerUtilities
             // Determine the operations to redefine
             ETList < ETPairT < IClassifier, IOperation >> selectedOps =
                     new ETArrayList < ETPairT < IClassifier, IOperation >> ();
+            
+            ETList < IClassifier > baseClasses = new ETArrayList < IClassifier >();
             if (pBaseClasses != null)
             {
+                
+                // Modify the base classes collection to not include any derivation
+                // classifiers.
+                for(IClassifier curClassifeir : pBaseClasses)
+                {
+                    baseClasses.add(checkIfDerivation(curClassifeir));
+                }
+                
                 //AZTEC: TODO: need to resolve the following
                 //CBusyCtrlProxy busyState( _Module.GetResourceInstance(), IDS_JRT_DETERMINE_OPERATIONS );
 
                 // Get all abstract and virtual functions off of base class and
                 // apply them to derived class, based on a preference
-                int lCnt = pBaseClasses.size();
+                int lCnt = baseClasses.size();
                 for (int lIndx = 0; lIndx < lCnt; lIndx++)
                 {
-                    IClassifier cpClassifier = pBaseClasses.get(lIndx);
+                    IClassifier cpClassifier = baseClasses.get(lIndx);
+                    
                     if (cpClassifier != null)
                         vopList =
                             collectVirtualOperations(
-                                cpClassifier, pBaseClasses,
+                                cpClassifier, baseClasses,
                                 vopList,
                                 behaviorControl);
 
@@ -257,7 +268,7 @@ public class JavaChangeHandlerUtilities
 
                 for (int lIndx = 0; lIndx < lCnt; lIndx++)
                 {
-                    IClassifier cpClassifier = pBaseClasses.get(lIndx);
+                    IClassifier cpClassifier = baseClasses.get(lIndx);
 
                     if (cpClassifier != null)
                     {
@@ -281,59 +292,59 @@ public class JavaChangeHandlerUtilities
                     int count = vopList.size();
                     //int derClassCount = allDerivedClasses.size();
                     
-                    for (int i=0; i<count; i++)
+                    for (int i = 0; i < count; i++)
                     {
-						IOperation pItem = vopList.get(i);
-						if (pItem != null)
-						{
+                        IOperation pItem = vopList.get(i);
+                        if (pItem != null)
+                        {
                             if (isOperationAlreadyRedefined(pItem, pDerivedClass) == false)
                             {
-                                ETPairT < IClassifier,	IOperation > data;
-                                data = new ETPairT < IClassifier, IOperation > (pDerivedClass, pItem);
+                                ETPairT<IClassifier, IOperation> data;
+                                data = new ETPairT<IClassifier, IOperation>(pDerivedClass, pItem);
                                 selectedOps.add(data);
                             }
-						}
+                        }
                     }
                 }
             }
 
             if (bUseDialog)
             {
-            	if (vopList.size() > 0)
-            	{
-					MethodsSelectionDialog msd =
-								new MethodsSelectionDialog(
-													allDerivedClasses,
-													pBaseClasses, this);
+            	   if (vopList.size() > 0)
+                {
+                    MethodsSelectionDialog msd =
+                            new MethodsSelectionDialog(
+                            allDerivedClasses,
+                            baseClasses, this);
 
-					selectedOps = msd.display();
-            	}
+                    selectedOps = msd.display();
+                }
             }
 
-			if (selectedOps != null)
-			{
-				for (int i = 0, count = selectedOps.size(); i < count; i++)
-				{
-					ETPairT < IClassifier, IOperation > p = selectedOps.get(i);
-					IClassifier pImplClass = p.getParamOne();
-					IOperation pImplOp = p.getParamTwo();
+            if (selectedOps != null)
+            {
+                    for (int i = 0, count = selectedOps.size(); i < count; i++)
+                    {
+                            ETPairT < IClassifier, IOperation > p = selectedOps.get(i);
+                            IClassifier pImplClass = p.getParamOne();
+                            IOperation pImplOp = p.getParamTwo();
 
-					if (pImplClass != null && pImplOp != null)
-					{
-						IOperation pNewOp = copyOperation(pImplOp, pImplClass);
-						if (pNewOp != null)
-						{
-							// Copy operation copies faithfully. That means it set the abstract
-							// flag. We want to make sure it is NOT set.
-							pNewOp.setIsAbstract(false);
-							addRedefiningOperation(request,
-								pImplOp,
-								pNewOp,
-								pImplClass);
-						}
-					}
-				}
-			}
+                            if (pImplClass != null && pImplOp != null)
+                            {
+                                    IOperation pNewOp = copyOperation(pImplOp, pImplClass);
+                                    if (pNewOp != null)
+                                    {
+                                            // Copy operation copies faithfully. That means it set the abstract
+                                            // flag. We want to make sure it is NOT set.
+                                            pNewOp.setIsAbstract(false);
+                                            addRedefiningOperation(request,
+                                                    pImplOp,
+                                                    pNewOp,
+                                                    pImplClass);
+                                    }
+                            }
+                    }
+            }
         }
         catch (Exception e)
         {
@@ -1761,12 +1772,18 @@ public class JavaChangeHandlerUtilities
                 {
                     if (doIt)
                     {
-                        String opName = readAccessorPrefix();
+                        String opNamePrefix = readAccessorPrefix();
                         String attrNameFix =
                             removePrefixFromAttributeName(attrName);
                         String attrNameCap = capAttributeName(attrNameFix);
-                        if (opName != null && attrNameCap != null)
-                            opName += attrNameCap;
+                        String opName = attrNameCap;
+                        if ( !removePrefixFromAccessor())
+                        {
+                            if (opNamePrefix != null && attrNameCap != null )
+                            {
+                                opName = opNamePrefix + attrNameCap;
+                            }
+                        }
 
                         IOperation pAccessor = null;
                         ETList < IJRPParameter > noParms =
@@ -1911,12 +1928,19 @@ public class JavaChangeHandlerUtilities
                         // the AddOperation routine. Why check again? batch attribute!!!!
                         // In this case, the attribute type corresponds to the parameter type.
 
-                        String opName = writeAccessorPrefix();
+                        
+                        String opNamePrefix = writeAccessorPrefix();
                         String attrNameFix =
                             removePrefixFromAttributeName(attrName);
                         String attrNameCap = capAttributeName(attrNameFix);
-                        if (opName != null && attrNameCap != null)
-                            opName += attrNameCap;
+                        String opName = attrNameCap;
+                        if ( !removePrefixFromAccessor())
+                        {
+                            if (opNamePrefix != null && attrNameCap != null )
+                            {
+                                opName = opNamePrefix + attrNameCap;
+                            }
+                        }
 
                         ETList < IJRPParameter > parms =
                             new ETArrayList < IJRPParameter > ();
@@ -2462,6 +2486,23 @@ public class JavaChangeHandlerUtilities
             }
         return retClass;
     }
+
+    private IClassifier checkIfDerivation(IClassifier cpClassifier)
+    {
+        IClassifier retVal = cpClassifier;
+        
+        if (cpClassifier instanceof IDerivationClassifier)
+        {
+            IDerivationClassifier classifier = (IDerivationClassifier) cpClassifier;
+            IDerivation derivation = classifier.getDerivation();
+            if(derivation != null)
+            {
+                retVal = derivation.getTemplate();
+            }
+        }
+
+        return retVal;
+    }
     
     private IChangeRequest getChangeRequest() {
         return m_pRequest;
@@ -2647,7 +2688,7 @@ public class JavaChangeHandlerUtilities
                                 // At this point, we don't know if the passed class is the
                                 // implementee, or the implementor. We only want to get the
                                 // implementees ( the contracts ).
-                                IInterface pContract = pItem.getContract();
+                                IClassifier pContract = pItem.getContract();
                                 if (pContract != null)
                                 {
                                     if (!isSame(pClass, pContract))
@@ -3553,13 +3594,13 @@ public class JavaChangeHandlerUtilities
      */
     public boolean removePrefixFromAccessor()
     {
-        return true;
+        return getBooleanPreferenceValue("NO_PREFIX_ON_ACCESSORS", false);
     }
 
     public String removePrefixFromAttributeName(String attrName)
     {
         String attrNameFix = attrName;
-        if (attrName != null && removePrefixFromAccessor())
+        if (attrName != null && !removePrefixFromAccessor())
         {
             String prefix = attributePrefix();
                         
@@ -3775,12 +3816,12 @@ public class JavaChangeHandlerUtilities
 	 * @return opList The list of operations
 	 */
 	public ETList < IOperation > collectVirtualOperations(
-									IClassifier pBaseClass,
-									ETList<IClassifier> pBaseClasses,
-									ETList < IOperation > opList,
-									IOperationCollectionBehavior behaviorControl)
+                                                            IClassifier pBaseClass,
+                                                            ETList<IClassifier> pBaseClasses,
+                                                            ETList < IOperation > opList,
+                                                            IOperationCollectionBehavior behaviorControl)
 	{
-		if (opList == null)
+            	if (opList == null)
 			opList = new ETArrayList < IOperation > ();
 		ETList < IOperation > currentList = new ETArrayList < IOperation > ();
 
@@ -3909,7 +3950,7 @@ public class JavaChangeHandlerUtilities
                     IImplementation pRel = impRels.get(idx++);
                     if (pRel != null)
                     {
-                        IInterface pInterface = pRel.getContract();
+                        IClassifier pInterface = pRel.getContract();
                         if (pInterface != null)
                         {
                             opList =

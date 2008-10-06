@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
           "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type name="wsdl-validation-annotation"
       description_key="LBL_validation_annotation"
-      localizing_bundle="org.netbeans.modules.xml.wsdl.ui.validation.ui.resources.Bundle"
+      localizing_bundle="org.netbeans.modules.xml.wsdl.ui.validation.resources.Bundle"
       visible="true"
       glyph="nbresloc:/org/netbeans/modules/xml/wsdl/ui/view/resources/error-badge.gif"
       highlight="#FF8080"

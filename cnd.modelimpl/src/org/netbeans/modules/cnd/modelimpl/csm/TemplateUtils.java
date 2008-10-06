@@ -65,11 +65,11 @@ public class TemplateUtils {
 //    public static final byte MASK_TEMPLATE = 0x01;
 //    public static final byte MASK_SPECIALIZATION = 0x02;
 
-    public static String getSpecializationSuffix(AST qIdToken) {
+    public static String getSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
 	for( AST child = qIdToken.getFirstChild(); child != null; child = child.getNextSibling() ) {
 	    if( child.getType() == CPPTokenTypes.LESSTHAN ) {
-		addSpecializationSuffix(child, sb);
+		addSpecializationSuffix(child, sb, parameters);
 		break;
 	    }
 	}
@@ -77,34 +77,44 @@ public class TemplateUtils {
     }
     
     // in class our parser skips LESSTHAN symbols in templates...
-    public static String getClassSpecializationSuffix(AST qIdToken) {
+    public static String getClassSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
-        addSpecializationSuffix(qIdToken.getFirstChild(), sb);
+        addSpecializationSuffix(qIdToken.getFirstChild(), sb, parameters);
 	return sb.toString();
     }
     
-    public static void addSpecializationSuffix(AST firstChild, StringBuilder sb) {
+    public static final String TYPENAME_STRING = "class"; //NOI18N
+    
+    public static void addSpecializationSuffix(AST firstChild, StringBuilder sb, List<CsmTemplateParameter> parameters) {
         int depth = 0;
 	for( AST child = firstChild; child != null; child = child.getNextSibling() ) {
             if (child.getType() == CPPTokenTypes.LESSTHAN) depth ++;
 	    if( CPPTokenTypes.CSM_START <= child.getType() && child.getType() <= CPPTokenTypes.CSM_END ) {
 		AST grandChild = child.getFirstChild();
 		if( grandChild != null ) {
-		    addSpecializationSuffix(grandChild, sb);
+		    addSpecializationSuffix(grandChild, sb, parameters);
 		}
 	    }
 	    else {
-		String text = child.getText();
-		assert text != null;
-		assert text.length() > 0;
-		if( sb.length() > 0 ) {
-		    if( Character.isJavaIdentifierPart(sb.charAt(sb.length() - 1)) ) {
-			if( Character.isJavaIdentifierPart(text.charAt(0)) ) {
-			    sb.append(' '); 
-			}
-		    }
-		}
-		sb.append(text);
+                String text = child.getText();
+                if (parameters != null) {
+                    for (CsmTemplateParameter param : parameters) {
+                        if (param.getName().toString().equals(text)) {
+                            text = TYPENAME_STRING;
+                        }
+                    }
+                }
+                assert text != null;
+                assert text.length() > 0;
+                if (sb.length() > 0) {
+                    if (Character.isJavaIdentifierPart(sb.charAt(sb.length() - 1))) {
+                        if (Character.isJavaIdentifierPart(text.charAt(0))) {
+                            sb.append(' ');
+                        }
+                    }
+                }
+                sb.append(text);
+                    
                 if (child.getType() == CPPTokenTypes.GREATERTHAN) {
                     depth--;
                     if (depth==0)
@@ -160,13 +170,33 @@ public class TemplateUtils {
                         // or parameter name, but not both.
                         fakeAST = AstUtil.createAST(parameterStart, child);
                     }
-                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope));
+                    if (child.getNextSibling() != null) {
+                        AST assign = child.getNextSibling();
+                        if (assign.getType() == CPPTokenTypes.ASSIGNEQUAL) {
+                            if (assign.getNextSibling() != null) {
+                                AST type = assign.getNextSibling();
+                                if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
+                                        || type.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope, type));
+                                    parameterStart = null;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope));                    
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
                     // now create parameter
                     parameterStart = child;
                     AST varDecl = child.getFirstChild();
+                    if (varDecl != null && varDecl.getType() == CPPTokenTypes.LITERAL_enum) {
+                        varDecl = varDecl.getNextSibling();
+                        if(varDecl == null || varDecl.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                            break;                                    
+                        }                                
+                    }
                     // check for existense of CSM_VARIABLE_DECLARATION branch
                     if (varDecl != null && varDecl.getNextSibling() != null &&
                             varDecl.getNextSibling().getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
@@ -183,7 +213,7 @@ public class TemplateUtils {
                                 break;
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                                for(AST p = varDecl.getFirstChild(); p != null; p = varDecl.getNextSibling()){
+                                for(AST p = varDecl.getFirstChild(); p != null; p = p.getNextSibling()){
                                     if (p.getType() == CPPTokenTypes.ID) {
                                        res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, scope));
                                        break;
@@ -195,10 +225,12 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
                     parameterStart = child;
-                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
                         if (paramChild.getType() == CPPTokenTypes.ID) {
-                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope));
-                           break;
+                            // IZ 141842 : If template parameter declared as a template class, its usage is unresolved
+                            // Now all IDs of template template parameter are added to template parameters of template.
+                            // When CsmClassifierBasedTemplateParameter will be finished, this should be replaced. 
+                            res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope));
                         }
                     }
                     break;
@@ -208,8 +240,13 @@ public class TemplateUtils {
     }
     
     public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
-        if (!(type instanceof TypeImpl)) {
+        if (!(type instanceof TypeImpl)) {            
             return type;
+        }
+
+        if (type instanceof NestedType) {
+            NestedType nestedType = (NestedType) type;
+            type = new NestedType(checkTemplateType(nestedType.getParent(), scope), nestedType);
         }
         
         // Check instantiation parameters

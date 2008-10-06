@@ -73,8 +73,13 @@ public class FilteringLineDiff extends LineDiff {
      * @param l2 second line to compare
      * @return true if lines equal
      */
+    @Override
     protected boolean compareLines(String l1,String l2) {
         if (super.compareLines(l1, l2)) {
+            return true;
+        }
+        //we're not interested in changes in whitespaces, only content is important
+        if (super.compareLines(l1.trim(), l2.trim())) {
             return true;
         }
         if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0))

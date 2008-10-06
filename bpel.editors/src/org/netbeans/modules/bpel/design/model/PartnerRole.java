@@ -45,13 +45,13 @@ public enum PartnerRole {
   CONSUMER(new Integer(0)),
   PROVIDER(new Integer(2));
 
-  private PartnerRole(Integer weight) {
-    myWeight = weight;
+  private PartnerRole(Integer order) {
+    myOrder = order;
   }
 
-  public Integer getWeight() {
-    return myWeight;
+  public Integer getOrder() {
+    return myOrder;
   }
 
-  private Integer myWeight;
+  private Integer myOrder;
 }

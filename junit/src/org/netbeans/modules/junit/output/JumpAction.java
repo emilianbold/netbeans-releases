@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,11 +55,20 @@ final class JumpAction extends AbstractAction {
     private final Node node;
     /** */
     private final String callstackFrameInfo;
+    /** */
+    private final Report.Trouble trouble;
 
     /** Creates a new instance of JumpAction */
     public JumpAction(Node node, String callstackFrameInfo) {
         this.node = node;
         this.callstackFrameInfo = callstackFrameInfo;
+        this.trouble = null;
+    }
+
+    public JumpAction(Node node, Report.Trouble trouble) {
+        this.node = node;
+        this.callstackFrameInfo = null;
+        this.trouble = trouble;
     }
 
     /**
@@ -67,11 +76,12 @@ final class JumpAction extends AbstractAction {
      * tries to jump to the callstack frame source code. Otherwise does nothing.
      */
     public void actionPerformed(ActionEvent e) {
-        if (callstackFrameInfo == null) {
-            return;
+        if (callstackFrameInfo != null) {
+            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+        } else {
+            assert trouble != null;
+            OutputUtils.openCallstackFrame(node, trouble);
         }
-        
-        OutputUtils.openCallstackFrame(node, callstackFrameInfo);
     }
 
 }

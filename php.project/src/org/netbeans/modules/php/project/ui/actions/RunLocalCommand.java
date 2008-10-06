@@ -37,14 +37,17 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditorCookie;
@@ -52,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -69,50 +73,62 @@ public class RunLocalCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        final String command = getPhpInterpreter();
-        final FileObject scriptFo = (context == null) ? fileForProject() : fileForContext(context);
-        final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
-        if (command == null || scriptFile == null) {
-            //TODO mising error handling
-            return;
-        }
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(isControllable()).frontWindow(true).inputVisible(false);
-        builder.showProgress(true).optionsPath("Advanced/PHP");//NOI18N
         try {
-            InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
-            builder.outProcessorFactory(redirector);
-            Callable<Process> callable = new Callable<Process>() {
-                public Process call() throws Exception {
-                    return getBuilder(command, scriptFile).create();
-                }
-            };
-            builder.postExecution(redirector);
-            final ExecutionService service = ExecutionService.newService(callable,
-                    builder.create(), getOutputTabTitle(command, scriptFile));
-            service.run();
-        } catch (IOException ex) {
+            getCallable(context).call();
+        } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    private ExternalProcessBuilder getBuilder(String command, File scriptFile) {
-        final ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(command);
-        processBuilder.addArgument(scriptFile.getName());
-        String argProperty = getProperty(PhpProjectProperties.ARGS);
+    public final Callable<Cancellable> getCallable(final Lookup context)  {        
+        return new Callable<Cancellable>() {
+            public Cancellable call() throws Exception {
+                PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(getProject());
+                final FileObject scriptFo = (context == null) ? fileForProject(false) : fileForContext(context);
+                final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
+                if (!phpInterpreter.isValid() || scriptFile == null) {
+                    return new Cancellable() {
+                        public boolean cancel() {
+                            return true;
+                        }
+                    };
+                }
+                ExecutionDescriptor descriptor = new ExecutionDescriptor().controllable(isControllable()).frontWindow(true).inputVisible(false).showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+                InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
+                descriptor = descriptor.outProcessorFactory(redirector);
+                descriptor = descriptor.postExecution(redirector);
+                final ExecutionService service = ExecutionService.newService(getBuilder(phpInterpreter, scriptFile),
+                        descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
+                final Future<Integer> result = service.run();
+                return new Cancellable() {
+                    public boolean cancel() {
+                        return result.cancel(true);
+                    }
+                };
+            }
+        };
+    }
+
+    private ExternalProcessBuilder getBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter.getInterpreter());
+        for (String param : phpInterpreter.getParameters()) {
+            processBuilder = processBuilder.addArgument(param);
+        }
+        processBuilder = processBuilder.addArgument(scriptFile.getName());
+        String argProperty = ProjectPropertiesSupport.getArguments(getProject());
         if (argProperty != null && argProperty.length() > 0) {
-            for (String argument : Arrays.asList(argProperty.split(" "))) {
-                processBuilder.addArgument(argument);
+            for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
+                processBuilder = processBuilder.addArgument(argument);
             }
         }
-        processBuilder.pwd(scriptFile.getParentFile());
-        initProcessBuilder(processBuilder);
+        processBuilder = processBuilder.workingDirectory(scriptFile.getParentFile());
+        processBuilder = initProcessBuilder(processBuilder);
         return processBuilder;
     }
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject() : fileForContext(context)) != null;
+        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null;
     }
 
     @Override
@@ -130,7 +146,8 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     //designed to set env.variables for debugger to resuse this code
-    protected  void initProcessBuilder(ExternalProcessBuilder processBuilder) {
+    protected  ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
+        return processBuilder;
     }
 
     private static File tempFileForScript(File scriptFile) throws IOException {

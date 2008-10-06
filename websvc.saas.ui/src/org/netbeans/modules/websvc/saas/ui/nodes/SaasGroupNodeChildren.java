@@ -38,14 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
@@ -55,19 +56,19 @@ import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 
 public class SaasGroupNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
-    
+
     protected SaasGroup group;
-    
+
     public SaasGroupNodeChildren(SaasGroup group) {
         this.group = group;
         SaasServicesModel model = SaasServicesModel.getInstance();
         model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
     }
-    
+
     protected void setGroup(SaasGroup g) {
         group = g;
     }
-    
+
     @Override
     protected void addNotify() {
         updateKeys();
@@ -84,31 +85,38 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
             }
         }
     }
-    
+
     protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(group.getChildrenGroups());
-        keys.addAll(group.getServices());
-        setKeys(keys.toArray());
+        List<SaasGroup> groups = group.getChildrenGroups();
+        Collections.sort(groups);
+        keys.addAll(groups);
+        
+        List<Saas> services = group.getServices();
+        Collections.sort(services);
+        keys.addAll(services);
+        
+        setKeys(keys);
     }
-    
+
     @Override
     protected void removeNotify() {
         java.util.List<String> emptyList = Collections.emptyList();
         setKeys(emptyList);
         super.removeNotify();
     }
-    
+
     protected Node[] createNodes(Object key) {
         if (key instanceof SaasGroup) {
-            SaasGroupNode node = new SaasGroupNode((SaasGroup) key);
-            return new Node[] { node };
+            SaasGroup g = (SaasGroup) key;
+            SaasGroupNode node = new SaasGroupNode(g);
+            return new Node[]{node};
         } else if (key instanceof WadlSaas) {
-            return new Node[] { new WadlSaasNode((WadlSaas)key) };
+            return new Node[]{new WadlSaasNode((WadlSaas) key)};
         } else if (key instanceof WsdlSaas) {
-            return new Node[] { new WsdlSaasNode((WsdlSaas) key) };
+            return new Node[]{new WsdlSaasNode((WsdlSaas) key)};
         } else if (key instanceof CustomSaas) {
-            return new Node[] { new CustomSaasNode((CustomSaas) key) };
+            return new Node[]{new CustomSaasNode((CustomSaas) key)};
         }
         return new Node[0];
     }

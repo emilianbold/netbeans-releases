@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
@@ -85,7 +87,6 @@ public class Tool {
     private String displayName;
     private String path;
     private CompilerSet compilerSet = null;
-    private String includeFilePrefix = null;
     
     /** Creates a new instance of GenericCompiler */
     public Tool(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -96,9 +97,12 @@ public class Tool {
         this.displayName = displayName;
         this.path = path;
         compilerSet = null;
-        includeFilePrefix = null;
     }
-    
+
+    public ToolDescriptor getDescriptor() {
+        return null;
+    }
+
     public Tool createCopy() {
         Tool copy = new Tool(hkey, flavor, kind, "", displayName, path);
         copy.setName(getName());
@@ -189,29 +193,18 @@ public class Tool {
     }
     
     public String getIncludeFilePathPrefix() {
-        if (includeFilePrefix == null) {
-            includeFilePrefix = ""; // NOI18N
-            if (getFlavor() == CompilerFlavor.Cygwin ||
-                    getFlavor() == CompilerFlavor.MinGW ||
-                    getFlavor() == CompilerFlavor.DJGPP ||
-                    getFlavor() == CompilerFlavor.Interix) {
-                int i = getPath().toLowerCase().indexOf("\\bin"); // NOI18N
-                if (i < 0)
-                    i = getPath().toLowerCase().indexOf("/bin"); // NOI18N
-                if (i > 0) {
-                    includeFilePrefix = getPath().substring(0, i);
-                    includeFilePrefix = includeFilePrefix.replaceAll("\\\\", "/"); // NOI18N
-                    //includeFilePrefix = FilePathAdaptor.normalize(includeFilePrefix);
-                }
-            }
-        }
-        return includeFilePrefix;
+        // TODO: someone put this here only because OutputWindowWriter in core
+        // wants to get information about compilers which are defined in makeprojects.
+        // abstract Tool shouldn't care about include paths for compilers
+        throw new UnsupportedOperationException();
     }
-    
+
+    @Deprecated
     public void setIncludeFilePathPrefix(String includeFilePrefix) {
-        this.includeFilePrefix = includeFilePrefix;
+        throw new UnsupportedOperationException();
     }
-    
+
+    @Deprecated
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;

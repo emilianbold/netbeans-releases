@@ -1,70 +1,70 @@
       if (match = source.match(pattern)) {
           -----------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
       if (result = !!(iterator || Prototype.K)(value, index))
           --------------------------------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     if (receiver = $(receiver)) {
         ----------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     while (element = element[property])
            ---------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     while (element = element.parentNode)
            ----------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
       if(value = (element.getStyle('filter') || '').match(/alpha\(opacity=(.*)\)/))
          -------------------------------------------------------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     while (match = expr.match(/^(.*)\[([a-z0-9_:-]+?)(?:([~\|!]?=)(?:"([^"]*)"|([^\]\s]*)))?\]$/i)) {
            ---------------------------------------------------------------------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     while (match = expr.match(/^([^a-z0-9_-])?([a-z0-9_-]+)(.*)/i)) {
            -------------------------------------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     if (clause = params.id)
         ------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     if (clause = params.tagName)
         -----------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     if (clause = params.attributes) {
         --------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     if (element = $(this.params.id))
         ---------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     } while (element = element.offsetParent);
              ------------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional
     } while (element = element.parentNode);
              ----------------------------
-HINT:Accidental Assignment? (if x = y instead of x == y)
+HINT:Accidental assignment? (if x = y instead of x == y)
 FIX:Convert assignment to comparison (change = to ==)
 FIX:Add extra ()'s to indicate that this is intentional

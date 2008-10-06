@@ -74,7 +74,7 @@ import org.openide.util.Parameters;
  *
  * @author Erno Mononen
  */
-abstract class EntityManagerGenerationStrategySupport implements EntityManagerGenerationStrategy{
+public abstract class EntityManagerGenerationStrategySupport implements EntityManagerGenerationStrategy{
     
     protected static final String ENTITY_MANAGER_FQN = "javax.persistence.EntityManager"; //NOI18N
     protected static final String ENTITY_MANAGER_FACTORY_FQN = "javax.persistence.EntityManagerFactory"; //NOI18N

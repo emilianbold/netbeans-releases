@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -73,12 +74,14 @@ public class UtilitiesTest extends TestCase {
     
     private String originalOsName;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         Utilities.resetOperatingSystem ();
         originalOsName = System.getProperty("os.name");
     }
     
+    @Override
     protected void tearDown() throws Exception {
         System.setProperty("os.name", originalOsName);
         super.tearDown();
@@ -104,7 +107,11 @@ public class UtilitiesTest extends TestCase {
 
     public void testGetUnknownOperatingSystem () {
         System.setProperty ("os.name", "Unknown");
-        assertEquals ("Windows NT recognized as Unknown", Utilities.OS_OTHER, Utilities.getOperatingSystem ());
+        if (File.pathSeparatorChar == ':') {
+            assertTrue("Unknown os.name should be recognized as Unix.", Utilities.isUnix());
+        } else {
+            assertEquals("Unknown os.name not OS_OTHER.", Utilities.OS_OTHER, Utilities.getOperatingSystem());
+        }
     }
 
     public void testWhatIsWinXP () {
@@ -146,11 +153,17 @@ public class UtilitiesTest extends TestCase {
         assertFalse( "no custom cursor created", toolkit.createCustomCursorCalled );
     }
      */
-    
+
+    public void testKeyConversions() throws Exception {
+        assertEquals("CS-F1", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)));
+        assertEquals(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.ALT_MASK), Utilities.stringToKey("A-EQUALS"));
+        // XXX stringToKeys, Mac support, various more exotic conditions...
+    }
+
     public void testSpecialKeyworksOn14AsWell15 () throws Exception {
         KeyStroke ks = Utilities.stringToKey("C-CONTEXT_MENU");
         assertNotNull ("key stroke created", ks);
-        KeyStroke alt = ks.getKeyStroke(ks.getKeyCode(), KeyEvent.ALT_MASK);
+        KeyStroke alt = KeyStroke.getKeyStroke(ks.getKeyCode(), KeyEvent.ALT_MASK);
         String s = Utilities.keyToString(alt);
         assertEquals ("Correctly converted", "A-CONTEXT_MENU", s);    
     }

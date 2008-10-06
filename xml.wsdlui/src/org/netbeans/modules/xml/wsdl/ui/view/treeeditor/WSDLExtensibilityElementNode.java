@@ -49,7 +49,7 @@ package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.NewTypesFactory;
-import org.openide.nodes.Children;
+import org.openide.nodes.ChildFactory;
 
 
 /**
@@ -60,17 +60,22 @@ import org.openide.nodes.Children;
  */
 public abstract class WSDLExtensibilityElementNode<T extends WSDLComponent> extends WSDLNamedElementNode<T> {
     
-    public WSDLExtensibilityElementNode(Children children, 
-                                        T element, 
+    public WSDLExtensibilityElementNode(T element, 
                                         NewTypesFactory newTypesFactory) {
-        
-        super(children, element, newTypesFactory);
+        super(element, newTypesFactory);
     }
     
-    public WSDLExtensibilityElementNode(Children children, 
-            T element) {
-        
-        super(children, element);
+    public WSDLExtensibilityElementNode(T element) {
+        super(element);
+    }
+    
+    public WSDLExtensibilityElementNode(ChildFactory factory, T element,
+                                        NewTypesFactory newTypesFactory) {
+        super(factory, element, newTypesFactory);
+    }
+    
+    public WSDLExtensibilityElementNode(ChildFactory factory, T element) {
+        super(factory, element);
     }
     
     public abstract String getNameInLayer();

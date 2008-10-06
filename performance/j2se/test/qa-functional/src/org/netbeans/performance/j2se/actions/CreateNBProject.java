@@ -137,7 +137,7 @@ public class CreateNBProject extends PerformanceTestCase {
         new EventTool().waitNoEvent(1000);
         return null;
     }
-  
+/*
     public void testInitGC() {
         org.netbeans.junit.Log.enableInstances(Logger.getLogger("TIMER"),null, Level.FINEST);
     }
@@ -145,11 +145,10 @@ public class CreateNBProject extends PerformanceTestCase {
     public void testGC() {
         org.netbeans.junit.Log.assertInstances("GC:"); 
     }
-  
+*/
     @Override
     public void close(){
         ProjectSupport.closeProject(project_name);
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /** Test could be executed internaly in IDE without XTest

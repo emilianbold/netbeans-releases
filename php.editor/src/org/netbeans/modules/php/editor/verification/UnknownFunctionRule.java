@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.TreeSet;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.NameKind;
@@ -60,7 +62,8 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class UnknownFunctionRule extends PHPRule{
-    private static final Collection<String> IGNORED = Collections.singleton("isset"); //NOI18N
+    private static final Collection<String> IGNORED = new TreeSet<String>(Arrays.asList(
+            "die", "empty", "eval", "exit", "isset", "print", "unset")); //NOI18N
 
     @Override
     public void visit(FunctionInvocation functionInvocation) {
@@ -71,7 +74,7 @@ public class UnknownFunctionRule extends PHPRule{
             
             String fname = CodeUtils.extractFunctionName(functionInvocation);
             
-            if (!IGNORED.contains(fname)) {
+            if (!IGNORED.contains(fname.toLowerCase())) {
                 Collection<IndexedFunction> functions = context.index.getFunctions(
                         (PHPParseResult) context.parserResult,
                         fname, NameKind.EXACT_NAME);
@@ -80,7 +83,7 @@ public class UnknownFunctionRule extends PHPRule{
                     FunctionName funcName = functionInvocation.getFunctionName();
                     OffsetRange range = new OffsetRange(funcName.getStartOffset(), funcName.getEndOffset());
 
-                    Hint hint = new Hint(UnknownFunctionRule.this, getDescription(),
+                    Hint hint = new Hint(UnknownFunctionRule.this, getDisplayName(),
                             context.compilationInfo.getFileObject(), range, null, 500);
 
                     addResult(hint);
@@ -96,15 +99,19 @@ public class UnknownFunctionRule extends PHPRule{
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunction");
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UnknownFunctionRule.class, "UnknownFunctionDispName");
     }
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
 
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
+    }
 }

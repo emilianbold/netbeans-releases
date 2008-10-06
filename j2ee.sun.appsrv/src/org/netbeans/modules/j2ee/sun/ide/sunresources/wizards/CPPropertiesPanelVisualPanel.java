@@ -156,9 +156,8 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         classNameField.getAccessibleContext().setAccessibleName(this.helper.getData().getString(__DatasourceClassname));
         classNameField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_datasource-classnamefieldA11yDesc"));
 
-        classNameLabel.setDisplayedMnemonic(bundle.getString("LBL_datasource-classname_Mnemonic").charAt(0));
         classNameLabel.setLabelFor(classNameField);
-        classNameLabel.setText(bundle.getString("LBL_datasource-classname"));
+        org.openide.awt.Mnemonics.setLocalizedText(classNameLabel, bundle.getString("LBL_datasource-classname"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -167,9 +166,8 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         jPanel1.add(classNameLabel, gridBagConstraints);
         classNameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ToolTip_datasource-classname"));
 
-        resTypeLabel.setDisplayedMnemonic(bundle.getString("LBL_res-type_Mnemonic").charAt(0));
         resTypeLabel.setLabelFor(resTypeCombo);
-        resTypeLabel.setText(bundle.getString("LBL_res-type"));
+        org.openide.awt.Mnemonics.setLocalizedText(resTypeLabel, bundle.getString("LBL_res-type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -197,10 +195,9 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(descField, gridBagConstraints);
 
-        descLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_description_Mnemonic").charAt(0));
         descLabel.setLabelFor(descField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle"); // NOI18N
-        descLabel.setText(bundle.getString("LBL_description")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, bundle.getString("LBL_description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -254,8 +251,7 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
 
         tableButtonsPane.setLayout(new java.awt.GridBagLayout());
 
-        addButton.setMnemonic(bundle.getString("LBL_Add_Mnemonic").charAt(0));
-        addButton.setText(bundle.getString("LBL_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("LBL_Add"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -269,8 +265,7 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         tableButtonsPane.add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddButtonA11yDesc"));
 
-        removeButton.setMnemonic(bundle.getString("LBL_Remove_Mnemonic").charAt(0));
-        removeButton.setText(bundle.getString("LBL_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString("LBL_Remove"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -310,9 +305,8 @@ public class CPPropertiesPanelVisualPanel extends javax.swing.JPanel implements 
         descriptionTextArea.getAccessibleContext().setAccessibleName(bundle.getString("CPPropertyPanel_Description"));
         descriptionTextArea.getAccessibleContext().setAccessibleDescription(bundle.getString("CPPropertyPanel_Description"));
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties_Mnemonic").charAt(0));
         jLabel1.setLabelFor(jTable1);
-        jLabel1.setText(bundle.getString("LBL_properties")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_properties")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

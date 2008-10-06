@@ -6,6 +6,7 @@
 @media
 */
 
+
 /**CC
 @|
 @charset
@@ -13,22 +14,31 @@
 */
 
 @media page{
-    
-    root { 
 
-/**CC
+    root {
+
+/** #135814
+c|
+color
+color
+*/
+
+    
+/** #135814
 background: |
 uri
 background: uri
 */
 
-/**CC
+      
+/** #135814
 color: |
 green
 color: green
 */
 
+      
     }
-    
+
 }
 

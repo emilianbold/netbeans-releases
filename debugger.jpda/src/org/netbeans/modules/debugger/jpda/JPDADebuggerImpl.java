@@ -43,7 +43,10 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
@@ -51,6 +54,7 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
@@ -108,7 +112,6 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -126,6 +129,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
 * Representation of a debugging session.
@@ -133,9 +137,9 @@ import org.openide.ErrorManager;
 * @author   Jan Jancura
 */
 public class JPDADebuggerImpl extends JPDADebugger {
-    
+
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
-    
+
     private static final boolean SINGLE_THREAD_STEPPING = !Boolean.getBoolean("netbeans.debugger.multiThreadStepping");
 
 
@@ -146,6 +150,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private final Object                virtualMachineLock = new Object();
     private Exception                   exception;
     private int                         state = 0;
+    private final Object                stateLock = new Object();
     private Operator                    operator;
     private PropertyChangeSupport       pcs;
     public  PropertyChangeSupport       varChangeSupport = new PropertyChangeSupport(this);
@@ -167,7 +172,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private ExpressionPool              expressionPool;
     private ThreadsCache                threadsCache;
     private DeadlockDetector            deadlockDetector;
-    private ThreadsCollector            threadsCollector;
+    private ThreadsCollectorImpl        threadsCollector;
     private final Object                threadsCollectorLock = new Object();
 
     private StackFrame      altCSF = null;  //PATCH 48174
@@ -209,7 +214,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @see #STATE_DISCONNECTED
      */
     public int getState () {
-        return state;
+        synchronized (stateLock) {
+            return state;
+        }
     }
 
     /**
@@ -218,7 +225,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @return value of suspend property
      */
     public int getSuspend () {
-        return suspend;
+        synchronized (stateLock) {
+            return suspend;
+        }
     }
 
     /**
@@ -227,9 +236,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @param s a new value of suspend property
      */
     public void setSuspend (int s) {
-        if (s == suspend) return;
-        int old = suspend;
-        suspend = s;
+        int old;
+        synchronized (stateLock) {
+            if (s == suspend) return;
+            old = suspend;
+            suspend = s;
+        }
         firePropertyChange (PROP_SUSPEND, new Integer (old), new Integer (s));
     }
 
@@ -283,20 +295,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
-     * Waits till the Virtual Machine is started and returns 
+     * Waits till the Virtual Machine is started and returns
      * {@link DebuggerStartException} if any.
      *
-     * @throws DebuggerStartException is some problems occurres during debugger 
+     * @throws DebuggerStartException is some problems occurres during debugger
      *         start
      *
      * @see AbstractDICookie#getVirtualMachine()
      */
     public void waitRunning () throws DebuggerStartException {
         synchronized (LOCK2) {
-            if (getState () == STATE_DISCONNECTED) {
-                if (exception != null) 
+            int state = getState();
+            if (state == STATE_DISCONNECTED) {
+                if (exception != null)
                     throw new DebuggerStartException (exception);
-                else 
+                else
                     return;
             }
             if (!starting && state != STATE_STARTING || exception != null) {
@@ -307,10 +320,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (InterruptedException e) {
                  throw new DebuggerStartException (e);
             }
-            
-            if (exception != null) 
+
+            if (exception != null)
                 throw new DebuggerStartException (exception);
-            else 
+            else
                 return;
         }
     }
@@ -327,7 +340,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     /**
-     * Returns <code>true</code> if this debugger supports fix & continue 
+     * Returns <code>true</code> if this debugger supports fix & continue
      * (HotSwap).
      *
      * @return <code>true</code> if this debugger supports fix & continue
@@ -342,11 +355,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Implements fix & continue (HotSwap). Map should contain class names
      * as a keys, and byte[] arrays as a values.
      *
-     * @param classes a map from class names to be fixed to byte[] 
+     * @param classes a map from class names to be fixed to byte[]
      */
     public void fixClasses (Map<String, byte[]> classes) {
         synchronized (LOCK) {
-            
+
             // 1) redefine classes
             Map<ReferenceType, byte[]> map = new HashMap<ReferenceType, byte[]>();
             Iterator<String> i = classes.keySet ().iterator ();
@@ -360,7 +373,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 int j, jj = classRefs.size ();
                 for (j = 0; j < jj; j++)
                     map.put (
-                        classRefs.get (j), 
+                        classRefs.get (j),
                         classes.get (className)
                     );
             }
@@ -368,32 +381,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             // update breakpoints
             fixBreakpoints();
-            
+
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {
-                CallStackFrame frame = getCurrentCallStackFrame ();
-
-                //PATCH #52209
-                if (t.getStackDepth () < 2 && frame.isObsolete()) return;
                 try {
-                    if (!frame.equals (t.getCallStack (0, 1) [0])) return;
-                } catch (AbsentInformationException ex) {
-                    return;
-                }
+                    if (t.getStackDepth () < 2) return;
+                    CallStackFrame frame;
+                    try {
+                        frame = t.getCallStack(0, 1)[0]; // Retrieve the new, possibly obsoleted frame and check it.
+                    } catch (AbsentInformationException ex) {
+                        return;
+                    }
 
-                //PATCH #52209
-                if (frame.isObsolete () && ((CallStackFrameImpl) frame).canPop()) {
-                    frame.popFrame ();
-                    setState (STATE_RUNNING);
-                    updateCurrentCallStackFrame (t);
-                    setState (STATE_STOPPED);
+                    //PATCH #52209
+                    if (frame.isObsolete () && ((CallStackFrameImpl) frame).canPop()) {
+                        frame.popFrame ();
+                        setState (STATE_RUNNING);
+                        updateCurrentCallStackFrame (t);
+                        setState (STATE_STOPPED);
+                    }
+                } catch (InvalidStackFrameException e) {
                 }
             }
-            
+
         }
     }
-    
+
     public void fixBreakpoints() {
         Session s = getSession();
         DebuggerEngine de = s.getEngineForLanguage ("Java");
@@ -411,14 +425,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
         EditorContextBridge.getContext().createTimeStamp(this);
         bel.fixBreakpointImpls ();
     }
-    
+
     public Session getSession() {
         return lookupProvider.lookupFirst(null, Session.class);
     }
-    
+
     private Boolean canBeModified;
     private Object canBeModifiedLock = new Object();
-    
+
     public boolean canBeModified() {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
@@ -445,7 +459,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     private SmartSteppingFilter smartSteppingFilter;
 
-    /** 
+    /**
      * Returns instance of SmartSteppingFilter.
      *
      * @return instance of SmartSteppingFilter
@@ -457,7 +471,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 (Set) Properties.getDefault ().getProperties ("debugger").
                     getProperties ("sources").getProperties ("class_filters").
                     getCollection (
-                        "enabled", 
+                        "enabled",
                         Collections.EMPTY_SET
                     )
             );
@@ -466,21 +480,21 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     CompoundSmartSteppingListener compoundSmartSteppingListener;
-    
+
     private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
         if (compoundSmartSteppingListener == null)
             compoundSmartSteppingListener = lookupProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
     }
-    
+
     /**
      * Test whether we should stop here according to the smart-stepping rules.
      */
     boolean stopHere(JPDAThread t) {
-        return getCompoundSmartSteppingListener ().stopHere 
+        return getCompoundSmartSteppingListener ().stopHere
                      (lookupProvider, t, getSmartSteppingFilter());
     }
-    
+
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
      *
@@ -488,7 +502,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @param event a event to be fired
      */
     public void fireBreakpointEvent (
-        JPDABreakpoint breakpoint, 
+        JPDABreakpoint breakpoint,
         JPDABreakpointEvent event
     ) {
         super.fireBreakpointEvent (breakpoint, event);
@@ -530,7 +544,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         pcs.removePropertyChangeListener (propertyName, l);
     }
 
-    
+
     // internal interface ......................................................
 
     public void popFrames (ThreadReference thread, StackFrame frame) {
@@ -569,9 +583,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (event != null) {
             firePropertyChange(event);
         }
-        if (thread.isSuspended()) {
-            setStoppedState(((JPDAThreadImpl) thread).getThreadReference());
-        }
+        setState(thread.isSuspended() ? STATE_STOPPED : STATE_RUNNING);
     }
 
     /**
@@ -603,7 +615,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             callStackFrame
         );
     }
-    
+
     private CallStackFrame setCurrentCallStackFrameNoFire (CallStackFrame callStackFrame) {
         CallStackFrame old;
         synchronized (currentThreadAndFrameLock) {
@@ -628,44 +640,51 @@ public class JPDADebuggerImpl extends JPDADebugger {
             throw iee;
         }
     }
-    
+
     //PATCH 48174
     public void setAltCSF(StackFrame sf) {
         altCSF = sf;
     }
-    
+
     public StackFrame getAltCSF() {
         return altCSF;
     }
-    
+
     /**
      * Used by WatchesModel & BreakpointImpl.
      */
-    public Value evaluateIn (Expression expression) 
+    public Value evaluateIn (Expression expression)
     throws InvalidExpressionException {
         synchronized (LOCK) {
-            
-            CallStackFrameImpl csf = (CallStackFrameImpl) 
-                getCurrentCallStackFrame ();
+
+            CallStackFrameImpl csf = (CallStackFrameImpl)getCurrentCallStackFrame ();
             if (csf != null) {
                 JPDAThread frameThread = csf.getThread();
                 try {
-                    Value value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
+                    Value value = null;
+                    boolean passed = false;
                     try {
-                        csf.getThread();
-                    } catch (InvalidStackFrameException isfex) {
-                        // The frame is invalidated, set the new current...
-                        int depth = csf.getFrameDepth();
-                        try {
-                            CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
-                            setCurrentCallStackFrameNoFire(csf2);
-                        } catch (AbsentInformationException aiex) {
-                            setCurrentCallStackFrame(null);
-                        }
+                        value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
+                        passed = true;
+                    } catch (InvalidStackFrameException e) {
                     }
-                    return value;
+                    if (passed) {
+                        try {
+                            csf.getThread();
+                        } catch (InvalidStackFrameException isfex) {
+                            // The frame is invalidated, set the new current...
+                            int depth = csf.getFrameDepth();
+                            try {
+                                CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
+                                setCurrentCallStackFrameNoFire(csf2);
+                            } catch (AbsentInformationException aiex) {
+                                setCurrentCallStackFrame(null);
+                            }
+                        }
+                        return value;
+                    }
                 } catch (com.sun.jdi.VMDisconnectedException e) {
-                    // Causes kill action when something is being evaluated. 
+                    // Causes kill action when something is being evaluated.
                     return null;
                 }
             }
@@ -682,13 +701,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     // Will be thrown when the altCSF is invalid
                     altCSF = null; // throw it
                 } catch (com.sun.jdi.VMDisconnectedException e) {
-                    // Causes kill action when something is being evaluated. 
+                    // Causes kill action when something is being evaluated.
                     return null;
                 }
             }
             throw new InvalidExpressionException
-                    ("No current context (stack frame)");
-            
+                (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContextStackFrame"));
+
         }
     }
 
@@ -697,11 +716,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by BreakpointImpl.
      */
-    public  Value evaluateIn (Expression expression, final StackFrame frame, int frameDepth) 
+    public  Value evaluateIn (Expression expression, final StackFrame frame, int frameDepth)
     throws InvalidExpressionException {
         synchronized (LOCK) {
             if (frame == null)
-                throw new InvalidExpressionException ("No current context");
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
 
             // TODO: get imports from the source file
             List<String> imports = new ArrayList<String>();
@@ -719,12 +739,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 EvaluationContext context;
                 if (useNewEvaluator) {
                     Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
-                    org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 = 
+                    org.netbeans.modules.debugger.jpda.expr.TreeEvaluator evaluator2 =
                         expression2.evaluator(
                             context = new EvaluationContext(
+                                tr,
                                 frame,
                                 frameDepth,
-                                imports, 
+                                imports,
                                 staticImports,
                                 methodCallsUnsupportedExc == null,
                                 new Runnable() {
@@ -760,12 +781,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         }
                     }
                 } else {
-                    org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
+                    org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator =
                         expression.evaluator (
                             context = new EvaluationContext (
+                                tr,
                                 frame,
                                 frameDepth,
-                                imports, 
+                                imports,
                                 staticImports,
                                 methodCallsUnsupportedExc == null,
                                 new Runnable() {
@@ -810,9 +832,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 iee.initCause (e);
                 throw iee;
             } catch (IncompatibleThreadStateException itsex) {
-                ErrorManager.getDefault().notify(itsex);
                 IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
                 isex.initCause(itsex);
+                throw isex;
+            } catch (InternalException e) {
+                IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
+                isex.initCause(e);
                 throw isex;
             } catch (RuntimeException rex) {
                 Throwable cause = rex.getCause();
@@ -824,7 +849,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
     }
-    
+
     /**
      * Used by AbstractVariable.
      */
@@ -833,9 +858,41 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
+        return invokeMethod(null, reference, method, arguments, 0);
+    }
+
+    public Value invokeMethod (
+        ObjectReference reference,
+        Method method,
+        Value[] arguments,
+        int maxLength
+    ) throws InvalidExpressionException {
+        return invokeMethod(null, reference, method, arguments, maxLength);
+    }
+
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
+        return invokeMethod(thread, reference, method, arguments, 0);
+    }
+
+    private Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments,
+        int maxLength
+    ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
-            if (currentThread == null)
-                throw new InvalidExpressionException ("No current context");
+            if (thread == null && currentThread == null)
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
         }
         synchronized (LOCK) {
             if (methodCallsUnsupportedExc != null) {
@@ -844,7 +901,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             boolean threadSuspended = false;
             JPDAThread frameThread = null;
             CallStackFrameImpl csf = null;
-            JPDAThreadImpl thread = null;
             List<EventRequest> l = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
@@ -854,8 +910,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         frameThread = csf.getThread();
                     } catch (InvalidStackFrameException isfex) {}
                 }
-                ThreadReference tr = getEvaluationThread();
-                thread = (JPDAThreadImpl) getThread(tr);
+                ThreadReference tr;
+                if (thread == null) {
+                    tr = getEvaluationThread();
+                    thread = (JPDAThreadImpl) getThread(tr);
+                } else {
+                    tr = thread.getThreadReference();
+                }
                 try {
                     thread.notifyMethodInvoking();
                     threadSuspended = true;
@@ -863,14 +924,24 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
                 l = disableAllBreakpoints ();
-                return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-                    invokeVirtual (
-                        reference,
-                        method,
-                        tr,
-                        Arrays.asList (arguments),
-                        this
-                    );
+                try {
+                    Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                        invokeVirtual (
+                            reference,
+                            method,
+                            tr,
+                            Arrays.asList (arguments),
+                            this
+                        );
+                    if (maxLength > 0 && maxLength < Integer.MAX_VALUE && (v instanceof StringReference)) {
+                        v = cutLength((StringReference) v, maxLength, tr);
+                    }
+                    return v;
+                } catch (InternalException e) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (e.getLocalizedMessage());
+                    ieex.initCause(e);
+                    throw ieex;
+                }
             } catch (InvalidExpressionException ieex) {
                 if (ieex.getTargetException() instanceof UnsupportedOperationException) {
                     methodCallsUnsupportedExc = ieex;
@@ -901,10 +972,40 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
 
+    private Value cutLength(StringReference sr, int maxLength, ThreadReference tr) throws InvalidExpressionException {
+        Method stringLengthMethod = ((ClassType) sr.type ()).
+            concreteMethodByName ("length", "()I");  // NOI18N
+        List<Value> emptyArgs = Collections.emptyList();
+        IntegerValue lengthValue = (IntegerValue) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+            invokeVirtual (
+                sr,
+                stringLengthMethod,
+                tr,
+                emptyArgs,
+                this
+            );
+            if (lengthValue.value() > maxLength) {
+                Method subStringMethod = ((ClassType) sr.type ()).
+                    concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
+                if (subStringMethod != null) {
+                    sr = (StringReference) org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                        invokeVirtual (
+                            sr,
+                            subStringMethod,
+                            tr,
+                            Arrays.asList(new Value [] { sr.virtualMachine().mirrorOf(0),
+                                           sr.virtualMachine().mirrorOf(maxLength) }),
+                            this
+                        );
+                }
+            }
+        return sr;
+    }
+
     public static String getGenericSignature (TypeComponent component) {
         if (tcGenericSignatureMethod == null) return null;
         try {
-            return (String) tcGenericSignatureMethod.invoke 
+            return (String) tcGenericSignatureMethod.invoke
                 (component, new Object[0]);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -943,11 +1044,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setStarting () {
         setState (STATE_STARTING);
     }
-    
+
     public synchronized void setAttaching(AbstractDICookie cookie) {
         this.attachingCookie = cookie;
     }
-    
+
     public void setRunning (VirtualMachine vm, Operator o) {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Start - JPDADebuggerImpl.setRunning ()");
@@ -963,11 +1064,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
         }
-        
+
         initGenericsSupport ();
         EditorContextBridge.getContext().createTimeStamp(this);
 
-                
+
 //        Iterator i = getVirtualMachine ().allThreads ().iterator ();
 //        while (i.hasNext ()) {
 //            ThreadReference tr = (ThreadReference) i.next ();
@@ -990,24 +1091,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
 //                return;
 //            }
 //        }
-        
+
         synchronized (threadsCollectorLock) {
             if (threadsCache != null) {
                 threadsCache.setVirtualMachine(vm);
             }
         }
-        
+
         setState (STATE_RUNNING);
         synchronized (virtualMachineLock) {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
         }
         if (vm != null) {
-            notifyToBeResumedAll();
-            synchronized (LOCK) {
-                vm.resume();
+            try {
+                notifyToBeResumedAll();
+                synchronized (LOCK) {
+                    vm.resume();
+                }
+            } catch (VMDisconnectedException e) {
             }
         }
-        
+
         logger.fine("   JPDADebuggerImpl.setRunning () finished, VM resumed.");
         synchronized (LOCK2) {
             starting = false;
@@ -1021,7 +1125,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public void setStoppedState (ThreadReference thread) {
         PropertyChangeEvent evt;
         synchronized (LOCK) {
-            // this method can be called in stopped state to switch 
+            // this method can be called in stopped state to switch
             // the current thread only
             JPDAThread c = getCurrentThread();
             JPDAThread t = getThread (thread);
@@ -1032,7 +1136,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             checkJSR45Languages (t);
             evt = setCurrentThreadNoFire(t);
             PropertyChangeEvent evt2 = setStateNoFire(STATE_STOPPED);
-            
+
             if (evt == null) evt = evt2;
             else if (evt2 != null) {
                 PropertyChangeEvent evt3 = evt;
@@ -1047,39 +1151,39 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } while (evt != null);
         }
     }
-    
+
     /**
      * Can be called if the current thread is resumed after stop.
      */
     public void setRunningState() {
         setState(STATE_RUNNING);
     }
-    
+
     /**
     * Performs stop action and disable a next call to resume()
     */
     public void setStoppedStateNoContinue (ThreadReference thread) {
         PropertyChangeEvent evt;
         synchronized (LOCK) {
-            // this method can be called in stopped state to switch 
+            // this method can be called in stopped state to switch
             // the current thread only
             evt = setStateNoFire(STATE_RUNNING);
             JPDAThread t = getThread (thread);
             checkJSR45Languages (t);
             PropertyChangeEvent evt2 = setCurrentThreadNoFire(t);
-            
+
             if (evt == null) evt = evt2;
             else if (evt2 != null) evt.setPropagationId(evt2);
-            
+
             evt2 = setStateNoFire(STATE_STOPPED);
-            
+
             if (evt == null) evt = evt2;
             else if (evt2 != null) {
                 PropertyChangeEvent evt3 = evt;
                 while(evt3.getPropagationId() != null) evt3 = (PropertyChangeEvent) evt3.getPropagationId();
                 evt3.setPropagationId(evt2);
             }
-            
+
             doContinue = false;
         }
         if (evt != null) {
@@ -1089,16 +1193,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } while (evt != null);
         }
     }
-    
-    
+
+
     private boolean finishing;
 
     /**
      * Used by KillActionProvider.
      */
     public void finish () {
-        //Workaround for #56233
-        //synchronized (LOCK) { 
+        try {
             synchronized (this) {
                 if (finishing) {
                     // Can easily be called twice - from the operator termination
@@ -1107,8 +1210,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 finishing = true;
             }
             logger.fine("StartActionProvider.finish ()");
-            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
+            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             Operator o = getOperator();
             if (o != null) o.stop();
             synchronized (this) {
@@ -1160,14 +1263,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             javaEngineProvider.getDestructor ().killEngine ();
             logger.fine (" StartActionProvider.finish() end.");
-            
+
             //Notify LOCK2 so that no one is waiting forever
             synchronized (LOCK2) {
                 starting = false;
                 LOCK2.notifyAll ();
             }
             EditorContextBridge.getContext().disposeTimeStamp(this);
-        //}
+        } finally {
+            finishing = false; // for safety reasons
+        }
     }
 
     /**
@@ -1182,8 +1287,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine;
         }
         synchronized (LOCK) {
-            if (getState () == STATE_STOPPED)
-                return;
             if (vm != null) {
                 logger.fine("VM suspend");
                 vm.suspend ();
@@ -1197,7 +1300,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         notifySuspendAll();
     }
-    
+
     public void notifySuspendAll() {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
@@ -1220,7 +1323,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
     }
-    
+
     /**
      * Used by ContinueActionProvider & StepActionProvider.
      */
@@ -1248,7 +1351,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
     }
-    
+
     /** DO NOT CALL FROM ANYWHERE BUT JPDAThreadImpl.resume(). */
     public boolean currentThreadToBeResumed() {
         synchronized (LOCK) {
@@ -1264,7 +1367,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         setState (STATE_RUNNING);
         return true;
     }
-    
+
     public void resumeCurrentThread() {
         synchronized (LOCK) {
             if (!doContinue) {
@@ -1277,11 +1380,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return ;
         }
         setState (STATE_RUNNING);
-        synchronized (currentThreadAndFrameLock) {
-            currentThread.resume();
-        }
+        currentThread.resume();
     }
-    
+
     public void notifyToBeResumedAll() {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
@@ -1299,7 +1400,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
     }
-    
+
     public ThreadsCache getThreadsCache() {
         synchronized (threadsCollectorLock) {
             if (threadsCache == null) {
@@ -1323,7 +1424,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return threadsCache;
         }
     }
-    
+
     List<JPDAThread> getAllThreads() {
         ThreadsCache tc = getThreadsCache();
         if (tc == null) {
@@ -1337,7 +1438,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
         return Collections.unmodifiableList(threads);
     }
-    
+
     public JPDAThreadGroup[] getTopLevelThreadGroups() {
         ThreadsCache tc = getThreadsCache();
         if (tc == null) {
@@ -1362,11 +1463,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public JPDAThreadGroup getThreadGroup (ThreadGroupReference tgr) {
         return (JPDAThreadGroup) threadsTranslation.translate (tgr);
     }
-    
+
     public Variable getLocalVariable(LocalVariable lv, Value v) {
         return (Variable) localsTranslation.translate(lv, v);
     }
-    
+
     public JPDAClassType getClassType(ReferenceType cr) {
         return (JPDAClassType) localsTranslation.translate (cr);
     }
@@ -1374,30 +1475,30 @@ public class JPDADebuggerImpl extends JPDADebugger {
     public Variable getVariable (Value value) {
         return getLocalsTreeModel ().getVariable (value);
     }
-    
+
     public ExpressionPool getExpressionPool() {
         return expressionPool;
     }
-    
+
     synchronized void setSingleThreadStepResumeDecision(Boolean decision) {
         singleThreadStepResumeDecision = decision;
     }
-    
+
     synchronized Boolean getSingleThreadStepResumeDecision() {
         return singleThreadStepResumeDecision;
     }
-    
+
     public synchronized void setStepInterruptByBptResumeDecision(Boolean decision) {
         stepInterruptByBptResumeDecision = decision;
     }
-    
+
     public synchronized Boolean getStepInterruptByBptResumeDecision() {
         return stepInterruptByBptResumeDecision;
     }
 
 
     // private helper methods ..................................................
-    
+
     private static final java.util.regex.Pattern jvmVersionPattern =
             java.util.regex.Pattern.compile ("(\\d+)\\.(\\d+)\\.(\\d+)(_\\d+)?(-\\w+)?");
     private static java.lang.reflect.Method  tcGenericSignatureMethod;
@@ -1412,27 +1513,33 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
             }
             if (vm == null) return ;
-            java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
-            if (m.matches ()) {
-                int minor = Integer.parseInt (m.group (2));
-                if (minor >= 5) {
-                    try {
-                        tcGenericSignatureMethod = TypeComponent.class.
-                            getMethod ("genericSignature", new Class [0]);
-                        lvGenericSignatureMethod = LocalVariable.class.
-                            getMethod ("genericSignature", new Class [0]);
-                    } catch (NoSuchMethodException e) {
-                        // the method is not available, ignore generics
+            try {
+                java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
+                if (m.matches ()) {
+                    int minor = Integer.parseInt (m.group (2));
+                    if (minor >= 5) {
+                        try {
+                            tcGenericSignatureMethod = TypeComponent.class.
+                                getMethod ("genericSignature", new Class [0]);
+                            lvGenericSignatureMethod = LocalVariable.class.
+                                getMethod ("genericSignature", new Class [0]);
+                        } catch (NoSuchMethodException e) {
+                            // the method is not available, ignore generics
+                        }
                     }
                 }
+            } catch (VMDisconnectedException e) {
             }
         }
     }
-    
+
     private PropertyChangeEvent setStateNoFire (int state) {
-        if (state == this.state) return null;
-        int o = this.state;
-        this.state = state;
+        int o;
+        synchronized (stateLock) {
+            if (state == this.state) return null;
+            o = this.state;
+            this.state = state;
+        }
         //PENDING HACK see issue 46287
         System.setProperty(
             "org.openide.awt.SwingBrowserImpl.do-not-block-awt",
@@ -1447,7 +1554,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             firePropertyChange(evt);
         }
     }
-    
+
     /**
      * Fires property change.
      */
@@ -1535,7 +1642,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
                                             old, callStackFrame);
     }
-    
+
     private List<EventRequest> disableAllBreakpoints () {
         logger.fine ("disableAllBreakpoints() start.");
         List<EventRequest> l = new ArrayList<EventRequest>();
@@ -1563,7 +1670,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         logger.fine ("disableAllBreakpoints() end.");
         return l;
     }
-    
+
     private void enableAllBreakpoints (List<EventRequest> l) {
         logger.fine ("enableAllBreakpoints() start.");
         operator.breakpointsEnabled();
@@ -1603,10 +1710,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     javaEngineProvider.getSession ().setCurrentLanguage (stratum);
                 lastStratumn = stratum;
             } catch (AbsentInformationException e) {
-                System.out.println("NoInformationException");
             }
     }
- 
+
     private Set<JSR45DebuggerEngineProvider> jsr45EngineProviders;
 
     private DebuggerInfo createJSR45DI (final String language) {
@@ -1629,12 +1735,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         );
     }
-    
+
     public JPDAStep createJPDAStep(int size, int depth) {
         Session session = lookupProvider.lookupFirst(null, Session.class);
         return new JPDAStepImpl(this, session, size, depth);
     }
-    
+
     /*public synchronized Heap getHeap() {
         if (virtualMachine != null && canGetInstanceInfo(virtualMachine)) {
             return new HeapImpl(virtualMachine);
@@ -1642,31 +1748,39 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return null;
         }
     }*/
-    
+
     public List<JPDAClassType> getAllClasses() {
         List<ReferenceType> classes;
         synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                classes = virtualMachine.allClasses();
+                try {
+                    classes = virtualMachine.allClasses();
+                } catch (VMDisconnectedException e) {
+                    classes = Collections.emptyList();
+                }
             }
         }
         return new ClassTypeList(this, classes);
     }
-    
+
     public List<JPDAClassType> getClassesByName(String name) {
         List<ReferenceType> classes;
         synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                classes = virtualMachine.classesByName(name);
+                try {
+                    classes = virtualMachine.classesByName(name);
+                } catch (VMDisconnectedException e) {
+                    classes = Collections.emptyList();
+                }
             }
         }
         return new ClassTypeList(this, classes);
     }
-    
+
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
         if (Java6Methods.isJDK6()) {
             VirtualMachine vm;
@@ -1674,6 +1788,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
             }
             if (vm == null) {
+                return new long[classTypes.size()];
+            }
+            try {
+                vm.version(); // check whether we are still connected to VM
+            } catch (VMDisconnectedException e) {
                 return new long[classTypes.size()];
             }
             if (classTypes instanceof ClassTypeList) {
@@ -1690,13 +1809,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
             throw new UnsupportedOperationException("Not supported.");
         }
     }
-    
+
     public boolean canGetInstanceInfo() {
         synchronized (virtualMachineLock) {
             return virtualMachine != null && canGetInstanceInfo(virtualMachine);
         }
     }
-    
+
     private static boolean canGetInstanceInfo(VirtualMachine vm) {
         if (Java6Methods.isJDK6()) {
             try {
@@ -1704,14 +1823,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
                 return Boolean.TRUE.equals(canGetInstanceInfo);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Logger.getLogger(JPDADebuggerImpl.class.getName()).log(Level.INFO, "", ex);
             }
         }
         return false;
     }
 
     @Override
-    public ThreadsCollector getThreadsCollector() {
+    public ThreadsCollectorImpl getThreadsCollector() {
         synchronized (threadsCollectorLock) {
             if (threadsCollector == null) {
                 threadsCollector = new ThreadsCollectorImpl(this);
@@ -1728,5 +1847,5 @@ public class JPDADebuggerImpl extends JPDADebugger {
             return deadlockDetector;
         }
     }
-    
+
 }

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.elements;
 
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 

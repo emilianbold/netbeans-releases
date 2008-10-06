@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.instance"/>
         </folder>
     </folder>
+    
     <folder name="Shortcuts">
         <file name="OS-A.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.instance"/>
@@ -63,6 +64,7 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-sqd-InsertOperandAction.instance"/>
         </file-->
     </folder>
+    
     <folder name="Editors">
         <folder name="modeling">
             <folder name="Popup">
@@ -73,7 +75,8 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1400"/>
                 </file>
-                <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                     <attr name="position" intvalue="1900"/>
                 </file>
                 <file name="org-openide-actions-PropertiesAction.instance">
@@ -101,6 +104,9 @@ made subject to such option by the copyright holder.
                     </folder>
                     <file name="org-netbeans-modules-uml-drawingarea-actions-ResizeToContentAction.instance">
                         <attr name="position" intvalue="580"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ResizeToDimensionAction.instance">
+                        <attr name="position" intvalue="581"/>
                     </file>
                     <file name="org-netbeans-modules-uml-drawingarea-actions-SyncElementWithDataAction.instance">
                         <attr name="position" intvalue="590"/>
@@ -133,7 +139,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                     <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
@@ -173,6 +180,12 @@ made subject to such option by the copyright holder.
                     <file name="org.netbeans.modules.uml.drawingarea.actions-AddLabelsAction.instance">
                         <attr name="position" intvalue="800"/>
                     </file>
+                    <file name="org.netbeans.modules.uml.drawingarea.actions-RemoveAllBendsAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.drawingarea.actions-FindSourceTargetAction.instance">
+                        <attr name="position" intvalue="905"/>
+                    </file>
                     <file name="SeparatorBeforeCut.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1000"/>
@@ -190,7 +203,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
@@ -214,11 +228,40 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
                         <attr name="position" intvalue="2000"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-classdiagram">
+                <folder name="Popup">
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="101"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-activitydiagram">
+                <folder name="Popup">
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="101"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-statediagram">
+                <folder name="Popup">
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="101"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-usecasediagram">
+                <folder name="Popup">
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="101"/>
                     </file>
                 </folder>
             </folder>
@@ -303,7 +346,18 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Enumeration, Operation"/>
                     </file>
-                    
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance">
+                        <attr name="position" intvalue="930"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance">
+                        <attr name="position" intvalue="940"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance">
+                        <attr name="position" intvalue="950"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-class-element">
@@ -321,6 +375,18 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="300"/>
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Class, Operation"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance">
+                        <attr name="position" intvalue="930"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance">
+                        <attr name="position" intvalue="940"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance">
+                        <attr name="position" intvalue="950"/>
                     </file>
                 </folder>
             </folder>
@@ -357,6 +423,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance">
+                        <attr name="position" intvalue="950"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-enumerationliteral-element">
@@ -391,6 +460,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="300"/>
                     </file>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance">
+                        <attr name="position" intvalue="950"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-interface-element">
@@ -408,6 +480,32 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateOperationAction.instance"/>
                         <attr name="context" stringvalue="Class, Operation"/>
                         <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
+                        <attr name="position" intvalue="609"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-codegen-action-GenerateCodeAction.instance">
+                        <attr name="position" intvalue="930"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance">
+                        <attr name="position" intvalue="940"/>
+                    </file>
+                    <file name="org-netbeans-modules-uml-integration-netbeans-actions-SourceNavigateAction.instance">
+                        <attr name="position" intvalue="950"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-datatype-element">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance">
+                        <attr name="position" intvalue="940"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-derivationclassifier-element">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-DependencyDiagramAction.instance">
+                        <attr name="position" intvalue="940"/>
                     </file>
                 </folder>
             </folder>
@@ -491,12 +589,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-compositestate-element">
                 <folder name="Popup">
-                    <file name="org.netbeans.modules.uml.diagrams.actions.state.AddRegionColumnAction.instance">
-                        <attr name="position" intvalue="320"/>
-                    </file>                  
-                    <file name="org.netbeans.modules.uml.diagrams.actions.state.AddRegionRowAction.instance">
-                        <attr name="position" intvalue="340"/>
-                    </file>                
+                    <file name="org.netbeans.modules.uml.diagrams.actions.state.RegionsAction.instance">
+                        <attr name="position" intvalue="592"/>
+                    </file>
                 </folder>
             </folder>   
             <folder name="x-pseudostate-element">
@@ -515,16 +610,6 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>  
-            <folder name="x-region-element">
-                <folder name="Popup">
-                    <file name="org.netbeans.modules.uml.diagrams.actions.state.AddRegionColumnAction.instance">
-                        <attr name="position" intvalue="320"/>
-                    </file>                  
-                    <file name="org.netbeans.modules.uml.diagrams.actions.state.AddRegionRowAction.instance">
-                        <attr name="position" intvalue="340"/>
-                    </file>                
-                </folder>
-            </folder>
              <folder name="x-activitypartition-element">
                 <folder name="Popup">
                     <file name="org.netbeans.modules.uml.diagrams.actions.activity.PartitionActions.instance">
@@ -597,6 +682,9 @@ made subject to such option by the copyright holder.
                 <folder name="Popup">
                     <file name="org.netbeans.modules.uml.diagrams.actions.usecase.AddExtensionPointAction.instance">
                         <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.usecase.ShowExtensionPointsAction.instance">
+                        <attr name="position" intvalue="201"/>
                     </file>                      
                 </folder>
             </folder>
@@ -679,10 +767,10 @@ made subject to such option by the copyright holder.
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.AbstractionFactory"/>
             </file>
             <!-- Activity Diagram -->
-            <file name="ActivityEdge.context_palette_item" url="resources/context/ActivityEdge.context_palette_item">
+            <file name="MultiFlow.context_palette_item" url="resources/context/MultiFlow.context_palette_item">
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.ActivityEdgeFactory"/>
             </file>
-            <file name="StateTransition.context_palette_item" url="resources/context/StateTransition.context_palette_item">
+            <file name="Transition.context_palette_item" url="resources/context/Transition.context_palette_item">
                 <attr name="factory" newvalue="org.netbeans.modules.uml.diagrams.edges.factories.StateTransitionFactory"/>
             </file>
             <file name="Include.context_palette_item" url="resources/context/Include.context_palette_item">
@@ -1345,7 +1433,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Activity">  <!-- common context palette for most activity nodes -->
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1397,7 +1485,7 @@ made subject to such option by the copyright holder.
             </folder>
              <folder name="ActivityControl">
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1409,7 +1497,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="ActivityFork">
                 <file name="ActivityEdge.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/ActivityEdge.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/MultiFlow.context_palette_item"/>
                     <attr name="default-node" stringvalue="InvocationNode"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1470,7 +1558,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="State">
                 <file name="StateTransition.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/StateTransition.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/Transition.context_palette_item"/>
                     <attr name="default-node" stringvalue="State"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1515,7 +1603,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="ForkState">
                 <file name="StateTransition.shadow">
-                    <attr name="originalFile" stringvalue="modeling/relationships/StateTransition.context_palette_item"/>
+                    <attr name="originalFile" stringvalue="modeling/relationships/Transition.context_palette_item"/>
                     <attr name="default-node" stringvalue="State"/>
                     <attr name="position" intvalue="100"/>
                 </file>
@@ -1740,6 +1828,11 @@ made subject to such option by the copyright holder.
                     <attr name="default-node" stringvalue="Enumeration"/>
                     <attr name="position" intvalue="100"/>
                 </file>
+                <file name="Implementation.shadow">
+                    <attr name="originalFile" stringvalue="modeling/relationships/Implementation.context_palette_item"/>
+                    <attr name="default-node" stringvalue="Interface"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
                 <folder name="Associations">
                     <attr name="position" intvalue="300"/>
                     <file name="Association.shadow">
@@ -1917,7 +2010,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-uml-diagrams-nodes-factories-CommentNodeFactory.instance"/>
             </folder>
             <folder name="AssociationClass">
-                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-ClassNodeFactory.instance"/>
+                <file name="org-netbeans-modules-uml-diagrams-nodes-factories-AssociationClassNodeFactory.instance"/>
                 <folder name="Views">
                     <file name="org-netbeans-modules-uml-diagrams-nodes-factories-BoundaryViewNodeFactory.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.diagrams.nodes.Bundle"/>
@@ -2097,15 +2190,17 @@ made subject to such option by the copyright holder.
                     <folder name="SubmachineState">
                         <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.SubMachineStateInitializer"/>
+                        <attr name="showPreference" boolvalue="false"/>
                     </folder>
                     <folder name="CompositeState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-StateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-CompositeStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.CompositeStateInitializer"/>
+                        <attr name="showPreference" boolvalue="false"/>
                     </folder>                       
                 </folder>
                 <folder name="FinalState">
                     <folder name="AbortedFinalState">                       
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-FinalStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-AbortedFinalStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.AbortedFinalStateInitializer"/>
                     </folder>
                     <folder name="FinalState">
@@ -2114,31 +2209,31 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="PseudoState">              
                     <folder name="InitialState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-InitialStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.InitialStateInitializer"/>
                     </folder>
-                    <folder name="ForkState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                    <folder name="JoinState">
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-JoinStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ForkStateInitializer"/>
                     </folder>
                     <folder name="ChoicePseudoState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-ChoicePseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ChoicePseudoStateInitializer"/>
                     </folder>
                     <folder name="ShallowHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-ShallowHistoryStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ShallowHistoryStateInitializer"/>
                     </folder>
                     <folder name="DeepHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-DeepHistoryStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.DeepHistoryStateInitializer"/>
                     </folder>
                     <folder name="EntryPointState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-EntryPointStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.EntryPointStateInitializer"/>
                     </folder>
                     <folder name="JunctionState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-JunctionStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.JunctionStateInitializer"/>
                     </folder>
                 </folder>
@@ -2149,18 +2244,6 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-
-         
-         <folder name="UseCaseDiagram">
-             <folder name="Default">
-                 <folder name="Default"/>
-             </folder>
-             <folder name="Nodes">
-                 <folder name="Package">
-                     <file name="org-netbeans-modules-uml-diagrams-nodes-factories-PackageNodeFactory.instance"/>
-                 </folder>
-             </folder>
-         </folder>
 
         <folder name="UMLOptions">
             <folder name="Panels">

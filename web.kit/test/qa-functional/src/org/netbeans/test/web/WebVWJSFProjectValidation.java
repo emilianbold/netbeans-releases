@@ -86,9 +86,9 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebVWJSFProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf, 
         "testPreconditions", "testNewVWJSFWebProject", "testRedeployProject", 
-                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+                "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));
@@ -139,7 +139,7 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("GlassFish V2");
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
 
@@ -161,24 +161,15 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-//        EditorWindowOperator.getEditor("Page1.jsp");//NOI18N
-        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-//        new Node(webPages, "WEB-INF|web.xml");//NOI18N
-//        new Node(webPages, "WEB-INF|sun-web.xml");//NOI18N
-        new Node(webPages, "WEB-INF|faces-config.xml");//NOI18N
-        new Node(webPages, "resources");//NOI18N
-        new Node(webPages, "resources|stylesheet.css");//NOI18N
-        new Node(webPages, "Page1.jsp");//NOI18N
-        SourcePackagesNode sourceNode = new SourcePackagesNode(PROJECT_NAME);
-        new Node(sourceNode, "myproject");
-        new Node(sourceNode, "myproject|ApplicationBean1.java");
-        new Node(sourceNode, "myproject|Bundle.properties");
-        new Node(sourceNode, "myproject|Page1.java");
-        new Node(sourceNode, "myproject|RequestBean1.java");
-        new Node(sourceNode, "myproject|SessionBean1.java");
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        assertEquals(true,ProjectSupport.closeProject(PROJECT_NAME));
+        verifyWebPagesNode("WEB-INF|faces-config.xml");//NOI18N
+        verifyWebPagesNode("resources");//NOI18N
+        verifyWebPagesNode("resources|stylesheet.css");//NOI18N
+        verifyWebPagesNode("Page1.jsp");//NOI18N
+        verifySourcePackageNode("myproject");
+        verifySourcePackageNode("myproject|ApplicationBean1.java");
+        verifySourcePackageNode("myproject|Bundle.properties");
+        verifySourcePackageNode("myproject|Page1.java");
+        verifySourcePackageNode("myproject|RequestBean1.java");
+        verifySourcePackageNode("myproject|SessionBean1.java");
     }
 }

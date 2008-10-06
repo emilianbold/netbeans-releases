@@ -37,14 +37,14 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         grailsServerPort.getDocument().addDocumentListener( this );
         grailsServerPort.setText(prjConfig.getPort());
         
-        // should we turn-on the Autodeploy flag?
-        
-        autodeployCheckBox.setSelected(prjConfig.getAutoDeployFlag());
-                
-        // populating the autodeploy field
-        
-        autodeployLocation.getDocument().addDocumentListener( this );
-        autodeployLocation.setText(prjConfig.getDeployDir());
+//        // should we turn-on the Autodeploy flag?
+//
+//        autodeployCheckBox.setSelected(prjConfig.getAutoDeployFlag());
+//
+//        // populating the autodeploy field
+//
+//        autodeployLocation.getDocument().addDocumentListener( this );
+//        autodeployLocation.setText(prjConfig.getDeployDir());
         
         // Here we define the indexes for the default enviroments as this:
         // 0 : "Development", 
@@ -81,9 +81,6 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         projectFolderTextField = new javax.swing.JTextField();
         grailsServerPortLabel = new javax.swing.JLabel();
         grailsServerPort = new javax.swing.JTextField();
-        autodeployLocationLabel = new javax.swing.JLabel();
-        autodeployLocation = new javax.swing.JTextField();
-        autodeployCheckBox = new javax.swing.JCheckBox();
 
         activeGrailsEnvironmentLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.activeGrailsEnvironmentLabel.text")); // NOI18N
 
@@ -104,17 +101,6 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
 
         grailsServerPort.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsServerPort.text")); // NOI18N
 
-        autodeployLocationLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.autodeployLocationLabel.text")); // NOI18N
-
-        autodeployLocation.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.autodeployLocation.text")); // NOI18N
-
-        autodeployCheckBox.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.autodeployCheckBox.text")); // NOI18N
-        autodeployCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                autodeployCheckBoxActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -123,16 +109,9 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(activeGrailsEnvironmentLabel)
                     .add(projectFolderLabel)
-                    .add(grailsServerPortLabel)
-                    .add(autodeployLocationLabel))
+                    .add(grailsServerPortLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(autodeployLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(autodeployCheckBox)
-                        .addContainerGap())
                     .add(grailsServerPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                     .add(grailsEnvChooser, 0, 315, Short.MAX_VALUE)))
@@ -151,12 +130,6 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(grailsServerPortLabel)
                     .add(grailsServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(autodeployCheckBox)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(autodeployLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(autodeployLocationLabel))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -164,17 +137,10 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
     private void grailsEnvChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grailsEnvChooserActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_grailsEnvChooserActionPerformed
-
-private void autodeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autodeployCheckBoxActionPerformed
-    prjConfig.setAutoDeployFlag(autodeployCheckBox.isSelected());
-}//GEN-LAST:event_autodeployCheckBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel activeGrailsEnvironmentLabel;
-    private javax.swing.JCheckBox autodeployCheckBox;
-    private javax.swing.JTextField autodeployLocation;
-    private javax.swing.JLabel autodeployLocationLabel;
     private javax.swing.JComboBox grailsEnvChooser;
     private javax.swing.JTextField grailsServerPort;
     private javax.swing.JLabel grailsServerPortLabel;
@@ -201,9 +167,9 @@ private void autodeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
         if ( doc == grailsServerPort.getDocument() ) {
             prjConfig.setPort(grailsServerPort.getText());
             }
-        else if ( doc == autodeployLocation.getDocument() ) {
-            prjConfig.setDeployDir(autodeployLocation.getText());
-            }
+//        else if ( doc == autodeployLocation.getDocument() ) {
+//            prjConfig.setDeployDir(autodeployLocation.getText());
+//            }
 
     }
 

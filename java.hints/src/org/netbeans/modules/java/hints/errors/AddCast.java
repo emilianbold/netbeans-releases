@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -53,9 +54,11 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -299,6 +302,18 @@ public final class AddCast implements ErrorRule<Void> {
             
             if (t.getKind() == Kind.ARRAY_ACCESS) {
                 return simpleName(((ArrayAccessTree) t).getExpression()) + "[]"; //NOI18N
+            }
+
+            if (t.getKind() == Kind.PARENTHESIZED) {
+                return "(" + simpleName(((ParenthesizedTree)t).getExpression()) + ")"; //NOI18N
+            }
+
+            if (t.getKind() == Kind.TYPE_CAST) {
+                return simpleName(((TypeCastTree)t).getType());
+            }
+
+            if (t.getKind() == Kind.ARRAY_TYPE) {
+                return simpleName(((ArrayTypeTree)t).getType());
             }
             
             throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N

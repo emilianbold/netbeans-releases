@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Radek Matous
  */
-public class ImproperFieldAccessRule extends PHPRule {
+public class ImproperFieldAccessRule extends PHPRule implements VarStackReadingRule {
     private String insideClsName = "";//NOI18N 
 
     public HintSeverity getDefaultSeverity() {
@@ -127,12 +127,12 @@ public class ImproperFieldAccessRule extends PHPRule {
         PHPIndex index = PHPIndex.get(i);
         List<IndexedElement> l = new LinkedList<IndexedElement>();
         Collection<IndexedConstant> flds = null;        
-        for (IndexedClass indexedClass : index.getClassInheritanceLine(null, className)) {
-            flds = getFields(index, indexedClass.getName(), field, modifiers);
+        for (String clazzName : index.getClassAncestors(null, className)) {
+            flds = getFields(index, clazzName, field, modifiers);
             if (!flds.isEmpty()) {
                 break;
             } else {
-                if (insideClsName.equals(indexedClass.getName())) {
+                if (insideClsName.equals(clazzName)) {
                     modifiers = BodyDeclaration.Modifier.PUBLIC | BodyDeclaration.Modifier.PROTECTED;
                 } else {
                     modifiers = BodyDeclaration.Modifier.PUBLIC;
@@ -177,19 +177,19 @@ public class ImproperFieldAccessRule extends PHPRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(ImproperFieldAccessRule.class, "ImproperFieldAccessDispName");//NOI18N
     }
 
     private void addHint(Variable field) {
         OffsetRange range = new OffsetRange(field.getStartOffset(), field.getEndOffset());
-        Hint hint = new Hint(ImproperFieldAccessRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ImproperFieldAccessRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
     }
 
     private Collection<IndexedConstant> getFields(PHPIndex index, String clsName, Variable field, int modifiers) {
         Collection<IndexedConstant> retval = new ArrayList<IndexedConstant>();
         final String varName = extractVariableName(field);
-        Collection<IndexedConstant> flds = index.getProperties(null, clsName,varName, NameKind.PREFIX, modifiers);
+        Collection<IndexedConstant> flds = index.getFields(null, clsName,varName, NameKind.PREFIX, modifiers);
         for (IndexedConstant indexedConstant : flds) {
             String fldName = indexedConstant.getName();
             fldName = fldName.charAt(0) == '$' ? fldName.substring(1) : fldName;//NOI18N
@@ -198,5 +198,10 @@ public class ImproperFieldAccessRule extends PHPRule {
             }            
         }
         return retval;
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }

@@ -41,52 +41,17 @@
 
 package org.netbeans.test.xml.schema.general.dtd;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import javax.swing.table.TableModel;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
-import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-import org.netbeans.jellytools.OutputTabOperator;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  *
@@ -113,18 +78,6 @@ public class DTDActions_0001 extends DTDActions {
     public DTDActions_0001(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(DTDActions_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new DTDActions_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -417,10 +370,24 @@ public class DTDActions_0001 extends DTDActions {
           sName = sName + "_" + iIndex;
         sName = sName + ".xml";
 
-        prn = pto.getProjectRootNode(
-            TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName
-          );
-        prn.select( );
+        int iLimit = 3;
+        boolean bRedo = true;
+        while( bRedo )
+        {
+          try
+          {
+            prn = pto.getProjectRootNode(
+                TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName
+              );
+            prn.select( );
+            bRedo = false;
+          }
+          catch( TimeoutExpiredException ex )
+          {
+            if( 0 == iLimit-- )
+              throw ex;
+          }
+        }
       }
 
     }

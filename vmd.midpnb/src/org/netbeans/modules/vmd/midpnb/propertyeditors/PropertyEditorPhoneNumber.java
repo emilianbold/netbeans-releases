@@ -81,6 +81,17 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        label = null;
+    }
+
     public static PropertyEditorPhoneNumber createInstance(String label, String ucLabel) {
         return new PropertyEditorPhoneNumber(label, ucLabel, null);
     }
@@ -92,6 +103,12 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
+
+        radioButton.getAccessibleContext().setAccessibleName(
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
+
         customEditor = new CustomEditor();
     }
 
@@ -215,11 +232,26 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
             initComponents();
         }
 
+       void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new BorderLayout());
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
+            
+            textField.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            
+            textField.getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+            
             add(textField, BorderLayout.SOUTH);
         }
 

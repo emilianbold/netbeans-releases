@@ -76,7 +76,7 @@ public class JasperNameMappingHelper {
      */
     static public final String makeJavaPackage(String path) {
         String classNameComponents[] = path.split("/");
-        StringBuffer legalClassNames = new StringBuffer();
+        StringBuilder legalClassNames = new StringBuilder(path.length());
         for (int i = 0; i < classNameComponents.length; i++) {
             if (classNameComponents[i].length() > 0) {
                 legalClassNames.append(makeJavaIdentifier(classNameComponents[i]));
@@ -96,8 +96,7 @@ public class JasperNameMappingHelper {
      * @return Legal Java identifier corresponding to the given identifier
      */
     static public final String makeJavaIdentifier(String identifier) {
-        StringBuffer modifiedIdentifier =
-        new StringBuffer(identifier.length());
+        StringBuilder modifiedIdentifier = new StringBuilder(identifier.length());
         if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
             modifiedIdentifier.append('_');
         }

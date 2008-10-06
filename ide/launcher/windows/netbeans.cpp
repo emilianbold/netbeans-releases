@@ -47,6 +47,7 @@
 #include <process.h>
 #include <commdlg.h>
 #include <tchar.h>
+#include <winuser.h>
 
 // #define DEBUG 1
 
@@ -80,7 +81,11 @@ int WINAPI
         
         for (int i = 1; i < argc; i++) {
             char buf[10240];
-            sprintf(buf, "\"%s\" ", argv[i]);
+            char *arg = argv[i];
+            int len = strlen(arg);
+            if (arg[len-1] == '\"')
+                arg[len-1] = '\0';
+            sprintf(buf, "\"%s\" ", arg);
             strcat(cmdline, buf);
         }
 #endif    
@@ -194,16 +199,18 @@ int WINAPI
                         &pi)) {
         sprintf (buf, "Cannot start %s", appname);
         ErrorExit(buf, "CreateProcess");
+        return 255;
     } else {
         // Wait until child process exits.
         WaitForSingleObject( pi.hProcess, INFINITE );
 
+        DWORD retCode = 0;
+        GetExitCodeProcess(pi.hProcess, &retCode);
         // Close process and thread handles. 
         CloseHandle( pi.hProcess );
-        CloseHandle( pi.hThread );        
-        exit(0);
+        CloseHandle( pi.hThread );
+        return retCode;
     }
-    return 0;
 }
     
 char* getUserHomeFromRegistry(char* userhome)

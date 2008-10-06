@@ -44,16 +44,18 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.projectimport.eclipse.core.wizard.ProgressPanel;
 import org.netbeans.modules.projectimport.eclipse.core.wizard.ProjectImporterWizard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -78,17 +80,17 @@ public class ImportProjectAction extends CallableSystemAction {
         if (wizard.isCancelled() || eclProjects == null) {
             return;
         }
+        performImport(eclProjects, destination, wizard.getExtraPanels(), 
+                wizard.getNumberOfImportedProject(), false, true, true, null, null);
+    }
+    
+    public static void performImport(List<EclipseProject> eclProjects, String destination, 
+            List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels, int numberOfImportedProject, 
+            final boolean setMain, final boolean showReport, 
+            final boolean openProjects, final List<String> importProblems, 
+            final List<Project> createdProjects) {
         
-        for (EclipseProject p : eclProjects) {
-            if (p.isImportSupported()) {
-                if (!p.getProjectTypeFactory().prepare()) {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Import aborted"));
-                    return;
-                }
-            }
-        }
-        
-        final Importer importer = new Importer(eclProjects, destination);
+        final Importer importer = new Importer(eclProjects, destination, extraPanels);
         
         // prepare progress dialog
         final ProgressPanel progressPanel = new ProgressPanel();
@@ -98,7 +100,7 @@ public class ImportProjectAction extends CallableSystemAction {
         desc.setClosingOptions(new Object[]{});
         final Dialog progressDialog = DialogDisplayer.getDefault().createDialog(desc);
         ((JDialog) progressDialog).setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        progressPanel.start(wizard.getNumberOfImportedProject());
+        progressPanel.start(numberOfImportedProject);
         
         // progress timer for periodically update progress
         final Timer progressTimer = new Timer(250, null);
@@ -109,11 +111,23 @@ public class ImportProjectAction extends CallableSystemAction {
                     progressTimer.stop();
                     progressDialog.setVisible(false);
                     progressDialog.dispose();
-                    ImportProblemsPanel.showReport("Import Issues", importer.getWarnings());
+                    if (importProblems != null) {
+                        importProblems.addAll(importer.getWarnings());
+                    }
+                    if (showReport) {
+                        ImportProblemsPanel.showReport(org.openide.util.NbBundle.getMessage(ImportProjectAction.class, "MSG_ImportIssues"), importer.getWarnings());
+                    }
                     // open created projects when importing finished
                     if (importer.getProjects().length > 0) {
-                        OpenProjects.getDefault().open(importer.getProjects(), true);
-                        OpenProjects.getDefault().setMainProject(importer.getProjects()[importer.getProjects().length-1]);
+                        if (createdProjects != null) {
+                            createdProjects.addAll(Arrays.<Project>asList(importer.getProjects()));
+                        }
+                        if (openProjects) {
+                            OpenProjects.getDefault().open(importer.getProjects(), true);
+                            if (setMain) {
+                                OpenProjects.getDefault().setMainProject(importer.getProjects()[importer.getProjects().length-1]);
+                            }
+                        }
                     }
                 }
             }
@@ -131,6 +145,7 @@ public class ImportProjectAction extends CallableSystemAction {
         return null;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

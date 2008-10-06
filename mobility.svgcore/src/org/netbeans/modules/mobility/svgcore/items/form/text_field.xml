@@ -3,31 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="textfield_name" transform="translate(20,40)">
-        <!-- Metadata information. Please don't edit. -->
-	<text display="none">type=textfield</text>
-        <text display="none">editable=true</text>
-        <text display="none">enabled=true</text>
-
-        <rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">
-            <animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusin" dur="0.25s" 
-                     fill="freeze" to="rgb(255,165,0)"/>
-            <animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusout" dur="0.25s" 
-                     fill="freeze" to="black"/>
-        </rect>
-        <text  x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
-	    <!-- Metadata information. Please don't edit. -->
-	    <text display="none">type=text</text>
-        </text>
-	<g>
-		    <!-- Metadata information. Please don't edit. -->
-		    <text display="none">type=caret</text>
-
-		    <rect visibility="visible" x="20" y="4" width="3" height="22" fill="black" stroke="black"/>
-        </g>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.TextField" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/text_field_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/text_field_32.png"/>
      

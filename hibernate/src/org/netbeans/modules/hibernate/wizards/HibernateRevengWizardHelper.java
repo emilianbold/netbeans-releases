@@ -62,6 +62,7 @@ public class HibernateRevengWizardHelper {
     private boolean ejbAnnotation;
     private FileObject confFile;
     private String schemaName;
+    private String catalogName;
 
     public HibernateRevengWizardHelper(Project project) {
         this.project = project;
@@ -151,6 +152,14 @@ public class HibernateRevengWizardHelper {
     
     public String getSchemaName() {
         return schemaName;
+    }
+    
+    public void setCatalogName(String catalogName) {
+        this.catalogName = catalogName;
+    }
+    
+    public String getCatalogName() {
+        return catalogName;
     }
     
 }

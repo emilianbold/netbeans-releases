@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.xml.schema.actions;
 
+import java.awt.Cursor;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.abe.wizard.SchemaTransformWizard;
@@ -49,10 +51,13 @@ import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
+import org.openide.windows.TopComponent;
 
 /**
  * An action on the SchemaDataObject node (SchemaNode)
@@ -81,22 +86,35 @@ public class SchemaTransformAction extends CookieAction {
         return isDocumentOpen(activatedNodes);
     }    
     
-    protected void performAction(Node[] node) {
-        assert node.length==1:
-            "Length of nodes array should be 1";
-        try {
-            //at this point forceResetDoc
-            SchemaModel sm = getSchemaModel(node);
-            if(sm != null) {
-                AXIModel am = AXIModelFactory.getDefault().getModel(sm);
-                SchemaTransformWizard wizard = new SchemaTransformWizard(sm);
-                wizard.show();
-                if(!wizard.isCancelled() && sdo != null)
-                    sdo.setModified(true);
+    protected void performAction(final Node[] node) {
+        assert node.length == 1 :
+                "Length of nodes array should be 1";
+        final TopComponent activatedTC = TopComponent .getRegistry().getActivated();
+        if(activatedTC == null)
+            return;                        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {                    
+                    activatedTC.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    SchemaModel sm = getSchemaModel(node);
+                    if (sm != null) {
+                        AXIModel am = AXIModelFactory.getDefault().getModel(sm);
+                        SchemaTransformWizard wizard = new SchemaTransformWizard(sm);
+                        wizard.show();
+                        if (!wizard.isCancelled() && sdo != null) {
+                            sdo.setModified(true);
+                        }
+                    }
+                } catch (IOException ex) {
+                    activatedTC.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                     DialogDisplayer.getDefault().notify(d);                    
+                } finally {
+                    activatedTC.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
             }
-        } catch (IOException ex) {
-//            ex.printStackTrace();
-        }
+        });
     }
     
     private SchemaModel getSchemaModel(final Node[] node) throws IOException {
@@ -115,7 +133,7 @@ public class SchemaTransformAction extends CookieAction {
     }
     
     private boolean isDocumentOpen(Node[] nodes) {
-        if(nodes == null || nodes.length == 0)
+        if(nodes == null || nodes.length != 1)
             return false;
         SchemaDataObject sDO = nodes[0].getLookup().lookup(
                 SchemaDataObject.class);

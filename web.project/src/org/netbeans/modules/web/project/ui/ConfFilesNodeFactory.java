@@ -54,9 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -84,6 +82,7 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -92,13 +91,12 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -170,85 +168,63 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     }
 
     private static Lookup createLookup(Project project) {
-        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-        // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed(new Object[]{project, rootFolder});
+        if (project.getProjectDirectory().isValid()) {
+            DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+            // XXX Remove root folder after FindAction rewrite
+            return Lookups.fixed(new Object[]{project, rootFolder});
+        } else {
+            return Lookups.fixed(new Object[0]);
+        }
     }
 
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
-        private static final Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
-        private Node projectNode;
+        private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
 
         // icon badging >>>
         private Set files;
-        private Map fileSystemListeners;
+        private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
         private final Object privateLock = new Object();
         private boolean iconChange;
         private boolean nameChange;
         private ChangeListener sourcesListener;
-        private Map groupsListeners;
+        private Map<SourceGroup, PropertyChangeListener> groupsListeners;
         private final Project project;
-        // icon badging <<<
-        private String iconbase = "org/openide/loaders/defaultFolder.gif";
+        private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
-            setIconBaseWithExtension(iconbase);
-
-            FileObject projectDir = prj.getProjectDirectory();
-            try {
-                DataObject projectDo = DataObject.find(projectDir);
-                if (projectDo != null) {
-                    projectNode = projectDo.getNodeDelegate();
-                }
-            } catch (DataObjectNotFoundException e) {
-            }
+            iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
 
+        @Override
         public Image getIcon(int type) {
-            Image img = computeIcon(false, type);
-            return (img != null) ? img : super.getIcon(type);
+            return computeIcon(false, type);
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
-            Image img = computeIcon(true, type);
-            return (img != null) ? img : super.getIcon(type);
+            return computeIcon(true, type);
         }
 
         private Image computeIcon(boolean opened, int type) {
-            if (projectNode == null) {
-                return null;
-            }
-            Image image = opened ? icon2image("Tree.openIcon") : icon2image("Tree.closedIcon"); //NOI18N
-            if (null == image) {
-                image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            }
-            image = Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
-            return image;
+            Image image;
+
+            image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
+            image = ImageUtilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
+
+            return image;        
         }
 
-        private static Image icon2image(String key) {
-            Object obj = UIManager.get(key);
-            if (obj instanceof Image) {
-                return (Image) obj;
-            }
-
-            if (obj instanceof Icon) {
-                Icon icon = (Icon) obj;
-                return Utilities.icon2Image(icon);
-            }
-
-            return null;
-        }
-
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ConfFilesNodeFactory.class, "LBL_Node_Config"); //NOI18N
         }
 
+        @Override
         public javax.swing.Action[] getActions(boolean context) {
             return new javax.swing.Action[]{SystemAction.get(FindAction.class)};
         }
@@ -318,8 +294,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                     group.removePropertyChangeListener(pcl);
                 }
             }
-            groupsListeners = new HashMap();
-            Set roots = new HashSet();
+            groupsListeners = new HashMap<SourceGroup, PropertyChangeListener>();
+            Set<FileObject> roots = new HashSet<FileObject>();
             Iterator it = groups.iterator();
             while (it.hasNext()) {
                 SourceGroup group = (SourceGroup) it.next();
@@ -342,13 +318,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 }
             }
 
-            fileSystemListeners = new HashMap();
+            fileSystemListeners = new HashMap<FileSystem, FileStatusListener>();
             this.files = files;
             if (files == null) {
                 return;
             }
             Iterator it = files.iterator();
-            Set hookedFileSystems = new HashSet();
+            Set<FileSystem> hookedFileSystems = new HashSet<FileSystem>();
             while (it.hasNext()) {
                 FileObject fo = (FileObject) it.next();
                 try {
@@ -367,14 +343,15 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static final class ConfFilesChildren extends Children.Keys {
+    private static final class ConfFilesChildren extends Children.Keys<FileObject> {
 
         private static final String[] wellKnownFiles = {"web.xml", "webservices.xml", "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", "managed-beans.xml"}; //NOI18N
         private final ProjectWebModule pwm;
-        private final HashSet keys;
-        private final java.util.Comparator comparator = new NodeComparator();
+        private final HashSet<FileObject> keys;
+        private final java.util.Comparator<FileObject> comparator = new NodeComparator();
         // Need to hold the conf dir strongly, otherwise it can be garbage-collected.
         private FileObject confDir;
+        private FileObject persistenceXmlDir;
 
         private final FileChangeListener webInfListener = new FileChangeAdapter() {
 
@@ -442,7 +419,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private ConfFilesChildren(ProjectWebModule pwm) {
             this.pwm = pwm;
-            keys = new HashSet();
+            keys = new HashSet<FileObject>();
         }
 
         public static Children forProject(Project project) {
@@ -459,11 +436,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             removeListeners();
         }
 
-        public Node[] createNodes(Object key) {
+        public Node[] createNodes(FileObject fo) {
             Node n = null;
 
-            if (keys.contains(key)) {
-                FileObject fo = (FileObject) key;
+            if (keys.contains(fo)) {
                 try {
                     DataObject dataObject = DataObject.find(fo);
                     n = dataObject.getNodeDelegate().cloneNode();
@@ -501,12 +477,13 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
             addWellKnownFiles();
             addConfDirectoryFiles();
+            addPersistenceXmlDirectoryFiles();
             addServerSpecificFiles();
             addFrameworkFiles();
         }
 
         private void doSetKeys() {
-            final Object[] result = keys.toArray();
+            final FileObject[] result = keys.toArray(new FileObject[keys.size()]);
             java.util.Arrays.sort(result, comparator);
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -545,6 +522,22 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
 
             confDir.addFileChangeListener(anyFileListener);
+        }
+        
+        private void addPersistenceXmlDirectoryFiles() {
+            persistenceXmlDir = pwm.getPersistenceXmlDir();
+            if (persistenceXmlDir == null ||
+                    (confDir != null && FileUtil.toFile(persistenceXmlDir).equals(FileUtil.toFile(confDir)))) {
+                return;
+            }
+            FileObject[] children = persistenceXmlDir.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                if (VisibilityQuery.getDefault().isVisible(children[i])) {
+                    keys.add(children[i]);
+                }
+            }
+
+            persistenceXmlDir.addFileChangeListener(anyFileListener);
         }
 
         private void addServerSpecificFiles() {
@@ -600,11 +593,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             return false;
         }
 
-        private static final class NodeComparator implements java.util.Comparator {
+        private static final class NodeComparator implements java.util.Comparator<FileObject> {
 
-            public int compare(Object o1, Object o2) {
-                FileObject fo1 = (FileObject) o1;
-                FileObject fo2 = (FileObject) o2;
+            public int compare(FileObject fo1, FileObject fo2) {
 
                 int result = compareType(fo1, fo2);
                 if (result == 0) {
@@ -630,6 +621,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             public boolean equals(Object o) {
                 return o instanceof NodeComparator;
             }
+
         }
     }
 }

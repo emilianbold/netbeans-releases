@@ -41,50 +41,17 @@
 
 package org.netbeans.test.xml.schema.general.generation;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JTableOperator;
 
 /**
  *
@@ -108,18 +75,6 @@ public class XMLGeneration_0002 extends XMLGeneration {
     public XMLGeneration_0002(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0002.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0002(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -165,6 +120,12 @@ public class XMLGeneration_0002 extends XMLGeneration {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "XML Document" );
@@ -197,8 +158,8 @@ public class XMLGeneration_0002 extends XMLGeneration {
 
       for( CImportClickData cli : aimpData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jOk = new JButtonOperator( jBrowser, "OK" );

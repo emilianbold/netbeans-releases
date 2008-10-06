@@ -104,8 +104,8 @@ public class FakeRegistrationTest1 extends ModelImplBaseTestCase  {
         
         writeFile(headerFile, " #define QNAME foo\n #define BEGIN class C {\n #define END };\n");
         sleep(500);
-        csmHeader.stateChanged(true);
-        csmSource.stateChanged(true);
+        csmHeader.markReparseNeeded(true);
+        csmSource.markReparseNeeded(true);
         csmSource.scheduleParsing(true);
         
         project.waitParse();

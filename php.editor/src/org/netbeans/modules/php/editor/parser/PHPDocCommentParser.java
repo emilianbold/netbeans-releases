@@ -40,10 +40,10 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 
 /**
@@ -65,18 +65,20 @@ public class PHPDocCommentParser {
      * @return
      */
     public PHPDocBlock parse(final int startOffset, final int endOffset, final String comment) {
+        List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
+        String blockDescription = "";   // description of the block
         if (comment == null || comment.length() == 0) {
-            return null;
+            // issue #142644
+            return new PHPDocBlock(startOffset, endOffset, blockDescription, tags);
         }
 
         Matcher matcher = pattern.matcher(comment);
         int index = 0;
-        String blockDescription = "";   // description of the block
         String line = "";               // one line of the blog
-        String description = "";        // temporary holder for description of block description or tag
-        List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
-
+        String description = "";        // temporary holder for description of block description or tag        
         PHPDocTag.Type lastTag = null;
+        int lastStartIndex = 0;
+        int lastEndIndex = comment.length();
 
         while (matcher.find()) {
             line = comment.substring(index, matcher.start()).trim();
@@ -88,14 +90,16 @@ public class PHPDocCommentParser {
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.trim();  // save the block description
                 } else { // create last recognized tag
-                    PHPDocTag tag = new PHPDocTag(lastTag, description.trim());
+                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                     tags.add(tag);
                 }
                 lastTag = tagType;  // remember the recognized tag
+                lastStartIndex = index;
                 description = "";
                 line = line.substring(tagType.name().length() + 1).trim(); // and the first line of description of the tag
             }
             index = matcher.end();
+            lastEndIndex = matcher.start();
             description = description + line + "\n";
         }
         // last line
@@ -109,24 +113,40 @@ public class PHPDocCommentParser {
             if (lastTag == null) {
                 blockDescription = description.trim();  
             } else {
-                PHPDocTag tag = new PHPDocTag(lastTag, description.trim());
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim());
                 tags.add(tag);
             }
             line = line.substring(tagType.name().length() + 1).trim();
-            PHPDocTag tag = new PHPDocTag(tagType, line);
+            PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line);
             tags.add(tag);
         } else {
             if (lastTag == null) {  // thre is not defined a tag before the last line
                 blockDescription = description + line;
             } else {
                 description = description + line;
-                PHPDocTag tag = new PHPDocTag(lastTag, description);
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description);
                 tags.add(tag);
             }
         }
-        return new PHPDocBlock(startOffset, endOffset, blockDescription, tags);
+        return new PHPDocBlock(startOffset + 3, endOffset, blockDescription, tags);
     }
 
+    private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description) {
+        if (type == PHPDocTag.Type.PROPERTY
+                || type == PHPDocTag.Type.PROPERTY_READ
+                || type == PHPDocTag.Type.PROPERTY_WRITE) {
+            String[] tokens = description.split("[ ]+"); //NOI18N
+            if (tokens.length > 1) {
+                String name = tokens[1].trim();
+                if (name != null && name.length() > 0 && name.charAt(0) == '$') { //NOI18N
+                    name = name.substring(1);
+                }
+                return new PHPDocPropertyTag(start, end, type, name, tokens[0].trim(), description);
+            }
+        }
+        return new PHPDocTag(start, end, type, description);
+    }
+    
     private String removeStarAndTrim(String text) {
         text = text.trim();
         if (text.length() > 0 && text.charAt(0) == '*') {
@@ -140,9 +160,12 @@ public class PHPDocCommentParser {
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.split("[ ]+");
             if (tokens.length > 0) {
-                String tag = tokens[0];
+                String tag = tokens[0].substring(1).toUpperCase();
+                if (tag.indexOf('-') > -1) {
+                    tag = tag.replace('-', '_');
+                }
                 try {
-                    type = PHPDocTag.Type.valueOf(tag.substring(1).toUpperCase());
+                    type = PHPDocTag.Type.valueOf(tag);
                 }
                 catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag

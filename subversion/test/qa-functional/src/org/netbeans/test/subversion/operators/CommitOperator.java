@@ -157,6 +157,7 @@ public class CommitOperator extends NbDialogOperator {
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
             _btCancel = new JButtonOperator(this, "Cancel");
@@ -167,6 +168,7 @@ public class CommitOperator extends NbDialogOperator {
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
             _btHelp = new JButtonOperator(this, "Help");

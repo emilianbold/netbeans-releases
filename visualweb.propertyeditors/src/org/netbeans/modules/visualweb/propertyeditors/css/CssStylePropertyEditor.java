@@ -64,8 +64,22 @@ public class CssStylePropertyEditor extends PropertyEditorBase implements
             return super.getAsText();
         else
             // Do not return "null" string for null value. See bug 122839
-            return "";
+            return null;
      }
+    
+   @Override
+   public void setAsText(String text) throws java.lang.IllegalArgumentException {
+	if (text instanceof String) {
+            if (((String)text).trim().length() == 0 ) {
+                setValue(null);
+            } else {
+                setValue(text);
+            }
+            
+	    return;
+	}
+	throw new java.lang.IllegalArgumentException(text);
+    }
      
     @Override
     public Component getCustomEditor() {

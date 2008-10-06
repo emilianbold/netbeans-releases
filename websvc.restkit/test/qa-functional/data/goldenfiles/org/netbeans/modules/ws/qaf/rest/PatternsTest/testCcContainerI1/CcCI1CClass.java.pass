@@ -1,9 +1,5 @@
 /*
- *  CcCI1CClass
- *
- * Created on March 11, 2008, 10:41 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -13,7 +9,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
@@ -26,7 +22,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class CcCI1CClass {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI1CClass */
     public CcCI1CClass() {
     }
@@ -36,7 +32,7 @@ public class CcCI1CClass {
      * @return an instance of org.codehaus.jettison.json.JSONObject
      */
     @GET
-    @ProduceMime("application/json")
+    @Produces("application/json")
     public JSONObject getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();

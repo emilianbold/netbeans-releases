@@ -79,7 +79,7 @@ public class ThreadsTableModel implements TableModel, Constants {
         //    will throw UnknownTypeException - the value is used for tooltips
         //}
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return "";
@@ -129,37 +129,37 @@ public class ThreadsTableModel implements TableModel, Constants {
             case JPDAThread.STATE_MONITOR:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_OnMonitor"
+                    "CTL_Thread_Status_OnMonitor"
                 );
             case JPDAThread.STATE_NOT_STARTED:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_NotStarted"
+                    "CTL_Thread_Status_NotStarted"
                 );
             case JPDAThread.STATE_RUNNING:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_Running"
+                    "CTL_Thread_Status_Running"
                 );
             case JPDAThread.STATE_SLEEPING:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_Sleeping"
+                    "CTL_Thread_Status_Sleeping"
                 );
             case JPDAThread.STATE_UNKNOWN:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_Unknown"
+                    "CTL_Thread_Status_Unknown"
                 );
             case JPDAThread.STATE_WAIT:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_Waiting"
+                    "CTL_Thread_Status_Waiting"
                 );
             case JPDAThread.STATE_ZOMBIE:
                 return NbBundle.getMessage (
                     ThreadsTableModel.class, 
-                    "CTL_Thread_State_Zombie"
+                    "CTL_Thread_Status_Zombie"
                 );
             default: ErrorManager.getDefault().log(ErrorManager.WARNING, "Unknown thread state: "+state);
                     return null;
@@ -169,7 +169,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_STATE_COLUMN_ID.equals (columnID)) 
                 return true;
@@ -189,7 +189,7 @@ public class ThreadsTableModel implements TableModel, Constants {
     public void setValueAt (Object row, String columnID, Object value) 
     throws UnknownTypeException {
         if (row instanceof MonitorModel.ThreadWithBordel) 
-            row = ((MonitorModel.ThreadWithBordel) row).originalThread;
+            row = ((MonitorModel.ThreadWithBordel) row).getOriginalThread();
         if (row instanceof JPDAThreadGroup) {
             if (THREAD_SUSPENDED_COLUMN_ID.equals (columnID)) {
                 if (((Boolean) value).booleanValue ())

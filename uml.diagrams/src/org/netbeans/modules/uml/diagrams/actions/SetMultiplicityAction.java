@@ -46,14 +46,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
-public final class SetMultiplicityAction extends NodeAction
+public final class SetMultiplicityAction extends SceneNodeAction
 {
     private IAssociationEnd end = null;
     
@@ -86,12 +86,16 @@ public final class SetMultiplicityAction extends NodeAction
     
     protected boolean enable(Node[] activatedNodes)
     {
-        boolean retVal = true;
-        if (end == null)
-        {
-            retVal = false;
-        }
+        boolean retVal = false;
         
+        if(super.enable(activatedNodes) == true)
+        {
+            retVal = true;
+            if (end == null)
+            {
+                retVal = false;
+            }
+        }
         return retVal;
     }
     
@@ -99,10 +103,10 @@ public final class SetMultiplicityAction extends NodeAction
     public Action createContextAwareInstance(Lookup actionContext)
     {
         end = actionContext.lookup(IAssociationEnd.class);
-        if (end == null)
-        {
-            return null;
-        }
+//        if (end == null)
+//        {
+//            return null;
+//        }
         
         return this;
     }

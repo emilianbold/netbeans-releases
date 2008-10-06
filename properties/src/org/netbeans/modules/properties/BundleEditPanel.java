@@ -58,6 +58,7 @@ import javax.swing.table.*;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -170,12 +171,26 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     /** Stops editing if editing is in run. */
     protected void stopEditing() {
+        saveEditorValue(true);
+    }
+
+    /**
+     */
+    protected void saveEditorValue(boolean stopEditing) {
         if (!table.isEditing()) {
             return;
         }
         TableCellEditor cellEdit = table.getCellEditor();
         if (cellEdit != null) {
-            cellEdit.stopCellEditing();
+            if (stopEditing) {
+                cellEdit.stopCellEditing();
+            } else {
+                int row = table.getEditingRow();
+                int col = table.getEditingColumn();
+                if ((row != -1) && (col != -1)) {
+                    table.setValueAt(cellEdit.getCellEditorValue(), row, col);
+                }
+            }
         }
     }
     
@@ -694,13 +709,13 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             if (ascending) {
                 if (iconSortAsc == null) {
                     iconSortAsc = new ImageIcon(
-                            org.openide.util.Utilities.loadImage(SORT_ASC_ICON));
+                            ImageUtilities.loadImage(SORT_ASC_ICON));
                 }
                 return iconSortAsc;
             } else {
                 if (iconSortDesc == null) {
                     iconSortDesc = new ImageIcon(
-                            org.openide.util.Utilities.loadImage(SORT_DESC_ICON));
+                            ImageUtilities.loadImage(SORT_DESC_ICON));
                 }
                 return iconSortDesc;
             }

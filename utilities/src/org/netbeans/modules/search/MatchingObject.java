@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,8 +62,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.netbeans.modules.search.LineReader.LineSeparator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -143,9 +142,9 @@ final class MatchingObject implements PropertyChangeListener {
     private StringBuilder text;
     
     /**
-     * {@code true} if the file's line terminator is other than {@code "\\n"}
+     * list of line separators used in the file
      */
-    boolean wasCrLf = false;
+    LineSeparator[] lineSeparators;
     
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
@@ -458,21 +457,10 @@ final class MatchingObject implements PropertyChangeListener {
         ByteBuffer buf = getByteBuffer();
         if (buf != null) {
             CharBuffer cbuf = decodeByteBuffer(buf, charset);
-            String terminator
-                    = System.getProperty("line.separator");         //NOI18N
-
-            if (!terminator.equals("\n")) {                         //NOI18N
-                Matcher matcher = Pattern.compile(terminator).matcher(cbuf);
-                if (matcher.find()) {
-                    wasCrLf = true;
-                    matcher.reset();
-                    ret = new StringBuilder(
-                                        matcher.replaceAll("\n"));  //NOI18N
-                }
-            }
-            if (ret == null) {
-                ret = new StringBuilder(cbuf);
-            }
+            LineReader reader = new LineReader(cbuf);
+            ret = reader.readText();
+            lineSeparators = reader.getLineSeparators();
+            reader.clear();
         }
         return ret;
     }
@@ -640,7 +628,6 @@ final class MatchingObject implements PropertyChangeListener {
         assert isSelected();
         
         Boolean uniformSelection = checkSubnodesSelection();
-        final boolean shouldReplaceAll = (uniformSelection == Boolean.TRUE);
         final boolean shouldReplaceNone = (uniformSelection == Boolean.FALSE);
         
         if (shouldReplaceNone) {
@@ -742,20 +729,13 @@ final class MatchingObject implements PropertyChangeListener {
         }
         
         if (REALLY_WRITE) {
-            if (wasCrLf) {
-                String terminator
-                        = System.getProperty("line.separator");         //NOI18N
-                //XXX use constant - i.e. on mac, only \r, etc.
-                text = new StringBuilder(
-                        text.toString().replace("\n", terminator));     //NOI18N
-            }
             final FileObject fileObject = getFileObject();
             Writer writer = null;
             try {
                 writer = new OutputStreamWriter(
                         fileObject.getOutputStream(fileLock),
                         charset);
-                writer.write(text.toString());
+                writer.write(makeStringToWrite());
             } finally {
                 if (writer != null) {
                     writer.close();
@@ -765,6 +745,36 @@ final class MatchingObject implements PropertyChangeListener {
             System.err.println("Would write to " + getFile().getPath());//NOI18N
             System.err.println(text);
         }
+    }
+
+    /**
+     */
+    private String makeStringToWrite() {
+        return makeStringToWrite(text, lineSeparators);
+    }
+    
+    /**
+     */
+    static String makeStringToWrite(StringBuilder text,
+                                    LineSeparator[] lineSeparators) {
+        if ((lineSeparators == null) || (lineSeparators.length == 0)) {
+            return text.toString();
+        }
+
+        StringBuilder outBuf = new StringBuilder(text.length()
+                                                 + lineSeparators.length);
+        int from = 0;
+        int index;
+        int separatorIndex = 0;
+        while ((index = text.indexOf("\n", from)) != -1) {              //NOI18N
+            outBuf.append(text.substring(from, index));
+            outBuf.append(lineSeparators[separatorIndex++].getString());
+            from = index + 1;
+        }
+        if (from != text.length()) {
+            outBuf.append(text.substring(from));
+        }
+        return outBuf.toString();
     }
 
     /**

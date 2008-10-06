@@ -1,0 +1,5 @@
+Code completion result for source line:
+$clsVarA2->|aCreateA();//test 5
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
+METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment

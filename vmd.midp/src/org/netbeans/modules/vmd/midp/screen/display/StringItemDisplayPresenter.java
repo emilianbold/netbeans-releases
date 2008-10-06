@@ -54,6 +54,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
  *
@@ -72,13 +73,18 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-
-        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
-        PropertyValue value = getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE);
-        int appearanceMode = MidpTypes.getInteger(value);
+        
+        PropertyValue value = getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE);        
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            int appearanceMode = MidpTypes.getInteger(value);
             label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
             label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
+        }
+        String text = null;
+        if (MidpDatabindingSupport.getConnector(getComponent(), StringItemCD.PROP_TEXT) != null) {
+            text = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/screen/display/Bundle").getString("LBL_Databinding"); //NOI18N 
+        } else {
+            text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
         }
         label.setText(text);
 

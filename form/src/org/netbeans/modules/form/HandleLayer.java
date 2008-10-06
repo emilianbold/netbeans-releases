@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -100,7 +101,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     private ComponentDrag draggedComponent;
     private JPanel dragPanel;
-
+    
     private Point lastMousePosition;
     private int lastXPosDiff;
     private int lastYPosDiff;
@@ -109,6 +110,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private Point prevLeftMousePoint;
     private boolean draggingEnded; // prevents dragging from starting inconveniently
     private int resizeType;
+
+    private boolean draggingSuspended;
 
     private SelectionDragger selectionDragger;
     private Image resizeHandle;
@@ -156,6 +159,18 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         
         dropListener = new NewComponentDropListener();
         dropTarget = new DropTarget(this, dropListener);
+    }
+
+    public boolean isSuspended() {
+        return draggingSuspended;
+    }
+
+    public void suspend() {
+        draggingSuspended = true;
+    }
+
+    public void resume() {
+        draggingSuspended = false;
     }
     
     //expose the drop listener so the MenuEditLayer can access it
@@ -214,11 +229,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         if (draggedComponent != null) {
-            try {
-                FormLAF.setUseDesignerDefaults(getFormModel());
-                draggedComponent.paintFeedback(g2);
-            } finally {
-                FormLAF.setUseDesignerDefaults(null);
+            if (!isSuspended()) {
+                try {
+                    FormLAF.setUseDesignerDefaults(getFormModel());
+                    draggedComponent.paintFeedback(g2);
+                } finally {
+                    FormLAF.setUseDesignerDefaults(null);
+                }
             }
         }
         else { // just paint the selection of selected components
@@ -642,7 +659,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     
     private Image resizeHandle() {
         if (resizeHandle == null) {
-            resizeHandle = new ImageIcon(Utilities.loadImage(
+            resizeHandle = new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/form/resources/resize_handle.png")).getImage(); // NOI18N
         }
         return resizeHandle;
@@ -3008,7 +3025,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (node == null) {
                         icon = paletteItem.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
                         if (icon == null) {
-                            icon = Utilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
+                            icon = ImageUtilities.loadImage("org/netbeans/modules/form/resources/form.gif"); // NOI18N
                         }
                     } else {
                         icon = node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
@@ -3286,7 +3303,5 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 formDesigner.requestActive();
             }
         }
-
     }
-    
 }

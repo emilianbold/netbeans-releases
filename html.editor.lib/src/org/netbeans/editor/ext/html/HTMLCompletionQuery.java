@@ -41,13 +41,9 @@
 
 package org.netbeans.editor.ext.html;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.editor.ext.html.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.awt.Color;
@@ -57,10 +53,9 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.*;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.javadoc.HelpManager;
 import org.netbeans.api.editor.completion.Completion;
@@ -69,7 +64,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -90,7 +85,10 @@ public class HTMLCompletionQuery  {
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
     
+    private static final String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+    
     private static boolean lowerCase;
+    private static boolean isXHTML = false;
     
     private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
     
@@ -111,11 +109,13 @@ public class HTMLCompletionQuery  {
         Class kitClass = Utilities.getKitClass(component);
         BaseDocument doc = (BaseDocument)component.getDocument();
     
-        if (kitClass != null) {
-            lowerCase = SettingsUtil.getBoolean(kitClass,
-                    HTMLSettingsNames.COMPLETION_LOWER_CASE,
-                    HTMLSettingsDefaults.defaultCompletionLowerCase);
-        }
+        //temporarily disabled functionality since we do not have any UI in preferences to change it.
+//        if (kitClass != null) {
+//            lowerCase = SettingsUtil.getBoolean(kitClass,
+//                    HTMLSettingsNames.COMPLETION_LOWER_CASE,
+//                    HTMLSettingsDefaults.defaultCompletionLowerCase);
+//        }
+        lowerCase = true;
         
         if( doc.getLength() == 0 ) return null; // nothing to examine
         HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
@@ -124,6 +124,11 @@ public class HTMLCompletionQuery  {
         
         DTD dtd = sup.getDTD();
         if( dtd == null ) return null; // We have no knowledge about the structure!
+        
+        if(XHTML_PUBLIC_ID.equalsIgnoreCase(dtd.getIdentifier())) {
+            //we are completing xhtml document
+            isXHTML = true;
+        }
         
         doc.readLock();
         try {
@@ -176,7 +181,7 @@ public class HTMLCompletionQuery  {
                 for(int i = 0;i < tagName.length(); i++) {
                     char ch = tagName.charAt(i);
                     if(Character.isLetter(ch)) {
-                        lowerCase = !Character.isUpperCase(tagName.charAt(i));
+                        lowerCase = isXHTML || !Character.isUpperCase(tagName.charAt(i));
                         break;
                     }
                 }
@@ -199,8 +204,12 @@ public class HTMLCompletionQuery  {
             int len = 1;
             
             /* Character reference finder */
-            if( (id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && preText.endsWith( "&" ) ) { // NOI18N
-                result = translateCharRefs( offset-len, len, dtd.getCharRefList( "" ) );
+            int ampIndex = preText.lastIndexOf('&'); //NOI18N
+            if((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > -1) {
+                len = preText.length() - ampIndex;
+                String refNamePrefix = preText.substring(ampIndex + 1);
+                result = translateCharRefs( offset-len, len, dtd.getCharRefList( refNamePrefix ) );
+                
             } else if( id == HTMLTokenId.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;
@@ -293,6 +302,10 @@ public class HTMLCompletionQuery  {
                     elem = sup.getElementChain(offset - 1);
                 }
                 
+                if( elem == null ) {
+                    return null;
+                }
+                
                 if( elem.getType() == SyntaxElement.TYPE_TAG ) { // not endTags
                     SyntaxElement.Tag tagElem = (SyntaxElement.Tag)elem;
                     
@@ -323,7 +336,7 @@ public class HTMLCompletionQuery  {
                         DTD.Attribute attr = (DTD.Attribute)i.next();
                         String aName = attr.getName();
                         if( aName.equals( prefix )
-                        || (!existingAttrsNames.contains( aName.toUpperCase()) && !existingAttrsNames.contains( aName.toLowerCase()))
+                        || (!existingAttrsNames.contains( aName.toUpperCase()) && !existingAttrsNames.contains( aName.toLowerCase(Locale.ENGLISH)))
                         || (wordAtCursor.equals( aName ) && prefix.length() > 0)) {
                             attribs.add( attr );
                         }
@@ -378,7 +391,7 @@ public class HTMLCompletionQuery  {
                     
                     if(argItem.id() != HTMLTokenId.ARGUMENT) return null; // no ArgItem
                     
-                    String argName = argItem.text().toString().toLowerCase();
+                    String argName = argItem.text().toString().toLowerCase(Locale.ENGLISH);
                     
                     DTD.Attribute arg = tag.getAttribute( argName );
                     if( arg == null || arg.getType() != DTD.Attribute.TYPE_SET ) return null;
@@ -422,7 +435,7 @@ public class HTMLCompletionQuery  {
         }
         if (commonLength == preText.trim().length()) {
             ArrayList<CompletionItem> items = new ArrayList<CompletionItem>(1);
-            items.add(new EndTagItem(lowerCase ? tagName.toLowerCase() : tagName, offset - commonLength, commonLength));
+            items.add(new EndTagItem(lowerCase ? tagName.toLowerCase(Locale.ENGLISH) : tagName, offset - commonLength, commonLength));
             return items;
         }
         return null;
@@ -512,12 +525,12 @@ public class HTMLCompletionQuery  {
         
         boolean shift = false;
         
-        private HTMLCompletionResultItemPaintComponent component;
+        private HTMLCompletionItemPC component;
         
         private static final int HTML_ITEMS_SORT_PRIORITY = 20;
         
         public HTMLResultItem( String baseText, int offset, int length ) {
-            this.baseText = lowerCase ? baseText.toLowerCase() : baseText.toUpperCase();
+            this.baseText = lowerCase ? baseText.toLowerCase(Locale.ENGLISH) : baseText.toUpperCase();
             this.offset = offset;
             this.length = length;
             this. helpID = null;
@@ -545,14 +558,14 @@ public class HTMLCompletionQuery  {
         
         public Component getPaintComponent(boolean isSelected) {
             //TODO: the paint component should be caches somehow
-            HTMLCompletionResultItemPaintComponent component = new HTMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+            HTMLCompletionItemPC component = new HTMLCompletionItemPC.StringPaintComponent(getPaintColor());
             component.setSelected(isSelected);
             component.setString(getItemText());
             return component;
         }
         
         public int getPreferredWidth(Graphics g, Font defaultFont) {
-            HTMLCompletionResultItemPaintComponent renderComponent = (HTMLCompletionResultItemPaintComponent)getPaintComponent(false);
+            HTMLCompletionItemPC renderComponent = (HTMLCompletionItemPC)getPaintComponent(false);
             return renderComponent.getPreferredWidth(g, defaultFont);
         }
         
@@ -563,7 +576,7 @@ public class HTMLCompletionQuery  {
             renderComponent.setForeground(defaultColor);
             renderComponent.setBackground(backgroundColor);
             renderComponent.setBounds(0, 0, width, height);
-            ((HTMLCompletionResultItemPaintComponent)renderComponent).paintComponent(g);
+            ((HTMLCompletionItemPC)renderComponent).paintComponent(g);
         }
         
         protected Object getAssociatedObject() {
@@ -608,31 +621,34 @@ public class HTMLCompletionQuery  {
             substituteText(component, substOffset, component.getCaretPosition() - substOffset, shift);
         }
         
-        boolean replaceText( JTextComponent component, String text ) {
-            BaseDocument doc = (BaseDocument)component.getDocument();
-            doc.atomicLock();
-            try {
-                //test whether we are trying to insert sg. what is already present in the text
-                String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
-                if(!text.equals(currentText)) {
-                    //remove common part
-                    doc.remove( offset, length );
-                    doc.insertString( offset, text, null);
-                } else {
-                    int newCaretPos = component.getCaret().getDot() + text.length() - length;
-                    //#82242 workaround - the problem is that in some situations
-                    //1) result item is created and it remembers the remove length
-                    //2) document is changed
-                    //3) RI is substituted.
-                    //this situation shouldn't happen imho and is a problem of CC infrastructure
-                    component.setCaretPosition(newCaretPos < doc.getLength() ? newCaretPos : doc.getLength());
+        boolean replaceText(final JTextComponent component, final String text) {
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final boolean[] result = new boolean[1];
+            result[0] = true;
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        //test whether we are trying to insert sg. what is already present in the text
+                        String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length());
+                        if (!text.equals(currentText)) {
+                            //remove common part
+                            doc.remove(offset, length);
+                            doc.insertString(offset, text, null);
+                        } else {
+                            int newCaretPos = component.getCaret().getDot() + text.length() - length;
+                            //#82242 workaround - the problem is that in some situations
+                            //1) result item is created and it remembers the remove length
+                            //2) document is changed
+                            //3) RI is substituted.
+                            //this situation shouldn't happen imho and is a problem of CC infrastructure
+                            component.setCaretPosition(newCaretPos < doc.getLength() ? newCaretPos : doc.getLength());
+                        }
+                    } catch (BadLocationException ble) {
+                        result[0] = false;
+                    }
                 }
-            } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } finally {
-                doc.atomicUnlock();
-            }
-            return true;
+            });
+            return result[0];
         }
         
         protected void reformat(JTextComponent component, String text) {
@@ -721,36 +737,26 @@ public class HTMLCompletionQuery  {
             }
             return replaced;
         }
-        
-        @Override
-        protected void reformat(JTextComponent component, String text) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
 
-                try {
-                    doc.atomicLock();
-                    try {
-                        int startOffset = Utilities.getRowStart(doc, dotPos);
-                        int endOffset = Utilities.getRowEnd(doc, dotPos);
-                        reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                } finally {
-                    reformat.unlock();
-                }
-            }catch(BadLocationException e) {
-                //ignore
-            }
-        }
-        
         @Override
-                public CharSequence getInsertPrefix() {
+        public CharSequence getInsertPrefix() {
             //disable instant substitution
             return null;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent c) {
+            return false; //do not complete even if we are the only item in the completion
+        }
+        
+        
+    }
+    
+    static class NonHTMLEndTagItem extends EndTagItem {
+        
+        public NonHTMLEndTagItem( String baseText, int offset, int length, int order ) {
+            super( baseText, offset, length, null, order );
+            this.baseText = baseText; //ufff, ugly ... reset the original text back in super we change the case 
         }
         
     }
@@ -796,30 +802,44 @@ public class HTMLCompletionQuery  {
         
         @Override
         protected void reformat(JTextComponent component, String text) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final int dotPos = component.getCaretPosition();
 
-                try {
-                    doc.atomicLock();
-                    try {
-                        int startOffset = Utilities.getRowStart(doc, dotPos);
-                        int endOffset = Utilities.getRowEnd(doc, dotPos);
-                        reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                } finally {
-                    reformat.unlock();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            HtmlIndenter.indentEndTag(doc, languagePath, dotPos, baseText);
+                        }
+                    });
+
+//            //PUT BACK ONCE WE PROPERY IMPLEMENT HTML INDENT TASK
+//            final Indent indent = Indent.get(doc);
+//            indent.lock();
+//            try {
+//                doc.runAtomic(new Runnable() {
+//
+//                    public void run() {
+//                        try {
+//                            int startOffset = Utilities.getRowStart(doc, dotPos);
+//                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+//                            indent.reindent(startOffset, endOffset);
+//                        } catch (BadLocationException ex) {
+//                            //ignore
+//                        }
+//                    }
+//                });
+//            } finally {
+//                indent.unlock();
+//            }
+
                 }
-            }catch(BadLocationException e) {
-                //ignore
+
             }
         }
-        
     }
+        
     
     private static class CharRefItem extends HTMLResultItem {
         
@@ -1063,18 +1083,6 @@ public class HTMLCompletionQuery  {
         
         public Action getGotoSourceAction() {
             return null;
-        }
-    }
-    
-    public static class HTMLCompletionResult extends CompletionQuery.DefaultResult {
-        private int substituteOffset;
-        public HTMLCompletionResult(JTextComponent component, String title, List data, int offset, int len ) {
-            super(component, title, data, offset, len);
-            substituteOffset = offset - len;
-        }
-        
-        public int getSubstituteOffset() {
-            return substituteOffset;
         }
     }
     

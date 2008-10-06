@@ -45,214 +45,415 @@ import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.openide.windows.InputOutput;
 
 /**
- * Descriptor for the execution environment. To build the most common kind
- * of descriptor use {@link Builder}.
+ * Descriptor for the execution environment. Describes the runtime attributes
+ * of the {@link ExecutionService}.
+ * <p>
+ * <i>Thread safety</i> of this class depends on type of objects passed to its
+ * configuration methods. If these objects are immutable, resulting descriptor
+ * is immutable as well. It these objects are thread safe, resulting descriptor
+ * is thread safe as well.
  *
  * @author Petr Hejl
- * @see Builder
+ * @see ExecutionService
  */
 public final class ExecutionDescriptor {
 
-    private Runnable preExecution;
+    private final Runnable preExecution;
 
-    private Runnable postExecution;
+    private final Runnable postExecution;
 
-    private boolean suspend;
+    private final boolean suspend;
 
-    private boolean progress;
+    private final boolean progress;
 
-    private boolean front;
+    private final boolean front;
 
-    private boolean input;
+    private final boolean input;
 
-    private boolean controllable;
+    private final boolean controllable;
 
-    private LineConvertorFactory outConvertorFactory;
+    private final LineConvertorFactory outConvertorFactory;
 
-    private LineConvertorFactory errConvertorFactory;
+    private final LineConvertorFactory errConvertorFactory;
 
-    private InputProcessorFactory outProcessorFactory;
+    private final InputProcessorFactory outProcessorFactory;
 
-    private InputProcessorFactory errProcessorFactory;
+    private final InputProcessorFactory errProcessorFactory;
 
-    private InputOutput inputOutput;
+    private final InputOutput inputOutput;
 
-    private RerunCondition rerunCondition;
+    private final RerunCondition rerunCondition;
 
-    private String optionsPath;
+    private final String optionsPath;
 
-    private ExecutionDescriptor(Builder builder) {
-        this.preExecution = builder.preExecution;
-        this.postExecution = builder.postExecution;
-        this.suspend = builder.suspend;
-        this.progress = builder.progress;
-        this.front = builder.front;
-        this.input = builder.input;
-        this.controllable = builder.controllable;
-        this.outConvertorFactory = builder.outConvertorFactory;
-        this.errConvertorFactory = builder.errConvertorFactory;
-        this.outProcessorFactory = builder.outProcessorFactory;
-        this.errProcessorFactory = builder.errProcessorFactory;
-        this.inputOutput = builder.inputOutput;
-        this.rerunCondition = builder.rerunCondition;
-        this.optionsPath = builder.optionsPath;
+    /**
+     * Creates the new descriptor. All properties are initalized to
+     * <code>null</code> or <code>false</code>.
+     */
+    public ExecutionDescriptor() {
+        this(new DescriptorData());
+    }
+
+    private ExecutionDescriptor(DescriptorData data) {
+        this.preExecution = data.preExecution;
+        this.postExecution = data.postExecution;
+        this.suspend = data.suspend;
+        this.progress = data.progress;
+        this.front = data.front;
+        this.input = data.input;
+        this.controllable = data.controllable;
+        this.outConvertorFactory = data.outConvertorFactory;
+        this.errConvertorFactory = data.errConvertorFactory;
+        this.outProcessorFactory = data.outProcessorFactory;
+        this.errProcessorFactory = data.errProcessorFactory;
+        this.inputOutput = data.inputOutput;
+        this.rerunCondition = data.rerunCondition;
+        this.optionsPath = data.optionsPath;
     }
 
     /**
-     * Returns the <i>custom</i> io to use. May return <code>null</code>
-     * which means that client is fine with infrustructure provided io (visible
-     * as tab in output pane).
+     * Returns a descriptor with configured <i>custom</i> io. When configured
+     * to <code>null</code> it means that client is fine with infrustructure
+     * provided io (visible as tab in output pane).
      * <p>
-     * If returned value is not <code>null</code> methods {@link #isControllable()},
-     * {@link #getRerunCondition()} and {@link #getOptionsPath()} have
-     * no meaning and are ignored.
+     * If configured value is not <code>null</code> values configured via
+     * methods {@link #controllable(boolean)}, {@link #rerunCondition(RerunCondition)}
+     * and {@link #getOptionsPath()} and are ignored by {@link ExecutionService}.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the <i>custom</i> io to use; may return <code>null</code>
+     * @param io custom input output, <code>null</code> allowed
+     * @return new descriptor with configured custom io
      */
-    public InputOutput getInputOutput() {
+    public ExecutionDescriptor inputOutput(InputOutput io) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.inputOutput(io));
+    }
+
+    InputOutput getInputOutput() {
         return inputOutput;
     }
 
     /**
-     * Returns <code>true</code> if the control buttons (rerun, stop) should
-     * be available in io tab.
+     * Returns a descriptor with configured controllable flag. When
+     * <code>true</code> the control buttons (rerun, stop) will be available
+     * io tab created by {@link ExecutionService}.
      * <p>
-     * Note that this property has no meaning when custom io
-     * ({@link #getInputOutput}) is used.
+     * Note that this property has no meaning when custom io is used
+     * (see {@link #inputOutput(org.openide.windows.InputOutput)}).
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return <code>true</code> if the control buttons (rerun, stop) should
-     *             be available in io tab
+     * @param controllable controllable flag
+     * @return new descriptor with configured controllable flag
      */
-    public boolean isControllable() {
+    public ExecutionDescriptor controllable(boolean controllable) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.controllable(controllable));
+    }
+
+    boolean isControllable() {
         return controllable;
     }
 
     /**
-     * Returns <code>true</code> if the io should be selected before
-     * the execution.
+     * Returns a descriptor with configured front window flag. When
+     * <code>true</code> the io tab will be selected before the execution
+     * invoked by {@link ExecutionService#run()}.
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return <code>true</code> if the io should be selected before
-     *             the execution
+     * @param frontWindow front window flag
+     * @return new descriptor with configured front window flag
      */
-    public boolean isFrontWindow() {
+    public ExecutionDescriptor frontWindow(boolean frontWindow) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.frontWindow(frontWindow));
+    }
+
+    boolean isFrontWindow() {
         return front;
     }
 
     /**
-     * Returns <code>true</code> if the input from user is allowed.
+     * Returns a descriptor with configured input visible flag. When configured
+     * value is <code>true</code> the input from user will be allowed.
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return <code>true</code> if the input from user is allowed
+     * @param inputVisible input visible flag
+     * @return new descriptor with configured input visible flag
      */
-    public boolean isInputVisible() {
+    public ExecutionDescriptor inputVisible(boolean inputVisible) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.inputVisible(inputVisible));
+    }
+
+    boolean isInputVisible() {
         return input;
     }
 
     /**
-     * Returns <code>true</code> if progress bar should be visible.
+     * Returns a descriptor with configured show progress flag. When configured
+     * value is <code>true</code> the progress bar will be visible.
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return <code>true</code> if progress bar should be visible
+     * @param showProgress show progress flag
+     * @return new descriptor with configured show progress flag
      */
-    public boolean showProgress() {
+    public ExecutionDescriptor showProgress(boolean showProgress) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.showProgress(showProgress));
+    }
+
+    boolean showProgress() {
         return progress;
     }
 
     /**
-     * Returns <code>true</code> if progress bar should suspended to just
+     * Returns a descriptor with configured show suspend flag. When configured
+     * value is <code>true</code> the progress bar will be suspended to just
      * "running" message.
+     * <p>
+     * The default (not configured) value is <code>false</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return <code>true</code> if progress bar should suspended to just
-     *             "running" message
+     * @param showSuspended show suspended flag
+     * @return new descriptor with configured show suspended flag
      */
-    public boolean showSuspended() {
+    public ExecutionDescriptor showSuspended(boolean showSuspended) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.showSuspended(showSuspended));
+    }
+
+    boolean showSuspended() {
         return suspend;
     }
 
     /**
-     * Returns the factory for additional processor to use for standard output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * Returns a descriptor with configured factory for standard output
+     * processor. The factory is used by {@link ExecutionService} to create
+     * additional processor for standard output.
+     * <p>
+     * Note that {@link ExecutionService} always automatically uses
+     * the printing processor created by
+     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the factory for additional processor to use for standard output
+     * @param outProcessorFactory factory for standard output processor,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for additional
+     *             processor to use for standard output
      */
-    public InputProcessorFactory getOutProcessorFactory() {
+    public ExecutionDescriptor outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.outProcessorFactory(outProcessorFactory));
+    }
+
+    InputProcessorFactory getOutProcessorFactory() {
         return outProcessorFactory;
     }
 
     /**
-     * Returns the factory for additional processor to use for standard error output.
-     * {@link ExecutionService} automatically uses the printing one.
+     * Returns a descriptor with configured factory for standard error output
+     * processor. The factory is used by {@link ExecutionService} to create
+     * additional processor for standard error output.
+     * <p>
+     * Note that {@link ExecutionService} always automatically uses
+     * the printing processor created by
+     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the factory for additional processor to use for standard error output
+     * @param errProcessorFactory factory for standard error output processor,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for additional
+     *             processor to use for standard error output
      */
-    public InputProcessorFactory getErrProcessorFactory() {
+    public ExecutionDescriptor errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.errProcessorFactory(errProcessorFactory));
+    }
+
+    InputProcessorFactory getErrProcessorFactory() {
         return errProcessorFactory;
     }
 
     /**
-     * Returns the factory for convertor to use with processor printing the standard
-     * output (that used by {@link ExecutionService} automatically.
+     * Returns a descriptor with configured factory for convertor for standard
+     * output. The factory is used by {@link ExecutionService} to create
+     * convertor to use with processor printing the standard output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard output. Convertor created by the returned factory will
+     * be passed to this default printing processor. See
+     * {@link #getOutProcessorFactory()} too.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the factory for convertor to use with processor printing
-     *             the standard output
+     * @param convertorFactory factory for convertor for standard output,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for converter for
+     *             standard output
      */
-    public LineConvertorFactory getOutConvertorFactory() {
+    public ExecutionDescriptor outConvertorFactory(LineConvertorFactory convertorFactory) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.outConvertorFactory(convertorFactory));
+    }
+
+    LineConvertorFactory getOutConvertorFactory() {
         return outConvertorFactory;
     }
 
     /**
-     * Returns the factory for convertor to use with processor printing the standard
-     * error output (that used by {@link ExecutionService} automatically.
+     * Returns a descriptor with configured factory for convertor for standard
+     * error output. The factory is used by {@link ExecutionService} to create
+     * convertor to use with processor printing the standard error output.
+     * <p>
+     * Note that {@link ExecutionService} always uses the printing processor
+     * for the standard error output. Convertor created by the returned
+     * factory will be passed to this default printing processor. See
+     * {@link #getErrProcessorFactory()} too.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the factory for convertor to use with processor printing
-     *             the standard error output
+     * @param convertorFactory factory for convertor for standard error output,
+     *             <code>null</code> allowed
+     * @return new descriptor with configured factory for converter for
+     *             standard error output
      */
-    public LineConvertorFactory getErrConvertorFactory() {
+    public ExecutionDescriptor errConvertorFactory(LineConvertorFactory convertorFactory) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.errConvertorFactory(convertorFactory));
+    }
+
+    LineConvertorFactory getErrConvertorFactory() {
         return errConvertorFactory;
     }
 
     /**
-     * Returns the runnable to execute <i>before</i> the external execution itself;
-     * may return <code>null</code>.
+     * Returns a descriptor with configured pre execution runnable. This
+     * runnable is executed <i>before</i> the external execution itself
+     * (when invoked by {@link ExecutionService#run()}).
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the runnable to execute <i>before</i> the external execution itself;
-     *             may return <code>null</code>
+     * @param preExecution pre execution runnable, <code>null</code> allowed
+     * @return new descriptor with configured pre execution runnable
      */
-    public Runnable getPreExecution() {
+    public ExecutionDescriptor preExecution(Runnable preExecution) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.preExecution(preExecution));
+    }
+
+    Runnable getPreExecution() {
         return preExecution;
     }
 
     /**
-     * Returns the runnable to execute <i>after</i> the external execution itself;
-     * may return <code>null</code>.
+     * Returns a descriptor with configured post execution runnable. This
+     * runnable is executed <i>after</i> the external execution itself
+     * (when invoked by {@link ExecutionService#run()}).
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the runnable to execute <i>after</i> the external execution itself;
-     *             may return <code>null</code>
+     * @param postExecution post execution runnable, <code>null</code> allowed
+     * @return new descriptor with configured post execution runnable
      */
-    public Runnable getPostExecution() {
+    public ExecutionDescriptor postExecution(Runnable postExecution) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.postExecution(postExecution));
+    }
+
+    Runnable getPostExecution() {
         return postExecution;
     }
 
     /**
-     * Returns the condition to control the possibility of the rerun action;
-     * may return <code>null</code>.
+     * Returns a descriptor with configured rerun condition. The condition
+     * is used by {@link ExecutionService} to control the possibility of the
+     * rerun action.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the condition to control the possibility of the rerun action;
-     *             may return <code>null</code>
+     * @param rerunCondition rerun condition, <code>null</code> allowed
+     * @return new descriptor with configured rerun condition
      */
-    public RerunCondition getRerunCondition() {
+    public ExecutionDescriptor rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.rerunCondition(rerunCondition));
+    }
+
+    RerunCondition getRerunCondition() {
         return rerunCondition;
     }
 
     /**
-     * Returns the options path, may be <code>null</code>. If not
-     * <code>null</code> the {@link ExecutionService} will display the button
-     * in the output tab displaying the proper options when pressed.
+     * Returns a descriptor with configured options path. If not configured
+     * value is not <code>null</code> the {@link ExecutionService} will
+     * display the button in the output tab displaying the proper options
+     * when pressed.
      * <p>
      * Format of the parameter is described in
      * {@link org.netbeans.api.options.OptionsDisplayer#open(java.lang.String)}.
+     * <p>
+     * Note that this property has no meaning when custom io is used
+     * (see {@link #inputOutput(org.openide.windows.InputOutput)}).
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
      *
-     * @return the options path if any, may be <code>null</code>
+     * @param optionsPath options path, <code>null</code> allowed
+     * @return this descriptor with configured options path
      */
-    public String getOptionsPath() {
+    public ExecutionDescriptor optionsPath(String optionsPath) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.optionsPath(optionsPath));
+    }
+
+    String getOptionsPath() {
         return optionsPath;
     }
 
@@ -312,14 +513,7 @@ public final class ExecutionDescriptor {
 
     }
 
-    /**
-     * This class is used to create execution descriptors.
-     * <p>
-     * This class in <i>not thread safe</i>.
-     *
-     * @author Petr Hejl
-     */
-    public static final class Builder {
+    private static final class DescriptorData {
 
         private Runnable preExecution;
 
@@ -349,224 +543,96 @@ public final class ExecutionDescriptor {
 
         private String optionsPath;
 
-        /**
-         * Creates the new builder. All properites of the builder are configured
-         * to <code>false</code> or <code>null</code>.
-         */
-        public Builder() {
+        public DescriptorData() {
             super();
         }
 
-        /**
-         * Sets this builder's custom io. ExecutionDescriptor subsequently created
-         * by {@link #create()} method will return this io on
-         * {@link ExecutionDescriptor#getInputOutput()}.
-         *
-         * @param io custom input output, <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getInputOutput()
-         */
-        public Builder inputOutput(InputOutput io) {
+        public DescriptorData(ExecutionDescriptor descriptor) {
+            this.preExecution = descriptor.preExecution;
+            this.postExecution = descriptor.postExecution;
+            this.suspend = descriptor.suspend;
+            this.progress = descriptor.progress;
+            this.front = descriptor.front;
+            this.input = descriptor.input;
+            this.controllable = descriptor.controllable;
+            this.outConvertorFactory = descriptor.outConvertorFactory;
+            this.errConvertorFactory = descriptor.errConvertorFactory;
+            this.outProcessorFactory = descriptor.outProcessorFactory;
+            this.errProcessorFactory = descriptor.errProcessorFactory;
+            this.inputOutput = descriptor.inputOutput;
+            this.rerunCondition = descriptor.rerunCondition;
+            this.optionsPath = descriptor.optionsPath;
+        }
+
+        public DescriptorData inputOutput(InputOutput io) {
             this.inputOutput = io;
             return this;
         }
 
-        /**
-         * Sets this builder's controllable flag. ExecutionDescriptor subsequently
-         * created by {@link #create()} method will return this flag on
-         * {@link ExecutionDescriptor#isControllable()}.
-         *
-         * @param controllable controllable flag
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#isControllable()
-         */
-        public Builder controllable(boolean controllable) {
+        public DescriptorData controllable(boolean controllable) {
             this.controllable = controllable;
             return this;
         }
 
-        /**
-         * Sets this builder's front window flag. ExecutionDescriptor subsequently
-         * created by {@link #create()} method will return this flag on
-         * {@link ExecutionDescriptor#isFrontWindow()}.
-         *
-         * @param frontWindow front window flag
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#isFrontWindow()
-         */
-        public Builder frontWindow(boolean frontWindow) {
+        public DescriptorData frontWindow(boolean frontWindow) {
             this.front = frontWindow;
             return this;
         }
 
-        /**
-         * Sets this builder's input visible flag. ExecutionDescriptor subsequently
-         * created by {@link #create()} method will return this flag on
-         * {@link ExecutionDescriptor#isInputVisible()}.
-         *
-         * @param inputVisible input visible flag
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#isInputVisible()
-         */
-        public Builder inputVisible(boolean inputVisible) {
+        public DescriptorData inputVisible(boolean inputVisible) {
             this.input = inputVisible;
             return this;
         }
 
-        /**
-         * Sets this builder's show progress flag. ExecutionDescriptor subsequently
-         * created by {@link #create()} method will return this flag on
-         * {@link ExecutionDescriptor#showProgress()}.
-         *
-         * @param showProgress show progress flag
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#showProgress()
-         */
-        public Builder showProgress(boolean showProgress) {
+        public DescriptorData showProgress(boolean showProgress) {
             this.progress = showProgress;
             return this;
         }
 
-        /**
-         * Sets this builder's show suspend flag. ExecutionDescriptor subsequently
-         * created by {@link #create()} method will return this flag on
-         * {@link ExecutionDescriptor#showSuspended()}.
-         *
-         * @param showSuspended show suspended
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#showSuspended()
-         */
-        public Builder showSuspended(boolean showSuspended) {
+        public DescriptorData showSuspended(boolean showSuspended) {
             this.suspend = showSuspended;
             return this;
         }
 
-        /**
-         * Sets this builder's factory for standard output processor. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * factory on {@link ExecutionDescriptor#getOutProcessorFactory()}.
-         *
-         * @param outProcessorFactory factory for standard output processor,
-         *             <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getOutProcessorFactory()
-         */
-        public Builder outProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        public DescriptorData outProcessorFactory(InputProcessorFactory outProcessorFactory) {
             this.outProcessorFactory = outProcessorFactory;
             return this;
         }
 
-        /**
-         * Sets this builder's factory for standard error output processor. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * factory on {@link ExecutionDescriptor#getErrProcessorFactory()}.
-         *
-         * @param errProcessorFactory factory for standard error output processor,
-         *             <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getErrProcessorFactory()
-         */
-        public Builder errProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        public DescriptorData errProcessorFactory(InputProcessorFactory errProcessorFactory) {
             this.errProcessorFactory = errProcessorFactory;
             return this;
         }
 
-        /**
-         * Sets this builder's factory for convertor for standard output. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * convertor on {@link ExecutionDescriptor#getOutConvertorFactory()}.
-         *
-         * @param convertorFactory factory for convertor for standard output,
-         *             <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getOutConvertorFactory()
-         */
-        public Builder outConvertorFactory(LineConvertorFactory convertorFactory) {
+        public DescriptorData outConvertorFactory(LineConvertorFactory convertorFactory) {
             this.outConvertorFactory = convertorFactory;
             return this;
         }
 
-        /**
-         * Sets this builder's factory for convertor for standard error output.
-         * ExecutionDescriptor subsequently created by {@link #create()} method
-         * will return this convertor on {@link ExecutionDescriptor#getErrConvertorFactory()}.
-         *
-         * @param convertorFactory factory for convertor for standard error output,
-         *             <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getErrConvertorFactory()
-         */
-        public Builder errConvertorFactory(LineConvertorFactory convertorFactory) {
+        public DescriptorData errConvertorFactory(LineConvertorFactory convertorFactory) {
             this.errConvertorFactory = convertorFactory;
             return this;
         }
 
-        /**
-         * Sets this builder's pre execution runnable. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * runnable on {@link ExecutionDescriptor#getPreExecution()}.
-         *
-         * @param preExecution pre exceution runnable, <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getPreExecution()
-         */
-        public Builder preExecution(Runnable preExecution) {
+        public DescriptorData preExecution(Runnable preExecution) {
             this.preExecution = preExecution;
             return this;
         }
 
-        /**
-         * Sets this builder's post execution runnable. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * runnable on {@link ExecutionDescriptor#getPostExecution()}.
-         *
-         * @param postExecution post execution runnable, <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getPostExecution()
-         */
-        public Builder postExecution(Runnable postExecution) {
+        public DescriptorData postExecution(Runnable postExecution) {
             this.postExecution = postExecution;
             return this;
         }
 
-        /**
-         * Sets this builder's rerun condition. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * condition on {@link ExecutionDescriptor#getRerunCondition()}.
-         *
-         * @param rerunCondition rerun condition, <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getRerunCondition()
-         */
-        public Builder rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
+        public DescriptorData rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
             this.rerunCondition = rerunCondition;
             return this;
         }
 
-        /**
-         * Sets this builder's options path. ExecutionDescriptor
-         * subsequently created by {@link #create()} method will return this
-         * path on {@link ExecutionDescriptor#getOptionsPath()}.
-         *
-         * @param optionsPath options path, <code>null</code> allowed
-         * @return this descriptor builder
-         * @see ExecutionDescriptor#getOptionsPath()
-         */
-        public Builder optionsPath(String optionsPath) {
+        public DescriptorData optionsPath(String optionsPath) {
             this.optionsPath = optionsPath;
             return this;
         }
 
-        /**
-         * Creates the new {@link ExecutionDescriptor} based on the properties
-         * configured in this builder.
-         *
-         * @return the new {@link ExecutionDescriptor} based on the properties
-         *             configured in this builder
-         */
-        public ExecutionDescriptor create() {
-            return new ExecutionDescriptor(this);
-        }
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,68 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class IntNodeProp extends Node.Property {
-    private IntConfiguration intConfiguration;
-    private boolean canWrite;
-    private String txt1;
-    private String txt2;
-    private String txt3;
 
-    public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
+    private final IntConfiguration intConfiguration;
+    private final String unused;
+    private final String name;
+    private final String description;
+
+    private boolean canWrite;
+    IntEditor intEditor = null;
+
+    public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String unused, String name, String description) {
         super(Integer.class);
         this.intConfiguration = intConfiguration;
-	this.canWrite = canWrite;
-	this.txt1 = txt1;
-	this.txt2 = txt2;
-	this.txt3 = txt3;
+        this.canWrite = canWrite;
+        this.unused = unused;
+        this.name = name;
+        this.description = description;
     }
 
     @Override
     public String getName() {
-	return txt2;
+        return name;
     }
 
     @Override
     public String getShortDescription() {
-	return txt3;
+        return description;
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
-        if (intConfiguration.getModified())
+        if (intConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        else
+        }
+        else {
             return null;
+        }
     }
-    
+
     public Object getValue() {
         return new Integer(intConfiguration.getValue());
     }
-    
+
     public void setValue(Object v) {
-        intConfiguration.setValue((String)v);
+        intConfiguration.setValue((String) v);
     }
-    
+
     @Override
     public void restoreDefaultValue() {
         intConfiguration.reset();
     }
-    
+
     @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return !intConfiguration.getModified();
@@ -108,32 +110,40 @@ public class IntNodeProp extends Node.Property {
     public boolean canWrite() {
         return canWrite;
     }
-    
+
+    public void setCanWrite(boolean canWrite) {
+        this.canWrite = canWrite;
+    }
+
     public boolean canRead() {
         return true;
     }
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+        if (intEditor == null) {
+            intEditor = new IntEditor();
+        }
+        return intEditor;
     }
 
     private class IntEditor extends PropertyEditorSupport {
+
         @Override
         public String getJavaInitializationString() {
             return getAsText();
         }
-        
+
         @Override
         public String getAsText() {
             return intConfiguration.getName();
         }
-        
+
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             setValue(text);
         }
-        
+
         @Override
         public String[] getTags() {
             return intConfiguration.getNames();

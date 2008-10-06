@@ -49,13 +49,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
-import javax.swing.text.StyledDocument;
 
 
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.actions.*;
 import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.OpenCookie;
@@ -70,7 +71,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
@@ -95,16 +95,23 @@ public class DataEditorSupportTest extends NbTestCase {
     public DataEditorSupportTest(String s) {
         super(s);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+    @Override
     protected void setUp () throws Exception {
         RUNNING = this;
         
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
         org.openide.filesystems.Repository.getDefault ().addFileSystem (fs);
         org.openide.filesystems.FileObject root = fs.getRoot ();
-        fileObject = new MyFileObject (org.openide.filesystems.FileUtil.createData (root, "my.obj"));
+        fileObject = new MyFileObject (org.openide.filesystems.FileUtil.createData (root, "my" + getName() + ".obj"));
     }
     
+    @Override
     protected void tearDown () throws Exception {
         waitEQ ();
         
@@ -112,6 +119,7 @@ public class DataEditorSupportTest extends NbTestCase {
         org.openide.filesystems.Repository.getDefault ().removeFileSystem (fs);
     }
     
+    @Override
     protected boolean runInEQ() {
         return false;
     }
@@ -121,10 +129,10 @@ public class DataEditorSupportTest extends NbTestCase {
     }
 
     DES support () throws Exception {
-        DataObject obj = DataObject.find (fileObject);
+        DataObject tmpObj = DataObject.find (fileObject);
         
-        assertEquals ("My object was created", MyDataObject.class, obj.getClass ());
-        Object cookie = obj.getCookie (org.openide.cookies.OpenCookie.class);
+        assertEquals ("My object was created", MyDataObject.class, tmpObj.getClass ());
+        Object cookie = tmpObj.getCookie (org.openide.cookies.OpenCookie.class);
         assertNotNull ("Our object has this cookie", cookie);
         assertEquals ("It is my cookie", DES.class, cookie.getClass ());
         
@@ -158,10 +166,12 @@ public class DataEditorSupportTest extends NbTestCase {
         
         
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1208
     public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (-1);
     }
+    @RandomlyFails // NB-Core-Build #1434
     public void testGetOpenedPanesWorksAfterDeserializationIfTheFileGetsBig () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (1024 * 1024 * 10);
     }
@@ -189,7 +199,7 @@ public class DataEditorSupportTest extends NbTestCase {
         assertNotNull (panes);
         assertEquals ("One is there", 1, panes.length);
         
-        NbMarshalledObject obj = new NbMarshalledObject (ed);
+        NbMarshalledObject marshall = new NbMarshalledObject (ed);
         ed.close ();
         
         panes = getPanes();
@@ -200,7 +210,7 @@ public class DataEditorSupportTest extends NbTestCase {
         
         expectedSize = size;
         
-        ed = (CloneableEditor)obj.get ();
+        ed = (CloneableEditor)marshall.get ();
         
         DataObject newObj = DataObject.find (fileObject);
         
@@ -231,18 +241,6 @@ public class DataEditorSupportTest extends NbTestCase {
         env.fileLock.releaseLock();
     }
     
-    public void testFileEncodingQuery () throws Exception {
-        DES des = support();
-        FileEncodingQueryImpl.getDefault().reset();
-        StyledDocument doc = des.openDocument();
-        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
-        FileEncodingQueryImpl.getDefault().reset();
-        doc.insertString(doc.getLength(), " Added text.", null);
-        des.saveDocument();        
-        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
-        assertEquals(" Added text.", content);
-    }
-    
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.
      */
@@ -267,6 +265,7 @@ public class DataEditorSupportTest extends NbTestCase {
                 public ContentStream() {
                     openStreams = -1;
                 }
+                @Override
                 public void close () throws java.io.IOException {
                     if (openStreams != -1) {
                         IOException ex = new IOException("One output stream");
@@ -455,6 +454,7 @@ public class DataEditorSupportTest extends NbTestCase {
         private static FileEncodingQueryImpl instance;
         
         private FileObject file;
+        private Exception who;
         
         private FileEncodingQueryImpl () {
             
@@ -464,6 +464,7 @@ public class DataEditorSupportTest extends NbTestCase {
             InputStream is  = null;
             try {
                 this.file = file;
+                this.who = new Exception("Assigned from here");
                 byte[] arr = new byte[4096];
                 is = file.getInputStream();
                 is.read(arr);
@@ -483,6 +484,7 @@ public class DataEditorSupportTest extends NbTestCase {
         
         public void reset () {
             this.file = null;
+            this.who = new Exception("Cleaned from here");
         }
         
         public FileObject getFile () {
@@ -494,7 +496,15 @@ public class DataEditorSupportTest extends NbTestCase {
                 instance = new FileEncodingQueryImpl ();
             }
             return instance;
-        }                
+        }
+
+        private void assertFile(FileObject primaryFile) {
+            if (!primaryFile.equals(file)) {
+                AssertionFailedError afe = new AssertionFailedError("Files shall be the same:\nExpected:" + primaryFile + "\nReal    :" + file);
+                afe.initCause(who);
+                throw afe;
+            }
+        }
     }
 
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
@@ -534,6 +544,7 @@ public class DataEditorSupportTest extends NbTestCase {
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MyDataObject(this, primaryFile);
         }
+        @Override
         protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
             primary++;
             return new org.openide.loaders.FileEntry (obj, primaryFile);
@@ -550,6 +561,7 @@ public class DataEditorSupportTest extends NbTestCase {
             return new DES (this, new MyEnv (this)); 
         }
         
+        @Override
         protected Node createNodeDelegate() {
             return new MyNode(this, Children.LEAF); 
         }
@@ -562,6 +574,7 @@ public class DataEditorSupportTest extends NbTestCase {
             super(obj, ch);
         }
         
+        @Override
         public String getHtmlDisplayName() {
             return "<b>" + getDisplayName() + "</b>";
         }

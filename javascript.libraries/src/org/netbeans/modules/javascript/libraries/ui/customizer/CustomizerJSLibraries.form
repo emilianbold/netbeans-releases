@@ -16,22 +16,23 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="libLocationJLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="libLocationJTextField" pref="419" max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="librariesListLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="libTableScrollPane" pref="446" max="32767" attributes="0"/>
+                          <Component id="libraryListLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="librariesListScrollPane" pref="363" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="addLibraryJButton" max="32767" attributes="1"/>
-                          <Component id="removeLibraryJButton" alignment="1" max="32767" attributes="1"/>
+                          <Component id="removeLibraryJButton" max="32767" attributes="1"/>
+                          <Component id="addLibraryJButton" alignment="1" min="-2" pref="110" max="-2" attributes="1"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="locationLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="locationDisplay" pref="431" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -40,67 +41,61 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="libLocationJLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="libLocationJTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
-              <Component id="librariesListLabel" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <Component id="libraryListLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="addLibraryJButton" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="addLibraryJButton" min="-2" pref="29" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeLibraryJButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="libTableScrollPane" pref="232" max="32767" attributes="0"/>
+                  <Component id="librariesListScrollPane" pref="252" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="locationDisplay" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="libLocationJLabel">
+    <Component class="javax.swing.JLabel" name="locationLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="libLocationJTextField"/>
+          <ComponentRef name="locationDisplay"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.libLocationJLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.locationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JTextField" name="libLocationJTextField">
-      <Properties>
-        <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="JSLibraryProjectUtils.getJSLibrarySourcePath(project)" type="code"/>
+    <Component class="javax.swing.JTextField" name="locationDisplay">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.locationDisplay.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-      </Properties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.locationDisplay.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="librariesListLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="librariesJList"/>
+    <Container class="javax.swing.JScrollPane" name="librariesListScrollPane">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.librariesListScrollPane.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.librariesListLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AuxValues>
-        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="libTableScrollPane">
+      </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JList" name="librariesJList">
+        <Component class="javax.swing.JList" name="librariesList">
           <Properties>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
               <StringArray count="5">
@@ -112,15 +107,41 @@
               </StringArray>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.librariesList.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.librariesList.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="libraryListLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="librariesList"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.libraryListLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
     <Component class="javax.swing.JButton" name="addLibraryJButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.addLibraryJButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.addLibraryJButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addLibraryJButtonActionPerformed"/>
       </Events>
@@ -134,6 +155,11 @@
           <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.removeLibraryJButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/libraries/ui/customizer/Bundle.properties" key="CustomizerJSLibraries.removeLibraryJButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeLibraryJButtonActionPerformed"/>
       </Events>

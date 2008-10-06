@@ -1,0 +1,4 @@
+Code completion result for source line:
+$bVa|r = new cls_B();
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   cls_B $bVar                                insideClass2.php

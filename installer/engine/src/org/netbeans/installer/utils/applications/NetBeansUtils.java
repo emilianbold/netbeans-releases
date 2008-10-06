@@ -41,9 +41,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -207,25 +209,32 @@ public class NetBeansUtils {
             FileUtils.deleteFile(license_accepted);
         }
     }
-    public static FilesList createMetricsEnabledMarker(File nbLocation) throws IOException {
-        File nbCluster = getNbCluster(nbLocation);
-        
-        File metricsEnabled = new File(nbCluster, METRICS_ENABLED);
-        
-        if (!metricsEnabled.exists()) {
-            return FileUtils.writeFile(metricsEnabled, "");
-        } else {
-            return new FilesList();
-        }
-    }
     
-    public static void removeMetricsEnabledMarker(File nbLocation) throws IOException {
-        File nbCluster = getNbCluster(nbLocation);
-        
-        File metricsEnabled = new File(nbCluster, METRICS_ENABLED);
-        
-        if (metricsEnabled.exists()) {
-            FileUtils.deleteFile(metricsEnabled);
+    public static FilesList setUsageStatistics(File nbLocation, boolean enabled) throws IOException {
+        File file = new File(getNbCluster(nbLocation), CORE_PROPERTIES);
+        String prop = USAGE_STATISTICS_ENABLED_PROPERTY + "=" + enabled;
+        if (!file.exists()) {
+            return FileUtils.writeFile(file,
+                    prop);
+        } else {
+            List<String> list = FileUtils.readStringList(file);
+            boolean exist = false;
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
+                if (s.startsWith(USAGE_STATISTICS_ENABLED_PROPERTY)) {
+                    exist = true;
+                    if (!s.endsWith("" + enabled)) {
+                        list.remove(i);
+                        list.add(prop);
+                    }
+                    break;
+                }
+            }
+            if (!exist) {
+                list.add(prop);
+            }
+            FileUtils.writeStringList(file, list);
+            return new FilesList();
         }
     }
     
@@ -728,8 +737,10 @@ public class NetBeansUtils {
             "config/productid"; // NOI18N
     public static final String LICENSE_ACCEPTED =
             "var/license_accepted"; // NOI18N
-    public static final String METRICS_ENABLED =
-            "var/metrics_enabled";
+    public static final String CORE_PROPERTIES =
+            "config/Preferences/org/netbeans/core.properties";
+    public static final String USAGE_STATISTICS_ENABLED_PROPERTY = 
+            "usageStatisticsEnabled";//NOI18N
     public static final String DIGITS_PATTERN =
             "[0-9]+"; // NOI18N
     public static final String CLUSTER_NUMBER_PATTERN =

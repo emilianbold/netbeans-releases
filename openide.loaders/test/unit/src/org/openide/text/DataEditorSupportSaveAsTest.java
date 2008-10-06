@@ -39,15 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.openide.text;
-
 
 import java.io.IOException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.junit.NbTestCase;
-import org.openide.actions.*;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -61,18 +58,14 @@ import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
-import org.openide.loaders.TestUtilHid;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.test.MockLookup;
 
-
-/**
- */
 public class DataEditorSupportSaveAsTest extends NbTestCase {
     
     FileSystem fs;
     static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.DataEditorSupportSaveAsTest$Lkp");
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
@@ -80,18 +73,11 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         super(s);
     }
     
-    protected void setUp () throws Exception {
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        MockLookup.setInstances(new Pool());
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
-        org.openide.filesystems.Repository.getDefault ().addFileSystem (fs);
-        org.openide.filesystems.FileObject root = fs.getRoot ();
-    }
-    
-    protected void tearDown () throws Exception {
-        org.openide.filesystems.Repository.getDefault ().removeFileSystem (fs);
-    }
-    
-    protected boolean runInEQ() {
-        return false;
     }
     
     public void testUnmodifiedDocumentSaveAs() throws IOException {
@@ -237,32 +223,14 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
         
     }
     
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
-        public Lkp () throws IOException {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) throws IOException {
-            super (ic);
-            
-            ic.add (new Repository (TestUtilHid.createLocalFileSystem (Lkp.class.getName()+System.currentTimeMillis(), new String[0])));
-            ic.add (new Pool ());
-        }
-        
-    } // end of Lkp
-    
     private static final class Pool extends org.openide.loaders.DataLoaderPool {
-        protected java.util.Enumeration loaders () {
+        protected java.util.Enumeration<? extends DataLoader> loaders() {
             return org.openide.util.Enumerations.array(DataLoader.getLoader(MyLoader.class), 
                     DataLoader.getLoader(MyMultiFileLoader.class));
         }
     }
     
     public static final class MyLoader extends UniFileLoader {
-        
-        public static MyLoader get () {
-            return (MyLoader)MyLoader.findObject (MyLoader.class, true);
-        }
         
         public MyLoader() {
             super(MyDataObject.class.getName ());
@@ -301,7 +269,7 @@ public class DataEditorSupportSaveAsTest extends NbTestCase {
 
     private static class MyMultiFileLoader extends MultiFileLoader {
         public MyMultiFileLoader () {
-            super(MyMultiFileDataObject.class);
+            super(MyMultiFileDataObject.class.getName());
         }
         
         protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {

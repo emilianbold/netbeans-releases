@@ -17,4 +17,13 @@
             </fileset>
         </copy>
     </target>
+
+    <target name="netbeans-extra">
+        <ant dir="anttask" target="jars"/>
+    </target>
+
+    <target name="clean" depends="projectized-common.clean">
+        <ant dir="anttask" target="clean"/>
+    </target>
+
 </project>

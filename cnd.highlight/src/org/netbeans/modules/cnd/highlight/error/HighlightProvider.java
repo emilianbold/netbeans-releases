@@ -50,7 +50,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -90,10 +92,10 @@ public class HighlightProvider  {
     private HighlightProvider() {
     }
     
-    /* package */ void update(CsmFile file, Document doc, DataObject dao) {
+    /* package */ void update(CsmFile file, Document doc, DataObject dao, Interrupter interrupter) {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
-            addAnnotations((BaseDocument)doc, file, dao);
+            addAnnotations((BaseDocument)doc, file, dao, interrupter);
             Hook theHook = this.hook;
             if( theHook != null ) {
                 theHook.highlightingDone(file.getAbsolutePath().toString());
@@ -105,6 +107,7 @@ public class HighlightProvider  {
         assert doc!=null;
         if (doc instanceof BaseDocument){
             removeAnnotations(doc);
+            CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         }
     }
     
@@ -116,35 +119,43 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(BaseDocument doc, CsmFile file, DataObject dao) {
-//        removing validation is questionable but it seems it's faster to just reannotate file
-//        if (!isNeededUpdateAnnotations(doc, file)) {
-//            return;
-//        }
-        
-        removeAnnotations(doc);
-        
-        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-        try {
-            if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
-            for( CsmErrorInfo info : CsmErrorProvider.getDefault().getErrors(doc, file) ) {
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, Interrupter interrupter) {
+
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+        if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
+
+        CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
+            private int lastSize = descriptions.size();
+            public void addError(CsmErrorInfo info) {
                 PositionBounds pb = createPositionBounds(dao, info.getStartOffset(), info.getEndOffset());
                 ErrorDescription desc = null;
                 if( pb != null ) {
-                    desc = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    try {
+                        desc = ErrorDescriptionFactory.createErrorDescription(
+                                getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                     descriptions.add(desc);
-                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded %s\n", desc);
+                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded to a bag %s\n", desc.toString());
                 } else {
                     if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
                 }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
+            public void done() {
+                if( descriptions.size() > lastSize ) {
+                    lastSize = descriptions.size();
+                    if (TRACE_ANNOTATIONS) System.err.printf("Showing %d errors\n", descriptions.size());
+                    HintsController.setErrors(doc, HighlightProvider.class.getName(), descriptions);
+                }
+            }
+        };
+        removeAnnotations(doc);
+        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+        
     }
-    
     
     private static PositionBounds createPositionBounds(DataObject dao, int start, int end) {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(dao);
@@ -159,6 +170,31 @@ public class HighlightProvider  {
     private void removeAnnotations(Document doc) {
         HintsController.setErrors(doc, HighlightProvider.class.getName(), Collections.<ErrorDescription>emptyList());
     }
-    
+
+    // package-local for test purposes
+    static class RequestImpl implements CsmErrorProvider.Request {
+
+        private final CsmFile file;
+        private Interrupter interrupter;
+        private final Document document;
+        
+        public RequestImpl(CsmFile file, Document doc, Interrupter interrupter) {
+            this.file = file;
+            this.interrupter = interrupter;
+            this.document = doc;
+        }
+
+        public CsmFile getFile() {
+            return file;
+        }
+
+        public boolean isCancelled() {
+            return interrupter.cancelled();
+        }
+
+        public Document getDocument() {
+            return document;
+        }
+    }
     
 }

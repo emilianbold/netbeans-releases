@@ -56,8 +56,8 @@ made subject to such option by the copyright holder.
     <target name="xjc-init" depends="build-init">
         <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
             <classpath>
-                <fileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxws21" includes="*.jar"/>
-                <fileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxws21/api" includes="*.jar"/>
+				<fileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb/api" includes="*.jar"/>
+				<fileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb" includes="*.jar"/>
             </classpath>
         </taskdef>
     </target>

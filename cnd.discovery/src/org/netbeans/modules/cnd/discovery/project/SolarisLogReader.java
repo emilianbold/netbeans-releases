@@ -70,10 +70,10 @@ public class SolarisLogReader {
     private static boolean TRACE = false;
     // environment variable  path to prototype
     // ROOT=/export/opensolaris/testws80/proto/root_i386
-    private static final String ENV_ROOT = "ROOT=";
+    private static final String ENV_ROOT = "ROOT="; // NOI18N
     // environment variable path to sources
     // SRC=/export/opensolaris/testws80/usr/src
-    private static final String ENV_SRC = "SRC=";
+    private static final String ENV_SRC = "SRC="; // NOI18N
     
     private String workingDir;
     private final String root;
@@ -464,7 +464,7 @@ public class SolarisLogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compilerFamily);
+           return gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP, li.compilerFamily); // NOI18N
        }
        return false;
     }
@@ -620,7 +620,7 @@ public class SolarisLogReader {
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
         for (Iterator it = set.iterator(); it.hasNext();){
             File d = new File((String)it.next());
-            if (d.isDirectory()){
+            if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
                     if (ff[i].isFile()) {
@@ -638,7 +638,7 @@ public class SolarisLogReader {
     }
     
     private void gatherSubFolders(File d, HashSet<String> set){
-        if (d.isDirectory()){
+        if (d.exists() && d.isDirectory() && d.canRead()){
             if (DiscoveryUtils.ignoreFolder(d)){
                 return;
             }
@@ -710,13 +710,13 @@ public class SolarisLogReader {
                         continue;
                     }
                     if (inBlock && inGlobal &&
-                        line.indexOf(";") > 0 &&
-                        line.indexOf("FILTER") < 0){
-                        String res = line.substring(0,line.indexOf(";"));
-                        if (res.indexOf("=")>0) {
-                            res = res.substring(0, res.indexOf("="));
+                        line.indexOf(";") > 0 && // NOI18N
+                        line.indexOf("FILTER") < 0){ // NOI18N
+                        String res = line.substring(0,line.indexOf(";")); // NOI18N
+                        if (res.indexOf("=")>0) { // NOI18N
+                            res = res.substring(0, res.indexOf("=")); // NOI18N
                         }
-                        if (res.indexOf(".")<0) {
+                        if (res.indexOf(".")<0) { // NOI18N
                             res = res.trim();
                             set.add(res);
                             //System.out.println("\t"+res);

@@ -85,6 +85,35 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
+    public void testDuplicationConstructions_0() throws Exception {
+        // IZ#145982: context of code changes unexpectedly
+        performTest("src/testDup1.cc", 5, 15, "src/dup1.h", 12, 5); // duplicationFoo
+        performTest("src/testDup1.cc", 7, 15, "src/dup1.h", 5, 5); // classElementDup
+        performTest("src/testDup1.cc", 4, 10, "src/dup1.h", 10, 1); // Duplication
+        performTest("src/testDup1.cc", 6, 10, "src/dup1.h", 3, 1); // ElementDup
+    }
+
+    public void testDuplicationConstructions_1() throws Exception {
+        // IZ#145982: context of code changes unexpectedly
+        performTest("src/testSys1Dup.cc", 5, 15, "sys_include/sys1dup.h", 4, 5); // duplicationSys1
+        performTest("src/testSys1Dup.cc", 7, 15, "sys_include/sys1dup.h", 11, 5); // structMethod
+        performTest("src/testSys1Dup.cc", 4, 10, "sys_include/sys1dup.h", 2, 1); // Duplication
+        performTest("src/testSys1Dup.cc", 6, 10, "sys_include/sys1dup.h", 10, 1); // ElementDup
+    }
+
+    public void testDuplicationConstructions_2() throws Exception {
+        // IZ#145982: context of code changes unexpectedly
+        performTest("src/testSys2Dup.cc", 5, 15, "sys_include2/sys2dup.h", 4, 5); // duplicationSys2
+        performTest("src/testSys2Dup.cc", 7, 15, "sys_include2/sys2dup.h", 4, 5); // duplicationSys2
+        performTest("src/testSys2Dup.cc", 4, 10, "sys_include2/sys2dup.h", 2, 1); // Duplication
+        performTest("src/testSys2Dup.cc", 6, 10, "sys_include2/sys2dup.h", 9, 1); // ElementDup
+    }
+    
+    public void testTypedefClassFwd() throws Exception {
+        // IZ#146289: REGRESSTION: inaccuracy tests show significant regressions
+        performTest("src/testTdClassFwdResolve.cc", 5, 25, "src/outer.h", 3, 5); // outerFunction
+    }
+
     public void testLibraryClass() throws Exception {
         performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
     }
@@ -121,6 +150,17 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testEndl() throws Exception {
         performTest("src/main2.cc", 7, 8, "sys_include/iostream", 20, 5);
         performTest("src/main2.cc", 7, 26, "sys_include/iostream", 14, 5);
+    }
+
+    public void testNamespaceInDifferentFolders() throws Exception {
+        performTest("src/main.cc", 26, 8, "sys_include/include1.h", 44, 5);
+        performTest("src/main.cc", 27, 8, "sys_include2/include2.h", 28, 5);
+    }
+
+    public void testIZ140787_cout() throws Exception {
+        // iz #140787 cout, endl unresolved in some Loki files
+        performTest("src/iz140787_cout.cc", 9, 9, "sys_include/include1.h", 44, 5);
+        performTest("src/iz140787_cout.cc", 10, 10, "sys_include2/include2.h", 28, 5);
     }
 
 }

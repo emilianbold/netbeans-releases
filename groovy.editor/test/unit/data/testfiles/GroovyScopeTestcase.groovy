@@ -8,6 +8,8 @@
  5) Parameter (param1)           : OK
  */
 
+package foo
+
 println "Starting testcase"
 new TestCase().method1()
 new TestCase().method1(1)

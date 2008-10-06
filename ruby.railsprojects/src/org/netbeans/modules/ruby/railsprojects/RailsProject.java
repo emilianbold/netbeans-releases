@@ -59,6 +59,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -94,24 +95,26 @@ public class RailsProject extends RubyBaseProject {
     }
     
     protected @Override Lookup createLookup(final AuxiliaryConfiguration aux,
+            final AuxiliaryProperties auxProperties,
             final ProjectInformation info,
             final ProjectOpenedHook projectOpenedHook) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         sources = new RailsSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        
         Lookup base = Lookups.fixed(new Object[] {
             info,
             aux,
+            auxProperties,
             helper.createCacheDirectoryProvider(),
             spp,
             new RailsActionProvider( this, this.updateHelper ),
             new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            // new RubyCustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             sources,
+            genFilesHelper, // for unit-tests so far
             new RailsSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new RailsFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RailsProject - use lookup instead
             new RailsProjectOperations(this),
@@ -198,7 +201,6 @@ public class RailsProject extends RubyBaseProject {
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/Ruby/_view.rhtml", // NOI18N
             "Templates/Ruby/_view.erb", // NOI18N
             "Templates/Ruby/main.rb", // NOI18N
             "Templates/Ruby/test.rb", // NOI18N
@@ -206,6 +208,7 @@ public class RailsProject extends RubyBaseProject {
             "Templates/Ruby/module.rb", // NOI18N
             "Templates/Ruby/rspec.rb", // NOI18N
             "Templates/Ruby/empty.rjs", // NOI18N
+            "Templates/Ruby/_view.rhtml", // NOI18N
         };
         
         public String[] getRecommendedTypes() {

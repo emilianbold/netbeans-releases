@@ -38,91 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
+import java.awt.Rectangle;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.support.umlsupport.IETRect;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+
+public class NodeMapLocation implements IGraphicMapLocation
+{
+
+    private IElement element;
+    private Rectangle rectangle;
+
+    public NodeMapLocation(IElement element, Rectangle rec)
+    {
+        this.element = element;
+        rectangle = rec;
+    }
 
 
-public class NodeMapLocation implements INodeMapLocation, IGraphicMapLocation {
-	public NodeMapLocation() {
-		m_Location = null;
-		m_ElementXMIID = null;
-		m_Name = null;
-		m_ElementType = null;
-	}
+    public Rectangle getLocation()
+    {
+        return rectangle;
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.ILabelMapLocation#getLocation()
-	 */
-	public IETRect getLocation() {
-		return m_Location;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.ILabelMapLocation#setLocation(org.netbeans.modules.uml.core.support.umlsupport.IETRect)
-	 */
-	public void setLocation(IETRect value) {
-		m_Location = value;
-	}
+    public String getElementXMIID()
+    {
+        return element.getXMIID();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getElementXMIID()
-	 */
-	public String getElementXMIID() {
-		return m_ElementXMIID;
-	}
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setElementXMIID(java.lang.String)
-	 */
-	public void setElementXMIID(String value) {
-		m_ElementXMIID = value;
-	}
+    public String getName()
+    {
+        if (element instanceof INamedElement)
+        {
+            return ((INamedElement) element).getNameWithAlias();
+        }
+        return "";
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getName()
-	 */
-	public String getName() {
-		return m_Name;
-	}
+    public String getElementType()
+    {
+        return element.getElementType();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setName(java.lang.String)
-	 */
-	public void setName(String value) {
-		m_Name = value;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#getElementType()
-	 */
-	public String getElementType() {
-		return m_ElementType;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation#setElementType(java.lang.String)
-	 */
-	public void setElementType(String value) {
-		m_ElementType = value;
-	}
-
-	public IElement getElement()
-	{
-		return m_Element;
-	}
-	
-	
-	public void setElement(IElement value)
-	{
-		m_Element = value;
-	}
-	
-	private IETRect m_Location;
-	private String m_ElementXMIID;
-	private String m_Name;
-	private String m_ElementType;
-	private IElement m_Element;
+    public IElement getElement()
+    {
+        return element;
+    }
 }

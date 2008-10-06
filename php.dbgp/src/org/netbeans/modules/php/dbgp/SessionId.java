@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -63,45 +64,46 @@ import org.openide.util.Exceptions;
 /**
  * This class is used for session identifying between IDE and Debugger.
  * Session id is based on file requested for debug.
- * It is used for mapping remote files to local files based on 
+ * It is used for mapping remote files to local files based on
  * session information.
- * 
- *   
+ *
+ *
  * @author ads
  *
  */
-public class SessionId {    
-    private static final String PREFIX      = "netbeans-xdebug";         // NOI18N    
-    private static final String SLASH       = "/";                     // NOI18N    
-    private static final String BACK_SLASH  = "\\";                    // NOI18N           
-        
+public class SessionId {
+    private static final String PREFIX      = "netbeans-xdebug";         // NOI18N
+    private static final String SLASH       = "/";                     // NOI18N
+    private static final String BACK_SLASH  = "\\";                    // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(SessionId.class.getName());
+
     //keep synchronized with org.netbeans.modules.php.rt.utils.PhpProjectSharedConstants
     private static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
-    
-    
+
+
     public SessionId( FileObject fileObject ) {
         myId = PREFIX;//+ mySessionsCount;
         mySessionsCount++;
         myFileObject = fileObject;
         myDebugFile = fileObject;
     }
-    
+
     public String getId() {
         return myId;
     }
-    
+
     public FileObject getSessionFileObject(){
         return myFileObject;
     }
-    
+
     public Project getProject(){
         return FileOwnerQuery.getOwner( myFileObject );
     }
-    
+
     public String getSessionPrefix() {
         return PREFIX;
     }
-    
+
     public synchronized void setFileUri( String uri ) {
         if ( myFileUri == null ) {
             myFileUri = uri;
@@ -111,7 +113,7 @@ public class SessionId {
         SessionProgress s = SessionProgress.forSessionId(this);
         if (s != null) {
             s.notifyConnectionFinished();
-        }        
+        }
     }
 
     public synchronized String waitServerFile( boolean  wait ) {
@@ -131,7 +133,7 @@ public class SessionId {
         }
         return getFileUri();
     }
-    
+
     /**
      * @param localFileName file name on the local filesystem
      * @return remote uri respectively given <code>localFileName</code>
@@ -141,10 +143,10 @@ public class SessionId {
         if ( !file.exists() ) {
             return null;
         }
-        return getFileUriByLocal( 
+        return getFileUriByLocal(
                 FileUtil.toFileObject(FileUtil.normalizeFile( file)) );
     }
-    
+
     /**
      * @param localFile file name on the local filesystem
      * @return remote uri respectively given <code>localFile</code>
@@ -153,19 +155,39 @@ public class SessionId {
         if ( localFile == null ) {
             return null;
         }
-        if ( localFile.equals( getDebugFile() )) {
+        String retval = getFileUri();
+        if ( retval != null && localFile.equals( getDebugFile() )) {
             // trivial case , could be quickly handled
-            return getFileUri();
+            return retval;
+        } else {
+            retval = null;
         }
-        if ( myLocalBase == null || myRemoteBase == null ) {
-            return null;
+        if ( myLocalBase != null && myRemoteBase != null ) {
+            String relativeFile = FileUtil.getRelativePath( myLocalBase, localFile);
+            if (relativeFile != null) {
+                relativeFile = relativeFile.replace(File.separator, myRemoteSeparator);
+                retval = myRemoteBase + relativeFile;
+            }
         }
-        
-        String relativeFile = FileUtil.getRelativePath( myLocalBase, localFile);
-        relativeFile = relativeFile.replace( File.separator, myRemoteSeparator );
-        return myRemoteBase + relativeFile; 
+        if (retval == null) {
+            File file = FileUtil.toFile(localFile);
+            if (file != null) {
+                try {
+                    URL u = file.toURI().toURL();
+                    if ("file".equals(u.getProtocol())) {//NOI18N
+                        retval = u.toExternalForm();
+                        if (retval.startsWith("file:/") && !retval.startsWith("file:///")) {//NOI18N
+                            retval = retval.replaceFirst("/", "///");//NOI18N
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return retval;
     }
-    
+
     public DataObject getDataObjectByRemote( String uri ) {
         try {
             FileObject fileObject = getFileObjectByRemote(uri);
@@ -179,18 +201,8 @@ public class SessionId {
         }
     }
 
-    public FileObject getFileObjectByRemote( String uri ){
-        FileObject retval = null;
+    private FileObject convertToFileObject(String uri) {
         if (uri != null) {
-            if (uri.equals(getFileUri())) {
-                retval = getDebugFile();
-            } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
-                String relativePath = uri.substring(myRemoteBase.length());
-                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
-                retval = myLocalBase.getFileObject(relativePath);
-            }
-        }   
-        if (retval == null) {
             try {
                 URL url = new URI(uri).toURL();
                 if ("file".equals(url.getProtocol())) { //NOI18N
@@ -203,19 +215,36 @@ public class SessionId {
                 Exceptions.printStackTrace(ex);
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
-            }            
+            }
+        }
+        return null;
+    }
+
+    public FileObject getFileObjectByRemote( String uri ){
+        FileObject retval = null;
+        if (uri != null) {
+            if (uri.equals(getFileUri())) {
+                retval = getDebugFile();
+            } else if (myRemoteBase != null && myLocalBase != null && uri.startsWith(myRemoteBase)) {
+                String relativePath = uri.substring(myRemoteBase.length());
+                relativePath = relativePath.replace(myRemoteSeparator, File.separator);
+                retval = myLocalBase.getFileObject(relativePath);
+            }
+        }
+        if (retval == null) {
+            retval = convertToFileObject(uri);
         }
         return retval;
     }
-        
+
     private String getFileUri() {
         return myFileUri;
     }
-    
+
 
     private void computeBases() {
         int indx;
-        
+
         int slashIndex = getFileUri().lastIndexOf( SLASH );
         if ( slashIndex!=-1 ) {
             indx = slashIndex;
@@ -229,27 +258,30 @@ public class SessionId {
             assert false;
             return;
         }
-        
+
         if ( indx == getFileUri().length() -1 ) {
-            /* This should never happend.  getFileUri() should represent 
+            /* This should never happend.  getFileUri() should represent
              * path to file, not folder.
-             */ 
+             */
             assert false;
             return ;
         }
         String fileName = getFileUri().substring( indx +1 );
         String remoteFolderName = getFileUri().substring( 0, indx );
         FileObject localFolder;
-        
+
         if ( getSessionFileObject().isFolder() ) {
-            // fileName in this case is directory index file ( f.e. index.php(html) ) 
+            // fileName in this case is directory index file ( f.e. index.php(html) )
             localFolder = getSessionFileObject();
             myDebugFile = getSessionFileObject().getFileObject( fileName );
         }
         else {
             String name = getSessionFileObject().getNameExt();
             if ( !name.equals( fileName )) {
-                assert false;
+                String fileUri = getFileUri();
+                FileObject tmpDebugFile = fileUri != null ? convertToFileObject(fileUri) : null;
+                myDebugFile = tmpDebugFile != null ? tmpDebugFile : myDebugFile;
+                assert tmpDebugFile != null : fileUri;
                 return;
             }
             localFolder = getSessionFileObject().getParent();
@@ -272,7 +304,7 @@ public class SessionId {
             //TODO: review this code  -just hot fix - for debugging project (debug not debug.single)
             setRemoteBase(  remoteFolder );
             myLocalBase = getSourceRoot();
-            if (myDebugFile == null) { 
+            if (myDebugFile == null) {
                 myDebugFile = getSourceRoot().getFileObject( fileName );
             }
             return;
@@ -289,11 +321,9 @@ public class SessionId {
             return;
         }
         assert indx+1 < remoteFolder.length();
-        String folderName = remoteFolder.substring( indx +1 );
-        String localName = localFolder.getNameExt();
         setupBases( localFolder.getParent() , remoteFolder.substring( 0, indx), fileName);
     }
-    
+
     private void setRemoteBase( String base ) {
         if ( base.endsWith( myRemoteSeparator)) {
             myRemoteBase = base ;
@@ -302,7 +332,7 @@ public class SessionId {
             myRemoteBase = base +myRemoteSeparator;
         }
     }
-    
+
     private FileObject getDebugFile(){
         return myDebugFile;
     }
@@ -311,7 +341,7 @@ public class SessionId {
 	final FileObject[] sourceObjects = getSourceObjects(getProject());
         return (sourceObjects != null && sourceObjects.length > 0) ? sourceObjects[0] : null;
     }
-    
+
     public static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
         SourceGroup[] groups = sources.getSourceGroups(SOURCES_TYPE_PHP);//NOI18N
@@ -319,28 +349,28 @@ public class SessionId {
     }
 
     public static FileObject[] getSourceObjects(Project phpProject) {
-        SourceGroup[] groups = getSourceGroups(phpProject);        
+        SourceGroup[] groups = getSourceGroups(phpProject);
         FileObject[] fileObjects = new FileObject[groups.length];
         for (int i = 0; i < groups.length; i++) {
             fileObjects[i] = groups[i].getRootFolder();
         }
         return fileObjects;
     }
-    
+
     private String myId;
-    
+
     private static int mySessionsCount = 1;
-    
+
     private String myFileUri;
-    
+
     private final FileObject myFileObject;
-    
+
     private FileObject myLocalBase;
-    
+
     private String myRemoteBase;
-    
+
     private String myRemoteSeparator;
-    
+
     private FileObject myDebugFile;
 
 }

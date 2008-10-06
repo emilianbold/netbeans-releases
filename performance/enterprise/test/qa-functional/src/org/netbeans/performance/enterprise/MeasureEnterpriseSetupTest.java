@@ -44,6 +44,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.setup.EnterpriseSetup;
 
 /**
@@ -59,6 +60,8 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
     }
     
     public static Test suite(NbTestSuite suite) {
+        PerformanceTestCase.prepareForMeasurements();
+
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(EnterpriseSetup.class)
             .addTest("cleanTempDir")
@@ -84,6 +87,8 @@ public class MeasureEnterpriseSetupTest extends NbTestCase {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Setup suite");
+        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseSetupTest");
+
         return suite(suite);
     }
 }

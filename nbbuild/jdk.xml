@@ -209,10 +209,12 @@ made subject to such option by the copyright holder.
         <condition property="nbjdk.home" value="${java.home}">
             <available file="${java.home}/lib/tools.jar" type="file"/>
         </condition>
+
         <!-- Mac OS X -->
-        <condition property="nbjdk.home" value="/Library/Java/Home">
-            <available file="/Library/Java/Home" type="dir"/>
+        <condition property="nbjdk.home" value="${java.home}">
+            <available file="${java.home}/../Classes/classes.jar" type="file"/>
         </condition>
+
         <!-- Fallback? -->
         <property name="nbjdk.home" location="${java.home.parent}"/>
         <available property="have-jdk-1.4" classname="java.lang.CharSequence"/>

@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
@@ -167,11 +168,22 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
     
+    public boolean processCondition(Event event) {
+        ThreadReference thread;
+        if (event instanceof ModificationWatchpointEvent) {
+            thread = ((ModificationWatchpointEvent) event).thread();
+        } else if (event instanceof AccessWatchpointEvent) {
+            thread = ((AccessWatchpointEvent) event).thread();
+        } else {
+            return true; // Empty condition, always satisfied.
+        }
+        return processCondition(event, breakpoint.getCondition (), thread, null);
+    }
+
     public boolean exec (Event event) {
         if (event instanceof ModificationWatchpointEvent)
             return perform (
                 event,
-                breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
                 ((ModificationWatchpointEvent) event).valueToBe ()
@@ -179,7 +191,6 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         if (event instanceof AccessWatchpointEvent)
             return perform (
                 event,
-                breakpoint.getCondition (),
                 ((WatchpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
                 ((AccessWatchpointEvent) event).valueCurrent ()

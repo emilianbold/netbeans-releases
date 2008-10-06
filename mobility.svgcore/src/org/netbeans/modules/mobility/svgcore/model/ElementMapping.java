@@ -75,7 +75,9 @@ public final class ElementMapping {
         m_fileModel = fileModel;
     }
 
-    public SVGImage parseDocument(boolean update) throws BadLocationException, IOException {
+    public SVGImage parseDocument(boolean update) 
+            throws BadLocationException, IOException, InterruptedException 
+    {
         StringBuilder sb;
 
         synchronized (m_fileModel.getTransactionMonitor()) {

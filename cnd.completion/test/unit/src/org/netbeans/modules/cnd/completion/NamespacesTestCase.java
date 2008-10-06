@@ -113,4 +113,28 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
         // IZ#123420: no completion for deep lucene namespaces
         super.performTest("file.cc", 61, 5, "S3::S4::S5::S5Class::pPtrS5Class->");
     }
+    
+    public void testStaticMembers1() throws Exception {
+        super.performTest("file2.cc", 13, 9);
+    }
+
+    public void testStaticMembers2() throws Exception {
+        super.performTest("file2.cc", 15, 5);
+    }
+
+    public void testStaticMembers3() throws Exception {
+        super.performTest("file2.cc", 17, 1);
+    }
+    
+    public void testStaticMembers4() throws Exception {
+        super.performTest("file2.cc", 17, 1, "S1::");
+    }
+
+    public void testStaticMembers5() throws Exception {
+        super.performTest("file2.cc", 17, 1, "S1::S2::");
+    }
+
+    public void testIZ146962() throws Exception {
+        super.performTest("iz146962.cc", 3, 5, "Gtk::");
+    }
 }

@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
@@ -90,6 +92,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.util.GenerationUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -99,6 +103,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -113,15 +118,13 @@ public class STSWizardCreator {
     private static final String SERVLET_NAME = "ServletName";
     private static final String SERVLET_CLASS = "ServletClass";
     private static final String URL_PATTERN = "UrlPattern";
-
-    private final static String DISPATCH_CLASS_NAME = "com.sun.xml.ws.transport.http.servlet.WSServlet"; //NOI18N
     
     private int projectType;
 
     private Project project;
     private WizardDescriptor wiz;
 
-    public boolean jwsdpSupported, wsitSupported, jsr109Supported, jsr109oldSupported;
+    public boolean wsitSupported, jsr109Supported;
 
     private static final Logger logger = Logger.getLogger(STSWizardCreator.class.getName());
     
@@ -168,12 +171,23 @@ public class STSWizardCreator {
             Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
             String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
             if (serverInstance != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+                J2eePlatform j2eePlatform = null;
+                try {
+                    j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
+                } catch (InstanceRemovedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 if (j2eePlatform != null) {
-                    jwsdpSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP);
-                    wsitSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT);
-                    jsr109Supported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
-                    jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
+                    Collection<WSStack> wsStacks = (Collection<WSStack>)
+                            j2eePlatform.getLookup().lookupAll(WSStack.class);
+                    for (WSStack stack : wsStacks) {
+                        if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                            wsitSupported = true;
+                        }
+                        if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                            jsr109Supported = true;
+                        }
+                    }
                 }
             }
         }

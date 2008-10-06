@@ -46,12 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.AccessControlException;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.Certificate;
@@ -66,9 +67,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -102,17 +105,14 @@ public class InstallSupportImpl {
     private boolean progressRunning = false;
     private static Logger err = Logger.getLogger (InstallSupportImpl.class.getName ());
     
-    public static final String UPDATE_DIR = "update"; // NOI18N
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
-    public static final String NBM_EXTENTSION = ".nbm";
-    
     private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
     
     private Map<UpdateElementImpl, File> element2Clusters = null;
     private Set<File> downloadedFiles = null;
     private boolean isGlobal;
     private int wasDownloaded = 0;
+    
+    private Future<Boolean> runningTask;
     
     private static enum STEP {
         NOTSTARTED,
@@ -189,7 +189,11 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (downloadCallable).get ();
+            runningTask = getExecutionService ().submit (downloadCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doDownload was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
@@ -246,7 +250,11 @@ public class InstallSupportImpl {
         };
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (validationCallable).get ();
+            runningTask = getExecutionService ().submit (validationCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doValidate was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             if (iex.getCause() instanceof OperationException) {
                 throw (OperationException) iex.getCause();
@@ -325,7 +333,7 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
+                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US));
                     
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
@@ -420,7 +428,11 @@ public class InstallSupportImpl {
         
         boolean retval =  false;
         try {
-            retval = getExecutionService ().submit (installCallable).get ();
+            runningTask = getExecutionService ().submit (installCallable);
+            retval = runningTask.get ();
+        } catch (CancellationException ex) {
+            err.log (Level.FINE, "InstallSupport.doInstall was cancelled", ex); // NOI18N
+            return false;
         } catch(InterruptedException iex) {
             err.log (Level.INFO, iex.getLocalizedMessage (), iex);
         } catch(ExecutionException iex) {
@@ -581,12 +593,9 @@ public class InstallSupportImpl {
         synchronized(this) {
             currentStep = STEP.CANCEL;
         }
-        if (es != null) {
-            try {
-                es.shutdownNow ();
-            } catch (AccessControlException ace) {
-                err.log (Level.INFO, ace.getMessage (), ace);
-            }
+        if (runningTask != null && ! runningTask.isDone () && ! runningTask.isCancelled ()) {
+            boolean cancelled = runningTask.cancel (true);
+            assert cancelled : runningTask + " was cancelled.";
         }
         for (File f : getDownloadedFiles ()) {
             if (f != null && f.exists ()) {
@@ -655,7 +664,7 @@ public class InstallSupportImpl {
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
         
-        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (NBM_EXTENTSION.toLowerCase (Locale.US));
+        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
         
@@ -672,6 +681,12 @@ public class InstallSupportImpl {
             String label = toUpdateImpl.getDisplayName ();
             getDownloadedFiles ().add (FileUtil.normalizeFile (dest));
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
+        } catch (UnknownHostException x) {
+            err.log (Level.INFO, x.getMessage (), x);
+            throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
+        } catch (FileNotFoundException x) {
+            err.log (Level.INFO, x.getMessage (), x);
+            throw new OperationException (OperationException.ERROR_TYPE.INSTALL, x.getLocalizedMessage ());
         } catch (IOException x) {
             err.log (Level.INFO, x.getMessage (), x);
             throw new OperationException (OperationException.ERROR_TYPE.PROXY, source.toString ());
@@ -730,12 +745,12 @@ public class InstallSupportImpl {
     
     static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
-        File destDir = new File (targetCluster, DOWNLOAD_DIR);
+        File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
         String fileName = codeName.replace ('.', '-');
-        File destFile = new File (destDir, fileName + (isNbmFile ? NBM_EXTENTSION : ""));
+        File destFile = new File (destDir, fileName + (isNbmFile ? Utilities.NBM_EXTENTSION : ""));
         err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }
@@ -758,7 +773,7 @@ public class InstallSupportImpl {
             byte [] bytes = new byte [1024];
             int size;
             int c = 0;
-            while ((size = bsrc.read (bytes)) != -1) {
+            while (STEP.CANCEL != currentStep && (size = bsrc.read (bytes)) != -1) {
                 bdest.write (bytes, 0, size);
                 increment += size;
                 c += size;
@@ -957,7 +972,7 @@ public class InstallSupportImpl {
         return es;
     }
     
-    private Set<File> getDownloadedFiles () {
+    private synchronized Set<File> getDownloadedFiles () {
         if (downloadedFiles == null) {
             downloadedFiles = new HashSet<File> ();
         }

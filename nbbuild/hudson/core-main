@@ -28,16 +28,6 @@ testmodule() {
 }
 
 if [ "$action" = "build" ]; then
-#    hg fetch http://hg.netbeans.org/main || exit 1
-#    hg pull http://hg.netbeans.org/main || exit 1
-#    if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
-#    then
-#       hg up || exit 6
-#    else
-#       hg merge || exit 7
-#       hg ci -m 'Automated merge' || exit 8
-#    fi
-
     ant build || exit 2
     ant commit-validation || echo commit-validation >$RESULT
 
@@ -120,7 +110,7 @@ if [ "$action" = "build" ]; then
            hg up || exit 6
        else
            hg merge || exit 7
-           hg ci -m 'Automated merge' || exit 8
+           hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
        fi
        hg out http://hg.netbeans.org/main
        hg in http://hg.netbeans.org/main
@@ -133,14 +123,10 @@ if [ "$action" = "sync" ]; then
     HEADS=`hg heads --template "{node}\n" | wc -l`
     if [ $HEADS = 2 ]; then
       hg merge
-      hg ci -m "Automated merge"
+      hg ci -u "$push_username"@netbeans.org -m "Automated merge"
       hg up -C
     fi
-    hg fetch http://hg.netbeans.org/core-main
+    hg fetch -u "$push_username"@netbeans.org http://hg.netbeans.org/core-main
     hg push https://"$push_username":"$push_password"@hg.netbeans.org/core-main
     exit 0
 fi
-
-
-
-

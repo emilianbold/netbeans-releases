@@ -44,17 +44,27 @@ package org.netbeans.modules.derby.ui;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverListener;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyOptions;
+import org.netbeans.modules.derby.RegisterDerby;
 import org.netbeans.modules.derby.Util;
+import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Despite the name, serves as a settings dialog for Derby (not only
@@ -112,6 +122,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                     continue;
                 }
             }
+            new RegisterSampleDatabase();
             DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
             DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
             return true;
@@ -127,7 +138,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         }
         
         initComponents();
-        jTextPane1.setBackground(getBackground());
+        derbyInstallInfo.setBackground(getBackground());
         messageLabel.setBackground(getBackground());
         derbySystemHomeTextField.getDocument().addDocumentListener(docListener);
         derbySystemHomeTextField.setText(DerbyOptions.getDefault().getSystemHome());
@@ -209,7 +220,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         installLabel = new javax.swing.JLabel();
         derbyInstall = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
-        jTextPane1 = new javax.swing.JTextPane();
+        derbyInstallInfo = new javax.swing.JTextPane();
         messageLabel = new javax.swing.JTextPane();
 
         derbySystemHomeLabel.setLabelFor(derbySystemHomeTextField);
@@ -222,6 +233,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
+        installLabel.setLabelFor(derbyInstall);
         org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_Install")); // NOI18N
 
         derbyInstall.addActionListener(new java.awt.event.ActionListener() {
@@ -237,9 +249,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
-        jTextPane1.setEditable(false);
-        jTextPane1.setText(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_InstallationInfo")); // NOI18N
-        jTextPane1.setAutoscrolls(false);
+        derbyInstallInfo.setEditable(false);
+        derbyInstallInfo.setText(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_InstallationInfo")); // NOI18N
+        derbyInstallInfo.setAutoscrolls(false);
 
         messageLabel.setEditable(false);
         messageLabel.setForeground(nbErrorForeground);
@@ -253,13 +265,13 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-                    .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+                    .add(derbyInstallInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(derbySystemHomeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -274,7 +286,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jTextPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(derbyInstallInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installLabel)
@@ -290,8 +302,12 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        derbySystemHomeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_CreateDatabasePanel_databaseLocationTextField")); // NOI18N
         derbySystemHomeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_derbySystemHomeTextField")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_browseButton")); // NOI18N
+        derbyInstall.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_derbySystemHomeTextField")); // NOI18N
+        derbyInstallInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_DerbySystemHomePanel_derbyInstallInfoTextField")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_DerbySystemHomePanel_messageLabel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -335,12 +351,59 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton browseButton;
     public javax.swing.JTextField derbyInstall;
+    public javax.swing.JTextPane derbyInstallInfo;
     public javax.swing.JLabel derbySystemHomeLabel;
     public javax.swing.JTextField derbySystemHomeTextField;
     public javax.swing.JLabel installLabel;
     public javax.swing.JButton jButton1;
-    public javax.swing.JTextPane jTextPane1;
     public javax.swing.JTextPane messageLabel;
     // End of variables declaration//GEN-END:variables
     
+    
+    private static class RegisterSampleDatabase {
+
+        private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
+        private static final String CONN_NAME = "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/sample [app on APP]";  // NOI18N
+        private boolean registered;
+
+        RegisterSampleDatabase() {
+            if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
+                JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+            }
+        }
+        private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
+            public void driversChanged() {
+                registerDatabase();
+            }
+        };
+
+        void registerDatabase() {
+            synchronized (this) {
+                if (registered) {
+                    return;
+                }
+
+                // We do this ahead of time to prevent another thread from
+                // double-registering the connections.
+                registered = true;
+            }
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+                        if ((drvsArray.length > 0) && (ConnectionManager.getDefault().getConnection(CONN_NAME) == null)) {
+                            DerbyDatabases.createSampleDatabase();
+                        }
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    } catch (DatabaseException de) {
+                        Exceptions.printStackTrace(de);
+                    } finally {
+                        JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
+                    }
+                }
+            });
+        }
+    }
 }

@@ -46,12 +46,16 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 
 /**
  * utilities method for working with offsets of Csm objects
@@ -73,17 +77,51 @@ public class CsmOffsetUtilities {
         CsmOffsetable offs = (CsmOffsetable)obj;
         if ((offs.getStartOffset() <= offset) &&
                 (offset <= offs.getEndOffset())) {
-            if (offset == offs.getEndOffset() && CsmKindUtilities.isType(obj)) {
-                CsmType type = (CsmType)obj;
-                // we do not accept type if offset is after '*', '&' or '[]' 
-                return !type.isPointer() && !type.isReference() && (type.getArrayDepth() == 0);
+            if (offset == offs.getEndOffset()) {
+                if (CsmKindUtilities.isType(obj)) {
+                    CsmType type = (CsmType)obj;
+                    // we do not accept type if offset is after '*', '&' or '[]'
+                    return !type.isPointer() && !type.isReference() && (type.getArrayDepth() == 0);
+                } else if (endsWithBrace(offs)) {
+                    // if we right after closed "}" it means we are out of scope object
+                    return false;
+                }
             }
             return true;
         } else {
             return false;
         }
     }
-    
+
+    private static boolean endsWithBrace(CsmOffsetable obj) {
+        if (!CsmKindUtilities.isScope(obj)) {
+            // only scopes can end with '}'
+            return false;
+        }
+        if (!CsmKindUtilities.isStatement(obj) || CsmKindUtilities.isCompoundStatement(obj)) {
+            // non-statement scope always ends with '}'
+            return true;
+        }
+        // special care is needed for scope statements
+        CsmStatement stmt = (CsmStatement) obj;
+        switch (stmt.getKind()) {
+            case IF:
+                // 'if' statement ends with '}' if its last branch ends with '}'
+                CsmStatement elseBranch = ((CsmIfStatement)stmt).getElse();
+                if (elseBranch != null) {
+                    return CsmKindUtilities.isCompoundStatement(elseBranch);
+                } else {
+                    return CsmKindUtilities.isCompoundStatement(((CsmIfStatement)stmt).getThen());
+                }
+            case FOR:
+            case WHILE:
+                // loop statement ends with '}' if its body ends with '}'
+                return CsmKindUtilities.isCompoundStatement(((CsmLoopStatement)stmt).getBody());
+            default:
+                return false;
+        }
+    }
+
     public static boolean isBeforeObject(CsmObject obj, int offset) {
         if (!CsmKindUtilities.isOffsetable(obj)) {
             return false;
@@ -111,7 +149,13 @@ public class CsmOffsetUtilities {
     // list is ordered by offsettable elements
     public static <T extends CsmObject> T findObject(Collection<T> list, CsmContext context, int offset) {
         assert (list != null) : "expect not null list";
-        for (Iterator<T> it = list.iterator(); it.hasNext();) {
+        return findObject(list.iterator(), context, offset);
+    }
+
+    // list is ordered by offsettable elements
+    public static <T extends CsmObject> T findObject(Iterator<T> it, CsmContext context, int offset) {
+        assert (it != null) : "expect not null list";
+        while (it.hasNext()) {
             T obj = it.next();
             assert (obj != null) : "can't be null declaration";
             if (CsmOffsetUtilities.isInObject((CsmObject)obj, offset)) {
@@ -166,5 +210,12 @@ public class CsmOffsetUtilities {
             }
         }
         return inScope;
-    }    
+    }
+
+    public static boolean isInClassScope(final CsmClass clazz, final int offset) {
+        return isInObject(clazz, offset) 
+                && clazz.getLeftBracketOffset() < offset
+                && offset < clazz.getEndOffset();
+    }
+
 }

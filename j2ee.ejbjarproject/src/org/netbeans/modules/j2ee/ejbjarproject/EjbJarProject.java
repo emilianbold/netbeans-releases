@@ -53,8 +53,10 @@ import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -73,7 +75,9 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
@@ -81,7 +85,8 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -115,16 +120,17 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -168,7 +174,7 @@ import org.openide.util.Exceptions;
  */
 public class EjbJarProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif")); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EjbJarProject.class.getName());
     
@@ -182,6 +188,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final UpdateHelper updateHelper;
     private final EjbJarProvider ejbModule;
     private final CopyOnSaveSupport css;
+    private final ArtifactCopyOnSaveSupport artifactSupport;
+    private final DeployOnSaveSupport deployOnSaveSupport;
     private final EjbJar apiEjbJar;
     private WebServicesSupport apiWebServicesSupport;
     private JAXWSSupport apiJaxwsSupport;
@@ -284,6 +292,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
+        artifactSupport = new ArtifactCopySupport();
+        deployOnSaveSupport = new DeployOnSaveSupportProxy();
         helper.addAntProjectListener(this);
         ProjectManager.mutex().postWriteRequest(
              new Runnable () {
@@ -305,7 +315,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 assert type != null : "Type cannot be null";  //NOI18N
                 final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
                 if (classPathProperty == null) {
-                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
+                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
                 return classPathProperty;
             }
@@ -371,7 +381,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     }
     
     public DeployOnSaveSupport getDeployOnSaveSupport() {
-        return css;
+        return deployOnSaveSupport;
     }
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
@@ -436,6 +446,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
+                BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
@@ -932,6 +943,18 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // UI Logging
                 Utils.logUI(NbBundle.getBundle(EjbJarProject.class), "UI_EJB_PROJECT_OPENED", // NOI18N
                         new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
+
+                String serverName = "";  // NOI18N
+                try {
+                    if (servInstID != null) {
+                        serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                    }
+                }
+                catch (InstanceRemovedException ier) {
+                    // ignore
+                }
+
+                Utils.logUsage(EjbJarProject.class, "USG_PROJECT_OPEN_EJB", new Object[] { serverName }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
@@ -960,10 +983,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String disableDeployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
+            if (!Boolean.parseBoolean(disableDeployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
+            artifactSupport.enableArtifactSynchronization(true);
             
             EjbJarLogicalViewProvider physicalViewProvider = EjbJarProject.this.getLookup().lookup(EjbJarLogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
@@ -986,13 +1010,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
             // #134642 - use Ant task from copylibs library
-            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
-                try {
-                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ProjectProperties.removeObsoleteLibraryLocations(ep);
@@ -1004,6 +1023,22 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
+            
+            // configure DoS
+            if (!props.containsKey(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
+                boolean deployOnSaveEnabled = false;
+                try {
+                    String instanceId = ep.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
+                    if (instanceId != null) {
+                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
+                                .isDeployOnSaveSupported();
+                    }
+                } catch (InstanceRemovedException ex) {
+                    // false
+                }
+                props.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+            }
+
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             
             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -1072,6 +1107,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LOGGER.log(Level.INFO, null, e);
             }
             
+            artifactSupport.enableArtifactSynchronization(false);
             Deployment.getDefault().disableCompileOnSaveSupport(ejbModule);
             
             // unregister project's classpaths to GlobalPathRegistry
@@ -1096,16 +1132,42 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             };
         }
     }
+
+    private class DeployOnSaveSupportProxy implements DeployOnSaveSupport {
+
+        public synchronized void addArtifactListener(ArtifactListener listener) {
+            css.addArtifactListener(listener);
+            artifactSupport.addArtifactListener(listener);
+        }
+
+        public synchronized void removeArtifactListener(ArtifactListener listener) {
+            css.removeArtifactListener(listener);
+            artifactSupport.removeArtifactListener(listener);
+        }
+    }
     
-    // TODO cleanup and move to j2ee.common if possible
+    /**
+     * This class handle copying of meta-inf resources to appropriate place in build
+     * dir. This class is used in true Deploy On Save.
+     *
+     * Class should not request project lock from FS listener methods
+     * (deadlock prone).
+     */
     public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
-        
+
+        private static final String META_INF_FOLDER = "META-INF";
+
         private FileObject metaBase = null;
 
+        private String metaBaseValue = null;
+
+        private String buildClasses = null;
+
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
-        
+
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
+            super();
         }
 
         public void addArtifactListener(ArtifactListener listener) {
@@ -1115,175 +1177,187 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public void removeArtifactListener(ArtifactListener listener) {
             listeners.remove(listener);
         }
-        
+
         public void initialize() throws FileStateInvalidException {
             metaBase = getEjbModule().getMetaInf();
+            metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
+            buildClasses = evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+
             if (metaBase != null) {
                 metaBase.getFileSystem().addFileChangeListener(this);
             }
-            ProjectInformation info = (ProjectInformation) getLookup().lookup(ProjectInformation.class);
-            info.addPropertyChangeListener (this);
+
+            LOGGER.log(Level.FINE, "Meta directory is {0}", metaBaseValue);
+
+            EjbJarProject.this.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
             if (metaBase != null) {
                 metaBase.getFileSystem().removeFileChangeListener(this);
             }
+            EjbJarProject.this.evaluator().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(EjbJarProjectProperties.META_INF)) {
+            if (EjbJarProjectProperties.META_INF.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();
                 } catch (org.openide.filesystems.FileStateInvalidException e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
+            } else if (ProjectProperties.BUILD_CLASSES_DIR.equals(evt.getPropertyName())) {
+                // TODO copy all files ?
+                Object value = evt.getNewValue();
+                buildClasses = value == null ? null : value.toString();
             }
         }
-    
-        /** Fired when a file is changed.
-        * @param fe the event describing context where action has taken place
-        */
-        public void fileChanged (FileEvent fe) {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
             try {
                 handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
 
-        public void fileDataCreated (FileEvent fe) {
+        @Override
+        public void fileDataCreated(FileEvent fe) {
             try {
                 handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
+                FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+                if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
                     // inside docbase
                     handleCopyFileToDestDir(fo);
                     FileObject parent = fo.getParent();
                     String path;
-                    if (FileUtil.isParentOf(docBase, parent)) {
-                        path = "META-INF/" + FileUtil.getRelativePath(docBase, fo.getParent()) +
+                    if (FileUtil.isParentOf(metaBase, parent)) {
+                        path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo.getParent()) +
                             "/" + fe.getName() + "." + fe.getExt();
+                    } else {
+                        path = META_INF_FOLDER + "/" + fe.getName() + "." + fe.getExt();
                     }
-                    else {
-                        path = "META-INF/" + fe.getName() + "." + fe.getExt();
-                    }
-                    if (!isSynchronizationAppropriate(path)) 
+                    if (!isSynchronizationAppropriate(path)) {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
         public void fileDeleted(FileEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
+                FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+                if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
                     // inside docbase
-                    String path = "META-INF/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
-                    if (!isSynchronizationAppropriate(path)) 
+                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
         private boolean isSynchronizationAppropriate(String filePath) {
             return true;
         }
-        
-        private void fireArtifactChange(Iterable<File> files) {
+
+        private void fireArtifactChange(Iterable<ArtifactListener.Artifact> files) {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(files);
             }
         }
-        
+
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
             File deleted = null;
-            FileObject webBuildBase = getEjbModule().getContentDirectory();
-            if (webBuildBase != null) {
+            FileObject ejbBuildBase = buildClasses == null ? null : helper.resolveFileObject(buildClasses);
+            if (ejbBuildBase != null) {
                 // project was built
-                FileObject toDelete = webBuildBase.getFileObject(resourcePath);
+                FileObject toDelete = ejbBuildBase.getFileObject(resourcePath);
                 if (toDelete != null) {
                     deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
                 }
+                if (deleted != null) {
+                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(deleted)));
+                }
             }
-            fireArtifactChange(Collections.singleton(deleted));
         }
-        
-        /** Copies a content file to an appropriate  destination directory, 
-         * if applicable and relevant.
-         */
+
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
-            if (!fo.isVirtual()) {
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
-                    // inside docbase
-                    String path = "META-INF/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
-                    if (!isSynchronizationAppropriate(path)) 
+            if (fo.isVirtual()) {
+                return;
+            }
+
+            FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+            if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
+                // inside docbase
+                String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo); // NOI18N
+                if (!isSynchronizationAppropriate(path)) {
+                    return;
+                }
+                FileObject ejbBuildBase = buildClasses == null ? null : helper.resolveFileObject(buildClasses);
+                if (ejbBuildBase != null) {
+                    // project was built
+                    if (FileUtil.isParentOf(metaBase, ejbBuildBase) || FileUtil.isParentOf(ejbBuildBase, metaBase)) {
+                        //cannot copy into self
                         return;
-                    FileObject ejbBuildBase = getEjbModule().getContentDirectory();
-                    if (ejbBuildBase != null) {
-                        // project was built
-                        if (FileUtil.isParentOf(docBase, ejbBuildBase) || FileUtil.isParentOf(ejbBuildBase, docBase)) {
-                            //cannot copy into self
-                            return;
-                        }
-                        FileObject destFile = ensureDestinationFileExists(ejbBuildBase, path, fo.isFolder());
-                        assert destFile != null : "webBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
-                        if (!fo.isFolder()) {
-                            InputStream is = null;
-                            OutputStream os = null;
-                            FileLock fl = null;
-                            try {
-                                is = fo.getInputStream();
-                                fl = destFile.lock();
-                                os = destFile.getOutputStream(fl);
-                                FileUtil.copy(is, os);
+                    }
+                    FileObject destFile = ensureDestinationFileExists(ejbBuildBase, path, fo.isFolder());
+                    assert destFile != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
+                    if (!fo.isFolder()) {
+                        InputStream is = null;
+                        OutputStream os = null;
+                        FileLock fl = null;
+                        try {
+                            is = fo.getInputStream();
+                            fl = destFile.lock();
+                            os = destFile.getOutputStream(fl);
+                            FileUtil.copy(is, os);
+                        } finally {
+                            if (is != null) {
+                                is.close();
                             }
-                            finally {
-                                if (is != null) {
-                                    is.close();
-                                }
-                                if (os != null) {
-                                    os.close();
-                                }
-                                if (fl != null) {
-                                    fl.releaseLock();
-                                }
-                                File file = FileUtil.toFile(destFile);
-                                fireArtifactChange(Collections.singleton(file));
+                            if (os != null) {
+                                os.close();
                             }
-                            //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
+                            if (fl != null) {
+                                fl.releaseLock();
+                            }
+                            File file = FileUtil.toFile(destFile);
+                            if (file != null) {
+                                fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(file)));
+                            }
                         }
                     }
                 }
             }
         }
 
-        /** Returns the destination (parent) directory needed to create file with relative path path under webBuilBase
+        /**
+         * Returns the destination (parent) directory needed to create file
+         * with relative path path under ejbBuilBase.
          */
-        private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
-            FileObject current = webBuildBase;
+        private FileObject ensureDestinationFileExists(FileObject ejbBuildBase, String path, boolean isFolder) throws IOException {
+            FileObject current = ejbBuildBase;
             StringTokenizer st = new StringTokenizer(path, "/");
             while (st.hasMoreTokens()) {
                 String pathItem = st.nextToken();
@@ -1293,21 +1367,55 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     if (isFolder || st.hasMoreTokens()) {
                         // create a folder
                         newCurrent = FileUtil.createFolder(current, pathItem);
-                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
-                    }
-                    else {
+                        assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                    } else {
                         newCurrent = FileUtil.createData(current, pathItem);
-                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                        assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
-                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
-            assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+            assert current != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
     }
-    
+
+    private class ArtifactCopySupport extends ArtifactCopyOnSaveSupport {
+
+        public ArtifactCopySupport() {
+            super("build.classes.dir", evaluator(), getAntProjectHelper()); // NOI18N
+        }
+
+        @Override
+        public Map<Item, String> getArtifacts() {
+            final AntProjectHelper helper = getAntProjectHelper();
+
+            ClassPathSupport cs = new ClassPathSupport(evaluator(), getReferenceHelper(), helper,
+                getUpdateHelper(), new ClassPathSupportCallbackImpl(helper));
+
+            Map<Item, String> result = new HashMap<Item, String>();
+            for (ClassPathSupport.Item item : cs.itemsList(
+                    helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ProjectProperties.JAVAC_CLASSPATH),
+                    ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES)) {
+
+                if (!item.isBroken() && item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT) {
+                    String included = item.getAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT);
+                    if (Boolean.parseBoolean(included)) {
+                        result.put(item, "");
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        protected Artifact filterArtifact(Artifact artifact) {
+            return artifact.relocatable();
+        }
+
+    }
+
     // List of primarily supported templates
     private static final String[] TYPES = new String[] {
         "java-classes",         // NOI18N

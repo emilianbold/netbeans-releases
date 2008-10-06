@@ -54,23 +54,25 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.JavaSource;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider;
+import org.netbeans.modules.websvc.saas.codegen.util.UniqueVariableNameFinder;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 
 /**
  * Code generator for REST services wrapping WSDL-based web service.
@@ -92,6 +94,9 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N
     public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
+    public static final String VAR_NAMES_RESULT_DECL = REST_RESPONSE + " " + Util.VAR_NAMES_RESULT;
+    public static final String INDENT = "        ";
+    public static final String INDENT_2 = "             ";
     
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;
@@ -104,6 +109,8 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     private int totalWorkUnits;
     private int workUnits;
     private DropFileType dropFileType;
+    private int precedence;
+    private UniqueVariableNameFinder nFinder = new UniqueVariableNameFinder();
     
     public SaasClientCodeGenerator() {
     }
@@ -146,6 +153,14 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
 
     public void setDropFileType(DropFileType dropFileType) {
         this.dropFileType = dropFileType;
+    }
+    
+    public void setPrecedence(int precedence) {
+        this.precedence = precedence;
+    }
+    
+    public int getPrecedence() {
+        return precedence;
     }
     
     public void initProgressReporting(ProgressHandle pHandle) {
@@ -195,7 +210,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     public Set<FileObject> generate() throws IOException {
         preGenerate();
         FileObject[] result = new FileObject[]{getTargetFile()};
-        JavaSourceHelper.saveSource(result);
+        //JavaSourceHelper.saveSource(result);
 
         finishProgressReporting();
 
@@ -274,7 +289,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
 
   
     protected void insert(String s, boolean reformat)
-    throws BadLocationException {
+            throws BadLocationException {
         Document doc = getTargetDocument();
         if (doc == null)
             return;
@@ -282,16 +297,18 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         if (s == null)
             return;
         
-        insert(s, getStartPosition(), getEndPosition(), doc);
-
+        insert(s, getStartPosition(), getEndPosition(), doc, reformat);
     }
     
-    protected int insert(String s, int start, int end, Document doc)
-    throws BadLocationException {
+    protected int insert(String s, int start, int end, Document doc, boolean reformat)
+            throws BadLocationException {
         try {
             doc.remove(start, end - start);
             doc.insertString(start, s, null);
         } catch (BadLocationException ble) {}
+        
+        if(reformat)
+            reformat(doc, 0, doc.getLength());
         
         return start;
     }
@@ -302,16 +319,28 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         return true;
     }
     
-    protected void createRestConnectionFile(Project project) throws IOException {
-        SourceGroup[] srcGrps = SourceGroupSupport.getJavaSourceGroups(project);
-        String pkg = REST_CONNECTION_PACKAGE;
-        FileObject targetFolder = SourceGroupSupport.getFolderForPackage(srcGrps[0],pkg , true);
-        JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, targetFolder, pkg, REST_CONNECTION);
-        String restResponseTemplate = REST_RESPONSE_TEMPLATE;
-        JavaSource restResponseJS = JavaSourceHelper.createJavaSource(restResponseTemplate, targetFolder, pkg, REST_RESPONSE);
+    protected void reformat(Document doc, final int start, final int end) 
+            throws BadLocationException {
+        final Reformat reformat = Reformat.get(doc);
+        final BadLocationException[] ble = new BadLocationException[1];
+        reformat.lock();
+        try {
+            NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
+                public void run() {
+                    try {
+                        reformat.reformat(start, end);
+                    } catch (BadLocationException e) {
+                        ble[0] = e;
+                    }
+                }
+            });
+        } finally {
+            reformat.unlock();
+        }
+        if (ble[0] != null)
+            throw ble[0];
     }
-    
-   
+  
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {
         ArrayList<String> params = new ArrayList<String>();
         params.addAll(Arrays.asList(getParamNames(queryParams)));
@@ -388,5 +417,59 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         Caret caret = targetComponent.getCaret();
         setStartPosition(Math.min(caret.getDot(), caret.getMark()));
         setEndPosition(Math.max(caret.getDot(), caret.getMark()));
+    }
+    
+    protected String findNewName(String pattern, String oldName) {
+        updateVariableDecl(pattern);
+        return nFinder.findNewName(pattern, oldName);
+    }
+    
+    protected String getResultPattern() {
+        return Util.VAR_NAMES_RESULT+
+                nFinder.getVariableCount(VAR_NAMES_RESULT_DECL);
+    }
+    
+    protected void addVariablePattern(String pattern, int count) {
+        nFinder.addPattern(pattern, new Integer(count));
+    }
+    
+    protected void updateVariableNames(List<ParameterInfo> params) {
+        nFinder.addPattern(VAR_NAMES_RESULT_DECL, new Integer(0));
+        try {
+            String text = getTargetDocument().getText(0, getTargetDocument().getLength());
+            nFinder.updateVariableDecl(text, params);
+            nFinder.updateVariableDecl(text, VAR_NAMES_RESULT_DECL);
+        } catch (BadLocationException ex) {}
+    }
+    
+    protected void updateVariableNamesForWS(List<WSParameter> params) {
+        nFinder.addPattern(VAR_NAMES_RESULT_DECL, new Integer(0));
+        try {
+            String text = getTargetDocument().getText(0, getTargetDocument().getLength());
+            nFinder.updateVariableDeclForWS(text, params);
+            nFinder.updateVariableDecl(text, VAR_NAMES_RESULT_DECL);
+        } catch (BadLocationException ex) {}
+    }
+    
+    private void updateVariableDecl(String pattern) {
+        try {
+            nFinder.updateVariableDecl(getTargetDocument().getText(0, getTargetDocument().getLength()), pattern);
+        } catch (BadLocationException ex) {}
+    }
+    
+    protected List<ParameterInfo> renameParameterNames(List<ParameterInfo> params) {
+        return nFinder.renameParameterNames(params);
+    }
+    
+    public String getVariableDecl(ParameterInfo p) {
+        return nFinder.getVariableDecl(p);
+    }
+
+    public String getVariableDecl(WSParameter p) {
+        return nFinder.getVariableDecl(p);
+    }
+    
+    protected void clearVariablePatterns() {
+        nFinder.clearPatterns();
     }
 }

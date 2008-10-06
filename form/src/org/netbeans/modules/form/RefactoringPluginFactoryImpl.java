@@ -42,6 +42,9 @@
 package org.netbeans.modules.form;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -77,14 +80,16 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         RefactoringInfo.ChangeType changeType = null;
-        FileObject primaryFile = null;
-        String oldName = null;
+        List<FileObject> fileList = new LinkedList<FileObject>();
+        List<String> nameList = new LinkedList<String>();
 
         // We must do some more analysis here, though it would be better to do
         // it later in the plugin's prepare method, but we can't be sure the
         // guarded handler is not called sooner from java plugin than our plugin.
 
         if (refactoring instanceof RenameRefactoring) {
+            FileObject primaryFile = null;
+            String oldName = null;
             Lookup sourceLookup = refactoring.getRefactoringSource();
             FileObject file = sourceLookup.lookup(FileObject.class);
             NonRecursiveFolder pkgFolder = sourceLookup.lookup(NonRecursiveFolder.class);
@@ -153,38 +158,53 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 if (isOnSourceClasspath(pkgFolder.getFolder())) {
                     changeType = RefactoringInfo.ChangeType.PACKAGE_RENAME;
                     primaryFile = pkgFolder.getFolder();
-                    oldName = primaryFile.getName();
+                    ClassPath cp = ClassPath.getClassPath(primaryFile, ClassPath.SOURCE);
+                    oldName = cp.getResourceName(primaryFile, '.', false);
                 }
             }
-        } else if (refactoring instanceof MoveRefactoring) {
-            FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
-            if (file != null && RefactoringInfo.isJavaFile(file) && isOnSourceClasspath(file)) {
-                // moving a java file (between packages)
-                changeType = RefactoringInfo.ChangeType.CLASS_MOVE;
-                primaryFile = file;
-                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-                oldName = cp.getResourceName(file, '.', false);
+            if (changeType != null) {
+                fileList.add(primaryFile);
+                nameList.add(oldName);
             }
-        } else if (refactoring instanceof SingleCopyRefactoring) {
-            FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
-            if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
-                // copying a java file
-                changeType = RefactoringInfo.ChangeType.CLASS_COPY;
-                primaryFile = file;
-                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
-                oldName = cp.getResourceName(file, '.', false);
+        } else {
+            if (refactoring instanceof MoveRefactoring) {
+                Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+                for (FileObject file : files) {
+                    if (RefactoringInfo.isJavaFile(file) && isOnSourceClasspath(file)) {
+                        // moving a java file (between packages)
+                        changeType = RefactoringInfo.ChangeType.CLASS_MOVE;
+                        fileList.add(file);
+                        ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                        nameList.add(cp.getResourceName(file, '.', false));
+                    }
+                }
+            } else if (refactoring instanceof SingleCopyRefactoring) {
+                Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+                for (FileObject file : files) {
+                    if (RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
+                        // copying a java file
+                        changeType = RefactoringInfo.ChangeType.CLASS_COPY;
+                        fileList.add(file);
+                        nameList.add(file.getName());
+                    }
+                }
+            } else if (refactoring instanceof SafeDeleteRefactoring) {
+                Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
+                for (FileObject file : files) {
+                    if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
+                        // deleting a form
+                        changeType = RefactoringInfo.ChangeType.CLASS_DELETE;
+                        fileList.add(file);
+                        nameList.add(null);
+                    }
+                }
             }
-        } else if (refactoring instanceof SafeDeleteRefactoring) {
-            FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
-            if (file != null && RefactoringInfo.isJavaFileOfForm(file) && isOnSourceClasspath(file)) {
-                // deleting a form
-                changeType = RefactoringInfo.ChangeType.CLASS_DELETE;
-                primaryFile = file;
-            }            
         }
 
         if (changeType != null) {
-            RefactoringInfo refInfo = new RefactoringInfo(refactoring, changeType, primaryFile, oldName);
+            FileObject[] originalFiles = fileList.toArray(new FileObject[fileList.size()]);
+            String[] oldNames = nameList.toArray(new String[nameList.size()]);
+            RefactoringInfo refInfo = new RefactoringInfo(refactoring, changeType, originalFiles, oldNames);
             refactoring.getContext().add(refInfo); // to be accessible to the GuardedBlockHandlerFactoryImpl
             return new RefactoringPluginImpl(refInfo);
         }
@@ -223,34 +243,36 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
         public Problem prepare(RefactoringElementsBag refactoringElements) {
             // even if guarded blocks are not affected directly we might want some changes
-            if (refInfo.isForm()) {
-                FormRefactoringUpdate update = refInfo.getUpdateForFile(refInfo.getPrimaryFile());
-                switch (refInfo.getChangeType()) {
-                case CLASS_DELETE: // in case of delete we only backup the form file
-                    refactoringElements.registerTransaction(update);
-                    return null;
-                case CLASS_RENAME: // renaming form class, always needs to load - auto-i18n
-                    if (!update.prepareForm(true)) {
-                        return new Problem(true, "Error loading form. Cannot update generated code.");
+            for (FileObject file : refInfo.getOriginalFiles()) {
+                if (RefactoringInfo.isJavaFileOfForm(file)) {
+                    FormRefactoringUpdate update = refInfo.getUpdateForFile(file);
+                    switch (refInfo.getChangeType()) {
+                    case CLASS_DELETE: // in case of delete we only backup the form file
+                        refactoringElements.registerTransaction(update);
+                        return null;
+                    case CLASS_RENAME: // renaming form class, always needs to load - auto-i18n
+                        if (!update.prepareForm(true)) {
+                            return new Problem(true, "Error loading form. Cannot update generated code.");
+                        }
+                        break;
+                    // for VARIABLE_RENAME and EVENT_HANDLER_RENAME we don't know yet
+                    // if they affect the form - guarded block handler will take care
                     }
-                    break;
-                // for VARIABLE_RENAME and EVENT_HANDLER_RENAME we don't know yet
-                // if they affect the form - guarded block handler will take care
-                }
-                refactoringElements.add(refInfo.getRefactoring(), update.getPreviewElement());
-                refactoringElements.addFileChange(refInfo.getRefactoring(), update);
-            } else if (refInfo.getChangeType() == RefactoringInfo.ChangeType.PACKAGE_RENAME
-                       || refInfo.getChangeType() == RefactoringInfo.ChangeType.FOLDER_RENAME) {
-                boolean anyForm = false;
-                for (FileObject fo : refInfo.getPrimaryFile().getChildren()) {
-                    if (RefactoringInfo.isJavaFileOfForm(fo)) {
-                        anyForm = true;
-                        FormRefactoringUpdate update = refInfo.getUpdateForFile(fo);
-                        refactoringElements.addFileChange(refInfo.getRefactoring(), update);
+                    refactoringElements.add(refInfo.getRefactoring(), update.getPreviewElement());
+                    refactoringElements.addFileChange(refInfo.getRefactoring(), update);
+                } else if (refInfo.getChangeType() == RefactoringInfo.ChangeType.PACKAGE_RENAME
+                           || refInfo.getChangeType() == RefactoringInfo.ChangeType.FOLDER_RENAME) {
+                    boolean anyForm = false;
+                    for (FileObject fo : file.getChildren()) {
+                        if (RefactoringInfo.isJavaFileOfForm(fo)) {
+                            anyForm = true;
+                            FormRefactoringUpdate update = refInfo.getUpdateForFile(fo);
+                            refactoringElements.addFileChange(refInfo.getRefactoring(), update);
+                        }
                     }
-                }
-                if (anyForm) {
-                    // TODO add refactoring element informing about updating references to resources in GUI forms in this package
+                    if (anyForm) {
+                        // TODO add refactoring element informing about updating references to resources in GUI forms in this package
+                    }
                 }
             }
             return null;

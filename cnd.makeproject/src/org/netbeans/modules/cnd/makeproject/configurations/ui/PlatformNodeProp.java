@@ -58,29 +58,30 @@ public class PlatformNodeProp extends Node.Property {
     public PlatformNodeProp(PlatformConfiguration platformConfiguration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.platformConfiguration = platformConfiguration;
-	this.canWrite = canWrite;
-	this.name = name;
-	this.description = description;
+        this.canWrite = canWrite;
+        this.name = name;
+        this.description = description;
         platformConfiguration.setPlatformNodeProp(this);
         editor = null;
     }
 
     @Override
     public String getName() {
-	return name;
+        return name;
     }
 
     @Override
     public String getShortDescription() {
-	return description;
+        return description;
     }
     
     @Override
     public String getHtmlDisplayName() {
-        if (platformConfiguration.getModified())
-            return "<b>" + getDisplayName(); // NOI18N
-        else
+        if (platformConfiguration.getModified()) {
+            return platformConfiguration.isDevHostOnline() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
+        } else {
             return null;
+        }
     }
     
     public Object getValue() {
@@ -136,7 +137,7 @@ public class PlatformNodeProp extends Node.Property {
         public String getAsText() {
             if (platformConfiguration instanceof PlatformConfiguration) {
                 if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-                    System.err.println("");
+//                    System.err.println("");
                 }
             }
             return platformConfiguration.getName();
@@ -146,7 +147,7 @@ public class PlatformNodeProp extends Node.Property {
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             if (platformConfiguration instanceof PlatformConfiguration) {
                 if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-                    System.err.println("");
+//                    System.err.println("");
                 }
             }
             setValue(text);

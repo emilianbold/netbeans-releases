@@ -44,86 +44,102 @@ package org.netbeans.modules.cnd.ui.options;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author gordonp
+ * @author Alexey Vladykin
  */
 public class VersionCommand {
-    private ProcessBuilder pb;
-    private String version = null;
-    private static HashMap<String, String> cygmap;
-    
-    static {
-        cygmap = new HashMap();
-        cygmap.put("cc.exe", "gcc.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-gcc.exe", "gcc.exe"); // NOI18N
-        cygmap.put("c++.exe", "g++.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-g++.exe", "g++.exe"); // NOI18N
-        cygmap.put("i686-pc-cygwin-c++.exe", "g++.exe"); // NOI18N
-    }
-    
+
+    private final Tool tool;
+    private final String path;
+    private boolean alreadyRun;
+    private String version;
+
     /**
      * Creates a new instance of VersionCommand
      */
-    public VersionCommand(CompilerFlavor flavor, String path) {
-        String option = null;
-        String name = IpeUtils.getBaseName(path);
-        
-        try {
-            path = new File(path).getCanonicalPath();
-        } catch (IOException ex) {
-        }
-        
-        if (flavor.isGnuCompiler()) { 
-            option = "--version"; // NOI18N
-        } else if (flavor.isSunCompiler()) {
-            option = "-V"; // NOI18N
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            if (name.equals("gmake")) { // NOI18N
-                option = "--version"; // NOI18N
-            } else if (name.equals("gdb")) { // NOI18N
-                option = "--version"; // NOI18N
-            } else if (name.equals("make")) { // NOI18N
-                path = "/sbin/uname"; // NOI18N
-                option = "-sr"; // NOI18N
-            } else if (name.equals("dmake")) { // NOI18N
-                option = "-v"; // NOI18N
-            }
-        }
-        if (option == null) {
-            option = "--version"; // NOI18N - Guessing its GNU ...
-        }
-        
-        if (version == null) {
-            pb = new ProcessBuilder(path, option);
-            pb.redirectErrorStream(true);
-            version = run();
-        }
+    public VersionCommand(Tool tool, String path) {
+        this.tool = tool;
+        this.path = path;
     }
-    
-    public String run() {
-        String v = null;
-        if (pb != null) {
-            try {
-                Process process = pb.start();
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                v = br.readLine(); // just read 1st line...
-                br.close();
-            } catch (IOException ioe) {
-            }
-        }
-        return v;
-    }
-    
+
     public String getVersion() {
+        if (!alreadyRun) {
+            run();
+        }
         return version;
     }
+
+    private void run() {
+        if (CompilerSetManager.LOCALHOST.equals(tool.getHostKey())) {
+            // we're dealing with a local toolchain
+            File file = new File(path);
+            if (file.exists()) {
+                ProcessBuilder pb = new ProcessBuilder(path, getVersionFlags());
+                pb.redirectErrorStream(true);
+                try {
+                    Process process = pb.start();
+                    version = extractVersion(process.getInputStream());
+                } catch (IOException ioe) {
+                    // silently drop
+                }
+            }
+        } else {
+            // it's a remote toolchain
+            CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
+            if (provider != null) {
+                provider.run(tool.getHostKey(),
+                        path + " " + getVersionFlags() + " 2>&1", // NOI18N
+                        Collections.EMPTY_MAP);
+                version = extractVersion(new StringReader(provider.getOutput()));
+            }
+        }
+        alreadyRun = true;
+    }
+
+    private String getVersionFlags() {
+        String flags = null;
+        if (tool.getDescriptor() != null) {
+            flags = tool.getDescriptor().getVersionFlags();
+        }
+        if (flags == null) {
+            return "--version"; // NOI18N
+        } else {
+            return flags;
+        }
+    }
+
+    private String extractVersion(InputStream is) {
+        return extractVersion(new InputStreamReader(is));
+    }
+
+    private String extractVersion(Reader reader) {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(reader);
+            return br.readLine();
+        } catch (IOException ioe) {
+            return null;
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                    // silently drop
+                }
+            }
+        }
+    }
+
 }

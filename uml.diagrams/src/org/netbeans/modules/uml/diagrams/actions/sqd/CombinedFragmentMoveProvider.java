@@ -49,13 +49,11 @@ import org.netbeans.modules.uml.diagrams.nodes.sqd.CombinedFragmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.MessagePinWidget;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
-import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
-import org.openide.windows.TopComponent;
 
 /**
  * use external provider for mopst actions and made adjustments cf specific
@@ -89,14 +87,6 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                     processAllVerifications(widget,finalcontainer);
                     widget.getScene().validate();
                     tb=null;
-                    if (widget.getScene() instanceof DesignerScene) 
-                    {
-                        TopComponent topComp = ((DesignerScene) widget.getScene()).getTopComponent();
-                        if (topComp instanceof UMLDiagramTopComponent) 
-                        {
-                            ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
-                        }
-                    }
                 }
 
                 public Point getOriginalLocation(Widget widget) {
@@ -256,18 +246,23 @@ public class CombinedFragmentMoveProvider  implements MoveProvider {
                                                 if(finalcontainer!=null)new AfterValidationExecutor(new ActionProvider(){
                                                     public void perfomeAction() {
                                                         finalcontainer.calculateChildren(true);
+                                                        widget.revalidate();
                                                         widget.getScene().validate();
                                                     }
                                                 },widget.getScene());
+                                                widget.revalidate();
                                                 widget.getScene().validate();
                                            }
                                         },widget.getScene());
+                                        widget.revalidate();
                                         widget.getScene().validate();
                                     }
                                 },widget.getScene());
+                                widget.revalidate();
                                 widget.getScene().validate();
                             }
                         },widget.getScene());
+                        widget.revalidate();
                         widget.getScene().validate();
                 }
 

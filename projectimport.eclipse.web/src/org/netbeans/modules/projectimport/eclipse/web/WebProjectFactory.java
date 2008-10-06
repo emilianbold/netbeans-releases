@@ -41,18 +41,19 @@ package org.netbeans.modules.projectimport.eclipse.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets.Facet;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
+import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.ProjectDescriptor;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeUpdater;
 import org.netbeans.modules.web.project.WebProject;
@@ -61,6 +62,7 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -83,18 +85,17 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     private static final Logger LOG =
             Logger.getLogger(WebProjectFactory.class.getName());
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
-    private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18
+    private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); //NOI18N
     
-    // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
-
+    
     public WebProjectFactory() {
     }
     
     public boolean canHandle(ProjectDescriptor descriptor) {
         // eclipse ganymede and europa are using facets:
         if (descriptor.getFacets() != null) {
-            return descriptor.getFacets().hasInstalledFacet("jst.web");
+            return descriptor.getFacets().hasInstalledFacet("jst.web"); //NOI18N
         }
         if (descriptor.getNatures().contains(WEB_NATURE)) {
             // this is perhaps case of older Eclipse versions??
@@ -105,27 +106,69 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         return descriptor.getNatures().contains(MYECLIPSE_WEB_NATURE);
     }
 
+    private ServerSelectionWizardPanel findWizardPanel(ProjectImportModel model) {
+        assert model.getExtraWizardPanels() != null;
+        for (WizardDescriptor.Panel panel : model.getExtraWizardPanels()) {
+            if (panel instanceof ServerSelectionWizardPanel) {
+                return (ServerSelectionWizardPanel)panel;
+            }
+        }
+        return null;
+    }
+    
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
-        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation();
+        
+        if (ProjectFactorySupport.areSourceRootsOwned(model, nbProjectDir, importProblems)) {
+            return null;
+        }
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
-
-        //
-        //
-        // TODO: most of the values defaulted for now:
-        //
-        //
-        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
-            importProblems.add("project cannot be imported if there is no application server");
+        if (webData == null) {
+            importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N
             return null;
+        }
+
+        String serverID;
+        if (model.getExtraWizardPanels() != null && findWizardPanel(model) != null) {
+            ServerSelectionWizardPanel wizard = findWizardPanel(model);
+            assert wizard != null;
+            serverID = wizard.getServerID();
+        } else {
+            if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
+                importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_NoJ2EEServer")); //NOI18N
+                return null;
+            } else {
+                serverID = Deployment.getDefault().getServerInstanceIDs()[0];
+            }
         }
         
         WebProjectCreateData createData = new WebProjectCreateData();
         createData.setProjectDir(nbProjectDir);
         createData.setName(model.getProjectName());
-        createData.setServerInstanceID(Deployment.getDefault().getServerInstanceIDs()[0]);
-        createData.setJavaEEVersion("1.5");
+        createData.setServerInstanceID(serverID);
+        String  j2eeSpecVersion = null;
+        if (model.getFacets() != null) {
+            Facet f = model.getFacets().getFacet("jst.web"); //NOI18N
+            if (f != null) {
+                String servletAPIVersion = f.getVersion();
+                if ("2.5".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.5"; // NOI18N
+                } else if ("2.4".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.4"; // NOI18N
+                } else if ("2.3".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.3"; // NOI18N
+                }
+            }
+        }
+        if (j2eeSpecVersion == null && webData.j2eeSpecVersion != null) {
+            j2eeSpecVersion = webData.j2eeSpecVersion;
+        }
+        if (j2eeSpecVersion == null) {
+            j2eeSpecVersion = "1.5"; //NOI18N
+        }
+        createData.setJavaEEVersion(j2eeSpecVersion);
         createData.setSourceLevel(model.getSourceLevel());
         if (model.getJavaPlatform() != null) {
             createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
@@ -134,33 +177,47 @@ public class WebProjectFactory implements ProjectTypeUpdater {
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
         if (root.getFileObject(webData.webRoot) == null) {
-            importProblems.add("web document root does not exist ('" + webData.webRoot + "'). project will not be imported.");
+            importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingDocRoot", webData.webRoot));
+            return null;
         }
         createData.setWebModuleFO(root);
         createData.setSourceFolders(model.getEclipseSourceRootsAsFileArray());
         createData.setTestFolders(model.getEclipseTestSourceRootsAsFileArray());
         createData.setContextPath(webData.contextRoot);
         createData.setDocBase(root.getFileObject(webData.webRoot));
-        createData.setLibFolder(root.getFileObject(webData.webRoot+"/WEB-INF/lib"));
-        createData.setWebInfFolder(root.getFileObject(webData.webRoot+"/WEB-INF"));
+        createData.setLibFolder(root.getFileObject(webData.webRoot+"/WEB-INF/lib")); //NOI18N
+        createData.setWebInfFolder(root.getFileObject(webData.webRoot+"/WEB-INF")); //NOI18N
         createData.setLibrariesDefinition(null);
-        createData.setBuildfile("build.xml");
+        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+            createData.setBuildfile("nb-build.xml"); //NOI18N
+        } else {
+            createData.setBuildfile("build.xml"); //NOI18N
+        }
         
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
         WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+        
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        boolean changed = false;
+        if (new File(nbProjectDir, "dist").exists()) { //NOI18N
+            ep.setProperty("dist.dir", "nbdist"); //NOI18N
+            changed = true;
+        }
+        if (new File(nbProjectDir, "build").exists()) { //NOI18N
+            ep.setProperty("build.dir", "nbbuild"); //NOI18N
+            changed = true;
+        }
+        if (changed) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
         
         // set labels for source roots
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());
         
-        ProjectFactorySupport.setupSourceExcludes(helper, model);
+        ProjectFactorySupport.setupSourceExcludes(helper, model, importProblems);
 
         setupCompilerProperties(helper, model);
-        
-        // Make sure PCPM knows who owns this (J2SEProject will do the same later on anyway):
-        if (!nbProjectDir.equals(model.getEclipseProjectFolder())) {
-            FileOwnerQuery.markExternalOwner(model.getEclipseProjectFolder().toURI(), nbProject, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        }
         
         // update project classpath
         ProjectFactorySupport.updateProjectClassPath(helper, nbProject.getReferenceHelper(), model, importProblems);
@@ -175,38 +232,74 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         if (!f.exists()) {
             f = new File(eclipseProject, ".settings/.component"); // NOI18N
         }
-        Document webContent;
-        try {
-            webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
-        } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e);
-            throw ioe;
-        }
-        Element modulesEl = webContent.getDocumentElement();
-        if (!"project-modules".equals(modulesEl.getLocalName())) { // NOI18N
-            return null;
-        }
-        WebContentData data = new WebContentData();
-        Element moduleEl = Util.findElement(modulesEl, "wb-module", null);
-        assert modulesEl != null;
-        for (Element el : Util.findSubElements(moduleEl)) {
-            if ("wb-resource".equals(el.getNodeName())) {
-                if ("/".equals(el.getAttribute("deploy-path"))) {
-                    data.webRoot = el.getAttribute("source-path");
+        if (f.exists()) {
+            Document webContent;
+            try {
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            } catch (SAXException e) {
+                IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
+                throw ioe;
+            }
+            Element modulesEl = webContent.getDocumentElement();
+            if (!"project-modules".equals(modulesEl.getLocalName())) { // NOI18N
+                return null;
+            }
+            WebContentData data = new WebContentData();
+            Element moduleEl = Util.findElement(modulesEl, "wb-module", null); //NOI18N
+            assert modulesEl != null;
+            for (Element el : Util.findSubElements(moduleEl)) {
+                if ("wb-resource".equals(el.getNodeName())) { //NOI18N
+                    if ("/".equals(el.getAttribute("deploy-path"))) { //NOI18N
+                        data.webRoot = el.getAttribute("source-path"); //NOI18N
+                    }
+                }
+                if ("property".equals(el.getNodeName())) { //NOI18N
+                    if ("context-root".equals(el.getAttribute("name"))) { //NOI18N
+                        data.contextRoot = el.getAttribute("value"); //NOI18N
+                    }
                 }
             }
-            if ("property".equals(el.getNodeName())) {
-                if ("context-root".equals(el.getAttribute("name"))) {
-                    data.contextRoot = el.getAttribute("value");
+            return data;
+        }
+        f = new File(eclipseProject, ".mymetadata"); // NOI18N
+        if (f.exists()) {
+            Document webContent;
+            try {
+                webContent = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            } catch (SAXException e) {
+                IOException ioe = (IOException) new IOException(f + ": " + e.toString()).initCause(e); //NOI18N
+                throw ioe;
+            }
+            Element modulesEl = webContent.getDocumentElement();
+            if (!"project-module".equals(modulesEl.getLocalName())) { // NOI18N
+                return null;
+            }
+            WebContentData data = new WebContentData();
+            data.contextRoot = modulesEl.getAttribute("context-root"); //NOI18N
+            String specVer = modulesEl.getAttribute("j2ee-spec"); //NOI18N
+            if ("5.0".equals(specVer)) {
+                specVer = "1.5"; // NOI18N
+            }
+            Element attrsEl = Util.findElement(modulesEl, "attributes", null); //NOI18N
+            if (attrsEl != null) {
+                for (Element el : Util.findSubElements(attrsEl)) {
+                    if ("attribute".equals(el.getNodeName())) { //NOI18N
+                        if ("webrootdir".equals(el.getAttribute("name"))) { //NOI18N
+                            data.webRoot = el.getAttribute("value"); //NOI18N
+                            break;
+                        }
+                    }
                 }
             }
+            return data;
         }
-        return data;
+        return null;
     }
     
     private static class WebContentData {
         private String contextRoot;
         private String webRoot;
+        private String j2eeSpecVersion; // only initialized in case od MyEclipse
 
         @Override
         public String toString() {
@@ -222,15 +315,15 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             webData = new WebContentData();
-            webData.contextRoot = "??";
-            webData.webRoot = "??";
+            webData.contextRoot = "??"; //NOI18N
+            webData.webRoot = "??"; //NOI18N
         }
-        return ProjectFactorySupport.calculateKey(model) + "web=" + webData.webRoot + ";" + "context=" + webData.contextRoot + ";";
+        return ProjectFactorySupport.calculateKey(model) + "web=" + webData.webRoot + ";" + "context=" + webData.contextRoot + ";"; //NOI18N
     }
 
     public String update(Project project, ProjectImportModel model, String oldKey, List<String> importProblems) throws IOException {
         if (!(project instanceof WebProject)) {
-            throw new IOException("is not web project: "+project.getClass().getName());
+            throw new IOException("is not web project: "+project.getClass().getName()); //NOI18N
         }
         String newKey = calculateKey(model);
         
@@ -255,16 +348,11 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     }
 
     public String getProjectTypeName() {
-        return "Web Application";
+        return org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "LABEL_Web_Application");
     }
 
-    public boolean prepare() {
-        if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
-            if (ServerManager.showAddServerInstanceWizard() == null) {
-                return false;
-            }
-        }
-        return true;
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalImportWizardPanels() {
+        return Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(new ServerSelectionWizardPanel());
     }
     
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
@@ -273,12 +361,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ep.setProperty(WebProjectProperties.JAVAC_TARGET, model.getTargetLevel());
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
         ep.setProperty(WebProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        String enc = model.getEncoding();
-        if (enc != null) {
-            ep.setProperty(WebProjectProperties.SOURCE_ENCODING, enc);
-        } else {
-            ep.remove(WebProjectProperties.SOURCE_ENCODING);
-        }
+        ep.setProperty(WebProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
@@ -286,11 +369,14 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     }
 
     public File getProjectFileLocation(ProjectDescriptor descriptor, String token) {
+        if (!token.equals(ProjectTypeFactory.FILE_LOCATION_TOKEN_WEBINF)) {
+            return null;
+        }
         WebContentData data;
         try {
             data = parseWebContent(descriptor.getEclipseProjectFolder());
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "cannot parse webmodule data", ex);
+            LOG.log(Level.INFO, "cannot parse webmodule data", ex); //NOI18N
             return null;
         }
         if (data != null) {

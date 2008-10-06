@@ -42,6 +42,118 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="NBProfiler">
+        <folder name="Categories">
+            <folder name="IO">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                <folder name="Files">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name=".subtypes">
+                        <folder name="java.io.FileOuptutStream" url="java.io.FileOuptutStream">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </folder>
+                        <folder name="java.io.FileReader" url="java.io.FileReader">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </folder>
+                        <folder name="java.io.FileWriter" url="java.io.FileWriter">
+                            <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name="Socket">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name=".subtype">
+                        <folder name="java.nio.SocketChannel" url="java.nio.SocketChannel">
+                            <attr name="includes" stringvalue="read,write"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name=".subtypes">
+                    <folder name="java.io.InputStream" url="java.io.InputStream">
+                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                    </folder>
+                    <folder name="java.io.InputStreamReader" url="java.io.InputStreamReader">
+                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                    </folder>
+                    <folder name="java.io.OutputStream" url="java.io.OutputStream">
+                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                    </folder>
+                    <folder name="java.io.OutputStreamWriter" url="java.io.OutputStreamWriter">
+                        <attr name="includes" stringvalue="write,reset,skip,flush"/>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="UI">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                <folder name="Java2D">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name=".package">
+                        <folder name="sun.java2d" url="sun.java2d"/>
+                    </folder>
+                </folder>
+                <folder name="Listeners">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name=".subtypes">
+                        <folder name="java.awt.LightweightDispatcher" url="java.awt.LightweightDispatcher">
+                            <attr name="includes" stringvalue="dispatchEvent"/>
+                        </folder>
+                        <folder name="java.awt.event.AWTEventListener" url="java.awt.event.AWTEventListener"/>
+                        <folder name="java.awt.event.AdjustmentListener" url="java.awt.event.AdjustmentListener"/>
+                        <folder name="java.awt.event.ComponentListener" url="java.awt.event.ComponentListener"/>
+                        <folder name="java.awt.event.ContainerListener" url="java.awt.event.ContainerListener"/>
+                        <folder name="java.awt.event.FocusListener" url="java.awt.event.FocusListener"/>
+                        <folder name="java.awt.event.HierarchyBoundsListener" url="java.awt.event.HierarchyBoundsListener"/>
+                        <folder name="java.awt.event.HierarchyListener" url="java.awt.event.HierarchyListener"/>
+                        <folder name="java.awt.event.InputMethodListener" url="java.awt.event.InputMethodListener"/>
+                        <folder name="java.awt.event.ItemListener" url="java.awt.event.ItemListener"/>
+                        <folder name="java.awt.event.KeyListener" url="java.awt.event.KeyListener"/>
+                        <folder name="java.awt.event.MouseListener" url="java.awt.event.MouseListener"/>
+                        <folder name="java.awt.event.MouseMotionListener" url="java.awt.event.MouseMotionListener"/>
+                        <folder name="java.awt.event.MouseWheelListener" url="java.awt.event.MouseWheelListener"/>
+                        <folder name="java.awt.event.TextListener" url="java.awt.event.TextListener"/>
+                        <folder name="java.awt.event.WindowFocusListener" url="java.awt.event.WindowFocusListener"/>
+                        <folder name="java.awt.event.WindowListener" url="java.awt.event.WindowListener"/>
+                        <folder name="java.awt.event.WindowStateListener" url="java.awt.event.WindowStateListener"/>
+                        <folder name="javax.swing.event.AncestorListener" url="javax.swing.event.AncestorListener"/>
+                        <folder name="javax.swing.event.CaretListener" url="javax.swing.event.CaretListener"/>
+                        <folder name="javax.swing.event.CellEditorListener" url="javax.swing.event.CellEditorListener"/>
+                        <folder name="javax.swing.event.ChangeListener" url="javax.swing.event.ChangeListener"/>
+                        <folder name="javax.swing.event.DocumentListener" url="javax.swing.event.DocumentListener"/>
+                        <folder name="javax.swing.event.HyperlinkListener" url="javax.swing.event.HyperlinkListener"/>
+                        <folder name="javax.swing.event.InternalFrameListener" url="javax.swing.event.InternalFrameListener"/>
+                        <folder name="javax.swing.event.ListDataListener" url="javax.swing.event.ListDataListener"/>
+                        <folder name="javax.swing.event.ListSelectionListener" url="javax.swing.event.ListSelectionListener"/>
+                        <folder name="javax.swing.event.MenuDragMouseListener" url="javax.swing.event.MenuDragMouseListener"/>
+                        <folder name="javax.swing.event.MenuKeyListener" url="javax.swing.event.MenuKeyListener"/>
+                        <folder name="javax.swing.event.MenuListener" url="javax.swing.event.MenuListener"/>
+                        <folder name="javax.swing.event.MouseInputListener" url="javax.swing.event.MouseInputListener"/>
+                        <folder name="javax.swing.event.PopupMenuListener" url="javax.swing.event.PopupMenuListener"/>
+                        <folder name="javax.swing.event.TableColumnModelListener" url="javax.swing.event.TableColumnModelListener"/>
+                        <folder name="javax.swing.event.TableModelListener" url="javax.swing.event.TableModelListener"/>
+                        <folder name="javax.swing.event.TreeExpansionListener" url="javax.swing.event.TreeExpansionListener"/>
+                        <folder name="javax.swing.event.TreeModelListener" url="javax.swing.event.TreeModelListener"/>
+                        <folder name="javax.swing.event.TreeSelectionListener" url="javax.swing.event.TreeSelectionListener"/>
+                        <folder name="javax.swing.event.TreeWillExpandListener" url="javax.swing.event.TreeWillExpandListener"/>
+                        <folder name="javax.swing.event.UndoableEditListener" url="javax.swing.event.UndoableEditListener"/>
+                    </folder>
+                </folder>
+                <folder name="Painters">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
+                    <folder name=".subtypes">
+                        <folder name="java.awt.Component" url="java.awt.Component">
+                            <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
+                        </folder>
+                        <folder name="javax.swing.JComponent" url="javax.swing.JComponent">
+                            <attr name="includes" stringvalue="repaint,paint,paintBorder,paintChildren,paintComponent,paintImmediately,print,printAll,printBorder,printChildren,printComponent"/>
+                        </folder>
+                    </folder>
+                </folder>
+                <folder name=".type">
+                    <folder name="javax.swing.UIManager" url="javax.swing.UIManager"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Lookup">
@@ -49,114 +161,12 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <folder name="IO">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                        <folder name="Files">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
-                                <folder name="java.io.FileOuptutStream" url="java.io.FileOuptutStream">
-                                    <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                                </folder>
-                                <folder name="java.io.FileReader" url="java.io.FileReader">
-                                    <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                                </folder>
-                                <folder name="java.io.FileWriter" url="java.io.FileWriter">
-                                    <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                                </folder>
-                            </folder>
-                        </folder>
-                        <folder name="Socket">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtype">
-                                <folder name="java.nio.SocketChannel" url="java.nio.SocketChannel">
-                                    <attr name="includes" stringvalue="read,write"/>
-                                </folder>
-                            </folder>
-                        </folder>
-                        <folder name="~subtypes">
-                            <folder name="java.io.InputStream" url="java.io.InputStream">
-                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                            </folder>
-                            <folder name="java.io.InputStreamReader" url="java.io.InputStreamReader">
-                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                            </folder>
-                            <folder name="java.io.OutputStream" url="java.io.OutputStream">
-                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                            </folder>
-                            <folder name="java.io.OutputStreamWriter" url="java.io.OutputStreamWriter">
-                                <attr name="includes" stringvalue="write,reset,skip,flush"/>
-                            </folder>
-                        </folder>
-                    </folder>
-                    <folder name="UI">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                        <folder name="Java2D">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~package">
-                                <folder name="sun.java2d" url="sun.java2d"/>
-                            </folder>
-                        </folder>
-                        <folder name="Listeners">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
-                                <folder name="java.awt.LightweightDispatcher" url="java.awt.LightweightDispatcher">
-                                    <attr name="includes" stringvalue="dispatchEvent"/>
-                                </folder>
-                                <folder name="java.awt.event.AWTEventListener" url="java.awt.event.AWTEventListener"/>
-                                <folder name="java.awt.event.AdjustmentListener" url="java.awt.event.AdjustmentListener"/>
-                                <folder name="java.awt.event.ComponentListener" url="java.awt.event.ComponentListener"/>
-                                <folder name="java.awt.event.ContainerListener" url="java.awt.event.ContainerListener"/>
-                                <folder name="java.awt.event.FocusListener" url="java.awt.event.FocusListener"/>
-                                <folder name="java.awt.event.HierarchyBoundsListener" url="java.awt.event.HierarchyBoundsListener"/>
-                                <folder name="java.awt.event.HierarchyListener" url="java.awt.event.HierarchyListener"/>
-                                <folder name="java.awt.event.InputMethodListener" url="java.awt.event.InputMethodListener"/>
-                                <folder name="java.awt.event.ItemListener" url="java.awt.event.ItemListener"/>
-                                <folder name="java.awt.event.KeyListener" url="java.awt.event.KeyListener"/>
-                                <folder name="java.awt.event.MouseListener" url="java.awt.event.MouseListener"/>
-                                <folder name="java.awt.event.MouseMotionListener" url="java.awt.event.MouseMotionListener"/>
-                                <folder name="java.awt.event.MouseWheelListener" url="java.awt.event.MouseWheelListener"/>
-                                <folder name="java.awt.event.TextListener" url="java.awt.event.TextListener"/>
-                                <folder name="java.awt.event.WindowFocusListener" url="java.awt.event.WindowFocusListener"/>
-                                <folder name="java.awt.event.WindowListener" url="java.awt.event.WindowListener"/>
-                                <folder name="java.awt.event.WindowStateListener" url="java.awt.event.WindowStateListener"/>
-                                <folder name="javax.swing.event.AncestorListener" url="javax.swing.event.AncestorListener"/>
-                                <folder name="javax.swing.event.CaretListener" url="javax.swing.event.CaretListener"/>
-                                <folder name="javax.swing.event.CellEditorListener" url="javax.swing.event.CellEditorListener"/>
-                                <folder name="javax.swing.event.ChangeListener" url="javax.swing.event.ChangeListener"/>
-                                <folder name="javax.swing.event.DocumentListener" url="javax.swing.event.DocumentListener"/>
-                                <folder name="javax.swing.event.HyperlinkListener" url="javax.swing.event.HyperlinkListener"/>
-                                <folder name="javax.swing.event.InternalFrameListener" url="javax.swing.event.InternalFrameListener"/>
-                                <folder name="javax.swing.event.ListDataListener" url="javax.swing.event.ListDataListener"/>
-                                <folder name="javax.swing.event.ListSelectionListener" url="javax.swing.event.ListSelectionListener"/>
-                                <folder name="javax.swing.event.MenuDragMouseListener" url="javax.swing.event.MenuDragMouseListener"/>
-                                <folder name="javax.swing.event.MenuKeyListener" url="javax.swing.event.MenuKeyListener"/>
-                                <folder name="javax.swing.event.MenuListener" url="javax.swing.event.MenuListener"/>
-                                <folder name="javax.swing.event.MouseInputListener" url="javax.swing.event.MouseInputListener"/>
-                                <folder name="javax.swing.event.PopupMenuListener" url="javax.swing.event.PopupMenuListener"/>
-                                <folder name="javax.swing.event.TableColumnModelListener" url="javax.swing.event.TableColumnModelListener"/>
-                                <folder name="javax.swing.event.TableModelListener" url="javax.swing.event.TableModelListener"/>
-                                <folder name="javax.swing.event.TreeExpansionListener" url="javax.swing.event.TreeExpansionListener"/>
-                                <folder name="javax.swing.event.TreeModelListener" url="javax.swing.event.TreeModelListener"/>
-                                <folder name="javax.swing.event.TreeSelectionListener" url="javax.swing.event.TreeSelectionListener"/>
-                                <folder name="javax.swing.event.TreeWillExpandListener" url="javax.swing.event.TreeWillExpandListener"/>
-                                <folder name="javax.swing.event.UndoableEditListener" url="javax.swing.event.UndoableEditListener"/>
-                            </folder>
-                        </folder>
-                        <folder name="Painters">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.profiler.j2se.Bundle"/>
-                            <folder name="~subtypes">
-                                <folder name="java.awt.Component" url="java.awt.Component">
-                                    <attr name="includes" stringvalue="repaint,paint,paintAll,print,printAll"/>
-                                </folder>
-                                <folder name="javax.swing.JComponent" url="javax.swing.JComponent">
-                                    <attr name="includes" stringvalue="repaint,paint,paintBorder,paintChildren,paintComponent,paintImmediately,print,printAll,printBorder,printChildren,printComponent"/>
-                                </folder>
-                            </folder>
-                        </folder>
-                        <folder name="~type">
-                            <folder name="javax.swing.UIManager" url="javax.swing.UIManager"/>
-                        </folder>
-                    </folder>
+                    <file name="IO.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/IO"/>
+                    </file>
+                    <file name="UI.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/UI"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

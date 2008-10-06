@@ -66,8 +66,8 @@ public class NbMetricsAction extends WizardAction {
             if (uid.equals("nb-base")) {
                 File location = product.getInstallationLocation();
                 try {
-                    LogManager.log("Creating metrics enabled marker in " + location);
-                    NetBeansUtils.createMetricsEnabledMarker(location);
+                    LogManager.log("Enable usage statistics of NetBeans at " + location);
+                    NetBeansUtils.setUsageStatistics(location, true);
                 } catch (IOException e) {
                     LogManager.log(e);
                 }

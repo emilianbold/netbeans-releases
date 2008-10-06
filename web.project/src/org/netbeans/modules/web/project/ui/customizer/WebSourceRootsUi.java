@@ -173,7 +173,7 @@ public final class WebSourceRootsUi {
         final JButton downButton;
         private final Project project;
         private final SourceRoots sourceRoots;
-        private final Set ownedFolders;
+        private final Set<File> ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
         private File lastUsedDir; //Last used current folder in JFileChooser
@@ -195,7 +195,7 @@ public final class WebSourceRootsUi {
             this.removeButton = removeButton;
             this.upButton = upButton;
             this.downButton = downButton;
-            this.ownedFolders = new HashSet();
+            this.ownedFolders = new HashSet<File>();
 
             this.project = master;
             this.sourceRoots = sourceRoots;
@@ -311,8 +311,8 @@ public final class WebSourceRootsUi {
             int lastIndex = si == null || si.length == 0 ? -1 : si[si.length - 1];
             ListSelectionModel selectionModel = this.rootsList.getSelectionModel();
             selectionModel.clearSelection();
-            Set rootsFromOtherProjects = new HashSet ();
-            Set rootsFromRelatedSourceRoots = new HashSet();
+            Set<File> rootsFromOtherProjects = new HashSet<File>();
+            Set<File> rootsFromRelatedSourceRoots = new HashSet<File>();
             for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;

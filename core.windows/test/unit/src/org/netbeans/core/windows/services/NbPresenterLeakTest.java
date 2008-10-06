@@ -44,7 +44,6 @@ package org.netbeans.core.windows.services;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
@@ -54,6 +53,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -68,12 +68,14 @@ public class NbPresenterLeakTest extends NbTestCase {
         super (testName);
     }
 
+    @Override
     protected boolean runInEQ () {
         return false;
     }
 
+    @RandomlyFails // NB-Core-Build #1189
     public void testLeakingNbPresenterDescriptor () throws InterruptedException, InvocationTargetException {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor (getPanels ());
+        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels(), null);
         wizardDescriptor.setModal (false);
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (wizardDescriptor);
         WeakReference<WizardDescriptor> w = new WeakReference<WizardDescriptor> (wizardDescriptor);
@@ -119,7 +121,7 @@ public class NbPresenterLeakTest extends NbTestCase {
         }
     }
     
-    private WizardDescriptor.Panel [] getPanels () {
+    private WizardDescriptor.Panel<?>[] getPanels () {
         WizardDescriptor.Panel p1 = new WizardDescriptor.Panel () {
             public Component getComponent() {
                 return new JLabel ("test");

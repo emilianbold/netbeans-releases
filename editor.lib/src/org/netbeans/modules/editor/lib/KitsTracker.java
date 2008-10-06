@@ -93,6 +93,11 @@ public abstract class KitsTracker {
                     }
 
                     @Override
+                    public Class<?> findKitClass(String mimeType) {
+                        return null;
+                    }
+
+                    @Override
                     public Set<String> getMimeTypes() {
                         return Collections.<String>emptySet();
                     }
@@ -149,6 +154,8 @@ public abstract class KitsTracker {
      */
     public abstract String findMimeType(Class kitClass);
 
+    public abstract Class findKitClass(String mimeType);
+    
     /**
      * Gets all know mime types registered in the system.
      * 

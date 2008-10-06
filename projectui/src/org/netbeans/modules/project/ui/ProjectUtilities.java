@@ -68,6 +68,7 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -350,8 +351,13 @@ public class ProjectUtilities {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         }
         
-        // target filesystem should be writable
-        if (!targetFolder.canWrite ()) {
+        // target directory should be writable
+        File targetDir = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
+        if (targetDir != null) {
+            if (targetDir.exists () && ! targetDir.canWrite ()) {
+                return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
+            }
+        } else if (! targetFolder.canWrite ()) {
             return NbBundle.getMessage (ProjectUtilities.class, "MSG_fs_is_readonly"); // NOI18N
         }
 
@@ -459,7 +465,7 @@ public class ProjectUtilities {
 
         // loop all open files of given project
         for (String url : urls) {
-            fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
+            fileEl = openFiles.getOwnerDocument ().createElementNS(OPEN_FILES_NS, FILE_ELEMENT);
             fileEl.appendChild(fileEl.getOwnerDocument().createTextNode(url));
             openFiles.appendChild (fileEl);
         }
@@ -481,7 +487,7 @@ public class ProjectUtilities {
             return;
         }
 
-        NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
+        NodeList list = openFiles.getElementsByTagNameNS(OPEN_FILES_NS, FILE_ELEMENT);
         
         for (int i = 0; i < list.getLength (); i++) {
             String url = list.item (i).getChildNodes ().item (0).getNodeValue ();

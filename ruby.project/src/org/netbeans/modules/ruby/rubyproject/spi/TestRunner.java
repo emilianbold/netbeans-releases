@@ -59,7 +59,9 @@ public interface TestRunner {
         /**
          * Represents RSpec tests.
          */
-        RSPEC
+        RSPEC,
+
+        AUTOTEST
     
     }
 

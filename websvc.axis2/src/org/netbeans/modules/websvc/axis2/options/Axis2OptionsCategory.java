@@ -45,6 +45,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -52,7 +53,7 @@ public final class Axis2OptionsCategory extends OptionsCategory {
 
     @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/websvc/axis2/resources/axis_options_32.png")); // NOI18N
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/websvc/axis2/resources/axis_options_32.png")); // NOI18N
     }
 
     public String getCategoryName() {

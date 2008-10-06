@@ -83,7 +83,7 @@ public class StreamMessage extends Message {
     
     public Encoding getEncoding(){
         String enc = getAttribute(getNode(), Property.ENCODING);
-        return Encoding.valueOf(enc.toUpperCase());
+        return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
     }    
     
     public byte[] getValue() throws UnsufficientValueException {

@@ -30,8 +30,8 @@ package org.netbeans.modules.refactoring.javascript;
 
 import java.util.Iterator;
 
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
@@ -96,11 +96,13 @@ public class JsElementCtx {
                     if (AstUtilities.isLabelledFunction(leaf)) {
                         break FindNode;
                     }
+                    break;
                 case Token.FUNCNAME:
                 case Token.NAME:
                 case Token.BINDNAME:
                 case Token.PARAMETER:
                 case Token.CALL:
+                case Token.NEW:
                     break FindNode;
             }
             if (!it.hasNext()) {
@@ -119,21 +121,6 @@ public class JsElementCtx {
 
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
-
-    /*
-    public JsElementCtx(IndexedFunction element, CompilationInfo info) {
-        CompilationInfo[] infoRet = new CompilationInfo[1];
-        Node node = AstUtilities.getForeignNode(element, infoRet);
-        Node root = AstUtilities.getRoot(infoRet[0]);
-
-// TODO - shouldn't I use infoRet[0] instead of info here?
-        Element e = AstElement.getElement(info, node);
-
-        FileObject fo = element.getFileObject();
-        document = RetoucheUtils.getDocument(null, fo);
-
-        initialize(root, node, e, fo, info);
-    }*/
 
     private void initialize(Node root, Node node, Element element, FileObject fileObject,
         CompilationInfo info) {
@@ -171,6 +158,7 @@ public class JsElementCtx {
                 if (AstUtilities.isLabelledFunction(node)) {
                     kind = ElementKind.METHOD;
                 }
+                break;
             }
             case Token.FUNCNAME:
                 //case Token.FUNCTION:
@@ -178,6 +166,7 @@ public class JsElementCtx {
                     ElementKind.CONSTRUCTOR : ElementKind.METHOD;
                 break;
             case Token.CALL:
+            case Token.NEW:
                 kind = ElementKind.METHOD;
                 break;
             case Token.PARAMETER:
@@ -189,6 +178,9 @@ public class JsElementCtx {
                 // TODO - look up scope and see if it's a global or a local var
                 //kind = ElementKind.GLOBAL;
                 kind = ElementKind.VARIABLE;
+                if (name != null && name.length() > 0 && Character.isUpperCase(name.charAt(0))) {
+                    kind = ElementKind.CLASS;
+                }
                 break;
             case Token.CONST:
             case Token.SETCONST:

@@ -39,6 +39,8 @@
 package org.netbeans.modules.web.client.tools.javascript.debugger.impl;
 
 
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 
@@ -54,14 +56,34 @@ public class JSHttpProgress implements JSHttpMessage {
     private final int max;
     private final int total;
     private final int maxTotal;
+    private final Map<String, String> headerData;
+    private final String status;
+    private final String mimeType;
+    private final String responseText;
+    private final String category;
 
     public JSHttpProgress(HttpMessage message) {
         id = message.getId();
+        assert id != null;
         timeStamp = message.getTimeStamp();
-        current = Integer.getInteger(message.getChildValue("current"));
-        max = Integer.getInteger(message.getChildValue("max"));
-        total = Integer.getInteger(message.getChildValue("total"));
-        maxTotal = Integer.getInteger(message.getChildValue("maxTotal"));
+        current = Integer.parseInt(message.getChildValue("current"));
+        max = Integer.parseInt(message.getChildValue("max"));
+        total = Integer.parseInt(message.getChildValue("total"));
+        maxTotal = Integer.parseInt(message.getChildValue("maxTotal"));
+
+        headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
+        status = message.getChildValue("status");
+        mimeType = message.getChildValue("mimeType");
+        responseText = message.getResponseText();
+        category = message.getChildValue("category");
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getResponseText() {
+        return responseText;
     }
 
     public final static Type getType() {
@@ -105,4 +127,19 @@ public class JSHttpProgress implements JSHttpMessage {
         return maxTotal;
     }
 
+    public Map<String,String> getHeader() {
+        return Collections.unmodifiableMap(headerData);
+    }
+
+    /**
+     * @return the mimeType
+     */
+    public String getStatus() {
+        return status;
+    }
+
+
+    public String getMimeType() {
+        return mimeType;
+    }
 }

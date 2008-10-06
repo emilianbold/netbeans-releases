@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -60,11 +59,7 @@ import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.gsfret.editor.semantic.ColoringManager;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
-import org.openide.ErrorManager;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -99,6 +94,7 @@ public final class Language {
     private StructureScanner structure;
     private HintsProvider hintsProvider;
     private GsfHintsManager hintsManager;
+    private IndexSearcher indexSearcher;
     //private PaletteController palette;
     private OccurrencesFinder occurrences;
     private SemanticAnalyzer semantic;
@@ -115,6 +111,7 @@ public final class Language {
     //private FileObject paletteFile;
     private FileObject semanticFile;
     private FileObject occurrencesFile;
+    private FileObject indexSearcherFile;
     
     
     /** Creates a new instance of DefaultLanguage */
@@ -282,20 +279,7 @@ public final class Language {
     
     // XXX This is crying out for generics!
     private Object createInstance(FileObject file) {
-        assert file.getExt().equals("instance"); // NOI18N
-        // Construct the service lazily using the instance cookie on the provided data object
-        try {
-            DataObject dobj = DataObject.find(file);
-            InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
-            return ic.instanceCreate();
-        } catch (ClassNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (DataObjectNotFoundException e) {
-            ErrorManager.getDefault().notify(e);
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-        return null;
+        return DataLoadersBridge.getDefault().createInstance(file);
     }
     
     @Override
@@ -539,7 +523,14 @@ public final class Language {
     
     @NonNull
     public GsfHintsManager getHintsManager() {
-        assert hintsProvider != null; // Should never call this method before getHintsProvider has been initialized!
+        if (hintsManager == null) {
+            if (hintsProvider == null) {
+                hintsProvider = getHintsProvider();
+            }
+            if (hintsProvider != null) {
+                hintsManager = new GsfHintsManager(getMimeType(), hintsProvider, this);
+            }
+        }
         return hintsManager;
     }
 
@@ -681,5 +672,31 @@ public final class Language {
 
     void setSemanticAnalyzer(FileObject semanticFile) {
         this.semanticFile = semanticFile;
+    }
+
+    /**
+     * Return the semantic analyzer for this language
+     */
+    @NonNull
+    public IndexSearcher getIndexSearcher() {
+        if (indexSearcher == null) {
+            if (indexSearcherFile != null) {
+                indexSearcher = (IndexSearcher)createInstance(indexSearcherFile);
+                if (indexSearcher == null) {
+                    // Don't keep trying
+                    indexSearcherFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    indexSearcher = languageConfig.getIndexSearcher();
+                }
+            }
+        }
+        return indexSearcher;
+    }
+
+    void setIndexSearcher(FileObject indexSearcherFile) {
+        this.indexSearcherFile = indexSearcherFile;
     }
 }

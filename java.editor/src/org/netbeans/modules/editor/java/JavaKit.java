@@ -274,7 +274,7 @@ public class JavaKit extends NbEditorKit {
                                     boolean overwrite) throws BadLocationException {
             char insertedChar = str.charAt(0);
             if (insertedChar == '\"' || insertedChar == '\''){
-                boolean inserted = BracketCompletion.completeQuote(doc, dotPos, caret, insertedChar);
+                boolean inserted = BraceCompletion.completeQuote(doc, dotPos, caret, insertedChar);
                 if (inserted){
                     caret.setDot(dotPos+1);
                 }else{
@@ -283,7 +283,7 @@ public class JavaKit extends NbEditorKit {
                 }
             } else {
                 super.insertString(doc, dotPos, caret, str, overwrite);
-                BracketCompletion.charInserted(doc, dotPos, caret, insertedChar);
+                BraceCompletion.charInserted(doc, dotPos, caret, insertedChar);
             }
         }
         
@@ -306,7 +306,7 @@ public class JavaKit extends NbEditorKit {
                         }
                         int caretPosition = caret.getDot();
                         if (doc instanceof BaseDocument){
-                            inserted = BracketCompletion.completeQuote(
+                            inserted = BraceCompletion.completeQuote(
                                     (BaseDocument)doc,
                                     caretPosition,
                                     caret, insertedChar);
@@ -325,7 +325,7 @@ public class JavaKit extends NbEditorKit {
             } else {
                 super.replaceSelection(target, dotPos, caret, str, overwrite);
                 if (doc instanceof BaseDocument){
-                    BracketCompletion.charInserted((BaseDocument)doc, caret.getDot()-1, caret, insertedChar);
+                    BraceCompletion.charInserted((BaseDocument)doc, caret.getDot()-1, caret, insertedChar);
                 }
             }
         }
@@ -495,7 +495,7 @@ public class JavaKit extends NbEditorKit {
         
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
-            if (BracketCompletion.posWithinString(doc, dotPos)) {
+            if (BraceCompletion.posWithinString(doc, dotPos)) {
                 try {
                     doc.insertString(dotPos, "\" + \"", null); //NOI18N
                     dotPos += 3;
@@ -505,10 +505,13 @@ public class JavaKit extends NbEditorKit {
                 }
             } else {
                 try {
-                    if (BracketCompletion.isAddRightBrace(doc, dotPos)) {
-                        int end = BracketCompletion.getRowOrBlockEnd(doc, dotPos);
-                        doc.insertString(end, "}", null); // NOI18N
-                        doc.getFormatter().indentNewLine(doc, end);                        
+                    if (BraceCompletion.isAddRightBrace(doc, dotPos)) {
+                        boolean insert[] = {true};
+                        int end = BraceCompletion.getRowOrBlockEnd(doc, dotPos, insert);
+                        if (insert[0]) {
+                            doc.insertString(end, "}", null); // NOI18N
+                            doc.getFormatter().indentNewLine(doc, end);
+                        }
                         caret.setDot(dotPos);
                         return Boolean.TRUE;
                     }
@@ -625,7 +628,7 @@ public class JavaKit extends NbEditorKit {
 
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
         throws BadLocationException {
-            BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
+            BraceCompletion.charBackspaced(doc, dotPos, caret, ch);
         }
 
         @Override

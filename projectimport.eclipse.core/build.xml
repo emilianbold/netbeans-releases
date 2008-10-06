@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
                 <include name="java*"/>
                 <include name="enterprise*"/>
                 <include name="gsf*"/>
+                <include name="websvccommon*"/>
                 <include name="nb*"/>
             </dirset>
         </path>

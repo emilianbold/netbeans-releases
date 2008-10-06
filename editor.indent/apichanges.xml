@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="CodeStylePreferences">
+            <summary>Adding org.netbeans.modules.editor.indent.spi.CodeStylePreferences</summary>
+            <version major="1" minor="9"/>
+            <date day="13" month="8" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+            <description>
+                The new <code>CodeStylePreferences</code> class was added in order to
+                unify access to editor formatting/indentation preferences (ie. code style).
+            </description>
+            <class package="org.netbeans.modules.editor.indent.spi" name="CodeStylePreferences"/>
+            <issue number="141974"/>
+        </change>
+
         <change id="repackaging.to.unofficial.packages">
             <summary>API/SPI repackaged to remove it from the official NetBeans API packages</summary>
             <version major="1" minor="5"/>

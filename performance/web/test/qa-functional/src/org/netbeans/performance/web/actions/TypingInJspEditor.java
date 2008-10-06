@@ -90,9 +90,25 @@ public class TypingInJspEditor extends PerformanceTestCase {
     private EditorOperator editorOperator;
     
     public void testTypingInJspEditor() {
-        doMeasurement();
+        throw new UnsupportedOperationException("Not yet implemented");
     }
     
+    public void testTypingInJspEditorAtBeginningOfLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void testTypingInJspEditorAtEndOfLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void testTypingInJspEditorInTheMiddleOfLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void testTypingInJspEditorWithLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     protected void initialize() {
         System.out.println("=== " + this.getClass().getName() + " ===");
 //        jspOptions().setCaretBlinkRate(0);

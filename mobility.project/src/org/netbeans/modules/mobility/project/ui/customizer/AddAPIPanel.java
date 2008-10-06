@@ -116,8 +116,11 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.wireless.messaging.mms.receive", //NOI18N
         "javax.wireless.messaging.mms.send", //NOI18N
         "javax.wireless.messaging.sms.receive", //NOI18N
-        "javax.wireless.messaging.sms.send" //NOI18N
-
+        "javax.wireless.messaging.sms.send", //NOI18N
+        // Fix for IZ#145774 - Add JSR 256 Permissions to the list of API Permisions
+        "javax.microedition.sensor.PrivateSensor", // NOI18N
+        "javax.microedition.sensor.ProtectedSensor",  // NOI18N
+        "javax.microedition.io.Connector.sensor", // NOI18N
     };
     
     private DialogDescriptor dd;

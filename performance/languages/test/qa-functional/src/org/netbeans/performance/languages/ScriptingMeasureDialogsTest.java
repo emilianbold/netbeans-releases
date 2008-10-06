@@ -44,6 +44,7 @@ package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.windows.AddJavaScriptLibraryDialog;
 import org.netbeans.performance.languages.windows.PhpPropertiesDialog;
 import org.netbeans.performance.languages.windows.RailsGeneratorDialog;
@@ -56,12 +57,18 @@ import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
  */
 public class ScriptingMeasureDialogsTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
-        suite.addTest(NbModuleSuite.create(RubyPropertiesDialog.class, ".*", ".*"));       
-        suite.addTest(NbModuleSuite.create(RailsGeneratorDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RubyGemsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PhpPropertiesDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddJavaScriptLibraryDialog.class, ".*", ".*"));
+        System.setProperty("suitename", ScriptingMeasureDialogsTest.class.getCanonicalName());
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(RubyPropertiesDialog.class)
+        .addTest(RailsGeneratorDialog.class)
+        .addTest(RubyGemsDialog.class)
+        .addTest(PhpPropertiesDialog.class)
+        .addTest(AddJavaScriptLibraryDialog.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+                
         return suite;
     }
 

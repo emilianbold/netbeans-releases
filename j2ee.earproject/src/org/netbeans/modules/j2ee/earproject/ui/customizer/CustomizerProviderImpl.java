@@ -99,7 +99,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         } else {
-            EarProjectProperties uiProperties = project.getProjectProperties();
+            EarProjectProperties uiProperties = new EarProjectProperties(project, project.getUpdateHelper(), project.evaluator(), project.getReferenceHelper());
             Lookup context = Lookups.fixed(new Object[] {
                 project,
                 uiProperties,

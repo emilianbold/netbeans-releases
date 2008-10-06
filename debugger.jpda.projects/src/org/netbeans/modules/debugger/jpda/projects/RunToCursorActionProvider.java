@@ -42,6 +42,8 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -54,15 +56,16 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -145,13 +148,34 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     }
     
     private void invokeAction() {
-        ((ActionProvider) MainProjectManager.getDefault ().
-            getMainProject ().getLookup ().lookup (
-                ActionProvider.class
-            )).invokeAction (
-                ActionProvider.COMMAND_DEBUG, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
+        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
+        if (fo != null) {
+            //JavaSource source = JavaSource.forFileObject(fo);
+            Collection mainClasses = SourceUtils.getMainClasses(fo);
+            if (!mainClasses.isEmpty()) {
+                if (debugFile(fo)) {
+                    return ;
+                }
+            }
+        }
+        debugProject(MainProjectManager.getDefault ().getMainProject ());
+    }
+
+    private static void debugProject(Project p) {
+        p.getLookup ().lookup(ActionProvider.class).invokeAction (
+                ActionProvider.COMMAND_DEBUG,
+                p.getLookup ()
             );
+    }
+
+    private static boolean debugFile(FileObject fo) {
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p == null) {
+            return false;
+        }
+        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
+        ap.invokeAction(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext());
+        return true;
     }
     
     private boolean shouldBeEnabled () {
@@ -173,11 +197,9 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         if (i == k) return false;
 
         // check if this action should be enabled
-        return ((ActionProvider) p.getLookup ().lookup (
-                ActionProvider.class
-            )).isActionEnabled (
+        return actionProvider.isActionEnabled (
                 ActionProvider.COMMAND_DEBUG, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
+                p.getLookup ()
             );
     }
     

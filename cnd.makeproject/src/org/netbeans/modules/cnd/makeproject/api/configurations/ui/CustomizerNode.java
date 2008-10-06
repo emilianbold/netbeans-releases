@@ -83,6 +83,6 @@ public class CustomizerNode {
     }
     
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx(""); // NOI18N // See CR 6718766
     }
 }

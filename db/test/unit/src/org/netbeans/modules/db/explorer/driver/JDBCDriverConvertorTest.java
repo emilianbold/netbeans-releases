@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -137,21 +136,6 @@ public class JDBCDriverConvertorTest extends TestBase {
         }
         
         assertTrue(DOMCompare.compareDocuments(doc, goldenDoc));
-    }
-    
-    /**
-     * Tests that the instance retrieved from the DO created by JDBCDC.create(JDBCD driver) is the same object as driver.
-     * Note that this test does not ensure that the DataObject-s returned from 
-     * {@link JDBCDriverConvertor#create} cannot be GCd. They can be, which will
-     * cause new JDBCDriver instances to be created. See issue 75204.
-     */
-    public void testSameInstanceAfterCreate() throws Exception {
-        JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[] { new URL("file:///bar1.jar"), new URL("file:///bar2.jar") });
-        DataObject dobj1 = JDBCDriverConvertor.create(driver1);
-        JDBCDriver driver2 = JDBCDriver.create("foo_driver", "Foo Driver", "org.foo.FooDriver", new URL[] { new URL("file:///foo1.jar"), new URL("file:///foo2.jar") });
-        DataObject dobj2 = JDBCDriverConvertor.create(driver2);
-        assertSame(driver1, ((InstanceCookie)dobj1.getCookie(InstanceCookie.class)).instanceCreate());
-        assertSame(driver2, ((InstanceCookie)dobj2.getCookie(InstanceCookie.class)).instanceCreate());
     }
     
     public void testLookup() throws Exception {

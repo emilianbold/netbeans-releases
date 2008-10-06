@@ -202,6 +202,7 @@ public class MetaTableModel extends AbstractTableModel {
         for (int i = 0; i < columns.size(); i++) {
             if (column.equals(columns.get(i))) {
                 row = i;
+                columns.set(row, column);
                 break;
             }
         }

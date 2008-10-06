@@ -50,7 +50,9 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -67,7 +69,10 @@ import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DbMetaDataListenerSupport;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.util.UIUtils;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 
 public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         implements Node.Cookie, Comparable {
@@ -82,6 +87,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public static final String DATABASE = "db"; //NOI18N
     public static final String URL = "url"; //NOI18N
     public static final String PREFIX = "prefix"; //NOI18N
+    public static final String DATABASE_CONNECTION = "database_connection"; //NOI18N
     public static final String CONNECTION = "connection"; //NOI18N
     public static final String CODE = "code"; //NOI18N
     public static final String NODE = "node"; //NOI18N
@@ -110,7 +116,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public static final String PERM = "perm"; //NOI18N
     public static final String ADAPTOR = "adaptor"; //NOI18N
     public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
-    public static final String REGISTERED_NODE = "registered"; // NOI8N
+    public static final String REGISTERED_NODE = "registered"; // NOI18N
 
     // Multi-operation changes are synchronized on this
     private static Map gtab = null;
@@ -118,7 +124,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     // Sychronized on this
     private boolean connected = false;
-        
+
     // Thread-safe, no synchronization
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -130,6 +136,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
 
     private final UUID uuid =   UUID.randomUUID();
+    private static final Logger LOGGER = Logger.getLogger(DatabaseNodeInfo.class.getName());
     
     public static Map readInfo() {
         Map data;
@@ -137,7 +144,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(gtabfile);
             if (stream == null) {
-                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"),gtabfile); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -169,14 +176,14 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         } else {
             String message = MessageFormat.format(bundle().
                     getString("EXC_UnableToFindClassInfo"), 
-                    new String[] {nodecode}); // NOI18N
+                    nodecode); // NOI18N
             throw new DatabaseException(message);
         }
 
         if (e_ni != null) {
             e_ni.setParentInfo(parent, nodecode);
         } else {
-            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), nodecode); // NOI18N
             throw new DatabaseException(message);
         }
         return e_ni;
@@ -321,6 +328,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return connectionpcsKeys;
     }
     
+    @Override
     public Object put(String key, Object obj)
     {
         Object old = get(key);
@@ -348,8 +356,10 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public void refreshChildren() throws DatabaseException {
         // create list (infos)
-        put(DatabaseNodeInfo.CHILDREN, new Vector());
-        getChildren();
+        Vector children = loadChildren(new Vector());
+
+        put(DatabaseNodeInfo.CHILDREN, children);
+        
         notifyChange();
     }
     
@@ -436,7 +446,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public DatabaseSpecification getSpecification()
     {
-        DatabaseSpecification spec = (DatabaseSpecification)get(SPECIFICATION);
+        DatabaseSpecification spec = (DatabaseSpecification)getParent(CONNECTION).get(SPECIFICATION);
         if (spec == null) return spec;
         String adaname = getDatabaseAdaptorClassName();
         if (!spec.getMetaDataAdaptorClassName().equals(adaname)) {
@@ -448,7 +458,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public void setSpecification(DatabaseSpecification spec)
     {
-        put(SPECIFICATION, spec);
+        getParent(CONNECTION).put(SPECIFICATION, spec);
     }
 
     public String getDriver()
@@ -464,7 +474,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public Connection getConnection()
     {
-        return (Connection)get(CONNECTION);
+        return (Connection)getParent(CONNECTION).get(CONNECTION);
     }
 
     public void setConnection(Connection con) throws DatabaseException
@@ -472,10 +482,10 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         Connection oldval = getConnection();
         if (con != null) {
             if (oldval != null && oldval.equals(con)) return;
-            put(CONNECTION, con);
+            getParent(CONNECTION).put(CONNECTION, con);
             setConnected(true);
         } else {
-            remove(CONNECTION);   
+            getParent(CONNECTION).remove(CONNECTION);
             setConnected(false);
         }
 
@@ -493,26 +503,52 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         notifyChange();
     }
 
-    public synchronized void setConnected(boolean connected) {
+    private synchronized void setConnected(boolean connected) {
         this.connected = connected;
-        notifyChange();
     }
     
     public synchronized boolean isConnected() {
-        return connected;
+        if (this instanceof ConnectionNodeInfo) {
+            return this.connected;
+        } else {
+            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
+            return cinfo.isConnected();
+        }
+    }
+    /**
+     * Make sure this is a valid connection, and if it's not, try
+     * to reconnect.
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException if we're
+     *
+     */
+    public boolean ensureConnected() throws DatabaseException {
+        final org.netbeans.api.db.explorer.DatabaseConnection dbconn = getDatabaseConnection().getDatabaseConnection();
+
+        assert(dbconn != null);
+
+        Connection conn = dbconn.getJDBCConnection(true);
+
+        if (conn == null) {
+            Mutex.EVENT.readAccess(new Action() {
+                public Object run() {
+                    boolean connect = UIUtils.displayYesNoDialog(NbBundle.getMessage(ConnectionNodeInfo.class, "MSG_ConnectionLost"));
+                    if (connect) {
+                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                    }
+                    return null;
+                }
+            });
+        }
+
+        conn = dbconn.getJDBCConnection();
+
+        return (conn != null);
     }
 
     public DatabaseConnection getDatabaseConnection()
     {
-        DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
-        if(get(REMEMBER_PWD)!=null) {
-            con.setRememberPassword(((Boolean)get(REMEMBER_PWD)).booleanValue());
-        }
-        else
-            con.setRememberPassword(Boolean.FALSE.booleanValue());
-        con.setSchema(getSchema());
-        con.setDriverName((String)get("drivername"));
-        return con;
+        return (DatabaseConnection) get(DATABASE_CONNECTION);
     }
 
     public DatabaseDriver getDatabaseDriver()
@@ -520,8 +556,9 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return (DatabaseDriver)get(DBDRIVER);
     }
 
-    public void setDatabaseConnection(DBConnection cinfo)
+    public void setDatabaseConnection(DatabaseConnection cinfo)
     {
+        put(DATABASE_CONNECTION, cinfo);
         String pwd = cinfo.getPassword();
         put(DRIVER, cinfo.getDriver());
         put(DATABASE, cinfo.getDatabase());
@@ -668,6 +705,12 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     {
     }
     
+    public void resetChildren() throws DatabaseException {
+        Vector children = new Vector();
+        initChildren(children);
+        put(CHILDREN, children);
+    }
+    
     public boolean isChildrenInitialized() {
         Vector children = (Vector)get(CHILDREN);
 
@@ -684,9 +727,20 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             return children;
         }
 
+        Vector chalt = loadChildren(children);
+
+        put(CHILDREN, chalt);
+
+        // Do NOT notify change here, as this is called by the stateChanged()
+        // method in the Node, we'd end up in an endless loop
+        
+        return chalt;
+    }
+    
+    public Vector loadChildren(Vector initialList) throws DatabaseException {
         Vector chalt = new Vector();
         initChildren(chalt);
-        chalt.addAll(children);
+        chalt.addAll(initialList);
 
         for (int i=0; i<chalt.size();i++) {
             Object e_child = chalt.elementAt(i);
@@ -696,17 +750,11 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             }
         }
 
-        children = chalt;
-        put(CHILDREN, children);
-        
-        // Do NOT notify change here, as this is called by the stateChanged()
-        // method in the Node, we'd end up in an endless loop
-        
-        return children;
+        return chalt;
     }
     
     // For debugging
-    private void printChildren(String message, Vector children) {
+    public static void printChildren(String message, Vector children) {
         System.out.println("");
         System.out.println(message);
         for ( Object child : children ) {
@@ -717,6 +765,8 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             } else {
                 childstr.append(": " + child.toString());
             }
+
+            childstr.append(": " + child.hashCode());
             
             System.out.println(childstr.toString());            
         }
@@ -726,36 +776,24 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public void addChild(DatabaseNodeInfo child) throws DatabaseException {
         addChild(child, true);
     }
-    
+
     public void addChild(DatabaseNodeInfo child, boolean notify)
             throws DatabaseException {
         getChildren().add(child);
-        
+
         if ( notify ) {
             notifyChange();
         }
     }
-    
+        
     public void removeChild(DatabaseNodeInfo child) throws DatabaseException {
         removeChild(child, true);
     }
-    
-    public synchronized void removeChild(DatabaseNodeInfo child, boolean notify) 
+
+    public synchronized void removeChild(DatabaseNodeInfo child, boolean notify)
             throws DatabaseException {
         getChildren().remove(child);
-        
-        if ( notify ) {
-            notifyChange();
-        }
-    }
-    
-    public void setChildren(Vector chvec) {
-        setChildren(chvec, true);
-    }
 
-    public void setChildren(Vector chvec, boolean notify)
-    {
-        put(CHILDREN, chvec);
         if ( notify ) {
             notifyChange();
         }
@@ -801,7 +839,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                         } catch (MissingResourceException e) {
                             locname = xname;
                             
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), xname); // NOI18N
                             System.out.println(message);
                         }
 
@@ -869,14 +907,14 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
      *@return Value of property driverSpecification.
      */
     public DriverSpecification getDriverSpecification() {
-        return (DriverSpecification) get(DRIVER_SPECIFICATION);
+        return (DriverSpecification) getParent(CONNECTION).get(DRIVER_SPECIFICATION);
     }
 
     /** Setter for property driverSpecification.
      *@param driverSpecification New value of property driverSpecification.
      */
     public void setDriverSpecification(DriverSpecification driverSpecification) {
-        put(DRIVER_SPECIFICATION, driverSpecification);
+        getParent(CONNECTION).put(DRIVER_SPECIFICATION, driverSpecification);
     }
     
     public void addChangeListener(ChangeListener listener) {
@@ -887,7 +925,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         changeSupport.removeChangeListener(listener);
     }
     
-    protected void notifyChange() {
+    public void notifyChange() {
         changeSupport.fireChange();
     }
     
@@ -939,33 +977,33 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                 (! (this instanceof ViewNodeInfo)) && 
                 (! (this instanceof ProcedureNodeInfo)) ); //NOI18N
 
-            if (! sort)
-                return 1;
+            if (sort)
+            {
+                // Ordering is based on the node class for this info class
+                // See if the node class is in the ordering map, and if it
+                // is, use that for comparison.
+                int o1val, o2val, diff;
+                Integer o1i = (Integer)map.get(get(CLASS));
+                if (o1i != null)
+                    o1val = o1i.intValue();
+                else
+                    o1val = Integer.MAX_VALUE;
 
-            // Ordering is based on the node class for this info class
-            // See if the node class is in the ordering map, and if it
-            // is, use that for comparison.
-            int o1val, o2val, diff;
-            Integer o1i = (Integer)map.get(get(CLASS));
-            if (o1i != null)
-                o1val = o1i.intValue();
-            else
-                o1val = Integer.MAX_VALUE;
+                Integer o2i = null;
+                o2i = (Integer)map.get(info2.get(CLASS));
 
-            Integer o2i = null;
-            o2i = (Integer)map.get(info2.get(CLASS));
+                if (o2i != null)
+                    o2val = o2i.intValue();
+                else
+                    o2val = Integer.MAX_VALUE;
 
-            if (o2i != null)
-                o2val = o2i.intValue();
-            else
-                o2val = Integer.MAX_VALUE;
+                diff = o1val-o2val;
 
-            diff = o1val-o2val;
-
-            // If they're the same class, then sort using display name
-            // below...
-            if (diff != 0) {
-                return diff;
+                // If they're the same class, then sort using display name
+                // below...
+                if (diff != 0) {
+                    return diff;
+                }
             }
         }
         

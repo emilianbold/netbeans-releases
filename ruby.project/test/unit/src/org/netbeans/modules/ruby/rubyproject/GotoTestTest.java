@@ -77,6 +77,10 @@ public class GotoTestTest extends RubyProjectTestBase {
         createFile(dir, "whatever/donkey.rb", "#foo");
         createFile(dir, "whatever/donkey_spec.rb", "#foo");
         
+        touch(dir, "app/controllers/donkey_controller.rb");
+        touch(dir, "spec/controllers/donkey_controller_spec.rb");
+        touch(dir, "test/functional/donkey_controller_test.rb");
+        
         gotoTest = new GotoTest();
     }
     
@@ -372,12 +376,23 @@ public class GotoTestTest extends RubyProjectTestBase {
 
     public void testRSpecSingle2() {
         assertNotNull(project);
-        
+
         FileObject f = getProjFile("whatever/donkey.rb");
         assertNotNull(f);
         DeclarationLocation loc = gotoTest.findTest(f, -1);
         assertNotSame(DeclarationLocation.NONE, loc);
         assertIsProjFile("whatever/donkey_spec.rb", loc.getFileObject());
+        assertEquals(-1, loc.getOffset());
+    }
+
+    public void testRSpecVsTest() {
+        assertNotNull(project);
+
+        FileObject f = getProjFile("app/controllers/donkey_controller.rb");
+        assertNotNull(f);
+        DeclarationLocation loc = gotoTest.findTest(f, -1);
+        assertNotSame(DeclarationLocation.NONE, loc);
+        assertIsProjFile("test/functional/donkey_controller_test.rb", loc.getFileObject());
         assertEquals(-1, loc.getOffset());
     }
 }

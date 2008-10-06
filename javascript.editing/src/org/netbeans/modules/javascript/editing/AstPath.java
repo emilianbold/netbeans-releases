@@ -44,8 +44,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 
 
 /**

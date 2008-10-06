@@ -53,9 +53,11 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
@@ -109,7 +111,7 @@ public class GdbProxy implements GdbMiDefinitions {
         engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
     }
 
-    protected GdbProxyEngine getProxyEngine() {
+    public GdbProxyEngine getProxyEngine() {
         return engine;
     }
 
@@ -136,6 +138,10 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int file_exec_and_symbols(String programName) {
         return engine.sendCommand("-file-exec-and-symbols " + programName); // NOI18N
+    }
+    
+    public int addSymbolFile(String path, String addr) {
+        return engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
     }
     
     /** Attach to a running program */
@@ -194,11 +200,36 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int environment_directory(String dir) {
         double ver = debugger.getGdbVersion();
-        if (ver > 6.3) {
+        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             return engine.sendCommand("-environment-directory  \"" + dir + "\""); // NOI18N
         } else {
             return engine.sendCommand("directory \"" + dir + "\""); // NOI18N
         }
+    }
+
+    /**
+     * Set the runtime directory. Note that this method may get called before we have
+     * gdb's version. Thats why we check that its greater than 6.3. This way, if we
+     * don't have the version we fallback to the non-mi command.
+     *
+     * @param path The directory we want to run from
+     */
+    public int environment_directory(List<String> dirs) {
+        StringBuilder cmd = new StringBuilder();
+        double ver = debugger.getGdbVersion();
+        
+        assert dirs.size() > 0;
+        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            cmd.append("-environment-directory"); // NOI18N
+        } else {
+            cmd.append("directory"); // NOI18N
+        }
+        for (String dir : dirs) {
+            cmd.append(" \""); // NOI18N
+            cmd.append(dir);
+            cmd.append("\""); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
 
     /**
@@ -288,6 +319,15 @@ public class GdbProxy implements GdbMiDefinitions {
         int src = withSource ? 1 : 0;
         return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
+
+    public static final int MEMORY_READ_WIDTH = 16;
+
+    /*
+     * @param addr - address to read from
+     */
+    public int data_read_memory(CommandBuffer cb, String addr, int lines) {
+        return engine.sendCommand(cb, "-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
+    }
     
     public int print(CommandBuffer cb, String expression) {
         return engine.sendCommand(cb, "print " + expression); // NOI18N
@@ -351,8 +391,15 @@ public class GdbProxy implements GdbMiDefinitions {
     /**
      * Execute single instruction
      */
-    public int exec_instruction() {
+    public int exec_step_instruction() {
         return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    }
+
+    /**
+     * Execute next instruction
+     */
+    public int exec_next_instruction() {
+        return engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
     /**
@@ -419,19 +466,21 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public int break_insert(int flags, String name, String threadID) {
+    public int break_insert(int flags, boolean temporary, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
         if (GdbUtils.isMultiByte(name)) {
-            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
+            if (temporary) {
                 cmd.append("tbreak "); // NOI18N
             } else {
                 cmd.append("break "); // NOI18N
             }
         } else {
             cmd.append("-break-insert "); // NOI18N
-            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
+            if (temporary) {
                 cmd.append("-t "); // NOI18N
+            } else if (debugger.getGdbVersion() >= 6.8) {
+                cmd.append("-f "); // NOI18N
             }
         }
 
@@ -439,7 +488,7 @@ public class GdbProxy implements GdbMiDefinitions {
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
             // Remove first slash
             name = name.substring(1);
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
         if (flags == GdbBreakpoint.SUSPEND_THREAD) {
@@ -448,19 +497,6 @@ public class GdbProxy implements GdbMiDefinitions {
         }
         cmd.append(name);
         return engine.sendCommand(cmd.toString());
-    }
-    
-    /**
-     * Send "-break-insert function" to the debugger
-     * This command inserts a regular breakpoint in all functions
-     * whose names match the given name.
-     *
-     * @param flags One or more flags aout this breakpoint
-     * @param name The function name or linenumber information
-     * @return token number
-     */
-    public int break_insert(int flags, String name) {
-        return break_insert(flags, name, "");
     }
 
     /**
@@ -472,7 +508,14 @@ public class GdbProxy implements GdbMiDefinitions {
      * @return token number
      */
     public int break_insert(String name) {
-        return break_insert(0, name, null);
+        return break_insert(0, false, name, null);
+    }
+
+    /**
+     * Insert temporary breakpoint
+     */
+    public int break_insert_temporary(String name) {
+        return break_insert(0, true, name, null);
     }
 
     /**
@@ -489,31 +532,41 @@ public class GdbProxy implements GdbMiDefinitions {
     /**
      * Send "-break-enable number" to the debugger
      * This command enables the breakpoint
-     * whose number is specified by the argument.
+     * whose number is specified by the argument
+     * or all if no args specified
      *
-     * @param number - breakpoint number
+     * @param ids - breakpoints number array
      */
-    public int break_enable(int number) {
-        return engine.sendCommand("-break-enable " + Integer.toString(number)); // NOI18N
+    public int break_enable(Integer... ids) {
+        StringBuilder cmd = new StringBuilder("-break-enable"); // NOI18N
+        for (int id : ids) {
+            cmd.append(" " + id); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
 
     /**
      * Send "-break-disable number" to the debugger
      * This command disables the breakpoint
-     * whose number is specified by the argument.
+     * whose number is specified by the argument
+     * or all if no args specified
      *
-     * @param number - breakpoint number
+     * @param ids - breakpoints number array
      */
-    public int break_disable(int number) {
-        return engine.sendCommand("-break-disable " + Integer.toString(number)); // NOI18N
+    public int break_disable(Integer... ids) {
+        StringBuilder cmd = new StringBuilder("-break-disable"); // NOI18N
+        for (int id : ids) {
+            cmd.append(" " + id); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
     
     public int break_condition(int number, String condition) {
         return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
     }
     
-    public int break_after(int number, String count) {
-        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
+    public int break_after(int number, int count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */

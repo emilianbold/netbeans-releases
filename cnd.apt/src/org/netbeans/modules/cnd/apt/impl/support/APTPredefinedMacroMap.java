@@ -69,10 +69,14 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     public APTMacroMap.State getState() {
         return null;
     }
-   
+
     public boolean isDefined(Token token) {
+        return isDefined(token.getText());
+    }
+    
+    public boolean isDefined(CharSequence token) {
         int i;
-        String tokenText = token.getText();
+        String tokenText = token.toString();
         
         if (tokenText.length() < 2 || tokenText.charAt(0) != '_' || tokenText.charAt(1) != '_') {
             return false;
@@ -87,7 +91,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
 
     public APTMacro getMacro(Token token) { 
-        if (isDefined(token)) {
+        if (isDefined(token.getText())) {
             return new APTPredefinedMacroImpl(token);        
         }
         return null;

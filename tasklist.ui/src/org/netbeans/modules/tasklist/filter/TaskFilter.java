@@ -52,13 +52,13 @@ import org.netbeans.spi.tasklist.Task;
  *
  * @author S. Aubrecht
  */
-public final class TaskFilter {
+public class TaskFilter {
     
-    public static final TaskFilter EMPTY = new TaskFilter( Util.getString( "no-filter" ) ); //NOI18N
+    public static final TaskFilter EMPTY = new EmptyTaskFilter();
     
     private String name;
     private KeywordsFilter keywords;
-    private TypesFilter types;
+    private TypesFilter types = new TypesFilter();
     
     TaskFilter( String name ) {
         this.name = name;
@@ -155,6 +155,33 @@ public final class TaskFilter {
             keywords.save( prefs, prefix+"_keywords" ); //NOI18N
         } else {
             prefs.putBoolean( prefix+"_keywords", false ); //NOI18N
+        }
+    }
+    
+    private static class EmptyTaskFilter extends TaskFilter {
+        
+        public EmptyTaskFilter() {
+            super( Util.getString( "no-filter" ) ); //NOI18N
+        }
+
+        @Override
+        public boolean accept(Task task) {
+            return true;
+        }
+
+        @Override
+        public boolean isEnabled(FileTaskScanner scanner) {
+            return true;
+        }
+
+        @Override
+        public boolean isEnabled(PushTaskScanner scanner) {
+            return true;
+        }
+
+        @Override
+        public boolean isTaskCountLimitReached(int currentTaskCount) {
+            return false;
         }
     }
 } 

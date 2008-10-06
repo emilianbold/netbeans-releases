@@ -5,6 +5,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>About Building Java Applications</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -48,6 +49,39 @@
   <li>Edit properties in <tt>project.properties</tt> to change the name and location 
     of build output directories and files.</li>
 </ul>
+
+<p><b>Notes:</b></p>
+        <ul class="note">
+          <li>By default, the IDE compiles the classes in a standard project
+          when you save them.
+          This compile-on-save feature enables you to run or debug your applications
+          in the IDE without having to wait for the projects to be built.
+          However, the compile-on-save feature does not build your
+          application JAR file. Before delivering your application to users, use the
+        Clean and Build command to generate fresh versions of the project's
+        distributable files.</li>
+        <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard projects">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+        </object> that have a main class is specified, the IDE automatically copies any JAR
+        files on the project's classpath to the <tt>dist/lib</tt> folder when you build
+        the application.
+        The IDE also adds each of the JAR files
+        to the Class-Path element in the application JAR's <tt>manifest.mf</tt>
+        file. This simplifies running the application outside the IDE. For more
+        information, see <a href="../compile/comp_jar_deploy.html">Preparing
+        a JAR for Deployment Outside the IDE</a></li>
+        </ul>
+
+        
   <!--<h3>Building Free-Form Projects</h3>-->
   <!--todo : add FF info-->
 

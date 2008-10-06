@@ -153,12 +153,23 @@ public class SvnModuleConfig {
     }
     
     public RepositoryConnection getRepositoryConnection(String url) {
+        if(url.endsWith("/")) url = url.substring(0, url.length() - 1);
         List<RepositoryConnection> rcs = getRecentUrls();
         for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
             RepositoryConnection rc = it.next();
-            if(url.equals(rc.getUrl())) {
-                return rc;
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
+            if(url.equals(rcUrl)) {
+                return rc; // exact match
             }            
+        }
+        for (Iterator<RepositoryConnection> it = rcs.iterator(); it.hasNext();) {
+            RepositoryConnection rc = it.next();
+            String rcUrl = rc.getUrl();
+            if(rcUrl.endsWith("/")) rcUrl = rcUrl.substring(0, rcUrl.length() - 1);
+            if(rcUrl.startsWith(url)) {
+                return rc; // try this
+            }
         }
         return null;
     }            

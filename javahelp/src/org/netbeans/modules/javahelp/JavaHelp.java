@@ -83,6 +83,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -255,7 +256,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (frameViewer == null) {
             Installer.log.fine("\tcreating new");
             frameViewer = new JFrame();
-            frameViewer.setIconImage(Utilities.loadImage("org/netbeans/modules/javahelp/resources/help.gif")); // NOI18N
+            frameViewer.setIconImage(ImageUtilities.loadImage("org/netbeans/modules/javahelp/resources/help.gif")); // NOI18N
             frameViewer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_JavaHelp_viewer"));
             
             if (isModalExcludedSupported()) {
@@ -426,6 +427,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         r.setLoggerName(Installer.UI.getName());
         Installer.log.log(r);
         Installer.UI.log(r);
+        
+        LogRecord rUsg = new LogRecord(Level.INFO, "USG_HELP_SHOW"); // NOI18N
+        rUsg.setParameters(new Object[] { ctx2.getHelpID() } );
+        rUsg.setResourceBundleName("org.netbeans.modules.javahelp.Bundle"); // NOI18N
+        rUsg.setResourceBundle(NbBundle.getBundle(JavaHelp.class));
+        rUsg.setLoggerName(Installer.USG.getName());
+        Installer.USG.log(rUsg);
+                
         final HelpSet[] hs_ = new HelpSet[1];
         Runnable run = new Runnable() {
             public void run() {

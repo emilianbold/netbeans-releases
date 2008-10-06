@@ -42,9 +42,7 @@ package org.openide.util.lookup;
 
 import org.openide.util.Lookup;
 
-import java.io.*;
 
-import java.lang.ref.WeakReference;
 
 import java.util.*;
 import org.openide.util.lookup.AbstractLookup.Pair;
@@ -166,7 +164,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
             i++;
 
             if (found != -1) {
-                if (i < arr.length) {
+                if (i < arr.length && !(arr[i] instanceof Integer)) {
                     // moving the array
                     arr[i - 1] = arr[i];
                 } else {
@@ -257,8 +255,9 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
     public AbstractLookup.ReferenceToResult cleanUpResult(Lookup.Template<?> templ) {
         AbstractLookup.ReferenceIterator it = new AbstractLookup.ReferenceIterator(this.results);
 
-        while (it.next())
-            ;
+        while (it.next()) {
+            // empty
+        }
 
         return this.results = it.first();
     }

@@ -68,4 +68,14 @@ public final class DatabaseException extends Exception
     public DatabaseException(Throwable cause) {
         super (cause);
     }
+
+    /**
+     * Constructs a new exception with the specified cause.
+     *
+     * @param message the text describing the exception.
+     * @param cause the cause of the exception.
+     */
+    public DatabaseException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

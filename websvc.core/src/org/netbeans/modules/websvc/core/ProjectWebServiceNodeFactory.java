@@ -64,9 +64,11 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -91,6 +93,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         private ChangeSupport changeSupport;
         private ProjectWebServiceView view;
         private Node serviceNode,  clientNode;
+        private ChangeListener weakL;
 
         public WsNodeList(Project proj) {
             project = proj;
@@ -141,16 +144,18 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
 
         public void addNotify() {
             initView();
-            view.addChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-            view.addChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+            weakL = WeakListeners.change(this, view);
+            view.addChangeListener(weakL, ProjectWebServiceView.ViewType.SERVICE);
+            view.addChangeListener(weakL, ProjectWebServiceView.ViewType.CLIENT);
             view.addNotify();
         }
 
         public void removeNotify() {
             if (view != null) {
-                view.removeChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-                view.removeChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+                view.removeChangeListener(weakL, ProjectWebServiceView.ViewType.SERVICE);
+                view.removeChangeListener(weakL, ProjectWebServiceView.ViewType.CLIENT);
                 view.removeNotify();
+                weakL = null;
             }
         }
 
@@ -258,7 +263,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
 
         private java.awt.Image getServicesImage() {
             if (cachedServicesBadge == null) {
-                cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+                cachedServicesBadge = ImageUtilities.loadImage(SERVICES_BADGE);
             }
             return cachedServicesBadge;
         }
@@ -284,7 +289,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         private Image computeIcon(boolean opened) {
             Icon icon = getFolderIcon(opened);
             Image image = ((ImageIcon) icon).getImage();
-            image = Utilities.mergeImages(image, getServicesImage(), 7, 7);
+            image = ImageUtilities.mergeImages(image, getServicesImage(), 7, 7);
             return image;
         }
     }

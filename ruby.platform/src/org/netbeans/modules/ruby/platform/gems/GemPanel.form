@@ -24,11 +24,11 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="gemsTab" alignment="0" pref="791" max="32767" attributes="1"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="gemHome" linkSize="3" max="32767" attributes="1"/>
                           <Component id="rubyPlatformLabel" linkSize="3" alignment="0" max="32767" attributes="1"/>
@@ -44,6 +44,7 @@
                           <Component id="browseGemHome" linkSize="1" alignment="1" min="-2" pref="80" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="oldRubyGemsText" alignment="0" pref="791" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -65,7 +66,9 @@
                   <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="gemsTab" pref="369" max="32767" attributes="0"/>
+              <Component id="gemsTab" pref="375" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="oldRubyGemsText" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -102,7 +105,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="reloadReposButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="reloadUpdatedButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="436" max="32767" attributes="0"/>
                               <Component id="searchUpdatedLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -134,12 +137,12 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="searchUpdatedLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="searchUpdatedText" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reloadReposButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="reloadUpdatedButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jScrollPane6" pref="256" max="32767" attributes="0"/>
-                          <Component id="updatedSP" alignment="1" pref="256" max="32767" attributes="0"/>
+                          <Component id="jScrollPane6" pref="262" max="32767" attributes="0"/>
+                          <Component id="updatedSP" alignment="1" pref="262" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -184,10 +187,10 @@
                 </Property>
               </AccessibilityProperties>
             </Component>
-            <Component class="javax.swing.JButton" name="reloadReposButton">
+            <Component class="javax.swing.JButton" name="reloadUpdatedButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.reloadReposButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.reloadUpdatedButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>
@@ -196,7 +199,7 @@
                 </Property>
               </AccessibilityProperties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadReposButtonActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadUpdatedButtonActionPerformed"/>
               </Events>
             </Component>
             <Container class="javax.swing.JScrollPane" name="updatedSP">
@@ -359,8 +362,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="installedSP" pref="256" max="32767" attributes="0"/>
-                          <Component id="jScrollPane5" alignment="1" pref="256" max="32767" attributes="0"/>
+                          <Component id="installedSP" pref="262" max="32767" attributes="0"/>
+                          <Component id="jScrollPane5" alignment="1" pref="262" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -564,8 +567,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="newSP" pref="256" max="32767" attributes="0"/>
-                          <Component id="jScrollPane4" alignment="0" pref="256" max="32767" attributes="0"/>
+                          <Component id="newSP" pref="262" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" alignment="0" pref="262" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -749,7 +752,7 @@
                           <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
                           <Component id="allVersionsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="463" max="32767" attributes="0"/>
+                      <EmptySpace pref="459" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -762,7 +765,7 @@
                       <Component id="allVersionsCheckbox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="descriptionCheckbox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="237" max="32767" attributes="0"/>
+                      <EmptySpace pref="243" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -882,6 +885,8 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseGemHomeActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="oldRubyGemsText">
     </Component>
   </SubComponents>
 </Form>

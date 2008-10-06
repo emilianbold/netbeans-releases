@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <uploader>
+        <ticket id="128" complete="1" photoid="2995" />
+        <ticket id="129" complete="0" />
+        <ticket id="130" complete="2" />
+        <ticket id="131" invalid="1" />
+    </uploader>
+</rsp>

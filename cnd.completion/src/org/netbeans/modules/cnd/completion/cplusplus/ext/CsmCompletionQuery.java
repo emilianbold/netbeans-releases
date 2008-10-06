@@ -65,25 +65,39 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -117,6 +131,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     abstract protected CsmFinder getFinder();
 
     abstract protected QueryScope getCompletionQueryScope();
+
+    abstract protected FileReferencesContext getFileReferencesContext();
 
     public static enum QueryScope {
         LOCAL_QUERY,
@@ -164,28 +180,28 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
 
 
-    private boolean parseExpression(CsmCompletionTokenProcessor tp, TokenSequence<?> cppTokenSequence, int startOffset, int lastOffset) {
-        boolean processedToken = false;
-        while (cppTokenSequence.moveNext()) {
-            if (cppTokenSequence.offset() >= lastOffset) {
-                break;
-            }
-            Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
-            if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-                TokenSequence<?> embedded = cppTokenSequence.embedded();
-                if (cppTokenSequence.offset() < startOffset) {
-                    embedded.move(startOffset);
-                }
-                processedToken |= parseExpression(tp, embedded, startOffset, lastOffset);
-            } else {
-                processedToken = true;
-                tp.token(token, cppTokenSequence.offset());
-            }
-        }
-        return processedToken;
-    }
+//    private boolean parseExpression(CsmCompletionTokenProcessor tp, TokenSequence<?> cppTokenSequence, int startOffset, int lastOffset) {
+//        boolean processedToken = false;
+//        while (cppTokenSequence.moveNext()) {
+//            if (cppTokenSequence.offset() >= lastOffset) {
+//                break;
+//            }
+//            Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
+//            if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+//                TokenSequence<?> embedded = cppTokenSequence.embedded();
+//                if (cppTokenSequence.offset() < startOffset) {
+//                    embedded.move(startOffset);
+//                }
+//                processedToken |= parseExpression(tp, embedded, startOffset, lastOffset);
+//            } else {
+//                processedToken = true;
+//                tp.token(token, cppTokenSequence.offset());
+//            }
+//        }
+//        return processedToken;
+//    }
 
-    public CompletionQuery.Result query(JTextComponent component, BaseDocument doc, int offset,
+    public CompletionQuery.Result query(JTextComponent component, final BaseDocument doc, final int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
@@ -202,20 +218,22 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            int lastSepOffset = sup.getLastCommandSeparator(offset);
-            CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
-            tp.setJava15(true);
-
-            TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, lastSepOffset);
-            if (cppTokenSequence == null) {
-                return null;
-            }
-            cppTokenSequence.move(lastSepOffset);
-            if (parseExpression(tp, cppTokenSequence, lastSepOffset, offset)) {
-                tp.eot(cppTokenSequence.offset());
+            int lastSepatorOffset = sup.getLastSeparatorOffset();
+            final int lastSepOffset;
+            if (lastSepatorOffset >=0 && lastSepatorOffset < offset){
+                lastSepOffset = lastSepatorOffset;
             } else {
-                tp.eot(offset);
+                lastSepOffset = sup.getLastCommandSeparator(offset);
             }
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
+            tp.setJava15(true);
+            doc.readLock();
+            try {
+                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+            } finally {
+                doc.readUnlock();
+            }
+            sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
@@ -275,9 +293,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
-            CsmOffsetableDeclaration context = sup.getDefinition(offset);
+            CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
-           ctx.resolveExp(exp);
+            ctx.resolveExp(exp);
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
@@ -293,7 +311,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return ctx.result;
         } else {
             boolean isProjectBeeingParsed = isProjectBeeingParsed(openingSource);
-            return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed);
+            return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed, null);
         }
 //	CompletionQuery.Result result = null;
 //
@@ -339,21 +357,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //					    classDisplayOffset);
 //	}
 //	return result;
-    }
-
-    // ================= help methods for sorting csm results =================
-    protected static boolean isCaseSensitive(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-            ExtSettingsDefaults.defaultCompletionCaseSensitive);
-        return b;
-    }
-
-    protected static boolean isNaturalSort(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_NATURAL_SORT,
-            ExtSettingsDefaults.defaultCompletionNaturalSort);
-        return b;
     }
 
     // ================= help methods to generate CsmCompletionResult ==========
@@ -492,7 +495,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
 
     static List findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
-                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier,boolean sort) {
+                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier,boolean skipConstructors,boolean sort) {
         // Find inner classes
         List ret = new ArrayList();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
@@ -531,7 +534,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         // Add methods
         res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier,sort);
         if (res != null) {
-            ret.addAll(res);
+            if (!skipConstructors) {
+                ret.addAll(res);
+            } else {
+                // add all but skip constructors
+                for (Object mtd : res) {
+                    if (!CsmKindUtilities.isConstructor(((CsmObject)mtd))) {
+                        ret.add(mtd);
+                    }
+                }
+            }
         }
         return ret;
     }
@@ -580,11 +592,50 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return cls;
     }
 
+    private static CsmFunction getOperator(CsmClassifier classifier, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(classifier)) {
+            return null;
+        }
+        CsmClass cls = (CsmClass)classifier;
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator ", false, true, false); // NOI18N
+        return getOperatorCheckBaseClasses(cls, filter, opKind, new HashSet<CsmClass>());
+    }
+
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFilter filter, CsmFunction.OperatorKind opKind, Set<CsmClass> antiLoop) {
+        if (antiLoop.contains(cls)) {
+            return null;
+        }
+        antiLoop.add(cls);        
+        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(cls, filter);
+        while (it.hasNext()) {
+            CsmMember member = it.next();
+            if (CsmKindUtilities.isOperator(member)) {
+                if (((CsmFunction) member).getOperatorKind() == opKind) {
+                    return (CsmFunction) member;
+                }
+            }
+        }
+        // now check base classes as well
+        for (CsmInheritance csmInheritance : cls.getBaseClasses()) {
+            CsmClassifier baseClassifier = csmInheritance.getClassifier();
+            if (baseClassifier != null) {
+                baseClassifier = CsmBaseUtilities.getOriginalClassifier(baseClassifier);
+                if (CsmKindUtilities.isClass(baseClassifier)) {
+                    CsmFunction operatorFun = getOperatorCheckBaseClasses((CsmClass) baseClassifier, filter, opKind, antiLoop);
+                    if (operatorFun != null) {
+                        return operatorFun;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
     private static CsmClassifier getClassifier(CsmType type, CsmFunction.OperatorKind operator) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
         if (CsmKindUtilities.isClass(cls)) {
-            CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, operator);
+            CsmFunction op = CsmCompletionQuery.getOperator((CsmClass)cls, operator);
             if (op != null) {
                 CsmType opType = op.getReturnType();
                 if (operator == CsmFunction.OperatorKind.ARROW) {
@@ -669,6 +720,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         * so the results should limit the search to the static fields and methods.
         */
         private boolean staticOnly = false;
+
+        private boolean memberPointer = false;
 
         /**
          * stores information where there is class or variable was resolved
@@ -786,7 +839,17 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
                 int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
+                // Fix for IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+                // Resolving should start after the last "->*" or ".*".
+                int startIdx = 0;
+                for (int i = exp.getTokenCount() - 1; 0 <= i; --i) {
+                    CppTokenId token = exp.getTokenID(i);
+                    if (token == CppTokenId.DOTMBR || token == CppTokenId.ARROWMBR) {
+                        startIdx = i + 1;
+                        break;
+                    }
+                }
+                for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in a dot exp
                     ExprKind kind;
                     if (i < exp.getTokenCount()) {
                         kind = exp.getTokenID(i) == CppTokenId.ARROW ? ExprKind.ARROW : ExprKind.DOT;
@@ -797,8 +860,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         } else {
                             kind = ExprKind.DOT;
                         }
+                        if (i == exp.getTokenCount()) {
+                            kind = exp.getTokenID(i - 1) == CppTokenId.SCOPE ? ExprKind.SCOPE : kind;
+                        }
                     }
-                    ok = resolveItem(exp.getParameter(i), (i == 0),
+                    ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                      (!lastDot && i == parmCnt - 1),
                                     kind);
 
@@ -829,11 +895,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
-                                                exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed());
+                                                exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed(), contextElement);
                     } else { // Found package (otherwise ok would be false)
                         if (true) {
                             // in C++ it's not legal to have NS-> or NS.
@@ -870,7 +936,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
                         }
                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',
-                                                exp, substPos, 0, 0, isProjectBeeingParsed());
+                                                exp, substPos, 0, 0, isProjectBeeingParsed(), contextElement);
                     }
                 }
                 break;
@@ -907,13 +973,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,false,sort); // NOI18N
                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
                             res.addAll(nestedClassifiers);
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
-                                                exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed());
+                                                exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed(), contextElement);
                     } else { // Found package (otherwise ok would be false)
                         String searchPkg = (lastNamespace.isGlobal() ? "" : lastNamespace.getQualifiedName()) + CsmCompletion.SCOPE;
                         List res;
@@ -942,10 +1008,11 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                             if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
                                 res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
+//                                res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, "", false, false, false)); // namespace elements //NOI18N
                             }
                         }
                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',  //NOI18N
-                                                exp, substPos, 0, 0, isProjectBeeingParsed());
+                                                exp, substPos, 0, 0, isProjectBeeingParsed(), contextElement);
                     }
                 }
                 break;
@@ -953,7 +1020,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.NEW: // 'new' keyword
             {
                 List res = finder.findClasses(null, "", false, false); // Find all classes by name // NOI18N
-                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
+                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement); // NOI18N
                 break;
             }
 
@@ -961,7 +1028,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             {
                 String name = exp.getParameter(0).getTokenText(0);
                 List res = finder.findLabel(contextElement, name, false,  false);
-                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
+                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement); // NOI18N
                 break;
             }
 
@@ -986,7 +1053,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
-
+            boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
             switch (item.getExpID()) {
             case CsmCompletionExpression.CONSTANT: // Constant item
                 if (first) {
@@ -1040,7 +1107,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                     default: // Regular constant
                         String var = item.getTokenText(0);
-                        int varPos = item.getTokenOffset(0);
+                        int varPos = item.getTokenOffset(0) + item.getTokenLength(0);
                         if (first) { // try to find variable for the first item
                             if (last && !findType) { // both first and last item
                                 CompletionResolver.Result res = null;
@@ -1048,7 +1115,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
                                                             CompletionResolver.RESOLVE_GLOB_NAMESPACES |
-                                                            CompletionResolver.RESOLVE_LIB_CLASSES);
+                                                            CompletionResolver.RESOLVE_LIB_CLASSES |
+                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                            CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }
@@ -1085,55 +1154,58 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                                    }
 //
 //                                }
-                                result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed());  //NOI18N
+                                result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed(), contextElement);  //NOI18N
                             } else { // not last item or finding type
                                 if (kind != ExprKind.SCOPE) {
                                     // find type of variable
-                                    lastType = (CsmType)sup.findType(var, varPos);
+                                    lastType = findExactVarType(var, varPos);
                                     if (lastType == null) {
                                         // try to find with resolver
                                         CompletionResolver.Result res = null;
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
                                         if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                             res = compResolver.getResult();
-                                        }
-                                        List vars = new ArrayList();
-                                        res.addResulItemsToCol(vars);
-                                        if (vars.size() > 0) {
-                                            // get the first
-                                            CsmVariable varElem = (CsmVariable) vars.get(0);
-                                            lastType = varElem.getType();
+                                            List vars = new ArrayList();
+                                            res.addResulItemsToCol(vars);
+                                            if (vars.size() > 0) {
+                                                // get the first
+                                                CsmObject firstElem = (CsmObject)vars.get(0);
+                                                if(CsmKindUtilities.isVariable(firstElem)) {
+                                                    CsmVariable varElem = (CsmVariable) firstElem;
+                                                    lastType = varElem.getType();
+                                                }
+                                            }
                                         }
                                     }
                                 }
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
                                 } else if ((kind == ExprKind.SCOPE) || (kind == ExprKind.NONE)){ // no variable found
-                                    if (kind == ExprKind.SCOPE) {
-                                        scopeAccessedClassifier = true;
+                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
+                                    if (scopeAccessedClassifier && var.length() == 0) {
+                                        lastNamespace = finder.getCsmFile().getProject().getGlobalNamespace();
                                     } else {
-                                        scopeAccessedClassifier = false;
-                                    }
-                                    lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
-                                    if (lastNamespace == null) { // not package, let's try class name
-                                        CsmClassifier cls = sup.getClassFromName(var, true);
-                                        if (cls == null) { // class not found
-                                            // try now resolver
-                                            if (kind == ExprKind.SCOPE) {
-                                                lastNamespace = findExactNamespace(var, varPos);
-                                            }
-                                            if (lastNamespace == null) {
-                                                // try class name
-                                                cls = findExactClass(var, varPos);
-                                                if (cls == null) {
-                                                    cont = false;
+                                        compResolver.setResolveTypes(
+                                                CompletionResolver.RESOLVE_CLASSES |
+                                                CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
+                                                CompletionResolver.RESOLVE_GLOB_NAMESPACES |
+                                                CompletionResolver.RESOLVE_LIB_CLASSES |
+                                                CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                CompletionResolver.RESOLVE_LOCAL_CLASSES |
+                                                CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                                            Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                            if (!res.isEmpty()) {
+                                                CsmObject obj = res.iterator().next();
+                                                if (scopeAccessedClassifier && CsmKindUtilities.isNamespace(obj)) {
+                                                    lastNamespace = (CsmNamespace)obj;
+                                                } else if (scopeAccessedClassifier && CsmKindUtilities.isNamespaceAlias(obj)) {
+                                                    lastNamespace = ((CsmNamespaceAlias)obj).getReferencedNamespace();
+                                                } else if (CsmKindUtilities.isClassifier(obj)) {
+                                                    obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)obj);
+                                                    lastType = CsmCompletion.getType((CsmClassifier)obj, 0);
                                                 }
-                                            } else if (cls == null) {
-                                                cls = finder.getExactClassifier(lastNamespace.getQualifiedName() + CsmCompletion.SCOPE + var);
                                             }
-                                        }
-                                        if (cls != null) {
-                                            lastType = CsmCompletion.getType(cls, 0);
                                         }
                                     }
                                 }
@@ -1156,16 +1228,27 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                             CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
                                             if (CsmKindUtilities.isClass(classifier)) {
                                                 CsmClass clazz = (CsmClass)classifier;
-                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
+                                                List elemList = finder.findFields(contextElement, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
 //                                                // add enumerators
 //                                                List enumerators = finder.findEnumerators(clazz, clazz, var, true, true, true, this.sort);
 //                                                if (enumerators != null) {
 //                                                    fldList.addAll(enumerators);
 //                                                }
-                                                if (fldList != null && fldList.size() > 0) { // match found
-                                                    CsmField fld = (CsmField)fldList.get(0);
-                                                    lastType = fld.getType();
+                                                if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
+                                                    // try base classes names like in this->Base::foo()
+                                                    // or like in a.Base::foo()
+                                                    List baseClasses = finder.findBaseClasses(contextElement, clazz, var, true, this.sort);
+                                                    if (elemList == null) {
+                                                        elemList = baseClasses;
+                                                    } else if (baseClasses != null) {
+                                                        elemList.addAll(baseClasses);
+                                                    }
+                                                }
+                                                if (elemList != null && elemList.size() > 0) { // match found
+                                                    CsmObject csmObj = (CsmObject)elemList.get(0);
+                                                    lastType = CsmCompletion.getObjectType(csmObj);
                                                     staticOnly = false;
+                                                } else if (kind == ExprKind.ARROW) {
                                                 } else { // no match found
                                                     lastType = null;
                                                     cont = false;
@@ -1179,6 +1262,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         }
                                     }
                                 } else { // last and searching for completion output
+                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
 //                                    CsmClass curCls = sup.getClass(varPos);
                                     CsmClassifier cls;
                                     if (lastType.getArrayDepth() == 0) { // Not array
@@ -1190,9 +1274,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                         cont = false;
                                     } else {
-                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, true,this.scopeAccessedClassifier,skipConstructors,sort);
                                         List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                         res.addAll(nestedClassifiers);
+                                        // add base classes as well
+                                        if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
+                                            // try base classes names like in this->Base::foo()
+                                            // or like in a.Base::foo()
+                                            List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, false, sort);
+                                            res.addAll(baseClasses);
+                                        }
                                         result = new CsmCompletionResult(
                                                      component, getBaseDocument(),
     //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),
@@ -1200,7 +1291,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      formatType(lastType, true, true, false) + var + '*',
                                                      item,
                                                      0/*cls.getName().length() + 1*/,
-                                                     isProjectBeeingParsed());
+                                                     isProjectBeeingParsed(), contextElement);
                                     }
                                 }
                             } else { // currently package
@@ -1213,6 +1304,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                     } else { // package doesn't exist
                                         res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
+//                                        if(res.isEmpty()) {
+//                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
+//                                        }
                                         CsmObject obj = res.isEmpty() ? null : (CsmObject)res.iterator().next();
                                         lastType = CsmCompletion.getObjectType(obj);
                                         cont = (lastType != null);
@@ -1222,7 +1316,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     if (last) { // get all matching fields/methods/packages
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
-                                        result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
+//                                        res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, var, openingSource, false, false));
+                                        result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed(), contextElement);
                                     }
                                 }
                             }
@@ -1242,7 +1337,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                            if (lastType.getArrayDepth() == 0) {
                                CsmClassifier cls = getClassifier(lastType);
                                if (cls != null) {
-                                   CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                   CsmFunction opArray = CsmCompletionQuery.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
                                    if (opArray != null) {
                                        lastType = opArray.getReturnType();
                                    }
@@ -1269,13 +1364,20 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 CsmType typ = resolveType(item.getParameter(0));
                 if (typ != null) {
                     lastType = typ;
+                    CsmClassifier cls = lastType.getClassifier();
+                    if (cls != null && CsmKindUtilities.isClass(cls)) {
+                        cls = createClassInstantiation((CsmClass) cls, item);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
+                    }
                 }
                 break;
             }
             case CsmCompletionExpression.GENERIC_TYPE_OPEN:
             case CsmCompletionExpression.OPERATOR:
                 CompletionResolver.Result res = null;
-                CsmClass curCls = sup.getClass(item.getTokenOffset(0)); //
+//                CsmClass curCls = sup.getClass(item.getTokenOffset(0)); //
 //                if (curCls != null) { //find all methods and fields for "this" class
 //                    res.addAll(findFieldsAndMethods(finder, getNamespaceName(curCls), curCls, "", false,
 //                    res.addAll(findFieldsAndMethods(finder, curCls, curCls, "", false,
@@ -1289,7 +1391,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                res.addAll(finder.findNestedNamespaces("", false, false)); // find all packages
 //                res.addAll(finder.findClasses(null, "", false)); // find all classes
 
-                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", item, endOffset, 0, 0, isProjectBeeingParsed()); // NOI18N
+                result = new CsmCompletionResult(component, getBaseDocument(), res, "*", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement); // NOI18N
 
                 switch (item.getTokenID(0)) {
                     case EQ: // Assignment operators
@@ -1386,13 +1488,39 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 }
                 break;
 
+            case CsmCompletionExpression.MEMBER_POINTER_OPEN:
+                if (item.getParameterCount() > 0) {
+                    if (item.getTokenCount() == 1) {
+                        switch (item.getTokenID(0)) {
+                            case AMP:
+                                memberPointer = true;
+                                break;
+                        }
+                    }
+                    cont = resolveExp(item.getParameter(0));
+                    memberPointer = false;
+                }
+                break;
             case CsmCompletionExpression.MEMBER_POINTER:
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
                     staticOnly = false;
-                    CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
-                    if (cls != null) {
-                        lastType = CsmCompletion.getType(cls, 0);
+                    CsmFunction.OperatorKind opKind = null;
+                    if (item.getTokenCount() == 1) {
+                        switch (item.getTokenID(0)) {
+                            case AMP:
+                                opKind = CsmFunction.OperatorKind.ADDRESS;
+                                break;
+                            case STAR:
+                                opKind = CsmFunction.OperatorKind.POINTER;
+                                break;
+                        }
+                    }
+                    if (opKind != null) {
+                        CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, opKind);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
                     }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
                     // and nested pointer expressions
@@ -1428,6 +1556,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      | CompletionResolver.RESOLVE_CLASSES
                                                      | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS
                                                      | CompletionResolver.RESOLVE_GLOB_NAMESPACES
+                                                     | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS
                                                      );
                         if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
                             res = compResolver.getResult();
@@ -1444,14 +1573,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     lastType = CsmCompletion.getType(cls, 0);
                                 }
                             }
-                            result = new CsmCompletionResult(component, getBaseDocument(), res, varName + '*', item, varPos, 0, 0, isProjectBeeingParsed());
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, varName + '*', item, varPos, 0, 0, isProjectBeeingParsed(), contextElement);
                         }
                     }
                 }
                 break;
 
             case CsmCompletionExpression.PARENTHESIS:
-                cont = resolveItem(item.getParameter(0), first, last, kind);
+                lastType = resolveType(item.getParameter(0));
                 break;
 
             case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression
@@ -1466,6 +1595,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             case CsmCompletionExpression.METHOD: // Closed method
                 CsmCompletionExpression mtdNameExp = item.getParameter(0);
                 String mtdName = mtdNameExp.getTokenText(0);
+
+                if (mtdNameExp.getExpID() == CsmCompletionExpression.GENERIC_TYPE) {
+                    lastType = resolveType(mtdNameExp);
+                }
 
                 // this() invoked, offer constructors
 //                if( ("this".equals(mtdName)) && (item.getTokenCount()>0) ){ //NOI18N
@@ -1497,7 +1630,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (isConstructor) { // Help for the constructor
                     CsmClassifier cls = null;
                     if (first) {
-                        cls = sup.getClassFromName(mtdName, true);
+                        cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
                     } else { // not first
 //                        if ((last)&&(lastNamespace != null)) { // valid package
 //                            cls = JCUtilities.getExactClass(finder, mtdName, (lastNamespace.isGlobal() ? "" : lastNamespace.getName()));
@@ -1580,8 +1713,19 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             }
                         }
                         if (mtdList == null || mtdList.size() == 0) {
-                            lastType = null;
-                            return false;
+                            // If we have not found method and (lastType != null) it could be default constructor.
+                            if (!isConstructor) {
+                                // It could be default constructor call without "new"
+                                CsmClassifier cls = null;
+                                //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
+                                if (cls == null) {
+                                    cls = findExactClass(mtdName, mtdNameExp.getTokenOffset(0));
+                                }
+                                if (cls != null) {
+                                    lastType = CsmCompletion.getType(cls, 0);
+                                }
+                            }
+                            return lastType != null;
                         }
                         String parmStr = "*"; // NOI18N
                         List typeList = getTypeList(item, 1);
@@ -1594,7 +1738,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             if (last && !findType) {
                                 result = new CsmCompletionResult(component, getBaseDocument(), mtdList,
                                         formatType(lastType, true, true, false) + mtdName + '(' + parmStr + ')',
-                                        item, endOffset, 0, 0, isProjectBeeingParsed());
+                                        item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement);
                             } else {
                                 if (mtdList.size() > 0) {
                                     CsmFunction fun = (CsmFunction)mtdList.get(0);
@@ -1617,7 +1761,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                         if (compResolver.refresh() && compResolver.resolve(varPos, "", false)) {
                             res = compResolver.getResult();
-                            result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, varPos, 0, 0, isProjectBeeingParsed());
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, mtdName + '*', mtdNameExp, varPos, 0, 0, isProjectBeeingParsed(), contextElement);
                         }
 
 //                        } else {
@@ -1635,6 +1779,27 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return cont;
         }
 
+        private CsmClass createClassInstantiation(CsmClass cls, CsmCompletionExpression exp) {
+            if (exp.getExpID() == CsmCompletionExpression.GENERIC_TYPE && CsmKindUtilities.isTemplate(cls)) {
+                List<CsmTemplateParameter> params = ((CsmTemplate) cls).getTemplateParameters();
+                if (params != null) {
+                    Map<CsmTemplateParameter, CsmType> mapping = new HashMap<CsmTemplateParameter, CsmType>();
+                    for (int i = 0; i + 1 < exp.getParameterCount() && i < params.size(); ++i) {
+                        CsmTemplateParameter param = params.get(i);
+                        CsmCompletionExpression paramInst = exp.getParameter(i + 1);
+                        if (paramInst != null) {
+                            mapping.put(param, resolveType(paramInst));
+                        } else {
+                            break;
+                        }
+                    }
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    return ip.instantiateClass(cls, mapping);
+                }
+            }
+            return null;
+        }
+        
         private CsmNamespace findExactNamespace(final String var, final int varPos) {
             CsmNamespace ns = null;
             compResolver.setResolveTypes(CompletionResolver.RESOLVE_GLOB_NAMESPACES | CompletionResolver.RESOLVE_LIB_NAMESPACES);
@@ -1657,7 +1822,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         private CsmClassifier findExactClass(final String var, final int varPos) {
             CsmClassifier cls = null;
-            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES);
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList());
@@ -1671,6 +1836,24 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 }
             }
             return cls;
+        }
+
+        private CsmType findExactVarType(final String var, final int varPos) {
+            //return  (CsmType)sup.findType(var, varPos);
+            CsmFile file = finder.getCsmFile();
+            if (file == null) {
+                return null;
+            }
+            CsmContext context = CsmOffsetResolver.findContext(file, varPos, getFileReferencesContext());
+            for(CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)){
+                if (decl instanceof CsmVariable) {
+                    CsmVariable v = (CsmVariable) decl;
+                    if (v.getName().toString().equals(var)) {
+                        return v.getType();
+                    }
+                }
+            }
+            return null;
         }
 
         private List getTypeList(CsmCompletionExpression item, int firstChildIdx) {
@@ -1740,22 +1923,22 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         private BaseDocument baseDocument;
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, String title,
-                   CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed) {
+                   CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement) {
             this(component, doc, data, title, substituteExp, substituteExp.getTokenOffset(0),
-                 substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed);
+                 substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed, contextElement);
         }
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
-                   CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed) {
+                   CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement) {
             this(component, doc, res, title, substituteExp, substituteExp.getTokenOffset(0),
-                 substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed);
+                 substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed, contextElement);
         }
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
-                   int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
+                   int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement) {
             this(component, doc,
-                    convertData(res, classDisplayOffset, substituteExp, substituteOffset),
+                    convertData(res, classDisplayOffset, substituteExp, substituteOffset, contextElement),
                     true,
                     title,
                     substituteExp,
@@ -1765,8 +1948,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
-                   int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            this(component, doc, convertData(data, classDisplayOffset, substituteExp, substituteOffset), true, title, substituteExp, substituteOffset,
+                   int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement) {
+            this(component, doc, 
+                    convertData(data, classDisplayOffset, substituteExp, substituteOffset, contextElement),
+                    true, title, substituteExp, substituteOffset,
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
@@ -1859,8 +2044,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem createLabelResultItem(CsmLabel csmStatement);
         public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld);
         public CsmResultItem.EnumeratorResultItem createMemberEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
-        public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp);
-        public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp);
+        public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, boolean isDeclaration);
+        public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, boolean isDeclaration);
 
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN);
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
@@ -1869,7 +2054,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN);
-        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp);
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration);
 
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac);
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac);
@@ -1878,7 +2063,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var);
         public CsmResultItem.EnumeratorResultItem createGlobalEnumeratorResultItem(CsmEnumerator enm, int enumtrDisplayOffset, boolean displayFQN);
-        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp);
+        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, boolean isDeclaration);
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac);
 
         public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath);
@@ -1960,15 +2145,15 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld){
             return new CsmResultItem.FieldResultItem(fld, FAKE_PRIORITY);
         }
-        public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp){
-            return new CsmResultItem.MethodResultItem(mtd, substituteExp, FAKE_PRIORITY);
+        public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, boolean isDeclaration){
+            return new CsmResultItem.MethodResultItem(mtd, substituteExp, FAKE_PRIORITY, isDeclaration);
         }
-        public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp){
-            return new CsmResultItem.ConstructorResultItem(ctr, substituteExp, FAKE_PRIORITY);
+        public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, boolean isDeclaration){
+            return new CsmResultItem.ConstructorResultItem(ctr, substituteExp, FAKE_PRIORITY, isDeclaration);
         }
 
-        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new CsmResultItem.GlobalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY);
+        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration) {
+            return new CsmResultItem.GlobalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY, isDeclaration);
         }
 
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var) {
@@ -1983,8 +2168,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return new CsmResultItem.FileLocalVariableResultItem(var, FAKE_PRIORITY);
         }
 
-        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new CsmResultItem.FileLocalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY);
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration) {
+            return new CsmResultItem.FileLocalFunctionResultItem(fun, substituteExp, FAKE_PRIORITY, isDeclaration);
         }
 
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac) {
@@ -2008,7 +2193,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
 
         public CsmResultItem.GlobalFunctionResultItem createLibGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return createGlobalFunctionResultItem(fun, substituteExp);
+            return createGlobalFunctionResultItem(fun, substituteExp, false);
         }
 
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
@@ -2030,7 +2215,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     ////////////////////////////////////////////////////////////////////////////
     // convert data into CompletionItem
-    private static List convertData(List dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset){
+    private static List convertData(List dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, CsmOffsetableDeclaration contextElement){
         Iterator iter = dataList.iterator();
         List ret = new ArrayList();
         while (iter.hasNext()){
@@ -2040,7 +2225,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 assert false : " why item element here?";
                 item = (CsmResultItem)obj;
             }else{
-                item = createResultItem(obj, classDisplayOffset, substituteExp);
+                item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement);
             }
             assert item != null : "why null item? object " + obj;
             if (item != null) {
@@ -2051,7 +2236,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return ret;
     }
 
-    private static CsmResultItem createResultItem(Object obj, int classDisplayOffset, CsmCompletionExpression substituteExp){
+    private static CsmResultItem createResultItem(Object obj, int classDisplayOffset, CsmCompletionExpression substituteExp, CsmOffsetableDeclaration contextElement){
         if (CsmKindUtilities.isCsmObject(obj)) {
             CsmObject csmObj = (CsmObject)obj;
             assert (!CsmKindUtilities.isMethod(csmObj) || CsmKindUtilities.isMethodDeclaration(csmObj)) : "completion result can not have method definitions " + obj;
@@ -2068,14 +2253,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else if (CsmKindUtilities.isField(csmObj)) {
                 return getCsmItemFactory().createFieldResultItem((CsmField)csmObj);
             } else if (CsmKindUtilities.isConstructor(csmObj)) { // must be checked before isMethod, because constructor is method too
-                return getCsmItemFactory().createConstructorResultItem((CsmConstructor)csmObj, substituteExp);
+                return getCsmItemFactory().createConstructorResultItem((CsmConstructor)csmObj, substituteExp, isDeclaration(substituteExp, contextElement));
             } else if (CsmKindUtilities.isMethodDeclaration(csmObj)) {
-                return getCsmItemFactory().createMethodResultItem((CsmMethod)csmObj, substituteExp);
+                return getCsmItemFactory().createMethodResultItem((CsmMethod)csmObj, substituteExp, isDeclaration(substituteExp, contextElement));
             } else if (CsmKindUtilities.isGlobalFunction(csmObj)) {
                 if (CsmBaseUtilities.isFileLocalFunction((CsmFunction) csmObj)) {
-                    return getCsmItemFactory().createFileLocalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                    return getCsmItemFactory().createFileLocalFunctionResultItem((CsmFunction)csmObj, substituteExp, isDeclaration(substituteExp, contextElement));
                 } else {
-                    return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp);
+                    return getCsmItemFactory().createGlobalFunctionResultItem((CsmFunction)csmObj, substituteExp, isDeclaration(substituteExp, contextElement));
                 }
             } else if (CsmKindUtilities.isGlobalVariable(csmObj)) {
                 return getCsmItemFactory().createGlobalVariableResultItem ((CsmVariable)csmObj);
@@ -2094,7 +2279,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return null;
     }
 
-    private static List convertData(CompletionResolver.Result res, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset) {
+    private static List convertData(CompletionResolver.Result res, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, CsmOffsetableDeclaration contextElement) {
         if (res == null) {
             return Collections.EMPTY_LIST;
         }
@@ -2131,9 +2316,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         for (CsmMethod elem : res.getClassMethods()) {
             if (CsmKindUtilities.isConstructor(elem)) {
-                item = factory.createConstructorResultItem((CsmConstructor)elem, substituteExp);
+                item = factory.createConstructorResultItem((CsmConstructor)elem, substituteExp, isDeclaration(substituteExp, contextElement));
             } else {
-                item = factory.createMethodResultItem(elem, substituteExp);
+                item = factory.createMethodResultItem(elem, substituteExp, isDeclaration(substituteExp, contextElement));
             }
             assert item != null;
             item.setSubstituteOffset(substituteOffset);
@@ -2184,7 +2369,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
 
         for (CsmFunction elem : res.getFileLocalFunctions()){
-            item = factory.createFileLocalFunctionResultItem(elem, substituteExp);
+            item = factory.createFileLocalFunctionResultItem(elem, substituteExp, isDeclaration(substituteExp, contextElement));
             assert item != null;
             item.setSubstituteOffset(substituteOffset);
             out.add(item);
@@ -2219,7 +2404,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         }
 
         for (CsmFunction elem : res.getGlobalProjectFunctions()) {
-            item = factory.createGlobalFunctionResultItem(elem, substituteExp);
+            item = factory.createGlobalFunctionResultItem(elem, substituteExp, isDeclaration(substituteExp, contextElement));
             assert item != null;
             item.setSubstituteOffset(substituteOffset);
             out.add(item);
@@ -2302,6 +2487,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             out.add(item);
         }
         return out;
+    }
+
+    private static boolean isDeclaration(CsmCompletionExpression substituteExp, CsmOffsetableDeclaration scopeElement) {
+        int expId = substituteExp.getExpID();
+        return scopeElement == null && (expId == CsmCompletionExpression.VARIABLE
+                || expId == CsmCompletionExpression.SCOPE
+                || expId == CsmCompletionExpression.SCOPE_OPEN);
     }
 
 }

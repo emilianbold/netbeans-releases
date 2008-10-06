@@ -60,6 +60,7 @@ public class RelationProxy implements IRelationProxy{
 	private IElement m_Connection = null;
 	private String m_ConnectionElementType = null;
 	private boolean m_RelationValidated = false;
+        private boolean reconnected = false;
 
 	/**
 	 * 
@@ -441,7 +442,13 @@ public class RelationProxy implements IRelationProxy{
 		return retEle;
 	}
 
+    public boolean isReconnected()
+    {
+        return this.reconnected;
+    }
+
+    public void setReconnectionFlag(boolean val)
+    {
+        this.reconnected = val;
+    }
 }
-
-
-

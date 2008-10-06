@@ -477,25 +477,36 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         return diffs;
     }
 
+    private void replace(final StyledDocument doc, final int start, final int length, final String text) {
+        NbDocument.runAtomic(doc, new Runnable() {
+            public void run() {
+                try {
+                    doc.remove(start, length);
+                    doc.insertString(start, text, null);
+                } catch (BadLocationException e) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+        });
+    }
+    
     /**
      * Rolls back a difference in the second document.
      * 
      * @param diff a difference to roll back, null to remove all differences
      */ 
     void rollback(Difference diff) {
+        StyledDocument document = (StyledDocument) getEditorPane2().getEditorPane().getDocument();
         if (diff == null) {
+            Document src = getEditorPane1().getEditorPane().getDocument();
             try {
-                Document dest = getEditorPane2().getEditorPane().getDocument();
-                Document src = getEditorPane1().getEditorPane().getDocument();
-                dest.remove(0, dest.getLength());
-                dest.insertString(0, src.getText(0, src.getLength()), null);
+                replace(document, 0, document.getLength(), src.getText(0, src.getLength()));
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
             }
             return;
         }
         try {
-            Document document = getEditorPane2().getEditorPane().getDocument();
             if (diff.getType() == Difference.ADD) {
                 int start = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
                 int end = DiffViewManager.getRowStartFromLineOffset(document, diff.getSecondEnd());
@@ -512,8 +523,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (end == -1) {
                     end = document.getLength();
                 }
-                document.remove(start, end - start);
-                document.insertString(start, diff.getFirstText(), null);
+                replace(document, start, end - start, diff.getFirstText());
             }
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
@@ -798,7 +808,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 }
             }
         } else {
-            firstSourceAvailable = true;
+            firstSourceAvailable = true;    
         }
         jEditorPane1.initActions();        
         jEditorPane1.getEditorPane().setDocument(doc);
@@ -811,9 +821,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
-                EditorCookie ec = dao.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    sdoc = ec.openDocument();
+                if (dao.getPrimaryFile() == fo) {
+                    EditorCookie ec = dao.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        sdoc = ec.openDocument();
+                    }
                 }
             } catch (Exception e) {
                 // fallback to other means of obtaining the source

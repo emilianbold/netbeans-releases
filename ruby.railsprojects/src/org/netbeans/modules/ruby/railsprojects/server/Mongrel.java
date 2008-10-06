@@ -91,7 +91,15 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
+    public String getLocation() {
+        return null;
+    }
+
     public String getStartupParam() {
+        return null;
+    }
+
+    public String getScriptPrefix() {
         return null;
     }
 
@@ -202,6 +210,11 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     }
 
     public int getRailsPort() {
+        return 3000;
+    }
+    
+    public String getServerCommand(RubyPlatform platform, String classpath, 
+            File applicationDir, int httpPort, boolean debug) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

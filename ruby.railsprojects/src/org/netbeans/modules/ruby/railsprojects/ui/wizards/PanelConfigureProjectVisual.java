@@ -77,13 +77,17 @@ public class PanelConfigureProjectVisual extends JPanel {
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_RoRExtSourcesProjectLocation")); // NOI18N
         }
         locationContainer.add( projectLocationPanel, java.awt.BorderLayout.CENTER );
-        optionsPanel = new PanelOptionsVisual( panel, type );
+        optionsPanel = new PanelOptionsVisual(panel);
         projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add( optionsPanel, java.awt.BorderLayout.CENTER );
     }
     
     RubyPlatform getPlatform() {
         return optionsPanel.getPlatform();
+    }
+
+    boolean needWarSupport() {
+        return optionsPanel.needWarSupport();
     }
     
     boolean valid( WizardDescriptor wizardDescriptor ) {

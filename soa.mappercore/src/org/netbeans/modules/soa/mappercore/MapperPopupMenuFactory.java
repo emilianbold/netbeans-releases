@@ -43,6 +43,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -52,7 +53,8 @@ public class MapperPopupMenuFactory {
     public static JPopupMenu createMapperPopupMenu(Canvas canvas, GraphItem graphItem) {
         JPopupMenu menu = new JPopupMenu();
         
-        JMenu menuItem = new JMenu("new");
+        JMenu menuItem = new JMenu(NbBundle.getMessage(Canvas.class, 
+                "NewMapperElement")); // NOI18N
         menu.add(menuItem);
         menu.addSeparator();
         

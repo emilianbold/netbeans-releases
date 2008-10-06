@@ -168,12 +168,12 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         if(isProjectSelection) {
             DefaultListModel model = (DefaultListModel) projectList.getModel();
             if (model.getSize() < 1) {
-                AbstractPanel.setErrorMessage(wizard, "MSG_NoProjects");
+                AbstractPanel.setInfoMessage(wizard, "MSG_NoProjects");
                 return false;
             }
         } else {
             if(wadlTextField.getText() == null || wadlTextField.getText().trim().equals("")) {
-                AbstractPanel.setErrorMessage(wizard, "MSG_NoWadlFile");
+                AbstractPanel.setInfoMessage(wizard, "MSG_NoWadlFile");
                 return false;
             } else {
                 String fileName = wadlTextField.getText().trim();
@@ -185,7 +185,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             }
         }
         if(createJmakiCheckBox.isSelected() && !isJmakiEnabled(project)) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_NoJmaki");
+            AbstractPanel.setInfoMessage(wizard, "MSG_NoJmaki");
             return false;
         }
         AbstractPanel.clearErrorMessage(wizard);
@@ -402,32 +402,27 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 .add(18, 18, 18)
                 .add(overwriteCheckBox)
                 .addContainerGap(127, Short.MAX_VALUE))
-            .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+            .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, projectRadioButton)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, wadlRadioButton)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(folderLabel)
-                        .add(14, 14, 14)
-                        .add(folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                        .add(6, 6, 6))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, wadlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, wadlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE))
                         .add(4, 4, 4))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(48, 48, 48)
-                                .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(locationLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(locationCB, 0, 312, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(folderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(projectLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(locationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, locationCB, 0, 351, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, folderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 351, Short.MAX_VALUE))
                         .add(6, 6, 6)))
                 .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -435,7 +430,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                     .add(addButton)
                     .add(removeButton)
                     .add(wadlBrowseButton)))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
         );
 
         layout.linkSize(new java.awt.Component[] {addButton, browseButton, removeButton, wadlBrowseButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -444,18 +439,17 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLabel)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(projectLabel))
                 .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locationLabel)
-                    .add(locationCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(locationCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(locationLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(folderLabel)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(browseButton)
-                        .add(folderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(browseButton)
+                    .add(folderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(folderLabel))
                 .add(8, 8, 8)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

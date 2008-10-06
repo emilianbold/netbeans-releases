@@ -46,11 +46,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -75,13 +78,17 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     /** Creates a new instance of CurrentEditorScope */
     public CurrentEditorScanningScope( String displayName, String description, Image icon ) {
         super( displayName, description, icon );
+        Map<String,String> labels = new HashMap<String,String>(1);
+        labels.put( "StatusBarLabel", //NOI18N
+                NbBundle.getMessage(CurrentEditorScanningScope.class, "LBL_CurrentFileStatusMessage") ); //NOI18N
+        lookupContent.add( labels );
     }
     
     public static CurrentEditorScanningScope create() {
         return new CurrentEditorScanningScope(
                 NbBundle.getBundle( CurrentEditorScanningScope.class ).getString( "LBL_CurrentEditorScope" ), //NOI18N)
                 NbBundle.getBundle( CurrentEditorScanningScope.class ).getString( "HINT_CurrentEditorScope" ), //NOI18N
-                Utilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/cur_editor_scope.png" ) //NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/cur_editor_scope.png" ) //NOI18N
                 );
     }
     
@@ -137,6 +144,10 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     }
     
     public void run() {
+        switchCurrentFile(true);
+    }
+    
+    private void switchCurrentFile( boolean callbackRefresh ) {
         FileObject newActiveFile = getCurrentFile();
         if( (null == currentFile && null != newActiveFile)
             || (null != currentFile && null == newActiveFile )
@@ -149,7 +160,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope
                 lookupContent.add( newActiveFile );
             currentFile = newActiveFile;
             //notify the TaskManager that user activated other file
-            if( null != callback )
+            if( null != callback && callbackRefresh )
                 callback.refresh();
         } else {
             currentFile = newActiveFile;

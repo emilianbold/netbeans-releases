@@ -26,7 +26,7 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface Service extends TMapComponent, PortTypeReference, Nameable 
+public interface Service extends TMapComponent, PartnerLinkTypeReference /* 142908 PortTypeReference*/, Nameable 
 {
 
     TMapComponents TYPE = TMapComponents.SERVICE;

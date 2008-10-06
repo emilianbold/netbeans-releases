@@ -168,7 +168,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     public Map<String,String> getProperties() {
         return delegatingEvaluator(true).getProperties();
     }
-    
+
     private boolean isModuleListDependentProperty(String p) {
         return p.equals("module.classpath") || // NOI18N
                 p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra") || // NOI18N
@@ -265,6 +265,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         this.runInAtomicAction = runInAtomicAction;
     }
     
+    /** See issue #69440 for more details. */
+    boolean isRunInAtomicAction() {
+        return runInAtomicAction;
+    }
+    
     public void removeListeners() {
         project.getHelper().removeAntProjectListener(this);
         delegate.removePropertyChangeListener(this);
@@ -287,7 +292,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
-            stock.put("netbeans.dest.dir", new File(nbroot, ModuleList.DEST_DIR_IN_NETBEANS_ORG).getAbsolutePath()); // NOI18N
+            stock.put("netbeans.dest.dir", ModuleList.findNetBeansOrgDestDir(nbroot).getAbsolutePath()); // NOI18N
         } else {
             nbroot = null;
         }
@@ -644,34 +649,75 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         return classpaths;
     }
     
+    private static interface Callback {
+        void callback(TestModuleDependency td, String cnb);
+    }
+    
     private void computeTestType(String ttName, File testDistDir, Set<TestModuleDependency> ttModules, Map<String,TestClasspath> classpaths, ModuleList ml) {
-        Set<String> compileCnbs = new HashSet<String>();
-        Set<String> runtimeCnbs = new HashSet<String>();
-        Set<String> testCompileCnbs = new HashSet<String>();
-        Set<String> testRuntimeCnbs = new HashSet<String>();
-        
-        Set<String> processedRecursive = new HashSet<String>();
+        final Set<String> compileCnbs = new HashSet<String>();
+        final Set<String> runtimeCnbs = new HashSet<String>();
+        final Set<String> testCompileCnbs = new HashSet<String>();
+        final Set<String> testRuntimeCnbs = new HashSet<String>();
+
+        // #139339: optimization using processedRecursive set was too bold, removed
         boolean fullySpecified = false;
         for (TestModuleDependency td : ttModules) {
             String cnb = td.getModule().getCodeNameBase();
             fullySpecified |= cnb.equals("org.netbeans.libs.junit4");
-            if (td.isTest()) {
-                if (td.isCompile()) {
-                    testCompileCnbs.add(cnb);
-                } 
-                testRuntimeCnbs.add(cnb);
-            }
+
             if (td.isRecursive()) {
                 // scan cp recursively
-                processTestEntryRecursive(td,compileCnbs,runtimeCnbs,processedRecursive,ml);         
+                processTestEntryRecursive(td,
+                        new Callback() {
+                            public void callback(TestModuleDependency td, String cnb) {
+                                runtimeCnbs.add(cnb);
+                                testRuntimeCnbs.add(cnb);
+                                if (td.isCompile()) {
+                                    compileCnbs.add(cnb);
+                                    testCompileCnbs.add(cnb);
+                                }
+                            }
+                        }, ml);
             } else {
                 runtimeCnbs.add(cnb);
                 if (td.isCompile()) {
                     compileCnbs.add(cnb);
                 }
+                if (td.isTest()) {
+                    if (td.isCompile()) {
+                        testCompileCnbs.add(cnb);
+                    }
+                    testRuntimeCnbs.add(cnb);
+                }
             }
         }
 
+        /* debug print
+         if (ttName.equals("unit")) {
+            StringBuilder debugCPs = new StringBuilder();
+            String[] labels = {"compile", "run", "TEST compile", "TEST run"};
+            Set<?>[] cps = new Set<?>[]{compileCnbs, runtimeCnbs, testCompileCnbs, testRuntimeCnbs};
+
+            Map<String, String> processed = new HashMap<String, String>();
+            for (int i = 0; i < cps.length; i++) {
+                Set<?> cpSet = cps[i];
+                for (Object entry : cpSet) {
+                    String se = (String) entry;
+                    if (processed.containsKey(se))
+                        processed.put(se, processed.get(se) + ", " + labels[i]);
+                    else
+                        processed.put(se, labels[i]);
+                }
+            }
+            for (Map.Entry<String, String> entry : processed.entrySet()) {
+                debugCPs.append(entry.getKey());
+                debugCPs.append(": ");
+                debugCPs.append(entry.getValue());
+                debugCPs.append("\n  ");
+            }
+            Logger.getLogger(Evaluator.class.getName()).info("'" + ttName + "' CPs for '" + project.getCodeNameBase() + "':\n" + debugCPs);
+        }*/
+        
         StringBuilder extra = new StringBuilder();
         if (!fullySpecified) {
             // Old module which failed to specify all its test dependencies.
@@ -740,9 +786,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     }
   
   private void processTestEntryRecursive(TestModuleDependency td,
-                                        Set<String> compileCnds,
-                                        Set<String> runtimeCnds,
-                                        Set<String> processedRecursive,
+                                        Callback clb,
                                         ModuleList ml) {
         Set<String> unprocessed = new HashSet<String>();
         
@@ -751,21 +795,17 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             Iterator<String> it = unprocessed.iterator();
             String cnb = it.next();
             it.remove();
-            if (processedRecursive.add(cnb)) {
-                ModuleEntry module = ml.getEntry(cnb);
-                if (module == null) {
-                    Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
-                    continue;
-                }
-                if (!cnb.equals(project.getCodeNameBase())) { // build/classes for this is special
-                    runtimeCnds.add(cnb);
-                    if (td.isCompile()) {
-                        compileCnds.add(cnb);
-                    }
-                }
-                String[] newDeps = module.getRunDependencies();
-                unprocessed.addAll(Arrays.asList(newDeps));
+
+            ModuleEntry module = ml.getEntry(cnb);
+            if (module == null) {
+                Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
+                continue;
             }
+            if (!cnb.equals(project.getCodeNameBase())) { // build/classes for this is special
+                clb.callback(td, cnb);
+            }
+            String[] newDeps = module.getRunDependencies();
+            unprocessed.addAll(Arrays.asList(newDeps));
         }
     }
 

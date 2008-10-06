@@ -56,6 +56,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
@@ -432,12 +433,12 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             if (node instanceof Function){
                 final Function f = (Function) node;
                 menu = new JPopupMenu();
-                menu.add(new GoToReferenceAction(f,0));
-                menu.add(new ExpandCallees(f));
-                menu.add(new ExpandCallers(f));
+                menu.add(new GoToReferenceAction(f,0).getPopupPresenter());
+                menu.add(new ExpandCallees(f).getPopupPresenter());
+                menu.add(new ExpandCallers(f).getPopupPresenter());
             } else if (widget instanceof CallGraphScene) {
                 menu = new JPopupMenu();
-                menu.add(exportAction);
+                menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
             }
             return menu;
         }
@@ -449,10 +450,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         public ExpandCallees(Function function) {
             this.function = function;
             putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "ExpandCallees"));  // NOI18N
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
             putValue(Action.SMALL_ICON, new javax.swing.ImageIcon(
                     CallGraphScene.class.getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -478,8 +479,8 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "ExpandCallers"));  // NOI18N
             putValue(Action.SMALL_ICON, new javax.swing.ImageIcon(
                     CallGraphScene.class.getResource("/org/netbeans/modules/cnd/callgraph/resources/who_calls.png"))); // NOI18N
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {

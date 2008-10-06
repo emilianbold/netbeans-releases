@@ -40,11 +40,10 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.util;
 
-import org.netbeans.modules.websvc.saas.codegen.java.support.*;
-import com.sun.source.tree.ClassTree;
 import java.awt.Component;
 import javax.swing.JLabel;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -57,9 +56,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.util.Utilities;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -73,30 +69,12 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Listener;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
@@ -114,33 +92,36 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SignedUrlAuthenti
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseGenerator.Token;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
+import org.netbeans.modules.websvc.saas.codegen.ui.ProgressDialog;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
+import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -161,71 +142,10 @@ public class Util {
     public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
     public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
     public static final String SCANNING_IN_PROGRESS = "ScanningInProgress";//NOI18N
-    private static final String BUILD_XML_PATH = "build.xml"; // NOI18N
-    private static final String JAXB_LIB = "jaxb21";     //NOI18N
-
-    /*
-     * Check if the primary file of d is a REST Resource
-     */
-    public static boolean isRestJavaFile(DataObject d) {
-        try {
-            if (!isJava(d)) {
-                return false;
-            }
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return false;
-            }
-            javax.swing.text.Document doc = ec.getDocument();
-            if (doc != null) {
-                String docText = doc.getText(0, doc.getLength());
-
-                return (docText.indexOf(APATH) != -1) ||
-                        (docText.indexOf(AGET) != -1) ||
-                        (docText.indexOf(APOST) != -1) ||
-                        (docText.indexOf(APUT) != -1) ||
-                        (docText.indexOf(ADELETE) != -1);
-            }
-        } catch (BadLocationException ex) {
-        }
-        return false;
-    }
-
-    public static boolean isServlet(DataObject d) {
-        try {
-            if (!isJava(d)) {
-                return false;
-            }
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return false;
-            }
-            javax.swing.text.Document doc = ec.getDocument();
-            if (doc != null) {
-                String docText = doc.getText(0, doc.getLength());
-
-                return (docText.indexOf("extends HttpServlet") != -1);
-            }
-        } catch (BadLocationException ex) {
-        }
-        return false;
-    }
-
-    public static boolean isJsp(DataObject d) {
-        if (d != null && "jsp".equals(d.getPrimaryFile().getExt())) //NOI18N
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isJava(DataObject d) {
-        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
-        {
-            return true;
-        }
-        return false;
-    }
+    public static final String BUILD_XML_PATH = "build.xml"; // NOI18N
+    public static final String VAR_NAMES_RESULT = "result";
+    public static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
+    public static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
     
     public static boolean isJsp(Document doc) {
         if(doc == null)
@@ -247,16 +167,6 @@ public class Util {
         return false;
     }
     
-    public static boolean isPhp(Document doc) {
-        if(doc == null)
-            return false;
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType != null && ("text/x-php5".equals(mimeType))) { //NOI18N
-            return true;
-        }
-        return false;
-    }
-
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
      */
@@ -337,25 +247,6 @@ public class Util {
             return ""; // NOI18N
         }
     }
-
-    /**
-     * Returns the SourceGroup of the passesd project which contains the
-     * fully-qualified class name.
-     */
-    public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
-        String classFile = fqClassName.replace('.', '/') + "." + Constants.JAVA_EXT; // NOI18N
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-
-        for (SourceGroup sourceGroup : sourceGroups) {
-            FileObject classFO = sourceGroup.getRootFolder().getFileObject(classFile);
-            if (classFO != null) {
-                return sourceGroup;
-            }
-        }
-        return null;
-    }
-    static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
-    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
 
     public static String lowerFirstChar(String name) {
         if (name.length() == 0) {
@@ -440,32 +331,14 @@ public class Util {
         return types;
     }
 
-    public static SourceGroup[] getSourceGroups(Project project) {
-        SourceGroup[] sourceGroups = null;
-
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] docRoot = sources.getSourceGroups(TYPE_DOC_ROOT);
-        SourceGroup[] srcRoots = SourceGroupSupport.getJavaSourceGroups(project);
-
-        if (docRoot != null && srcRoots != null) {
-            sourceGroups = new SourceGroup[docRoot.length + srcRoots.length];
-            System.arraycopy(docRoot, 0, sourceGroups, 0, docRoot.length);
-            System.arraycopy(srcRoots, 0, sourceGroups, docRoot.length, srcRoots.length);
-        }
-
-        if (sourceGroups == null || sourceGroups.length == 0) {
-            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        }
-        return sourceGroups;
-    }
     private static Map<String, Class> primitiveTypes;
     private static Map<String, Class> primitiveClassTypes;
     
     private static HashSet<String> keywords;
 
     public static Class getType(Project project, String typeName) {
-        List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
-        
+        List<ClassPath> classPaths = new ArrayList<ClassPath>();
+                
         //hack for PHP
         if(classPaths.size() == 0){
             try {
@@ -519,22 +392,22 @@ public class Util {
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
-            primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", Integer[].class);
-            primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", Boolean[].class);
-            primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", Byte[].class);
-            primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", Character[].class);
-            primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", Double[].class);
-            primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", Float[].class);
-            primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", Long[].class);
-            primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("int", Integer.TYPE);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("boolean", Boolean.TYPE);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("byte", Byte.TYPE);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("char", Character.TYPE);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("double", Double.TYPE);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("float", Float.TYPE);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("long", Long.TYPE);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("short", Short.TYPE);
+            primitiveTypes.put("short[]", short[].class);
         }
         return primitiveTypes.get(typeName);
     }
@@ -648,46 +521,6 @@ public class Util {
         return sortedKeys;
     }
 
-    public static void showMethod(FileObject source, String methodName) throws IOException {
-        try {
-            DataObject dataObj = DataObject.find(source);
-            if (!isJava(dataObj)) {
-                return;
-            }
-            JavaSource javaSource = JavaSource.forFileObject(source);
-
-            // Force a save to make sure to make sure the line position in
-            // the editor is in sync with the java source.
-            SaveCookie sc = (SaveCookie) dataObj.getCookie(SaveCookie.class);
-
-            if (sc != null) {
-                sc.save();
-            }
-
-            LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
-
-            if (lc != null) {
-                Util.checkScanning(false);
-                final long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
-                final Line line = lc.getLineSet().getOriginal((int) position[0]);
-
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        line.show(Line.SHOW_SHOW, (int) position[1]);
-                    }
-                });
-            }
-        } catch (Exception de) {
-            if (de instanceof IOException && de.getMessage().equals(Util.SCANNING_IN_PROGRESS)) {
-                throw new IOException(Util.SCANNING_IN_PROGRESS);
-            } else {
-                de.printStackTrace();
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-            }
-        }
-    }
-
     public static Method getValueOfMethod(Class type) {
         try {
             Method method = type.getDeclaredMethod("valueOf", String.class);
@@ -784,35 +617,6 @@ public class Util {
         //normalized = normalized.replaceAll("\\p{Space}", "_");
         //return normalized;
         return SaasUtil.toValidJavaName(name);
-    }
-
-    public static boolean isScanningInProgress(boolean showMessage) {
-        try {
-            Thread.sleep(2000);
-            if (SourceUtils.isScanInProgress()) {
-                if (showMessage) {
-                    String message = NbBundle.getMessage(CodeSetupPanel.class,
-                            "MSG_ScanningInProgress"); // NOI18N
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                }
-                return true;
-            }
-        } catch (InterruptedException ex) {
-        }
-        return false;
-    }
-
-    public static void checkScanning() throws IOException {
-        if (Util.isScanningInProgress(true)) {
-            throw new IOException(SCANNING_IN_PROGRESS);
-        }
-    }
-
-    public static void checkScanning(boolean showMessage) throws IOException {
-        if (isScanningInProgress(showMessage)) {
-            throw new IOException(SCANNING_IN_PROGRESS);
-        }
     }
 
     public static List<ParameterInfo> filterParametersByAuth(SaasAuthenticationType authType,
@@ -1246,131 +1050,6 @@ public class Util {
         return paramVal;
     }
 
-    public static void createSessionKeyAuthorizationClassesForWeb(
-            SaasBean bean, Project project,
-            String groupName, String saasServicePackageName, FileObject targetFolder,
-            JavaSource loginJS, FileObject loginFile,
-            JavaSource callbackJS, FileObject callbackFile,
-            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
-        createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
-                saasServicePackageName, targetFolder, loginJS, loginFile, 
-                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
-    }
-    
-    public static void createSessionKeyAuthorizationClassesForWeb(
-            SaasBean bean, Project project,
-            String groupName, String saasServicePackageName, FileObject targetFolder,
-            JavaSource loginJS, FileObject loginFile,
-            JavaSource callbackJS, FileObject callbackFile,
-            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
-            boolean skipWebDescEntry) throws IOException {
-        SaasAuthenticationType authType = bean.getAuthenticationType();
-        if (authType == SaasAuthenticationType.SESSION_KEY ||
-                authType == SaasAuthenticationType.HTTP_BASIC) {
-            if (!isUseTemplates) {
-                String fileId = Util.upperFirstChar(Constants.LOGIN);// NoI18n
-                String methodName = "processRequest";// NoI18n
-                String authFileName = groupName + fileId;
-                loginJS = JavaSourceHelper.createJavaSource(
-                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-                Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
-                if (files != null && files.size() > 0) {
-                    loginFile = files.iterator().next();
-                }
-
-                if (!JavaSourceHelper.isContainsMethod(loginJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, loginJS,
-                            parameters, paramTypes,
-                            "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
-                }
-
-                fileId = Util.upperFirstChar(Constants.CALLBACK);// NOI18n
-                authFileName = groupName + fileId;
-                callbackJS = JavaSourceHelper.createJavaSource(
-                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-                files = new HashSet<FileObject>(callbackJS.getFileObjects());
-                if (files != null && files.size() > 0) {
-                    callbackFile = files.iterator().next();
-                }
-
-                if (!JavaSourceHelper.isContainsMethod(callbackJS, methodName, parameters, paramTypes)) {
-                    addServletMethod(bean, groupName, methodName, callbackJS,
-                            parameters, paramTypes,
-                            "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
-                }
-            } else {
-                UseTemplates useTemplates = null;
-                if (bean.getAuthentication() instanceof SessionKeyAuthentication) {
-                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
-                    useTemplates = sessionKey.getUseTemplates();
-                } else if (bean.getAuthentication() instanceof HttpBasicAuthentication) {
-                    HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
-                    useTemplates = httpBasic.getUseTemplates();
-                }
-                if (useTemplates != null) {
-                    for (Template template : useTemplates.getTemplates()) {
-                        String id = template.getId();
-                        String type = template.getType() == null ? "" : template.getType();
-                        String templateUrl = template.getUrl();
-                        if (templateUrl == null || templateUrl.trim().equals("")) {
-                            throw new IOException("Authentication template is empty.");
-                        }
-                        String fileName = null;
-                        if (type.equals(Constants.LOGIN)) {
-                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.LOGIN);
-                        } else if (type.equals(Constants.CALLBACK)) {
-                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.CALLBACK);
-                        } else if (type.equals(Constants.AUTH)) {
-                            continue;
-                        }
-                        FileObject fObj = null;
-                        if (templateUrl.endsWith("." + Constants.JAVA_EXT)) {
-                            JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
-                                    bean.getSaasServicePackageName(), fileName);
-                            Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
-                            if (files != null && files.size() > 0) {
-                                fObj = files.iterator().next();
-                            }
-                        } else {
-                            if (fileName != null) {
-                                fObj = targetFolder.getFileObject(fileName);
-                                if (fObj == null) {
-                                    DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder,
-                                            fileName);
-                                    if (d != null) {
-                                        fObj = d.getPrimaryFile();
-                                    }
-                                }
-                            }
-                        }
-                        if (fObj != null) {
-                            if (type.equals(Constants.LOGIN)) {
-                                loginFile = fObj;
-                            } else if (type.equals(Constants.CALLBACK)) {
-                                callbackFile = fObj;
-                            }
-                        }
-                    }
-                }
-            }
-
-            //Make entry into web.xml for login and callback servlets
-            if(!skipWebDescEntry) {
-                if (loginFile != null && callbackFile != null) {
-                    Map<String, String> filesMap = new HashMap<String, String>();
-                    filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
-                    filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
-                    addAuthorizationClassesToWebDescriptor(project, filesMap);
-                } else {
-                    Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
-                            "to web descriptor");
-                }
-            }
-        }
-    }
-
     public static String getServletLoginBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
@@ -1523,184 +1202,6 @@ public class Util {
         return getHeaderOrParameterUsage(getAuthenticatorMethodParametersForWeb());
     }
 
-    /**
-     *  Return target and generated file objects
-     */
-    public static void addServletMethod(final SaasBean bean,
-            String groupName, final String methodName, final JavaSource source,
-            final String[] parameters, final Object[] paramTypes,
-            final String bodyText) throws IOException {
-
-        if (JavaSourceHelper.isContainsMethod(source, methodName, parameters, paramTypes)) {
-            return;
-        }
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-
-                javax.lang.model.element.Modifier[] modifiers = Constants.PROTECTED;
-
-                String type = Constants.VOID;
-
-                String comment = "Retrieves representation of an instance of " + bean.getQualifiedClassName() + "\n";// NOI18N
-                for (String param : parameters) {
-                    comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N
-                }
-                comment += "@return an instance of " + type;// NOI18N
-                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-                ClassTree tree = JavaSourceHelper.addMethod(copy, initial,
-                        modifiers, null, null,
-                        methodName, type, parameters, paramTypes,
-                        null, null, new String[]{"javax.servlet.ServletException", "java.io.IOException"},
-                        bodyText, comment);      //NOI18N
-                copy.rewrite(initial, tree);
-            }
-        });
-        result.commit();
-    }
-
-    public static FileObject getWebXmlFile(Project p) {
-        SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups("web");
-        for (SourceGroup group : groups) {
-            FileObject root = group.getRootFolder();
-            java.util.Enumeration<? extends FileObject> files = root.getData(true);
-            while (files.hasMoreElements()) {
-                FileObject fobj = files.nextElement();
-                if (fobj.getNameExt().equals("web.xml")) {
-                    return fobj;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static void addAuthorizationClassesToWebDescriptor(Project p,
-            Map<String, String> filesMap) throws IOException {
-        for (Map.Entry e : filesMap.entrySet()) {
-            String name = (String) e.getKey();
-            String qName = (String) e.getValue();
-            addServiceEntriesToDD(p, name, qName);
-        }
-    }
-
-    /**
-     * This is to support non-JSR 109 containers. In this case, a regular jaxws web service
-     * is created and the deployment descriptor is updated with the jaxws-ri servlet and
-     * listener.
-     */
-    public static void addServiceEntriesToDD(Project p, String servletName,
-            String servletClassName) {
-        WebApp webApp = getWebApp(p);
-        if (webApp != null) {
-            Servlet servlet = null;
-            Listener listener = null;
-            try {
-                servlet = (Servlet) webApp.addBean("Servlet", new String[]{"ServletName", "ServletClass"},
-                        new Object[]{servletName, servletClassName}, "ServletName");
-                servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-                ServletMapping servletMapping = (ServletMapping) webApp.addBean("ServletMapping", new String[]{"ServletName", "UrlPattern"},
-                        new Object[]{servletName, "/" + servletName}, "ServletName");
-                // This also saves server specific configuration, if necessary.
-                webApp.write(getDeploymentDescriptor(p));
-            } catch (ClassNotFoundException exc) {
-                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-            } catch (NameAlreadyUsedException exc) {
-                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-            } catch (IOException exc) {
-                Logger.getLogger("global").log(Level.INFO, exc.getLocalizedMessage());
-            }
-        }
-    }
-
-    public static FileObject getDeploymentDescriptor(Project p) {
-        FileObject webInfFo = getWebInf(p);
-        if (webInfFo == null) {
-            if (isProjectOpened(p)) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(
-                            CodeSetupPanel.class, "MSG_WebInfCorrupted",
-                            new Object[] {p.getProjectDirectory().getPath()}), // NOI18N
-                            NotifyDescriptor.ERROR_MESSAGE));
-            }
-            return null;
-        }
-        return getWebInf(p).getFileObject("web.xml");//NoI18n
-    }
-
-    public static FileObject getWebInf(Project p) {
-        WebModule webModule = WebModule.getWebModule(p.getProjectDirectory());
-        if (webModule != null) {
-            return webModule.getWebInf();
-        }
-        return null;
-    }
-
-    public static WebApp getWebApp(Project p) {
-        try {
-            FileObject deploymentDescriptor = getDeploymentDescriptor(p);
-            if (deploymentDescriptor != null) {
-                return DDProvider.getDefault().getDDRoot(deploymentDescriptor);
-            }
-        } catch (java.io.IOException e) {
-            Logger.getLogger("global").log(Level.INFO, e.getLocalizedMessage());
-        }
-        return null;
-    }
-
-    public static boolean isProjectOpened(Project p) {
-        // XXX workaround: OpenProjects.getDefault() can be null
-        // when called from ProjectOpenedHook.projectOpened() upon IDE startup
-        if (OpenProjects.getDefault() == null) {
-            return true;
-        }
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(p)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void addClientJars(SaasBean bean, Project p,
-            FileObject target) throws IOException {
-        if (bean instanceof RestClientSaasBean) {
-            if (p == null || bean == null ||
-                    ((RestClientSaasBean) bean).getMethod() == null) {
-                throw new IllegalArgumentException(
-                        "Cannot create JAXB classes, since project|bean is null.");
-            }
-            LibrariesHelper.addClientJars(p, target, ((RestClientSaasBean) bean).getMethod().getSaas());
-        }
-    }
-
-    public static void addJaxbLib(Project p) throws IOException {
-        if (isJDK5()) {
-            //Add JAXB libs if not available (if using JDK1.5)
-            Library library = LibraryManager.getDefault().getLibrary(JAXB_LIB);
-            SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (sgs == null || sgs.length < 1) {
-                throw new IOException("Project has no Java sources"); //NOI18N
-            }
-            FileObject sourceRoot = sgs[0].getRootFolder();
-            ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.COMPILE);
-        }
-    }
-
-    public static void addImportsToSource(JavaSource source, List<String> imports) throws IOException {
-        for (final String imp : imports) {
-            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-                public void run(WorkingCopy copy) throws IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-                    JavaSourceHelper.addImports(copy, new String[]{imp});
-                }
-            });
-            result.commit();
-        }
-    }
-
     public static List<String> getJaxBClassImports() {
         List<String> imports = new ArrayList<String>();
         imports.add(JAXBContext.class.getName());
@@ -1733,26 +1234,44 @@ public class Util {
                 NotifyDescriptor.Message.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
     }
-
-    public static String createPrintStatement(String pkg, String typeName,
+    
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
+        return createPrintStatement(pkgs, typeNames, dropFileType, methodType,
+            canGenerateJaxb, VAR_NAMES_RESULT, indent);
+    }
+    
+    public static String createPrintStatement(List<String> pkgs, List<String> typeNames,
+            DropFileType dropFileType, HttpMethodType methodType,
+            boolean canGenerateJaxb, String resultVarName, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
-            if (!isPrimitive(typeName)) {
-                String resultClass = pkg + "." + Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsObject(" + resultClass + ".class);\n";
-            } else {
-                String resultClass = Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+            for(int i=0;i<typeNames.size();i++) {
+                String pkg = pkgs.get(i);
+                String typeName = typeNames.get(i);
+                if(i>0) {
+                    methodBody += "else ";
+                }
+                if (!isPrimitive(typeName)) {
+                    String resultClass = pkg + "." + Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class)";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + "    " + lft + " "+resultVarName+"Obj = " + rht + ";\n}\n";
+                } else {
+                    String resultClass = Util.camelize(typeName, false);
+                    String lft = resultClass;
+                    String rht = resultVarName+".getDataAsObject(" + resultClass + ".class, \"java.lang\")";
+                    methodBody += indent + "if(" + rht + " instanceof " + lft + ") {\n";
+                    methodBody += indent + resultClass + " "+resultVarName+"Obj = " + rht +";\n}\n";
+                }
             }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
         methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+                ".println(\"The SaasService returned: \"+"+resultVarName+".getDataAsString());\n";
 
         return methodBody;
     }
@@ -1760,39 +1279,6 @@ public class Util {
     private static boolean isPrimitive(String typeName) {
         return typeName.equals("integer") || typeName.equals("string") || typeName.equals("boolean") ||
                 typeName.equals("float") || typeName.equals("long");  //NOI18N
-    }
-    
-    public static void addInputParamField(JavaSource source,
-            final ParameterInfo p, final String[] annotations, final Object[] annotationAttrs) throws IOException {
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                ClassTree initial = JavaSourceHelper.getTopLevelClassTree(copy);
-                ClassTree modifiedTree = JavaSourceHelper.addField(copy,
-                        initial,
-                        Constants.PRIVATE,
-                        annotations, annotationAttrs,
-                        getParameterName(p, true, true, true),
-                        p.getTypeName(),
-                        getParamValue(p));
-                copy.rewrite(initial, modifiedTree);
-            }
-        });
-        result.commit();
-    }
-
-    public static void addInputParamFields(JavaSource source,
-            final List<ParameterInfo> params) throws IOException {
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                JavaSourceHelper.addFields(copy, getParamNames(params),
-                        getParamTypeNames(params), getParamValues(params));
-            }
-        });
-        result.commit();
     }
 
     public static String[] getParamNames(List<ParameterInfo> params) {
@@ -1915,30 +1401,15 @@ public class Util {
         types.addAll(Arrays.asList(getParamTypeNames(queryParams)));
         return types.toArray(new String[types.size()]);
     }
-
-    public static void addInputParamFields(JavaSource source,
-            final List<ParameterInfo> params,
-            final javax.lang.model.element.Modifier[] modifier) throws IOException {
-        ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-            public void run(WorkingCopy copy) throws IOException {
-                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                List<ParameterInfo> addList = new ArrayList<ParameterInfo>();
-                for (ParameterInfo p : params) {
-                    if (JavaSourceHelper.getField(copy, getParameterName(p, true, true, true)) == null) {
-                        addList.add(p);
-                    }
-                }
-                JavaSourceHelper.addFields(copy, getParamNames(addList),
-                        getParamTypeNames(addList), getParamValues(addList), modifier);
-            }
-        });
-        result.commit();
-    }
     
-    public static List<ParameterInfo> getJaxRsMethodParameters(RestClientSaasBean bean) {
+    public static List<ParameterInfo> getRestClientMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
+        getRestClientPutPostParameters(bean, params);
+        return params;
+    }
+    
+    public static List<ParameterInfo> getRestClientPutPostParameters(RestClientSaasBean bean, List<ParameterInfo> params) {
         HttpMethodType httpMethod = bean.getHttpMethod();
 
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
@@ -1957,17 +1428,37 @@ public class Util {
                         contentType = String.class;
                     }
                 }
-                if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
-                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
-                }
+            }
+            if (hasInputRepresentations(bean) && !isPutPostFormParams(bean)) {
+                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
         return params;
     }
 
+    public static boolean isPutPostFormParams(RestClientSaasBean bean) {
+        HttpMethodType httpMethod = bean.getHttpMethod();
+        if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+            for(RepresentationType rep: reps) {
+                if (rep.getParam() != null && rep.getParam().size() > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasInputRepresentations(RestClientSaasBean bean) {
+       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       
+       if (reps == null || reps.size() == 0) 
+           return false;
+       
+       return true;
+    }
+
     public static Document getDocument(FileObject f) throws IOException {
         try {
-            JavaSource src = JavaSource.forFileObject(f);
             DataObject d = DataObject.find(f);
             EditorCookie ec = d.getCookie(EditorCookie.class);
             Document doc = ec.openDocument();
@@ -1979,4 +1470,66 @@ public class Util {
             throw new IOException("DataObject does not exist for : " + f.getPath());
         }
     }
+
+    public static boolean isRPCEncoded(WSDLModel wsdlModel){
+
+        Definitions definitions = wsdlModel.getDefinitions();
+        Collection<Binding> bindings = definitions.getBindings();
+        for (Binding binding : bindings) {
+            List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+            for (SOAPBinding soapBinding : soapBindings) {
+                if (soapBinding.getStyle() == Style.RPC) {
+                    Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                    for (BindingOperation bindingOperation : bindingOperations) {
+                        BindingInput bindingInput = bindingOperation.getBindingInput();
+                        if (bindingInput != null) {
+                            List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                            if (soapBodies != null && soapBodies.size() > 0) {
+                                SOAPBody soapBody = soapBodies.get(0);
+                                if (soapBody.getUse() == Use.ENCODED) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public static boolean showDialog(String displayName, List<ParameterInfo> allParams, 
+            Document targetDoc) {
+        if (!allParams.isEmpty()) {
+            boolean showParamTypes = Util.isJava(targetDoc) || Util.isJsp(targetDoc);
+            CodeSetupPanel panel = new CodeSetupPanel(allParams, showParamTypes);
+
+            DialogDescriptor desc = new DialogDescriptor(panel,
+                    NbBundle.getMessage(CodeSetupPanel.class,
+                    "LBL_CustomizeSaasService", displayName));
+
+            Dialog d = DialogDisplayer.getDefault().createDialog(desc);
+            panel.setDialog(d);
+            d.setVisible(true);
+            Object response = (desc.getValue() != null) ? desc.getValue() : NotifyDescriptor.CLOSED_OPTION;
+            if (response.equals(NotifyDescriptor.CANCEL_OPTION) ||
+                    response.equals(NotifyDescriptor.CLOSED_OPTION)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static void doGenerateCode(SaasClientCodeGenerator codegen,
+            ProgressDialog progress, List<Exception> errors) {
+        try {
+            codegen.initProgressReporting(progress.getProgressHandle());
+            codegen.generate();
+        } catch (IOException ex) {
+            if (!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS)) {
+                errors.add(ex);
+            }
+        }
+    }
+
 }

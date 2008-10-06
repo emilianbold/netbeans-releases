@@ -44,13 +44,11 @@ package org.openide.loaders;
 
 import java.io.IOException;
 import org.openide.filesystems.*;
-import org.netbeans.junit.*;
 
 /** Check what can be done when registering loaders in layer. And how it works
  * on system file system.
  * @author Jaroslav Tulach
  */
-@RandomlyFails
 public class DataLoaderInLayerOnSFSTest extends DataLoaderInLayerTest {
 
     public DataLoaderInLayerOnSFSTest(String name) {

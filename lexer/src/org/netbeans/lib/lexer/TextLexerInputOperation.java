@@ -75,10 +75,10 @@ public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperat
         if (endOffset == -1) {
             endOffset = inputSourceText.length();
         }
-        assert (0 <= startOffset) && (startOffset <= endOffset)
-            && (endOffset <= inputSourceText.length())
-            : "startOffset=" + startOffset + ", endOffset=" + endOffset
-                + ", inputSourceText.length()=" + inputSourceText.length();
+        if ((startOffset < 0) || (startOffset > endOffset) || (endOffset > inputSourceText.length())) {
+            throw new IndexOutOfBoundsException("startOffset=" + startOffset + ", endOffset=" + endOffset +
+                ", inputSourceText.length()=" + inputSourceText.length());
+        }
         tokenStartOffset = startOffset;
         readOffset = tokenStartOffset;
         readEndOffset = endOffset;
@@ -97,7 +97,6 @@ public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperat
     }
 
     protected void fillTokenData(AbstractToken<T> token) {
-        token.setTokenList(tokenList);
         token.setRawOffset(tokenStartOffset);
     }
     

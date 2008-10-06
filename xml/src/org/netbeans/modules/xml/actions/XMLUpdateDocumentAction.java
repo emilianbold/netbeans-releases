@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.actions;
 
 import java.util.Iterator;
 import org.netbeans.modules.xml.cookies.UpdateDocumentCookie;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -69,7 +70,7 @@ public final class XMLUpdateDocumentAction extends CookieAction {
      * @return the name of the action
      */
     public String getName () {
-        return Util.THIS.getString ("PROP_UpdateDocument");
+        return Util.THIS.getString (XMLUpdateDocumentAction.class, "PROP_UpdateDocument");
     }
 
     protected Class[] cookieClasses () {

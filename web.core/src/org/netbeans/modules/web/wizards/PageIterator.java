@@ -65,13 +65,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.project.ui.api.PageLayoutChooserFactory;
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.modules.web.taglib.TLDDataObject;
 import org.netbeans.modules.web.taglib.model.Taglib;
 import org.netbeans.modules.web.taglib.model.TagFileType;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /** A template wizard iterator (sequence of panels).
  * Used to fill in the second and subsequent panels in the New wizard.
@@ -119,7 +116,6 @@ public class PageIterator implements TemplateWizard.Iterator {
     }
 
     // You should define what panels you want to use here:
-    @SuppressWarnings("unchecked") // Generic Array Creation
     protected WizardDescriptor.Panel[] createPanels(Project project) {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         if (fileType.equals(FileType.JSP)) {
@@ -130,18 +126,10 @@ public class PageIterator implements TemplateWizard.Iterator {
             folderPanel = new TargetChooserPanel(project, sourceGroups, fileType);
 
             FileObject template = Templates.getTemplate(wiz);
-            if (hasPageLayouts(template)) {
-                PageLayoutChooserFactory.getWizrdPanel(template);
-                pageLayoutChooserPanel = PageLayoutChooserFactory.getWizrdPanel(template);
-                return new WizardDescriptor.Panel[]{
-                            folderPanel,
-                            pageLayoutChooserPanel
-                        };
-            } else {
-                return new WizardDescriptor.Panel[]{
-                            folderPanel
-                        };
-            }
+           
+            return new WizardDescriptor.Panel[]{
+                        folderPanel
+                    };
         } else if (fileType.equals(FileType.HTML) || fileType.equals(FileType.XHTML) || fileType.equals(FileType.CSS)) {
             SourceGroup[] docRoot = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
             SourceGroup[] srcRoots = Util.getJavaSourceGroups(project);
@@ -187,21 +175,6 @@ public class PageIterator implements TemplateWizard.Iterator {
                 };
     }
 
-    /**
-     * Check if any Page Layouts available associated with this template
-     * @param template
-     * @return
-     */
-    private boolean hasPageLayouts(FileObject template) {
-        String pageLayoutsFolderName = "PageLayouts/" + template.getName(); // NOI18N
-        FileObject pageLayoutsFolder = Repository.getDefault().getDefaultFileSystem().findResource(pageLayoutsFolderName);
-        if (pageLayoutsFolder != null) {
-            return pageLayoutsFolder.getChildren().length > 0;
-        } else {
-            return false;
-        }
-    }
-
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
@@ -221,35 +194,15 @@ public class PageIterator implements TemplateWizard.Iterator {
         Map<String, Object> wizardProps = new HashMap<String, Object>();
 
         if (FileType.JSP.equals(fileType)) {
-            // If the finishing panel is PageLayoutChooserPanel, then use the selected Template
-            if (PageLayoutChooserFactory.isPageLayoutChooserPanel(panels[index])) {
-                template = PageLayoutChooserFactory.getSelectedTemplate(panels[index]);
-                // If resource folder starts with "/" then create it in the web root folder
-                String resourceFolderName = PageLayoutChooserFactory.getResourceFolder(panels[index]);
-                FileObject resourceFolder = null;
-                if (resourceFolderName.startsWith("/")) {
-                    Project project = Templates.getProject(wiz);
-                    WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                    resourceFolder = FileUtil.createFolder(wm.getDocumentBase(), resourceFolderName);
-                    wizardProps.put("folder", wm.getContextPath() + resourceFolderName);
+            if (panel.isSegment()) {
+                if (panel.isXml()) {
+                    template = templateParent.getFileObject("JSPFX", "jspf"); //NOI18N
                 } else {
-                    resourceFolder = FileUtil.createFolder(dir, resourceFolderName);
-                    wizardProps.put("folder", resourceFolderName);
+                    template = templateParent.getFileObject("JSPF", "jspf"); //NOI18N
                 }
-                PageLayoutChooserFactory.copyResources(panels[index], resourceFolder);
-                 
             } else {
-
-                if (panel.isSegment()) {
-                    if (panel.isXml()) {
-                        template = templateParent.getFileObject("JSPFX", "jspf"); //NOI18N
-                    } else {
-                        template = templateParent.getFileObject("JSPF", "jspf"); //NOI18N
-                    }
-                } else {
-                    if (panel.isXml()) {
-                        template = templateParent.getFileObject("JSPX", "jspx"); //NOI18N
-                    }
+                if (panel.isXml()) {
+                    template = templateParent.getFileObject("JSPX", "jspx"); //NOI18N
                 }
             }
         } else if (FileType.TAG.equals(fileType)) {

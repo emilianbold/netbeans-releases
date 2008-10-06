@@ -88,15 +88,7 @@ public interface Constants {
     static final String IMAGE_TAB_SEL_UPPER_RIGHT = "org/netbeans/modules/welcome/resources/tab_sel_upper_right.png"; // NOI18N
     static final String IMAGE_TAB_SEL_LOWER_RIGHT = "org/netbeans/modules/welcome/resources/tab_sel_lower_right.png"; // NOI18N
     
-    static final String IMAGE_STRIP_BOTTOM_EAST = "org/netbeans/modules/welcome/resources/strip_bottom_east.png"; // NOI18N
-    static final String IMAGE_STRIP_BOTTOM_WEST = "org/netbeans/modules/welcome/resources/strip_bottom_west.png"; // NOI18N
-    static final String IMAGE_STRIP_BOTTOM_CENTER = "org/netbeans/modules/welcome/resources/strip_bottom_center.png"; // NOI18N
-    
-    static final String IMAGE_STRIP_TOP_WEST = "org/netbeans/modules/welcome/resources/strip_top_west.png"; // NOI18N
-    static final String IMAGE_STRIP_TOP_CENTER = "org/netbeans/modules/welcome/resources/strip_top_center.png"; // NOI18N
-    
-    static final String IMAGE_STRIP_MIDDLE_EAST = "org/netbeans/modules/welcome/resources/strip_middle_east.png"; // NOI18N
-    static final String IMAGE_STRIP_MIDDLE_CENTER = "org/netbeans/modules/welcome/resources/strip_middle_center.png"; // NOI18N
+    static final String IMAGE_BOTTOM_GRADIENT = "org/netbeans/modules/welcome/resources/bottom_gradient.png"; // NOI18N
     
     static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
     static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N

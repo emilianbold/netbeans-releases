@@ -37,6 +37,14 @@ __PROJECT_NAME__.prototype = {
         r.flush();
       }
    },
+   
+   getProxy : function() {
+       return rjsSupport.getHttpProxy();
+   },
+   
+   setProxy : function(proxy_) {
+       rjsSupport.setHttpProxy(proxy_);
+   },
 
    toString : function() {
       var s = '';

@@ -9,21 +9,60 @@ package org.netbeans.modules.javascript.editing.options;
 import java.util.EnumSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.mozilla.javascript.Context;
+import org.mozilla.nb.javascript.Context;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Tor Norbye
  */
-public class BrowserPanel extends javax.swing.JPanel {
+public class BrowserPanel extends JSPreferencesPanel {
+
 
     private final String[] VERSION_LABELS = new String[] {
          NbBundle.getMessage(BrowserPanel.class, "LanguageDefault"),
          "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"
     };
+
+
+   private enum BROWSER_VERSION {
+       FF1(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff1Rb.text")),
+       FF2(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff2Rb.text")) ,
+       FF3(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff3Rb.text")),
+       SAFARI2(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf2Rb.text")),
+       SAFARI3(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf3Rb.text")),
+       IE5(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie5Rb.text")),
+       IE6(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie6Rb.text")),
+       IE7(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie7Rb.text"));
+       BROWSER_VERSION(String string){
+           this.string = string;
+       }
+       String string;
+       public String toString() {
+           return string;
+       }
+   }
+
+    
+    private final BROWSER_VERSION[] FF_VERSION_LABELS =new BROWSER_VERSION[] {
+        BROWSER_VERSION.FF1,
+        BROWSER_VERSION.FF2,
+        BROWSER_VERSION.FF3};
+    
+    private final BROWSER_VERSION[] IE_VERSION_LABELS = new BROWSER_VERSION[] {
+        BROWSER_VERSION.IE5, 
+        BROWSER_VERSION.IE6,
+        BROWSER_VERSION.IE7
+    };
+    
+    private final BROWSER_VERSION[] SAFARI_VERSION_LABELS = new BROWSER_VERSION[] { 
+        BROWSER_VERSION.SAFARI2,
+        BROWSER_VERSION.SAFARI3
+    };
+    
     private final int[] VERSION_VALUES = new int[] {
         Context.VERSION_DEFAULT,
         Context.VERSION_1_0,
@@ -45,39 +84,40 @@ public class BrowserPanel extends javax.swing.JPanel {
         initComponents();
     }
 
+    @Override
     public void load() {
         SupportedBrowsers query = SupportedBrowsers.getInstance();
         if (query.isSupported(BrowserVersion.FF1)) {
-            ff1Rb.setSelected(true);
+            cbFFVersion.setSelectedItem(BROWSER_VERSION.FF1);
             ffCb.setSelected(true);
         } else if (query.isSupported(BrowserVersion.FF2)) {
-            ff2Rb.setSelected(true);
+            cbFFVersion.setSelectedItem(BROWSER_VERSION.FF2);
             ffCb.setSelected(true);
         } else if (query.isSupported(BrowserVersion.FF3)) {
-            ff3Rb.setSelected(true);
+            cbFFVersion.setSelectedItem(BROWSER_VERSION.FF3);
             ffCb.setSelected(true);
         } else {
             ffCb.setSelected(false);
         }
 
         if (query.isSupported(BrowserVersion.IE55)) {
-            ie5Rb.setSelected(true);
+            cbIEVersion.setSelectedItem(BROWSER_VERSION.IE5);
             ieCb.setSelected(true);
         } else if (query.isSupported(BrowserVersion.IE6)) {
-            ie6Rb.setSelected(true);
+            cbIEVersion.setSelectedItem(BROWSER_VERSION.IE6);
             ieCb.setSelected(true);
         } else if (query.isSupported(BrowserVersion.IE7)) {
-            ie7Rb.setSelected(true);
+            cbIEVersion.setSelectedItem(BROWSER_VERSION.IE7);
             ieCb.setSelected(true);
         } else {
             ieCb.setSelected(false);
         }
 
         if (query.isSupported(BrowserVersion.SAFARI2)) {
-            sf2Rb.setSelected(true);
+            cbSafariVersion.setSelectedItem(BROWSER_VERSION.SAFARI2);
             safariCb.setSelected(true);
         } else if (query.isSupported(BrowserVersion.SAFARI3)) {
-            sf3Rb.setSelected(true);
+            cbSafariVersion.setSelectedItem(BROWSER_VERSION.SAFARI3);
             safariCb.setSelected(true);
         } else {
             safariCb.setSelected(false);
@@ -92,44 +132,51 @@ public class BrowserPanel extends javax.swing.JPanel {
                 break;
             }
         }
-        // XXX TODO
+        
     }
 
+    @Override
+    @SuppressWarnings("fallthrough")
     public void store() {
         EnumSet<BrowserVersion> es = EnumSet.noneOf(BrowserVersion.class);
 
         if (ieCb.isSelected()) {
-            if (ie5Rb.isSelected()) {
-                es.add(BrowserVersion.IE55);
-                es.add(BrowserVersion.IE6);
-                es.add(BrowserVersion.IE7);
-            } else if (ie6Rb.isSelected()) {
-                es.add(BrowserVersion.IE6);
-                es.add(BrowserVersion.IE7);
-            } else if (ie7Rb.isSelected()) {
-                es.add(BrowserVersion.IE7);
+            assert cbIEVersion.getSelectedItem() instanceof BROWSER_VERSION;
+            switch ( (BROWSER_VERSION) cbIEVersion.getSelectedItem()){
+                case IE5:
+                    es.add(BrowserVersion.IE55); //Fall Through On Purpose
+                case IE6:
+                    es.add(BrowserVersion.IE6);
+                case IE7:
+                    es.add(BrowserVersion.IE7);
+                default:
+                    break;
             }
         }
-
+        
         if (ffCb.isSelected()) {
-            if (ff1Rb.isSelected()) {
-                es.add(BrowserVersion.FF1);
-                es.add(BrowserVersion.FF2);
-                es.add(BrowserVersion.FF3);
-            } else if (ff2Rb.isSelected()) {
-                es.add(BrowserVersion.FF2);
-                es.add(BrowserVersion.FF3);
-            } else if (ff3Rb.isSelected()) {
-                es.add(BrowserVersion.FF3);
+            assert cbFFVersion.getSelectedItem() instanceof BROWSER_VERSION;
+            switch ( (BROWSER_VERSION) cbFFVersion.getSelectedItem()){
+                case FF1:
+                    es.add(BrowserVersion.FF1); //Fall Through On Purpose
+                case FF2:
+                    es.add(BrowserVersion.FF2);
+                case FF3:
+                    es.add(BrowserVersion.FF3);
+                default:
+                    break;
             }
         }
-
+        
         if (safariCb.isSelected()) {
-            if (sf2Rb.isSelected()) {
-                es.add(BrowserVersion.SAFARI2);
-                es.add(BrowserVersion.SAFARI3);
-            } else if (sf3Rb.isSelected()) {
-                es.add(BrowserVersion.SAFARI3);
+            assert cbSafariVersion.getSelectedItem() instanceof BROWSER_VERSION;
+            switch ( (BROWSER_VERSION) cbSafariVersion.getSelectedItem()){
+                case SAFARI2:
+                    es.add(BrowserVersion.SAFARI2); //Fall Through On Purpose
+                case SAFARI3:
+                    es.add(BrowserVersion.SAFARI3);
+                default:
+                    break;
             }
         }
 
@@ -144,7 +191,21 @@ public class BrowserPanel extends javax.swing.JPanel {
     }
 
     private ComboBoxModel getVersionModel() {
+        
         return new DefaultComboBoxModel(VERSION_LABELS);
+        
+    }
+
+    private ComboBoxModel getFFVersionModel() {
+        return new DefaultComboBoxModel(FF_VERSION_LABELS);
+    }
+
+    private ComboBoxModel getSafariVersionModel() {
+        return new DefaultComboBoxModel(SAFARI_VERSION_LABELS);
+    }
+
+    private ComboBoxModel getIEVersionModel() {
+        return new DefaultComboBoxModel(IE_VERSION_LABELS);
     }
 
     /** This method is called from within the constructor to
@@ -164,18 +225,11 @@ public class BrowserPanel extends javax.swing.JPanel {
         ieCb = new javax.swing.JCheckBox();
         safariCb = new javax.swing.JCheckBox();
         operaCb = new javax.swing.JCheckBox();
-        ff1Rb = new javax.swing.JRadioButton();
-        ff2Rb = new javax.swing.JRadioButton();
-        ff3Rb = new javax.swing.JRadioButton();
-        ie5Rb = new javax.swing.JRadioButton();
-        ie6Rb = new javax.swing.JRadioButton();
-        ie7Rb = new javax.swing.JRadioButton();
-        sf2Rb = new javax.swing.JRadioButton();
-        sf3Rb = new javax.swing.JRadioButton();
-        unsupportedCb = new javax.swing.JCheckBox();
-        limitCb = new javax.swing.JCheckBox();
         languageLabel = new javax.swing.JLabel();
         languageCombo = new javax.swing.JComboBox();
+        cbSafariVersion = new javax.swing.JComboBox();
+        cbIEVersion = new javax.swing.JComboBox();
+        cbFFVersion = new javax.swing.JComboBox();
 
         browserLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.browserLabel.text")); // NOI18N
 
@@ -211,89 +265,6 @@ public class BrowserPanel extends javax.swing.JPanel {
             }
         });
 
-        firefoxGroup.add(ff1Rb);
-        ff1Rb.setSelected(true);
-        ff1Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff1Rb.text")); // NOI18N
-        ff1Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        firefoxGroup.add(ff2Rb);
-        ff2Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff2Rb.text")); // NOI18N
-        ff2Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        firefoxGroup.add(ff3Rb);
-        ff3Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff3Rb.text")); // NOI18N
-        ff3Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        ieGroup.add(ie5Rb);
-        ie5Rb.setSelected(true);
-        ie5Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie5Rb.text")); // NOI18N
-        ie5Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        ieGroup.add(ie6Rb);
-        ie6Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie6Rb.text")); // NOI18N
-        ie6Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        ieGroup.add(ie7Rb);
-        ie7Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ie7Rb.text")); // NOI18N
-        ie7Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        safariGroup.add(sf2Rb);
-        sf2Rb.setSelected(true);
-        sf2Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf2Rb.text")); // NOI18N
-        sf2Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        safariGroup.add(sf3Rb);
-        sf3Rb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.sf3Rb.text")); // NOI18N
-        sf3Rb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                actionCheckChange(evt);
-            }
-        });
-
-        unsupportedCb.setSelected(true);
-        unsupportedCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.unsupportedCb.text")); // NOI18N
-        unsupportedCb.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                itemCheckChange(evt);
-            }
-        });
-
-        limitCb.setSelected(true);
-        limitCb.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.limitCb.text")); // NOI18N
-        limitCb.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                itemCheckChange(evt);
-            }
-        });
-
         languageLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.languageLabel.text")); // NOI18N
 
         languageCombo.setModel(getVersionModel());
@@ -303,6 +274,12 @@ public class BrowserPanel extends javax.swing.JPanel {
             }
         });
 
+        cbSafariVersion.setModel(getSafariVersionModel());
+
+        cbIEVersion.setModel(getIEVersionModel());
+
+        cbFFVersion.setModel(getFFVersionModel());
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -311,77 +288,50 @@ public class BrowserPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(browserLabel)
+                    .add(languageLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(ffCb)
-                        .add(18, 18, 18)
-                        .add(ff1Rb)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(ffCb)
+                            .add(ieCb)
+                            .add(safariCb)
+                            .add(operaCb))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ff2Rb)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ff3Rb))
-                    .add(layout.createSequentialGroup()
-                        .add(ieCb)
-                        .add(18, 18, 18)
-                        .add(ie5Rb)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ie6Rb)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ie7Rb))
-                    .add(unsupportedCb)
-                    .add(limitCb)
-                    .add(layout.createSequentialGroup()
-                        .add(safariCb)
-                        .add(20, 20, 20)
-                        .add(sf2Rb)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sf3Rb))
-                    .add(operaCb)
-                    .add(layout.createSequentialGroup()
-                        .add(languageLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(93, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cbSafariVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(cbFFVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(cbIEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(browserLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ffCb)
-                    .add(ff1Rb)
-                    .add(ff2Rb)
-                    .add(ff3Rb))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(ieCb)
-                    .add(ie5Rb)
-                    .add(ie6Rb)
-                    .add(ie7Rb))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(safariCb)
-                    .add(sf2Rb)
-                    .add(sf3Rb))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(operaCb)
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(browserLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(ffCb)
+                            .add(cbFFVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(ieCb)
+                            .add(cbIEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(safariCb)
+                            .add(cbSafariVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(operaCb)))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(languageLabel)
                     .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 60, Short.MAX_VALUE)
-                .add(limitCb)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(unsupportedCb)
-                .addContainerGap())
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-private void actionCheckChange(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_actionCheckChange
-// TODO add your handling code here:
-        controller.changed();
-}//GEN-LAST:event_actionCheckChange
 
 private void itemCheckChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_itemCheckChange
 // TODO add your handling code here:
@@ -391,25 +341,18 @@ private void itemCheckChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_it
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel browserLabel;
-    private javax.swing.JRadioButton ff1Rb;
-    private javax.swing.JRadioButton ff2Rb;
-    private javax.swing.JRadioButton ff3Rb;
+    private javax.swing.JComboBox cbFFVersion;
+    private javax.swing.JComboBox cbIEVersion;
+    private javax.swing.JComboBox cbSafariVersion;
     private javax.swing.JCheckBox ffCb;
     private javax.swing.ButtonGroup firefoxGroup;
-    private javax.swing.JRadioButton ie5Rb;
-    private javax.swing.JRadioButton ie6Rb;
-    private javax.swing.JRadioButton ie7Rb;
     private javax.swing.JCheckBox ieCb;
     private javax.swing.ButtonGroup ieGroup;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
-    private javax.swing.JCheckBox limitCb;
     private javax.swing.JCheckBox operaCb;
     private javax.swing.JCheckBox safariCb;
     private javax.swing.ButtonGroup safariGroup;
-    private javax.swing.JRadioButton sf2Rb;
-    private javax.swing.JRadioButton sf3Rb;
-    private javax.swing.JCheckBox unsupportedCb;
     // End of variables declaration//GEN-END:variables
 
 }

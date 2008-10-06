@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pages_getInfo_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <page>
+        <page_id>4846711747</page_id>
+        <name>Kronos Quartet</name>
+        <pic_small>http://profile.ak.facebook.com/object2/283/56/t4846711747_9511.jpg</pic_small>
+        <pic_big>http://profile.ak.facebook.com/object2/283/56/n4846711747_9511.jpg</pic_big>
+        <pic_square>http://profile.ak.facebook.com/object2/283/56/q4846711747_9511.jpg</pic_square>
+        <pic_large>http://profile.ak.facebook.com/object2/283/56/4846711747_9511.jpg</pic_large>
+        <type>MUSICIANS</type>
+        <!-- bug on facebook's api page?? 
+        <type>page</type>
+        -->
+        <website>http://www.kronosquartet.org </website>
+        <location/>
+        <hours/>
+        <band_members>David Harrington. Violin John Sherba . Violin Frank Dutt . Viola Jeffrey Zeigler . Cello </band_members>
+        <bio>For more than 30 years, the Kronos Quartet has pursued a singular artistic vision with a spirit of fearless exploration.</bio>
+        <hometown>San Francisco, CA</hometown>
+        <genre>
+            <dance>0</dance>
+            <party>0</party>
+            <relax>0</relax>
+            <talk>0</talk>
+            <think>1</think>
+            <workout>0</workout>
+            <sing>0</sing>
+            <intimate>0</intimate>
+            <raunchy>0</raunchy>
+            <headphones>0</headphones>
+        </genre>
+        <record_label>Nonesuch</record_label>
+        <influences>
+            Composers: John Adams, Alban Berg, John Cage Collaborators: Asha Bhosle, David Bowie, Cafe Tacuba
+        </influences>
+        <has_added_app>0
+        </has_added_app>
+        <founded/>
+        <company_overview/>
+        <mission/>
+        <products/>
+        <release_date/>
+        <starring/>
+        <written_by/>
+        <directed_by/>
+        <produced_by/>
+        <studio/>
+        <awards/>
+        <plot_outline/>
+        <network/>
+        <season/>
+        <schedule/>
+    </page>
+</pages_getInfo_response>

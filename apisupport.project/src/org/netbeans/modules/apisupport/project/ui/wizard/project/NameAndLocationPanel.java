@@ -149,7 +149,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return false;
         }
         if (txtName.getText().trim().length() == 0) {
-            setError(getMessage("ERR_Name_Prefix_Empty"));
+            setInfo(getMessage("ERR_Name_Prefix_Empty"), false);
             return false;
         }
         if (!Utilities.isJavaIdentifier(txtName.getText().trim())) {

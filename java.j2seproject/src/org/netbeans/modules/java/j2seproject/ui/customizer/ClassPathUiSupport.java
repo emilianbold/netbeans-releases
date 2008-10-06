@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

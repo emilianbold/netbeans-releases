@@ -127,10 +127,6 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     private void doPerform( Lookup context, DataObject template, boolean inProject ) {
-        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
-            // Can sometimes happen when pressing Ctrl-N, it seems.
-            return;
-        }
 
         if ( context == null ) {
             context = getLookup();
@@ -139,6 +135,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         if ( !inProject ) {
             // Context outside of projects
             NoProjectNew.showDialog( template, preselectedFolder( context ) );
+            return;
+        }
+        
+        if (OpenProjectList.getDefault().getOpenProjects().length == 0) {
+            // Can sometimes happen when pressing Ctrl-N, it seems.
             return;
         }
 

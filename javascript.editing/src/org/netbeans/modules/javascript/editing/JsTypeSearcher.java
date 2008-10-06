@@ -50,24 +50,25 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
-import org.netbeans.modules.gsf.api.TypeSearcher.GsfTypeDescriptor;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +77,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tor Norbye
  */
-public class JsTypeSearcher implements TypeSearcher {
+public class JsTypeSearcher implements IndexSearcher {
     public JsTypeSearcher() {
     }
     
@@ -115,7 +116,7 @@ public class JsTypeSearcher implements TypeSearcher {
         return kind;
     }
     
-    public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex,
+    public Set<? extends Descriptor> getTypes(Index gsfIndex,
                                                         String textForQuery,
                                                         NameKind kind,
                                                         EnumSet<SearchScope> scope, Helper helper) {
@@ -144,7 +145,7 @@ public class JsTypeSearcher implements TypeSearcher {
             textForQuery = textForQuery.toLowerCase();
         }
 
-        Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
+        Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
         Set<IndexedElement> elements;
         int dot = textForQuery.lastIndexOf('.');
         if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
@@ -155,7 +156,7 @@ public class JsTypeSearcher implements TypeSearcher {
             elements = index.getAllNames(textForQuery, kind, scope, null);
         }
         for (IndexedElement element : elements) {
-            result.add(new JsTypeDescriptor(element, helper));
+            result.add(new JsSymbolDescriptor(element, helper));
         }
         
         
@@ -171,7 +172,7 @@ public class JsTypeSearcher implements TypeSearcher {
 //            classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
 //        }
 //        
-//        Set<JsTypeDescriptor> result = new HashSet<JsTypeDescriptor>();
+//        Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
 //        
 //        if (method != null) {
 //            // Query methods
@@ -219,18 +220,136 @@ public class JsTypeSearcher implements TypeSearcher {
 //                        }
 //                    }
 //                }
-//                result.add(new JsTypeDescriptor(m, helper));
+//                result.add(new JsSymbolDescriptor(m, helper));
 //            }
 //        } else {
 //            for (IndexedClass cls : classes) {
-//                result.add(new JsTypeDescriptor(cls, helper));
+//                result.add(new JsSymbolDescriptor(cls, helper));
 //            }
 //        }
         
         return result;
     }
 
-    private class JsTypeDescriptor extends GsfTypeDescriptor {
+    public Set<? extends Descriptor> getSymbols(Index gsfIndex,
+                                                        String textForQuery,
+                                                        NameKind kind,
+                                                        EnumSet<SearchScope> scope, Helper helper) {
+        // In addition to just computing the declared types here, we perform some additional
+        // "second guessing" of the query. In particular, we want to allow double colons
+        // to be part of the query names (to specify full module names), but since colon is
+        // treated by the Open Type dialog as a regexp char, it will turn it into a regexp query
+        // for example. Thus, I look at the query string and I might turn it into a different kind
+        // of query. (We also allow #method suffixes which are handled here.)
+
+
+//        if (textForQuery.endsWith("::")) {
+//            textForQuery = textForQuery.substring(0, textForQuery.length()-2);
+//        } else if (textForQuery.endsWith(":")) {
+//            textForQuery = textForQuery.substring(0, textForQuery.length()-1);
+//        }
+
+        JsIndex index = JsIndex.get(gsfIndex);
+        if (index == null) {
+            return Collections.emptySet();
+        }
+
+        kind = adjustKind(kind, textForQuery);
+
+        if (kind == NameKind.CASE_INSENSITIVE_PREFIX /*|| kind == NameKind.CASE_INSENSITIVE_REGEXP*/) {
+            textForQuery = textForQuery.toLowerCase();
+        }
+
+        Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
+        Set<IndexedElement> elements;
+        int dot = textForQuery.lastIndexOf('.');
+        if (dot != -1 && (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX)) {
+            String prefix = textForQuery.substring(dot+1);
+            String in = textForQuery.substring(0, dot);
+            elements = index.getElements(prefix, in, kind, scope, null);
+        } else {
+            elements = index.getAllNames(textForQuery, kind, scope, null);
+        }
+        for (IndexedElement element : elements) {
+            result.add(new JsSymbolDescriptor(element, helper));
+        }
+
+        // I should add in classes too!
+
+
+//        String method = null;
+//        int methodIndex = textForQuery.indexOf('#');
+//        if (methodIndex != -1) {
+//            method = textForQuery.substring(methodIndex+1);
+//            textForQuery = textForQuery.substring(0, methodIndex);
+//        }
+//
+//        Set<IndexedClass> classes = null;
+//        if (method == null || textForQuery.length() > 0) {
+//            classes = index.getClasses(textForQuery, kind, true, false, false, scope, null);
+//        }
+//
+//        Set<JsSymbolDescriptor> result = new HashSet<JsSymbolDescriptor>();
+//
+//        if (method != null) {
+//            // Query methods
+//            Set<IndexedMethod> methods = index.getMethods(method, null, kind, scope);
+//            for (IndexedMethod m : methods) {
+//                if (textForQuery.length() > 0 && m.getClz() != null) {
+//                    String in = m.getClz();
+//                    switch (kind) {
+//                    case CASE_INSENSITIVE_REGEXP:
+//                    case REGEXP:
+//                        try {
+//                            if (in.indexOf("::") != -1 && textForQuery.indexOf("::") == -1) { // NOI18N
+//                                // Try matching each
+//                                boolean matches = false;
+//                                for (String c : in.split("::")) { // NOI18N
+//                                    if (c.matches(textForQuery)) {
+//                                        matches = true;
+//                                        break;
+//                                    }
+//                                }
+//
+//                                if (!matches) {
+//                                    continue;
+//                                }
+//                            } else if (!in.matches(textForQuery)) {
+//                                continue;
+//                            }
+//                        } catch (Exception e) {
+//                            // Silently ignore errors in regexps since they can come from the user
+//                        }
+//                        break;
+//                    case CASE_INSENSITIVE_PREFIX:
+//                        if (!in.regionMatches(true, 0, textForQuery, 0, textForQuery.length())) {
+//                            continue;
+//                        }
+//                        break;
+//                    case PREFIX:
+//                        if (!in.regionMatches(false, 0, textForQuery, 0, textForQuery.length())) {
+//                            continue;
+//                        }
+//                        break;
+//                    case EXACT_NAME:
+//                        if (!in.equalsIgnoreCase(textForQuery)) {
+//                            continue;
+//                        }
+//                    }
+//                }
+//                result.add(new JsSymbolDescriptor(m, helper));
+//            }
+//        } else {
+//            for (IndexedClass cls : classes) {
+//                result.add(new JsSymbolDescriptor(cls, helper));
+//            }
+//        }
+
+        return result;
+    }
+
+// TODO - rename to SymbolDescriptor or JsDescriptor
+    private class JsSymbolDescriptor extends Descriptor {
         private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
@@ -238,11 +357,12 @@ public class JsTypeSearcher implements TypeSearcher {
         private boolean isLibrary;
         private static final String ICON_PATH = "org/netbeans/modules/javascript/editing/javascript.png"; //NOI18N
         
-        public JsTypeDescriptor(IndexedElement element, Helper helper) {
+        public JsSymbolDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
             this.helper = helper;
         }
 
+        @Override
         public Icon getIcon() {
             if (projectName == null) {
                 initProjectInfo();
@@ -253,10 +373,12 @@ public class JsTypeSearcher implements TypeSearcher {
             return helper.getIcon(element);
         }
 
+        @Override
         public String getTypeName() {
             return element.getName();
         }
 
+        @Override
         public String getProjectName() {
             if (projectName == null) {
                 initProjectInfo();
@@ -292,20 +414,23 @@ public class JsTypeSearcher implements TypeSearcher {
             }
         }
         
+        @Override
         public Icon getProjectIcon() {
             if (projectName == null) {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+                return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
             }
             return projectIcon;
         }
 
+        @Override
         public FileObject getFileObject() {
             return element.getFileObject();
         }
 
+        @Override
         public void open() {
             CompilationInfo[] infoRet = new CompilationInfo[1];
             Node node = AstUtilities.getForeignNode(element, infoRet);
@@ -316,7 +441,7 @@ public class JsTypeSearcher implements TypeSearcher {
                 if (lexOffset == -1) {
                     lexOffset = 0;
                 }
-                NbUtilities.open(element.getFileObject(), lexOffset, element.getName());
+                GsfUtilities.open(element.getFileObject(), lexOffset, element.getName());
                 return;
             }
             
@@ -336,6 +461,7 @@ public class JsTypeSearcher implements TypeSearcher {
             helper.open(fileObject, element);
         }
 
+        @Override
         public String getContextName() {
             // XXX This is lame - move formatting logic to the goto action!
             StringBuilder sb = new StringBuilder();
@@ -344,46 +470,32 @@ public class JsTypeSearcher implements TypeSearcher {
             String fqn = element.getIn() != null ? element.getIn() + "." + element.getName() : element.getName();
             if (element.getName().equals(fqn)) {
                 fqn = null;
-            }
-            if (fqn != null/* || require != null*/) {
-                sb.append(" (");
-                if (fqn != null) {
-                    sb.append(fqn);
+                String url = element.getFilenameUrl();
+                if (url != null) {
+                    return url.substring(url.lastIndexOf('/')+1);
                 }
-//                if (require != null) {
-//                    if (fqn != null) {
-//                        sb.append(" ");
-//                    }
-//                    sb.append("in ");
-//                    sb.append(require);
-//                    sb.append(".rb");
-//                }
-                sb.append(")");
-                return sb.toString();
-            } else {
-                return null;
             }
+
+            return fqn;
         }
 
         public ElementHandle getElement() {
             return element;
         }
 
+        @Override
         public int getOffset() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public String getSimpleName() {
             return element.getName();
         }
 
+        @Override
         public String getOuterName() {
             return null;
         }
-
-    }
-
-    public String getMimetype() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 }

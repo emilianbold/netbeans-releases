@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3">
+<Form version="1.4" maxVersion="1.4">
   <NonVisualComponents>
     <Container class="javax.swing.JPanel" name="selector">
 
@@ -67,6 +67,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="categoryTitle">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="categoryList"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_CategoryTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -83,6 +86,11 @@
               <Properties>
                 <Property name="selectionMode" type="int" value="0"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_Category" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="categoryListValueChanged"/>
               </Events>
@@ -100,6 +108,11 @@
               <Properties>
                 <Property name="selectionMode" type="int" value="0"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_Format" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="formatListValueChanged"/>
               </Events>
@@ -108,6 +121,9 @@
         </Container>
         <Component class="javax.swing.JLabel" name="formatTitle">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="formatList"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_FormatTitle" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
@@ -115,12 +131,20 @@
         </Component>
         <Component class="javax.swing.JLabel" name="formatLabel">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="formatField"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_Format" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="formatField">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_Format2" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
           <Events>
             <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="formatFieldFocusLost"/>
           </Events>
@@ -147,8 +171,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="previewField" max="32767" attributes="2"/>
-                          <Component id="exampleCombo" alignment="0" pref="6" max="32767" attributes="2"/>
+                          <Component id="previewField" pref="20" max="32767" attributes="2"/>
+                          <Component id="exampleCombo" alignment="0" pref="20" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="formatButton" min="-2" max="-2" attributes="0"/>
@@ -179,9 +203,17 @@
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_Preview" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JLabel" name="previewLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="previewField"/>
+                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_Preview" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -191,6 +223,11 @@
               <Properties>
                 <Property name="editable" type="boolean" value="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_ValueToFormat" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="exampleComboItemStateChanged"/>
               </Events>
@@ -201,12 +238,20 @@
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_Test" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="ACSD_FormatSelector_Test" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="formatButtonActionPerformed"/>
               </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="exampleLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="exampleCombo"/>
+                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/form/editors/Bundle.properties" key="LBL_FormatSelector_ValueToFormat" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -219,7 +264,9 @@
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>

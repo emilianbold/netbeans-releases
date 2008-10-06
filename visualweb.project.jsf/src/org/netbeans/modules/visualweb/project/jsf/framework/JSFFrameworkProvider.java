@@ -242,7 +242,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        Project project = (webModule == null) ? null : FileOwnerQuery.getOwner(webModule.getDeploymentDescriptor());
+        Project project = null;
+        if (webModule != null) {
+            FileObject dd = webModule.getDeploymentDescriptor();
+            if (dd != null) {
+                project = FileOwnerQuery.getOwner(dd);
+            }
+        }
         panel = new JSFConfigurationPanel(this, project, controller, !defaultValue);
 
         // Default Bean Package
@@ -359,19 +365,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             filter.setFilterClass("com.sun.rave.web.ui.util.UploadFilter"); // NOI18N
                     
                         contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
-                        contextParam.setDescription("The maximum allowed upload size in bytes.  If this is set " +
-                                "to a negative value, there is no maximum.  The default " +
-                                "value is 1000000."); // NOI18N
+                        contextParam.setDescription(NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_MAX_SIZE"));
                         contextParam.setParamName("maxSize"); // NOI18N
                         contextParam.setParamValue("1000000"); // NOI18N
                         filter.addInitParam(contextParam);
                         
                         contextParam = (InitParam)filter.createBean("InitParam"); // NOI18N
-                        contextParam.setDescription("The size (in bytes) of an uploaded file which, if it is " +
-                                "exceeded, will cause the file to be written directly to " +
-                                "disk instead of stored in memory.  Files smaller than or " +
-                                "equal to this size will be stored in memory.  The default " +
-                                "value is 4096."); // NOI18N
+                        contextParam.setDescription(NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_SIZE_THRESHOLD"));
                         contextParam.setParamName("sizeThreshold"); // NOI18N
                         contextParam.setParamValue("4096"); // NOI18N
                         filter.addInitParam(contextParam);

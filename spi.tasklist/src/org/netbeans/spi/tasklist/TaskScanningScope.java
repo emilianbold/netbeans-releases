@@ -42,6 +42,8 @@
 package org.netbeans.spi.tasklist;
 
 import java.awt.Image;
+import java.util.Map;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -87,7 +89,14 @@ public abstract class TaskScanningScope implements Iterable <FileObject>, Lookup
      * @return Display name used for Task List's popup menu, cannot be null.
      */
     final String getDisplayName() {
-        return displayName;
+        String res = null;
+        Map<String,String> labels = getLookup().lookup(Map.class);
+        if( null != labels ) {
+            res = labels.get(AbstractAction.NAME);
+        }
+        if( null == res )
+            res = displayName;
+        return res;
     }
     
     /**
@@ -95,7 +104,14 @@ public abstract class TaskScanningScope implements Iterable <FileObject>, Lookup
      * @return Long description (e.g. for tooltip)
      */
     final String getDescription() {
-        return description;
+        String res = null;
+        Map<String,String> labels = getLookup().lookup(Map.class);
+        if( null != labels ) {
+            res = labels.get(AbstractAction.SHORT_DESCRIPTION);
+        }
+        if( null == res )
+            res = description;
+        return res;
     }
     
     /**

@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Utilities;
 
@@ -64,9 +65,12 @@ public class KillableProcess extends Process {
 
     private final File directory;
 
-    public KillableProcess(Process nativeProcess, File directory) {
+    private final String command;
+
+    public KillableProcess(Process nativeProcess, File directory, String command) {
         this.nativeProcess = nativeProcess;
         this.directory = directory;
+        this.command = command;
     }
 
     @Override
@@ -81,15 +85,22 @@ public class KillableProcess extends Process {
                             "get", "processid,commandline" }; // NOI18N
 
         WindowsExecutor executor = new WindowsExecutor("wmic.exe",
-                Utilities.escapeParameters(params), directory.getName());
+                Utilities.escapeParameters(params), directory.getAbsolutePath(), command);
 
         Thread t = new Thread(executor);
         t.start();
 
+        boolean interrupted = Thread.interrupted();
         try {
-            t.join(TIMEOUT);
-        } catch (InterruptedException ex) {
-            LOGGER.log(Level.FINEST, null, ex);
+            try {
+                t.join(TIMEOUT);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.FINEST, null, ex);
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
 
         // kill running server using taskkill
@@ -97,7 +108,7 @@ public class KillableProcess extends Process {
 
         if (pidToKill != null) {
             WindowsExecutor killer = new WindowsExecutor(
-                    "taskkill.exe", "/F /PID " + pidToKill + " /T", null);
+                    "taskkill.exe", "/F /PID " + pidToKill + " /T", null, null);
 
             Thread tk = new Thread(killer);
             tk.start();
@@ -139,12 +150,15 @@ public class KillableProcess extends Process {
 
         private final String nameToFilter;
 
+        private final String commandToFilter;
+
         private String pid;
 
-        public WindowsExecutor(String cmd, String args, String nameToFilter) {
+        public WindowsExecutor(String cmd, String args, String nameToFilter, String commandToFilter) {
             this.cmd = cmd;
             this.args = args;
             this.nameToFilter = nameToFilter;
+            this.commandToFilter = commandToFilter;
         }
 
         public String getPid() {
@@ -174,15 +188,16 @@ public class KillableProcess extends Process {
                     return;
                 }
 
+                Pattern pattern = Pattern.compile(".*grails.bat(\\s+-D\\S*=\\S*)*\\s+"
+                        + Pattern.quote(commandToFilter) + "\\s+REM NB:" + Pattern.quote(nameToFilter)
+                        + ".*");
+
                 BufferedReader procOutput = new BufferedReader(
                         new InputStreamReader(utilityProcess.getInputStream()));
                 try {
                     String errString;
                     while ((errString = procOutput.readLine()) != null) {
-
-                        String regEx = ".*grails.bat +run-app +REM NB:" + nameToFilter + ".*"; // NOI18N
-
-                        if (errString.matches(regEx)) {
+                        if (pattern.matcher(errString).matches()) {
                             String nbTag = "REM NB:" + nameToFilter; // NOI18N
                             int idx = errString.indexOf(nbTag);
                             idx = idx + nbTag.length();

@@ -80,7 +80,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     private IOManager               ioManager;
     private GdbDebugger             debugger;
     private ContextProvider         contextProvider;
-    private Object                  lock = new Object();
+    private final Object            lock = new Object();
 
     
     public BreakpointOutput(ContextProvider contextProvider) {

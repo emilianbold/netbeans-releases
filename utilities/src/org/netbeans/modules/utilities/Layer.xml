@@ -80,7 +80,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="url">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-url-URLDataLoader.instance"/>
+                    <file name="org-netbeans-modules-url-URLDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.utilities.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
@@ -153,7 +155,9 @@ made subject to such option by the copyright holder.
         <folder name="application">
             <folder name="pdf">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-pdf-PDFDataLoader.instance"/>
+                    <file name="org-netbeans-modules-pdf-PDFDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.utilities.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
@@ -230,7 +234,13 @@ made subject to such option by the copyright holder.
         </folder> <!-- Edit -->
 
         <folder name="System">
-            <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+            <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
+               <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+               <attr name="delegate" newvalue="org.netbeans.modules.openfile.OpenFileAction"/>
+               <attr name="displayName" bundlevalue="org.netbeans.modules.openfile.Bundle#LBL_openFile"/>
+               <attr name="iconBase" stringvalue="org/netbeans/modules/openfile/openFile.png"/>
+               <attr name="noIconInMenu" boolvalue="true"/>
+            </file>
             <file name="org-netbeans-modules-openfile-RecentFileAction.instance"/>
         </folder> <!-- System -->
 
@@ -257,8 +267,9 @@ made subject to such option by the copyright holder.
         
         <folder name="File">
             <!-- position of OpenFileAction defined in projects/ui module -->
-            <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
+            <file name="org-netbeans-modules-openfile-OpenFileAction.shadow">
                 <attr name="position" intvalue="800"/>
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-OpenFileAction.instance"/>
             </file>
             <file name="org-netbeans-modules-openfile-RecentFileAction.instance">
                 <attr name="position" intvalue="900"/>
@@ -351,7 +362,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">       <!-- "output" is defined in core/ui -->
                 <file name="search-results.wstcref" url="../search/res/search-results.wstcref">
-                    <attr name="position" intvalue="1000"/>
+                    <attr name="position" intvalue="1900"/>
                 </file>
             </folder>
         </folder>

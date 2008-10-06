@@ -44,7 +44,6 @@ import com.sun.source.util.TreePath;
 import org.netbeans.api.java.source.CompilationInfo;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.java.hints.errors.ChangeType;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -146,7 +145,21 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "Change type of o to CharSequence",
                 "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> l = null; CharSequence o = l.get(0);}}");
     }
+
+    public void testToAnonymousType120619() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo() {Strin|g d = new Runnable() {public void run() {}};}}",
+                       "Change type of d to Runnable",
+                       "package test; public class Test {public void foo() {Runnable d = new Runnable() {public void run() {}};}}");
+    }
     
+    /**
+     * change to &lt;nulltype&gt; should not be offered
+     */
+    public void test141664() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {char x = |null;}}");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
         List<Fix> fixes = new ChangeType().run(info, null, pos, path, null);
         List<Fix> result=  new LinkedList<Fix>();

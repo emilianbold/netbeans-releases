@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
 import java.awt.Color;
@@ -59,8 +60,10 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
@@ -106,7 +109,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
     private PreferenceChangeListener prefListener;
     private Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
-    private Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
+    private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
     private JPDADebugger debugger;
     
     public DebuggingMonitorModel(ContextProvider lookupProvider) {
@@ -136,31 +139,44 @@ NodeActionsProviderFilter, TableModel, Constants {
                 try {
                     ObjectVariable contended = t.getContendedMonitor ();
                     ObjectVariable[] owned;
-                    boolean noFrameMonitors = false;
                     List<MonitorInfo> mf = t.getOwnedMonitorsAndFrames();
+                    List<Monitor> ownedMonitors;
                     if (mf.size() > 0) {
-                        List<ObjectVariable> mlf = new ArrayList<ObjectVariable>();
+                        ownedMonitors = new ArrayList<Monitor>();
                         for (MonitorInfo m: mf) {
                             if (m.getFrame() == null) {
-                                mlf.add(m.getMonitor());
+                                ownedMonitors.add(new Monitor(m.getMonitor(), m.getFrame(), debugger));
                             }
                         }
-                        owned = mlf.toArray(new ObjectVariable[0]);
-                        noFrameMonitors = true;
+                        owned = null;
                     } else {
                         owned = t.getOwnedMonitors ();
+                        ownedMonitors = null;
                     }
                     ContendedMonitor cm = null;
                     OwnedMonitors om = null;
-                    if ( (contended != null) &&
-                         (from  == 0) && (to > 0)
-                    ) cm = new ContendedMonitor (contended);
-                    if ( (owned.length > 0) &&
+                    if (contended != null &&
+                        (from  == 0) && (to > 0)) {
+                        CallStackFrame f = null;
+                        try {
+                            CallStackFrame[] frames = t.getCallStack(0, 1);
+                            if (frames != null && frames.length == 1) {
+                                f = frames[0];
+                            }
+                        } catch (AbsentInformationException aiex) {}
+                        cm = new ContendedMonitor (contended, f, debugger);
+                    }
+                    if (ownedMonitors != null && ownedMonitors.size() > 0 &&
+                         ( ((contended != null) && (from < 2) && (to > 1)) ||
+                           ((contended == null) && (from == 0) && (to > 0)))) {
+                        om = new OwnedMonitors(ownedMonitors.toArray(new Monitor[] {}));
+                    }
+                    if (owned != null && (owned.length > 0) &&
                          ( ((contended != null) && (from < 2) && (to > 1)) ||
                            ((contended == null) && (from == 0) && (to > 0))
-                         )
-                    ) om = new OwnedMonitors (owned);
-                    if (om != null) om.noFrame = noFrameMonitors;
+                         )) {
+                        om = new OwnedMonitors (owned);
+                    }
                     int i = 0;
                     if (cm != null) i++;
                     if (om != null) i++;
@@ -205,8 +221,15 @@ NodeActionsProviderFilter, TableModel, Constants {
         if (o instanceof OwnedMonitors) {
             OwnedMonitors om = (OwnedMonitors) o;
             Object[] fo = new Object [to - from];
-            System.arraycopy (om.variables, from, fo, 0, to - from);
+            if (om.monitors != null) {
+                System.arraycopy (om.monitors, from, fo, 0, to - from);
+            } else {
+                System.arraycopy (om.variables, from, fo, 0, to - from);
+            }
             return fo;
+        }
+        if (o instanceof Monitor) {
+            return model.getChildren (((Monitor) o).variable, from, to);
         }
         if (o instanceof CallStackFrame) {
             if (preferences.getBoolean(SHOW_MONITORS, false)) {
@@ -217,11 +240,11 @@ NodeActionsProviderFilter, TableModel, Constants {
                     synchronized (framesAskedForMonitors) {
                         framesAskedForMonitors.add(frame);
                     }
-                    ObjectVariable[] ch = new ObjectVariable[n];
+                    Monitor[] ms = new Monitor[n];
                     for (int i = 0; i < n; i++) {
-                        ch[i] = monitors.get(i).getMonitor();
+                        ms[i] = new Monitor(monitors.get(i).getMonitor(), frame, debugger);
                     }
-                    return ch;
+                    return ms;
                 }
             } else {
                 synchronized (framesAskedForMonitors) {
@@ -260,7 +283,15 @@ NodeActionsProviderFilter, TableModel, Constants {
             );
         }*/
         if (o instanceof OwnedMonitors) {
-            return ((OwnedMonitors) o).variables.length;
+            OwnedMonitors om = (OwnedMonitors)o;
+            if (om.monitors != null) {
+                return om.monitors.length;
+            } else {
+                return om.variables.length;
+            }
+        }
+        if (o instanceof Monitor) {
+            return model.getChildrenCount(((Monitor) o).variable);
         }
         return model.getChildrenCount (o);
     }
@@ -274,6 +305,9 @@ NodeActionsProviderFilter, TableModel, Constants {
             return false;
         if (o instanceof ContendedMonitor)
             return true;
+        if (o instanceof Monitor) {
+            return true;
+        }
         if (o instanceof ObjectVariable)
             return true;
         if (o instanceof CallStackFrame) {
@@ -295,8 +329,15 @@ NodeActionsProviderFilter, TableModel, Constants {
     UnknownTypeException {
         if (o instanceof ContendedMonitor) {
             ObjectVariable v = ((ContendedMonitor) o).variable;
+            Field field = ((ContendedMonitor) o).field;
+            String varName;
+            if (field == null) {
+                varName = v.getType();
+            } else {
+                varName = field.getName();
+            }
             String monitorText = java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
-                    "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { v.getType(), v.getValue() });
+                    "CTL_MonitorModel_Column_ContendedMonitor"), new Object [] { varName, v.getValue() });
             Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
@@ -312,14 +353,27 @@ NodeActionsProviderFilter, TableModel, Constants {
         if (o instanceof OwnedMonitors) {
             return NbBundle.getBundle(DebuggingMonitorModel.class).getString("CTL_MonitorModel_Column_OwnedMonitors");
         } else
-        if (o instanceof ObjectVariable) {
-            ObjectVariable v = (ObjectVariable) o;
+        if (o instanceof Monitor || o instanceof ObjectVariable) {
+            ObjectVariable v;
+            String varName;
+            if (o instanceof Monitor) {
+                v = ((Monitor) o).variable;
+                Field field = ((Monitor) o).field;
+                if (field == null) {
+                    varName = v.getType();
+                } else {
+                    varName = field.getName();
+                }
+            } else {
+                v = (ObjectVariable) o;
+                varName = v.getType();
+            }
             String monitorText = java.text.MessageFormat.format(NbBundle.getBundle(DebuggingMonitorModel.class).getString(
-                    "CTL_MonitorModel_Column_Monitor"), new Object [] { v.getType(), v.getValue() });
+                    "CTL_MonitorModel_Column_Monitor"), new Object [] { varName, v.getValue() });
             Set nodesInDeadlock = DebuggingNodeModel.getNodesInDeadlock(debugger);
             if (nodesInDeadlock != null) {
                 synchronized (nodesInDeadlock) {
-                    if (nodesInDeadlock.contains(o)) {
+                    if (nodesInDeadlock.contains(v)) {
                         monitorText = BoldVariablesTableModelFilterFirst.toHTML(
                                 monitorText,
                                 false, false, Color.RED);
@@ -344,7 +398,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 throw (UnknownTypeException) shortDescription;
             }
         }
-        
+
         // Called from AWT - we need to postpone the work...
         evaluationRP.post(new Runnable() {
             public void run() {
@@ -362,7 +416,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                 if (o instanceof OwnedMonitors) {
                     shortDescription = "";
                 } else
-                if (o instanceof ObjectVariable) {
+                if (o instanceof Monitor || o instanceof ObjectVariable) {
                     /*
                     ObjectVariable v = (ObjectVariable) o;
                     try {
@@ -431,6 +485,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         if (o instanceof OwnedMonitors) {
             return new Action [0];
         } else
+        if (o instanceof Monitor) {
+            return new Action [0];
+        } else
         if (o instanceof ObjectVariable) {
             return new Action [0];
         } else
@@ -445,6 +502,9 @@ NodeActionsProviderFilter, TableModel, Constants {
         if (o instanceof OwnedMonitors) {
             return;
         } else
+        if (o instanceof Monitor) {
+            return;
+        }
         if (o instanceof ObjectVariable) {
             return;
         } else
@@ -458,6 +518,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     UnknownTypeException {
         if (node instanceof OwnedMonitors ||
             node instanceof ContendedMonitor ||
+            node instanceof Monitor ||
             node instanceof ObjectVariable) {
             
             if (columnID == THREAD_STATE_COLUMN_ID)
@@ -472,6 +533,7 @@ NodeActionsProviderFilter, TableModel, Constants {
     UnknownTypeException {
         if (node instanceof OwnedMonitors ||
             node instanceof ContendedMonitor ||
+            node instanceof Monitor ||
             node instanceof ObjectVariable) {
             
             if (columnID == THREAD_STATE_COLUMN_ID || 
@@ -489,21 +551,65 @@ NodeActionsProviderFilter, TableModel, Constants {
     
     
     // innerclasses ............................................................
-    
-    static class OwnedMonitors {
-        ObjectVariable[] variables;
-        boolean noFrame; // If true, these are monitors which are not part of a concrete frame.
+
+    private static class Monitor {
+        ObjectVariable variable;
+        Field field;
         
-        OwnedMonitors (ObjectVariable[] vs) {
-            variables = vs;
+        Monitor (ObjectVariable variable, CallStackFrame f, JPDADebugger debugger) {
+            this.variable = variable;
+            setVarInfo(variable, f, debugger);
+        }
+
+        private void setVarInfo(ObjectVariable v, CallStackFrame f, JPDADebugger debugger) {
+            ObjectVariable t = f.getThisVariable();
+            long uid = v.getUniqueID();
+            // Test static fields
+            List<JPDAClassType> classes = debugger.getClassesByName(f.getClassName());
+            if (classes != null && classes.size() > 0) {
+                List<Field> fields = classes.get(0).staticFields();
+                for (Field field : fields) {
+                    if (field instanceof ObjectVariable &&
+                        uid == ((ObjectVariable) field).getUniqueID()) {
+                        this.field = field;
+                        return ;
+                    }
+                }
+            }
+            while (t != null) {
+                Field[] fields = t.getFields(0, t.getFieldsCount());
+                for (Field field : fields) {
+                    if (field instanceof ObjectVariable &&
+                        uid == ((ObjectVariable) field).getUniqueID()) {
+                        this.field = field;
+                        return ;
+                    }
+                }
+                // Not found, repeat for outer object:
+                t = (ObjectVariable) t.getField("this$0");
+            }
+        }
+    }
+
+    static class OwnedMonitors {
+        Monitor[] monitors;         // If set, these are monitors with frame information
+        ObjectVariable[] variables; // If set, these are monitors which are not part of a concrete frame.
+        
+        OwnedMonitors (ObjectVariable[] variables) {
+            this.variables = variables;
+            this.monitors = null;
+        }
+
+        OwnedMonitors (Monitor[] monitors) {
+            this.monitors = monitors;
+            this.variables = null;
         }
     }
     
-    private static class ContendedMonitor {
-        ObjectVariable variable;
+    private static class ContendedMonitor extends Monitor {
         
-        ContendedMonitor (ObjectVariable v) {
-            variable = v;
+        ContendedMonitor (ObjectVariable v, CallStackFrame f, JPDADebugger d) {
+            super(v, f, d);
         }
     }
 
@@ -541,7 +647,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         if (node instanceof OwnedMonitors) {
             return OWNED_MONITORS;
         } else
-        if (node instanceof ObjectVariable) {
+        if (node instanceof ObjectVariable || node instanceof Monitor) {
             return MONITOR;
         } else
         return model.getIconBaseWithExtension(node);

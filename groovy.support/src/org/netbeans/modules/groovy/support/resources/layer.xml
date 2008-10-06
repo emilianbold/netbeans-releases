@@ -2,60 +2,67 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="OptionsDialog">
-        <folder name="Groovy">
-            <attr name="position" intvalue="240"/>
+        <folder name="Advanced">
             <file name="org-netbeans-modules-groovy-support-api-GroovySettings.instance"/>
-        </folder>
-        <file name="org-netbeans-modules-groovy-support-options-GroovyOptionsCategory.instance">
-            <attr name="position" intvalue="1200"/>
-        </file>
-    </folder>
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="x-groovy">
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-groovy-support-RunScriptAction.instance">
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                </folder>
-            </folder>
         </folder>
     </folder>
     <folder name="Templates">
         <folder name="Groovy">
-            <attr name="position" intvalue="260"/>
+            <attr name="position" intvalue="1350"/>
             <file name="GroovyScript.groovy" url="GroovyScript.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="110"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyScript.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
             </file>
             <file name="GroovyClass.groovy" url="GroovyClass.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.support.wizard.GroovyFileWizardIterator.create"/>
-                <attr name="position" intvalue="0"/>
+                <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyClass.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
             </file>
         </folder>
     </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
-                <file name="Groovy.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.customizer.GroovyCustomizer.create"/>
-                    <attr name="position" intvalue="150"/>
-                </file>
+                <folder name="BuildCategory">
+                    <file name="Groovy.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.customizer.GroovyCustomizer.create"/>
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                </folder>
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.GroovyLookupProvider.createJavaSE"/>
                 </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>                    
+                </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

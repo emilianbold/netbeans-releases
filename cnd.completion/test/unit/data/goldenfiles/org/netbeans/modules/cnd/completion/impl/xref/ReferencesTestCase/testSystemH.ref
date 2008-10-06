@@ -24,9 +24,9 @@
 ==============================================================
 'System', tokenID=identifier, offset=2252 [52:7/2252-52:13/2258]
 --OWNER:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'System', tokenID=identifier, offset=2273 [54:5/2273-54:11/2279]
 --OWNER:
@@ -44,7 +44,7 @@
 --OWNER:
     TYPE const &System TEXT=const System&  [55:12/2294-55:25/2307] ReferencesTestCase/system.h
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'obj', tokenID=identifier, offset=2308 [55:26/2308-55:29/2311]
 --OWNER:
@@ -56,7 +56,7 @@
 --OWNER:
     TYPE &Module TEXT=Module&  [57:5/2346-57:12/2353] ReferencesTestCase/system.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetModule', tokenID=identifier, offset=2354 [57:13/2354-57:22/2363]
 --OWNER:
@@ -80,7 +80,7 @@
 --OWNER:
     TYPE *Module TEXT=Module*  [58:20/2401-58:27/2408] ReferencesTestCase/system.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'module', tokenID=identifier, offset=2409 [58:28/2409-58:34/2415]
 --OWNER:
@@ -110,7 +110,7 @@
 --OWNER:
     TYPE $unresolved$::vector TEXT=vector<Module*>  [64:5/2507-64:21/2523] ReferencesTestCase/system.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'moduleList', tokenID=identifier, offset=2524 [64:22/2524-64:32/2534]
 --OWNER:
@@ -140,5 +140,5 @@
 --OWNER:
     VARIABLE  [67:39/2598-67:52/2611] ReferencesTestCase/system.h  TYPE: const &System TEXT=const System&  [67:39/2598-67:44/2603]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================

@@ -5,6 +5,7 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Ruby">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.samples.depot.resources.Bundle"/>
                     <attr name="position" intvalue="607"/>
                     <file name="DepotProject.zip" url="DepotProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.samples.depot.resources.Bundle"/>

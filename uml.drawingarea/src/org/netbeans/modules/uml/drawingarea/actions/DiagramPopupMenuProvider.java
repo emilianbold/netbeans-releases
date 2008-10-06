@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,6 +124,17 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
             // the popup menu action was invoked on one of the selected widgets
             else
             {
+                //handle null locallocation (case of popup invocation via key)
+                if(localLocation==null)
+                {
+                    //get left-top point of the widget with small shift about 5px or half of width/height
+                   Rectangle bnd=widget.getBounds();
+                   int x=Math.min(bnd.x+5, bnd.x+bnd.width/2);
+                   int y=Math.min(bnd.y+5, bnd.y+bnd.height/2);
+                   //may it have sense to consider always get center point?
+                   localLocation=new Point(x,y);
+                }
+                //
                 for (Object e : s.getSelectedObjects())
                 {
                     if (e instanceof IPresentationElement)
@@ -176,10 +188,13 @@ public class DiagramPopupMenuProvider implements PopupMenuProvider
 
                 lookup = new ProxyLookup(Utilities.actionsGlobalContext(), 
                                          Lookups.fixed(context.getContextItems()), 
-                                         Lookups.singleton(context));
+                                         Lookups.singleton(context),
+                                         widget.getLookup());
             } else
             {
-                lookup = Utilities.actionsGlobalContext();
+                //lookup = Utilities.actionsGlobalContext();
+                lookup = new ProxyLookup(Utilities.actionsGlobalContext(),
+                                         widget.getLookup());
             }
 
             return Utilities.actionsToPopup(actionArray, lookup);

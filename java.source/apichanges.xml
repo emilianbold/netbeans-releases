@@ -105,6 +105,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CodeStyle.getDefault">
+             <api name="general"/>
+             <summary>Better ways of getting CodeStyle instance</summary>
+             <version major="0" minor="39"/>
+             <date day="13" month="8" year="2008"/>
+             <author login="vstejskal"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="yes" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CodeStyle.getDefault(FileObject)</code>, <code>CodeStyle.getDefault(Document)</code>.
+                 Deprecated <code>CodeStyle.getDefault(Project)</code>.
+             </description>
+             <class package="org.netbeans.api.java.source" name="CodeStyle" />
+        </change>
         <change id="BuildArtifactMapper">
              <api name="general"/>
              <summary>Added BuildArtifactMapper</summary>

@@ -48,7 +48,8 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @author Martin Grebac
  */
 public enum TransportAttribute implements Attribute {
-        ENABLED("enabled");
+        ENABLED("enabled"),
+        PORT("port");
     
     private String name;
     private Class type;

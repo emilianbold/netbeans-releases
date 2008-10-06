@@ -48,7 +48,6 @@ import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.Container;
@@ -61,7 +60,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,10 +67,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -97,12 +93,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
-import org.openide.xml.XMLUtil;
 
 /** 
  * @author Petr Hrebejk
@@ -119,21 +115,24 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
     private GoToPanel panel;
     private Dialog dialog;
     private JButton okButton;
-    private final Collection<? extends SymbolProvider> typeProviders;    
+    private Collection<? extends SymbolProvider> typeProviders;    
     private final String title;
 
     /** Creates a new instance of OpenTypeAction */
     public GoToSymbolAction() {
-        this(
-            NbBundle.getMessage( GoToSymbolAction.class, "DLG_GoToSymbol"  ),            
-            Lookup.getDefault().lookupAll(SymbolProvider.class).toArray(new SymbolProvider[0])        
-        );
+        this(NbBundle.getMessage( GoToSymbolAction.class, "DLG_GoToSymbol"));
     }
     
-    public GoToSymbolAction(String title, SymbolProvider... typeProviders) {
+    public GoToSymbolAction(String title) {
         super( NbBundle.getMessage( GoToSymbolAction.class,"TXT_GoToSymbol")  );
         this.title = title;
-        this.typeProviders = Arrays.asList(typeProviders);
+    }
+    
+    private Collection<? extends SymbolProvider> getTypeProviders() {
+        if (typeProviders==null) {
+            typeProviders = Arrays.asList(Lookup.getDefault().lookupAll(SymbolProvider.class).toArray(new SymbolProvider[0]));
+        }
+        return typeProviders;
     }
     
     public void actionPerformed( ActionEvent e ) {
@@ -347,7 +346,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             GoToSymbolAction.this.dialog.dispose();
             GoToSymbolAction.this.dialog = null;
             //GoToTypeAction.this.cache = null;
-            for (SymbolProvider provider : typeProviders) {
+            for (SymbolProvider provider : getTypeProviders()) {
                 provider.cleanup();
             }
         }
@@ -424,7 +423,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             String[] message = new String[1];
             SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, nameKind);
             SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message);
-            for (SymbolProvider provider : typeProviders) {
+            for (SymbolProvider provider : getTypeProviders()) {
                 current = provider;
                 if (isCanceled) {
                     return null;
@@ -625,7 +624,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
+            jlName.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);

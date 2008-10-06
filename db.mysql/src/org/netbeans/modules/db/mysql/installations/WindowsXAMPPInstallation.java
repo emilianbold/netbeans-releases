@@ -51,7 +51,7 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class WindowsXAMPPInstallation implements Installation {
-    private static final String DEFAULT_BASE_PATH = "C:/xampp"; // NOI8N
+    private static final String DEFAULT_BASE_PATH = "C:/xampp"; // NOI18N
     private static final String START_PATH="/mysql_start.bat";
     private static final String STOP_PATH="/mysql_stop.bat";
     private static final String ADMIN_URL = "http://localhost/phpmyadmin";

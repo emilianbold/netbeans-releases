@@ -52,6 +52,7 @@ package org.netbeans.modules.uml.drawingarea.actions;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -88,6 +89,8 @@ import org.openide.util.Lookup;
  */
 public class SceneConnectProvider implements ExConnectProvider
 {
+    private static int eventID = 0;
+    
     private String defaultTargetType;
     private RelationValidator validator = new RelationValidator();
     private RelationshipFactory factory = null;
@@ -198,9 +201,6 @@ public class SceneConnectProvider implements ExConnectProvider
             GraphScene scene = (GraphScene) sourceWidget.getScene();
             IPresentationElement sourceElement = getElement(sourceWidget);
             IPresentationElement targetElement = getElement(targetWidget);
-
-
-            
             createConnection(scene, sourceElement, targetElement);
         }
     }
@@ -262,6 +262,13 @@ public class SceneConnectProvider implements ExConnectProvider
             }
             scene.validate();
         }
+
+        if(conn.size() > 0)
+        {
+            scene.setFocusedObject(conn.get(0));
+        }
+        HashSet < IPresentationElement > selected = new HashSet < IPresentationElement>(conn);
+        scene.userSelectionSuggested(selected, false);  
     }
 
     public boolean hasTargetWidgetCreator()
@@ -282,6 +289,9 @@ public class SceneConnectProvider implements ExConnectProvider
      *
      * @param targetScene The scene that will contain the node.  The scene must be a
      *                    GraphScene.
+     * @param sourceWidget The source end of the connection
+     * @param location the location of the new widget.  The coordinates are in 
+     *                 scene coordinates.
      * @return The new node that was created.
      */
     public Widget createTargetWidget(Scene targetScene, 
@@ -289,7 +299,7 @@ public class SceneConnectProvider implements ExConnectProvider
                                      Point location)
     {
         Widget retVal = null;
-
+        
         IPresentationElement sourceElement = getElement(sourceWidget);
         if ((targetScene instanceof DesignerScene) && (sourceElement != null))
         {
@@ -311,26 +321,40 @@ public class SceneConnectProvider implements ExConnectProvider
                     IPresentationElement element = createNodePresentationElement(namedElement);
                     retVal = scene.addNode(element);
                     
+                    // In order to check if the widget is able to fit in the 
+                    // container, the bounds needs to be resolved.
+                    retVal.setPreferredLocation(location);
+                    
+                    scene.validate();
+                    
+                    IDiagram diagram = scene.getDiagram();
+                    if (diagram != null)
+                    {
+                        INamespace space = diagram.getNamespaceForCreatedElements();
+                        space.addOwnedElement(namedElement);
+                    }
+
                     MoveDropTargetDropEvent dropEvent = new MoveDropTargetDropEvent(retVal, location);
                     WidgetDropTargetDropEvent event = new WidgetDropTargetDropEvent (1, dropEvent);
 
-                    if(processLocationOperator(scene, event, location) == false)
-                    {
-                        IDiagram diagram = scene.getDiagram();
-                        if (diagram != null)
-                        {
-                            INamespace space = diagram.getNamespaceForCreatedElements();
-                            space.addOwnedElement(namedElement);
-                        }
-                    }
+                    processLocationOperator(scene, event, location);
                 }
                 else
                 {
                     namedElement.delete();
                 }
             }
+         
+            // I do not know why we are making this call.  I am assuming it is
+            // to make sure that the widget will layout for the first time.
+            // Therefore I am first verifing that the widget is valid.
+            if(retVal != null)
+            {
+                retVal.getPreferredBounds();
+            }
+            scene.validate();
         }
-
+        
         return retVal;
     }
 
@@ -355,7 +379,7 @@ public class SceneConnectProvider implements ExConnectProvider
         }
 
         Point location = widget.getLocation();
-//        point.translate(-location.x, -location.y);
+        point.translate(-location.x, -location.y);
 
         Rectangle bounds = widget.getBounds();
         if ((bounds != null) && (bounds.contains(point) == true))

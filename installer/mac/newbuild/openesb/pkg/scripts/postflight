@@ -30,7 +30,7 @@ glassfish_dir=`pwd`
 # http://www.netbeans.org/issues/show_bug.cgi?id=125358
 # run the jbi core installer first - temporary solution 
 #mv "$glassfish_dir/addons/jbi-core-installer.jar" "$glassfish_dir/jbi-core-installer.jar"
-#/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java -jar "$glassfish_dir/jbi-core-installer.jar" "$glassfish_dir" install
+#`"$script_dir"/get_current_jdk.sh`/bin/java -jar "$glassfish_dir/jbi-core-installer.jar" "$glassfish_dir" install
 #rm "$glassfish_dir/jbi-core-installer.jar"
 
 ./bin/asadmin install-addon "$glassfish_dir/addons/jbi_components_installer.jar"

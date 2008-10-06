@@ -280,7 +280,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.4.1</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -315,6 +315,7 @@
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <package>org.netbeans.modules.xml.schema.ui.basic</package>
                 <package>org.netbeans.modules.xml.schema.ui.basic.spi</package>
                 <package>org.netbeans.modules.xml.schema.ui.nodes</package>

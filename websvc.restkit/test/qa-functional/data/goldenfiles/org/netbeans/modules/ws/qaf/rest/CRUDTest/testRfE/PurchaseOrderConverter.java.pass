@@ -1,9 +1,5 @@
 /*
- *  PurchaseOrderConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -12,14 +8,15 @@ package o.n.m.ws.qaf.rest.crud.converter;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.Date;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
-import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
-
+import javax.persistence.EntityManager;
+import o.n.m.ws.qaf.rest.crud.Customer;
+import o.n.m.ws.qaf.rest.crud.Product;
 
 /**
  *
@@ -31,9 +28,10 @@ public class PurchaseOrderConverter {
     private PurchaseOrder entity;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of PurchaseOrderConverter */
     public PurchaseOrderConverter() {
+        entity = new PurchaseOrder();
     }
 
     /**
@@ -47,6 +45,8 @@ public class PurchaseOrderConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getOrderNum() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getCustomerId();
+        getProductId();
     }
 
     /**
@@ -67,7 +67,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public Integer getOrderNum() {
-        return (expandLevel > 0) ? getEntity().getOrderNum() : null;
+        return (expandLevel > 0) ? entity.getOrderNum() : null;
     }
 
     /**
@@ -76,7 +76,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setOrderNum(Integer value) {
-        getEntity().setOrderNum(value);
+        entity.setOrderNum(value);
     }
 
     /**
@@ -86,7 +86,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public Short getQuantity() {
-        return (expandLevel > 0) ? getEntity().getQuantity() : null;
+        return (expandLevel > 0) ? entity.getQuantity() : null;
     }
 
     /**
@@ -95,7 +95,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setQuantity(Short value) {
-        getEntity().setQuantity(value);
+        entity.setQuantity(value);
     }
 
     /**
@@ -105,7 +105,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public BigDecimal getShippingCost() {
-        return (expandLevel > 0) ? getEntity().getShippingCost() : null;
+        return (expandLevel > 0) ? entity.getShippingCost() : null;
     }
 
     /**
@@ -114,7 +114,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setShippingCost(BigDecimal value) {
-        getEntity().setShippingCost(value);
+        entity.setShippingCost(value);
     }
 
     /**
@@ -124,7 +124,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public Date getSalesDate() {
-        return (expandLevel > 0) ? getEntity().getSalesDate() : null;
+        return (expandLevel > 0) ? entity.getSalesDate() : null;
     }
 
     /**
@@ -133,7 +133,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setSalesDate(Date value) {
-        getEntity().setSalesDate(value);
+        entity.setSalesDate(value);
     }
 
     /**
@@ -143,7 +143,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public Date getShippingDate() {
-        return (expandLevel > 0) ? getEntity().getShippingDate() : null;
+        return (expandLevel > 0) ? entity.getShippingDate() : null;
     }
 
     /**
@@ -152,7 +152,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setShippingDate(Date value) {
-        getEntity().setShippingDate(value);
+        entity.setShippingDate(value);
     }
 
     /**
@@ -162,7 +162,7 @@ public class PurchaseOrderConverter {
      */
     @XmlElement
     public String getFreightCompany() {
-        return (expandLevel > 0) ? getEntity().getFreightCompany() : null;
+        return (expandLevel > 0) ? entity.getFreightCompany() : null;
     }
 
     /**
@@ -171,7 +171,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setFreightCompany(String value) {
-        getEntity().setFreightCompany(value);
+        entity.setFreightCompany(value);
     }
 
     /**
@@ -182,8 +182,8 @@ public class PurchaseOrderConverter {
     @XmlElement
     public CustomerConverter getCustomerId() {
         if (expandLevel > 0) {
-            if (getEntity().getCustomerId() != null) {
-                return new CustomerConverter(getEntity().getCustomerId(), uri.resolve("customerId/"), expandLevel - 1, false);
+            if (entity.getCustomerId() != null) {
+                return new CustomerConverter(entity.getCustomerId(), uri.resolve("customerId/"), expandLevel - 1, false);
             }
         }
         return null;
@@ -195,7 +195,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setCustomerId(CustomerConverter value) {
-        getEntity().setCustomerId((value != null) ? value.resolveEntity() : null);
+        entity.setCustomerId((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -206,8 +206,8 @@ public class PurchaseOrderConverter {
     @XmlElement
     public ProductConverter getProductId() {
         if (expandLevel > 0) {
-            if (getEntity().getProductId() != null) {
-                return new ProductConverter(getEntity().getProductId(), uri.resolve("productId/"), expandLevel - 1, false);
+            if (entity.getProductId() != null) {
+                return new ProductConverter(entity.getProductId(), uri.resolve("productId/"), expandLevel - 1, false);
             }
         }
         return null;
@@ -219,7 +219,7 @@ public class PurchaseOrderConverter {
      * @param value the value to set
      */
     public void setProductId(ProductConverter value) {
-        getEntity().setProductId((value != null) ? value.resolveEntity() : null);
+        entity.setProductId((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -247,8 +247,11 @@ public class PurchaseOrderConverter {
      */
     @XmlTransient
     public PurchaseOrder getEntity() {
-        if (entity == null) {
-            entity = new PurchaseOrder();
+        if (entity.getOrderNum() == null) {
+            PurchaseOrderConverter converter = UriResolver.getInstance().resolve(PurchaseOrderConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -258,11 +261,15 @@ public class PurchaseOrderConverter {
      *
      * @return an resolved entity
      */
-    public PurchaseOrder resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(PurchaseOrder.class, entity.getOrderNum());
-        } else {
-            return (PurchaseOrder) UriResolver.getInstance().resolve(PurchaseOrderConverter.class, uri);
+    public PurchaseOrder resolveEntity(EntityManager em) {
+        Customer customerId = entity.getCustomerId();
+        if (customerId != null) {
+            entity.setCustomerId(em.getReference(Customer.class, customerId.getCustomerId()));
         }
+        Product productId = entity.getProductId();
+        if (productId != null) {
+            entity.setProductId(em.getReference(Product.class, productId.getProductId()));
+        }
+        return entity;
     }
 }

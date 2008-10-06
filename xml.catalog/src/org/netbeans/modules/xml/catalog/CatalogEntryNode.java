@@ -154,10 +154,8 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
      * Provide <code>ViewCookie</code>. Always provide same instance for
      * entry until its system ID changes.
      */
-    public Node.Cookie getCookie(Class clazz) {
-        
-        if (ViewCookie.class.equals(clazz)) {
-            
+    public Node.Cookie getCookie(Class clazz) {        
+        if (ViewCookie.class.equals(clazz)) {            
             try {
                 String sys = getSystemID();
                 if (sys == null) return null;
@@ -167,8 +165,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
                     ViewEnv env = new ViewEnv(getPublicID(), sys);
                     view = new ViewCookieImpl(env);
                 }
-                return view;                
-                
+                return view;
             } catch (MalformedURLException ex) {
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.notify(ErrorManager.INFORMATIONAL, ex);
@@ -177,8 +174,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
                 ErrorManager emgr = ErrorManager.getDefault();
                 emgr.notify(ErrorManager.INFORMATIONAL, ex);                
                 return null;
-            }
-            
+            }            
         } else {
             return super.getCookie(clazz);
         }
@@ -199,7 +195,10 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
     }
     
     public String getShortDescription() {
-        return getSystemID();
+        String displayName = getPublicID();
+        if(displayName.startsWith("SCHEMA:")) //NOI18N
+            displayName = displayName.substring("SCHEMA:".length()); //NOI18N
+        return displayName;
     }
 
     public void destroy() throws IOException {
@@ -230,7 +229,12 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
         
         protected java.lang.String messageToolTip() {
-            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            //return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            //return "hello there";
+            String publicID = getPublicID();
+            if(publicID.startsWith("SCHEMA:")) //NOI18N
+                publicID = publicID.substring("SCHEMA:".length()); //NOI18N
+            return publicID;
         }
 
         protected java.lang.String messageOpening() {

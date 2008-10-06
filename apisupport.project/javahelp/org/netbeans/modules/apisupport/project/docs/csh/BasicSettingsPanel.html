@@ -5,6 +5,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Window Component Wizard: Basic Settings</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -18,32 +19,31 @@
   <p>In the Basic Settings page, you have to set the following: 
 <ul>
 	<li><b>Window Position.</b> Specifies the location of the window component when open in the IDE.
-	 Choose one of the following:
+	 Depending on the modules installed
+         in the platform that forms the basis
+         of your application, you're able
+         to choose from several window positions,
+         including the following:
 	 <ul>
-		 <li><tt>output.</tt> The default position of the IDE's Output window.
-		 <li><tt>explorer.</tt> The default position of the IDE's Projects window.
-		 <li><tt>editor.</tt> The default position of the IDE's Source Editor.
-		 <li><tt>properties.</tt> The default position of the IDE's Properties window. This is
-		 on the right side of the Source Editor.
-		 <li><tt>leftSlidingSide.</tt> The window component will be available as a button
-		  on the left sidebar of the IDE.
-		 <li><tt>rightSlidingSide.</tt>  The window component will be available as a button
-		  on the right sidebar of the IDE. 
 		 <li><tt>bottomSlidingSide.</tt>  The window component will be available as a button
 		  on the bottom bar of the IDE. 
-	  </ul>
-	  <p>For standalone modules and for modules that belong to a module suite which includes
-	  the <tt>ide8</tt> cluster in the Module List,
-	  the following positions are also available:
- 	<ul>
-		<li><tt>commonpalette.</tt> The default position of the IDE's Palette for HTML/JSP code snippets.
+		 <li><tt>commonpalette.</tt> The default position of the IDE's Palette for HTML/JSP code snippets.
 		 <li><tt>debugger.</tt> The default position of the IDE's Debugger.
+		 <li><tt>editor.</tt> The default position of the IDE's Source Editor.
+		 <li><tt>explorer.</tt> The default position of the IDE's Projects window.
+		 <li><tt>leftSlidingSide.</tt> The window component will be available as a button
+		  on the left sidebar of the IDE.
 		 <li><tt>navigator.</tt> The default position of the IDE's Navigator.
+		 <li><tt>output.</tt> The default position of the IDE's Output window.
+		 <li><tt>properties.</tt> The default position of the IDE's Properties window.
+		 <li><tt>rightSlidingSide.</tt>  The window component will be available as a button
+		 on the right side of the Source Editor.
 	  </ul>
 	<li><b>Open on Application Start.</b> Specifies whether the window component is open
 	 by default or not.
-	<li><b>Keep preferred size when slided-in.</b> Specifies the size of the
-         window when minimized. When selected, the following line is added
+	<li><b>Keep preferred size when slided-in.</b> Specifies that the size of the
+         window when minimized will be determined by the preferred size propery of the
+         window. When selected, the following line is added
          to the TopComponent's constructor:
          <tt>putClientProperty("netbeans.winsys.tc.keep_preferred_size_when_slided_in", Boolean.TRUE);</tt>
 

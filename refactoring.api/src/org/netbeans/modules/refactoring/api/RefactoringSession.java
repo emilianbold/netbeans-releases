@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -93,6 +95,8 @@ public final class RefactoringSession {
      * @return instance of Problem or null, if everything is OK
      */
     public Problem doRefactoring(boolean saveAfterDone) {
+        long time = System.currentTimeMillis();
+        
         Iterator it = internalList.iterator();
         fireProgressListenerStart(0, internalList.size()+1);
         if (realcommit) {
@@ -129,6 +133,11 @@ public final class RefactoringSession {
                 undoManager.transactionEnded(false);
                 realcommit=false;
             }
+        }
+        Logger timer = Logger.getLogger("TIMER.RefactoringSession");
+        if (timer.isLoggable(Level.FINE)) {
+            time = System.currentTimeMillis() - time;
+            timer.log(Level.FINE, "refactoringSession.doRefactoring", new Object[] { description, RefactoringSession.this, time } );
         }
         return null;
     }

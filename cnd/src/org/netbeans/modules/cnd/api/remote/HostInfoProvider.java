@@ -41,27 +41,41 @@ package org.netbeans.modules.cnd.api.remote;
 import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.util.Lookup;
 
 /**
  * Interface for a remote host information utility provider which can/will be implemented in another module.
  *
  * @author gordonp
+ * @author Sergey Grinev
  */
 public abstract class HostInfoProvider {
 
     /**
-     * This function returns path mapper for the host stated by key
+     * This function returns path mapper for the host stated by hkey
      */
-    public abstract PathMap getMapper(String key);
+    public abstract PathMap getMapper(String hkey);
 
     /**
-     * This function returns system environment for the host stated by key
+     * This function returns PlatformTypes constant representing remote host platform
      */
-    public abstract Map<String, String> getEnv(String key);
+    public abstract int getPlatform(String hkey);
 
-    public abstract boolean fileExists(String key, String path);
+    /**
+     * This function returns system environment for the host stated by hkey
+     */
+    public abstract Map<String, String> getEnv(String hkey);
+
+    /**
+     * Validates file existence
+     */
+    public abstract boolean fileExists(String hkey, String path);
     
+    /**
+     * Returns dir where libraries are located
+     */
+    public abstract String getLibDir(String hkey);
     
     /** Static method to obtain the provider.
      * @return the resolver
@@ -88,32 +102,58 @@ public abstract class HostInfoProvider {
         }
 
         @Override
-        public PathMap getMapper(String key) {
-            if (CompilerSetManager.LOCALHOST.equals(key)) {
+        public PathMap getMapper(String hkey) {
+            if (RemoteUtils.isLocalhost(hkey)) {
                 return local;
             } else if (provider != null) {
-                return provider.getMapper(key);
+                return provider.getMapper(hkey);
             } else {
-                throw new IllegalArgumentException();
+                throw getRE();
             }
         }
 
         @Override
-        public Map<String, String> getEnv(String key) {
-            if (CompilerSetManager.LOCALHOST.equals(key)) {
+        public Map<String, String> getEnv(String hkey) {
+            if (RemoteUtils.isLocalhost(hkey)) {
                 return System.getenv();
             } else if (provider != null) {
-                return provider.getEnv(key);
+                return provider.getEnv(hkey);
             } else {
-                throw new IllegalArgumentException();
+                throw getRE();
+            }
+        }
+        
+        @Override
+        public String getLibDir(String hkey) {
+            if (RemoteUtils.isLocalhost(hkey)) {
+                return null;
+            } else if (provider != null) {
+                return provider.getLibDir(hkey);
+            } else {
+                throw getRE();
             }
         }
         
         private static PathMap local = new LocalPathMap();
 
+        @Override
+        public int getPlatform(String hkey) {
+            if (RemoteUtils.isLocalhost(hkey)) {
+                return CompilerSetManager.computeLocalPlatform();
+            } else if (provider != null) {
+                return provider.getPlatform(hkey);
+            } else {
+                throw getRE();
+            }
+        }
+        
+        private static RuntimeException getRE() {
+            return new RuntimeException("No HostInfoProvider able to handle remote host was found"); //NOI18N
+        }
+
         private static class LocalPathMap implements PathMap {
 
-            public boolean isRemote(String path) {
+            public boolean isRemote(String path, boolean fixMissingPath) {
                 return false;
             }
 
@@ -127,11 +167,11 @@ public abstract class HostInfoProvider {
         }
 
         @Override
-        public boolean fileExists(String key, String path) {
-            if (CompilerSetManager.LOCALHOST.equals(key)) {
+        public boolean fileExists(String hkey, String path) {
+            if (CompilerSetManager.LOCALHOST.equals(hkey)) {
                 return new File(path).exists();
             } else if (provider != null) {
-                return provider.fileExists(key, path);
+                return provider.fileExists(hkey, path);
             } else {
                 throw new IllegalArgumentException();
             }

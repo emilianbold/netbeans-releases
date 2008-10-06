@@ -43,16 +43,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
-import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
+import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -66,11 +70,16 @@ public class NestedType extends TypeImpl {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.parentType = parent;
     }
+    
+    public NestedType(CsmType parent, CsmType type) {
+        super(type);
+        this.parentType = parent;
+    }
 
     @Override
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
-        if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
+        if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
@@ -81,8 +90,8 @@ public class NestedType extends TypeImpl {
                 } else {
                     parentClassifier = parentType.getClassifier();
                 }
-                if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable)parentClassifier).isValid()) {
-                    CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
+                if (CsmBaseUtilities.isValid(parentClassifier)) {
+                    MemberResolverImpl memberResolver = new MemberResolverImpl(parent);
                     Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, getOwnText());
                     if (iter.hasNext()) {
                         classifier = iter.next();
@@ -106,25 +115,19 @@ public class NestedType extends TypeImpl {
         List res = new ArrayList();
         if (parentType instanceof NestedType) {
             res.addAll(((NestedType)parentType).getFullQName());
-        } else if (parentType != null) {
-            res.add(getOwnText((TypeImpl)parentType));
+        } else if (parentType instanceof TypeImpl) {
+            res.add(((TypeImpl)parentType).getOwnText());
+        } else if (parentType instanceof TemplateParameterTypeImpl) {
+            res.add(((TemplateParameterTypeImpl)parentType).getOwnText());
         }
         res.add(getOwnText());
         return res;
     }
 
-    private CharSequence getOwnText() {
-        return getOwnText(this);
+    /*package local*/ CsmType getParent() {
+        return parentType;
     }
-
-    private static CharSequence getOwnText(TypeImpl type) {
-        if (type.qname != null && type.qname.length>0) {
-            return type.qname[type.qname.length-1];
-        } else {
-            return "";
-        }
-    }
-
+    
     /*
      * Classifier text should contain specialization of the parent classifier
      */
@@ -134,6 +137,31 @@ public class NestedType extends TypeImpl {
             return parentType.getClassifierText().toString() + getInstantiationText(parentType) + "::" + classifierText; // NOI18N
         } else {
             return "::" + classifierText; // NOI18N
+        }
+    }
+
+    @Override
+    public boolean isInstantiation() {
+        return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
+    }
+
+    @Override
+    public boolean isTemplateBased() {
+        return isTemplateBased(new HashSet<CsmType>());
+    }
+
+    @Override
+    public boolean isTemplateBased(Set<CsmType> visited) {
+        if (parentType instanceof SafeTemplateBasedProvider) {
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            return ((SafeTemplateBasedProvider)parentType).isTemplateBased(visited);
+        } else if (parentType != null && parentType.isTemplateBased()) {
+            return true;
+        } else {
+            return super.isTemplateBased(visited);
         }
     }
 

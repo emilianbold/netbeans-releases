@@ -187,7 +187,8 @@ public class ProjectCreator {
         }
         String target = "Default"; // NOI18N
 
-        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE);
+        // TODO: create localhost based project
+        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, CompilerSetManager.LOCALHOST);
         String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
@@ -363,7 +364,7 @@ public class ProjectCreator {
 
     //copy from one file with specified URL to another
     private void copyURLFile(String resource, String toFile) throws IOException {
-        String fromURL = "nbresloc:"+resource;
+        String fromURL = "nbresloc:"+resource; // NOI18N
         InputStream is = null;
         try {
             URL url = new URL(fromURL);
@@ -433,10 +434,10 @@ public class ProjectCreator {
 
     private void createAdditionalRequiredProjects(Project project, String displayName, 
             Set<String> folders, Set<String> libraries){
-        if (displayName.indexOf(".sources")>0 ||
-            displayName.indexOf(".libraries")>0 ||
-            displayName.indexOf(".uts")>0 ||
-            displayName.indexOf(".commands")>0) {
+        if (displayName.indexOf(".sources")>0 || // NOI18N
+            displayName.indexOf(".libraries")>0 || // NOI18N
+            displayName.indexOf(".uts")>0 || // NOI18N
+            displayName.indexOf(".commands")>0) { // NOI18N
             return;
         }
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -447,13 +448,13 @@ public class ProjectCreator {
             name = displayName.substring(displayName.lastIndexOf('.')+1);
         }
         Set<String> libs = new HashSet<String>();
-        if (name.equals("libc")){
-            libraries.remove("c");
+        if (name.equals("libc")){ // NOI18N
+            libraries.remove("c"); // NOI18N
         } else {
-            libraries.add("c");
+            libraries.add("c"); // NOI18N
         }
         for(String lib : libraries){
-           lib = "lib"+lib;
+           lib = "lib"+lib; // NOI18N
            String folder = null;
            for(String f: folders){
                if (f.endsWith("/"+lib)) { // NOI18N
@@ -465,8 +466,8 @@ public class ProjectCreator {
                //System.out.println("Not found "+lib+" for "+displayName); // NOI18N
                continue;
            }
-           String[] prj = workingDir.substring(workingDir.indexOf("/usr/src/")+9).split("/");
-           String[] lbr = folder.split("/");
+           String[] prj = workingDir.substring(workingDir.indexOf("/usr/src/")+9).split("/"); // NOI18N
+           String[] lbr = folder.split("/"); // NOI18N
            int start = 0;
            for(int i = 0; i < prj.length; i++){
                if(!prj[i].equals(lbr[i])){
@@ -476,13 +477,13 @@ public class ProjectCreator {
            }
            String res = "";
            for(int i = start; i < prj.length; i++){
-                res += "../";
+                res += "../"; // NOI18N
            }
            for(int i = start; i < lbr.length; i++){
                if (res.length()>0 && res.charAt(res.length()-1)=='/'){
                    res += lbr[i];
                } else {
-                   res += "/"+lbr[i];
+                   res += "/"+lbr[i]; // NOI18N
                }
            }
            libs.add(res);
@@ -505,15 +506,17 @@ public class ProjectCreator {
     }
 
     private void removeProjectDir(File dir) {
-	for(File file : dir.listFiles()){
-            if (file.isDirectory()){
-                removeProjectDir(file);
+        if (dir.exists() && dir.canRead() && dir.isDirectory()) {
+            for(File file : dir.listFiles()){
+                if (file.isDirectory()){
+                    removeProjectDir(file);
+                }
             }
+            for(File file : dir.listFiles()){
+                file.delete();
+            }
+            dir.delete();
         }
-	for(File file : dir.listFiles()){
-            file.delete();
-        }
-        dir.delete();
     }
 
 }

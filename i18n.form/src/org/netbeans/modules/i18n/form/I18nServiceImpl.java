@@ -210,7 +210,7 @@ public class I18nServiceImpl implements I18nService {
                     jrh.removeProperty(oldKey);
                     if (newI18nString != null)
                         newI18nString.allData = oldI18nString.allData;
-                }
+                    }
                 else if (localeSuffix != null && !localeSuffix.equals("")) { // NOI18N
                     // remember all locale data (to be able to undo adding new specific value to a locale)
                     oldI18nString.allData = allData;
@@ -227,6 +227,7 @@ public class I18nServiceImpl implements I18nService {
         if (newI18nString != null && newI18nString.getKey() != null) {
             // valid new value - make sure it is up-to-date in the properties file
             JavaResourceHolder rh = (JavaResourceHolder) newI18nString.getSupport().getResourceHolder();
+            String key = newI18nString.getKey();
 
             if (rh.getResource() == null) { // find or create properties file
                 DataObject propertiesDO = getPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
@@ -234,22 +235,33 @@ public class I18nServiceImpl implements I18nService {
                     propertiesDO = createPropertiesDataObject(srcDataObject.getPrimaryFile(), bundleName);
                     if (propertiesDO == null)
                         return;
+                } else if (oldI18nString == null && newI18nString.getValue() == null) {
+                    // if the value itself is null we actually want to update it from the properties file
+                    rh.setResource(propertiesDO);
+                    newI18nString.setValue(rh.getValueForKey(key));
+                    newI18nString.setComment(rh.getCommentForKey(key));
+                    return;
                 }
                 rh.setResource(propertiesDO);
 
                 // make sure we use free (unique) key
-                newI18nString.setKey(rh.findFreeKey(newI18nString.getKey()));
+                key = rh.findFreeKey(key);
+                newI18nString.setKey(key);
             }
 
             rh.setLocalization(localeSuffix);
-            String key = newI18nString.getKey();
             if (!isValueUpToDate(rh, newI18nString)) {
                 if (newI18nString.allData != null) { // restore complete data across all locales
                     rh.setAllData(key, newI18nString.allData);
                     newI18nString.allData = null;
-                    // update also the current value - might have come from a different locale
-                    newI18nString.setValue(rh.getValueForKey(key));
-                    newI18nString.setComment(rh.getCommentForKey(key));
+                    if (oldI18nString == null) {
+                        // update also the current value - might have come from a different locale
+                        newI18nString.setValue(rh.getValueForKey(key));
+                        newI18nString.setComment(rh.getCommentForKey(key));
+                    } else if (newI18nString.getValue() != null) {
+                        // besides changing place (key/file) there might also be a new value
+                        rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);
+                    }
                 }
                 else {
                     rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <method name="flickr.fakeMethod" needslogin="1">
+        <description>A fake method</description>
+        <response>xml-response-example</response>
+        <explanation>explanation of example response</explanation>
+        <arguments>
+            <argument name="api_key" optional="0">
+			You API application key.
+            </argument>
+            <argument name="color" optional="1">
+			Your favorite color.
+            </argument>
+        </arguments>
+        <errors>
+            <error code="1" message="Photo not found">
+			Full explanation...
+            </error>
+            <error code="100" message="Invalid API Key">
+			Full explanation...
+            </error>
+        </errors>
+    </method>
+</rsp>

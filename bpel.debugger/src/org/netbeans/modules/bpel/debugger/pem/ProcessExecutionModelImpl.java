@@ -527,6 +527,42 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                             
                             myCallStack.push(handlersPem);
                         } else {
+                            // If the call stack is empty, but the first event is not 
+                            // from the process node -- we need to manually rebuild
+                            // the 'pem' tree and add the stuff to the callstack.
+                            if (myRoot.getPsmEntity() != psmParent) {
+                                final PemEntityImpl pemChild = 
+                                        buildSyntheticEntities(myRoot, pemEntity);
+                                
+                                if (pemChild != null) {
+                                    if (pemChild.getPsmEntity().getTag().equals(
+                                            "faultHandlers")) {
+                                        addEventHandlersToParent(pemChild);
+                                    } else {
+                                        myRoot.addChild(pemChild);
+                                    }
+                                }
+                                
+                                PemEntityImpl current = pemChild;
+                                PemEntity[] currentChildren = current.getChildren();
+                                while ((current != null) && 
+                                        currentChildren.length != 0) {
+                                    
+                                    myCallStack.push(current);
+                                    
+                                    current = null;
+                                    
+                                    for (PemEntity temp: currentChildren) {
+                                        if (pemEntity.isInTree(temp)) {
+                                            current = (PemEntityImpl) temp;
+                                            currentChildren = current.getChildren();
+                                            
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
                             myRoot.addChild(pemEntity);
                         }
                     } else if (psmParent.getTag().equals("flow")) {

@@ -427,7 +427,7 @@ final class ModuleList implements Stamps.Updater {
         try {
             mgr.enable(modules);
         } catch (InvalidException ie) {
-            LOG.log(Level.WARNING, null, ie);
+            LOG.log(Level.INFO, null, ie);
             Module bad = ie.getModule();
             if (bad == null) throw new IllegalStateException();
             Set<Module> affectedModules = mgr.getModuleInterdependencies (bad, true, true);

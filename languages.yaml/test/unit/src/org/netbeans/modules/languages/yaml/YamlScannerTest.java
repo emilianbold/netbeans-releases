@@ -112,4 +112,76 @@ public class YamlScannerTest extends YamlTestBase {
     public void testErb3() throws Exception {
         checkStructure("testfiles/fixture3.yml");
     }
+
+    public void test143747a() throws Exception {
+        checkStructure("testfiles/unicode.yml");
+    }
+
+    public void testFolds1() throws Exception {
+        checkFolds("testfiles/test1.yaml");
+    }
+
+    public void testFolds2() throws Exception {
+        checkFolds("testfiles/test2.yaml");
+    }
+
+    public void testFolds3() throws Exception {
+        checkFolds("testfiles/test3.yaml");
+    }
+
+    public void testFolds4() throws Exception {
+        checkFolds("testfiles/test4.yaml");
+    }
+
+    public void testFolds5() throws Exception {
+        checkFolds("testfiles/test5.yaml");
+    }
+
+    public void testFolds6() throws Exception {
+        checkFolds("testfiles/test6.yaml");
+    }
+
+    public void testFolds7() throws Exception {
+        checkFolds("testfiles/test7.yaml");
+    }
+
+    public void testFolds8() throws Exception {
+        checkFolds("testfiles/test8.yaml");
+    }
+
+    public void testFolds9() throws Exception {
+        checkFolds("testfiles/test9.yaml");
+    }
+
+    public void testFolds10() throws Exception {
+        checkFolds("testfiles/test10.yaml");
+    }
+
+    public void testFolds11() throws Exception {
+        checkFolds("testfiles/test11.yaml");
+    }
+
+    public void testFoldsOmap() throws Exception {
+        checkFolds("testfiles/ordered.yaml");
+    }
+
+    public void testErb1Folds() throws Exception {
+        checkFolds("testfiles/fixture.yml");
+    }
+
+    public void testErb2Folds() throws Exception {
+        checkFolds("testfiles/fixture2.yml");
+    }
+
+    public void testErb3Folds() throws Exception {
+        checkFolds("testfiles/fixture3.yml");
+    }
+
+    public void test143747b() throws Exception {
+        checkFolds("testfiles/unicode.yml");
+    }
+
+    public void testUnicodePositions() throws Exception {
+        checkFolds("testfiles/unicode2.yml");
+    }
 }

@@ -36,16 +36,14 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -65,7 +63,10 @@ import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.diagrams.border.UMLRoundedBorder;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
@@ -76,29 +77,59 @@ import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
  *
  * @author Sheryl Su
  */
-public class CompositeStateWidget extends Widget
+public class CompositeStateWidget extends CompositeNodeWidget
 {
+
     private State state;
     private Scene scene;
     private Widget bodyWidget;
     private Widget tabWidget;
-    private boolean horizontal = true;
-    private LinkedHashSet<RegionWidget> regionWidgets = new LinkedHashSet<RegionWidget>();
+    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.HORIZONTAL;
+    private ArrayList<CompartmentWidget> regionWidgets = new ArrayList<CompartmentWidget>();
     private UMLNameWidget nameWidget;
     // variable to hold all region contained elements for discovering relationships after the all regions
     // are initialized
-    private ArrayList<IElement> elements = new ArrayList<IElement>(); 
+    private ArrayList<IElement> elements = new ArrayList<IElement>();
+    private IElementLocator locator = new ElementLocator();
 
-    public CompositeStateWidget(Scene scene, State state)
+    public CompositeStateWidget(Scene scene)
     {
         super(scene);
-        setForeground(null);
-        setBackground(null);
-        this.state = state;
         this.scene = scene;
-        init();
     }
-    
+
+
+    @Override
+    public void initializeNode(IPresentationElement presentation)
+    {
+        IElement element = presentation.getFirstSubject();
+        elements.clear();
+
+        if (element instanceof State && ((State) element).getIsComposite())
+        {
+            state = (State) presentation.getFirstSubject();
+            if (!isInitialized())
+            {
+                init();
+                Widget widget = new ViewWidget(scene);
+                widget.setLayout(LayoutFactory.createVerticalFlowLayout());
+                widget.addChild(tabWidget, 0);
+                widget.addChild(bodyWidget, 100);
+                setCurrentView(widget);
+                setIsInitialized(true);
+                setFont(getCurrentView().getFont());
+            } else
+            {
+                if (!PersistenceUtil.isDiagramLoading())
+                {
+                    initRegions();
+                    addRegionElements();
+                }
+            }
+        }
+        super.initializeNode(presentation);
+    }
+
     private void init()
     {
         nameWidget = new UMLNameWidget(scene, false, getWidgetID());
@@ -116,18 +147,13 @@ public class CompositeStateWidget extends Widget
         UMLRoundedBorder border = new UMLRoundedBorder(15, 15, 0, 0, null, Color.BLACK);
         bodyWidget.setBorder(border);
         bodyWidget.setMinimumSize(new Dimension(150, 80));
-        setHorizontalLayout(horizontal);
+        setOrientation(orientation);
         if (!PersistenceUtil.isDiagramLoading())
         {
             initRegions();
             addRegionElements();
         }
-        setLayout(LayoutFactory.createVerticalFlowLayout());
-        addChild(tabWidget, 0);
-        addChild(bodyWidget, 100);
-        
     }
-    
 
     public UMLNameWidget getNameWidget()
     {
@@ -135,34 +161,52 @@ public class CompositeStateWidget extends Widget
     }
 
     protected void initRegions()
-    {      
+    {
         List<IRegion> regions = state.getContents();
-        
+
         for (int i = 0; i < regions.size(); i++)
         {
             IRegion region = regions.get(i);
-            addRegion(region);
-//            for (IElement e: region.getElements())
-//            {
-//                if (!(e instanceof ITransition))
-//                    elements.add(e);                    
-//            }
+            boolean found = false;
+
+            for (CompartmentWidget rw : regionWidgets)
+            {
+                if (rw.getElement().equals(region))
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                addCompartment(region);
+            }
+        }
+
+        for (CompartmentWidget rw : regionWidgets)
+        {
+            if (!PersistenceUtil.isDiagramLoading())
+            {
+                rw.initContainedElements();
+            }
         }
     }
-    
+
     protected void addRegionElements()
     {
         List<IRegion> regions = state.getContents();
         for (IRegion region : regions)
         {
-            for (IElement e: region.getElements())
+            for (IElement e : region.getElements())
             {
                 if (!(e instanceof ITransition))
-                    elements.add(e);                    
+                {
+                    elements.add(e);
+                }
             }
         }
     }
-    
+
     private void updateConstraint()
     {
         RegionWidget[] regions = new RegionWidget[regionWidgets.size()];
@@ -181,22 +225,13 @@ public class CompositeStateWidget extends Widget
         }
         scene.validate();
     }
+
     
-    
-    public void removeRegion(RegionWidget widget)
+    public CompartmentWidget addCompartment(IElement element)
     {
-        regionWidgets.remove(widget);  
-        if (regionWidgets.isEmpty())
-        {
-            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
-            state.addContent(region);
-            addRegion(region);
-        }
-        updateConstraint();
-    }
-    
-    public void addRegion(IRegion region)
-    {   
+        assert element instanceof IRegion;
+        IRegion region = (IRegion)element;
+        
         RegionWidget regionWidget = new RegionWidget(scene, region, this);
 
         IPresentationElement pe = Util.createNodePresentationElement();
@@ -208,80 +243,67 @@ public class CompositeStateWidget extends Widget
         regionWidgets.add(regionWidget);
         bodyWidget.addChild(regionWidget);
 
+        setFont(getFont());
         updateConstraint();
+        updateSize();
+        return regionWidget;
     }
-    
+
+    private void updateSize()
+    {
+        setPreferredBounds(null);
+        setPreferredSize(null);
+        if (getBounds() != null)
+        {
+            setMinimumSize(getBounds().getSize());
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent event)
+    {
+        String propName = event.getPropertyName();
+
+        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        {
+            if (getNameWidget() instanceof PropertyChangeListener)
+            {
+                PropertyChangeListener listener = (PropertyChangeListener) getNameWidget();
+                listener.propertyChange(event);
+            }
+        }
+    }
+
     protected void updateName(PropertyChangeEvent event)
     {
         nameWidget.propertyChange(event);
     }
-    
-    private String getWidgetID()
-    {
-        return UMLWidget.UMLWidgetIDString.STATEWIDGET.toString();
-    }
 
-    public boolean isHorizontalLayout()
-    {      
-        return horizontal;
-    }
-    
-    public Collection<RegionWidget> getRegionWidgets()
-    {
-        return regionWidgets;
-    }
-    
-    public void setHorizontalLayout(boolean val)
-    {
-        horizontal = val;
-        if (horizontal)
-            bodyWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY,0));
-        else
-            bodyWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY,0));
-        
-        for (RegionWidget widget: regionWidgets)
-        {
-            widget.updateOrientation(horizontal);
-        }
-    }
-    
     public State getElement()
     {
         return state;
     }
-    
-    public void notifyAdded()
-    {
-        // discover relationships (inter or inner) after all regions are loaded
-        UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
-        relationshipD.discoverCommonRelations(elements);
-    }
 
-    IElementLocator locator = new ElementLocator();
-    
+
+    @Override
     public void load(NodeInfo nodeReader)
     {
         IElement elt = nodeReader.getModelElement();
         if (elt == null)
         {
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
-        }   
+        }
         if (elt != null && elt instanceof IState)
         {
-                String or = nodeReader.getProperties().get("Orientation").toString();
-                if (or.contains(SeparatorWidget.Orientation.VERTICAL.toString()))
-                        this.setHorizontalLayout(false);
-                else
-                    this.setHorizontalLayout(true);
-                
-                initRegions();
-                this.setPreferredLocation(nodeReader.getPosition());
-                this.setPreferredSize(nodeReader.getSize());
-                
-            }
+            String or = nodeReader.getProperties().get("Orientation").toString();
+            setOrientation(SeparatorWidget.Orientation.valueOf(or));
+            initRegions();
+            this.setPreferredLocation(nodeReader.getPosition());
+            this.setPreferredSize(nodeReader.getSize());
+
+        }
         if (elt != null && elt instanceof IRegion)
         {
-            RegionWidget regionW = findRegionWidget((IRegion) elt);
+            CompartmentWidget regionW = findCompartmentWidget(elt);
             if (regionW != null)
             {
                 //fix the size/location/properties
@@ -292,24 +314,77 @@ public class CompositeStateWidget extends Widget
             }
         }
     }
-    
-    private RegionWidget findRegionWidget(IRegion region)
+
+
+    public Collection<CompartmentWidget> getCompartmentWidgets()
     {
-        RegionWidget retVal = null;
-        if (region != null)
-        {
-            Collection<RegionWidget> list =  getRegionWidgets();
-            for (Iterator<RegionWidget> it = list.iterator(); it.hasNext();)
-            {
-                RegionWidget regionWidget = it.next();
-                if (regionWidget.getElement().equals(region))
-                {
-                    retVal = regionWidget;
-                    break;
-                }                
-            }
-        }        
-        return retVal;
+        return regionWidgets;
     }
 
+    public String getWidgetID()
+    {
+        return UMLWidget.UMLWidgetIDString.STATEWIDGET.toString();
+    }
+
+    public void removeCompartment(CompartmentWidget widget)
+    {
+        regionWidgets.remove(widget);
+        if (regionWidgets.isEmpty())
+        {
+            IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
+            state.addContent(region);
+            addCompartment(region);
+        }
+        updateConstraint();
+    }
+
+
+    // this main purpose of this class is to capture the moment to execute relationship discovery
+    // when all regions and their contained elements are created
+    private class ViewWidget extends Widget
+    {
+        public ViewWidget(Scene scene)
+        {
+            super(scene);
+            setForeground(null);
+            setBackground(null);
+            setFont(null);
+        }
+
+        public void notifyAdded()
+        {
+            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+            relationshipD.discoverCommonRelations(elements);
+        }
+    }
+
+    @Override
+    public String getContextPalettePath()
+    {
+        return "UML/context-palette/State";
+    }
+
+    @Override
+    public void setOrientation(SeparatorWidget.Orientation orientation)
+    {
+        this.orientation = orientation;
+ 
+        if (orientation == SeparatorWidget.Orientation.HORIZONTAL)
+        {
+            bodyWidget.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        } else
+        {
+            bodyWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        }
+        for (CompartmentWidget widget : regionWidgets)
+        {
+            widget.updateOrientation(orientation == SeparatorWidget.Orientation.HORIZONTAL);
+        }
+    }
+
+    @Override
+    public SeparatorWidget.Orientation getOrientation()
+    {
+        return orientation;
+    }
 }

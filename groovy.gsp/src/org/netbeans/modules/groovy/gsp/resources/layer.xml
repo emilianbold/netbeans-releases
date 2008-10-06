@@ -4,10 +4,11 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-gsp">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
                 <folder name="Factories">
                     <file name="org-netbeans-modules-groovy-gsp-loaders-GspDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -72,9 +73,10 @@
             <file name="_view.gsp" url="GspTemplate.gsp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
                 <attr name="position" intvalue="120"/>
-                <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspTemplate.html"/>
             </file>
         </folder>
     </folder>
@@ -84,6 +86,7 @@
             <folder name="x-gsp">
                 <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId.language"/>
@@ -91,7 +94,7 @@
                 </file>
                 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
                     <!-- This doesn't work right because most of the templates don't start with characters
                          that are identifiers
@@ -99,6 +102,14 @@
                     -->
                 </folder>
    
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
                 <!--
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-groovy-gsp-editor-GspCodeTemplateFilter$Factory.instance"/>
@@ -131,7 +142,6 @@
                     </folder>
                 </folder>
 
-                <file name="Settings.settings" url="GspOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.editor.GspKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.groovy.gsp.editor.GspKit"/>

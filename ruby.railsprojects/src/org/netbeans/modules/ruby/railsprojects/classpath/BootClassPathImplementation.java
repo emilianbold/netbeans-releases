@@ -62,7 +62,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
@@ -221,11 +220,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
                     result.add(ClassPathSupport.createResource(url));
                 }
-            }
-            
-            // Additional libraries - such as the JavaScript ones
-            for (URL url : LanguageRegistry.getInstance().getLibraryUrls()) {
-                result.add(ClassPathSupport.createResource(url));
             }
             
             resourcesCache = Collections.unmodifiableList (result);

@@ -42,6 +42,8 @@ package org.netbeans.modules.localhistory.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -51,19 +53,22 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public final class LocalHistoryOptionsController extends OptionsPanelController {
+public final class LocalHistoryOptionsController extends OptionsPanelController implements DocumentListener {
     
     private final LocalHistoryOptionsPanel panel;
 
     public LocalHistoryOptionsController() {
         panel = new LocalHistoryOptionsPanel();
+        panel.warningLabel.setVisible(false);
+        panel.daysTextField.getDocument().addDocumentListener(this);
     }   
         
     public void update() {        
         panel.daysTextField.setText(Long.toString(LocalHistorySettings.getInstance().getTTL()));
     }
 
-    public void applyChanges() {        
+    public void applyChanges() {
+        if(!isValid()) return;
         LocalHistorySettings.getInstance().setTTL(Integer.parseInt(panel.daysTextField.getText()));
     }
 
@@ -72,12 +77,14 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     }
 
     public boolean isValid() {
+        boolean valid = true;
         try {            
             Long.parseLong(panel.daysTextField.getText());
         } catch (NumberFormatException e) {
-            return false;
+            valid = false;
         }
-        return true;
+        panel.warningLabel.setVisible(!valid);
+        return valid;
     }
 
     public boolean isChanged() {       
@@ -101,4 +108,15 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
         // do nothing
     }
 
+    public void insertUpdate(DocumentEvent e) {
+       isValid();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+       isValid();
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+       isValid();
+    }
 }

@@ -78,7 +78,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
                 return declaration;
             }
         };
-        renderer.renderVariable(node, null, null);
+        renderer.renderVariable(node, null, null, false);
     }
 
     public CsmVariable getDeclaration() {
@@ -90,7 +90,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     }
 
     public CsmScope getScope() {
-        return declaration.getScope();
+        return (declaration == null) ? getContainingFile() : declaration.getScope();
     }
     
 }

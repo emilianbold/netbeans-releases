@@ -78,6 +78,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -369,7 +370,7 @@ public abstract class ExternalReferenceCreator<T extends Component>
             messageLabel.setIcon(null);
         } else {
             messageLabel.setText(msg);
-            messageLabel.setIcon(new ImageIcon(Utilities.loadImage(
+            messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
                     "org/netbeans/modules/xml/xam/ui/resources/error.gif"))); // NOI18N
         }
     }
@@ -552,6 +553,20 @@ public abstract class ExternalReferenceCreator<T extends Component>
                 set = new NodeSet(this);
                 set.add(erdn);
             }
+            String ns = null;
+            if (selected) {
+                // Have to collect the namespace value
+                // when the node is selected.
+                Model model = erdn.getModel();
+                if (model != null) {
+                    ns = getTargetNamespace(model);
+                }
+            }
+            // This will clear the field if the user has
+            // deselected the file, which is to prevent
+            // the user from being confused as to what
+            // the namespace field represents.
+            namespaceTextField.setText(ns);
             set.setSelected(selected);
             // Check if the current selection is valid.
             validateInput(erdn);

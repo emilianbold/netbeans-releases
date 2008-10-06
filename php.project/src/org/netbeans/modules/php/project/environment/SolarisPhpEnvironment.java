@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -79,7 +80,8 @@ final class SolarisPhpEnvironment extends PhpEnvironment {
                 // one htdocs is enough
                 String documentRoot = getFolderName(htDocs, projectName);
                 String url = getDefaultUrl(projectName);
-                roots.add(new DocumentRoot(documentRoot, url, roots.isEmpty() && htDocs.canWrite()));
+                String hint = NbBundle.getMessage(SolarisPhpEnvironment.class, "TXT_HtDocs");
+                roots.add(new DocumentRoot(documentRoot, url, hint, roots.isEmpty() && htDocs.canWrite()));
                 break;
             }
         }

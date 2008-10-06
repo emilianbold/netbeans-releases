@@ -158,7 +158,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.8</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -175,6 +175,7 @@ made subject to such option by the copyright holder.
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.core</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.db</code-name-base>
@@ -201,6 +202,17 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.text</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.core.output2</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javahelp</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
                 <test-type>

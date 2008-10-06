@@ -67,6 +67,12 @@ public abstract class AbstractUMLConnectionWidget extends UMLEdgeWidget
     {
         super(scene);
         
+        initLabelManager();
+        
+    }
+
+    protected void initLabelManager() 
+    {
         LabelManager labelManager = createLabelManager();
         if(labelManager != null)
         {
@@ -97,20 +103,6 @@ public abstract class AbstractUMLConnectionWidget extends UMLEdgeWidget
         {
             manager.propertyChange(evt);
         }
-    }
-    
-    @Override
-    protected void notifyAdded()
-    {
-        super.notifyAdded();
-        
-        if (getScene() instanceof ObjectScene)
-        {
-            ObjectScene scene = (ObjectScene) getScene();
-            IPresentationElement element = (IPresentationElement)scene.findObject(this);
-            initialize(element);
-        }
-
     }
     
     @Override

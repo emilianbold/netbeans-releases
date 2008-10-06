@@ -17,14 +17,31 @@
     
     <key>CFBundleShortVersionString</key>
     <string>@VERSION@</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>org.netbeans.ide</string> 
     
     <key>CFBundleSignature</key>
-    <string>????</string>
+    <string>NETB</string>
     
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     
     <key>CFBundleIconFile</key>
     <string>@ICONFILENAME@</string>
+
+    <key>CFBundleDocumentTypes</key>
+    <array>
+	<dict>
+		<key>CFBundleTypeName</key>
+		<string>public.shell-script</string>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>LSItemContentTypes</key>
+		<array>
+			<string>public.shell-script</string>
+		</array>
+	</dict>
+    </array>
   </dict>
 </plist>

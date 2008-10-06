@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
-    private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();    
+    private Map<Object/*getTokenTextKey(token)*/,Integer/*ttype*/> filter = new HashMap<Object,Integer>();
 
     // uncomment to use reduced memory
 //    private static final int BUFFERED_COUNT = 256;
@@ -67,7 +67,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //            int2Int[i] = null;
 //        }
 //    }
-    
+
     /**
      * Creates a new instance of APTBaseLanguageFilter
      */
@@ -77,17 +77,17 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     public TokenStream getFilteredStream(TokenStream origStream) {
         return new FilterStream(origStream);
     }
-   
-//    // do necessary initializations in derived classes by calling 
-//    // filter() method to fill up the filter    
+
+//    // do necessary initializations in derived classes by calling
+//    // filter() method to fill up the filter
 //    protected abstract void initialize();
-    
+
     /**
      * add token's key to be filtered
      * the token stream returned from getFilteredStream
      * will change the type of original token to new token type
      * if original token has the filtered textKey value
-     */  
+     */
     protected void filter(String text, int ttype) {
         Object textKey = APTUtils.getTextKey(text);
         // uncomment to use reduced memory
@@ -101,33 +101,129 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        filter.put(textKey, val);
         filter.put(textKey, new Integer(ttype));
     }
-    
+
     private Token onID(Token token) {
-        Integer newType = filter.get(APTUtils.getTokenTextKey(token));
+        Integer newType = filter.get(token.getText());
         if (newType != null) {
             int ttype = newType.intValue();
-            token = createKeyword(token, ttype);
+            token = new FilterToken((APTToken)token, ttype);
         }
-        return token;        
+        return token;
     }
-    
-    private Token createKeyword(Token token, int ttype) {
-        APTToken newToken = APTUtils.createAPTToken(token, ttype);
-        return newToken;
-    }
-    
+
     private final class FilterStream implements TokenStream {
         private TokenStream orig;
         public FilterStream(TokenStream orig) {
             this.orig = orig;
         }
-        
+
         public Token nextToken() throws TokenStreamException {
             Token token = orig.nextToken();
             if (token.getType() == APTTokenTypes.ID) {
                 token = onID(token);
             }
             return token;
-        }        
+        }
     }
+
+    /**
+     * A wrapper token that changes original token type
+     * and delegates the rest of the methods to original token.
+     */
+    private static class FilterToken implements APTToken {
+
+        private final APTToken origToken;
+        private int type;
+
+        public FilterToken(APTToken origToken, int type) {
+            this.origToken = origToken;
+            this.type = type;
+        }
+
+        public int getOffset() {
+            return origToken.getOffset();
+        }
+
+        public void setOffset(int o) {
+            origToken.setOffset(o);
+        }
+
+        public int getEndColumn() {
+            return origToken.getEndColumn();
+        }
+
+        public void setEndColumn(int c) {
+            origToken.setEndColumn(c);
+        }
+
+        public int getEndLine() {
+            return origToken.getEndLine();
+        }
+
+        public void setEndLine(int l) {
+            origToken.setEndLine(l);
+        }
+
+        public int getEndOffset() {
+            return origToken.getEndOffset();
+        }
+
+        public void setEndOffset(int o) {
+            origToken.setEndOffset(o);
+        }
+
+        public int getTextID() {
+            return origToken.getTextID();
+        }
+
+        public void setTextID(int id) {
+            origToken.setTextID(id);
+        }
+
+        public int getColumn() {
+            return origToken.getColumn();
+        }
+
+        public void setColumn(int c) {
+            origToken.setColumn(c);
+        }
+
+        public int getLine() {
+            return origToken.getLine();
+        }
+
+        public void setLine(int l) {
+            origToken.setLine(l);
+        }
+
+        public String getFilename() {
+            return origToken.getFilename();
+        }
+
+        public void setFilename(String name) {
+            origToken.setFilename(name);
+        }
+
+        public String getText() {
+            return origToken.getText();
+        }
+
+        public void setText(String t) {
+            origToken.setText(t);
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public void setType(int t) {
+            this.type = t;
+        }
+
+        @Override
+        public String toString() {
+            return "FilterToken: " + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
+        }
+    }
+
 }

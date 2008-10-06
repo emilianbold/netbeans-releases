@@ -179,19 +179,19 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     
     private void writeLicenses (InstallUnitWizardModel model) {
         goOverLicenses (model);
-        String content = "";
+        StringBuffer content = new StringBuffer ();
         for (String lic : license4plugins.keySet ()) {
-            String title = "";
+            StringBuffer title = new StringBuffer ();
             for (String plugin : license4plugins.get (lic)) {
-                title += (title.length () == 0 ? "" :
-                    NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Delimeter")) + plugin; // NOI18N
+                title.append ((title.length () == 0 ? "" :
+                    NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Delimeter")) + plugin); // NOI18N
             }
-            content += NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Head", title); // NOI18N
-            content += "\n"; // NOI18N
-            content += lic;
-            content += NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Separator"); // NOI18N
+            content.append (NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Head", title)); // NOI18N
+            content.append ("\n"); // NOI18N
+            content.append (lic);
+            content.append (NbBundle.getMessage (LicenseApprovalPanel.class, "LicenseApprovalPanel_tpLicense_Separator")); // NOI18N
         }
-        taLicenses.setText (content);
+        taLicenses.setText (content.toString ());
         taLicenses.setCaretPosition (0);
     }
 }

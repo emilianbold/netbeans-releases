@@ -44,7 +44,6 @@ import java.io.File;
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.Reference;
 import org.netbeans.modules.bpel.project.anttasks.util.PackageCatalogArtifacts;
 
 /**
@@ -70,12 +69,15 @@ public class CliGenerateCatalogDelegate extends Task {
     @Override
     public void execute() throws BuildException {
         if (this.mSourceDirectory == null) {
-            throw new BuildException("No directory is set for source files.");
+            throw new BuildException(
+                    "No directory is set for source files."); // NOI18N
         }
-        File sourceDirectory = new File(this.mSourceDirectory);
-        File buildDirectory = new File(this.mBuildDirectory);
         
-        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        final File sourceDirectory = new File(this.mSourceDirectory);
+        final File buildDirectory = new File(this.mBuildDirectory);
+        
+        //CommandlineBpelProjectXmlCatalogProvider.
+        //        getInstance().setSourceDirectory(this.mSourceDirectory);
         
         new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
     }

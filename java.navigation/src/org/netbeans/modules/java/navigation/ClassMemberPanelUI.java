@@ -202,7 +202,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     public FileObject getFileObject() {
-        return getRootNode().getDescritption().fileObject;
+        final ElementNode root = getRootNode();
+        if (root != null) {
+            return root.getDescritption().fileObject;
+        }
+        else {
+            return null;
+        }        
     }
     
     // FilterChangeListener ----------------------------------------------------
@@ -356,6 +362,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             Dimension compSize = getSize();
             Point res = new Point();
             Rectangle tooltipSrcRect = getToolTipSourceBounds( mouseLocation );
+            //May be null, prevent the NPE, nothing will be shown anyway.
+            if (tooltipSrcRect == null) {
+                tooltipSrcRect = new Rectangle();
+            }
 
             Point viewPosition = getViewport().getViewPosition();
             screenLocation.x -= viewPosition.x;

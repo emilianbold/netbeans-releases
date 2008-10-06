@@ -72,7 +72,7 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
         
         initAccessibility();
     }
-    
+
     /**
      */
     private void initAccessibility() {

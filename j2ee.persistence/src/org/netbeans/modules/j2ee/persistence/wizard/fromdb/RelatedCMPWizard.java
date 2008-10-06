@@ -57,11 +57,14 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,6 +104,8 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     private PersistenceGenerator generator;
     private RelatedCMPHelper helper;
     private ProgressPanel progressPanel;
+
+    private Project project;
     
     public static RelatedCMPWizard createForJPA() {
         return new RelatedCMPWizard(TYPE_JPA);
@@ -171,14 +176,18 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     }
     
     private WizardDescriptor.Panel[] createPanels() {
+        
+        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
+        String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey);
+        
         if (isCMP()) {
             return new WizardDescriptor.Panel[] {
-                    new DatabaseTablesPanel.WizardPanel(),
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
                     new EntityClassesPanel.WizardPanel(),
             };
         } else {
             return new WizardDescriptor.Panel[] {
-                    new DatabaseTablesPanel.WizardPanel(),
+                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
                     new EntityClassesPanel.WizardPanel(),
                     new MappingOptionsPanel.WizardPanel(),
             };
@@ -210,7 +219,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         panels = createPanels();
         Wizards.mergeSteps(wizardDescriptor, panels, createSteps());
         
-        Project project = Templates.getProject(wiz);
+        project = Templates.getProject(wiz);
         generator = createPersistenceGenerator(type);
         
         FileObject configFilesFolder = PersistenceLocation.getLocation(project);
@@ -219,9 +228,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         
         wiz.putProperty(PROP_HELPER, helper);
         wiz.putProperty(PROP_CMP, new Boolean(isCMP()));
-        
-        String wizardBundleKey = isCMP() ? "Templates/J2EE/RelatedCMP" : "Templates/Persistence/RelatedCMP"; // NOI18N
-        wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
         
         generator.init(wiz);
     }
@@ -234,10 +240,20 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         Component c = WindowManager.getDefault().getMainWindow();
         
         // create the pu first if needed
-        if (helper.getPersistenceUnit() != null){
+        if (helper.getPersistenceUnit() != null) {
+            
+            //Only add library for Hibernate in NB 6.5
+            String providerClass = helper.getPersistenceUnit().getProvider();
+            if (providerClass.equals("org.hibernate.ejb.HibernatePersistence")) {
+                Library lib = LibraryManager.getDefault().getLibrary("hibernate-support"); //NOI18N
+                if (lib != null) {
+                    Util.addLibraryToProject(project, lib);
+                }
+            }
+
             try {
                 ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wiz));
-            } catch (InvalidPersistenceXmlException ipx){
+            } catch (InvalidPersistenceXmlException ipx) {
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
                 Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
@@ -314,7 +330,6 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     private void createBeans(TemplateWizard wiz, ProgressContributor handle) throws IOException {
         try {
             handle.start(1); //TODO: need the correct number of work units here 
-            Project project = Templates.getProject(wiz);
             handle.progress(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
             progressPanel.setText(NbBundle.getMessage(RelatedCMPWizard.class, "TXT_SavingSchema"));
             

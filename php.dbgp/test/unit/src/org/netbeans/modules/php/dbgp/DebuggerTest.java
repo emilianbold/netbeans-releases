@@ -291,7 +291,7 @@ public class DebuggerTest extends NbTestCase {
         DebuggerOptions dOptions = new DebuggerOptions();
         dOptions.debugForFirstPageOnly = true;
         ProcessBuilder processBuilder = null;
-        Semaphore semaphore = getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance());
+        Semaphore semaphore = getDebugger().debug(sessionId, DebuggerOptions.getGlobalInstance(), null);
         try {
             semaphore.acquire();
             String command = gePHPInterpreter();

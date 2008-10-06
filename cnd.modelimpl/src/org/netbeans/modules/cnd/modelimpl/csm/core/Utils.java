@@ -149,7 +149,21 @@ public class Utils {
         // Returned string should be differed from getCsmDeclarationKindkey()
         return "I"; // NOI18N
     }
-    
+
+    public static CharSequence[] getAllClassifiersUniqueNames(CharSequence uniqueName) {
+        CharSequence namePostfix = uniqueName.subSequence(1, uniqueName.length());
+        CharSequence out[] = new CharSequence[]
+                                {
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix
+                                };
+        return out;
+    }
+
     public static String getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
         // Returned string should be differed from getCsmIncludeKindkey()
 	switch( kind ) {

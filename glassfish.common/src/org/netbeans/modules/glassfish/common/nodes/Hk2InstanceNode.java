@@ -50,12 +50,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
+import org.netbeans.modules.glassfish.common.actions.ProfileAction;
 import org.netbeans.modules.glassfish.common.actions.PropertiesAction;
 import org.netbeans.modules.glassfish.common.actions.RemoveServerAction;
 import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.common.actions.ViewAdminConsoleAction;
+import org.netbeans.modules.glassfish.common.actions.ViewServerLogAction;
 import org.netbeans.modules.glassfish.common.actions.ViewUpdateCenterAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -146,11 +148,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     @Override
     public Action[] getActions(boolean context) {
-        // !PW Commented actions are place holders for when those features are available.
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
-//            SystemAction.get(ProfileAction.class),
+            SystemAction.get(ProfileAction.class),
             SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
@@ -158,7 +159,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             SystemAction.get(RemoveServerAction.class),
             null,
             SystemAction.get(ViewAdminConsoleAction.class),
-//            SystemAction.get(ViewServerLogAction.class),
+            SystemAction.get(ViewServerLogAction.class),
             SystemAction.get(ViewUpdateCenterAction.class),
             null,
             SystemAction.get(PropertiesAction.class)
@@ -176,10 +177,6 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
     //        return new Customizer(dataSup, new Hk2J2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
         return new javax.swing.JPanel();
     }
-
-//    public Hk2DeploymentManager getDeploymentManager() {
-//        return ((Hk2DeploymentManager) lookup.lookup(Hk2DeploymentManager.class));
-//    }
 
     @Override
     public Image getIcon(int type) {
@@ -205,6 +202,8 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             case RUNNING:
                 if(isDebug()) {
                     badge = ImageUtilities.loadImage(DEBUGGING_ICON);
+                } else if (isProfile()) {
+                    badge = ImageUtilities.loadImage(PROFILING_ICON);
                 } else {
                     badge = ImageUtilities.loadImage(RUNNING_ICON);
                 }
@@ -243,6 +242,11 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
                 serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
     }
     
+    private boolean isProfile() {
+        return GlassfishModule.PROFILE_MODE.equals(
+                serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
+    }
+
     private Map<String, String> getInstanceProperties() {
         Map<String, String> ip = null;
         GlassfishModule commonSupport = getLookup().lookup(GlassfishModule.class);
@@ -268,9 +272,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         
         Map<String, String> ip = getInstanceProperties();
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+        String adminPort = !"false".equals(System.getProperty("glassfish.useadminport")) ?
+            ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
         if(host != null && host.length() > 0) {
-            result = "http://" + host + ":" + httpPort;
+            result = "http://" + host + ":" + adminPort;
         }
         
         return result;

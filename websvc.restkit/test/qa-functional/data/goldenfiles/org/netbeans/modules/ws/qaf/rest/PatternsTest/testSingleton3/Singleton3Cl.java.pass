@@ -1,9 +1,5 @@
 /*
- *  Singleton3Cl
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,8 +10,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -27,7 +23,7 @@ import javax.ws.rs.ConsumeMime;
 public class Singleton3Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton3Cl */
     public Singleton3Cl() {
     }
@@ -37,7 +33,7 @@ public class Singleton3Cl {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("text/html")
+    @Produces("text/html")
     public String getHtml() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -49,7 +45,7 @@ public class Singleton3Cl {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("text/html")
+    @Consumes("text/html")
     public void putHtml(String content) {
     }
 }

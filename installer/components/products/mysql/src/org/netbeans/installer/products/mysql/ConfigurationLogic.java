@@ -65,6 +65,7 @@ import org.netbeans.installer.utils.helper.EnvironmentScope;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.RemovalMode;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.system.NativeUtils;
 import org.netbeans.installer.utils.system.UnixNativeUtils.FileAccessMode;
@@ -81,7 +82,6 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-
     private List<WizardComponent> wizardComponents;
 
     // constructor //////////////////////////////////////////////////////////////////
@@ -101,20 +101,147 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             installUnix(progress);
         }
 
-        final List<Product> ides =
-                Registry.getInstance().getProducts("nb-base");
-        for (Product ide : ides) {
-            // if the IDE was installed in the same session as the
-            // MySQL, we should add its "product id" to the IDE
-            if (ide.hasStatusChanged()) {
-                try {
-                    NetBeansUtils.addPackId(ide.getInstallationLocation(), PRODUCT_ID);
-                    break;
-                } catch (IOException e) {
-                    LogManager.log("Cannot update NetBeans productid with MySQL data", e);
+        Registry bundledRegistry = new Registry();
+        try {
+            final String bundledRegistryUri = System.getProperty(
+                    Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
+
+            bundledRegistry.loadProductRegistry(
+                    (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
+        } catch (InitializationException e) {
+            LogManager.log("Cannot load bundled registry", e);
+        }
+
+
+        try {
+            progress.setDetail(getString("CL.install.ide.integration")); // NOI18N
+
+            final List<Product> ides =
+                    Registry.getInstance().getProducts("nb-base");
+            List<Product> productsToIntegrate = new ArrayList<Product>();
+            for (Product ide : ides) {
+                if (ide.getStatus() == Status.INSTALLED) {
+                    LogManager.log("... checking if " + getProduct().getDisplayName() + " can be integrated with " + ide.getDisplayName() + " at " + ide.getInstallationLocation());
+                    final File ideLocation = ide.getInstallationLocation();
+                    if (ideLocation != null && FileUtils.exists(ideLocation) && !FileUtils.isEmpty(ideLocation)) {
+                        final Product bundledProduct = bundledRegistry.getProduct(ide.getUid(), ide.getVersion());
+                        if (bundledProduct != null) {
+                            //one of already installed IDEs is in the bundled registry as well - we need to integrate with it
+                            productsToIntegrate.add(ide);
+                            LogManager.log("... will be integrated since this produce is also bundled");
+                        } else {
+                            //check if this IDE is not integrated with any other MySQL instance - we need integrate with such IDE instance
+                            try {
+                                String path = NetBeansUtils.getJvmOption(ideLocation, MYSQL_START_COMMAND_PROPERTY);
+                                if (path == null || !FileUtils.exists(new File(path))) {
+                                    LogManager.log("... will be integrated since there it is not yet integrated with any instance or such an instance does not exist");
+                                    productsToIntegrate.add(ide);
+                                } else {
+                                    LogManager.log("... will not be integrated since it is already integrated with another instance at " + path);
+                                }
+                            } catch (IOException e) {
+                                LogManager.log(e);
+                            }
+                        }
+                    }
                 }
             }
+
+            for (Product productToIntegrate : productsToIntegrate) {
+                final File ideLocation = productToIntegrate.getInstallationLocation();
+                LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + ideLocation);
+                if (SystemUtils.isWindows()) {
+                    File netLocation = new File(SystemUtils.getEnvironmentVariable("SYSTEMROOT") + File.separator + "system32" + File.separator + "net.exe");
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_START_COMMAND_PROPERTY, 
+                            netLocation.getAbsolutePath(), true);
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_STOP_COMMAND_PROPERTY, 
+                            netLocation.getAbsolutePath(), true);
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_START_ARGS_PROPERTY,
+                            StringUtils.asString(new String[]{"start", MYSQL_SERVICE_NAME}, StringUtils.SPACE), true);
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_STOP_ARGS_PROPERTY, 
+                            StringUtils.asString(new String[]{"stop", MYSQL_SERVICE_NAME}, StringUtils.SPACE), true);
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_PORT_PROPERTY, 
+                            getProperty(MySQLPanel.PORT_PROPERTY));
+                } else {
+                    File daemon = new File(getProduct().getInstallationLocation(),
+                                MYSQL_SERVER_DAEMON_FILE_UNIX);
+                    if (!SystemUtils.isCurrentUserAdmin()) {
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_START_COMMAND_PROPERTY, daemon.getAbsolutePath(), true);
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_STOP_COMMAND_PROPERTY, daemon.getAbsolutePath(), true);
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_START_ARGS_PROPERTY, "start", true);
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_STOP_ARGS_PROPERTY, "stop", true);
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_PORT_PROPERTY,
+                                getProperty(MySQLPanel.PORT_PROPERTY));
+                    } else {
+                        File gksu = null;
+                        for(String s: POSSIBLE_GKSU_LOCATIONS) {
+                            File f = new File(s);
+                            if(FileUtils.exists(f)) {
+                                gksu = f;
+                                break;
+                            }
+                        }
+                        if(gksu==null) {
+                            //search in PATH
+                            for(String s : StringUtils.asList(SystemUtils.getEnvironmentVariable("PATH"), File.pathSeparator)) {
+                                if(s!=null && !s.equals(StringUtils.EMPTY_STRING)) {
+                                    File f = new File(s, "gksu");
+                                    if(FileUtils.exists(f)) {
+                                        gksu = f;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (gksu != null) {
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_START_COMMAND_PROPERTY, gksu.getAbsolutePath(), true);
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_STOP_COMMAND_PROPERTY, gksu.getAbsolutePath(), true);
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_START_ARGS_PROPERTY,
+                                    StringUtils.asString(new String[]{daemon.getAbsolutePath(), "start"}, StringUtils.SPACE), true);
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_STOP_ARGS_PROPERTY,
+                                    StringUtils.asString(new String[]{daemon.getAbsolutePath(), "stop"}, StringUtils.SPACE), true);
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_PORT_PROPERTY,
+                                    getProperty(MySQLPanel.PORT_PROPERTY));
+                        } else {
+                            LogManager.log("... gksu not available on the system, skipping MySQL integration");
+                        }
+                    }
+                }
+
+                // if the IDE was installed in the same session as the
+                // appserver, we should add its "product id" to the IDE
+                if (productToIntegrate.hasStatusChanged()) {
+                    NetBeansUtils.addPackId(
+                            ideLocation,
+                            PRODUCT_ID);
+                }
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.ide.integration"), // NOI18N
+                    e);
+        } catch (NativeException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.ide.integration"), // NOI18N
+                    e);
         }
+
+
         try {
             ClassLoader cl = getClass().getClassLoader();
             FileUtils.writeFile(new File(getProduct().getInstallationLocation(), NBGFMYSQL_LICENSE),
@@ -204,7 +331,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
-    private void fixSecuritySettingsWindows(File location) throws InstallationException {        
+    private void fixSecuritySettingsWindows(File location) throws InstallationException {
         if (!Boolean.parseBoolean(getProperty(MySQLPanel.ANONYMOUS_ACCOUNT_PROPERTY))) {
             query(location, REMOVE_ANONYMOUS_QUERY);
         }
@@ -214,7 +341,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     private void query(File location, String query) {
         final File exe = new File(location, MYSQL_EXE);
-        
+
 
         try {
             LogManager.log("... query : " + query);
@@ -241,12 +368,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log(e);
             }
             LogManager.logIndent("... query output: ");
-            LogManager.log(StreamUtils.readStream(p.getInputStream()));           
+            LogManager.log(StreamUtils.readStream(p.getInputStream()));
             LogManager.logUnindent("... query errorcode: " + p.exitValue());
             p.destroy();
         } catch (IOException e) {
             LogManager.log(e);
-        } 
+        }
     }
 
     private void installUnix(Progress progress) throws InstallationException {
@@ -369,17 +496,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File logFile = getLog("config");
 
         LogManager.log("... MySQL configuration log file : " + logFile);
-        String version =
-                getProduct().getVersion().getMajor() + StringUtils.DOT +
-                getProduct().getVersion().getMinor() + StringUtils.DOT +
-                getProduct().getVersion().getMicro();
+        //String version =
+        //        getProduct().getVersion().getMajor() + StringUtils.DOT +
+        //        getProduct().getVersion().getMinor() + StringUtils.DOT +
+        //        getProduct().getVersion().getMicro();
+        String version = MYSQL_INSTANCE_VERSION;
         List<String> commandsList = new ArrayList<String>();
 
         commandsList.add(configInstanceFile.getAbsolutePath());
         commandsList.add("-i");                             // -i  (install instance)        
 
         commandsList.add("-q");                             // -q  (be quiet)
-        //commandsList.add("-n" + PRODUCT_NAME);              // -n<product name>
 
         commandsList.add("-p" + installationLocation);      // -p<path of installation> (no \bin)
 
@@ -397,7 +524,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File targetConfigFile = new File(installationLocation, TARGET_CONFIGURATION_FILE);
         commandsList.add("-t" + template);
         commandsList.add("-c" + targetConfigFile);
-
+        commandsList.add("-n" + PRODUCT_NAME);              // -n<product name>
         // Use the following option to define the parameters for the config file generation.
         //
         // ServiceName=$
@@ -418,6 +545,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commandsList.add("ServerType=DEVELOPMENT");
         commandsList.add("DatabaseType=MIXED");
         commandsList.add("ConnectionUsage=DSS");
+        commandsList.add("Charset=utf8");
 
         if (Boolean.parseBoolean(getProperty(MySQLPanel.NETWORK_PROPERTY))) {
             commandsList.add("SkipNetworking=no");
@@ -563,15 +691,87 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public void uninstall(
             final Progress progress)
             throws UninstallationException {
-        File directory = getProduct().getInstallationLocation();
+        File location = getProduct().getInstallationLocation();
         if (SystemUtils.isWindows()) {
-            uninstallWindows(progress, directory);
+            uninstallWindows(progress, location);
         } else {
-            uninstallUnix(progress, directory);
+            uninstallUnix(progress, location);
+        }
+        
+                /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.uninstall.ide.integration")); // NOI18N
+
+            final List<Product> ides =
+                    Registry.getInstance().getProducts("nb-base");
+            for (Product ide: ides) {
+                if (ide.getStatus() == Status.INSTALLED) {
+                    LogManager.log("... checking if " + ide.getDisplayName() + " is integrated with " + getProduct().getDisplayName() + " installed at " + location);
+                    final File nbLocation = ide.getInstallationLocation();
+                    
+                    if (nbLocation != null) {
+                        LogManager.log("... ide location is " + nbLocation);
+                        boolean integrated = false;
+                        
+                        if(SystemUtils.isWindows()) {
+                            final String value = NetBeansUtils.getJvmOption(
+                                nbLocation, MYSQL_START_ARGS_PROPERTY);
+                            LogManager.log("... ide integrated with (start args): " + value);                        
+                            integrated = value!=null && value.contains(MYSQL_SERVICE_NAME);
+                        } else {                            
+                            if(SystemUtils.isCurrentUserAdmin()) {
+                                final String value = NetBeansUtils.getJvmOption(
+                                nbLocation, MYSQL_START_COMMAND_PROPERTY);
+                                LogManager.log("... ide integrated with: " + value);
+                                integrated = value!=null && FileUtils.exists(new File(value));
+                            } else {
+                                final String value = NetBeansUtils.getJvmOption(
+                                nbLocation, MYSQL_START_ARGS_PROPERTY);
+                                LogManager.log("... ide integrated with (start args): " + value);
+                                if(value!=null) {
+                                    List <String> args = StringUtils.asList(value, StringUtils.SPACE);
+                                    if(args.size()==2) {
+                                        integrated = FileUtils.exists(new File(args.get(0)));
+                                    }
+                                }                                
+                            }
+                        }
+                        if (integrated) {
+			    LogManager.log("... removing integration");
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_START_COMMAND_PROPERTY);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_STOP_COMMAND_PROPERTY);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_START_ARGS_PROPERTY);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_STOP_ARGS_PROPERTY);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_PORT_PROPERTY);
+                        }
+                    } else {
+                        LogManager.log("... ide location is null");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.ide.integration"), // NOI18N
+                    e);           
+        } catch (NativeException e) {
+            throw new UninstallationException(
+                    getString("CL.uninstall.error.ide.integration"), // NOI18N
+                    e);
         }
 
+        
         try {
-            FileUtils.deleteFile(new File(directory, "data"), true);
+            FileUtils.deleteFile(new File(location, "data"), true);
         } catch (IOException e) {
             LogManager.log(e);
         }
@@ -624,7 +824,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     }
 
     private void uninstallUnix(Progress progress, File location) throws UninstallationException {
-        
+
         final File uninstallScript = new File(location, "uninstall-mysql.sh");
         try {
             InputStream is = ResourceUtils.getResource(UNINSTALL_SCRIPT_UNIX,
@@ -636,7 +836,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             commandsList.add(uninstallScript.getAbsolutePath());
             commandsList.add(getProperty(MySQLPanel.PASSWORD_PROPERTY));
             ExecutionResults results = SystemUtils.executeCommand(location, commandsList.toArray(new String[0]));
-            if(results.getStdErr().contains("Check that mysqld is running")) {
+            if (results.getStdErr().contains("Check that mysqld is running")) {
                 LogManager.log("MySQL server is not running");
             } else if (results.getErrorCode() != 0) {
                 throw new UninstallationException(
@@ -792,9 +992,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String WIZARD_COMPONENTS_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX +
             "org/netbeans/installer/products/mysql/wizard.xml"; // NOI18N
-
     public static final String MYSQL_MSI_FILE_NAME =
-            "mysql-essential-5.0.51a-win32.msi";//NOI18N
+            "{mysql-msi-installer-name}";//NOI18N
+    public static final String MYSQL_INSTANCE_VERSION =
+            "{mysql-instance-version}";//NOI18N
     public static final String INSTANCE_CONFIGURATION_FILE =
             "bin/MySQLInstanceConfig.exe";
     public static final String MYSQL_INSTALLED_WINDOWS_PROPERTY =
@@ -830,7 +1031,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "MySQL50";
     private static final String START_MENU_SHORTCUT_LOCATION_PROPERTY =
             "start.menu.shortcut.location"; // NOI18N
-
     public static final String START_MYSQL_SHORTCUT_NAME =
             ResourceUtils.getString(ConfigurationLogic.class,
             "CL.shortcuts.start.mysql");
@@ -854,11 +1054,29 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     final public static String FLUSH_PRIVILEGES_QUERY =
             "FLUSH PRIVILEGES;";
     final public static String MYSQL_EXE = SystemUtils.isWindows() ? "bin/mysql.exe" : "bin/mysql";
-
     public static final String LEGAL_RESOURCE_PREFIX =
             "org/netbeans/installer/products/mysql/";
     public static final String NBGFMYSQL_LICENSE =
             "NB_GF_MySQL.txt";//NOI18N
     public static final String NBGFMYSQL_THIRDPARTY_README =
             "NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt";
+    public static final String MYSQL_START_COMMAND_PROPERTY =
+            "-Dcom.sun.mysql.startcommand";
+    public static final String MYSQL_START_ARGS_PROPERTY =
+            "-Dcom.sun.mysql.startargs";
+    public static final String MYSQL_STOP_COMMAND_PROPERTY =
+            "-Dcom.sun.mysql.stopcommand";
+    public static final String MYSQL_STOP_ARGS_PROPERTY =
+            "-Dcom.sun.mysql.stopargs";
+    public static final String MYSQL_PORT_PROPERTY =
+            "-Dcom.sun.mysql.port";
+    public static final String MYSQL_SERVER_DAEMON_FILE_UNIX =
+            "support-files/mysql.server";
+    public static final String[] POSSIBLE_GKSU_LOCATIONS = {
+        "/usr/bin/gksu",
+        "/usr/sbin/gksu",
+        "/bin/gksu",
+        "/sbin/gksu"
+    };
+    
 }

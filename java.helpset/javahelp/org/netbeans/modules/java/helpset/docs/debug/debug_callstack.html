@@ -6,6 +6,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Using the Call Stack </title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -13,35 +14,76 @@
 <h2>Using the Call Stack</h2>
 <p>
 <small><a href="#seealso">See Also</a></small></p>
-<p>The Call Stack window lists the sequence of calls made during the execution
-	of the current thread. By default, the Call Stack window opens automatically
-  whenever you start a debugging session. </p>
-<p>The information given for each call includes the name of the call, followed 
+<p>In a debugging session, you can see the call stack for the current thread 
+in the Debugging window (opened automatically
+whenever you start a debugging session).
+If you expand the node for the current thread you can see a list of the
+sequence of calls made during the execution of the thread. 
+</p>
+  
+<p>The information given for each call (marked by a <img src="images/call_stack_16.png" alt="Current frame icon"> 
+  icon) includes the name of the call, followed 
   by the file name and line number of the call's currently executing statement. 
-  If the file name and line number are displayed in blue underlined text, then 
-  the text is linked to the source code for that call. </p>
-<p>You can open the Call Stack window at any time by choosing Window  &gt; Debugging  &gt; Call
+  If the sources are available, you can right-click the call and choose 
+  Go To Source to go to the source code of the call.</p>
+<p>Alternatively, you can open the Call Stack window by choosing Window  &gt; Debugging  &gt; Call
 Stack (Alt -Shift-3). </p>
 <h3>Changing the Current Call</h3>
-<p>The current call (marked by a <img src="images/CurrentFrame.gif" alt="Current frame icon"> 
-  icon) is the most recent call made by the current thread. When you select a 
-  different current thread, the Call Stack window is updated to show the calls 
-  for that thread. The Local Variables window displays the values of variables 
+<p>The current call (indicated in bold) is the most recent call made by the current thread. When you select a 
+  different current thread, the window is updated to show the calls 
+  for that thread. The Local Variables window is also updated to display the values of variables 
   for the current call. </p>
 <p><b>To browse the call stack, do any of the following:</b></p>
 <ul>
-  <li>To move one level away from the <tt>main</tt> routine, choose Run  &gt; Stack 
+  <li>To move one level away from the <tt>main</tt> routine, choose Debug  &gt; Stack 
      &gt; Make Callee Current (Ctrl-Alt-up arrow). </li>
-  <li>To move one level toward the <tt>main</tt> routine, choose Run  &gt; Stack 
+  <li>To move one level toward the <tt>main</tt> routine, choose Debug &gt; Stack 
      &gt; Make Caller Current (Ctrl-Alt-down arrow). </li>
   <li>To make a call current, double-click the call in the Call Stack window.</li>
 </ul>
 <p>You can capture a textual representation of the call stack by right-clicking a a call and choosing Copy Stack from the pop-up menu.
 When you copy the call stack, the text is copied to the clipboard. You can then paste the call stack into a text file.</p>
 
+<a name="pop"></a>
+<h3>Popping a Call From the Call Stack</h3>
+<p>
+You can change the execution of your program so that the next statement to be executed is one of the 
+calls made earlier on the stack.
+In general, popping, or removing, a call from the call stack
+does not undo any effects that the call caused.  For example,
+if a call opened a database connection and then that
+call is removed, the database connection will remain open.
+</p>
+<ul class="note"><li>You can only pop a call if the program being debugged is paused.</ul>
+
+<p><b>To pop the most recent call from the call stack:</b>
+</p>
+<ul>
+  <li>From the main menu, choose Debug  &gt; Stack &gt; Pop Topmost Call. 
+    <p> The call is removed from the call stack. The program counter is moved to the 
+      line before the instruction that made the removed call. If the source code 
+      is available, the focus of the Source Editor is set to that line. When you 
+      continue program execution, the call is repeated.</p>
+
+  </li>
+</ul>
+
+<p><b>To pop multiple calls from the call stack:</b>
+</p>
+<ul>
+  <li>In the Debugging window, right-click the call that you want to remain at 
+    the top of the call stack and choose Pop to Here.
+    <p> All of the calls above the selected call are removed from the call stack. 
+      The program counter is moved to the line before the instruction that made 
+      the removed call. 
+      If the source code is available, the program counter moves to that line. 
+      When you continue program execution, the call is repeated.</p>  </li>
+</ul>
+    
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="debug_pop.html">Popping a Call From the Call Stack</a></dd>
+    <dd><a href="debug_debuggingwindow.html">Using the Debugging Window</a></dd>
     <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>
     <dd><a href="debug_threads.html">Debugging Threads in the IDE</a></dd>
 </dl>

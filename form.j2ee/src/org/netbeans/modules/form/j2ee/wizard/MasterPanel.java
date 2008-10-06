@@ -42,6 +42,7 @@ package org.netbeans.modules.form.j2ee.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
@@ -53,7 +54,11 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -77,8 +82,11 @@ public class MasterPanel implements WizardDescriptor.Panel {
     
     /** For acessing info/error label */
     private WizardDescriptor wizardDesc;
-    /** Last displayed wizard msg (hint, warning, error) */    
+    /** Last displayed wizard msg */    
     private String lastMsg; 
+    /** Last displayed wizard msg rendered with info icon  */    
+    private boolean lastMsgInfoIconEnabled; 
+    
     
     /**
      * Creates new <code>MasterPanel</code>.
@@ -495,13 +503,15 @@ public class MasterPanel implements WizardDescriptor.Panel {
         tableCombo.setEnabled(tableCombo.getModel().getSize() != 0);
         tableCombo.setSelectedItem(tableCombo.getSelectedItem());
         
-        if (model.getSize() == 0) {
-            showMsg("MSG_MasterDBWithoutTables"); // NOI18N
-        } else {
-            if (invalidCount == model.getSize()) {
-                showMsg("MSG_MasterDBWithoutTablesWithPrimaryKeys"); // NOI18N
+        if (connection != null) {
+            if (model.getSize() == 0) {
+                showMsg("MSG_MasterDBWithoutTables"); // NOI18N
             } else {
-                hideMsg();
+                if (invalidCount == model.getSize()) {
+                    showMsg("MSG_MasterDBWithoutTablesWithPrimaryKeys"); // NOI18N
+                } else {
+                    hideMsg();
+                }
             }
         }
     }
@@ -588,6 +598,19 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 valid = (name.length() != 0);
                 if (!valid) {
                     showMsg("MSG_MasterDefaultPackage"); // NOI18N
+                } else {
+                    FileObject root = cp.findOwnerRoot(fob);
+                    URL[] urls = UnitTestForSourceQuery.findSources(root);
+                    if (urls.length != 0) {
+                        showMsg("MSG_MasterTestPackage"); // NOI18N
+                        valid = false;
+                    }
+                }
+                Project project = FileOwnerQuery.getOwner(fob);
+                if (project.getLookup().lookup(PersistenceLocationProvider.class) == null) {
+                    // For example module project
+                    showMsg("MSG_MasterNoProvider"); // NOI18N
+                    valid = false;
                 }
             } catch (IOException ioex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
@@ -598,14 +621,14 @@ public class MasterPanel implements WizardDescriptor.Panel {
             setValid(false);
         } else {
             if (connectionCombo.getSelectedItem() == null) {
-                showMsg("MSG_MasterDefaultConnection"); // NOI18N
+                showMsg("MSG_MasterDefaultConnection",true); // NOI18N
             }
         }
         
         // After pushing Back button and Next button wizard removes label text
         // This code will setup last msg again
         if (lastMsg != null) {
-            showMsg(lastMsg);
+            showMsg(lastMsg, lastMsgInfoIconEnabled);
         }
     }
 
@@ -684,21 +707,31 @@ public class MasterPanel implements WizardDescriptor.Panel {
         }
     }
     
-    /** Hides info/warning/error wizard label */
-    private void hideMsg() {
-        showMsg(null);
+    /** Sets warning/error wizard label */
+    private void showMsg(String msg) {
+        showMsg(msg, false);
     }
  
     /** Sets info/warning/error wizard label */
-    private void showMsg(String msg) {
-        // TODO: add something like MsgLevel param (MsgLevel.Info, MsgLevel.Warning, etc...) 
-        // Waiting for fixed issue 137737
+    private void showMsg(String msg, boolean showInfoIcon) {
         lastMsg = msg;
+        lastMsgInfoIconEnabled = showInfoIcon;
+        
         if (wizardDesc != null) {
-            wizardDesc.putProperty(
-                    WizardDescriptor.PROP_ERROR_MESSAGE,
-                    (msg != null) ? NbBundle.getMessage(getClass(), msg) : null
-                    );
+            if (msg != null) {
+                msg = NbBundle.getMessage(getClass(), msg);
+            }
+            
+            if (showInfoIcon) {
+                wizardDesc.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, msg);
+            } else {
+                wizardDesc.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+            }
         }
+    }
+    
+    /** Hides info/warning/error wizard label */
+    private void hideMsg() {
+        showMsg(null, true);
     }
 }

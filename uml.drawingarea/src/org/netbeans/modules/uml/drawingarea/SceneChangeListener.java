@@ -44,6 +44,7 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectSceneEvent;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 
 /**
  *
@@ -60,17 +61,17 @@ public class SceneChangeListener extends ObjectSceneListenerAdapter {
 
     @Override
     public void objectAdded(ObjectSceneEvent event, Object addedObject) {  
-        dobj.setDirty(true, scene);           
+        if(!PersistenceUtil.isDiagramLoading())dobj.setDirty(true, scene);//during loading some elements may be added to a scene           
     }
 
     @Override
     public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-        dobj.setDirty(true, scene);
+        if(!PersistenceUtil.isDiagramLoading())
+            dobj.setDirty(true, scene); //during loading some elements may be removed from the scene
     }
 
     @Override
     public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-        System.out.println("Hello State Changed");
     }
 
 }

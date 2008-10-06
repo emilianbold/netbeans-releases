@@ -79,6 +79,19 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private JRadioButton radioButton;
     private static String[] USERCODE_TAGS =  new String[]{(PropertyEditorUserCode.USER_CODE_TEXT)};
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        typeID = null;
+        tags = null;
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        enableTypeID = null;
+    }
+    
     private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID,
             TypeID enableTypeID, String valueLabel, String userCodeLabel) {
         super(userCodeLabel);
@@ -117,6 +130,10 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, valueLabel);
+        
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
+        
         customEditor = new CustomEditor();
         customEditor.updateModel();
     }
@@ -235,6 +252,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
 
         private JComboBox combobox;
 
+        void cleanUp() {
+            combobox.removeActionListener(this);
+            combobox = null;
+            this.removeAll();
+        }
+
         public CustomEditor() {
             initComponents();
         }
@@ -244,6 +267,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             combobox = new JComboBox();
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+                    combobox.getAccessibleContext().setAccessibleDescription( 
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+            
             add(combobox, BorderLayout.CENTER);
         }
 

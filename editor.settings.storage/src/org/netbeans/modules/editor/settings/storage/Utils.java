@@ -94,8 +94,8 @@ public class Utils {
         try {
             return fo.getFileSystem().getStatus().annotateName(defaultValue, Collections.singleton(fo));
         } catch (FileStateInvalidException ex) {
-            if (LOG.isLoggable(Level.INFO)) {
-                logOnce(LOG, Level.INFO, "Can't find localized name of " + fo, ex); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                logOnce(LOG, Level.FINE, "Can't find localized name of " + fo, ex); //NOI18N
             }
             return defaultValue;
         }
@@ -113,8 +113,8 @@ public class Utils {
             try {
                 return ((ResourceBundle) bundleInfo[1]).getString(key);
             } catch (MissingResourceException ex) {
-                if (!silent && LOG.isLoggable(Level.INFO)) {
-                    logOnce(LOG, Level.INFO, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
+                if (!silent && LOG.isLoggable(Level.FINE)) {
+                    logOnce(LOG, Level.FINE, "The bundle '" + bundleInfo[0] + "' is missing key '" + key + "'.", ex); //NOI18N
                 }
             }
         }
@@ -157,8 +157,8 @@ public class Utils {
                     try {
                         bundleInfo = new Object [] { bundleName, NbBundle.getBundle(bundleName) };
                     } catch (MissingResourceException ex) {
-                        if (!silent && LOG.isLoggable(Level.INFO)) {
-                            logOnce(LOG, Level.INFO, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
+                        if (!silent && LOG.isLoggable(Level.FINE)) {
+                            logOnce(LOG, Level.FINE, "Can't find resource bundle for " + fo.getPath(), ex); //NOI18N
                         }
                     }
                 } else {

@@ -91,7 +91,7 @@ public class SQDSyncMessagePropertiesTests extends UMLTestCase {
     private String LINE_NAME = "LN";
     private String CLASS_NAME = "CLN";
     private String PROPS_NAME = "Properties";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     /********************************************************/
     
     

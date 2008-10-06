@@ -78,6 +78,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -111,13 +112,13 @@ import org.openide.util.Exceptions;
  * @author Chris Webster
  * @author Andrei Badea
  */
-public class EjbJarProjectProperties {
+final public class EjbJarProjectProperties {
     
     // Special properties of the project
     public static final String EJB_PROJECT_NAME = "j2ee.ejbjarproject.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
-    public static final String DEPLOY_ON_SAVE = "deploy.on.save"; // NOI18N
+    public static final String DISABLE_DEPLOY_ON_SAVE = "disable.deploy.on.save"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -167,6 +168,8 @@ public class EjbJarProjectProperties {
     public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
+    
+    public static final String RUNMAIN_JVM_ARGS = "runmain.jvmargs"; // NOI18N
     
     public static final String META_INF_EXCLUDES="meta.inf.excludes"; // NOI18N
     
@@ -239,6 +242,7 @@ public class EjbJarProjectProperties {
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
     ButtonModel DEPLOY_ON_SAVE_MODEL;
+    Document RUNMAIN_JVM_MODEL;
 
     // CustomizerRunTest
     
@@ -260,7 +264,7 @@ public class EjbJarProjectProperties {
     }
 
     /** Creates a new instance of EjbJarProjectProperties and initializes them */
-    public EjbJarProjectProperties(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+    EjbJarProjectProperties(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
         this.project = project;
         this.updateHelper = updateHelper;
         this.evaluator = evaluator;
@@ -345,10 +349,13 @@ public class EjbJarProjectProperties {
 
         // CustomizerRun
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel( 
-            privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+            privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+            projectProperties.getProperty(J2EE_PLATFORM),
+            J2eeModule.EJB);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
-        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, DISABLE_DEPLOY_ON_SAVE);
+        RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
     }
     
     public void save() {
@@ -363,6 +370,10 @@ public class EjbJarProjectProperties {
             });
             // and save the project        
             ProjectManager.getDefault().saveProject(project);
+            //Delete COS mark
+            if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
+                DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N
+            }            
         } 
         catch (MutexException e) {
             Exceptions.printStackTrace((IOException) e.getException());
@@ -751,16 +762,14 @@ public class EjbJarProjectProperties {
         }
     }
 
-    public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
-        EditableProperties props = helper.getProperties(path);
-        return props.getProperty(property);
-    }
-
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         v.setRoots(roots.toArray(new File[roots.size()]));

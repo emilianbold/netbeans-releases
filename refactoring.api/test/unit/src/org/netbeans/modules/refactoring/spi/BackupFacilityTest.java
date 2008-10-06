@@ -80,7 +80,7 @@ public class BackupFacilityTest extends NbTestCase {
         f.delete();
         assertFalse(f.isValid());
         transactionId.restore();
-        FileObject newone = FileUtil.toFileObject(new File(f.getPath()));
+        FileObject newone = FileUtil.toFileObject(FileUtil.toFile(f));
         assertTrue(newone.isValid());
     }
 

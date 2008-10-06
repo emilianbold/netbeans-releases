@@ -41,15 +41,33 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
 <filesystem>
+    <folder name="Actions">
+        <folder name="PHP">
+            <file name="org-netbeans-modules-php-project-ui-logicalview-DownloadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createDownloadAction"/>
+            </file>
+            <file name="org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.logicalview.SrcNode.createUploadAction"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- uncomment/change default values for actions Download, Upload
+    <folder name="Shortcuts">
+        <file name="CSA-D.shadow">
+            <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-DownloadAction.instance"/>
+        </file>
+        <file name="CSA-U.shadow">
+            <attr name="originalFile" stringvalue="Actions/PHP/org-netbeans-modules-php-project-ui-logicalview-UploadAction.instance"/>
+        </file>
+    </folder>
+    -->
     <folder name="Templates">
         <folder name="Project">
             <folder name="PHP">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpDescription.html"/>
                 <attr name="position" intvalue="700"/>
-
                 <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
@@ -59,22 +77,31 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPhpProject.html"/>
                 </file>
+                <file name="existingPHPProject.php">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.existing"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/phpProject.png"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/existingPhpProject.html"/>
+                </file>
             </folder>
         </folder>
         <folder name="Scripting">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
             <attr name="position" intvalue="20"/>
-
-            <file name="EmptyPHP.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
+            <file name="EmptyPHP" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyPHPFileDescription.html"/>
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="100"/>
             </file>
-            <file name="EmptyPHPWebPage.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/index.php">
+            <file name="EmptyPHPWebPage" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyWebPagePHP.php">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
                 <attr name="template" boolvalue="true" />
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -82,7 +109,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="200"/>
             </file>
-            <file name="PHPClass.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
+            <file name="PHPClass" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyClassPHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
@@ -91,7 +118,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="PHP"/>
                 <attr name="position" intvalue="300"/>
             </file>
-            <file name="PHPInterface.php" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
+            <file name="PHPInterface" url="nbresloc:/org/netbeans/modules/php/project/ui/resources/emptyInterfacePHP.php">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.php.project.ui.wizards.NewFileWizardIterator"/>
@@ -101,17 +128,12 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
-
     </folder>
-
     <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="PHP.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.php.project.ui.options.PhpAdvancedOption"/>
-            </file>
-        </folder>
+        <file name="org-netbeans-modules-php-project-ui-options-PHPOptionsCategory.instance">
+            <attr name="position" intvalue="650"/>
+        </file>
     </folder>
-
     <folder name="Projects">
         <folder name="org-netbeans-modules-php-project">
             <folder name="Customizer">
@@ -127,16 +149,28 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl.createPhpIncludePath"/>
                     <attr name="position" intvalue="300"/>
                 </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-php5"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-php-project-ui-logicalview-SourcesNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-php-project-ui-logicalview-IncludePathNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
             </folder>
         </folder>
     </folder>
-
     <folder name="PHP">
         <folder name="RuntimeLibraries">
-            <file name="runtime.php" url="nbres:/org/netbeans/modules/php/project/resources/runtime.php"/>
+            <file name="pdo_mysql.php" url="nbres:/org/netbeans/modules/php/project/resources/phpruntime/pdo_mysql.php"/>
         </folder>
     </folder>
-
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-php5">
@@ -209,5 +243,4 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-
 </filesystem>

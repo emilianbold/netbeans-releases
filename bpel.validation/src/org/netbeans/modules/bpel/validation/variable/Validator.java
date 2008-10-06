@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.validation.variable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -494,10 +493,8 @@ public final class Validator extends BpelValidator {
     if (collection == null) {
       return list;
     }
-    Iterator<Copy> iterator = collection.iterator();
-
-    while (iterator.hasNext()) {
-      list.add(iterator.next());
+    for (Copy copy : collection) {
+      list.add(copy);
     }
     return list;
   }

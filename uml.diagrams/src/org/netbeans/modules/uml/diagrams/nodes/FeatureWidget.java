@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.UIManager;
@@ -57,6 +58,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.support.umlutils.DataFormatter;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.diagrams.engines.DefaultDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
@@ -68,7 +70,11 @@ import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -79,7 +85,10 @@ public abstract class FeatureWidget extends CustomizableWidget
 {
     private EditableCompartmentWidget label = null;
     public static final String ID = "feature";
-    private Alignment alignment = Alignment.LEFT;
+    private Alignment myAlignment = Alignment.LEFT;
+    
+    private InstanceContent lookupContent = new InstanceContent();
+    private Lookup lookup = new AbstractLookup(lookupContent);
     
     public FeatureWidget(Scene scene)
     {
@@ -90,7 +99,14 @@ public abstract class FeatureWidget extends CustomizableWidget
     {
         super(scene, propId, propDisplayName);
         setForeground((Color)null); 
-        setLayout(LayoutFactory.createHorizontalFlowLayout());
+        
+        // Someday it would be nice to put a icon beside the feature.  In which
+        // case we would need to use a horizontal flow layout.  However since
+        // we currently do not have an icon beside the feature label, and 
+        // the horizontal flow layout does not work well with being able to
+        // center the label text (for enumerations) use an overlay layout for
+        // now.
+        setLayout(LayoutFactory.createOverlayLayout());
         
         if (scene instanceof ObjectScene) 
         {
@@ -99,17 +115,44 @@ public abstract class FeatureWidget extends CustomizableWidget
             WidgetAction.Chain chain = createActions(DesignerTools.SELECT);
             chain.addAction(objScene.createSelectAction());
             chain.addAction(DefaultDiagramEngine.POPUP_ACTION);
+            
+            WidgetAction.Chain readonly = createActions(DesignerTools.READ_ONLY);
+            readonly.addAction(objScene.createSelectAction());
+            readonly.addAction(DefaultDiagramEngine.POPUP_ACTION);
+            if (canSelect())
+            {
+                addToLookup(new ObjectSelectable());
+            }
         }
+    }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //  Lookup Methods
+    
+    protected void addToLookup(Object item)
+    {
+        lookupContent.add(item);
+    }
+    
+    protected void removeFromLookup(Object item)
+    {
+        lookupContent.remove(item);
+    }
+    
+    @Override
+    public Lookup getLookup()
+    {
+        return lookup;
     }
     
     public void setAlignment(Alignment alignment)
     {
-        if(alignment == Alignment.CENTER)
-        {
-            setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
-        }
-        
-        this.alignment = alignment;
+        this.myAlignment = alignment;
+    }
+    
+    protected boolean canSelect()
+    {
+        return true;
     }
     
     @Override
@@ -137,8 +180,7 @@ public abstract class FeatureWidget extends CustomizableWidget
             setOpaque(false);
             if((label != null) && (getParentWidget() != null))
             {
-                label.setForeground(getParentWidget().getForeground());
-                //label.closeEditorCommitChanges();//
+                label.setForeground(null);
             }
             
             setParentSelectedState(false);
@@ -169,14 +211,12 @@ public abstract class FeatureWidget extends CustomizableWidget
         }
 
         label = new EditableCompartmentWidget(getScene(), this, ID);
-        label.setAlignment(alignment);
+        label.setAlignment(myAlignment);
         label.setLabel(formatedStr);
         addChild(label);
         
-        if(alignment == Alignment.CENTER)
-        {
-            setChildConstraint(label, 100);
-        }
+        // Use the parents foreground color.
+        label.setForeground(null);
         setBorder(BorderFactory.createEmptyBorder(1));
     }
     
@@ -191,6 +231,11 @@ public abstract class FeatureWidget extends CustomizableWidget
     public String getText()
     {
         return label.getLabel();
+    }
+    
+    protected EditableCompartmentWidget getLabel()
+    {
+        return label;
     }
     
     protected void addActions()
@@ -262,28 +307,73 @@ public abstract class FeatureWidget extends CustomizableWidget
     {
 
         IElement element = getElement();
-        if (element != null)
-        {
-            ObjectScene scene = (ObjectScene) getScene();
-            Widget parentWidget = Util.getParentNodeWidget(this);
-
+        if (element != null)   
+        { 
+            Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
             if (parentWidget != null)
             {
-                ObjectState newState = parentWidget.getState().deriveSelected(value);
-                parentWidget.setState(newState);
+                ObjectState curState = parentWidget.getState();
+                if ( curState.isSelected() != value)
+                {
+                    ObjectState newState = curState.deriveSelected(value);
+                    parentWidget.setState(newState);
+                }
             }
         }
     }
     
+    private ObjectState getParentSelectedState()
+    {
+         Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
+         return getParentSelectedState(parentWidget);
+    }
+    
+    private ObjectState getParentSelectedState(Widget parentWidget)
+    {
+        ObjectState state = null;
+        if (parentWidget != null)
+        {
+            state = parentWidget.getState();
+        }
+        return state;
+    }
+    
+    
     public void remove()
     {
-        super.removeFromParent();
-        IPresentationElement pe = getObject();
-        if (pe != null)
+        // before remove
+        ObjectScene scene = (DesignerScene) getScene();
+        Object  focusedObj =  scene.getFocusedObject();
+        IPresentationElement pe = getObject();  
+        
+        if ( pe != null && pe.equals(focusedObj))
+        {
+            ObjectState parentState = null;
+            Object parentObj =  null;
+            
+            Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
+            if ( parentWidget != null)
+            {
+                parentObj = scene.findObject(parentWidget);
+                parentState = getParentSelectedState(parentWidget);
+            }
+            
+            if ( parentState != null && parentState.isSelected())
+            {
+                scene.setFocusedObject(parentObj);
+                scene.userSelectionSuggested (Collections.singleton(parentObj), false);
+            }
+            else 
+            {
+                scene.setFocusedObject(null);
+                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
+            }
+            super.removeFromParent();
             pe.delete();
+        }
     }
 
-    public void refresh() 
+    public void refresh(boolean resizetocontent) 
     {
     }
 
@@ -357,19 +447,10 @@ public abstract class FeatureWidget extends CustomizableWidget
         UMLDiagramTopComponent tc=(UMLDiagramTopComponent) scene.getTopComponent();
         if(tc.isActivated())//diagram action
         {
-            //Set selected=scene.getSelectedObjects();
             HashSet newSelection=new HashSet();
             newSelection.add(getObject());
             scene.setFocusedObject(getObject());
-            scene.setSelectedObjects(newSelection);
-            //ObjectState stFocFoc=attrW.getState().deriveWidgetFocused(true).deriveObjectFocused(true).deriveHighlighted(true).deriveWidgetAimed(true);
-            //attrW.setState(stFocFoc);
-            //scene.setSelectedObjects(newSelection);
-//                        new AfterValidationExecutor(new ActionProvider() {
-//                            public void perfomeAction() {
-//                                attrW.switchToEditMode();
-//                            }
-//                        }, scene);
+            scene.userSelectionSuggested(newSelection, false);
             scene.validate();
         }
     }

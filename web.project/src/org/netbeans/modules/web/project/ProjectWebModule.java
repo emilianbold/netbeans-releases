@@ -205,10 +205,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public FileObject getDocumentBase (boolean silent) {
-        FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
+        String value = helper.getAntProjectHelper().getStandardPropertyEvaluator()
+                .getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+
+        return resolveDocumentBase(value, silent);
+    }
+
+    FileObject resolveDocumentBase(String value, boolean silent) {
+        FileObject docBase = value != null ? helper.getAntProjectHelper().resolveFileObject(value) : null;
         if (docBase == null && !silent) {
-            String relativePath = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-            String path = (relativePath != null ? helper.getAntProjectHelper().resolvePath(relativePath) : null);
+            String path = (value != null ? helper.getAntProjectHelper().resolvePath(value) : null);
             String errorMessage;
             if (path != null) {
                 errorMessage = NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", project.getName(), path);
@@ -238,17 +244,29 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getWebInf (boolean silent) {
-        FileObject webInf = getFileObject(WebProjectProperties.WEBINF_DIR);
-        
+        String value = helper.getAntProjectHelper().getStandardPropertyEvaluator()
+                .getProperty(WebProjectProperties.WEBINF_DIR);
+
+        return resolveWebInf(null, value, silent, false);
+    }
+
+    FileObject resolveWebInf(String docBaseValue, String webInfValue, boolean silent, boolean useDocBase) {
+        FileObject webInf = webInfValue != null ? helper.getAntProjectHelper().resolveFileObject(webInfValue) : null;
+
         //temporary solution for < 6.0 projects
         if (webInf == null) {
-            FileObject documentBase = getDocumentBase(silent);
+            FileObject documentBase = null;
+            if (useDocBase) {
+                documentBase = resolveDocumentBase(docBaseValue, silent);
+            } else {
+                documentBase = getDocumentBase(silent);
+            }
             if (documentBase == null) {
                 return null;
             }
             webInf = documentBase.getFileObject (FOLDER_WEB_INF);        
         }
-        
+
         if (webInf == null && !silent) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted2")); //NOI18N
         }
@@ -261,6 +279,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public File getConfDirAsFile() {
         return getFile(WebProjectProperties.CONF_DIR);
+    }
+    
+    public FileObject getPersistenceXmlDir() {
+        return getFileObject(WebProjectProperties.PERSISTENCE_XML_DIR);
+    }
+    
+    public File getPersistenceXmlDirAsFile() {
+        return getFile(WebProjectProperties.PERSISTENCE_XML_DIR);
     }
     
     public ClassPathProvider getClassPathProvider () {
@@ -357,7 +383,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         WebProjectProperties.setServerInstance(project, helper, severInstanceID);
     }
     
-    public Iterator getArchiveContents () throws java.io.IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents () throws java.io.IOException {
         FileObject content = getContentDirectory();
         content.refresh();
         return new IT(content);
@@ -555,7 +581,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
-        List roots = new LinkedList();
+        List<FileObject> roots = new LinkedList<FileObject>();
         FileObject documentBase = getDocumentBase();
         if (documentBase != null)
             roots.add(documentBase);
@@ -565,7 +591,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         
         FileObject[] rootArray = new FileObject[roots.size()];
-        return (FileObject[])roots.toArray(rootArray);        
+        return roots.toArray(rootArray);
     }
     
     private boolean isProjectOpened() {
@@ -624,12 +650,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return propertyChangeSupport;
     }
     
-    private static class IT implements Iterator {
-        ArrayList ch;
+    private static class IT implements Iterator<J2eeModule.RootedEntry> {
+        ArrayList<FileObject> ch;
         FileObject root;
         
         private IT (FileObject f) {
-            this.ch = new ArrayList ();
+            this.ch = new ArrayList<FileObject>();
             ch.add (f);
             this.root = f;
         }
@@ -638,8 +664,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return ! ch.isEmpty();
         }
         
-        public Object next () {
-            FileObject f = (FileObject) ch.get(0);
+        public J2eeModule.RootedEntry next () {
+            FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {
                 f.refresh();

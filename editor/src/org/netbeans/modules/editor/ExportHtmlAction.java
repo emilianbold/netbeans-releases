@@ -410,6 +410,8 @@ public class ExportHtmlAction extends CookieAction {
         private void selectFile () {
             JFileChooser chooser = new JFileChooser();
             chooser.setDialogTitle(NbBundle.getMessage(ExportHtmlAction.class, "CTL_Browse_Dialog_Title")); // NOI18N
+            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportHtmlAction.class, "ACD_Browse_Dialog")); // NOI18N
+            chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportHtmlAction.class, "ACN_Browse_Dialog")); // NOI18N
             chooser.setFileFilter (new javax.swing.filechooser.FileFilter () {
                 public boolean accept(File f) {
                     if (f.isFile() && f.getName().endsWith (HTML_EXT) || f.isDirectory()) {

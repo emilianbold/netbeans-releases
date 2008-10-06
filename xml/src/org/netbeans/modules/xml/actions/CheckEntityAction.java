@@ -47,6 +47,7 @@ import org.openide.util.actions.CookieAction;
 import org.netbeans.modules.xml.actions.CollectXMLAction;
 
 import org.netbeans.api.xml.cookies.*;
+import org.netbeans.modules.xml.util.Util;
 
 /**
  * Checks well-formess of XML entity sending results to output window.
@@ -85,13 +86,13 @@ public class CheckEntityAction extends CookieAction implements CollectXMLAction.
             cake.checkXML(console);
         }
         
-        console.message(Util.THIS.getString("MSG_XML_entity_check_end"));
+        console.message(Util.THIS.getString(CheckEntityAction.class, "MSG_XML_entity_check_end"));
         console.moveToFront(true);
     }
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Check_XML_entity");
+        return Util.THIS.getString(CheckEntityAction.class, "NAME_Check_XML_entity");
     }
 
     /** Do not slow by any icon. */

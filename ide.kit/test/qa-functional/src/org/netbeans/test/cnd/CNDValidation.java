@@ -158,7 +158,9 @@ public class CNDValidation extends JellyTestCase {
      * - check Welcome|main node is available
      */
     public void testClassView() {
-        new Action(null, "Window|Classes").perform(); // NOI18N
+        TopComponentOperator projectView = new TopComponentOperator("Projects");
+        new Node(new JTreeOperator(projectView), SAMPLE_PROJECT_NAME+"|Header Files|welcome.h").performPopupActionNoBlock("Open");
+        new Action("Window|Classes", null).perform(); // NOI18N
         TopComponentOperator classView = new TopComponentOperator("Classes"); // NOI18N
         new Node(new JTreeOperator(classView), SAMPLE_PROJECT_NAME+"|main");
     }

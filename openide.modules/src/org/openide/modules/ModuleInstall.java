@@ -41,6 +41,7 @@
 
 package org.openide.modules;
 
+import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 
 /**
@@ -74,7 +75,7 @@ public class ModuleInstall extends SharedClassObject {
      * wrong with the module (missing ad-hoc dependency, missing
      * license key, etc.) then <code>IllegalStateException</code>
      * may be thrown to prevent it from being loaded (preferably
-     * with a localized annotation). The default implementation
+     * with a {@linkplain Exceptions#attachLocalizedMessage localized annotation}). The default implementation
      * does nothing. The module cannot assume much about when this
      * method will be called; specifically it cannot rely on layers
      * or manifest sections to be ready, nor for the module's classloader
@@ -166,6 +167,7 @@ public class ModuleInstall extends SharedClassObject {
     public void close() {
     }
 
+    @Override
     protected boolean clearSharedData() {
         return false;
     }

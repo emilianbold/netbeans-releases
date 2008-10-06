@@ -58,6 +58,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -269,7 +271,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
                     log ("Missing answers to questions: " + s);
                     log ("Generating the answers to end of file " + questionsFile);
                     try {
-                        generateMissingQuestions (s);
+                        generateMissingQuestions(questionsVersion, s);
                     } catch (IOException ex) {
                         throw new BuildException (ex);
                     }
@@ -527,7 +529,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         }
     }
     
-    private void generateMissingQuestions(SortedSet<String> missing) throws IOException, BuildException {
+    private void generateMissingQuestions(String version, SortedSet<String> missing) throws IOException, BuildException {
         StringBuffer sb = new StringBuffer();
         InputStreamReader is = new InputStreamReader(new FileInputStream(questionsFile.toString()));
         char[] arr = new char[4096];
@@ -544,6 +546,12 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         }
         
         sb.delete (indx, indx + "</api-answers>".length());
+
+        Matcher m = Pattern.compile("question-version='([0-9\\.]*)'").matcher(sb);
+        if (m.find()) {
+            sb.delete(m.start(1), m.end(1));
+            sb.insert(m.start(1), version);
+        }
         
         Writer w = new OutputStreamWriter (new FileOutputStream (questionsFile.toString ()));
         w.write(sb.toString());
@@ -602,7 +610,7 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
         
         Writer w = new FileWriter (questionsFile);
         
-        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- -*- sgml-indent-step: 1 -*- -->\n");
+        w.write ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         w.write ("<!--\n");
         w.write("The contents of this file are subject to the terms of the Common Development\n");
         w.write("and Distribution License (the License). You may not use this file except in\n");

@@ -54,34 +54,34 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.BlockArgNode;
-import org.jruby.ast.CallNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.HashNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.StrNode;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.VCallNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgsNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.BlockArgNode;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.ConstDeclNode;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.HashNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.VCallNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -342,6 +342,9 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
             AstPath path = new AstPath(root, astOffset);
             Node closest = path.leaf();
+            if (closest == null) {
+                return DeclarationLocation.NONE;
+            }
 
             // See if the hyperlink is over a method reference in an rdoc comment
             DeclarationLocation rdoc = findRDocMethod(info, doc, astOffset, lexOffset, root, path, closest, index);
@@ -747,7 +750,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             
             if (n instanceof HashNode) {
                 if (prev instanceof ListNode) { // uhm... why am I going back to prev?
-                    List<Node> hashItems = (List<Node>)prev.childNodes();
+                    List<Node> hashItems = prev.childNodes();
 
                     Iterator<Node> hi = hashItems.iterator();
                     while (hi.hasNext()) {
@@ -809,7 +812,13 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             if (begin != -1) {
                 int end = Utilities.getRowEnd(doc, lexOffset);
                 String s = doc.getText(begin, end-begin); // TODO - limit to a narrower region around the caret?
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => " }; // NOI18N
+                if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
+                    return null;
+                }
+                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
+                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
+                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
+                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
                 for (String target : targets) {
                     int index = s.indexOf(target);
                     if (index != -1) {
@@ -1025,7 +1034,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
         if (candidate != null) {
             IndexedElement com = candidate;
-            Node node = AstUtilities.getForeignNode(com, null);
+            Node node = AstUtilities.getForeignNode(com, (Node[])null);
 
             DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                 node.getPosition().getStartOffset(), com);
@@ -1069,7 +1078,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 return DeclarationLocation.NONE;
             }
 
-            Node node = AstUtilities.getForeignNode(candidate, null);
+            Node node = AstUtilities.getForeignNode(candidate, (Node[])null);
             int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
 
             DeclarationLocation loc = new DeclarationLocation(
@@ -1394,7 +1403,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         
         while (!classes.isEmpty()) {
             IndexedClass clz = findBestClassMatchHelper(classes, path, reference, index);
-            Node node = AstUtilities.getForeignNode(clz, null);
+            Node node = AstUtilities.getForeignNode(clz, (Node[])null);
 
             if (node != null) {
                 return clz;
@@ -1575,7 +1584,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         while (!methods.isEmpty()) {
             IndexedMethod method =
                 findBestMethodMatchHelper(name, methods, doc, astOffset, lexOffset, path, call, index);
-            Node node = AstUtilities.getForeignNode(method, null);
+            Node node = AstUtilities.getForeignNode(method, (Node[])null);
 
             if (node != null) {
                 return method;
@@ -1905,11 +1914,11 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {
@@ -2074,7 +2083,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             // How do we choose one?
             // For now, just pick the first one
             
-            Node node = AstUtilities.getForeignNode(field, null);
+            Node node = AstUtilities.getForeignNode(field, (Node[])null);
 
             if (node != null) {
                 return new DeclarationLocation(field.getFile().getFileObject(),
@@ -2175,7 +2184,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         return null;
     }
     
-    private class RubyAltLocation implements AlternativeLocation {
+    private static class RubyAltLocation implements AlternativeLocation {
         private IndexedElement element;
         private boolean isPreferred;
         private String cachedDisplayItem;
@@ -2316,7 +2325,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         }
 
         public DeclarationLocation getLocation() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            Node node = AstUtilities.getForeignNode(element, (Node[])null);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
                 lineOffset, element);

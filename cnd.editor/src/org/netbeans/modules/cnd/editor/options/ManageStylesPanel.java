@@ -66,14 +66,14 @@ import org.openide.util.NbPreferences;
  */
 public class ManageStylesPanel extends javax.swing.JPanel
              implements ListSelectionListener, KeyListener, MouseListener {
-    private CodeStyle.Language currentLanguage;
-    private Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences;
+    private CodeStyle.Language language;
+    private Map<String, PreviewPreferences> preferences;
 
     /** Creates new form ManageStylesPanel */
-    public ManageStylesPanel(CodeStyle.Language currentLanguage, 
-            Map<CodeStyle.Language, Map<String,PreviewPreferences>> allPreferences) {
-        this.currentLanguage = currentLanguage;
-        this.allPreferences = allPreferences;
+    public ManageStylesPanel(CodeStyle.Language language,
+            Map<String,PreviewPreferences> allPreferences) {
+        this.language = language;
+        this.preferences = allPreferences;
         initComponents();
         initList();
     }
@@ -92,9 +92,8 @@ public class ManageStylesPanel extends javax.swing.JPanel
     
     private void initListModel(){
         List<MyListItem> objects = new ArrayList<MyListItem>();
-        Map<String,PreviewPreferences> pref = allPreferences.get(currentLanguage);
-        for(String style : pref.keySet()){
-            objects.add(new MyListItem(style, EditorOptions.getStyleDisplayName(currentLanguage,style)));
+        for(String style : preferences.keySet()){
+            objects.add(new MyListItem(style, EditorOptions.getStyleDisplayName(language,style)));
         }
         Collections.sort(objects);
         stylesList.setModel(new MyListModel(objects));
@@ -184,16 +183,16 @@ public class ManageStylesPanel extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
 private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-    PreviewPreferences pp = allPreferences.get(currentLanguage).get("Default"); // NOI18N
+    PreviewPreferences pp = preferences.get("Default"); // NOI18N
     String id = nextId();
     String resourceId = id+"_Style_Name"; // NOI18N
     String displayName = getString("Custom_Name"); // NOI18N
     displayName = getDisplayName(displayName);
-    if (displayName != null) {
+    if (displayName != null && checkUniqueStyleName(displayName)) {
         NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
-        PreviewPreferences np = new PreviewPreferences(pp, currentLanguage, id);
+        PreviewPreferences np = new PreviewPreferences(pp, language, id);
         np.makeAllKeys(pp);
-        allPreferences.get(currentLanguage).put(id, np);
+        preferences.put(id, np);
         initListModel();
     }
 }//GEN-LAST:event_newButtonActionPerformed
@@ -202,16 +201,16 @@ private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     int i = stylesList.getSelectedIndex();
     if (i >= 0) {
         MyListItem item = (MyListItem) stylesList.getModel().getElementAt(i);
-        PreviewPreferences pp = allPreferences.get(currentLanguage).get(item.id);
+        PreviewPreferences pp = preferences.get(item.id);
         String id = nextId();
         String resourceId = id+"_Style_Name"; // NOI18N
         String displayName = NbBundle.getMessage(ManageStylesPanel.class, "CopyOfStyle", item.name); // NOI18N
         displayName = getDisplayName(displayName);
-        if (displayName != null) {
+        if (displayName != null && checkUniqueStyleName(displayName)) {
             NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
-            PreviewPreferences np = new PreviewPreferences(pp, currentLanguage, id);
+            PreviewPreferences np = new PreviewPreferences(pp, language, id);
             np.makeAllKeys(pp);
-            allPreferences.get(currentLanguage).put(id, np);
+            preferences.put(id, np);
             initListModel();
         }
     }    
@@ -222,7 +221,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     int i = stylesList.getSelectedIndex();
     if (i >= 0) {
         MyListItem item = (MyListItem) stylesList.getModel().getElementAt(i);
-        allPreferences.get(currentLanguage).remove(item.id);
+        preferences.remove(item.id);
         initListModel();
     }
 }//GEN-LAST:event_removeButtonActionPerformed
@@ -262,6 +261,20 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             Exceptions.printStackTrace(ex);
         }
         return "Style_" + maxId; // NOI18N
+    }
+
+    private boolean checkUniqueStyleName(String styleName) {
+        for (String key : preferences.keySet()) {
+            String name = EditorOptions.getStyleDisplayName(language, key);
+            if (name.equals(styleName)) {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", styleName), // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(descriptor);
+                return false;
+            }
+        }
+        return true;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

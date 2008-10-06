@@ -56,6 +56,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -256,10 +257,10 @@ public class UpdateManagerImpl extends Object {
         }
         
         private void createMaps () {
-            availableEagers = new HashSet<UpdateElement> ();
-            installedEagers = new HashSet<UpdateElement> ();
-            token2installedProviders = new HashMap<String, Collection<ModuleInfo>> ();
-            token2availableProviders = new HashMap<String, Collection<ModuleInfo>> ();
+            availableEagers = new HashSet<UpdateElement> (getUnits ().size ());
+            installedEagers = new HashSet<UpdateElement> (getUnits ().size ());
+            token2installedProviders = new HashMap<String, Collection<ModuleInfo>> (11);
+            token2availableProviders = new HashMap<String, Collection<ModuleInfo>> (11);
             for (UpdateUnit unit : getUnits ()) {
                 UpdateElement el;
                 if ((el = unit.getInstalled ()) != null) {
@@ -267,6 +268,10 @@ public class UpdateManagerImpl extends Object {
                         installedEagers.add (el);
                     }
                     for (ModuleInfo mi : Trampoline.API.impl (el).getModuleInfos ()) {
+                        for (Dependency dep : mi.getDependencies ()) {
+                            DependencyAggregator dec = DependencyAggregator.getAggregator (dep);
+                            dec.addDependee (mi);
+                        }
                         String[] provs = mi.getProvides ();
                         if (provs == null || provs.length == 0) {
                             continue;
@@ -278,13 +283,17 @@ public class UpdateManagerImpl extends Object {
                             token2installedProviders.get (token).add (mi);
                         }
                     }
-                } else {
-                    assert ! unit.getAvailableUpdates ().isEmpty () : unit + " is not installed but it has available updates.";
+                }
+                if (! unit.getAvailableUpdates ().isEmpty ()) {
                     el = unit.getAvailableUpdates ().get (0);
                     if (Trampoline.API.impl (el).isEager ()) {
                         availableEagers.add (el);
                     }
                     for (ModuleInfo mi : Trampoline.API.impl (el).getModuleInfos ()) {
+                        for (Dependency dep : mi.getDependencies ()) {
+                            DependencyAggregator dec = DependencyAggregator.getAggregator (dep);
+                            dec.addDependee (mi);
+                        }
                         String[] provs = mi.getProvides ();
                         if (provs == null || provs.length == 0) {
                             continue;

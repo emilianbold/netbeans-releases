@@ -45,19 +45,19 @@ import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.groovy.support.GroovyLookupProvider;
 import org.netbeans.modules.groovy.support.GroovyProjectExtender;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -65,7 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard to create a new Groovy file.
@@ -82,10 +81,10 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
     }    
     
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
-        // Ask for Java folders
         Project project = Templates.getProject(wizardDescriptor);
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<SourceGroup> groupList = GroovySources.getGroovySourceGroups(sources);
+        SourceGroup[] groups = groupList.toArray(new SourceGroup[groupList.size()]);
         assert groups != null : "Cannot return null from Sources.getSourceGroups: " + sources;
         if (groups.length == 0) {
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -242,10 +241,10 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
     private static String getSelectedPackageName(FileObject targetFolder) {
         Project project = FileOwnerQuery.getOwner(targetFolder);
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<SourceGroup> groups = GroovySources.getGroovySourceGroups(sources);
         String packageName = null;
-        for (int i = 0; i < groups.length && packageName == null; i++) {
-            packageName = FileUtil.getRelativePath(groups [i].getRootFolder(), targetFolder);
+        for (int i = 0; i < groups.size() && packageName == null; i++) {
+            packageName = FileUtil.getRelativePath(groups.get(i).getRootFolder(), targetFolder);
         }
         if (packageName != null) {
             packageName = packageName.replaceAll("/", "."); // NOI18N
@@ -261,15 +260,16 @@ public class GroovyFileWizardIterator implements WizardDescriptor.InstantiatingI
         }
         
         public boolean isValid() {
-            if (super.isValid()) {
-                initExtender();
-                if (extender != null && !extender.isGroovyEnabled()) {
-                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                            NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
-                }
-                return true;
-            }
-            return false;
+//            if (super.isValid()) {
+//                initExtender();
+//                if (extender != null && !extender.isGroovyEnabled()) {
+//                    getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+//                            NbBundle.getMessage(GroovyFileWizardIterator.class, "ERR_GroovyNotEnabled")); // NOI18N
+//                }
+//                return true;
+//            }
+//            return false;
+            return true;
         }
     }
 

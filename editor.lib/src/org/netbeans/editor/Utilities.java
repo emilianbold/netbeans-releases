@@ -838,10 +838,10 @@ public class Utilities {
     * @param len number of chars to change
     * @param type either CASE_CAPITAL, CASE_SMALL or CASE_SWITCH
     */
-    public static boolean changeCase(BaseDocument doc, int offset, int len, int type)
+    public static boolean changeCase(final BaseDocument doc, final int offset, final int len, final int type)
     throws BadLocationException {
-        char[] orig = doc.getChars(offset, len);
-        char[] changed = (char[])orig.clone();
+        final char[] orig = doc.getChars(offset, len);
+        final char[] changed = (char[])orig.clone();
         for (int i = 0; i < orig.length; i++) {
             switch (type) {
             case CASE_UPPER:
@@ -862,13 +862,19 @@ public class Utilities {
         // check chars for difference and possibly change document
         for (int i = 0; i < orig.length; i++) {
             if (orig[i] != changed[i]) {
-                doc.atomicLock();
-                try {
-                    doc.remove(offset, orig.length);
-                    doc.insertString(offset, new String(changed), null);
-                } finally {
-                    doc.atomicUnlock();
-                }
+                final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                        try {
+                            doc.remove(offset, orig.length);
+                            doc.insertString(offset, new String(changed), null);
+                        } catch (BadLocationException ex) {
+                            badLocationExceptions [0] = ex;
+                        }
+                    }
+                });
+                if (badLocationExceptions [0] != null)
+                    throw badLocationExceptions [0];
                 return true; // changed
             }
         }
@@ -931,15 +937,25 @@ public class Utilities {
      * @param endOffset offset at which the formatting ends
      * @return length of the reformatted code
      */
-    public static int reformat(BaseDocument doc, int startOffset, int endOffset)
+    public static int reformat (final BaseDocument doc, final int startOffset, final int endOffset)
     throws BadLocationException {
-        Formatter formatter = doc.getFormatter();
+        final Formatter formatter = doc.getFormatter();
         formatter.reformatLock();
-        doc.atomicLock();
         try {
-            return formatter.reformat(doc, startOffset, endOffset);
+            final Object[] result = new Object [1];
+            doc.runAtomicAsUser (new Runnable () {
+                public void run () {
+                    try {
+                        result [0] = formatter.reformat (doc, startOffset, endOffset);
+                    } catch (BadLocationException ex) {
+                        result [0] = ex;
+                    }
+                }
+            });
+            if (result [0] instanceof BadLocationException)
+                throw (BadLocationException) result [0];
+            return (Integer) result [0];
         } finally {
-            doc.atomicUnlock();
             formatter.reformatUnlock();
         }
     }

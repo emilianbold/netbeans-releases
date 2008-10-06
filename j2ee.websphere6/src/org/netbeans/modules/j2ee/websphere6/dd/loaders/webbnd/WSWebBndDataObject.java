@@ -66,6 +66,7 @@ import org.openide.ErrorManager;
 import java.io.StringWriter;
 import java.io.Writer;
 import javax.xml.parsers.*;
+import org.openide.util.ImageUtilities;
 import org.xml.sax.*;
 
 public class WSWebBndDataObject extends WSMultiViewDataObject /*MultiDataObject*/
@@ -129,7 +130,7 @@ public class WSWebBndDataObject extends WSMultiViewDataObject /*MultiDataObject*
             return wbtb;            
         }
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws5.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws5.gif"); //NOI18N
         }
     }
     

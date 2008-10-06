@@ -318,8 +318,7 @@ class ExtPlainView extends PlainView {
 
     @Override
     public float getPreferredSpan(int axis) {
-        Document doc = getDocument();
-        if (axis == Y_AXIS || !(doc instanceof OutputDocument)) {
+        if (axis == Y_AXIS) {
             return super.getPreferredSpan(axis);
         } else {
             return longestLineLength + 1;

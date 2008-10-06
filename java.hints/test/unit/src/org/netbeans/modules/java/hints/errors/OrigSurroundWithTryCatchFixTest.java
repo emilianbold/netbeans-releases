@@ -213,12 +213,13 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "import java.io.FileNotFoundException;\n" +
                        "public abstract class Test {\n" +
                        "    public Test() {\n" +
-                       "        FileInputStream a,b,c,fis,d,e,f;\n" +
+                       "        FileInputStream a,b,c,fis;\n" +
                        "        try {\n" +
                        "            fis = new FileInputStream(new File(\"\"));\n" +
                        "        } catch (FileNotFoundException ex) {\n" +
                        "            ex.printStackTrace();\n" +
                        "        }" +
+                       "        FileInputStream d,e,f;\n" +
                        "        fis.read();\n" +
                        "    }\n" +
                        "}\n").replaceAll("[ \t\n]+", " "));
@@ -242,12 +243,13 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "import java.io.FileNotFoundException;\n" +
                        "public abstract class Test {\n" +
                        "    public Test() {\n" +
-                       "        FileInputStream fis,a,b,c;\n" +
+                       "        FileInputStream fis;\n" +
                        "        try {\n" +
                        "            fis = new FileInputStream(new File(\"\"));\n" +
                        "        } catch (FileNotFoundException ex) {\n" +
                        "            ex.printStackTrace();\n" +
                        "        }" +
+                       "        FileInputStream a,b,c;\n" +
                        "        fis.read();\n" +
                        "    }\n" +
                        "}\n").replaceAll("[ \t\n]+", " "));

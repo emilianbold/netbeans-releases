@@ -1,9 +1,5 @@
 /*
- *  PersonResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,15 +10,17 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
+import javax.persistence.EntityManager;
 import converter.PersonConverter;
-import javax.ws.rs.core.UriInfo;
-
 
 /**
  *
@@ -30,21 +28,18 @@ import javax.ws.rs.core.UriInfo;
  */
 
 public class PersonResource {
-    private String id;
-    private UriInfo context;
-    
+    @Context
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+    protected String id;
+  
     /** Creates a new instance of PersonResource */
     public PersonResource() {
     }
 
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public PersonResource(String id, UriInfo context) {
+    public void setId(String id) {
         this.id = id;
-        this.context = context;
     }
 
     /**
@@ -54,12 +49,14 @@ public class PersonResource {
      * @return an instance of PersonConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public PersonConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            return new PersonConverter(getEntity(), context.getAbsolutePath(), expandLevel);
+            persistenceSvc.beginTx();
+            return new PersonConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -72,12 +69,13 @@ public class PersonResource {
      * @param data an PersonConverter entity that is deserialized from a XML stream
      */
     @PUT
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public void put(PersonConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            updateEntity(getEntity(), data.getEntity());
+            EntityManager em = persistenceSvc.getEntityManager();
+            updateEntity(getEntity(), data.resolveEntity(em));
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
@@ -94,8 +92,7 @@ public class PersonResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Person entity = getEntity();
-            deleteEntity(entity);
+            deleteEntity(getEntity());
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
@@ -109,10 +106,11 @@ public class PersonResource {
      * @return an instance of Person
      */
     protected Person getEntity() {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         try {
-            return (Person) PersistenceService.getInstance().createQuery("SELECT e FROM Person e where e.id = :id").setParameter("id", id).getSingleResult();
+            return (Person) em.createQuery("SELECT e FROM Person e where e.id = :id").setParameter("id", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
         }
     }
 
@@ -124,7 +122,8 @@ public class PersonResource {
      * @return the updated entity
      */
     protected Person updateEntity(Person entity, Person newEntity) {
-        entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        entity = em.merge(newEntity);
         return entity;
     }
 
@@ -134,6 +133,7 @@ public class PersonResource {
      * @param entity the entity to deletle
      */
     protected void deleteEntity(Person entity) {
-        PersistenceService.getInstance().removeEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.remove(entity);
     }
 }

@@ -40,21 +40,26 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JTree;
-import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.plaf.TreeUI;
+import javax.swing.plaf.basic.BasicTreeUI;
+import javax.swing.tree.FixedHeightLayoutCache;
+import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
@@ -65,33 +70,68 @@ import org.openide.nodes.Node;
  *
  * @author Dan
  */
-public class DebugTreeView extends BeanTreeView implements TreeExpansionListener {
+public class DebugTreeView extends BeanTreeView {
 
-    private int thickness;
-    private Color highlightColor = new Color(233, 239, 248); // new Color(234, 234, 250);
-    private Color currentThreadColor = new Color(233, 255, 230); // new Color(234, 234, 250);
+    private int thickness = 0;
+    private Color highlightColor = new Color(233, 239, 248);
+    private Color currentThreadColor = new Color(233, 255, 230);
     private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private JPDAThread focusedThread;
     
     DebugTreeView() {
         super();
-        tree.setPreferredSize(new Dimension(5, 5)); // [TODO]
-        tree.setMinimumSize(new Dimension(5, 5));
-        setPreferredSize(new Dimension(5, 5));
-        setMinimumSize(new Dimension(5, 5));
+        setBackground(whiteColor);
         tree.setOpaque(false);
+        tree.setBackground(whiteColor);
         ((JComponent)tree.getParent()).setOpaque(false);
+        ((JComponent)tree.getParent()).setBackground(whiteColor);
+        setWheelScrollingEnabled(false);
     }
 
     public JTree getTree() {
         return tree;
     }
 
+    void resetSelection() {
+        tree.getSelectionModel().clearSelection(); // To flush selection cache
+        clearSelectionCache(tree.getSelectionModel().getRowMapper());
+        clearDrawingCache(tree);
+        tree.repaint(); // To flush SynthTreeUI.drawingCache
+    }
+
+    // HACK to clear Swing caches
+    private static void clearSelectionCache(RowMapper rm) {
+        if (rm instanceof FixedHeightLayoutCache) {
+            try {
+                Field infoField = rm.getClass().getDeclaredField("info");
+                infoField.setAccessible(true);
+                Object searchInfo = infoField.get(rm);
+                if (searchInfo != null) {
+                    Field nodeField = searchInfo.getClass().getDeclaredField("node");
+                    nodeField.setAccessible(true);
+                    nodeField.set(searchInfo, null);
+                }
+            } catch (Exception ex) {}
+        }
+    }
+
+    // HACK http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6258067
+    private static void clearDrawingCache(JTree tree) {
+        TreeUI tui = tree.getUI();
+        if (tui instanceof BasicTreeUI) {
+            try {
+                Field drawingCacheField = BasicTreeUI.class.getDeclaredField("drawingCache");
+                drawingCacheField.setAccessible(true);
+                Map table = (Map) drawingCacheField.get(tui);
+                table.clear();
+            } catch (Exception ex) {}
+        }
+     }
+
     public List<TreePath> getVisiblePaths() {
         synchronized(tree) {
             List<TreePath> result = new ArrayList<TreePath>();
-//            collectVisiblePaths(result, tree.getPathForRow(0));
             int count = tree.getRowCount();
             for (int x = 0; x < count; x++) {
                 TreePath path = tree.getPathForRow(x);
@@ -101,6 +141,20 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
             }
             return result;
         }
+    }
+
+    public Object getJPDAObject(TreePath path) {
+        Node node = Visualizer.findNode(path.getLastPathComponent());
+        JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+        if (jpdaThread != null) {
+            return jpdaThread;
+        }
+        JPDAThreadGroup jpdaThreadGroup = node.getLookup().lookup(JPDAThreadGroup.class);
+        return jpdaThreadGroup;
+    }
+
+    public int getUnitHeight() {
+        return thickness;
     }
 
     public void addTreeExpansionListener(TreeExpansionListener listener) {
@@ -123,14 +177,24 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
 
     // [TODO] optimize paintStripes() method
     void paintStripes(Graphics g, JComponent comp) {
-        List<TreePath> paths = getVisiblePaths();
+        List<TreePath> paths = getVisiblePaths(); // [TODO] do not call getVisiblePaths()
         int linesNumber = paths.size();
-        int zebraHeight = linesNumber * thickness;
         Rectangle rect = paths.size() > 0 ? tree.getRowBounds(tree.getRowForPath(paths.get(0))) : null;
-        thickness = rect != null ? (int) Math.round(rect.getHeight()) : 18; // [TODO] compute height for each particular row
+        if (rect != null) {
+            thickness = (int)Math.round(rect.getHeight());
+        }
+        int rowHeight;
+        if (thickness > 0) { // [TODO] compute height for each particular row
+            rowHeight = thickness;
+        } else if (tree.getRowHeight() > 0) {
+            rowHeight = tree.getRowHeight() + 2;
+        } else {
+            rowHeight = 18;
+        }
+        int zebraHeight = linesNumber * rowHeight;
         
-        int width = getWidth();
-        int height = getHeight();
+        int width = comp.getWidth();
+        int height = comp.getHeight();
         
         if ((width <= 0) || (height <= 0)) {
             return;
@@ -161,15 +225,17 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         }
 
         Color origColor = g.getColor();
-        JPDADebugger debugger = ThreadsListener.getDefault().getDebugger();
+        ThreadsListener threadsListener = ThreadsListener.getDefault();
+        JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
         JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
-        if (currentThread != null && !currentThread.isSuspended()) {
+        if (currentThread != null && !currentThread.isSuspended() &&
+                !DebuggingTreeModel.isMethodInvoking(currentThread)) {
             currentThread = null;
         }
         boolean isHighlighted = false;
         boolean isCurrent = false;
         Iterator<TreePath> iter = paths.iterator();
-        int firstGroupNumber = clipY / thickness;
+        int firstGroupNumber = clipY / rowHeight;
         for (int x = 0; x <= firstGroupNumber && iter.hasNext(); x++) {
             Node node = Visualizer.findNode(iter.next().getLastPathComponent());
             JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
@@ -179,14 +245,17 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
             }
         }
         
-        int sy = (clipY / thickness) * thickness;
+        int sy = (clipY / rowHeight) * rowHeight;
         int limit = Math.min(clipY + clipH - 1, zebraHeight);
         while (sy < limit) {
             int y1 = Math.max(sy, clipY);
-            int y2 = Math.min(clipY + clipH, y1 + thickness) ;
-            g.setColor(isHighlighted ? highlightColor : (isCurrent ? currentThreadColor : whiteColor));
-            g.fillRect(clipX, y1, clipW, y2 - y1);
-            sy += thickness;
+            int y2 = Math.min(clipY + clipH, y1 + rowHeight);
+            if (isHighlighted || isCurrent) {
+                //g.setColor(isHighlighted ? highlightColor : (isCurrent ? currentThreadColor : whiteColor));
+                g.setColor(isHighlighted ? highlightColor : currentThreadColor);
+                g.fillRect(clipX, y1, clipW, y2 - y1);
+            }
+            sy += rowHeight;
             if (iter.hasNext()) {
                 Node node = Visualizer.findNode(iter.next().getLastPathComponent());
                 JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
@@ -199,10 +268,10 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
                 isCurrent = false;
             }
         }
-        if (sy < clipY + clipH - 1) {
-            g.setColor(whiteColor);
-            g.fillRect(clipX, sy, clipW, clipH + clipY - sy);
-        }
+//        if (sy < clipY + clipH - 1) {
+//            g.setColor(whiteColor);
+//            g.fillRect(clipX, sy, clipW, clipH + clipY - sy);
+//        }
         g.setColor(origColor);
     }
 
@@ -223,24 +292,5 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         }
         return false;
     }
-    
-    private void collectVisiblePaths(List<TreePath> result, TreePath path) {
-        result.add(path);
-        Enumeration<TreePath> paths = tree.getExpandedDescendants(path);
-        if (paths != null) {
-            while (paths.hasMoreElements()) {
-                path = paths.nextElement();
-                collectVisiblePaths(result, path);
-            }
-        }
-    }
 
-    public void treeExpanded(TreeExpansionEvent event) {
-        repaint();
-    }
-
-    public void treeCollapsed(TreeExpansionEvent event) {
-        repaint();
-    }
-    
 }

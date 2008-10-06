@@ -42,11 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <html>
 
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
         <title>Using MySQL with the NetBeans IDE</title>
 
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
@@ -64,12 +64,14 @@ made subject to such option by the copyright holder.
         
         
         <ul>
-            <li><strong>Create a  database.</strong> Brings up a dialog for creating a database, including sample databases.</li>
-            <li><strong>Start.</strong> Starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
+            <li><strong>Create Database.</strong> Brings up a dialog for creating a database, including sample databases.</li>
+    <li><strong>Start.</strong> Starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
             <li><strong>Stop.</strong> Stops the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
-            <li><strong>Connect.</strong> Connects the IDE to the database. </li>
-            <li><strong>Refresh.</strong> Refreshes the list of databases based on what's currently on the server.</li>
-            <li><strong>Delete.</strong> Removes the MySQL node. It also marks the node as removed, so that next time the user starts up NetBeans the IDE will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
+            <li><strong>Connect.</strong> Connects the IDE to the MySQL database server. </li>
+            <li>Disconnect. Disconnects the IDE ffrom the MySQL database server.</li>
+            
+    <li><strong>Delete.</strong> Removes the MySQL node. It also marks the node as removed, so that next time the user starts up NetBeans the IDE will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
+           <li><strong>Refresh.</strong> Refreshes the list of databases based on what's currently on the server.</li>
             <li><strong>Run Administration Tool.</strong> Brings up the administration tool that is registered with the runtime. The provider either invokes the admin tool as a separate system process, or if it is a web-based tool, brings up the provided URL in the default browser. If the administer command has not been set, then when the user picks the action, they are prompted to set the path to the command. </li>
             <li><strong>Properties.</strong>  Brings up a dialog that allows the user to configure important settings for the server. There are two tabs, one for basic settings and one for setting command paths to administrative commands (start, stop, administer) </li>
            

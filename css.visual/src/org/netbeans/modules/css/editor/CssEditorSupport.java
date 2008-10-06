@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.css.editor;
 
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -106,6 +107,20 @@ public class CssEditorSupport {
     private PropertyChangeListener CSS_STYLE_DATA_LISTENER = new PropertyChangeListener() {
 
         public void propertyChange(final PropertyChangeEvent evt) {
+            //detach myself from the source so next UI changes are not propagated to the 
+            //document until the parser finishes. Then new listener will be added
+            if(selected != null) {
+                d("css style data listener - detachinf from rule content.");
+                selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            }
+            
+            //remove caret listener, new one will be added one the written test is parsed
+            if (caretListenerRegistered) {
+                editorPane.removeCaretListener(CARET_LISTENER);
+                d("removed caret listener");
+                caretListenerRegistered = false;
+            }
+            
             final NbEditorDocument doc = (NbEditorDocument) document;
             if (doc != null) {
                 doc.runAtomic(new Runnable() {
@@ -125,24 +140,22 @@ public class CssEditorSupport {
                         try {
                             if (oldRule != null && newRule == null) {
                                 //remove the old rule line - maybe we should just cut the exact part?!?!
-                                int offset = oldRule.key().offset();
-                                int lineStart = Utilities.getRowStart(doc, offset);
-
-                                //do not remove the rule opening bracket if we are on it's line
-                                int ruleOpenBracketOffset = myRule.getRuleOpenBracketOffset();
-                                if (lineStart <= ruleOpenBracketOffset) {
-                                    lineStart = ruleOpenBracketOffset + 1;
+                                int start = oldRule.key().offset();
+                                int end = oldRule.value().offset() + oldRule.value().name().length();
+                                
+                                //cut off also the semicolon if there is any
+                                end = oldRule.semicolonOffset() != -1 ? oldRule.semicolonOffset() + 1 : end; 
+                                
+                                doc.remove(start, end - start);
+                                
+                                //check if the line is empty and possibly remove it
+                                if(Utilities.isRowWhite(doc, start)) {
+                                    int lineStart = Utilities.getRowStart(doc, start);
+                                    int lineOffset = Utilities.getLineOffset(doc, start);
+                                    int nextLineStart = Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+                                    
+                                    doc.remove(lineStart, nextLineStart - lineStart);
                                 }
-
-                                int lineEnd = Utilities.getRowEnd(doc, offset) + LINE_SEPARATOR.length();
-
-                                //do not remove the rule closing bracket if we are on it's line
-                                int ruleCloseBracketOffset = myRule.getRuleCloseBracketOffset();
-                                if (lineEnd > ruleCloseBracketOffset) {
-                                    lineEnd = ruleCloseBracketOffset;
-                                }
-
-                                doc.remove(lineStart, lineEnd - lineStart);
 
                             } else if (oldRule == null && newRule != null) {
                                 //add the new rule at the end of the rule block:
@@ -265,6 +278,9 @@ public class CssEditorSupport {
         public void caretUpdate(CaretEvent ce) {
             Object source = ce.getSource();
             if (source instanceof JEditorPane) {
+                if(!caretListenerRegistered) {
+                    return ;
+                }
                 d("caret event; dot=" + ce.getDot());
                 RULE_UPDATE.setPane(((JEditorPane) source));
                 RULE_UPDATE_TASK.schedule(RULE_UPDATE_DELAY);
@@ -273,7 +289,7 @@ public class CssEditorSupport {
     };
 
     //always called fro AWT, no need to explicit synch with cssTCDeactivated
-    public void cssTCActivated(TopComponent tc) {
+    public void cssTCActivated(final TopComponent tc) {
         d("activated: " + tc.getName());
         
         if (current != null) {
@@ -299,6 +315,27 @@ public class CssEditorSupport {
         this.fileObject = tc.getLookup().lookup(FileObject.class);
         this.model = CssModel.get(document);
 
+        //select the first rule if the caret in on zero offset
+        //once the model is updated/created the caret is set and this listener unregistered
+        
+        //access the final refs to the model and editorPane instead of this.* refs objects 
+        //since the code is unsynchronized and they may become null at any time
+        final CssModel model_ref = model;
+        final JEditorPane pane_ref = editorPane;
+        model_ref.addPropertyChangeListener( new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
+                    model_ref.removePropertyChangeListener(this);
+                    if (pane_ref.getCaret().getDot() == 0) {
+                        if (model_ref.rules().size() > 0) {
+                            d("setting caret to first rule: " + tc.getName());
+                            pane_ref.getCaret().setDot(model_ref.rules().get(0).getRuleNameOffset());
+                        }
+                    }
+                }
+            }
+        });
+
         if (!caretListenerRegistered) {
             d("added caret listener: " + tc.getName());
             editorPane.addCaretListener(CARET_LISTENER);
@@ -313,14 +350,6 @@ public class CssEditorSupport {
             d("removed css styledatalistener from old " + selected + ": " + tc.getName());
             selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             selected = null;
-        }
-        
-                //select the first rule if the caret in on zero offset
-        if(editorPane.getCaret().getDot() == 0) {
-            if(model.rules().size() > 0) {
-                d("setting caret to first rule: " + tc.getName());
-                editorPane.getCaret().setDot(model.rules().get(0).getRuleNameOffset());
-            }
         }
         
         updateSelectedRule(editorPane.getCaret().getDot());
@@ -365,7 +394,7 @@ public class CssEditorSupport {
         EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
         if (ec != null) {
             JEditorPane[] panes = ec.getOpenedPanes();
-            if (panes.length > 0) {
+            if (panes != null && panes.length > 0) {
                 return panes[0];
             }
         }
@@ -408,7 +437,7 @@ public class CssEditorSupport {
         } else {
             //something was selected
 
-            if (selectedRule == selected) {
+            if (selectedRule.equals(selected)) {
                 d("already selected rule selected, exiting");
                 return; //trying to select already selected rule, ignore
             }

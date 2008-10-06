@@ -52,15 +52,17 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
+ * Copy from openide.util to avoid any external dependency of reglib.
+ *
  * Factory methods for various types of {@link Enumeration}.
  * Allows composition of existing enumerations, filtering their contents, and/or modifying them.
  * All of this is designed to be done lazily, i.e. elements created on demand.
- * @since 4.37
+ * 
  * @author Jaroslav Tulach
  * @see NbCollections#checkedEnumerationByFilter
  * @see NbCollections#iterable(Enumeration)
  */
-public final class Enumerations extends Object {
+final class Enumerations extends Object {
     /** No instances */
     private Enumerations() {
     }

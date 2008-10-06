@@ -70,10 +70,11 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private String scriptPrefix;
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
-    private String jrubyProps;
+    private String jvmArgs;
     private FileObject fileObject;
     private String classPath;
     boolean showProgress = true;
@@ -82,7 +83,22 @@ public class ExecutionDescriptor {
     boolean debug;
     private boolean fastDebugRequired;
     private boolean appendJdkToPath;
-    List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
+    private String encoding;
+    private boolean useInterpreter;
+    List<OutputRecognizer> outputRecognizers;
+    /**
+     * Defines whether rerun should be allowed. <i>Currently needed
+     * only because rerunning rake test tasks in the test runner does not
+     * work reliably (might be causing #145228), likely will become obsolete
+     * once that issue has been solved</i>.
+     */
+    private boolean rerun = true;
+    /**
+     * The max time in ms for waiting a stream to become ready
+     * before considering the process to be stalling.
+     */
+    private int readMaxWaitTime = 50;
+
 
     public ExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
@@ -97,6 +113,8 @@ public class ExecutionDescriptor {
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
+        this.outputRecognizers = new ArrayList<OutputRecognizer>();
+        this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
             Map<String, String> env = new HashMap<String, String>();
@@ -182,8 +200,8 @@ public class ExecutionDescriptor {
         return this;
     }
     
-    public ExecutionDescriptor jrubyProperties(final String jrubyProps) {
-        this.jrubyProps = jrubyProps;
+    public ExecutionDescriptor jvmArguments(final String jvmArgs) {
+        this.jvmArgs = jvmArgs;
         return this;
     }
 
@@ -241,6 +259,14 @@ public class ExecutionDescriptor {
         return script;
     }
     
+    public void scriptPrefix(String sp) {
+        scriptPrefix = sp;
+    }
+
+    public String getScriptPrefix() {
+        return scriptPrefix;
+    }
+    
     /**
      * Arguments to be appended <em>AFTER</em> the target. Usually arguments and
      * options to the Ruby script (target, application, ..) itself.
@@ -257,9 +283,9 @@ public class ExecutionDescriptor {
         return initialArgs == null ? null : Utilities.parseParameters(initialArgs);
     }
     
-    /** Properties to be passed to the JVM running the JRuby process. */
-    public String[] getJRubyProps() {
-        return jrubyProps == null ? null : Utilities.parseParameters(jrubyProps);
+    /** Arguments to be passed to the JVM running the JRuby process. */
+    public String[] getJVMArguments() {
+        return jvmArgs == null ? null : Utilities.parseParameters(jvmArgs);
     }
     
     public File getPwd() {
@@ -281,7 +307,15 @@ public class ExecutionDescriptor {
     public FileObject getFileObject() {
         return fileObject;
     }
-    
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    String getEncoding() {
+        return encoding;
+    }
+
     /**
      * Should the JDK be appended to the PATH?
      * @return True iff the JDK should be appended to the PATH.
@@ -300,4 +334,41 @@ public class ExecutionDescriptor {
     public Map<String, String> getAdditionalEnvironment() {
         return additionalEnv;
     }
+
+    public boolean useInterpreter() {
+        return useInterpreter;
+    }
+
+    public void useInterpreter(final boolean useInterpreter) {
+        this.useInterpreter = useInterpreter;
+    }
+
+    /**
+     * @see #readMaxWaitTime
+     */
+    public int getReadMaxWaitTime() {
+        return readMaxWaitTime;
+    }
+
+    /**
+     * @see #readMaxWaitTime
+     */
+    public void setReadMaxWaitTime(int readMaxWaitTime) {
+        this.readMaxWaitTime = readMaxWaitTime;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public boolean isRerun() {
+        return rerun;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public void setRerun(boolean rerun) {
+        this.rerun = rerun;
+    }
+
 }

@@ -112,8 +112,8 @@ class OrigSurroundWithTryCatchFix implements Fix {
                     //may be necessary to separate variable declaration and assignment:
                     Element e = parameter.getTrees().getElement(p);
                     VariableTree vt = (VariableTree) leaf;
-                    long start = parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), vt);
-                    
+
+                    // XXX: Come up with some smart skipping solution for comma separated variables, with respect to #143232
                     if (e != null && e.getKind() == ElementKind.LOCAL_VARIABLE) {
                         TreePath block = findBlock(p);
                         
@@ -126,21 +126,6 @@ class OrigSurroundWithTryCatchFix implements Fix {
                                 
                                 assert index != (-1);
                                 
-                                int skipIndex = index + 1;
-
-                                while (bt.getStatements().size() > skipIndex) {
-                                    StatementTree s = bt.getStatements().get(skipIndex);
-                                    
-                                    if (s.getKind() != Kind.VARIABLE) {
-                                        break;
-                                    }
-                                    
-                                    if (start != parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), vt))
-                                        break;
-                                    
-                                    skipIndex++;
-                                }
-                                
                                 StatementTree assignment = make.ExpressionStatement(make.Assignment(make.Identifier(vt.getName()), vt.getInitializer()));
                                 StatementTree declaration = make.Variable(vt.getModifiers(), vt.getName(), vt.getType(), null);//XXX: mask out final
                                 TryTree tryTree = make.Try(make.Block(Collections.singletonList(assignment), false), MagicSurroundWithTryCatchFix.createCatches(parameter, make, thandles, p), null);
@@ -148,9 +133,8 @@ class OrigSurroundWithTryCatchFix implements Fix {
                                 
                                 nueStatements.addAll(bt.getStatements().subList(0, index));
                                 nueStatements.add(declaration);
-                                nueStatements.addAll(bt.getStatements().subList(index + 1, skipIndex));
                                 nueStatements.add(tryTree);
-                                nueStatements.addAll(bt.getStatements().subList(skipIndex, bt.getStatements().size()));
+                                nueStatements.addAll(bt.getStatements().subList(index + 1, bt.getStatements().size()));
                                 
                                 parameter.rewrite(bt, make.Block(nueStatements, false));
                                 return ;

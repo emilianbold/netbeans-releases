@@ -2,8 +2,8 @@
 < f:validateDoubleRange >
 < f:validateLength >
 < f:validateLongRange >
-< f:validator />
-< f:valueChangeListener />
+< f:validator / >
+< f:valueChangeListener / >
 < f:verbatim >
 < f:view >
 End cursor position = 405

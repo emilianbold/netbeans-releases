@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -138,6 +139,7 @@ public class PaletteItemDataObject extends MultiDataObject {
     PaletteItemDataObject(FileObject fo, MultiFileLoader loader)
     throws DataObjectExistsException {
         super(fo, loader);
+        getCookieSet().add(new PaletteItemInfoImpl(this));
     }
 
     boolean isFileRead() {
@@ -160,14 +162,10 @@ public class PaletteItemDataObject extends MultiDataObject {
     public Node createNodeDelegate() {
         return new ItemNode();
     }
-    
+
     @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> cookieClass) {
-        
-        if (PaletteItemInfoCookie.class.isAssignableFrom(cookieClass)){
-            return cookieClass.cast(new PaletteItemInfoImpl( this ));
-        }                
-        return cookieClass.cast(super.getCookie(cookieClass));
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     // -------
@@ -294,7 +292,7 @@ public class PaletteItemDataObject extends MultiDataObject {
         }
         
         public java.awt.Image getIcon(final int type) {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
 
         
@@ -355,7 +353,7 @@ public class PaletteItemDataObject extends MultiDataObject {
 //                    if (icon32 == null && isItemValid())
 //                        icon32 = paletteItem.getIcon(type);
                     if (icon32 == null)
-                        icon32 = Utilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component_32.png"); // NOI18N
+                        icon32 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component_32.png"); // NOI18N
                 }
                 return icon32;
             } else { // small icon by default
@@ -367,7 +365,7 @@ public class PaletteItemDataObject extends MultiDataObject {
 //                        icon16 = paletteItem.getIcon(type);
                     if (icon16 == null) {                        
 //                        System.out.println("Small Icon is null after assignment");
-                        icon16 = Utilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
+                        icon16 = ImageUtilities.loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
                     }
                 }
                 return icon16;
@@ -665,6 +663,8 @@ public class PaletteItemDataObject extends MultiDataObject {
         }
         
         public String getClassName() {
+            // XXX should ensure that the field is set (e.g., by making sure
+            // loadFile() has already been called)!
             return pido.componentClassName;
         }
 

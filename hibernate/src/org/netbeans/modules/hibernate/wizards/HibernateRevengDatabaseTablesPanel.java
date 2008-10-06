@@ -88,6 +88,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     private final DBSchemaManager dbschemaManager = new DBSchemaManager();
     private DatabaseConnection dbconn;
     private String schemaName;
+    private String catalogName;
     private boolean sourceSchemaUpdateEnabled;
     private Project project;
     private HibernateEnvironment env;
@@ -158,18 +159,23 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         HibernateConfiguration hibConf = null;
         try {
-            hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
-            dbconn = HibernateUtil.getDBConnection(hibConf);
-            if (dbconn != null) {
-                sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
-                schemaName = dbconn.getSchema();
+            if (cmbDatabaseConn.getSelectedIndex() != -1) {
+                hibConf = ((HibernateCfgDataObject) DataObject.find(configFileObjects.get(cmbDatabaseConn.getSelectedIndex()))).getHibernateConfiguration();
+                dbconn = HibernateUtil.getDBConnection(hibConf);
+                if (dbconn != null) {
+                    sourceSchemaElement = dbschemaManager.getSchemaElement(dbconn);
+                    schemaName = dbconn.getSchema();
+                    java.sql.Connection jdbcConnection = dbconn.getJDBCConnection();
+                    if (jdbcConnection != null)
+                        catalogName = jdbcConnection.getCatalog();
+                }
             }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         } catch (SQLException e) {
-            notify("Error");
+            notify(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "ERR_DatabaseError")); // NOI18N
         }
 
         if (sourceSchemaElement != null) {
@@ -205,17 +211,19 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
                     String existingClass = ((Table.ExistingDisabledReason) t.getDisabledReason()).getFQClassName();
                     tableError.setText(
                             NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_Already_Mapped", new Object[]{t.getName(), existingClass})); // NOI18N
+
                     break;
 
                 } else if (t.getDisabledReason() instanceof Table.NoPrimaryKeyDisabledReason) {
                     tableError.setText(NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "MSG_No_Primary_Key", new Object[]{t.getName()})); // NOI18N
+
                     break;
 
                 }
             }
         }
     }
-    
+
     public FileObject getConfigurationFile() {
         if (cmbDatabaseConn.getSelectedIndex() != -1) {
             return configFileObjects.get(cmbDatabaseConn.getSelectedIndex());
@@ -226,9 +234,13 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
     public TableClosure getTableClosure() {
         return tableClosure;
     }
-    
+
     public String getSchemaName() {
         return schemaName;
+    }
+    
+    public String getCatalogName() {
+        return catalogName;
     }
 
     private static void notify(String message) {
@@ -378,7 +390,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         tableClosureCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
-        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
+        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "TXT_HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {

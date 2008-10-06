@@ -56,7 +56,7 @@ public class CallEnterpriseBeanDialog extends JDialogOperator {
      * Creates new CallEnterpriseBeanDialog that can handle it.
      */
     public CallEnterpriseBeanDialog() {
-        super(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbAction"));
+        super(Bundle.getString("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres.Bundle", "LBL_CallEjbActionTitle"));
     }
 
     private JCheckBoxOperator _cbConvertCheckedExceptionsToRuntimeException;

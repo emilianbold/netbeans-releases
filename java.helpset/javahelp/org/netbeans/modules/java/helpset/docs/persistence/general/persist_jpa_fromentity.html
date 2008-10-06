@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright � 2008 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="lastupdated" content="15Aug08">
+<!-- p2 -->
+<title>Generating JPA Controller Classes from Entity Classes</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Generating JPA Controller Classes from Entity Classes</h2>
+<p><small> <a href="#seealso">See Also</a> </small></p>
+
+<p>A JPA controller class is a wrapper for an entity class that provides clients with access to 
+the database through the methods in the entity class. 
+The JPA controller class contains the logic for creating, editing and destorying an entry in the data source, 
+getting all of the entries in the data source, and getting a specific entry in the data source.</p>
+<p>The JPA Controller Classes from Entity Classes wizard generates JPA controllers based on entity classes in your application.
+The wizard generates one JPA controller class for each entity class that you select and places the controller class in the specified location.
+Each generated JPA controller class contains <tt>create</tt>, <tt>edit</tt> and <tt>destroy</tt> methods
+and methods for retrieving the entities and uses an entity manager for managing entity persistence.
+The wizard also generates exception classes used by the controller classes.</p>
+
+
+<p><b>To generate a JPA controller class from an entity class:</b></p>
+<ol>
+    <li>Choose File > New (Ctrl-N) from the main menu.</li>
+    <li>From the Persistence category, select JPA Controller Classes from Entity Classes and click Next. The wizard displays all of the entity classes in the project.</li>
+    <li>Add all of the entity classes for which you want to generate controller classes to the Selected Entity Classes list and click Next.</li>
+    <li>Specify a package for the JPA controller classes. 
+        The default location is the folder containing the selected entity classes. </li>
+    <li>Click Finish.</li>
+</ol>
+<p>After the wizard generates the JPA controller classes, the controller methods can be invoked from JSP pages or JSP converters
+or other classes in your application.
+If the database schema changes you can use the IDE wizards to again generate new entity classes and controller classes and 
+then where necessary update the code that invokes the controller methods.</p>
+
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/tag/framework/framework_jsf_fromentity.html">Generating JSF Pages from an Entity Class</a></dd>
+  <dd><a href="nbdocs://org.netbeans.modules.visualweb.ravehelp.rave_nbpack/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/create/tag/framework/framework_jsf_aboutcrud.html">About CRUD Applications</a></dd>
+  <dd><a href="persistence_entityclasses.html">Creating an Entity Class</a></dd>
+  <dd><a href="persistence_fromdb.html">Generating Persistent Entity Classes from a Database</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr> 
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

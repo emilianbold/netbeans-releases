@@ -48,14 +48,17 @@
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.ExtensibilityElementNewTypesFactory;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
@@ -65,26 +68,23 @@ import org.openide.util.datatransfer.NewType;
  *
  */
 public class ExtensibilityElementsFolderNode extends FolderNode {
-    
+
     private Definitions mDef = null;
     private Set<String> mSpecialTargetNamespaces;
-    
-    
+
     public ExtensibilityElementsFolderNode(Definitions element) {
         this(element, null);
     }
-    
+
     public ExtensibilityElementsFolderNode(Definitions element, Set<String> specialTargetNamespaces) {
-        super(new ExtensibilityElementsFolderChildren(element, specialTargetNamespaces),
+        super(new ExtensibilityElementChildFactory(element, specialTargetNamespaces),
                 element, ExtensibilityElement.class);
         mDef = element;
         mSpecialTargetNamespaces = specialTargetNamespaces;
-        this.setDisplayName(NbBundle.
-                getMessage(ExtensibilityElementsFolderNode.class,
+        this.setDisplayName(NbBundle.getMessage(ExtensibilityElementsFolderNode.class,
                 "EXTENSIBILITY_ELEMENTS_FOLDER_NODE_NAME"));
     }
 
-    
     @Override
     public final NewType[] getNewTypes() {
         if (isEditable()) {
@@ -96,27 +96,36 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
             }
             return new ExtensibilityElementNewTypesFactory(WSDLExtensibilityElements.ELEMENT_DEFINITIONS).getNewTypes(mDef);
         }
-        return new NewType[] {};
+        return new NewType[]{};
     }
-    
-    public static final class ExtensibilityElementsFolderChildren extends GenericWSDLComponentChildren<Definitions> {
+
+    @Override
+    public Class getType() {
+        return ExtensibilityElement.class;
+    }
+
+    public static final class ExtensibilityElementChildFactory extends ChildFactory implements Refreshable {
         private Set<String> specialTargetNS;
-        
-        public ExtensibilityElementsFolderChildren(Definitions definitions, Set<String> specialTargetNamespaces) {
-            super(definitions);
+        private Definitions def;
+
+        public ExtensibilityElementChildFactory(Definitions definitions, Set<String> specialTargetNamespaces) {
+            super();
             specialTargetNS = specialTargetNamespaces;
+            this.def = definitions;
         }
-        public ExtensibilityElementsFolderChildren(Definitions definitions) {
+
+        public ExtensibilityElementChildFactory(Definitions definitions) {
             this(definitions, null);
         }
-        
+
         @Override
-        public final Collection<ExtensibilityElement> getKeys() {
-            Definitions def = getWSDLComponent();
-            
+        protected boolean createKeys(List toPopulate) {
+
             List<ExtensibilityElement> list = def.getExtensibilityElements();
-            if (specialTargetNS == null) return list;
-            
+            if (specialTargetNS == null) {
+                toPopulate.addAll(list);
+                return true;
+            }
             List<ExtensibilityElement> finalList = new ArrayList<ExtensibilityElement>();
             if (list != null) {
                 for (ExtensibilityElement element : list) {
@@ -126,13 +135,23 @@ public class ExtensibilityElementsFolderNode extends FolderNode {
                     finalList.add(element);
                 }
             }
-            return finalList;
+            toPopulate.addAll(finalList);
+            return true;
         }
-    }
 
-    @Override
-    public Class getType() {
-        return ExtensibilityElement.class;
+        @Override
+        protected Node createNodeForKey(Object key) {
+            if (key instanceof WSDLComponent) {
+                return NodesFactory.getInstance().create((WSDLComponent) key);
+            }
+            return null;
+        }
+        
+        
+
+        public void refreshChildren(boolean immediate) {
+            refresh(immediate);
+        }
     }
 }
 

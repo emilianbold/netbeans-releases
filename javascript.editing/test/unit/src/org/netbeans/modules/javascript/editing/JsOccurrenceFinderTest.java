@@ -93,6 +93,10 @@ public class JsOccurrenceFinderTest extends JsTestBase {
         String caretLine = "puts(e^)";
         checkOccurrences("testfiles/occurrences2.js", caretLine, false);
     }
+
+    public void test137522() throws Exception {
+        checkOccurrences("testfiles/137522.js", "updated.each(function(it^em)", true); //);false /* true */);
+    }
     
     
     // TODO - test function calls

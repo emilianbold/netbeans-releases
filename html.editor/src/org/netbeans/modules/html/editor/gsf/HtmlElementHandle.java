@@ -43,8 +43,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstPath;
-import org.netbeans.modules.editor.html.HTMLKit;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
@@ -57,15 +56,15 @@ import org.openide.filesystems.FileObject;
 public class HtmlElementHandle implements ElementHandle {
 
     private AstNode node;
-    private CompilationInfo ci;
+    private FileObject fo;
     
-    HtmlElementHandle(AstNode node, CompilationInfo ci) {
+    HtmlElementHandle(AstNode node, FileObject fo) {
         this.node = node;
-        this.ci = ci;
+        this.fo = fo;
     }
     
     public FileObject getFileObject() {
-        return ci.getFileObject();
+        return fo;
     }
 
     public String getMimeType() {
@@ -109,8 +108,5 @@ public class HtmlElementHandle implements ElementHandle {
         return node;
     }
     
-    public CompilationInfo compilationInfo() {
-        return ci;
-    }
     
 }

@@ -1,17 +1,60 @@
 /*
- * PackagingPanel.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on June 20, 2008, 4:19 PM
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
-import javax.swing.JPanel;
+import java.util.Vector;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -23,27 +66,55 @@ import org.openide.util.NbBundle;
 public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener  {
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
+    private MakeConfiguration conf;
+    private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
+    private PackagingInfoPanel packagingInfoPanel = null;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
+    private PackagingFilesPanel packagingFilesPanel = null;
     
     /** Creates new form PackagingPanel */
-    public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env) {
+    public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
         initComponents();
         
         this.packagingConfiguration = packagingConfiguration;
         this.editor = editor;
+        this.conf = conf;
         
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
         
-        // Combobox
-        String[] displayNames = packagingConfiguration.getDisplayNames();
-        for (int i = 0; i < displayNames.length; i++ ) {
-            packagingTypeComboBox.addItem(displayNames[i]);
-        }
-        packagingTypeComboBox.setSelectedIndex(packagingConfiguration.getType().getValue());
-        
         // Add tabs
-        tabbedPane.addTab("Info", new PackagingInfoPanel());
-        tabbedPane.addTab("Files", new PackagingFilesPanel());
+        String type = packagingConfiguration.getType().getValue();
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (packager.hasInfoList()) {
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeaderSubList(type), packagingConfiguration));
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else {
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
+        
+        tabbedPane.addTab(getString("InfoPanelText"), packagingInfoOuterPanel);
+        tabbedPane.addTab(getString("FilePanelText"), packagingFilesOuterPanel);
+        
+        if (packager.hasInfoList()) {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,true);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(0);
+        }
+        else {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,false);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(1);
+        }
+        
+        //  See IZ 142846
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = ((int)dim.getWidth()/10)*6;
+        setPreferredSize(new Dimension(width, 500));
     }
 
         
@@ -54,7 +125,27 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-	return packagingConfiguration; // FIXUP
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (packager.hasInfoList()) {
+            List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
+            List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
+            // Copy all other types over
+            for (PackagerInfoElement elem : oldList) {
+                if (elem.getPackager() != packagingConfiguration.getType().getValue()) {
+                    newList.add(elem);
+                }
+            }
+            // Copy edited list
+            Vector<PackagerInfoElement> editedList = packagingInfoPanel.getListData();
+            for (PackagerInfoElement elem : editedList) {
+                newList.add(elem);
+            }
+            packagingConfiguration.getInfo().setValue(newList);
+        }
+        
+        packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));
+	return packagingConfiguration;
+        
     }
 
     public HelpCtx getHelpCtx() {
@@ -71,24 +162,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        innerPanel = new javax.swing.JPanel();
-        packagingTypeLabel = new javax.swing.JLabel();
-        packagingTypeComboBox = new javax.swing.JComboBox();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1000, 400));
         setLayout(new java.awt.GridBagLayout());
-
-        innerPanel.setLayout(new java.awt.GridBagLayout());
-
-        packagingTypeLabel.setText(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.packagingTypeLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        innerPanel.add(packagingTypeLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        innerPanel.add(packagingTypeComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -96,21 +172,13 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        innerPanel.add(tabbedPane, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(innerPanel, gridBagConstraints);
+        add(tabbedPane, gridBagConstraints);
+        tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleName")); // NOI18N
+        tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel innerPanel;
-    private javax.swing.JComboBox packagingTypeComboBox;
-    private javax.swing.JLabel packagingTypeLabel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 

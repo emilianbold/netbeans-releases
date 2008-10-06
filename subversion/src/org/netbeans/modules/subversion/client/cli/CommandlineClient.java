@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.client.cli.commands.BlameCommand;
@@ -135,6 +134,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             cli.exec(cmd);
             checkErrors(cmd);            
             if(!cmd.isSupported()) {
+                Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.3");
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
             }                       
         } catch (IOException ex) {
@@ -916,8 +916,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         ISVNStatus[] newStatuses = getStatus(file, rec, false);
         for (ISVNStatus newStatus : newStatuses) {
             ISVNStatus oldStatus = oldStatusMap.get(newStatus.getFile());
-            if(oldStatus.getTextStatus() != newStatus.getTextStatus() ||
-               oldStatus.getPropStatus() != newStatus.getPropStatus()) 
+            if( (oldStatus == null && newStatus != null) ||
+                 oldStatus.getTextStatus() != newStatus.getTextStatus() ||
+                 oldStatus.getPropStatus() != newStatus.getPropStatus())
             {
                 notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);   
             }            

@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-j2ee-ejbcore-naming-EJBNameOptions.instance"/>
         </folder>
     </folder>
--->    
+-->
     <folder name="Templates">
         <folder name="JSP_Servlet">
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
@@ -74,9 +74,9 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="J2EE">
-            
+
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.resources.Bundle"/>
-            
+
             <!-- Templates accessible from Tools | TemplateManager -->
 
             <attr name="position" intvalue="500"/>
@@ -203,7 +203,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
                 </file>
             </folder>
-            
+
             <folder name="EJB30">
                 <attr name="position" intvalue="0"/>
                 <file name="StatelessEjbClass.java" url="templates/EJB30StatelessEjbClass.template">
@@ -250,9 +250,9 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ui/logicalview/ejb/mdb/MessageNodeIcon.gif"/>
                 </file>
             </folder>
-            
+
             <!-- End Templates accessible from Tools | TemplateManager -->
-            
+
             <file name="Session">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
@@ -272,7 +272,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+
             <file name="Entity">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
@@ -282,7 +282,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+
             <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
@@ -293,7 +293,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+
             <file name="RelatedCMP">
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
@@ -303,7 +303,7 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/resources/CMPDatabase.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+
             <file name="ServiceLocator.java" url="ServiceLocator.template">
                 <attr name="position" intvalue="500"/>
                 <attr name="template" boolvalue="true"/>
@@ -314,7 +314,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbcore.patterns.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
-            
+
             <file name="ejbJarXml">
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="700"/>
@@ -322,29 +322,45 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.dd.EjbJarXmlWizardIterator"/>
                 <attr name="templateCategory" stringvalue="ejb-types,ejb-deployment-descriptor"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/dd/ejbJarXml.html"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/multiview/resources/xmlObject.gif"/>
             </file>
         </folder>
     </folder>
-    
+
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-                <folder name="Popup">                           
-                    <!-- Place before WS Group (position 9600) -->
-                    <file name="SeparatorBeforeEjb.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="9500"/>
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddBusinessMethodCodeGenerator.instance">
+                        <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance">
-                        <attr name="position" intvalue="9510"/>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddCreateMethodCodeGenerator.instance">
+                        <attr name="position" intvalue="1100"/>
                     </file>
-                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance">
-                        <attr name="position" intvalue="9520"/>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddFinderMethodCodeGenerator.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddHomeMethodCodeGenerator.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-AddMethodActions$AddSelectMethodCodeGenerator.instance">
+                        <attr name="position" intvalue="1400"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-CallEjbCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-UseDatabaseCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-SendJMSMessageCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="2200"/>
+                    </file>
+                    <file name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-SendEmailCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="2300"/>
                     </file>
                 </folder>
             </folder>
         </folder>
-    </folder> 
-    
+    </folder>
+
 </filesystem>

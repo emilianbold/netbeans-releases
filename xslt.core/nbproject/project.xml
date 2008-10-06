@@ -73,6 +73,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -99,6 +108,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.soa.mapper</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -120,8 +138,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>6.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -147,6 +172,15 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -319,7 +353,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -328,15 +362,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.5.22</specification-version>
-                    </run-dependency>
-                </dependency>
-            <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

@@ -212,8 +212,9 @@ public interface TypeProvider {
           *
           * @param  typeDescriptor  type descriptor to be added to result
           */
+        @SuppressWarnings("unchecked")
         public void addResult(List<? extends TypeDescriptor> typeDescriptor) {
-            result.addAll(typeDescriptor);
+            ((List)result).addAll(typeDescriptor);  //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334
         }
     }
 

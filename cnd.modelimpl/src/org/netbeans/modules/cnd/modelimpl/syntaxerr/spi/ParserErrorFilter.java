@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.modelimpl.syntaxerr.spi;
 
 import antlr.RecognitionException;
 import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.openide.util.Lookup;
 
@@ -69,9 +69,10 @@ public abstract class ParserErrorFilter {
         
         
         @Override
-        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, ReadOnlyTokenBuffer tokenBuffer, BaseDocument doc) {
+        public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, 
+                ReadOnlyTokenBuffer tokenBuffer, CsmFile file) {
             for( ParserErrorFilter filter : res.allInstances() ) {
-                filter.filter(parserErrors, result, tokenBuffer, doc);
+                filter.filter(parserErrors, result, tokenBuffer, file);
             }
         }
     }
@@ -97,5 +98,5 @@ public abstract class ParserErrorFilter {
             Collection<RecognitionException> parserErrors, 
             Collection<CsmErrorInfo> result,
             ReadOnlyTokenBuffer tokenBuffer,
-            BaseDocument doc);
+            CsmFile file);
 }

@@ -66,13 +66,11 @@ public class SQLCompletionEnvTest extends TestCase {
             SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
             assertTrue(env.isSelect());
             assertEquals(Context.SELECT, env.getContext());
-            assertEquals(0, env.getContextOffset());
         }
         for (int i = 13; i < doc.getLength(); i++ ) {
             SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
             assertTrue(env.isSelect());
             assertEquals(Context.FROM, env.getContext());
-            assertEquals(9, env.getContextOffset());
         }
     }
 }

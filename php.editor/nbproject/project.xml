@@ -60,15 +60,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -105,6 +96,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -118,8 +118,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -150,21 +150,21 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -263,7 +263,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.12</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -277,9 +277,14 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                         <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.plain</code-name-base>
@@ -309,10 +314,32 @@
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
                 </test-type>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.php.editor.index</package>
                 <package>org.netbeans.modules.php.editor.lexer</package>
                 <package>org.netbeans.modules.php.editor.parser</package>

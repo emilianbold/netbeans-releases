@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.Java6Methods;
+import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 
 /**
  *
@@ -69,7 +70,7 @@ import org.netbeans.modules.debugger.jpda.Java6Methods;
  */
 public class JPDAClassTypeImpl implements JPDAClassType {
     
-    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
     private JPDADebuggerImpl debugger;
     private ReferenceType classType;
@@ -139,6 +140,16 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             }
         }
         return Collections.EMPTY_LIST;
+    }
+
+    public boolean isInstanceOf(String className) {
+        List<ReferenceType> classTypes = classType.virtualMachine().classesByName(className);
+        for (ReferenceType rt : classTypes) {
+            if (EvaluatorVisitor.instanceOf(classType, rt)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Field> staticFields() {

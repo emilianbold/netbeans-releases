@@ -72,6 +72,7 @@ public class SpringBeansTypeProvider implements TypeProvider {
     private Set<AbstractBeanTypeDescriptor> cache;
     private String lastRefreshText;
     private SearchType lastRefreshSearchType;
+    private volatile boolean isCancelled = false;
 
     public String name() {
         return "springbeans"; // NOI18N
@@ -85,7 +86,8 @@ public class SpringBeansTypeProvider implements TypeProvider {
 
     public void computeTypeNames(Context context, Result result) {
         assert context.getProject() == null; // Issue 136025
-
+        
+        isCancelled = false;
         boolean cacheRefresh = false;
 
         final String searchText = context.getText();
@@ -114,6 +116,9 @@ public class SpringBeansTypeProvider implements TypeProvider {
                 return;
             }
 
+            if (isCancelled) {
+                return;
+            }
             for (Project project : projects) {
                 ProjectSpringScopeProvider scopeProvider = project.getLookup().lookup(ProjectSpringScopeProvider.class);
                 if (scopeProvider == null) {
@@ -125,10 +130,16 @@ public class SpringBeansTypeProvider implements TypeProvider {
                     continue;
                 }
 
+                if (isCancelled) {
+                    return;
+                }
                 final Set<File> processed = new HashSet<File>();
                 List<SpringConfigModel> models = scope.getAllConfigModels();
                 for (SpringConfigModel model : models) {
                     try {
+                        if (isCancelled) {
+                            return;
+                        }
                         model.runDocumentAction(new Action<DocumentAccess>() {
 
                             public void run(DocumentAccess docAccess) {
@@ -137,7 +148,10 @@ public class SpringBeansTypeProvider implements TypeProvider {
                                     return;
                                 }
                                 processed.add(file);
-                                
+
+                                if (isCancelled) {
+                                    return;
+                                }
                                 FileObject fo = docAccess.getFileObject();
                                 FileSpringBeans fileBeans = docAccess.getSpringBeans().getFileBeans(fo);
                                 List<SpringBean> beans = fileBeans.getBeans();
@@ -168,27 +182,32 @@ public class SpringBeansTypeProvider implements TypeProvider {
                 }
             }
 
-            cache = currCache;
-            lastRefreshText = searchText;
-            lastRefreshSearchType = searchType;
-        }
-
-        ArrayList<AbstractBeanTypeDescriptor> beans = new ArrayList<AbstractBeanTypeDescriptor>(cache.size());
-        for (AbstractBeanTypeDescriptor beanTypeDescriptor : cache) {
-            if (cacheRefresh || matcher.match(beanTypeDescriptor.getSimpleName())) {
-                beans.add(beanTypeDescriptor);
+            if (!isCancelled) {
+                cache = currCache;
+                lastRefreshText = searchText;
+                lastRefreshSearchType = searchType;
             }
         }
 
-        result.addResult(beans);
+        if (cache != null) {
+            ArrayList<AbstractBeanTypeDescriptor> beans = new ArrayList<AbstractBeanTypeDescriptor>(cache.size());
+            for (AbstractBeanTypeDescriptor beanTypeDescriptor : cache) {
+                if (cacheRefresh || matcher.match(beanTypeDescriptor.getSimpleName())) {
+                    beans.add(beanTypeDescriptor);
+                }
+            }
+
+            result.addResult(beans);
+        }
     }
 
     public void cancel() {
-        assert false; // Issue 136025
+        isCancelled = true;
 
     }
 
     public void cleanup() {
+        isCancelled = false;
         cache = null;
         lastRefreshText = null;
         lastRefreshSearchType = null;

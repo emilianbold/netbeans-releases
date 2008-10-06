@@ -80,7 +80,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-web-project/Customizer"; //NO18N
 
-    private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
+    private static Map<Project,Dialog> project2Dialog = new HashMap<Project,Dialog>(); 
     
     public CustomizerProviderImpl(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;

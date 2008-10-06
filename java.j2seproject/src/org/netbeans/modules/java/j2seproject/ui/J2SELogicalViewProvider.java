@@ -85,6 +85,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -233,7 +234,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         return result;
     }
     
-    private static Image brokenProjectBadge = Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", true);
+    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", true);
     
     /** Filter node containin additional features for the J2SE physical
      */
@@ -278,13 +279,13 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         @Override
         public Image getIcon(int type) {
             Image original = super.getIcon(type);
-            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         @Override
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            return broken || illegalState ? Utilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
         }
         
         @Override

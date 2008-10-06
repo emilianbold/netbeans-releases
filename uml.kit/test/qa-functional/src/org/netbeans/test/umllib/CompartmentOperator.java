@@ -579,7 +579,9 @@ public class CompartmentOperator implements Actionable {
                 Utils.log("CompartmentOperator:CompartmentByTypeChooser:checkCompartment():clazz != null && clazz.isInstance(co)=true ");
                 if (typeInfo.equals("Attributes") || typeInfo.equals("Operations")) {
                     // It is ElementListWidget compartment
-                     return ((ElementListWidget) co).getLabel().equals(typeInfo);
+                    // TODO implement real behaviour
+                    return false;
+//                     return ((ElementListWidget) co).getLabel().equals(typeInfo);
                 }    
             }
             return (clazz != null && clazz.isInstance(co)) ; 

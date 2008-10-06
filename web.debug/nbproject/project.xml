@@ -186,6 +186,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -211,13 +215,22 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
-                        <recursive/> 
+                        <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

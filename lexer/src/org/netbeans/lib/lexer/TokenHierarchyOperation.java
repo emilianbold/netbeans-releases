@@ -357,7 +357,23 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public boolean isActiveNoInit() { // BTW used by tests to check if hierarchy is active or not
         return (activity == Activity.ACTIVE);
     }
-    
+
+    /**
+     * Recreate token hierarchy if there was a runtime exception thrown during token hierarchy recreation.
+     *
+     * @param e runtime exception that was thrown.
+     */
+    public void recreateAfterError(RuntimeException e) {
+        if (TokenList.LOG.isLoggable(Level.FINE)) { // Running tests or strict mode
+            throw e;
+        } else {
+            LOG.log(Level.INFO, "Runtime exception occurred during token hierarchy updating. Token hierarchy will be rebuilt from scratch.", e);
+            if (isActiveNoInit()) {
+                rebuild();
+            }
+        }
+    }
+
     public void ensureReadLocked() {
         if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isReadLocked(mutableTextInput)
@@ -481,7 +497,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             } // not active - no changes fired
         }
     }
-    
+
     public void fireTokenHierarchyChanged(TokenHierarchyEventInfo eventInfo) {
         TokenHierarchyEvent evt = LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo);
         Object[] listeners = listenerList.getListenerList();
@@ -663,15 +679,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //    
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("TOKEN HIERARCHY"); // NOI18N
-        if (inputSource() != null) {
-            sb.append(" for " + inputSource());
-        }
-        if (!isActive()) {
-            sb.append(" is NOT ACTIVE.");
-            return sb.toString();
-        }
-
+        StringBuilder sb = toStringNoTokens(null);
         sb.append(":\n"); // NOI18N
         LexerUtilsConstants.appendTokenList(sb, rootTokenList);
         if (path2tokenListList != null && path2tokenListList.size() > 0) {
@@ -683,7 +691,24 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
         return sb.toString();
     }
-    
+
+    public StringBuilder toStringNoTokens(StringBuilder sb) {
+        if (sb == null)
+            sb = new StringBuilder(200);
+        sb.append("TOKEN HIERARCHY"); // NOI18N
+        if (inputSource() != null) {
+            sb.append(" for " + inputSource());
+        }
+        if (!isActive()) {
+            sb.append(" is NOT ACTIVE.");
+        } else {
+            CharSequence inputSourceText = rootTokenList.inputSourceText();
+            sb.append("\nText: ").append(inputSourceText.getClass());
+            sb.append(", length=").append(inputSourceText.length());
+        }
+        return sb;
+    }
+
     /**
      * Check consistency of the whole token hierarchy.
      * @return string describing the problem or null if the hierarchy is consistent.

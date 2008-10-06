@@ -54,7 +54,7 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 public interface StructureItem {
     @NonNull String getName();
     @NonNull String getSortText();
-    @NonNull String getHtml();
+    @NonNull String getHtml(@NonNull HtmlFormatter formatter);
     @NonNull ElementHandle getElementHandle();
     @NonNull ElementKind getKind();
     @NonNull Set<Modifier> getModifiers();

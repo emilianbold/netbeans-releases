@@ -42,9 +42,12 @@
 package org.netbeans.api.java.source;
 
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.java.ui.FmtOptions;
 
+import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 
 /** 
@@ -66,30 +69,81 @@ public final class CodeStyle {
     private CodeStyle(Preferences preferences) {
         this.preferences = preferences;
     }
+
+    /**
+     * Gets <code>CodeStyle</code> for files in the given project.
+     *
+     * <p>Please see the other two <code>getDefault</code> methods as they are
+     * the preferred way of getting <code>CodeStyle</code>.
+     *
+     * @param project The project to get the <code>CodeStyle</code> for.
+     * @return The current code style that would be used by documents opened
+     *   from files belonging to the <code>project</code>.
+     *
+     * @deprecated Please use {@link #getDefault(javax.swing.text.Document)}
+     *   or {@link #getDefault(org.openide.filesystems.FileObject)} respectively.
+     */
+    public static CodeStyle getDefault(Project project) {
+        return getDefault(project.getProjectDirectory());
+    }
     
-    public synchronized static CodeStyle getDefault(Project project) {
-        return FmtOptions.codeStyleProducer.create(FmtOptions.getPreferences(project));
+    /**
+     * Gets <code>CodeStyle</code> for the given file. If you have a document
+     * instance you should use the {@link #getDefault(javax.swing.text.Document)}
+     * method.
+     * 
+     * @param file The file to get the <code>CodeStyle</code> for.
+     * @return The current code style that would be used by a document if the
+     *   <code>file</code> were opened in the editor.
+     *
+     * @since 0.39
+     */
+    public synchronized static CodeStyle getDefault(FileObject file) {
+        Preferences prefs = CodeStylePreferences.get(file).getPreferences();
+        return FmtOptions.codeStyleProducer.create(prefs);
+    }
+
+    /**
+     * Gets <code>CodeStyle</code> for the given document. This is the preferred
+     * method of getting <code>CodeStyle</code>. If you don't have a document
+     * you can use {@link #getDefault(org.openide.filesystems.FileObject)} method instead.
+     *
+     * @param doc The document to get the <code>CodeStyle</code> for.
+     * @return The current code style used by a document. This is the code style that
+     *   will be used when formatting the document or generating new code.
+     * 
+     * @since 0.39
+     */
+    public synchronized static CodeStyle getDefault(Document doc) {
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        return FmtOptions.codeStyleProducer.create(prefs);
     }
     
     // General tabs and indents ------------------------------------------------
     
     public boolean expandTabToSpaces() {
-        return preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+//        System.out.println("~~~ expand-tabs=" + preferences.get(SimpleValueNames.EXPAND_TABS, null));
+        return preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
     }
 
     public int getTabSize() {
-        return preferences.getInt(tabSize, getGlobalTabSize());
+//        System.out.println("~~~ tab-size=" + preferences.get(SimpleValueNames.TAB_SIZE, null));
+        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
     }
 
     public int getIndentSize() {
-        int indentLevel = preferences.getInt(indentSize, getGlobalIndentSize());
+//        System.out.println("~~~ indent-shift-width=" + preferences.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null));
+        int indentLevel = preferences.getInt(indentSize, getDefaultAsInt(indentSize));
 
         if (indentLevel <= 0) {
-            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
+//            System.out.println("~~~ expand-tabs=" + preferences.get(SimpleValueNames.EXPAND_TABS, null));
+            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
             if (expandTabs) {
-                indentLevel = preferences.getInt(spacesPerTab, getGlobalSpacesPerTab());
+//                System.out.println("~~~ spaces-per-tab=" + preferences.get(SimpleValueNames.SPACES_PER_TAB, null));
+                indentLevel = preferences.getInt(spacesPerTab, getDefaultAsInt(spacesPerTab));
             } else {
-                indentLevel = preferences.getInt(tabSize, getGlobalTabSize());
+//                System.out.println("~~~ tab-size=" + preferences.get(SimpleValueNames.TAB_SIZE, null));
+                indentLevel = preferences.getInt(tabSize, getDefaultAsInt(tabSize));
             }
         }
         
@@ -117,7 +171,11 @@ public final class CodeStyle {
     }
 
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getGlobalRightMargin());
+        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+    }
+
+    public boolean addLeadingStarInComment() {
+        return preferences.getBoolean(addLeadingStarInComment, getDefaultAsBoolean(addLeadingStarInComment));
     }
 
     // Code generation ---------------------------------------------------------

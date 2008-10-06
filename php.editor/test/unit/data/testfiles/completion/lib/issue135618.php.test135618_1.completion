@@ -1,0 +1,5 @@
+Code completion result for source line:
+B135618::|AAA;
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   ? AAA                                      A135618
+CONSTANT   ? BBB                                      B135618

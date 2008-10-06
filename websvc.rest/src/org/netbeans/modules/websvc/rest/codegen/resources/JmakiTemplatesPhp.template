@@ -1,5 +1,12 @@
 <?php
    addWidget( array("name" => "dojo.rest.__CONTAINER_PATH_NAME__table",
-       "service" => "http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/"
+       "service" => "__BASE_URL__/__CONTAINER_PATH_NAME__/"
    ));
+// Use below if using proxy for javascript cross-domain
+/*
+   addWidget( array("name" => "dojo.rest.__CONTAINER_PATH_NAME__table",
+       "service" => "__BASE_URL__/__CONTAINER_PATH_NAME__/",
+       "args" => "proxy=__BASE_URL__/../restproxy"
+   ));
+*/
 ?>

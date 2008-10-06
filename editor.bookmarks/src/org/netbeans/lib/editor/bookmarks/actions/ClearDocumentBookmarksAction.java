@@ -69,10 +69,7 @@ public class ClearDocumentBookmarksAction extends BaseAction {
 
     public void actionPerformed(ActionEvent e, JTextComponent target) {
 	BookmarkList bookmarkList = BookmarkList.get(target.getDocument());
-
-	for (int i = bookmarkList.getBookmarkCount() - 1; i >= 0; i--) {
-	    bookmarkList.removeBookmarkAtIndex(i);
-	}
+        bookmarkList.removeAllBookmarks ();
     }
 
     protected Object getDefaultShortDescription() {

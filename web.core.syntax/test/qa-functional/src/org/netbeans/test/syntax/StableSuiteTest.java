@@ -52,13 +52,17 @@ import org.openide.filesystems.FileUtil;
  */
 public class StableSuiteTest extends J2eeTestCase {
 
+    public StableSuiteTest(String name) {
+        super(name);
+    }
+    
     public StableSuiteTest() {
         super("StableSuiteTest");
     }
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        addServerTests(conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         if (isRegistered(Server.ANY)){
             return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
@@ -70,6 +74,7 @@ public class StableSuiteTest extends J2eeTestCase {
     public static final class SuiteCreator extends NbTestSuite {
         FileObject dataDir = FileUtil.createData(new StableSuiteTest().getDataDir());
         FileObject completionTestWebDir = dataDir.getFileObject("CompletionTestProjects/Jsp/web/");
+        FileObject completionJSFTestWebDir = dataDir.getFileObject("CompletionTestProjects/JSF/web/");
 
         public SuiteCreator() throws IOException {
             super();
@@ -81,6 +86,8 @@ public class StableSuiteTest extends J2eeTestCase {
             addCompletionTest("stableScriptletsJavaBasic.jsp");
             addCompletionTest("stableTaglibCompletion.jsp");
             addCompletionTest("stableXHTML.xhtml");
+            addJSFCompletionTest("testJSFObjects.jsp");
+            addJSFCompletionTest("testJSFTag.jsp");
         }
         
         private void addCompletionTest(String fileName) throws IOException{
@@ -88,6 +95,10 @@ public class StableSuiteTest extends J2eeTestCase {
             addTest(new CompletionTest(name, completionTestWebDir.getFileObject(fileName)));
         }
                 
+        private void addJSFCompletionTest(String fileName) throws IOException{
+            String name = fileName.replace('.', '_');
+            addTest(new CompletionTest(name, completionJSFTestWebDir.getFileObject(fileName)));
+        }
     }
     
 }

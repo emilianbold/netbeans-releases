@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statuses type="array">
+    <status>
+        <created_at>Fri Aug 29 16:54:15 +0000 2008</created_at>
+        <id>903119093</id>
+        <text>Thinking we're going to buy a new camera today! Yay!</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>15322393</id>
+            <name>Dani_H</name>
+            <screen_name>Dani_H</screen_name>
+            <description>I don't like change, but I'm making some anyway.</description>
+            <location>Ohio</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/56234050/Angry_Mojo_normal.jpg</profile_image_url>
+            <url>http://purplemelange.wordpress.com</url>
+            <protected>false</protected>
+            <followers_count>4</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119092</id>
+        <text>Blog: 5 Affordable Things You Can Do to Live Green http://tinyurl.com/66323q</text>
+        <source>twitterfeed</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>8408982</id>
+            <name>TiffanyWashko</name>
+            <screen_name>TiffanyWashko</screen_name>
+            <description>Peace Loving Hippie, artsy, craftsy, homeschooling, green living enthusiast, raw foodie...</description>
+            <location>Ohio</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/52922629/tiff2_normal.gif</profile_image_url>
+            <url>http://www.naturemoms.com/blog</url>
+            <protected>false</protected>
+            <followers_count>343</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119091</id>
+        <text>?????? @klamm ???????, ?????????? ( http://tinyurl.com/6m6j7q )</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>1982151</id>
+            <name>Jimmy Su</name>
+            <screen_name>jimmy_su</screen_name>
+            <description>Luzofan</description>
+            <location>Taipei</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/59032258/mascara-nacho-libre_150x150_normal.jpg</profile_image_url>
+            <url>http://wormsculptor.com</url>
+            <protected>false</protected>
+            <followers_count>354</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119090</id>
+        <text>Browsing: ?H.264??????????????? OP http://www.nicovideo.jp/watch/sm3721317</text>
+        <source>foxytunes</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>5379102</id>
+            <name>ot_inc(????????)</name>
+            <screen_name>ot_inc</screen_name>
+            <description>?????????????????????????????Japanize???????????????????????????????@kgrkksg???????????http://iddy.jp/profile/ot_inc/</description>
+            <location>Japan Ibaraki Tuchiura</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/55195956/sshot-2008-06-09-_00-53-38__normal.jpg</profile_image_url>
+            <url>http://ot-inc.nowa.jp/</url>
+            <protected>false</protected>
+            <followers_count>1140</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119089</id>
+        <text>I love not speaking for 50 minutes</text>
+        <source>sms</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>815170</id>
+            <name>Damara</name>
+            <screen_name>ibansheei</screen_name>
+            <description>undergraduate architecture student.</description>
+            <location>North East</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/53905011/IMG_0109small_normal.jpg</profile_image_url>
+            <url>http://www.dsisti.net</url>
+            <protected>false</protected>
+            <followers_count>36</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119088</id>
+        <text>??p?o|q |? ???d s?o|q o?u!? so| opu?uo!???|?s</text>
+        <source>twitterfox</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>779853</id>
+            <name>HeV</name>
+            <screen_name>HeV</screen_name>
+            <description>Mareao</description>
+            <location>Valencia, Spain</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/54649531/esteban.saiz_gmail.com_20080525_a1721ea8_normal.jpg</profile_image_url>
+            <url>http://estebansaiz.com</url>
+            <protected>false</protected>
+            <followers_count>235</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119086</id>
+        <text>Listening to Re-Cool ??????? by ???</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>15087986</id>
+            <name>kazunori310</name>
+            <screen_name>kazunori310</screen_name>
+            <description></description>
+            <location></location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/57150187/060630k-tai__69__normal.JPG</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119085</id>
+        <text>@alyssaavant have you voted before?</text>
+        <source>twhirl</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id>903119018</in_reply_to_status_id>
+        <in_reply_to_user_id>7595842</in_reply_to_user_id>
+        <favorited>false</favorited>
+        <user>
+            <id>3587091</id>
+            <name>Tammy Munson</name>
+            <screen_name>TammyMunson</screen_name>
+            <description>New Media VA and Army Wife</description>
+            <location>Washington DC</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/54681046/tammy_closeup_normal.JPG</profile_image_url>
+            <url>http://www.newmediava.com</url>
+            <protected>false</protected>
+            <followers_count>535</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119084</id>
+        <text>????????????</text>
+        <source>movatwitter</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>14193475</id>
+            <name>nurutema</name>
+            <screen_name>nurutema</screen_name>
+            <description>Net:???????FLASH?????????????real:??2????????????????????????????????????????????????????????Blog : http://nurutema.blog69.fc2.com/</description>
+            <location>???</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/59072476/girl_Qmix_normal.jpg</profile_image_url>
+            <url>http://nurutema.com/</url>
+            <protected>false</protected>
+            <followers_count>87</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:12 +0000 2008</created_at>
+        <id>903119083</id>
+        <text>#pax group byoc seating starts between 11am and noon today.  that means the #sdcrew needs to wake the 'f' up. :p</text>
+        <source>sms</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>7818962</id>
+            <name>BrotherXaos</name>
+            <screen_name>BrotherXaos</screen_name>
+            <description>Creator of ideas, catalyst to the masses, and eater of delicious cookies.</description>
+            <location>San Diego, California</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/26687732/labrador.avatar_normal.jpg</profile_image_url>
+            <url>http://www.poweredsugar.net</url>
+            <protected>false</protected>
+            <followers_count>50</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:12 +0000 2008</created_at>
+        <id>903119081</id>
+        <text>@BIGAL39 what are you thinking about getting?</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id>903099673</in_reply_to_status_id>
+        <in_reply_to_user_id>15293739</in_reply_to_user_id>
+        <favorited>false</favorited>
+        <user>
+            <id>804374</id>
+            <name>Ben Reese</name>
+            <screen_name>2shoes</screen_name>
+            <description />
+            <location />
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/51494671/shoes_normal.jpg</profile_image_url>
+            <url />
+            <protected>false</protected>
+            <followers_count>50</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:12 +0000 2008</created_at>
+        <id>903119080</id>
+        <text>@Splashgirl yeah when rita hit he got to stay at a mall in beaumont, tx! I was so jealous!</text>
+        <source>sms</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id>903112207</in_reply_to_status_id>
+        <in_reply_to_user_id>8566542</in_reply_to_user_id>
+        <favorited>false</favorited>
+        <user>
+            <id>14087028</id>
+            <name>wyndi</name>
+            <screen_name>wyndi</screen_name>
+            <description>Robby Gordon's biggest fan!</description>
+            <location>Texas</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/56921922/LC_Icon_normal.jpg</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>48</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:12 +0000 2008</created_at>
+        <id>903119079</id>
+        <text>????????????????????????????????????</text>
+        <source>tween</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>16029429</id>
+            <name>????</name>
+            <screen_name>chameau</screen_name>
+            <description>?????????????????????/????/60???????/???/</description>
+            <location></location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/59053008/0807192_normal.jpg</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>1</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:14 +0000 2008</created_at>
+        <id>903119077</id>
+        <text>Perez en Twente blij met elkaar http://twurl.nl/gq8vn2</text>
+        <source>twitterfeed</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>14850698</id>
+            <name>voetjebal</name>
+            <screen_name>voetjebal</screen_name>
+            <description>Blijf op de hoogte van het laatste voetbal nieuws</description>
+            <location></location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/54477264/wk-voetbal-net-logo_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>94</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119076</id>
+        <text>Week 3 Preseason Stockwatch http://tinyurl.com/6b5uvr</text>
+        <source>easytweets</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>15538158</id>
+            <name>NFL Fantasy News</name>
+            <screen_name>NFLFantasyNews</screen_name>
+            <description>Follow the latest Fantasy Football News from across the NFL!</description>
+            <location></location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/57063965/Cheerleader3_normal.jpg</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>66</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119075</id>
+        <text>@brentrowland More applications will only hurt you.  It'll confuse em.  Wouldn't hurt to mail em. Did get your permission to pay $99 yet?</text>
+        <source>twitterrific</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id>902985652</in_reply_to_status_id>
+        <in_reply_to_user_id>14335598</in_reply_to_user_id>
+        <favorited>false</favorited>
+        <user>
+            <id>14149068</id>
+            <name>JivaDeVoe</name>
+            <screen_name>JivaDeVoe</screen_name>
+            <description>Macs; iPhone; Coding; I make stuff... it's fun.</description>
+            <location></location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/55991504/IMG_0347_2_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>35</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119074</id>
+        <text>Biden vs. Palin what a scary thought. She better know the issues &amp; a personality. Start a 3 o’clock high narrative now. http://ping.fm/NEgof</text>
+        <source>pingfm</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>9506582</id>
+            <name>Anthony Barba</name>
+            <screen_name>AnthonyBarba</screen_name>
+            <description></description>
+            <location>Park Slope Brooklyn NY</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/58276408/WYWH_normal.gif</profile_image_url>
+            <url>http://www.anthonybarba.net</url>
+            <protected>false</protected>
+            <followers_count>33</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119073</id>
+        <text>Nuevo en frogx3: 25+ efectos brillantes tipo Glow, usando Photoshop: El efecto Glow bien e.. http://tinyurl.com/5t9ff5</text>
+        <source>twitterfeed</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>2321411</id>
+            <name>frogx3</name>
+            <screen_name>frogx3</screen_name>
+            <description>http://www.jorgealdana.com</description>
+            <location>Merida, Yucatan Mexico</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/57053106/frogx3-avatar_normal.jpg</profile_image_url>
+            <url>http://www.frogx3.com</url>
+            <protected>false</protected>
+            <followers_count>204</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:11 +0000 2008</created_at>
+        <id>903119072</id>
+        <text>@hossie Google:hossy -&amp;gt; ????: HOSSY ????</text>
+        <source>p3</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id>903117922</in_reply_to_status_id>
+        <in_reply_to_user_id>9382762</in_reply_to_user_id>
+        <favorited>false</favorited>
+        <user>
+            <id>5896762</id>
+            <name>?Free?????Tibet?</name>
+            <screen_name>rch850</screen_name>
+            <description>a programmer which was made in Kousen. feel free to follow me.</description>
+            <location>Fukui, Japan</location>
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/57270523/default_gununu_2_normal.png</profile_image_url>
+            <url>http://850mb.net/</url>
+            <protected>false</protected>
+            <followers_count>395</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Fri Aug 29 16:54:13 +0000 2008</created_at>
+        <id>903119069</id>
+        <text>y esto como se supone q funciona? soltamos la parida de turno y ya esta?? Txan! es un programa a tu medida!!!</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id />
+        <in_reply_to_user_id />
+        <favorited>false</favorited>
+        <user>
+            <id>16044232</id>
+            <name>Meicas</name>
+            <screen_name>Meicas</screen_name>
+            <description />
+            <location />
+            <profile_image_url>http://s3.amazonaws.com/twitter_production/profile_images/59108984/prf_twitter_normal.jpg</profile_image_url>
+            <url />
+            <protected>false</protected>
+            <followers_count>1</followers_count>
+        </user>
+    </status>
+</statuses>

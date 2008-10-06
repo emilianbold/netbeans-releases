@@ -44,10 +44,9 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.actions.AddNewBpelProcess;
-import org.netbeans.performance.enterprise.actions.CreateBPELmodule;
 import org.netbeans.performance.enterprise.actions.CreateCompositeApplication;
-import org.netbeans.performance.enterprise.actions.OpenSchemaView;
 import org.netbeans.performance.enterprise.actions.WatchProjects;
 
 public class MeasureEnterpriseGCTest extends NbTestCase {
@@ -57,7 +56,11 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
     }
 
     public static Test suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Enterprise Performance GC suite");
+        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseGCTest");
+
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)
                 .addTest(WatchProjects.class, "testInitGCProjects")

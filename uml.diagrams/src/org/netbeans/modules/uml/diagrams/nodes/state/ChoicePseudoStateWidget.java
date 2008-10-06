@@ -38,79 +38,22 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Polygon;
-import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.diagrams.nodes.activity.DecisionNodeWidget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class ChoicePseudoStateWidget extends CustomizableWidget
-{
-    public static final int width = 20;
-    public static final int height = 30;
-    
-    public ChoicePseudoStateWidget(Scene scene, String propID, String propDisplayName)
+public class ChoicePseudoStateWidget extends DecisionNodeWidget
+{    
+    public ChoicePseudoStateWidget(Scene scene, String path)
     {
-        super(scene, propID, propDisplayName);
-        setOpaque(true);
+        super(scene, path);
     }
     
-    @Override
-    protected Rectangle calculateClientArea()
+    public String getWidgetID()
     {
-        if (getBounds()==null || !isPreferredBoundsSet())
-        {
-            return new Rectangle(0, 0, width, height);
-        }
-       return  super.calculateClientArea();
-    }
-
-    @Override
-    protected void paintWidget()
-    {
-        Graphics2D graphics = getGraphics();
-        Color currentColor = graphics.getColor();
-        graphics.setColor(getForeground());
-        
-        graphics.drawPolygon(getPolygon());
-        graphics.setColor(currentColor);
-    }
-
-    protected void paintBackground()
-    {
-        Paint bgColor = getBackground();
-            Color bg = (Color) bgColor;
-            if (UMLNodeWidget.useGradient())
-            {
-                bgColor = new GradientPaint(
-                        0, 0, Color.WHITE,
-                        0, getBounds().height, bg);
-            }
-            
-           Graphics2D graphics = getGraphics();
-           Paint currentPaint = graphics.getPaint();
-           graphics.setPaint(bgColor);
-           graphics.fillPolygon(getPolygon());
-           
-           //reset to previous paint
-           graphics.setPaint(currentPaint);
-        
-    }
-    
-    private Polygon getPolygon()
-    {
-        Rectangle rec = getBounds();
-    
-        return new Polygon(new int[]{rec.x + rec.width/2, rec.x, rec.x + rec.width/2, rec.x + rec.width},
-                           new int[]{rec.y, rec.y + rec.height/2, rec.y + rec.height, rec.y + rec.height/2},
-                           4);
+        return UMLWidgetIDString.CHOICEPSEUDOSTATEWIDGET.toString();
     }
 }

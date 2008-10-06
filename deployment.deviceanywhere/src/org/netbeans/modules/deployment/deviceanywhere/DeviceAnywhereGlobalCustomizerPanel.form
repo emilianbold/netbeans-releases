@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -35,9 +36,9 @@
                           </Group>
                       </Group>
                       <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jTextFieldUser" max="32767" attributes="1"/>
-                          <Component id="jPasswordField" alignment="0" pref="423" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jTextFieldUser" pref="423" max="32767" attributes="1"/>
+                          <Component id="jPasswordField" alignment="0" min="-2" pref="423" max="-2" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
@@ -50,7 +51,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jTextFieldUser" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jTextFieldUser" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -119,6 +120,14 @@
           <Connection code="DeviceAnywhereDeploymentPlugin.PROP_USERID" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/deployment/deviceanywhere/Bundle.properties" key="ACSN_UserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/deployment/deviceanywhere/Bundle.properties" key="ACSD_UserName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
       </AuxValues>
@@ -129,6 +138,14 @@
           <Connection code="DeviceAnywhereDeploymentPlugin.PROP_PASSWORD" type="code"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/deployment/deviceanywhere/Bundle.properties" key="ACSD_Password" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/deployment/deviceanywhere/Bundle.properties" key="ACSD_Password" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
       </AuxValues>
@@ -184,9 +201,9 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton1MouseEntered"/>
         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton1MouseExited"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JButton(){&#xd;&#xa;    @Override&#xd;&#xa;    protected void paintComponent(Graphics g) {&#xd;&#xa;        Graphics2D g2 = prepareGraphics( g );&#xd;&#xa;        super.paintComponent(g2);&#xd;&#xa;        &#xd;&#xa;        Dimension size = getSize();&#xd;&#xa;        if( hasFocus() ) {&#xd;&#xa;            g2.setStroke( LINK_IN_FOCUS_STROKE );&#xd;&#xa;            g2.setColor( LINK_IN_FOCUS_COLOR );&#xd;&#xa;            g2.drawRect( 0, 0, size.width - 1, size.height - 1 );&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;    &#xd;&#xa;    @Override&#xd;&#xa;    public void paint(Graphics g) {&#xd;&#xa;        super.paint(g);&#xd;&#xa;        if( underline1 ) {&#xd;&#xa;            Font f = getFont();&#xd;&#xa;            FontMetrics fm = getFontMetrics(f);&#xd;&#xa;            int y1 = fm.getHeight();&#xd;&#xa;            int x2 = fm.stringWidth(getText());&#xd;&#xa;            if( getText().length() &gt; 0 )&#xd;&#xa;                g.drawLine(0, y1, x2, y1);&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;}"/>
@@ -213,9 +230,9 @@
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton2MouseEntered"/>
         <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jButton2MouseExited"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JButton(){&#xd;&#xa;    @Override&#xd;&#xa;    protected void paintComponent(Graphics g) {&#xd;&#xa;        Graphics2D g2 = prepareGraphics( g );&#xd;&#xa;        super.paintComponent(g2);&#xd;&#xa;        &#xd;&#xa;        Dimension size = getSize();&#xd;&#xa;        if( hasFocus() ) {&#xd;&#xa;            g2.setStroke( LINK_IN_FOCUS_STROKE );&#xd;&#xa;            g2.setColor( LINK_IN_FOCUS_COLOR );&#xd;&#xa;            g2.drawRect( 0, 0, size.width - 1, size.height - 1 );&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;    &#xd;&#xa;    @Override&#xd;&#xa;    public void paint(Graphics g) {&#xd;&#xa;        super.paint(g);&#xd;&#xa;        if( underline2 ) {&#xd;&#xa;            Font f = getFont();&#xd;&#xa;            FontMetrics fm = getFontMetrics(f);&#xd;&#xa;            int y1 = fm.getHeight();&#xd;&#xa;            int x2 = fm.stringWidth(getText());&#xd;&#xa;            if( getText().length() &gt; 0 )&#xd;&#xa;                g.drawLine(0, y1, x2, y1);&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;}"/>

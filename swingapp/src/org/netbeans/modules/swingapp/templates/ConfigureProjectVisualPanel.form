@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.JSeparator" name="separator">
+    </Component>
+  </NonVisualComponents>
   <Properties>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -15,6 +19,8 @@
     </Property>
   </AccessibilityProperties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -26,36 +32,57 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="mainProjectCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="348" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="appNameTextField" alignment="0" pref="284" max="32767" attributes="0"/>
-                  <Component id="createdFolderTextField" alignment="0" pref="284" max="32767" attributes="0"/>
-                  <Component id="projectLocationTextField" alignment="0" pref="284" max="32767" attributes="0"/>
-                  <Component id="projectNameTextField" alignment="0" pref="284" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="browseButton" min="-2" max="-2" attributes="0"/>
-          </Group>
-          <Component id="jSeparator1" alignment="0" pref="457" max="32767" attributes="0"/>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="shellListLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="shellList" min="-2" pref="187" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="descBrowser" pref="264" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="shellList" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="descBrowser" pref="204" max="32767" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="shellListLabel" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="projectNameLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="projectLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="createdFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="appNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="19" pref="19" max="19" attributes="0"/>
+                                      <Component id="libFolderLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="appNameTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="createdFolderTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="projectNameTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="projectLocationTextField" alignment="1" pref="277" max="32767" attributes="0"/>
+                                  <Component id="libFolderTextField" alignment="0" pref="277" max="32767" attributes="0"/>
+                                  <Component id="libHintLabel" alignment="0" pref="277" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="browseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="libFolderButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="libFolderCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="mainProjectCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
           </Group>
       </Group>
     </DimensionLayout>
@@ -63,97 +90,68 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="projectLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createdFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="createdFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="mainProjectCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="appNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="appNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="shellListLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="descBrowser" pref="88" max="32767" attributes="2"/>
+                  <Component id="descBrowser" min="0" pref="0" max="32767" attributes="2"/>
                   <Component id="shellList" alignment="0" pref="88" max="32767" attributes="2"/>
               </Group>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Component id="libFolderCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="libFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="libFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="libFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="libHintLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="mainProjectCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="org.openide.awt.HtmlBrowser" name="descBrowser">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="projectNameTextField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="statusLineVisible" type="boolean" value="false"/>
+        <Property name="toolbarVisible" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel1.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.descBrowser.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="projectNameTextField">
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel2">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="projectLocationTextField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel2.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="projectLocationTextField">
-    </Component>
-    <Component class="javax.swing.JButton" name="browseButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jButton1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jButton1.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabel3">
+    <Component class="javax.swing.JLabel" name="createdFolderLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="createdFolderTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.createdFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -162,10 +160,39 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="createdFolderTextField">
+    <Component class="javax.swing.JTextField" name="appNameTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="appNameLabel">
       <Properties>
-        <Property name="editable" type="boolean" value="false"/>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="appNameTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.appNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel4.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="projectNameTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="projectNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="projectNameTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel1.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="mainProjectCheckBox">
       <Properties>
@@ -188,24 +215,105 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="jLabel4">
+    <Component class="javax.swing.JLabel" name="libHintLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libHintLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="libFolderButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderButton.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="libFolderButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="libFolderTextField">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="libFolderLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="projectLocationLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="appNameTextField"/>
+          <ComponentRef name="projectLocationTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.projectLocationLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel4.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jLabel2.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="appNameTextField">
+    <Component class="javax.swing.JCheckBox" name="libFolderCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.libFolderCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="libFolderCheckBoxActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JSeparator" name="jSeparator1">
+    <Component class="javax.swing.JTextField" name="projectLocationTextField">
+    </Component>
+    <Component class="javax.swing.JButton" name="browseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jButton1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.jButton1.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="createdFolderTextField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="shellListLabel">
       <Properties>
@@ -227,17 +335,6 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new TemplatesListView();"/>
       </AuxValues>
-    </Component>
-    <Component class="org.openide.awt.HtmlBrowser" name="descBrowser">
-      <Properties>
-        <Property name="statusLineVisible" type="boolean" value="false"/>
-        <Property name="toolbarVisible" type="boolean" value="false"/>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/swingapp/templates/Bundle.properties" key="ConfigureProjectVisualPanel.descBrowser.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

@@ -51,21 +51,31 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ146392() throws Exception {
+        // IZ#146392: regression: some declaration statements are not rendered any more
+        performTest("iz146392.cc", 4, 25, "iz146392.cc", 4, 22);
+        performTest("iz146392.cc", 6, 15, "iz146392.cc", 4, 22);
+    }
+
+    public void testIZ139600() throws Exception {
+        performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
+    }
+
     public void testVarInFunWithInitalization() throws Exception {
         performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
     }
-    
+
     public void testParamWithoutSpace() throws Exception {
         performTest("main.c", 18, 17, "main.c", 18, 10); // aaa in void foo(char* aaa, char**bbb)
         performTest("main.c", 18, 28, "main.c", 18, 21); // bbb in void foo(char* aaa, char**bbb)
     }
-    
+
     public void testFileLocalVariable() throws Exception {
         performTest("main.c", 15, 12, "main.c", 15, 1); // VALUE in const int VALUE = 10;
         performTest("main.c", 16, 30, "main.c", 15, 1); // VALUE in const int VALUE_2 = 10 + VALUE;
         performTest("main.c", 16, 12, "main.c", 16, 1); // VALUE_2 in const int VALUE_2 = 10 + VALUE;
     }
-    
+
     public void testFuncParamUsage() throws Exception {
         performTest("main.c", 3, 15, "main.c", 2, 9); // aa in 'int kk = aa + bb;'
         performTest("main.c", 3, 20, "main.c", 2, 17); // bb in 'int kk = aa + bb;'
@@ -93,7 +103,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testNameWithUnderscore() throws Exception {
         performTest("main.c", 12, 6, "main.c", 11, 1); // method_name_with_underscore();
     }
-    
+
     public void testSameNameDiffScope() throws Exception {
         // IZ#131560: Hyperlink does not distinguish variables with the same names within function body
         // function parameter
@@ -101,37 +111,37 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 23, 10, "main.c", 22, 24); // name in if (name++) {
         performTest("main.c", 26, 17, "main.c", 22, 24); // name in } else if (name++) {
         performTest("main.c", 26, 17, "main.c", 22, 24); // name in name--;
-        
+
         // local variable
         performTest("main.c", 24, 17, "main.c", 24, 9); // name in name--;
-        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;        
-        
+        performTest("main.c", 25, 10, "main.c", 24, 9); // name in name--;
+
         // second local variable
         performTest("main.c", 27, 17, "main.c", 27, 9); // name in name--;
-        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;        
+        performTest("main.c", 28, 17, "main.c", 27, 9); // name in name--;
     }
-    
+
     public void testGlobalVar() throws Exception {
         // IZ#132295: Hyperlink does not  distinguish local variable and global
         // variable if they has same name
-        
+
         // local variable
         performTest("main.c", 33, 24, "main.c", 32, 5);
         performTest("main.c", 34, 36, "main.c", 32, 5);
-        
+
         // global variable
-        performTest("main.c", 33, 14, "main.c", 37, 1);
-        performTest("main.c", 34, 12, "main.c", 37, 1);
-        performTest("main.c", 34, 28, "main.c", 37, 1);
+        performTest("main.c", 33, 14, "main.c", 38, 1);
+        performTest("main.c", 34, 12, "main.c", 38, 1);
+        performTest("main.c", 34, 28, "main.c", 38, 1);
     }
-    
+
     public void testConstParameter() throws Exception {
         // IZ#76032: ClassView component doubles function in some cases
         // (partial fix: made const parameters resolve correctly)
         performTest("const.cc", 5, 44, "const.cc", 1, 1);
         performTest("const.cc", 5, 50, "const.cc", 2, 5);
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // K&R style
 
@@ -170,7 +180,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ136730() throws Exception {
         performTest("IZ136730.c", 2, 11, "IZ136730.c", 3, 1);
     }
-    
+
     public void testTemplateParameter() throws Exception {
         performTest("template_parameter.cc", 2, 13, "template_parameter.cc", 1, 17);
         performTest("template_parameter.cc", 3, 13, "template_parameter.cc", 1, 17);
@@ -243,6 +253,258 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ139056.cc", 15, 24, "IZ139056.cc", 2, 5);
     }
 
+    public void testIZ139141() throws Exception {
+        // IZ#139141 : unable to resolve constructor of nested structure
+        performTest("IZ139141.cc", 7, 6, "IZ139141.cc", 7, 5);
+        performTest("IZ139141.cc", 8, 6, "IZ139141.cc", 8, 5);
+    }
+
+    public void testIZ139618() throws Exception {
+        // IZ#139618 : Syntax hightlighting failure for unnamed union
+        performTest("IZ139618.cc", 2, 11, "IZ139618.cc", 2, 9);
+        performTest("IZ139618.cc", 2, 15, "IZ139618.cc", 2, 14);
+        performTest("IZ139618.cc", 3, 13, "IZ139618.cc", 3, 5);
+        performTest("IZ139618.cc", 8, 16, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 9, 15, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 11, 7, "IZ139618.cc", 8, 9);
+        performTest("IZ139618.cc", 12, 6, "IZ139618.cc", 9, 9);
+        performTest("IZ139618.cc", 12, 19, "IZ139618.cc", 10, 7);
+        performTest("IZ139618.cc", 12, 22, "IZ139618.cc", 9, 9);
+    }
+
+    public void testIZ139693() throws Exception {
+        // IZ#139693 : function-local typedefs are not resolved
+        performTest("IZ139693.cc", 2, 21, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 3, 9, "IZ139693.cc", 2, 5);
+        performTest("IZ139693.cc", 4, 26, "IZ139693.cc", 2, 5);
+    }
+
+    public void testIZ139409() throws Exception {
+        // IZ#139409 : Labels highlighted as errors
+        performTest("IZ139409.cc", 1, 8, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 3, 17, "IZ139409.cc", 1, 1);
+        performTest("IZ139409.cc", 4, 7, "IZ139409.cc", 4, 5);
+        performTest("IZ139409.cc", 6, 16, "IZ139409.cc", 4, 5);
+        performNullTargetTest("IZ139409.cc", 8, 11);
+    }
+
+    public void testIZ139784() throws Exception {
+        // IZ#139784 : last unnamed enum overrides previous ones
+        performTest("IZ139784.cc", 2, 13, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 2, 21, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 3, 13, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 3, 18, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 3, 26, "IZ139784.cc", 3, 25);
+        performTest("IZ139784.cc", 3, 31, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 4, 16, "IZ139784.cc", 2, 12);
+        performTest("IZ139784.cc", 5, 16, "IZ139784.cc", 2, 20);
+        performTest("IZ139784.cc", 6, 16, "IZ139784.cc", 3, 12);
+        performTest("IZ139784.cc", 7, 16, "IZ139784.cc", 3, 25);
+    }
+
+    public void testIZ139058() throws Exception {
+        // IZ#139058 : unresolved identifiers in statement "this->operator std::string()"
+        performTest("IZ139058.cc", 7, 65, "IZ139058.cc", 1, 1);
+        performTest("IZ139058.cc", 7, 75, "IZ139058.cc", 2, 5);
+    }
+
+    public void testIZ139143() throws Exception {
+        // IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+        performTest("IZ139143.cc", 9, 9, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 14, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 9, 24, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 9, 29, "IZ139143.cc", 5, 5);
+        performTest("IZ139143.cc", 10, 11, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 18, "IZ139143.cc", 4, 5);
+        performTest("IZ139143.cc", 10, 23, "IZ139143.cc", 8, 5);
+        performTest("IZ139143.cc", 10, 28, "IZ139143.cc", 5, 5);
+    }
+
+    public void testIZ140111() throws Exception {
+        // IZ#140111 : unresolved identifier in declaration "TCHAR c;"
+        performTest("IZ140111.cc", 3, 10, "IZ140111.cc", 3, 1);
+        performTest("IZ140111.cc", 4, 8, "IZ140111.cc", 4, 1);
+        performTest("IZ140111.cc", 7, 14, "IZ140111.cc", 7, 5);
+        performTest("IZ140111.cc", 8, 12, "IZ140111.cc", 8, 5);
+        performTest("IZ140111.cc", 12, 14, "IZ140111.cc", 12, 5);
+        performTest("IZ140111.cc", 13, 12, "IZ140111.cc", 13, 5);
+        performTest("IZ140111.cc", 14, 8, "IZ140111.cc", 14, 5);
+    }
+
+    public void testIZ140589() throws Exception {
+        // IZ#140589 : template class member is not resolved when parentheses are used
+        performTest("IZ140589.cc", 8, 38, "IZ140589.cc", 3, 5);
+        performTest("IZ140589.cc", 9, 38, "IZ140589.cc", 3, 5);
+    }
+
+    public void testIZ138683() throws Exception {
+        // IZ#138683 : function typedef are not recognized
+        performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
+    }
+
+    public void testLabels() throws Exception {
+        // IZ#141135 : Labels within code bocks are unresolved
+        performTest("labels.cc", 3, 12, "labels.cc", 4, 5);
+        performTest("labels.cc", 8, 12, "labels.cc", 10, 9);
+        performTest("labels.cc", 15, 12, "labels.cc", 19, 9);
+        performTest("labels.cc", 24, 12, "labels.cc", 26, 9);
+        performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
+        performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
+        performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
+        performTest("labels.cc", 57, 19, "labels.cc", 54, 13);
+    }
+
+    public void testStaticConstInNamespace() throws Exception {
+        // IZ141765 static const in namespace definition is unresolved
+        performTest("IZ141765_static_const_in_nsp.cc", 7, 48, "IZ141765_static_const_in_nsp.h", 3, 17);
+        performTest("IZ141765_static_const_in_nsp.cc", 9, 48, "IZ141765_static_const_in_nsp.h", 4, 17);
+    }
+
+    public void testStaticFunctionInHeader() throws Exception {
+        // IZ141601 A static function defined in a header and used in a source file is unresolved
+        performTest("IZ141601_static_fun_in_hdr.c", 4, 8, "IZ141601_static_fun_in_hdr.h", 2, 1);
+    }
+
+    public void testIZ141842() throws Exception {
+        // IZ#141842 : If template parameter declared as a template class, its usage is unresolved
+        performTest("IZ141842.cc", 9, 13, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 13, 5, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 14, 5, "IZ141842.cc", 5, 5);
+    }
+
+    public void testIZ137897() throws Exception {
+        // IZ#137897 : parameters of function pointer are not resolved
+        performTest("IZ137897.cc", 1, 24, "IZ137897.cc", 1, 15);
+        performTest("IZ137897.cc", 1, 43, "IZ137897.cc", 1, 31);
+        performTest("IZ137897.cc", 2, 26, "IZ137897.cc", 2, 16);
+        performTest("IZ137897.cc", 2, 43, "IZ137897.cc", 2, 34);
+        performTest("IZ137897.cc", 3, 30, "IZ137897.cc", 3, 24);
+    }
+
+    public void testIZ143226() throws Exception {
+        // IZ#143226 : Incorrect error in the editor
+        performTest("IZ143226.cc", 3, 6, "IZ143226.cc", 2, 5);
+        performTest("IZ143226.cc", 3, 18, "IZ143226.cc", 2, 5);
+    }
+
+    public void testIZ144154() throws Exception {
+        // IZ#144154 : nested typedef "type" is unresolved in Boost
+        performTest("IZ144154.cc", 24, 49, "IZ144154.cc", 12, 9);
+        performTest("IZ144154.cc", 57, 52, "IZ144154.cc", 31, 5);
+    }
+
+    public void testIZ144360() throws Exception {
+        // IZ#144360 : unable to resolve typedef-ed class member in loki
+        performTest("IZ144360.cc", 12, 22, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 9, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
+    }
+
+    public void testIZ140795() throws Exception {
+        // IZ#140795 : Usage of enumerators of nested enums
+        // of the template specializations are unresolved
+        performTest("IZ140795.cc", 8, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 9, 29, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 10, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 11, 34, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 12, 36, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 13, 37, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 14, 43, "IZ140795.cc", 4, 16);
+    }
+
+    public void testIZ140757() throws Exception {
+        // IZ#140757 : Template parameter in the definition of the static
+        // template class field is highlighted as an error
+        performTest("IZ140757.cc", 17, 12, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 18, 29, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 19, 29, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 20, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 21, 12, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 23, 27, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 23, 30, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 23, 33, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 23, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 23, 39, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 24, 22, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 24, 25, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 24, 28, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 24, 31, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 24, 34, "IZ140757.cc", 21, 5);
+    }
+
+    public void testIZ144363() throws Exception {
+        // IZ#144363 : typename in for-loop leads to unresolved identifier error
+        performTest("IZ144363.cc", 17, 48, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 18, 15, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 20, 43, "IZ144363.cc", 9, 5);
+    }
+
+    public void testIZ145286() throws Exception {
+        // IZ#145286 : const variable declared in "if" condition is not resolved
+        performTest("IZ145286.cc", 3, 27, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 4, 14, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 6, 31, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 7, 15, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 9, 29, "IZ145286.cc", 9, 17);
+        performTest("IZ145286.cc", 10, 22, "IZ145286.cc", 9, 17);
+    }
+
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        // global
+        performTest("iz_145553_namesakes.cc", 14, 26, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 15, 8, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 18, 18, "iz_145553_namesakes.cc", 11, 5);
+        performTest("iz_145553_namesakes.cc", 19, 12, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 19, 19, "iz_145553_namesakes.cc", 3, 5);
+        performTest("iz_145553_namesakes.cc", 20, 20, "iz_145553_namesakes.cc", 4, 9);
+        performTest("iz_145553_namesakes.cc", 22, 22, "iz_145553_namesakes.cc", 14, 1);
+        // namespace
+        performTest("iz_145553_namesakes.cc", 36, 24, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 41, 31, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 42, 10, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 45, 20, "iz_145553_namesakes.cc", 38, 9);
+        performTest("iz_145553_namesakes.cc", 46, 16, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 47, 23, "iz_145553_namesakes.cc", 31, 13);
+        performTest("iz_145553_namesakes.cc", 49, 25, "iz_145553_namesakes.cc", 41, 5);
+    }
+
+    public void testIZ145071() throws Exception {
+        // IZ#145071 : forward declarations marked as error
+        performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
+    }
+
+    public void testIZ136731() throws Exception {
+        // IZ#136731 : No hyper link on local extern function
+        performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 5);
+        performTest("IZ136731_local_extern_function.cc", 3, 40, "IZ136731_local_extern_function.cc", 3, 32);
+    }
+
+    public void testIZ146464() throws Exception {
+        // IZ#146464 : IDE can't find 'wchar_t' identifier in C projects
+        performTest("IZ146464.c", 1, 16, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 5, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 23, "IZ146464.c", 1, 1); // NOI18N
+    }
+
+    public void testIZ147627() throws Exception {
+        // IZ#147627 : IDE highlights code with 'i' in 'for' as wrong
+        performTest("IZ147627.cc", 6, 18, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 23, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 7, 28, "IZ147627.cc", 6, 14); // NOI18N
+        performTest("IZ147627.cc", 8, 18, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 23, "IZ147627.cc", 8, 14); // NOI18N
+        performTest("IZ147627.cc", 9, 28, "IZ147627.cc", 8, 14); // NOI18N
+    }
+
+    public void testIZ147632() throws Exception {
+        // IZ#147632 : IDE highlights global variable in 'if' as wrong
+        performTest("IZ147632.cc", 8, 16, "IZ147632.cc", 1, 1);
+        performTest("IZ147632.cc", 8, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 10, 25, "IZ147632.cc", 3, 5);
+        performTest("IZ147632.cc", 12, 25, "IZ147632.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -267,3 +529,4 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
     }
 }
+

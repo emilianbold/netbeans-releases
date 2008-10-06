@@ -40,15 +40,22 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.openide.awt.Toolbar;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,32 +73,106 @@ public class DiagramSelectToolAction extends AbstractAction
     {
         this(scene, DesignerTools.SELECT, ImageUtil.instance().getIcon("selection-arrow.png"), 
                 NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
-                Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),null, null);
     }
 
-    public DiagramSelectToolAction(Scene scene, String tool, Icon icon, String tooltip, Cursor cursor)
+    public DiagramSelectToolAction(Scene scene, 
+                                   String tool, 
+                                   Icon icon, 
+                                   String tooltip, 
+                                   Cursor cursor, 
+                                   KeyStroke accelerator,
+                                   KeyStroke macAccelerator)
     {
         this.scene = scene;
         putValue(Action.SMALL_ICON, icon); 
         putValue(Action.SHORT_DESCRIPTION, tooltip);
         this.cursor = cursor; 
         this.tool = tool;
+        
+        putValue(Action.ACCELERATOR_KEY, accelerator);
+        putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macAccelerator);
     }
 
     public void actionPerformed(ActionEvent evt)
     {
-        if (evt.getSource() instanceof JToggleButton)
+        Object eventSource = evt.getSource();
+        IDiagram diagram = scene.getLookup().lookup(IDiagram.class);
+        
+        if (eventSource instanceof JToggleButton)
         {
-            JToggleButton button = (JToggleButton) evt.getSource();
+            JToggleButton button = (JToggleButton) eventSource;
             if (button.isSelected())
             {
+                // If the diagram is in read-only mode then we do not want to 
+                // set the scene in select, but READ_ONLY mode instead.
+                if((tool.equals(DesignerTools.SELECT) == true) && 
+                    ((diagram != null) && diagram.getReadOnly() == true))
+                {
+                    tool = DesignerTools.READ_ONLY;
+                }
+                
                 scene.setActiveTool(tool);
                 scene.setCursor(cursor);
-            } else
+            } 
+            else
             {
-                scene.setActiveTool(DesignerTools.SELECT);
+                // If the diagram is in read-only mode then we do not want to 
+                // set the scene in select, but READ_ONLY mode instead.
+                if((tool.equals(DesignerTools.SELECT) == true) && 
+                    ((diagram != null) && diagram.getReadOnly() == true))
+                {
+                    scene.setActiveTool(DesignerTools.READ_ONLY);
+                }
+                else
+                {
+                    scene.setActiveTool(DesignerTools.SELECT);
+                }
+                
                 scene.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
+        // The action is invoked by key strokes
+        else if (eventSource instanceof UMLDiagramTopComponent)
+        {
+            UMLDiagramTopComponent umlTopComp = (UMLDiagramTopComponent) eventSource;
+            // If the diagram is in read-only mode then we do not want to 
+            // set the scene in select, but READ_ONLY mode instead.
+            if ((tool.equals(DesignerTools.SELECT) == true) &&
+                    ((diagram != null) && diagram.getReadOnly() == true))
+            {
+                tool = DesignerTools.READ_ONLY;
+            } else
+            {
+                JToggleButton toolButton = this.getToolButton(umlTopComp);
+                toolButton.setSelected(true);
+            }
+            scene.setActiveTool(tool);
+            scene.setCursor(cursor);
+        }
+    }
+    
+    private JToggleButton getToolButton(UMLDiagramTopComponent umlTopComp)
+    {
+        JToggleButton retTool = null;
+
+        Toolbar editorToolbar = umlTopComp.getLookup().lookup(Toolbar.class);
+        if (editorToolbar != null)
+        {
+            Component[] toolbarComps = editorToolbar.getComponents();
+            for (Component comp : toolbarComps)
+            {
+                if (comp instanceof JToggleButton)
+                {
+                    JToggleButton jtButton = (JToggleButton) comp;
+                    if (jtButton.getName().equals(this.tool))
+                    {
+                        retTool = jtButton;
+                        break;
+                    }
+                }
+            }
+        }
+        return retTool;
     }
 }

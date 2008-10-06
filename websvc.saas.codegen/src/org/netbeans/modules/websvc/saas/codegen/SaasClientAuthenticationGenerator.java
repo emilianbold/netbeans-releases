@@ -42,9 +42,8 @@ package org.netbeans.modules.websvc.saas.codegen;
 
 import java.io.IOException;
 import java.util.List;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.Constants.DropFileType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.SaasAuthenticationType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
@@ -63,6 +62,7 @@ public abstract class SaasClientAuthenticationGenerator {
     private List<ParameterInfo> authMethodParams;
     private Project project;
     private String authProfile;
+    private DropFileType dropFileType;
 
     public SaasClientAuthenticationGenerator(SaasBean bean,
             Project project) {
@@ -76,6 +76,14 @@ public abstract class SaasClientAuthenticationGenerator {
     
     public Project getProject() {
         return project;
+    }
+    
+    public DropFileType getDropFileType() {
+        return dropFileType;
+    }
+
+    public void setDropFileType(DropFileType dropFileType) {
+        this.dropFileType = dropFileType;
     }
     
     public String getAuthenticationProfile() {
@@ -142,7 +150,7 @@ public abstract class SaasClientAuthenticationGenerator {
     /**
      *  Return target and generated file objects
      */
-    public abstract void modifyAuthenticationClass(final String comment, final Modifier[] modifiers,
+    public abstract void modifyAuthenticationClass(final String comment, final Object[] modifiers,
             final Object returnType, final String name, final String[] parameters, final Object[] paramTypes,
             final Object[] throwList, final String bodyText)
             throws IOException;

@@ -39,22 +39,31 @@
 
 package org.netbeans.modules.javascript.hints;
 
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+
 public class DuplicateLabelHintTest extends HintTestBase {
     
     public DuplicateLabelHintTest(String testName) {
         super(testName);
     }            
 
+    private JsAstRule createRule() {
+        return new DuplicateLabelHint();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
     public void testHint1() throws Exception {
-        checkHints(this, new DuplicateLabelHint(), "testfiles/duplicatelabels.js", null);
+        checkHints(this, createRule(), "testfiles/duplicatelabels.js", null);
     }
 
     public void testLabels() throws Exception {
-        checkHints(this, new DuplicateLabelHint(), "testfiles/prototype.js", null);
+        checkHints(this, createRule(), "testfiles/prototype.js", null);
     }
 
     public void testLabels2() throws Exception {
-        checkHints(this, new DuplicateLabelHint(), "testfiles/returns.js", null);
+        checkHints(this, createRule(), "testfiles/returns.js", null);
     }
 
 }

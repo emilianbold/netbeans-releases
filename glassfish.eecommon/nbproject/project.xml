@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.glassfish.eecommon</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.db</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -33,6 +42,32 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.metadata</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.sun.dd</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -51,12 +86,29 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -68,11 +120,43 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.13</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -86,8 +170,12 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ws7</friend>
                 <package>org.netbeans.modules.glassfish.eecommon.api</package>
+                <package>org.netbeans.modules.glassfish.eecommon.api.config</package>
             </friend-packages>
         </data>
     </configuration>

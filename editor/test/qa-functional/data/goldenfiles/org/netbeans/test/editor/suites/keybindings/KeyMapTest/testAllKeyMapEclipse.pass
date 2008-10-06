@@ -1,95 +1,75 @@
-Build|Build Main Project
-  F11
-Build|Clean and Build Main Project
-  Shift+F11
-Build|Compile File
-  F9
-Edit|<unknown>
-  COPY
-Edit|<unknown>
-  CUT
-Edit|<unknown>
-  DELETE
+Edit|Clear Document Bookmarks
+Edit|Copy
+Edit|Cut
+Edit|Delete Next Character
+Edit|File Hierarchy
+  Alt+F12
+Edit|File Members
+  Ctrl+O
 Edit|Find Next Occurrence
   Ctrl+K
 Edit|Find Previous Occurrence
   Ctrl+Shift+K
-Edit|Find Usages
-  Alt+F7
+Edit|Find Selection
+Edit|Find in Projects...
+  Ctrl+H
 Edit|Find...
   FIND
-Edit|<unknown>
-  PASTE
-Edit|<unknown>
-  Ctrl+Y
-Edit|<unknown>
-  Ctrl+Shift+F
+Edit|Go to Line...
+  Ctrl+L
+Edit|Go to Symbol...
+Edit|Go to Type...
+  Ctrl+Shift+T
+Edit|Hierarchy
+  Ctrl+T
+Edit|Members
+  Ctrl+Shift+F12
+Edit|Next Bookmark
+Edit|Paste
+Edit|Previous Bookmark
+  Shift+F2
+Edit|Quick Search
+  Ctrl+I
+Edit|Redo
+Edit|Replace
+Edit|Replace in Projects...
+  Ctrl+Shift+H
 Edit|Start Macro Recording
-  Ctrl+J S
 Edit|Stop Macro Recording
-  Ctrl+J E
-Edit|<unknown>
-  UNDO
-File|New File...
-  Ctrl+N
-File|New Project...
-  Ctrl+Shift+N
-File|Open Project...
-  Ctrl+Shift+O
-File|Print...
-  Ctrl+P
-File|Save
-  Ctrl+S
-File|Save All
-  Ctrl+Shift+S
+Edit|Toggle Bookmark
+  Ctrl+F2
+Edit|Undo
+Editor Macros|cast-to-String
+Editor Macros|debug-var
+Editor Macros|quote-word
 Go To|Go to Declaration
   F3
-Go To|<unknown>
+Go To|Go to Javadoc
+Go To|Go to Line...
   Ctrl+L
-Go To|Go to Previous Document
-  Ctrl+F6
 Go To|Go to Source
-  Ctrl+F3
-Go To|Go to Test
-  Ctrl+Shift+T
-Go To|Go to Type...
-  Ctrl+O
-Go To|Next Error
-  Ctrl+PERIOD
-Go To|Next Inner View
-  Alt+Shift+RIGHT
-Go To|Next Tab
-  Alt+RIGHT
-Go To|Previous Bookmark
-  Shift+F2
-Go To|Previous Error
-  Ctrl+COMMA
-Go To|Previous Inner View
-  Alt+Shift+LEFT
-Go To|Previous Tab
-  Alt+LEFT
-Go To|Select Node in Projects
-  Ctrl+Shift+1
-Go To|Select in Favorites
-  Ctrl+Shift+3
-Go To|Toggle Bookmark
-  Ctrl+F2
-Help|Help
-  F1
+Go To|Go to Super Implementation
 Other|Back
   Alt+LEFT
-Other|Cancel Process
-  Ctrl+Shift+DELETE
-Other|Check XML
-  Alt+F9
+Other|Complete Line
+Other|Complete Line and Create New Line
+Other|Copy Selection else Line down
+  Ctrl+Alt+DOWN
+Other|Copy Selection else Line up
+  Ctrl+Alt+UP
+Other|Cut from Insertion Point to Line Begining
+Other|Cut from Insertion Point to Line End
 Other|Delete Line
   Ctrl+D
 Other|Delete Next Word
   Ctrl+DELETE
+Other|Delete Preceding Characters in Line
 Other|Delete Previous Character
   BACK_SPACE
+  Shift+BACK_SPACE
 Other|Delete Previous Word
   Ctrl+BACK_SPACE
+Other|Delete Selection
 Other|Delete Tab
   Shift+TAB
 Other|Extend Selection Back
@@ -104,12 +84,19 @@ Other|Extend Selection Up
   Shift+UP
 Other|Extend Selection to Beginning of Document
   Ctrl+Shift+HOME
+Other|Extend Selection to Beginning of Line
 Other|Extend Selection to Beginning of Text on Line
   Shift+HOME
+Other|Extend Selection to Beginning of Word
 Other|Extend Selection to End of Document
   Ctrl+Shift+END
 Other|Extend Selection to End of Line
   Shift+END
+Other|Extend Selection to End of Word
+Other|Extend Selection to First Non-whitespace Char
+Other|Extend Selection to Last Non-whitespace Char
+Other|Extend Selection to Matching Brace
+  Ctrl+Shift+OPEN_BRACKET
 Other|Extend Selection to Next Page
   Shift+PAGE_DOWN
 Other|Extend Selection to Next Word
@@ -118,28 +105,19 @@ Other|Extend Selection to Previous Page
   Shift+PAGE_UP
 Other|Fast Import
   Ctrl+Shift+M
-Other|File Hierarchy
-  Alt+F12
-Other|File Members
-  Ctrl+F12
-Other|Files
-  Ctrl+2
-Other|Find in Projects...
-  Ctrl+Shift+F
-Other|Fix Code...
-  Alt+ENTER
 Other|Forward
   Alt+RIGHT
-Other|Full Screen
-  Alt+Shift+ENTER
-Other|Go to File...
-  Alt+Shift+O
-Other|HTTP Monitor
-  Ctrl+Shift+5
-Other|Hierarchy
-  Alt+Shift+F12
+Other|Go to First Non-whitespace Char
+Other|Go to Last Non-whitespace Char
+Other|Incremental Search Backward
+  Ctrl+Shift+J
 Other|Incremental Search Forward
-  FIND
+  Ctrl+J
+Other|Inplace Refactoring
+  Ctrl+R
+Other|Insert Code
+  Alt+Shift+S
+Other|Insert Current Date and Time
 Other|Insert Newline
   ENTER
 Other|Insert Tab
@@ -152,192 +130,188 @@ Other|Insertion Point Down
   KP_DOWN
 Other|Insertion Point Forward
   RIGHT
+  KP_RIGHT
 Other|Insertion Point Up
   KP_UP
   UP
 Other|Insertion Point to Beginning of Document
   Ctrl+HOME
+Other|Insertion Point to Beginning of Line
 Other|Insertion Point to Beginning of Text on Line
   HOME
+Other|Insertion Point to Beginning of Word
 Other|Insertion Point to End of Document
   Ctrl+END
 Other|Insertion Point to End of Line
   END
+Other|Insertion Point to End of Word
 Other|Insertion Point to Matching Brace
-  Ctrl+Alt+Shift+P
+  Ctrl+Shift+P
 Other|Insertion Point to Next Word
   Ctrl+RIGHT
 Other|Insertion Point to Previous Word
   Ctrl+LEFT
-Other|Javadoc Index Search
-  Shift+F1
 Other|Last edit
   Ctrl+Q
-Other|Members
-  Ctrl+Shift+F12
-Other|Modify Profiling Session...
-  Alt+Shift+F2
+Other|Move Insertion Point to Bottom
+  Alt+Shift+PAGE_DOWN
+Other|Move Insertion Point to Center
+  Alt+Shift+INSERT
+Other|Move Insertion Point to Top
+  Alt+Shift+PAGE_UP
+Other|Move Selection else Line down
+  Alt+DOWN
+Other|Move Selection else Line up
+  Alt+UP
+Other|Navigate to Next Occurrence
+Other|Navigate to Next Occurrence
+Other|Navigate to Next Occurrence
+Other|Navigate to Previous Occurrence
+Other|Navigate to Previous Occurrence
+Other|Navigate to Previous Occurrence
 Other|Page Down
   PAGE_DOWN
 Other|Page Up
   PAGE_UP
-Other|Reload Form
-  Ctrl+Shift+R
+Other|Paste Formatted
+  Ctrl+Shift+V
+Other|Re-indent Current Line or Selection
+Other|Remove Trailing Spaces
 Other|Replace Variable With its Getter
   Alt+U G
 Other|Replace Variable With its Setter
   Alt+U S
 Other|Replace Variable With its is* Method
   Alt+U I
-Other|Replace in Projects...
-  Ctrl+Shift+H
-Other|Rerun Profiling Session
-  Ctrl+Shift+F2
-Other|Run SQL
-  Ctrl+Shift+E
 Other|Scroll Down
   Ctrl+UP
+Other|Scroll Insertion Point to Bottom
+Other|Scroll Insertion Point to Center
+Other|Scroll Insertion Point to Top
 Other|Scroll Up
   Ctrl+DOWN
 Other|Select All
   Ctrl+A
+Other|Select Identifier
+  Alt+Shift+J
+Other|Select Line
 Other|Select Next Element
-  Alt+Shift+UP
+  Alt+Shift+PERIOD
 Other|Select Previous Element
-  Alt+Shift+DOWN
-Other|Set Request Parameters...
-  Ctrl+Q
+  Alt+Shift+COMMA
+Other|Select Word
 Other|Show All Code Completion Popup
   Ctrl+Alt+SPACE
+  Ctrl+Alt+BACK_SLASH
 Other|Show Code Completion Popup
+  Ctrl+BACK_SLASH
   Ctrl+SPACE
 Other|Show Code Completion Tip Popup
-  Alt+P
+  F2
 Other|Show Documentation Popup
   Ctrl+Shift+SPACE
+  Ctrl+Shift+BACK_SLASH
+Other|Show Popup Menu
+  Shift+F10
 Other|Split Line
   Ctrl+ENTER
 Other|Start New Line
   Shift+ENTER
-Other|Step Over Expression
-  Shift+F8
-Other|Take Snapshot of Collected Results
-  Ctrl+F2
-Other|Test Project
-  Alt+F6
+Other|Switch Capitalization of Identifier
+Other|Switch Case
+  Ctrl+U S
 Other|To Lowercase
   Ctrl+Shift+Y
 Other|To Uppercase
   Ctrl+Shift+X
+Other|Toggle Comment
+  Ctrl+SLASH
+Other|Toggle Highlight Search
+  Alt+Shift+H
+Other|Toggle Line Numbers
+Other|Toggle Toolbar
 Other|Toggle Typing Mode
   INSERT
-Other|Undock Window
-  Alt+Shift+D
-Other|Validate XML
-  Alt+Shift+F9
+Refactor|Change Method Parameters...
+Refactor|Convert Anonymous to Member...
+Refactor|Copy...
+Refactor|Encapsulate Fields...
+Refactor|Extract Interface...
+Refactor|Extract Superclass...
+Refactor|Find Usages
+  Ctrl+Alt+H
+Refactor|Introduce Constant...
+Refactor|Introduce Field...
+Refactor|Introduce Method...
+Refactor|Introduce Variable...
+Refactor|Move...
+  Ctrl+M
+Refactor|Pull Up...
+Refactor|Push Down...
+Refactor|Redo
 Refactor|Rename...
   Ctrl+R
-Run|Continue
-  F8
-Run|Debug File
-  Ctrl+Shift+F5
-Run|Debug Main Project
-  F11
-Run|Debug Test for File
-  Ctrl+Shift+F6
-Run|Evaluate Expression...
-  Ctrl+F9
-Run|Finish Debugger Session
-  Shift+F5
-Run|Make Callee Current
-  Ctrl+Alt+UP
-Run|Make Caller Current
-  Ctrl+Alt+DOWN
-Run|New Breakpoint...
-  Ctrl+Shift+F8
-Run|New Watch...
-  Ctrl+Shift+F7
-Run|Pop Topmost Call
-  F7
-Run|Run File
-  Shift+F6
-Run|Run Into Method
-  Ctrl+F5
-Run|Run Main Project
-  Ctrl+Shift+F11
-Run|Run to Cursor
-  Ctrl+R
-Run|Step Into
-  F5
-Run|Step Out
-  Ctrl+F7
-Run|Step Over
-  F6
-Run|Test File
-  Ctrl+F6
-Run|Toggle Line Breakpoint
-  Ctrl+Shift+B
+Refactor|Safely Delete...
+  Alt+DELETE
+Refactor|Undo
+Refactor|Use Supertype Where Possible...
+Source|Analyze Javadoc
+Source|Comment
+Source|Fix Code...
+  Ctrl+1
 Source|Fix Imports
   Ctrl+Shift+O
+Source|Format
+  Ctrl+Shift+F
+Source|Next Error in Editor
 Source|Next Matching Word
   Alt+SLASH
-System|Rename...
-  F2
-Tools|Create JUnit Tests
-  Ctrl+Shift+U
-Tools|Insert Internationalized String...
-  Ctrl+Shift+J
+Source|Previous Matching Word
+Source|Shift Line Left
+  Alt+Shift+LEFT
+Source|Shift Line Right
+  Alt+Shift+RIGHT
+Source|Uncomment
+Tools|Go to File...
+  Ctrl+Shift+R
+Tools|Javadoc Index Search
+  Shift+F1
+Tools|Javadoc References
 View|Collapse All
+  Ctrl+Shift+MINUS
   Ctrl+Shift+SUBTRACT
+View|Collapse All Java Code
+View|Collapse All Javadoc
 View|Collapse Fold
+  Ctrl+MINUS
   Ctrl+SUBTRACT
 View|Expand All
   Ctrl+MULTIPLY
+  Ctrl+Shift+EQUALS
+  Ctrl+Shift+ADD
+  Ctrl+Shift+PLUS
+View|Expand All Java Code
+View|Expand All Javadoc
 View|Expand Fold
   Ctrl+ADD
-Window|Breakpoints
-  Alt+Shift+5
-Window|Call Stack
-  Alt+Shift+3
-Window|Classes
-  Alt+Shift+4
+  Ctrl+PLUS
+  Ctrl+EQUALS
+Window|Analyzer
+Window|Call Hierarchy
+Window|Clone Document
 Window|Close All Documents
   Ctrl+Shift+W
   Ctrl+Shift+F4
+Window|Close Other Documents
 Window|Close Window
   Ctrl+W
   Ctrl+F4
-Window|Documents...
-  Ctrl+Shift+E
+Window|Declaration View
 Window|Editor
   F12
-Window|Favorites
-  Ctrl+3
 Window|Find Usages Results
   Alt+Shift+U
-Window|Local Variables
-  Alt+Shift+1
-Window|Maximize Window
-  Ctrl+M
+Window|Javadoc View
 Window|Navigator
   Ctrl+7
-Window|Output
-  Ctrl+4
-Window|Palette
-  Ctrl+Shift+8
-Window|Properties
-  Ctrl+Shift+7
-Window|Search Results
-  Ctrl+Shift+0
-Window|Services
-  Ctrl+5
-Window|Sessions
-  Alt+Shift+6
-Window|Sources
-  Alt+Shift+8
-Window|Task List
-  Ctrl+6
-Window|Threads
-  Alt+Shift+7
-Window|Watches
-  Alt+Shift+2
+Window|Refactoring Preview

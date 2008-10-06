@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,10 +44,12 @@ package org.netbeans.modules.autoupdate.services;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +57,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -68,11 +71,12 @@ abstract class OperationValidator {
     private final static OperationValidator FOR_ENABLE = new EnableValidator();
     private final static OperationValidator FOR_DISABLE = new DisableValidator();
     private final static OperationValidator FOR_CUSTOM_INSTALL = new CustomInstallValidator();
-    private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationValidator");    
+    private static final Logger LOGGER = Logger.getLogger (OperationValidator.class.getName ());
     
     /** Creates a new instance of OperationValidator */
     private OperationValidator() {}
-    static boolean isValidOperation(OperationContainerImpl.OperationType type, UpdateUnit updateUnit, UpdateElement updateElement) {
+    
+    public static boolean isValidOperation(OperationContainerImpl.OperationType type, UpdateUnit updateUnit, UpdateElement updateElement) {
         if (updateUnit.isPending ()) {
             return false;
         }
@@ -104,28 +108,31 @@ abstract class OperationValidator {
         return isValid;
     }
     
-    static List<UpdateElement> getRequiredElements(OperationContainerImpl.OperationType type, UpdateElement updateElement, List<ModuleInfo> moduleInfos) {
+    public static List<UpdateElement> getRequiredElements (OperationContainerImpl.OperationType type,
+            UpdateElement updateElement,
+            List<ModuleInfo> moduleInfos,
+            Collection<String> brokenDependencies) {
         List<UpdateElement> retval = Collections.emptyList ();
         switch(type){
         case INSTALL:
-            retval = FOR_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         case DIRECT_UNINSTALL:
         case UNINSTALL:
-            retval = FOR_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         case UPDATE:
-            retval = FOR_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         case ENABLE:
-            retval = FOR_ENABLE.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_ENABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         case DIRECT_DISABLE:
         case DISABLE:
-            retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         case CUSTOM_INSTALL:
-            retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos);
+            retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         default:
             assert false;
@@ -140,17 +147,60 @@ abstract class OperationValidator {
         return retval;
     }
     
+    public static Set<String> getBrokenDependencies (OperationContainerImpl.OperationType type,
+            UpdateElement updateElement,
+            List<ModuleInfo> moduleInfos) {
+            Set<String> broken = new HashSet<String> ();
+            switch (type) {
+            case ENABLE :
+                broken = Utilities.getBrokenDependenciesInInstalledModules (updateElement);
+                break;
+            case INSTALL :
+            case UPDATE :
+                getRequiredElements (type, updateElement, moduleInfos, broken);
+                break;
+            case UNINSTALL :
+            case DIRECT_UNINSTALL :
+            case CUSTOM_UNINSTALL :
+            case DISABLE :
+            case DIRECT_DISABLE :
+            case CUSTOM_INSTALL:
+                broken = Utilities.getBrokenDependencies (updateElement, moduleInfos);
+                break;
+            default:
+                assert false : "Unknown type of operation " + type;
+            }
+            return broken;
+    }
+    
     abstract boolean isValidOperationImpl(UpdateUnit updateUnit, UpdateElement uElement);
-    abstract List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos);
+    abstract List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement,
+            List<ModuleInfo> moduleInfos,
+            Collection<String> brokenDependencies);
     
     private static class InstallValidator extends OperationValidator {
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() == null && containsElement (uElement, unit);
         }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
-            return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements(uElement, moduleInfos));
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+            Set<Dependency> brokenDeps = new HashSet<Dependency> ();
+            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps));
+            if (brokenDependencies != null) {
+                for (Dependency dep : brokenDeps) {
+                    brokenDependencies.add (dep.toString ());
+                }
+            }
+            return res;
         }
+    }
+    
+    private static Map<Module, Set<Module>> module2depending = new HashMap<Module, Set<Module>> ();
+    private static Map<Module, Set<Module>> module2required = new HashMap<Module, Set<Module>> ();
+    
+    public static void clearMaps () {
+        module2depending = new HashMap<Module, Set<Module>> ();
+        module2required = new HashMap<Module, Set<Module>> ();
     }
     
     private static class UninstallValidator extends OperationValidator {
@@ -184,7 +234,7 @@ abstract class OperationValidator {
             return res;
         }
         
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos) {
+        List<UpdateElement> getRequiredElementsImpl  (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -228,8 +278,8 @@ abstract class OperationValidator {
             return unit.getInstalled() != null && containsElement (uElement, unit);
         }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
-             return FOR_INSTALL.getRequiredElementsImpl(uElement, moduleInfos);
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+             return FOR_INSTALL.getRequiredElementsImpl(uElement, moduleInfos, brokenDependencies);
         }
     }
     
@@ -266,7 +316,7 @@ abstract class OperationValidator {
             return res;
         }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -320,7 +370,7 @@ abstract class OperationValidator {
             return res;
         }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -379,7 +429,7 @@ abstract class OperationValidator {
             return res;
         }
         
-        List<UpdateElement> getRequiredElementsImpl(UpdateElement uElement, List<ModuleInfo> moduleInfos) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
             //return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos));
@@ -394,7 +444,7 @@ abstract class OperationValidator {
             inscreasing = false;
             Set<Module> tmp = new HashSet<Module> (extendReqToDeactivate);
             for (Module dep : tmp) {
-                Set<Module> deps = Utilities.findDependingModules (dep, mm);
+                Set<Module> deps = Utilities.findDependingModules (dep, mm, module2depending);
                 inscreasing |= extendReqToDeactivate.addAll (deps);
             }
         }
@@ -407,7 +457,7 @@ abstract class OperationValidator {
             Set<Module> tmp = new HashSet<Module> (moreToDeactivate);
             for (Module req : tmp) {
                 if ((! Utilities.isKitModule (req) && ! Utilities.isEssentialModule (req)) || extendReqToDeactivate.contains (req)) {
-                    Set<Module> reqs = Utilities.findRequiredModules (req, mm);
+                    Set<Module> reqs = Utilities.findRequiredModules (req, mm, module2required);
                     inscreasing |= moreToDeactivate.addAll (reqs);
                 }
             }
@@ -439,16 +489,16 @@ abstract class OperationValidator {
             if ((Utilities.isKitModule (depM) || Utilities.isEssentialModule (depM)) && ! requested.contains (depM)) {
                 if (LOGGER.isLoggable (Level.FINE)) {
                     LOGGER.log(Level.FINE, "The module " + depM.getCodeNameBase() +
-                        " is KIT_MODULE and won't be deactivated now not even " + Utilities.findRequiredModules(depM, mm));
+                        " is KIT_MODULE and won't be deactivated now not even " + Utilities.findRequiredModules(depM, mm, module2required));
                 }
                 mustRemain.add (depM);
             } else if (mustRemain.contains (depM)) {
                 LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " was investigated already and won't be deactivated now.");
             } else {
-                Set<Module> depends = Utilities.findDependingModules (depM, mm);
+                Set<Module> depends = Utilities.findDependingModules (depM, mm, module2depending);
                 if (! compactSet.containsAll (depends)) {
                     mustRemain.add (depM);
-                    mustRemain.addAll (Utilities.findRequiredModules (depM, mm));
+                    mustRemain.addAll (Utilities.findRequiredModules (depM, mm, module2required));
                     LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
                     if (LOGGER.isLoggable (Level.FINER)) {
                         Set<Module> outsideModules = new HashSet<Module> (depends);
@@ -482,7 +532,7 @@ abstract class OperationValidator {
             Set<Module> tmp = new HashSet<Module> (more);
             inscreasing = false;
             for (Module req : tmp) {
-                Set<Module> reqs = Utilities.findRequiredModules (req, mm);
+                Set<Module> reqs = Utilities.findRequiredModules (req, mm, module2required);
                 inscreasing |= more.addAll (reqs);
             }
         }

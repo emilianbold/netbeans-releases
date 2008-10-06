@@ -50,6 +50,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -88,13 +89,28 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
     }
 
+    public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {
+        int start = getStartOffset(ast);
+        int end = getEndOffset(ast);
+        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        for (CsmDeclaration decl : container.getDeclarations()) {
+            if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                NamespaceDefinitionImpl candidate = (NamespaceDefinitionImpl) decl;
+                if (candidate.getStartOffset() == start && candidate.getEndOffset() == end && candidate.getName().equals(name)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+    
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
             
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
-        synchronized (declarations) {
+        synchronized (this) {
             decls = UIDCsmConverter.UIDsToDeclarations(declarations);
         }
         return decls;
@@ -102,7 +118,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         Iterator<CsmOffsetableDeclaration> out;
-        synchronized (declarations) {
+        synchronized (this) {
             out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations, filter);
          }
          return out;
@@ -112,6 +128,18 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         declarations.add(uid);
+        if (decl instanceof VariableImpl) {
+            VariableImpl v = (VariableImpl) decl;
+            if (!NamespaceImpl.isNamespaceScope(v, false)) {
+                v.setScope(this);
+            }
+        }
+        if (decl instanceof FunctionImpl) {
+            FunctionImpl f = (FunctionImpl) decl;
+            if (!NamespaceImpl.isNamespaceScope(f)) {
+                f.setScope(this);
+            }
+        }
         // update repository
         RepositoryUtils.put(this);
     }
@@ -119,8 +147,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
-        boolean res = declarations.remove(uid);
-        assert res;
+        declarations.remove(uid);
         RepositoryUtils.remove(uid);
         // update repository
         RepositoryUtils.put(this);
@@ -146,7 +173,29 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public CsmScope getScope() {
         return getContainingFile();
     }
+    
+    public Collection<CsmScopeElement> getScopeElements() {
+        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        for (Iterator iter = getDeclarations().iterator(); iter.hasNext();) {
+            CsmDeclaration decl = (CsmDeclaration) iter.next();
+            if (isOfMyScope(decl)) {
+                l.add(decl);
+            }
+        }
+        return l;
+    }
 
+    private boolean isOfMyScope(CsmDeclaration decl) {
+        if (decl instanceof VariableImpl) {
+            return ! NamespaceImpl.isNamespaceScope((VariableImpl) decl, false);
+        } else if (decl instanceof FunctionImpl) {
+            return ! NamespaceImpl.isNamespaceScope((FunctionImpl) decl);
+
+        } else {
+            return false;
+        }
+    }
+    
     @Override
     public void dispose() {
         super.dispose();
@@ -154,7 +203,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         Collection<CsmOffsetableDeclaration> decls;
         List<CsmUID<CsmOffsetableDeclaration>> uids;
-        synchronized (declarations) {
+        synchronized (this) {
             decls = getDeclarations();
             uids = declarations;
             declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
@@ -198,8 +247,12 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         assert this.name != null;
         output.writeUTF(this.name.toString());
+
+        if (getName().length() == 0) {
+            writeUID(output);
+        }
     }  
-    
+
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
         super(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -212,5 +265,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         
         this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
+
+        if (getName().length() == 0) {
+            readUID(input);
+        }
     }      
 }

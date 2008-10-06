@@ -122,6 +122,9 @@ public class GsfDataLoader extends UniFileLoader {
                 String resourcePath = "";
                 if (cp != null) {
                     resourcePath = cp.getResourceName(target);
+                    if (resourcePath == null) {
+                        resourcePath = ""; // NOI18N
+                    }
                 } else {
                     ErrorManager.getDefault().log(ErrorManager.WARNING, "No classpath was found for folder: "+target);
                 }
@@ -177,6 +180,7 @@ public class GsfDataLoader extends UniFileLoader {
                 MapFormat f = new MapFormat(m);
                 f.setLeftBrace( "__" ); //NOI18N
                 f.setRightBrace( "__" ); //NOI18N
+                f.setExactMatch(false);
 
                 return f;
             }

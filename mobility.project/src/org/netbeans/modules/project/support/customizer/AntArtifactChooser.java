@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.support.customizer;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -63,6 +64,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /** Accessory component used in the ProjectChooser for choosing project
@@ -181,14 +183,19 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     
     private Project getProject( final File projectDir ) {
         
-        try {
-            final FileObject fo = FileUtil.toFileObject(projectDir);
+        if (projectDir == null) {
+            return null;
+        }
+        
+        try {            
+            File normProjectDir = FileUtil.normalizeFile(projectDir);
+            final FileObject fo = FileUtil.toFileObject(normProjectDir);
             
             if (fo != null) {
                 return ProjectManager.getDefault().findProject(fo);
             }
         } catch ( IOException e ) {
-            // Return null
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         
         return null;
@@ -208,8 +215,8 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                     model.addElement( new ArtifactItem( artifacts[i], uris[j]));
                 }
             }
+            jListArtifacts.setSelectionInterval(0, model.size() - 1);            
         }
-//        jListArtifacts.setSelectedIndex(model.getSize() > 0 ? 0 : -1);
     }
     
     
@@ -237,6 +244,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         
         final AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
         chooser.setAccessory( accessory );
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );
         
         final int option = chooser.showOpenDialog( findParent() ); // show file chooser
         

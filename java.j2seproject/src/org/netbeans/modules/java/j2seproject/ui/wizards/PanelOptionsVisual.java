@@ -176,7 +176,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         cbSharable.setSelected(SharableLibrariesUtils.isLastProjectSharable());
         org.openide.awt.Mnemonics.setLocalizedText(cbSharable, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
-        cbSharable.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbSharable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbSharableActionPerformed(evt);
@@ -197,13 +196,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         createMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
-        createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         mainClassTextField.setText("com.myapp.Main");
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -217,8 +214,8 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                         .add(lblLibFolder)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 243, Short.MAX_VALUE)
-                            .add(txtLibFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))))
+                            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                            .add(txtLibFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(btnLibFolder))
             .add(layout.createSequentialGroup()
@@ -246,7 +243,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .add(mainClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(setAsMainCheckBox)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         cbSharable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_sharableProject")); // NOI18N

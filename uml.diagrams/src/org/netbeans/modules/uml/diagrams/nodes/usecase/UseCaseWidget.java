@@ -39,9 +39,17 @@
 
 package org.netbeans.modules.uml.diagrams.nodes.usecase;
 
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
 import java.beans.PropertyChangeEvent;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
@@ -56,7 +64,10 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.actions.Selectable;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -72,6 +83,7 @@ public class UseCaseWidget extends UMLNodeWidget
     protected static ResourceBundle bundle = NbBundle.getBundle(UseCaseWidget.class);
     public static int USECASE_DEFAULT_WIDTH = 90;
     public static int USECASE_DEFAULT_HEIGHT = 60;
+    public static String SHOW_EXTENSION_POINTS = "ShowExtensionPoints";
     private Widget currentView;
     private Scene scene;
     private Widget usecaseWidget;
@@ -105,13 +117,15 @@ public class UseCaseWidget extends UMLNodeWidget
             usecase = (IUseCase) presentation.getFirstSubject();
             currentView = createSimpleUseCaseView(usecase);
             setCurrentView(currentView);
+//            setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
     private void initUseCaseWidget()
     {
         usecaseWidget = new Widget(scene);
-        ovalWidget = new OvalWidget(scene, USECASE_DEFAULT_WIDTH, USECASE_DEFAULT_HEIGHT, getWidgetID(), bundle.getString("LBL_body"));
+        ovalWidget = new OvalWidget(scene, USECASE_DEFAULT_WIDTH, USECASE_DEFAULT_HEIGHT, getResourcePath(), bundle.getString("LBL_body"));
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
         detailWidget.setBackground(null);
@@ -146,10 +160,12 @@ public class UseCaseWidget extends UMLNodeWidget
         ovalWidget.addChild(nameWidget);
 
         detailWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
-        detailWidget.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
+        detailWidget.addChild(new ExtensionPointSeparator(scene));
         UMLLabelWidget extPtLabel = new UMLLabelWidget(scene,
-                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"),
-                getWidgetID() + "." + "extensionPoint", "Extension Point Label");
+                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"), // NOI18N
+                getWidgetID() + "." + "extensionPoint", 
+                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoint_Label")); // NOI18N
+//        extPtLabel.setForeground(null);
         extPtLabel.setAlignment(LabelWidget.Alignment.CENTER);
         extPtLabel.setBorder(BorderFactory.createEmptyBorder(5));
 
@@ -176,6 +192,14 @@ public class UseCaseWidget extends UMLNodeWidget
     private void showDetail(boolean show)
     {
         detailWidget.setVisible(show);
+        if(show == true)
+        {
+            ovalWidget.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
+        }
+        else
+        {
+            ovalWidget.setLayout(new CenterWidgetLayout());
+        }
     }
 
     public boolean isDetailVisible()
@@ -185,7 +209,7 @@ public class UseCaseWidget extends UMLNodeWidget
 
     public void setDetailVisible(boolean visible)
     {
-        detailWidget.setVisible(visible);
+        showDetail(visible);
     }
 
     public String getWidgetID()
@@ -196,24 +220,32 @@ public class UseCaseWidget extends UMLNodeWidget
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         if (!event.getSource().equals(usecase))
         {
             return;
         }
         String propName = event.getPropertyName();
-
-        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
+        //usecase name / stereotype change
+        if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString())
+                || (propName.equals(ModelElementChangedKind.STEREOTYPE.toString())))
         {
             if (nameWidget != null)
             {
                 nameWidget.propertyChange(event);
             }
-        } 
-         
+        }    //taggedvalue change    
         else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
         {
+            String taggedValues = usecase.getTaggedValuesAsString();
+            if (taggedValues.length() > 0)
+            {
+                nameWidget.propertyChange(event);
+            }
+            //extension points        
             updateDetails();
-        }        
+        }
+        updateSizeWithOptions();
     }
 
     private void updateDetails()
@@ -233,7 +265,7 @@ public class UseCaseWidget extends UMLNodeWidget
             }
             for (IExtensionPoint extPt : usecase.getExtensionPoints())
             {
-                addExtensionPoint(extPt);
+                addExtensionPoint(extPt);     
             }
         }
     }
@@ -243,7 +275,13 @@ public class UseCaseWidget extends UMLNodeWidget
         if (extPt != null)
         {
             ExtensionPointWidget widget = new ExtensionPointWidget(getScene(), extPt);
+            widget.setForeground(null);
             extPtListWidget.addChild(widget);
+            Selectable selectable = widget.getLookup().lookup(Selectable.class);
+            if (selectable != null) 
+            {
+                selectable.select(widget);
+            }
         }
     }
     
@@ -255,6 +293,163 @@ public class UseCaseWidget extends UMLNodeWidget
             retVal = usecase.getExtensionPoints().size();
         }
         return retVal;
+    }
+
+    @Override
+    public void save(NodeWriter nodeWriter)
+    {
+        //we need to save the property for ext pt visibility
+        HashMap map = nodeWriter.getProperties();
+        map.put(SHOW_EXTENSION_POINTS, isDetailVisible());
+        nodeWriter.setProperties(map);
+        super.save(nodeWriter);
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        if (nodeReader != null)
+        {
+            Object showExtPt = nodeReader.getProperties().get(SHOW_EXTENSION_POINTS);
+            if (showExtPt != null)
+            {
+                setDetailVisible(Boolean.parseBoolean(showExtPt.toString()));
+                if (isDetailVisible())
+                {
+                    showDetail(true);
+                }
+                else
+                {
+                    showDetail(false);
+                }
+            }
+        }
+        super.load(nodeReader);
+    }
+    
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof UseCaseWidget;
+        
+        super.duplicate(setBounds, target);
+        ((UseCaseWidget)target).showDetail(isDetailVisible());
+    }
+    
+    public class ExtensionPointSeparator extends SeparatorWidget
+    {
+        public ExtensionPointSeparator(Scene scene)
+        {
+            super(scene, SeparatorWidget.Orientation.HORIZONTAL);
+        }
+
+        @Override
+        protected void paintWidget()
+        {
+            // I need to use the oval bounds to calculate the ellipse that will
+            // correctly bound the ellipse.  
+            // 
+            // Since the widget paint method first transforms the coordinate system
+            // to be expressed in the separator coordinates, I need the x, and y
+            // to be in the separators coordinate system.  Therefore the x, and 
+            // y will be negitive numbers.
+            Rectangle bounds = ovalWidget.getClientArea();
+            Point ovalScreenLocation = ovalWidget.convertLocalToScene(ovalWidget.getClientArea()).getLocation();
+            Point myScreenLocation = convertLocalToScene(getClientArea()).getLocation();
+            Ellipse2D.Float ellipse = new Ellipse2D.Float(ovalScreenLocation.x - myScreenLocation.x,
+                                                          ovalScreenLocation.y - myScreenLocation.y,
+                                                          bounds.width,
+                                                          bounds.height);
+            
+            
+            
+            Graphics2D graphics = getGraphics();
+            
+            Shape curClip = graphics.getClip();
+            
+            graphics.setClip(ellipse);
+            super.paintWidget();
+            
+            graphics.setClip(curClip);
+        }
+        
+        
+    }
+    
+    public class CenterWidgetLayout implements Layout
+    {
+
+        public void layout(Widget widget)
+        {
+            List<Widget> children = widget.getChildren();
+
+            int y = 0;
+            for (Widget child : children)
+            {
+                Rectangle childBounds = child.getPreferredBounds();
+                if(child.isVisible() == true)
+                {
+                    child.resolveBounds(new Point(0, y), childBounds);
+                    y += childBounds.height;
+                }
+                else
+                {
+                    child.resolveBounds(new Point(0, y), new Rectangle(childBounds.x, childBounds.y, 0, 0));
+                }
+            }
+        }
+
+        public boolean requiresJustification(Widget widget)
+        {
+            return true;
+        }
+
+        public void justify(Widget widget)
+        {
+            List<Widget> children = widget.getChildren();
+
+            int totalHeight = 0;
+            for (Widget child : children)
+            {
+                if(child.isVisible() == true)
+                {
+                    Rectangle childBounds = child.getClientArea();
+                    totalHeight += childBounds.height;
+                }
+            }
+
+            Rectangle bounds = widget.getClientArea();
+
+            // For some reason the top left corner is adjusted is adjusted 
+            // to negitive numbers.
+            // 
+            // Therefore counter act that value.
+            int x = bounds.x;
+            int y = bounds.y;
+            
+            // Get the top location.
+            y += (bounds.height - totalHeight) / 2;
+            
+            for (Widget child : children)
+            {
+
+                Rectangle childBounds = child.getPreferredBounds();
+                Rectangle newBounds = new Rectangle(childBounds);
+                newBounds.width = bounds.width;
+                if(child.isVisible() == true)
+                {
+                    child.resolveBounds(new Point(x, y), 
+                                        new Rectangle(new Point(0,0), 
+                                                      bounds.getSize())); 
+                    y += childBounds.height;
+                }
+                else
+                {
+                    newBounds = new Rectangle(newBounds.x, newBounds.y, 0, 0);
+                    child.resolveBounds(new Point(-childBounds.x, y), newBounds);
+                }
+            }
+        }
     }
     
 }

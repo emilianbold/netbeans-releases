@@ -47,7 +47,9 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="Metro">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
+                    <!-- Not used and commented out so it doesn't get overridden by other modules and break the validation test.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/metroSamplesCategory.html"/>
+                    -->
                     <attr name="position" intvalue="250"/>
                     <file name="SecureCalculator" url="pkg/SecureCalculator.txt">
                         <attr name="position" intvalue="300"/>

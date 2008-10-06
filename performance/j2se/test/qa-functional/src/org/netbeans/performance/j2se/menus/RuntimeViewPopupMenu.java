@@ -85,7 +85,7 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     }
     
     public void testTomcatPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|Bundled Tomcat");
+        testMenu(SERVER_REGISTRY + "|Tomcat");
     }
     
     private void testMenu(String path){

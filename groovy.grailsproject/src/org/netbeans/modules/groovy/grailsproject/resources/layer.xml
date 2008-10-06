@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
         <folder name="Build">
             <file name="org-netbeans-modules-groovy-grailsproject-actions-CreateViewAction.instance"/>
             <file name="org-netbeans-modules-groovy-grailsproject-actions-GenerateAllAction.instance"/>
+        </folder>
+        <folder name="Groovy">
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoDomainClassAction.instance"/>
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
         </folder>
     </folder>
     <folder name="Loaders">
@@ -31,26 +36,119 @@
             </folder>
         </folder>
     </folder>
+    <folder name="Menu">
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoControllerAction.instance"/>
+                <attr name="position" intvalue="550"/>
+            </file>
+            <file name="org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Groovy/org-netbeans-modules-groovy-grailsproject-actions-GotoViewAction.instance"/>
+                <attr name="position" intvalue="575"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Project">
             <folder name="Groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/desktop.html"/>
-                <attr name="position" intvalue="140"/>
-                <file name="Grails Application">
-                    <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="825"/>
+                <file name="emptyGrails.xml">
+                    <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewGrailsProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grails/resources/GrailsIcon16x16.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/emptyProject.html"/>
                 </file>
             </folder>
+        </folder>
+        <folder name="Groovy">
+            <file name="DomainClass.groovy">
+                <attr name="position" intvalue="130"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/DomainClass.html"/>
+            </file>
+            <file name="Controller.groovy">
+                <attr name="position" intvalue="140"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/Controller.html"/>
+            </file>
+            <file name="IntegrationTest.groovy">
+                <attr name="position" intvalue="150"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/IntegrationTest.html"/>
+            </file>
+            <file name="GantScript.groovy">
+                <attr name="position" intvalue="160"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GantScript.html"/>
+            </file>
+            <file name="Service.groovy">
+                <attr name="position" intvalue="170"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/Service.html"/>
+            </file>
+            <file name="TagLib.groovy">
+                <attr name="position" intvalue="180"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/TagLib.html"/>
+            </file>
+            <file name="UnitTest.groovy">
+                <attr name="position" intvalue="190"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="groovy"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator.create"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/UnitTest.html"/>
+            </file>
         </folder>
     </folder>
     
     <folder name="Projects">
         <folder name="org-netbeans-modules-groovy-grailsproject">
+            <folder name="Customizer">
+                <file name="General.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createGeneral"/>
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="Debugging.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider.createDebugging"/>
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-groovy,text/x-java"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
+            </folder>
 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-groovy-grailsproject-ui-SourceNodeFactory.instance"/>

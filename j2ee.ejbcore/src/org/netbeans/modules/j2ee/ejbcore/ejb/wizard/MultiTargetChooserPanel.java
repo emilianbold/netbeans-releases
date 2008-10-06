@@ -50,8 +50,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
@@ -98,6 +100,11 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
     public MultiTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isValidPackageRequired ) {
         this.project = project;
         this.folders = folders;
+        // the folders array is invalid... I quess we should try to recover here.
+        if (0 == folders.length) {
+            this.folders = ProjectUtils.getSources(project).getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);            
+        }
         this.bottomPanel = bottomPanel;
         this.type = TYPE_FILE; // in JavaTargetChooserPanel it is passed in constructor, but we want to create only files
         if ( bottomPanel != null ) {
@@ -161,6 +168,10 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
 
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
+        if (rootFolder == null) {
+            setErrorMessage( "ERR_JavaTargetChooser_InvalidRootFolder" );
+            return false;
+        }
         SpecificationVersion specVersion = null;
         if (type != TYPE_PACKAGE) {
             String sl = SourceLevelQuery.getSourceLevel(rootFolder);
@@ -303,7 +314,7 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
                     String name = null;
                     while (tk.hasMoreTokens()) {
                         name = tk.nextToken();
-                        FileObject fo = folder.getFileObject (name,"");   //NOI8N
+                        FileObject fo = folder.getFileObject (name,"");   //NOI18N
                         if (fo == null) {
                             break;
                         }
@@ -373,7 +384,7 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
     final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         String newObjectNameToDisplay = newObjectName;
         if (newObjectName != null) {
-            newObjectName = newObjectName.replace ('.', '/'); // NOI8N
+            newObjectName = newObjectName.replace ('.', '/'); // NOI18N
         }
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();

@@ -1,6 +1,4 @@
 21:6-21:16:error:An entity class must be public.
-21:6-21:16:error:The class should have a no-arg, public or protected constructor.
-Create default constructor
 Make class MakePublic public
 ---------------------
 /*

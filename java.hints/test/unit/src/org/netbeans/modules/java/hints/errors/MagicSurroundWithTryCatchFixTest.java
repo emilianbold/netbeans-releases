@@ -54,21 +54,21 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "FixImpl",
                        "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() {try {}finally{try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}}");
     }
-    
+
     public void testLogStatementLogger() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() { System.out.println(\"\");|new java.io.FileInputStream(\"\");}}",
                        "FixImpl",
                        "package test; import java.io.FileNotFoundException; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } }}");
     }
-    
+
     public void testLogStatementExceptions() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test() {System.out.println(\"\");|new java.io.FileInputStream(\"\");}}",
                        "FixImpl",
                        "package test; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test() {try { System.out.println(\"\"); new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { Exceptions.printStackTrace(ex); } }}");
     }
-    
+
     public void testLogPrint() throws Exception {
         boolean orig = ErrorFixesFakeHint.isUseLogger();
 
@@ -83,21 +83,21 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
             ErrorFixesFakeHint.setUseLogger(orig);
         }
     }
-    
+
     public void test117085a() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(Exception ex) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex1); } } private void x() throws Exception {}}");
     }
-    
+
     public void test117085b() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(Exception ex) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import org.openide.util.Exceptions; public class Test {public void test(Exception ex) {try { System.out.println(\"\"); x(); } catch (Exception ex1) { Exceptions.printStackTrace(ex1); } } private void x() throws Exception {}}");
     }
-    
+
     public void test117085c() throws Exception {
         boolean orig = ErrorFixesFakeHint.isUseLogger();
 
@@ -112,21 +112,21 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
             ErrorFixesFakeHint.setUseLogger(orig);
         }
     }
-    
+
     public void test117085d() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(Exception ex, Exception ex1) {System.out.println(\"\");|x();} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex, Exception ex1) {try { System.out.println(\"\"); x(); } catch (Exception ex2) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex2); } } private void x() throws Exception {}}");
     }
-    
+
     public void test117085e() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {System.out.println(\"\");|x();}}} private void x() throws Exception {}}",
                        "FixImpl",
                        "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test {public void test(Exception ex) {while (true) {Exception ex1; if (1 != 1) {try { System.out.println(\"\"); x(); } catch (Exception ex2) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex2); } }}} private void x() throws Exception {}}");
     }
-    
+
 //    public void test86483() throws Exception {
 //        performFixTest("test/Test.java",
 //                       "package test; import java.io.IOException; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test(int a) {try {if (a == 1) |throw new IOException(); } catch (FileNotFoundException e) { Exceptions.printStacktrace(e); } } }",
@@ -134,6 +134,13 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
 //                       "package test; import java.io.IOException; import java.io.FileNotFoundException; import org.openide.util.Exceptions; public class Test {public void test(int a) {try {if (a == 1) throw new IOException(); } catch (FileNotFoundException e) { Exceptions.printStacktrace(e); } catch (IOException e) { Exceptions.printStacktrace(e); } } }");
 //    }
     
+    public void test143965() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { { int h; thr|ow new Exception();} }",
+                       "FixImpl",
+                       "package test; import java.util.logging.Level; import java.util.logging.Logger; public class Test { { try { int h; throw new Exception(); } catch (Exception ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } }");
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
     }

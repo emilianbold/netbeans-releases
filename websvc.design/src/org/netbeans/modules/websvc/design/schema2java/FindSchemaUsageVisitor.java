@@ -61,7 +61,7 @@ import org.openide.ErrorManager;
 public class FindSchemaUsageVisitor extends ChildVisitor implements WSDLVisitor {
     private ReferenceableSchemaComponent referenced;
     private Model model;
-    List<WSDLRefactoringElement> elements = new ArrayList();
+    List<WSDLRefactoringElement> elements = new ArrayList<WSDLRefactoringElement>();
    
     
     /** Creates a new instance of FindUsageVisitor */

@@ -38,10 +38,10 @@
  */
 package org.netbeans.modules.css.gsf;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,15 +71,14 @@ import org.openide.util.Exceptions;
  */
 public class CSSStructureScanner implements StructureScanner {
 
-    private HtmlFormatter formatter;
-
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
-        //hack
-        EditorAwareSourceTaskSupport.instance().fire(info);
-        //eof hack
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
+         //so far the css parser always parses the whole css content
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if(!presultIterator.hasNext()) {
+            return Collections.emptyList();
+        }
         
-        //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
 
@@ -89,32 +88,56 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         final List<StructureItem> items = new ArrayList<StructureItem>();
-        this.formatter = formatter;
 
         NodeVisitor rulesSearch = new NodeVisitor() {
 
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
                     //get parent - style rule
-                    SimpleNode ruleNode = (SimpleNode)node.jjtGetParent();
-                    
+                    SimpleNode ruleNode = (SimpleNode) node.jjtGetParent();
                     assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
-                    
-                    
                     int so = AstUtils.documentPosition(ruleNode.startOffset(), source);
                     int eo = AstUtils.documentPosition(ruleNode.endOffset(), source);
                     if (eo != so) {
-                        //we need to get the text directly from the document otherwise
-                        //the GENERATED_xxx items may appear in the navigator
-                        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
-                        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
-                        String nodeName = info.getText().substring(documentSO, documentEO);
 
-                        //filter out inlined style definitions - they have just virtual selector which
-                        //is mapped to empty string
-                        if(nodeName.length() > 0) {
-                            items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
+                        StringBuffer selectorsListText = new StringBuffer();
+                        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                            SimpleNode n = (SimpleNode) node.jjtGetChild(i);
+                            if (n.kind() == CSSParserTreeConstants.JJTSELECTOR) {
+                                StringBuffer content = new StringBuffer();
+                                //found selector
+                                for (int j = 0; j < n.jjtGetNumChildren(); j++) {
+                                    SimpleNode n2 = (SimpleNode) n.jjtGetChild(j);
+                                    //append simpleselectors and combinators
+                                    if (n2.kind() == CSSParserTreeConstants.JJTSIMPLESELECTOR ||
+                                            n2.kind() == CSSParserTreeConstants.JJTCOMBINATOR) {
+                                        if(n2.image().trim().length() > 0) {
+                                            String nodeText = extractDocumentText(n2, info, source).trim();
+                                            content.append(nodeText);
+                                            content.append(' ');
+                                        }
+                                    }
+                                }
+                                //filter out inlined style definitions - they have just virtual selector which
+                                //is mapped to empty string
+
+                                if (content.length() > 0) {
+                                    selectorsListText.append(content.substring(0, content.length() - 1)); //cut last space
+                                    selectorsListText.append(", "); //append selectos separator //NOI18N
+                                }
+                            }
                         }
+                        //filter empty(virtual) selector lists
+                        if (selectorsListText.length() > 2 /* ", ".length() */) {
+                            
+                            //possibly remove last space and comma
+                            if (selectorsListText.charAt(selectorsListText.length() - 2) == ',') {
+                                selectorsListText.deleteCharAt(selectorsListText.length() - 2);
+                            }
+
+                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.createElement(ruleNode), source));
+                        }
+
                     }
                 }
             }
@@ -123,6 +146,12 @@ public class CSSStructureScanner implements StructureScanner {
         return items;
     }
 
+    private String extractDocumentText(SimpleNode node, CompilationInfo ci, TranslatedSource source) {
+        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+        return ci.getText().substring(documentSO, documentEO);
+    }
+    
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
         final BaseDocument doc = (BaseDocument) info.getDocument();
         if (doc == null) {
@@ -130,7 +159,12 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyMap();
+        }
+
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
 
@@ -161,20 +195,33 @@ public class CSSStructureScanner implements StructureScanner {
             }
         };
         root.visitChildren(foldsSearch);
-        folds.put("codeblocks", foldRange);
+        folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
         
+    }
+    
+    public Configuration getConfiguration() {
+        return new Configuration(true, false);
     }
     
     private static class CssRuleStructureItem implements StructureItem {
 
         private String name;
         private CssAstElement element;
+        private int from, to;
 
-        private CssRuleStructureItem(String name, CssAstElement element) {
+        private static String escape(String s) {
+            s = s.replace("<", "&lt;");
+            s = s.replace(">", "&gt;");
+            return s;
+        }
+        
+        private CssRuleStructureItem(String name, CssAstElement element, TranslatedSource source) {
             this.name = name;
             this.element = element;
+            this.from = AstUtils.documentPosition(element.node().startOffset(), source);
+            this.to = AstUtils.documentPosition(element.node().endOffset(), source);
         }
 
         public String getName() {
@@ -185,8 +232,8 @@ public class CSSStructureScanner implements StructureScanner {
             return getName();
         }
 
-        public String getHtml() {
-            return getName();
+        public String getHtml(HtmlFormatter formatter) {
+            return escape(getName());
         }
 
         public ElementHandle getElementHandle() {
@@ -211,11 +258,11 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public long getPosition() {
-            return AstUtils.documentPosition(element.node().startOffset(), element.translatedSource());
+            return from;
         }
 
         public long getEndPosition() {
-            return AstUtils.documentPosition(element.node().endOffset(), element.translatedSource());
+            return to;
         }
 
         public ImageIcon getCustomIcon() {

@@ -31,19 +31,22 @@ dirname=`dirname "$0"`
 
 "$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
 
-jdk_home_1_5=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home
+"$dirname"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$MYSQL_INSTALL_DIR"
+
+jdk_home=`"$dirname"/get_current_jdk.sh`
+
 cd "$NETBEANS_INSTALL_DIR"
 cd Contents/Resources/NetBeans*/etc
 if [ -f netbeans.conf ]
 then
   echo netbeans.conf found: `pwd`/netbeans.conf
-  if [ -d $jdk_home_1_5 ]
+  if [ -d $jdk_home ] || [ -L $jdk_home ]
   then
-    echo 1.5 JDK home exists: $jdk_home_1_5
+    echo JDK home exists: $jdk_home
     cp netbeans.conf netbeans.conf_orig_jdk_home
-    cat netbeans.conf_orig_jdk_home  | sed -e 's|.*netbeans_jdkhome.*|netbeans_jdkhome='$jdk_home_1_5'|' > netbeans.conf
+    cat netbeans.conf_orig_jdk_home  | sed -e 's|.*netbeans_jdkhome.*|netbeans_jdkhome='$jdk_home'|' > netbeans.conf
   else
-    echo No 1.5 JDK home: $jdk_home_1_5
+    echo No JDK home: $jdk_home
   fi
   sed -E -i -e "s|\\$\{NETBEANS_HOME\}|$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans|g" netbeans.conf
 else

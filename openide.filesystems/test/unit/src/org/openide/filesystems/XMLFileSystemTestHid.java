@@ -41,17 +41,39 @@
 
 package org.openide.filesystems;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
+    /** Factory for all filesystems that want to use TCK in this class.
+     */
+    public static interface Factory {
+        /** Creates a filesystem representing XML files at given URLs
+         *
+         * @param testName name of the test
+         * @param layers URLs of layers to parse
+         * @return new filesystem that represents those layers
+         */
+        public FileSystem createLayerSystem(String testName, URL[] layers) throws IOException;
+
+        /** Assigns new URLs to existing filesystem.
+         *
+         * @param fs the filesystem produced by {@link #createLayerSystem(java.lang.String, java.net.URL[])}
+         * @param layers new URLs that the filesystem shall switch to
+         * @return true if successful, false if this operation is not supported
+         */
+        public boolean setXmlUrl(FileSystem fs, URL[] layers) throws IOException;
+    }
 
     private String[] resources = new String[] {"a/b/c"};
-    XMLFileSystem xfs = null;
+    FileSystem xfs = null;
 
     public XMLFileSystemTestHid(String testName) {
         super(testName);
@@ -70,21 +92,25 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         FileChangeAdapter fcl = new FileChangeAdapter();
         a.addFileChangeListener(fcl);
         
-        resources = new String[] {"a/b/c","a/b1/c"};        
-        xfs.setXmlUrl(createXMLLayer().toURL());
+        resources = new String[] {"a/b/c","a/b1/c"};
+
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, createXMLLayer().toURL())) {
+            // OK, unsupported
+            return;
+        }
         
         FileObject b1 = xfs.findResource("a/b1");
         assertNotNull(b1);                
         assertTrue(b1.isFolder());        
     }
     
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
-        
         File f = createXMLLayer();
-        xfs = new XMLFileSystem ();
-        xfs.setXmlUrl(f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         this.testedFS = xfs;
+        this.allTestedFS = new FileSystem[] { xfs };
+        super.setUp();
     }
 
     private File createXMLLayer() throws IOException {
@@ -113,13 +139,16 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = new XMLFileSystem (f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals ("Four bytes there", 4, fo.getSize ());
         registerDefaultListener (fo);
         
-        xfs.setXmlUrl (f2.toURL ());
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, f2.toURL())) {
+            // OK, unsupported
+            return;
+        }
         
         assertEquals ("Six bytes there", 6, fo.getSize ());
         
@@ -149,13 +178,16 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = new XMLFileSystem (f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals ("Four bytes there", 4, fo.getSize ());
         registerDefaultListener (fo);
         
-        xfs.setXmlUrl (f2.toURL ());
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, f2.toURL())) {
+            // OK, unsupported
+            return;
+        }
         
         assertEquals ("Six bytes there", 6, fo.getSize ());
         
@@ -186,13 +218,16 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = new XMLFileSystem (f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertEquals("Old value is in the attribute", "old", fo.getAttribute("value"));
         registerDefaultListener (fo);
         
-        xfs.setXmlUrl (f2.toURL ());
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, f2.toURL())) {
+            // OK, unsupported
+            return;
+        }
 
         assertEquals("New value is in the attribute", "new", fo.getAttribute("value"));
         fileAttributeChangedAssert("Change in the content", 1);
@@ -217,13 +252,16 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
         
         
-        xfs = new XMLFileSystem(f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         
         FileObject fo = xfs.findResource("TestModule/sample.txt");
         assertEquals("Four bytes there", 4, fo.getSize());
         registerDefaultListener(fo);
         
-        xfs.setXmlUrl(f2.toURL());
+        if (!FileSystemFactoryHid.switchXMLSystem(xfs, this, f2.toURL())) {
+            // OK, unsupported
+            return;
+        }
         
         assertFalse("Valid no more", fo.isValid());
         assertEquals("Empty now", 0, fo.getSize());
@@ -246,7 +284,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             Thread.sleep(3000);
             assertTrue(f2.createNewFile());
         }
-        xfs = new XMLFileSystem(f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
         assertEquals(fo.lastModified().getTime(), f.lastModified());        
@@ -258,6 +296,135 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
     }
 
+
+    public void testNoInstanceCreatedWithNewValue() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' newvalue='org.openide.filesystems.Count'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+        
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Yet right class guessed", Count.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testNoInstanceCreatedWithMethodValue1() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' methodvalue='org.openide.filesystems.Count.create'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Yet right class guessed", Count.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testNoInstanceCreatedWithMethodValue2() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' methodvalue='org.openide.filesystems.Count.exec'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Only Runnable guessed as that is the return type of the method", Runnable.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testClassBoolean() throws Exception {
+        doPrimitiveTypeTest("boolvalue='true'", Boolean.class);
+    }
+
+    public void testClassByte() throws Exception {
+        doPrimitiveTypeTest("bytevalue='1'", Byte.class);
+    }
+
+    public void testClassInt() throws Exception {
+        doPrimitiveTypeTest("intvalue='1'", Integer.class);
+    }
+
+    public void testClassShort() throws Exception {
+        doPrimitiveTypeTest("shortvalue='1'", Short.class);
+    }
+
+    public void testClassLong() throws Exception {
+        doPrimitiveTypeTest("longvalue='1'", Long.class);
+    }
+    public void testClassDouble() throws Exception {
+        doPrimitiveTypeTest("doublevalue='1.0'", Double.class);
+    }
+    public void testClassFloat() throws Exception {
+        doPrimitiveTypeTest("floatvalue='1.0'", Float.class);
+    }
+    public void testClassString() throws Exception {
+        doPrimitiveTypeTest("stringvalue='1'", String.class);
+    }
+    public void testClassURL() throws Exception {
+        doPrimitiveTypeTest("urlvalue='http://www.netbeans.org'", URL.class);
+    }
+
+    private void doPrimitiveTypeTest(String value, Class<?> expClass) throws Exception {
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' " + value + "/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("Only Runnable guessed as that is the return type of the method", expClass, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", expClass, instance.getClass());
+    }
     
     
     private File writeFile(String name, String content) throws IOException {
@@ -268,6 +435,59 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return f;
     }
     
+
+    public void testAttribute08 () throws Exception {
+      URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
+      assertTrue ("Cannot create XML FS for testing purposes", fsURLDef != null);
+      FileSystem fs = FileSystemFactoryHid.createXMLSystem(getName(), this, fsURLDef);
+      FileObject fo = fs.findResource("testMethodValue");
+      assertTrue ("Cannot acces  FileObject named testMethodValue", fo != null);
+
+      String testName = "test1";
+      Object obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertEquals("methodValue doesn't keep order", obj, getObjectViaMethodValue1(fo, testName));
+
+      testName = "test2";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertTrue ("methodValue doesn't keep order ",
+      obj.equals(getObjectViaMethodValue2 (testName, fo)));
+
+      testName = "test3";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertTrue ("methodValue doesn't keep order ",
+      obj.equals(getObjectViaMethodValue3 (fo)));
+
+      testName = "test4";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertTrue ("methodValue doesn't keep order ",
+      obj.equals(getObjectViaMethodValue4 (testName)));
+
+      testName = "test5";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertTrue ("methodValue doesn't keep order ",
+      obj.equals(getObjectViaMethodValue5 ()));
+
+      testName = "test6";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertEquals("even works for java.util.Map", "Ahoj1", obj);
+
+      testName = "test7";
+      obj = fo.getAttribute(testName);
+      assertTrue ("methodValue failed", obj != null);
+      assertEquals("works for map and string", "Ahoj1test7", obj);
+
+      testName = "testLoc";
+      obj = fo.getAttribute(testName);
+      assertNotNull("Value returned", obj);
+      assertEquals("works for bundle key", "Hello World!", obj);
+    }
+
     
     public void testChangeOfAnAttributeInLayerIsFiredIfThereIsRealChange() throws Exception {
         XMLFileSystem fs = new XMLFileSystem();
@@ -305,6 +525,57 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertAttr("Imutable value is still nochange", nochange, "value", "nochange");
         assertEquals("No change in this attribute: "  + no.events, 0, no.events.size());
     }    
+
+    private static Image icon;
+
+    /**
+     * Called from layer, do not rename!
+     */
+    public static Object method(FileObject fo, String attr) {
+        //System.err.println("CMTBH.m: fo=" + fo.getClass().getName() + "<" + fo.getPath() + ">; attr=" + attr + "; x=" + fo.getAttribute("x"));
+        return String.valueOf(fo.getAttribute("x")) + "/" + attr;
+    }
+
+    public static Image icon() {
+        assertNull("Called just once", icon);
+        icon = new BufferedImage(133, 133, BufferedImage.TYPE_INT_ARGB);
+        return icon;
+    }
+
+    public static Object map1(Map map) {
+        return String.valueOf(map.get("x"));
+    }
+    public static Object map2(Map map, String attr) {
+        return String.valueOf(map.get("x")) + "/" + attr;
+    }
+    public static Object mapImage(Map map) {
+        return map.get("image");
+    }
+    public static Object mapDisplayName(Map map) {
+        return map.get("displayName");
+    }
+
+    public void testVariousXMLAttributes() throws Exception {
+        URL attribs = XMLFileSystemTestHid.class.getResource("test-layer-attribs.xml");
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, attribs);
+
+        clearWorkDir();
+
+        FileSystem f = xfs;
+
+        assertEquals("val/a", attr(xfs, "foo/bar", "a"));
+        assertEquals("val", attr(xfs, "foo/bar", "map1"));
+        assertEquals("val/map2", attr(xfs, "foo/bar", "map2"));
+        assertEquals("Ahoj", attr(xfs, "foo/bar", "mapDisplayName"));
+        Image read = (Image) attr(xfs, "foo/bar", "mapImage");
+        assertNotNull("Image loaded", icon);
+        assertEquals("Same image", icon, read);
+    }
+    private static Object attr(FileSystem f, String path, String a) throws IOException {
+        FileObject fo = f.findResource(path);
+        if (fo == null) return null;
+        return fo.getAttribute(a);
+    }
     
     private static void assertAttr(String msg, FileObject fo, String attr, String value) throws IOException {
         Object v = fo.getAttribute(attr);
@@ -333,30 +604,131 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         public List<FileEvent> change = new ArrayList<FileEvent>();
         
         
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             events.add(fe);
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             events.add(fe);
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             events.add(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             events.add(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             events.add(fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             change.add(fe);
         }
         
+    }
+    private static String getObjectViaMethodValue1 (FileObject fo, String testName) {
+        return fo.getPath()+testName;
+    }
+
+    private static String getObjectViaMethodValue1 (String testName, FileObject fo) {
+        return testName+fo.getPath();
+    }
+
+    private static String getObjectViaMethodValue1 (FileObject fo) {
+        return fo.getPath();
+    }
+
+    private static String getObjectViaMethodValue1 (String testName) {
+        return testName;
+    }
+
+    private static String getObjectViaMethodValue1 () {
+        return "";
+    }
+///
+    private static String getObjectViaMethodValue2 (String testName, FileObject fo) {
+        return testName+fo.getPath();
+    }
+
+    private static String getObjectViaMethodValue2 (FileObject fo) {
+        return fo.getPath();
+    }
+
+    private static String getObjectViaMethodValue2 (String testName) {
+        return testName;
+    }
+
+    private static String getObjectViaMethodValue2 () {
+        return "";
+    }
+///
+    private static String getObjectViaMethodValue3 (FileObject fo) {
+        return fo.getPath();
+    }
+
+    private static String getObjectViaMethodValue3 (String testName) {
+        return testName;
+    }
+
+    private static String getObjectViaMethodValue3 () {
+        return "";
+    }
+///
+    private static String getObjectViaMethodValue4 (String testName) {
+        return testName;
+    }
+
+    private static String getObjectViaMethodValue4 () {
+        return "";
+    }
+///
+    private static String getObjectViaMethodValue5 () {
+        return "";
+    }
+
+    private static Object getObjectViaMethodValue6 (Map attrs) {
+        try {
+            attrs.keySet().iterator().remove();
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        try {
+            attrs.put("value1", "nothing");
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+        try {
+            attrs.remove("value1");
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+
+
+        return attrs.get("value1");
+    }
+    private static Object getObjectViaMethodValue7 (Map<String,Object> attrs, String attrName) {
+        assertEquals(9, attrs.keySet().size());
+        try {
+            attrs.entrySet().remove(null);
+            return "UnsupportedOperationException";
+        } catch (UnsupportedOperationException ex) {
+            // ok
+        }
+
+
+        return attrs.get("value1") + attrName;
     }
     
 }

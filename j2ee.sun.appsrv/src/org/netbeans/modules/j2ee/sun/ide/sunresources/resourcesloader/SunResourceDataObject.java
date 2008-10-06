@@ -53,6 +53,7 @@ import org.openide.ErrorManager;
 
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
@@ -77,7 +78,7 @@ import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBeanDataNode;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBeanDataNode;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;

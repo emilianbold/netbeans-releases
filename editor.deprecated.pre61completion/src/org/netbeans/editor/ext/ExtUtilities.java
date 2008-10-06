@@ -41,9 +41,9 @@
 
 package org.netbeans.editor.ext;
 
-import org.netbeans.editor.BaseTextUI;
 import javax.swing.text.JTextComponent;
-import javax.swing.plaf.TextUI;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
 
 /**
 * Extended kit offering advanced functionality
@@ -59,10 +59,8 @@ public class ExtUtilities {
     }
 
     public static ExtEditorUI getExtEditorUI(JTextComponent target) {
-        TextUI ui = target.getUI();
-        return (ui instanceof BaseTextUI)
-            ? (ExtEditorUI)((BaseTextUI)ui).getEditorUI()
-            : null;
+        EditorUI eui = Utilities.getEditorUI(target);
+        return (eui instanceof ExtEditorUI) ? (ExtEditorUI)eui : null;
     }
 
     public static Completion getCompletion(JTextComponent target) {

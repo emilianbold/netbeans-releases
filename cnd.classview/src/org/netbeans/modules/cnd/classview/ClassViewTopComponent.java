@@ -158,6 +158,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
         view.startup();
         addRemoveModelListeners(true);
         if (CsmModelAccessor.getModel().projects().isEmpty()) {
+            removeAll();
             add(createEmptyContent(), BorderLayout.CENTER);
         } else {
             add(view, BorderLayout.CENTER);

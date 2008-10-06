@@ -57,7 +57,22 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class TopComponentOperatorTest extends JellyTestCase {
-    
+
+    static final String[] tests = new String [] {
+        "testConstructors",
+        "testMakeComponentVisible",
+        "testAttachTo",
+        "testMaximize",
+        "testRestore",
+        "testCloneDocument",
+        "testPushMenuOnTab",
+        "testSaveDocument",
+        "testSave",
+        "testCloseDiscard",
+        "testCloseWindow",
+        "testClose",
+        "testCloseAllDocuments"
+    };
     public TopComponentOperatorTest(java.lang.String testName) {
         super(testName);
     }
@@ -85,20 +100,7 @@ public class TopComponentOperatorTest extends JellyTestCase {
         suite.addTest(new TopComponentOperatorTest("testCloseAllDocuments"));
         return suite;
          */
-        return (NbTest) createModuleTest(TopComponentOperatorTest.class, 
-        "testConstructors",
-        "testMakeComponentVisible",
-        "testAttachTo",
-        "testMaximize",
-        "testRestore",
-        "testCloneDocument",
-        "testPushMenuOnTab",
-        "testSaveDocument",
-        "testSave",
-        "testCloseDiscard",
-        "testCloseWindow",
-        "testClose",
-        "testCloseAllDocuments");
+        return (NbTest) createModuleTest(TopComponentOperatorTest.class, tests);
     }
     
     /** Print out test name. */

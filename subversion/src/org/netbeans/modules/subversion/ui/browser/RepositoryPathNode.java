@@ -48,6 +48,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
@@ -149,11 +150,11 @@ public class RepositoryPathNode extends AbstractNode {
         Image base = null;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); 
         if (baseIcon != null) {
-           base = Utilities.icon2Image(baseIcon);
+           base = ImageUtilities.icon2Image(baseIcon);
         } else {
             base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); 
             if (base == null) { // fallback to our owns                
-                base = Utilities.loadImage("org/openide/loaders/defaultFolder.gif");        //NOI18N
+                base = ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif");        //NOI18N
             }
         }
         assert base != null;
@@ -247,10 +248,7 @@ public class RepositoryPathNode extends AbstractNode {
     
     private static class RepositoryPathChildren extends Children.Keys {
 
-        private RequestProcessor.Task task;
-
         private final BrowserClient client;
-
         private Node[] previousNodes = null;
         
         public RepositoryPathChildren(BrowserClient client) {
@@ -264,7 +262,6 @@ public class RepositoryPathNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            task.cancel();
             setKeys(Collections.EMPTY_LIST);
             super.removeNotify();
         }

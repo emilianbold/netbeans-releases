@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <places query="Alabama" total="3">
+        <place place_id="VrrjuESbApjeFS4." woeid="2347559"
+               latitude="32.614" longitude="-86.680"
+               place_url="/United+States/Alabama"
+               place_type="region">Alabama, Alabama, United States
+        </place>
+        <place place_id="cGHuc0mbApmzEHoP" woeid="2352520"
+               latitude="43.096" longitude="-78.389"
+               place_url="/United+States/New+York/Alabama"
+               place_type="locality">Alabama, New York, United States
+        </place>
+        <place place_id="o4yVPEqYBJvFMP8Q" woeid="1579389"
+               latitude="-26.866" longitude="26.583"
+               place_url="/South+Africa/North+West/Alabama"
+               place_type="locality">Alabama, North West, South Africa
+        </place>
+    </places>
+</rsp>

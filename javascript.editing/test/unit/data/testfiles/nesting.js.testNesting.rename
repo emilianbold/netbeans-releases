@@ -1,0 +1,2 @@
+2:  function otherfunc(|>element<|) {
+3:      pprint(|>element<|);

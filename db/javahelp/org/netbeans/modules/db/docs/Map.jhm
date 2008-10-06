@@ -85,8 +85,20 @@ made subject to such option by the copyright holder.
 <mapID target="db_save_password" url="csh_connectdb.html" />
 <mapID target="new_db_save_password" url="csh_newconnectdb.html" />
 
+<!-- create table dialog box csh -->
+<!-- <mapID target="" url="create-table-db.html" />  -->
+
 <!-- MySQL topics -->
 
 <mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />
 <mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="csh_mysql_props.html" />
+
+<!-- SQL specific topcs -->
+
+<mapID target="sql_history" url="sql_history.html" /> 
+
+<!-- SQL History CSH -->
+
+<mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="sql_history.html" />
+
 </map>

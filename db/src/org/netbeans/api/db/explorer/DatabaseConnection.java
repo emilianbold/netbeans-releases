@@ -42,6 +42,7 @@
 package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
 
@@ -222,7 +223,53 @@ public final class DatabaseConnection {
         if (!ConnectionList.getDefault().contains(delegate)) {
             throw new IllegalStateException("This connection is not added to the ConnectionManager."); // NOI18N
         }
+
         return delegate.getJDBCConnection();
+    }
+    
+    /**
+     * Returns the {@link java.sql.Connection} instance which encapsulates 
+     * the physical connection to the database if this database connection
+     * is connected. Note that "connected" here means "connected using the
+     * Database Explorer". Unless <code>test</code is set to <code>true</code>,
+     * there is no check if {@link java.sql.Connection#close}
+     * has been called on the returned connection. However,
+     * clients should not call <code>Connection.close()</code> on the returned
+     * connection, therefore this method should always return a non-closed 
+     * connection or <code>null</code>.
+     *
+     * <p><strong>Calling {@link java.sql.Connection#close} on the connection
+     * returned by this method is illegal. Use 
+     * {@link ConnectionManager#disconnect} 
+     * to close the connection.</strong></p>
+     *
+     * @param test Set this to true if you want the Database Explorer to validate
+     * the JDBC connection before returning it.  If the JDBC connection is invalid, the
+     * DatabaseConnection is marked as disconnected and null is returned.
+     * <p>
+     * <strong>NOTE</strong>
+     * that setting this to true can have a performance impact because it requires
+     * sending a command to the database server.  Also, this method should not be
+     * called on the AWT event thread if you set <code>test</code> to true.
+     *
+     * @return the physical connection or null if not connected.
+     *
+     * @throws IllegalStateException if this connection is not added to the
+     * ConnectionManager, or if <code>test</code> is set to true and this method is called
+     * on the AWT event thread.
+     *
+     * @since 1.30
+     */
+    public Connection getJDBCConnection(boolean test) {
+        if (test && SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("This method can not be called on the event dispatch thread with 'test' set to true."); // NOI18N
+        }
+        
+        if (!ConnectionList.getDefault().contains(delegate)) {
+            throw new IllegalStateException("This connection is not added to the ConnectionManager."); // NOI18N
+        }
+        
+        return delegate.getJDBCConnection(test);        
     }
 
     /**

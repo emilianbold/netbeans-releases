@@ -42,13 +42,14 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
+public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     public static int MT_LEVEL_NONE = 0;
     public static int MT_LEVEL_SAFE = 1;
     public static int MT_LEVEL_AUTOMATIC = 2;
@@ -107,7 +108,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     private BooleanConfiguration inheritPreprocessor;
 
     // Constructors
-    public CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master) {
+    protected CCCCompilerConfiguration(String baseDir, CCCCompilerConfiguration master) {
 	super(baseDir, master);
 	mpLevel = new IntConfiguration(master != null ? master.getMTLevel() : null, MT_LEVEL_NONE, MT_LEVEL_NAMES, null);
 	libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
@@ -237,28 +238,28 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
 	getInheritPreprocessor().assign(conf.getInheritPreprocessor());
     }
 
-    @Override
-    public Object clone() {
-	CCCCompilerConfiguration clone = new CCCCompilerConfiguration(getBaseDir(), (CCCCompilerConfiguration)getMaster());
-	// BasicCompilerConfiguration
-	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
-	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
-	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
-	clone.setStrip((BooleanConfiguration)getStrip().clone());
-	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
-	clone.setTool((StringConfiguration)getTool().clone());
-	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
-	// XCompilerConfiguration
-	clone.setMTLevel((IntConfiguration)getMTLevel().clone());
-	clone.setLibraryLevel((IntConfiguration)getLibraryLevel().clone());
-	clone.setStandardsEvolution((IntConfiguration)getStandardsEvolution().clone());
-	clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
-	clone.setIncludeDirectories((VectorConfiguration)getIncludeDirectories().clone());
-	clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
-	clone.setPreprocessorConfiguration((VectorConfiguration)getPreprocessorConfiguration().clone());
-	clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
-	return clone;
-    }
+//    @Override
+//    public Object clone() {
+//	CCCCompilerConfiguration clone = new CCCCompilerConfiguration(getBaseDir(), (CCCCompilerConfiguration)getMaster());
+//	// BasicCompilerConfiguration
+//	clone.setDevelopmentMode((IntConfiguration)getDevelopmentMode().clone());
+//	clone.setWarningLevel((IntConfiguration)getWarningLevel().clone());
+//	clone.setSixtyfourBits((IntConfiguration)getSixtyfourBits().clone());
+//	clone.setStrip((BooleanConfiguration)getStrip().clone());
+//	clone.setAdditionalDependencies((StringConfiguration)getAdditionalDependencies().clone());
+//	clone.setTool((StringConfiguration)getTool().clone());
+//	clone.setCommandLineConfiguration((OptionsConfiguration)getCommandLineConfiguration().clone());
+//	// XCompilerConfiguration
+//	clone.setMTLevel((IntConfiguration)getMTLevel().clone());
+//	clone.setLibraryLevel((IntConfiguration)getLibraryLevel().clone());
+//	clone.setStandardsEvolution((IntConfiguration)getStandardsEvolution().clone());
+//	clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
+//	clone.setIncludeDirectories((VectorConfiguration)getIncludeDirectories().clone());
+//	clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
+//	clone.setPreprocessorConfiguration((VectorConfiguration)getPreprocessorConfiguration().clone());
+//	clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
+//	return clone;
+//    }
 
     // Sheet
     public Sheet.Set getSet() {
@@ -289,7 +290,7 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
             else
                 master = null;
 	}
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"PreprocessorDefinitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
+        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getInheritPreprocessor(), new String[] {"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         
         return set1;
     }
@@ -322,4 +323,10 @@ public class CCCCompilerConfiguration extends BasicCompilerConfiguration {
     private static String getString(String s) {
         return NbBundle.getMessage(CCCCompilerConfiguration.class, s);
     }
+    
+    protected abstract CompilerDescriptor getCompilerDescription();
+
+    protected abstract String getUserIncludeFlag();
+
+    protected abstract String getUserMacroFlag();
 }

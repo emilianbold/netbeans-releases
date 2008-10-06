@@ -40,16 +40,21 @@
  */
 package org.netbeans.test.j2ee.wizard;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -84,13 +89,12 @@ public class NewFileWizardsTest extends JellyTestCase {
 
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.wizard.golden");
 //    private static boolean CREATE_GOLDEN_FILES = true;
-
     private static final String DEF_EJB_MOD = "def EJB Mod";
     private static final String DEF_WEB_MOD = "def Web app";
     private static final String BAD_EJB_MOD = "BadModule";
-
     private Reporter reporter;
     private String version;
+    private static String projectLocation = null;
 
     public NewFileWizardsTest(String testName) {
         this(testName, "5");
@@ -112,11 +116,16 @@ public class NewFileWizardsTest extends JellyTestCase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
+        if (projectLocation == null) {
+            projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
+        }
         reporter = Reporter.getReporter((NbTestCase) this);
     }
 
     @Override
     public void tearDown() throws Exception {
+        super.tearDown();
         reporter.close();
     }
 
@@ -334,7 +343,17 @@ public class NewFileWizardsTest extends JellyTestCase {
                 "Web", "Servlet");
         NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 servletName, servletPkg, null);
-        nop.finish();    }
+        nop.finish();
+
+        //workaound for @Override annotation
+        EditorOperator eo = EditorWindowOperator.getEditor(servletName);
+        eo.select("@Override");
+        eo.pressKey(KeyEvent.VK_DELETE);
+        eo.select("@Override");
+        eo.pressKey(KeyEvent.VK_DELETE);
+        eo.select("@Override");
+        eo.pressKey(KeyEvent.VK_DELETE);
+    }
 
     /**
      * Go through New Session/Entity/Message-Driven Bean wizard.
@@ -347,10 +366,10 @@ public class NewFileWizardsTest extends JellyTestCase {
             boolean local, boolean remote, boolean stateless, String srcRoot) throws Exception {
         boolean hasMoreSrcRoots = (srcRoot != null);
         Project p = (hasMoreSrcRoots)
-        ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
-        : J2eeProjectSupport.getProject(new File(System.getProperty("xtest.sketchpad")), prjRoot);
-        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
-                "Enterprise", type);
+                ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
+                : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
+        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
         NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 ejbName, ejbPkg, srcRoot);
         if (type.equals("Message-Driven Bean")) {
@@ -376,28 +395,26 @@ public class NewFileWizardsTest extends JellyTestCase {
         }
         nop.finish();
         Ejb ejb = (hasMoreSrcRoots)
-        ? new Ejb(ejbPkg + "." + ejbName, p, local, remote, srcRoot)
-        : new Ejb(ejbPkg + "." + ejbName, p, local, remote);
+                ? new Ejb(ejbPkg + "." + ejbName, p, local, remote, srcRoot)
+                : new Ejb(ejbPkg + "." + ejbName, p, local, remote);
         if ("1.4".equals(version)) {
             String[] err = ejb.checkExistingFiles();
-            assertTrue(Arrays.asList(err).toString(),  err.length == 0);
+            assertTrue(Arrays.asList(err).toString(), err.length == 0);
         }
         List<File> files = new ArrayList<File>();
         File prjDir = (hasMoreSrcRoots)
-        ? new File(prjRoot).getCanonicalFile()
-        : new File(new File(System.getProperty("xtest.sketchpad")), prjRoot).getCanonicalFile();
+                ? new File(prjRoot).getCanonicalFile()
+                : new File(new File(projectLocation), prjRoot).getCanonicalFile();
         if ("1.4".equals(version)) {
             files.add(new File(prjDir, "src/conf/ejb-jar.xml"));
             files.add(new File(prjDir, "src/conf/sun-ejb-jar.xml"));
         }
         if (!hasMoreSrcRoots) {
             files.addAll(Arrays.asList(
-                    new File(prjDir, "src/java/" + ejbPkg.replace('.', '/') + "/")
-                    .listFiles(new Filter(ejbName))));
+                    new File(prjDir, "src/java/" + ejbPkg.replace('.', '/') + "/").listFiles(new Filter(ejbName))));
         } else {
             files.addAll(Arrays.asList(
-                    new File(prjDir, srcRoot + "/" + ejbPkg.replace('.', '/') + "/")
-                    .listFiles(new Filter(ejbName))));
+                    new File(prjDir, srcRoot + "/" + ejbPkg.replace('.', '/') + "/").listFiles(new Filter(ejbName))));
         }
         checkFiles(files);
     }
@@ -409,11 +426,11 @@ public class NewFileWizardsTest extends JellyTestCase {
             boolean caching, String srcRoot) throws Exception {
         boolean hasMoreSrcRoots = (srcRoot != null);
         Project p = (hasMoreSrcRoots)
-        ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
-        : J2eeProjectSupport.getProject(new File(System.getProperty("xtest.sketchpad")), prjRoot);
+                ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
+                : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         String type = (caching) ? "Caching Service Locator" : "Service Locator";
-        String category = "Enterprise";
-        if(prjRoot.startsWith(DEF_WEB_MOD) || prjRoot.startsWith(getMultiWebPath())) {
+        String category = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.resources.Bundle", "Templates/J2EE");
+        if (prjRoot.startsWith(DEF_WEB_MOD) || prjRoot.startsWith(getMultiWebPath())) {
             category = "Web";
         }
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, category, type);
@@ -422,8 +439,8 @@ public class NewFileWizardsTest extends JellyTestCase {
         nop.finish();
         List<File> files = new ArrayList<File>(1);
         File prjDir = (hasMoreSrcRoots)
-        ? new File(prjRoot).getCanonicalFile()
-        : new File(new File(System.getProperty("xtest.sketchpad")), prjRoot).getCanonicalFile();
+                ? new File(prjRoot).getCanonicalFile()
+                : new File(new File(projectLocation), prjRoot).getCanonicalFile();
         if (!hasMoreSrcRoots) {
             files.add(new File(prjDir, "src/java/" + pkg.replace('.', '/') + "/" + name + ".java"));
         } else {
@@ -433,7 +450,7 @@ public class NewFileWizardsTest extends JellyTestCase {
     }
 
     private void puTest(String prjRoot, String name) throws Exception {
-        Project p = J2eeProjectSupport.getProject(new File(System.getProperty("xtest.sketchpad")), prjRoot);
+        Project p = J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
                 "Persistence", "Persistence Unit");
         JTextFieldOperator jtfo = new JTextFieldOperator(nfwo, 0);
@@ -443,7 +460,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         jcbo.selectItem("sample");
         nfwo.finish();
         List<File> files = new ArrayList<File>();
-        File prjDir = new File(new File(System.getProperty("xtest.sketchpad")), prjRoot).getCanonicalFile();
+        File prjDir = new File(new File(projectLocation), prjRoot).getCanonicalFile();
         files.add(new File(prjDir, "src/conf/persistence.xml"));
         checkFiles(files);
     }
@@ -452,8 +469,8 @@ public class NewFileWizardsTest extends JellyTestCase {
             throws Exception {
         boolean hasMoreSrcRoots = (srcRoot != null);
         Project p = (hasMoreSrcRoots)
-        ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
-        : J2eeProjectSupport.getProject(new File(System.getProperty("xtest.sketchpad")), prjRoot);
+                ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
+                : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
         NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
                 "Persistence", "Entity Class");
         NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
@@ -461,20 +478,17 @@ public class NewFileWizardsTest extends JellyTestCase {
         nop.finish();
         List<File> files = new ArrayList<File>();
         File prjDir = (hasMoreSrcRoots)
-        ? new File(prjRoot).getCanonicalFile()
-        : new File(new File(System.getProperty("xtest.sketchpad")), prjRoot).getCanonicalFile();
+                ? new File(prjRoot).getCanonicalFile()
+                : new File(new File(projectLocation), prjRoot).getCanonicalFile();
         if (!hasMoreSrcRoots) {
             files.addAll(Arrays.asList(
-                    new File(prjDir, "src/java/" + pkg.replace('.', '/') + "/")
-                    .listFiles(new Filter(name))));
+                    new File(prjDir, "src/java/" + pkg.replace('.', '/') + "/").listFiles(new Filter(name))));
         } else {
             files.addAll(Arrays.asList(
-                    new File(prjDir, srcRoot + "/" + pkg.replace('.', '/') + "/")
-                    .listFiles(new Filter(name))));
+                    new File(prjDir, srcRoot + "/" + pkg.replace('.', '/') + "/").listFiles(new Filter(name))));
         }
         checkFiles(files);
     }
-
 
     /**
      * Check files against golden files.
@@ -485,13 +499,17 @@ public class NewFileWizardsTest extends JellyTestCase {
         new EventTool().waitNoEvent(1000);
         // save all instead of timeout
         new SaveAllAction().performAPI();
+        new EventTool().waitNoEvent(1000);
         if (!CREATE_GOLDEN_FILES) {
             List<String> l = new ArrayList<String>(newFiles.size() / 2);
             for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
                 File newFile = i.next();
                 File goldenFile = null;
                 try {
+                    Logger lo = Logger.getLogger(NewFileWizardsTest.class.getName());
                     goldenFile = getGoldenFile(getName() + "_" + version + "/" + newFile.getName() + ".pass");
+                    lo.fine("comparing: " + goldenFile.getAbsolutePath());
+                    lo.fine("with: " + newFile.getAbsolutePath());
                     if (newFile.getName().endsWith(".xml") && !newFile.getName().startsWith("sun-") && !newFile.getName().startsWith("webservices.xml")) {
                         assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
                     } else {
@@ -518,12 +536,12 @@ public class NewFileWizardsTest extends JellyTestCase {
         List<String> names = new ArrayList<String>();
         names.add("goldenfiles");
         while (!f.getName().equals("test")) {
-            if (!f.getName().equals("sys") && !f.getName().equals("work") &&!f.getName().equals("tests")) {
+            if (!f.getName().equals("sys") && !f.getName().equals("work") && !f.getName().equals("tests")) {
                 names.add(f.getName());
             }
-            f=f.getParentFile();
+            f = f.getParentFile();
         }
-        for (int i = names.size()-1;i > -1;i--) {
+        for (int i = names.size() - 1; i > -1; i--) {
             f = new File(f, names.get(i));
         }
         f = new File(f, getClass().getName().replace('.', File.separatorChar));
@@ -539,15 +557,14 @@ public class NewFileWizardsTest extends JellyTestCase {
     /**
      * Build project.
      * @paramprjName project to build
-     * @param projectNameInStatus true if project name is displayed in IDE's status bar
      */
     private void tearDownProject(String prjName) {
+        ProjectsTabOperator.invoke().getProjectRootNode(prjName).collapse();
         Utils.buildProject(prjName);
     }
 
 
 //----------------------------------------------------- multi src roots projects
-
     /**
      * Open EJB Module project with multiple source roots.
      */

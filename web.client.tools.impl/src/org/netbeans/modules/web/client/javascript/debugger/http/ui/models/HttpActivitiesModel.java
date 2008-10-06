@@ -36,19 +36,24 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.http.ui.models;
 
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.Action;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.HttpMonitorPreferences;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEvent;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessageEventListener;
@@ -64,106 +69,200 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author joelle
  */
 public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, NodeActionsProvider {
-    
+
     private final List<ModelListener> listeners;
     public final static String METHOD_COLUMN = "METHOD_COLUMN";
     public final static String SENT_COLUMN = "SENT_COLUMN";
     public final static String RESPONSE_COLUMN = "RESPONSE_COLUMN";
-    
-
-    private static final String HTTP_RESPONSE=
+    private static final String HTTP_RESPONSE =
             "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/GreenArrow"; // NOI18N
-//    private final static String ROOT = "Root";
-    private NbJSDebugger debugger;
 
+    private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+    private NbJSDebugger debugger;
+    private final JSHttpMessageEventListener httpMessageEventListener = new JSHttpMesageEventListenerImpl();
+    private final PreferenceChangeListenerImpl preferenceChangeListener = new PreferenceChangeListenerImpl();
+
+    private  final static Logger LOG = Logger.getLogger(HttpActivitiesModel.class.getName());
+    
     public HttpActivitiesModel(NbJSDebugger debugger) {
-        listeners = new CopyOnWriteArrayList<ModelListener>();
+        this.listeners = new CopyOnWriteArrayList<ModelListener>();
         this.debugger = debugger;
-        debugger.addJSHttpMessageEventListener(new JSHttpMesageEventListenerImpl());
+        debugger.addJSHttpMessageEventListener(
+                WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, debugger));
+        httpMonitorPreferences.addPreferenceChangeListener(
+                WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, httpMonitorPreferences));
     }
 
-
+    private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
     private class JSHttpMesageEventListenerImpl implements JSHttpMessageEventListener {
-        Map<String, HttpActivity> id2ActivityMap = new HashMap<String,HttpActivity>();
+
         public void onHttpMessageEvent(JSHttpMessageEvent jsHttpMessageEvent) {
             JSHttpMessage message = jsHttpMessageEvent.getHttpMessage();
-            if( message instanceof JSHttpRequest ){
-                HttpActivity activity = new HttpActivity((JSHttpRequest)message);
-                id2ActivityMap.put(message.getId(), activity);
-                activityList.add(activity);
+            assert message != null;
+
+            if (message instanceof JSHttpRequest) {
+                JSHttpRequest req = (JSHttpRequest) message;
+                HttpActivity activity = new HttpActivity(req);
+                synchronized (lock){
+                    if ( req.isLoadTriggeredByUser() ) {
+                        activityList.clear();
+                        id2ActivityMap.clear();;
+                    }
+                    id2ActivityMap.put(message.getId(), activity);
+                    activityList.add(activity);
+                }
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
-                if (activity != null ){
-                    if( message instanceof JSHttpResponse) {
-                        activity.setResponse((JSHttpResponse) message);
-                    } else if ( message instanceof JSHttpProgress ){
-                        activity.updateProgress((JSHttpProgress)message);
-                    }
-                } else {
-                    //Why is the activity null.. maybe we started listening to late a missed a request.
-                    return;
+                if ( activity == null ){
+                        LOG.warning("Activity should not be null for response:" + message);
+                        return;
                 }
+                if (message instanceof JSHttpResponse) {
+                    activity.setResponse((JSHttpResponse) message);
+                } else if (message instanceof JSHttpProgress) {
+                    activity.updateProgress((JSHttpProgress) message);
+                }
+
             }
             fireModelChange();
         }
-
     }
-
-    final List<HttpActivity> activityList = new LinkedList<HttpActivity>();
+    final List<HttpActivity> activityList = Collections.synchronizedList(new LinkedList<HttpActivity>());
+    private List<HttpActivity> filteredActivites;
     public List<HttpActivity> getHttpActivities() {
-        return activityList;
+         synchronized ( lock ) {
+            if ( filteredActivites == null ) {
+                filteredActivites = filterActivities(Collections.unmodifiableList(activityList));
+            }
+            return Collections.unmodifiableList(filteredActivites);
+        }
     }
-    
 
+
+    private final Object lock = new Object();
+    private final List<HttpActivity> filterActivities(List<HttpActivity> activities){
+        List<HttpActivity> filterList = new LinkedList<HttpActivity>();
+
+        if ( httpMonitorPreferences.isShowAll() ) {
+            filterList = activities;
+        } else {
+            for( HttpActivity activity : activities ){
+                String category = activity.getCategory();
+                if ( category != null && !filterOutCategory(category)){
+                    filterList.add(activity);
+                }
+            }
+        }
+        return filterList;
+    }
+
+    public void clearActivities() {
+        synchronized (lock){
+            activityList.clear();
+            id2ActivityMap.clear();
+            filteredActivites = null;
+        }
+        fireModelChange();
+    }
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
-        if ( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return getHttpActivities();
         }
-        if( node instanceof HttpActivity ){
-            HttpActivity activity = (HttpActivity)node;
-            
-            if ( METHOD_COLUMN.equals(columnID)){
-                return activity.getRequest().getMethod().toString().toUpperCase();
-            } else if ( SENT_COLUMN.equals(columnID) ) {
+        if (node instanceof HttpActivity) {
+            HttpActivity activity = (HttpActivity) node;
 
-               // Date date = new Date(activity.getRequest().getTimeStamp());
-                Calendar cal = Calendar.getInstance();
-                long l = Long.parseLong(activity.getRequest().getTimeStamp());
-                cal.setTimeInMillis(l);
-                return cal.getTime().toString();
-            } else if ( RESPONSE_COLUMN.equals(columnID) ){
-                JSHttpMessage response = activity.getResponse();
-                if( response != null ){
-                    Calendar cal = Calendar.getInstance();
-                    long l = Long.parseLong(response.getTimeStamp());
-                    cal.setTimeInMillis(l);
-                    return cal.getTime().toString();
-                } 
-                return "";
+            if (METHOD_COLUMN.equals(columnID)) {
+                return activity.getMethod();
+            } else if (SENT_COLUMN.equals(columnID)) {
+                Date startTime = activity.getStartTime();
+                return startTime != null ? startTime.toString() : "";
+            } else if (RESPONSE_COLUMN.equals(columnID)) {
+                Date endTime = activity.getEndTime();
+                return endTime != null ? endTime.toString() : "";
             }
             throw new UnknownTypeException("Column type not recognized: " + columnID);
-                
+
         }
         throw new UnknownTypeException("Type not recognized:" + node);
     }
 
+
+    public static final List<String> HTML_CONTENT_TYPES = Arrays.asList("text/plain", "application/octet-stream", "text/html", "text/xml" );
+    public static final List<String> JS_CONTENT_TYPES = Arrays.asList("application/x-javascript", "text/javascript", "application/javascript");
+    public static final List<String> CSS_CONTENT_TYPES = Arrays.asList("text/css");
+    public static final List<String> IMAGES_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmp");
+    public static final List<String> FLASH_CONTENT_TYPES = Arrays.asList("application/x-shockwave-flash");
+    
+    private static List<String> editorMimeType  = new ArrayList<String>();
+    static {
+        editorMimeType.addAll(HTML_CONTENT_TYPES);
+        editorMimeType.addAll(JS_CONTENT_TYPES);
+        editorMimeType.addAll(CSS_CONTENT_TYPES);
+    }
+    public static final List getEditorMimeTypes () {
+        return editorMimeType;
+    }
+
+    private static final String HTML_CATEGORY = "html";
+    private static final String JS_CATEGORY = "js";
+    private static final String CSS_CATEGORY = "css";
+    private static final String IMAGE_CATEGORY = "image";
+    private static final String FLASH_CATEGORY ="flash";
+    private static final String XHR_CATEGORY = "xhr";
+    private static final String BIN_CATEGORY = "bin";
+    private static final String TEXT_CATEGORY = "text";
+
+    private boolean filterOutCategory(String category){
+        if ( !httpMonitorPreferences.isShowHTML() && HTML_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowJS() && JS_CATEGORY.equals(category) ){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowImages() && IMAGE_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowXHR() && XHR_CATEGORY.equals(category)){
+                return true;
+        }
+        return false;
+    }
+    
+//    private boolean filterOutContentType(String contentType){
+//        if ( !httpMonitorPreferences.isShowHTML() && HTML_CONTENT_TYPES.contains(contentType) ){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowJS() && JS_CONTENT_TYPES.contains(contentType) ){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowImages() && IMAGES_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CONTENT_TYPES.contains(contentType)){
+//                return true;
+//        }
+//        return false;
+//    }
+
+
     public Object[] getChildren(Object parent, int from, int to) {
-        if( ROOT.equals(parent) ){
+        if (ROOT.equals(parent)) {
             return getHttpActivities().toArray();
         }
         return new Object[0];
     }
 
     public int getChildrenCount(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
-            return getHttpActivities().size();
+        if (ROOT.equals(node)) {
+            return getHttpActivities().size(); //Hmm, I don't want to refilter but not sure if this is safe.
         }
         return 0;
     }
@@ -173,17 +272,18 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public boolean isLeaf(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return false;
         }
         return true;
     }
+
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         return true;
     }
 
     public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void addModelListener(ModelListener l) {
@@ -194,28 +294,31 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         listeners.remove(l);
     }
 
-    private void fireModelChange( ){
-        for( ModelListener l : listeners ){
+    private void fireModelChange() {
+        for (ModelListener l : listeners) {
             l.modelChanged(new TreeChanged(this));
         }
+        synchronized ( lock ) {
+            filteredActivites = null;
+        }
     }
-    
 
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if ( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return NbBundle.getMessage(HttpActivitiesModel.class, "URL_COLUMN");
         }
         if (node instanceof HttpActivity) {
             HttpActivity activity = ((HttpActivity) node);
-            String displayName = activity.getRequest().toString();  //url
-            return displayName;
+            return activity.toString();
+//            String displayName = activity.getRequest().toString();  //url
+//            return displayName;
         } else {
             throw new UnknownTypeException(node);
         }
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
-        if( ROOT.equals(node)){
+        if (ROOT.equals(node)) {
             return null;
         } else {
             return HTTP_RESPONSE;
@@ -233,7 +336,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     }
 
     public void performDefaultAction(Object node) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public Action[] getActions(Object node) throws UnknownTypeException {
@@ -243,19 +346,19 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private static final MethodColumn methodColumn = new MethodColumn();
     private static final SentColumn sentColumn = new SentColumn();
     private static final ResponseColumn resColumn = new ResponseColumn();
-    
-    public static ColumnModel getColumnModel(String columnID){
-        if( METHOD_COLUMN.equals(columnID)){
+
+    public static ColumnModel getColumnModel(String columnID) {
+        if (METHOD_COLUMN.equals(columnID)) {
             return methodColumn;
-        } else if ( SENT_COLUMN.equals(columnID)){
+        } else if (SENT_COLUMN.equals(columnID)) {
             return sentColumn;
-        } else if ( RESPONSE_COLUMN.equals(columnID)){
+        } else if (RESPONSE_COLUMN.equals(columnID)) {
             return resColumn;
         }
         return null;
     }
-    
-    private static final class MethodColumn extends ColumnModel {
+
+    private static final class MethodColumn extends AbstractColumnModel {        
 
         @Override
         public String getID() {
@@ -269,12 +372,19 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
         @Override
         public Class getType() {
-            return String.class;
+            return String.class; 
         }
-        
+
+        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+        @Override
+
+        public int getColumnWidth () {
+            return properties.getInt (getID () + ".columnWidth", HttpMonitorPreferences.DEFAULT_METHOD_COLUMN_WIDTH);
+        }
+
     }
-    
-    private static final class SentColumn extends ColumnModel {
+
+    private static final class SentColumn extends AbstractColumnModel {
 
         @Override
         public String getID() {
@@ -290,10 +400,9 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
-        
     }
-    
-    private static final class ResponseColumn extends ColumnModel {
+
+    private static final class ResponseColumn extends AbstractColumnModel {
 
         @Override
         public String getID() {
@@ -309,10 +418,14 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         public Class getType() {
             return String.class;
         }
-        
     }
 
+    private class PreferenceChangeListenerImpl implements PreferenceChangeListener {
 
-
-
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if ( HttpMonitorPreferences.isPreference(evt.getKey())) {
+                    fireModelChange();
+                }
+            }
+        }
 }

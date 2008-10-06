@@ -42,6 +42,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint; 
@@ -51,16 +52,23 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.widgets.PolygonConstraints;
 import org.netbeans.modules.uml.widgets.PolygonWidget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.openide.util.NbBundle;
@@ -88,13 +96,27 @@ public class PackageWidget extends ContainerNode
                             new PolygonConstraints(0, 3, 5, 6,
                                                    PolygonConstraints.VertexWeight.NONE,
                                                    PolygonConstraints.VertexWeight.NONE);
+
+    private final static Border BODY_NAME_BORDER = BorderFactory.createOpaqueBorder(UMLNameWidget.BORDER_SIZE,
+                                                                             UMLNameWidget.BORDER_SIZE,
+                                                                             0,
+                                                                             UMLNameWidget.BORDER_SIZE);
+
+    private final static Border TAB_NAME_BORDER = BorderFactory.createOpaqueBorder(UMLNameWidget.BORDER_SIZE,
+                                                                             UMLNameWidget.BORDER_SIZE,
+                                                                             UMLNameWidget.BORDER_SIZE,
+                                                                             UMLNameWidget.BORDER_SIZE);
     
     
-    private UMLNameWidget nameWidget = null;
+    private UMLLabelWidget stereotypeWidget = null;
+    private MultiLineTaggedValueWidget taggedValuesWidget = null;
+    private EditableCompartmentWidget nameWidget = null;
+
     private ContainerWidget container = null;
     private IPresentationElement pe;
     public static String BodyNameContainerID = "PackageBody";
     private Widget namePlaceholder = null;
+    private Widget bodyNameHolder = null;
     private NameSizeDependency nameDependency = new NameSizeDependency();
     
     public PackageWidget(Scene scene)
@@ -142,12 +164,31 @@ public class PackageWidget extends ContainerNode
 
         container = new ContainerWidget(scene);
         container.setCheckClipping(true);
+
+        stereotypeWidget = new UMLLabelWidget(getScene(),
+                                              getWidgetID() + "." + UMLNameWidget.stereotypeID,
+                                              NbBundle.getMessage(PackageWidget.class, "LBL_stereotype"));
+        stereotypeWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+        stereotypeWidget.setBorder(BODY_NAME_BORDER);
+        updateStereotypes(data.getAppliedStereotypesAsString());
+
+        taggedValuesWidget = new MultiLineTaggedValueWidget(getScene(),
+                                                getWidgetID() + "." + UMLNameWidget.taggedValueID,
+                                                NbBundle.getMessage(PackageWidget.class, "LBL_taggedValue"));
+        //taggedValuesWidget.setBorder(BODY_NAME_BORDER);
+        taggedValuesWidget.updateTaggedValues(data.getTaggedValuesAsList());
+
+        nameWidget = new EditableCompartmentWidget(getScene(),
+                                                   getWidgetID() + "." + UMLNameWidget.nameCompartmentWidgetID,
+                                                   NbBundle.getMessage(PackageWidget.class, "LBL_name"));
+
+        nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+        nameWidget.setBorder(BODY_NAME_BORDER);
+        nameWidget.setLabel(data.getNameWithAlias());
+        setFont(getCurrentView().getFont());
         
-        nameWidget= new UMLNameWidget(scene, false,  getWidgetID());
-        nameWidget.initialize(data); 
-        
-        String id = getWidgetID() + "." + BodyNameContainerID; // NOI18N
-        Widget bodyNameContainer = new CustomizableWidget(scene, id, 
+//        String id = getResourcePath();//getWidgetID() + "." + BodyNameContainerID; // NOI18N
+        Widget bodyNameContainer = new CustomizableWidget(scene, getResourcePath(), 
                 NbBundle.getMessage(PackageWidget.class, "LBL_BodyNameContainer"))
         {
             @Override
@@ -179,14 +220,17 @@ public class PackageWidget extends ContainerNode
         bodyNameContainer.setOpaque(true);
         bodyNameContainer.setLayout(LayoutFactory.createOverlayLayout());
         
-        final Widget centerHack = new Widget(getScene());
-        centerHack.setBackground((Paint) null);
-        centerHack.setForeground((Color) null);
+        bodyNameHolder = new Widget(getScene());
+        bodyNameHolder.setBackground((Paint) null);
+        bodyNameHolder.setForeground((Color) null);
 
-        centerHack.setLayout(new CenterLayout());
-        centerHack.setCheckClipping(true);
-        centerHack.addChild(nameWidget);
-        bodyNameContainer.addChild(centerHack);
+        bodyNameHolder.setLayout(new CenterLayout());
+        bodyNameHolder.setCheckClipping(true);
+//        bodyNameHolder.addChild(nameWidget);
+        bodyNameHolder.addChild(stereotypeWidget);
+        bodyNameHolder.addChild(nameWidget);
+        bodyNameHolder.addChild(taggedValuesWidget);
+        bodyNameContainer.addChild(bodyNameHolder);
         
         final Widget body = new Widget(scene);
         body.setForeground((Color)null);
@@ -220,32 +264,123 @@ public class PackageWidget extends ContainerNode
                         nameWidget.removeDependency(nameDependency);
                         
                         nameWidget.getParentWidget().removeChild(nameWidget);
+                        nameWidget.setBorder(TAB_NAME_BORDER);
                         polygon.addChild(nameWidget, TAB_NAME_CONSTRAINTS);
+                        bodyNameHolder.setLayout(LayoutFactory.createVerticalFlowLayout());
                     }
                     else
                     {
                         nameWidget.getParentWidget().removeChild(nameWidget);
-                        centerHack.addChild(nameWidget);
-                        centerHack.setChildConstraint(nameWidget, 100);
+                        bodyNameHolder.addChild(1,nameWidget);
+                        bodyNameHolder.setChildConstraint(nameWidget, 100);
                         
                         namePlaceholder.removeFromParent();
-                        
+
+                        bodyNameHolder.setLayout(new CenterLayout());
+                        nameWidget.setBorder(BODY_NAME_BORDER);
                         polygon.addChild(namePlaceholder, EMPTY_TAB_NAME_CONSTRAINTS);
                         nameWidget.addDependency(nameDependency);
                     }
                 }
             }
         });
+        
+        super.initializeNode(presentation);
+    }
+
+    @Override
+    protected void notifyElementDeleted()
+    {
+        getContainer().firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
+    }
+
+    protected void updateStereotypes(List<String> stereotypes)
+    {
+        String stereotypeStr = "";
+        for (String stereotype : stereotypes)
+        {
+            if (stereotypeStr.length() > 0)
+            {
+                stereotypeStr += ", ";
+            }
+            stereotypeStr += stereotype;
+        }
+
+        if (stereotypeStr.length() > 0)
+        {
+            stereotypeWidget.setLabel("<<" + stereotypeStr + ">>");
+            stereotypeWidget.setVisible(true);
+        } else
+        {
+            stereotypeWidget.setLabel("");
+            stereotypeWidget.setVisible(false);
+        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        nameWidget.propertyChange(event);
+//        nameWidget.propertyChange(event);
+
+        super.propertyChange(event);
+        IElement element = (IElement) event.getSource();
+        String propName = event.getPropertyName();
+        if (element instanceof IPackage)
+        {
+            IPackage data = (IPackage) element;
+
+            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
+                propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) )
+            {
+                if (getScene() instanceof ObjectScene)
+                {
+                    nameWidget.setLabel(data.getNameWithAlias());
+                }
+            } else if (propName.equals(ModelElementChangedKind.STEREOTYPE.toString()))
+            {
+                nameWidget.setLabel(data.getNameWithAlias());
+                updateStereotypes(data.getAppliedStereotypesAsString());
+            } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
+            {
+                // There is a specific tagged value event.  Therefore we have to
+                // check everytime the element is modified.
+                taggedValuesWidget.updateTaggedValues(element.getTaggedValuesAsList());
+            }
+        }
     }
     
     public String getWidgetID() {
         return UMLWidgetIDString.PACKAGEWIDGET.toString();
+    }
+
+    @Override
+    public void refresh(boolean resizetocontent) {
+        //default logic with init do not work because of possible children nodes existence
+        IPresentationElement nodePe = getObject();
+        if (nodePe != null && nodePe.getFirstSubject() != null && !nodePe.getFirstSubject().isDeleted())
+        {
+            INamedElement packEl=(INamedElement) nodePe.getFirstSubject();//widget should be used for packages only,so not check for type
+            //need to update name
+            nameWidget.setLabel(packEl.getNameWithAlias());
+            //need to update owned elements but keep it the same as in 6.1 where update do not work if model was changed
+            //i.e. if child node was moved out of package in model it rmains graphically contained and even dragged with the container
+            //issue #78705
+            //..
+        } else
+        {
+            remove();
+        }
+        
+        if(resizetocontent)Util.resizeNodeToContents(this);
+        getScene().validate();
+    }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(nameWidget!=null && font!=null)
+        {
+            nameWidget.setFont(font.deriveFont(Font.BOLD));
+        }
     }
     
     private DefaultContextPaletteModel initializeContextPalette()
@@ -309,9 +444,10 @@ public class PackageWidget extends ContainerNode
             for(Widget child : children)
             {
                 Rectangle childBounds = child.getPreferredBounds();
-                totalHeight = childBounds.height;
+                totalHeight += childBounds.height;
             }
-            
+
+//            System.out.println("Total Height = " + totalHeight);
             Rectangle bounds = widget.getClientArea();
             
             int y = (bounds.height / 2) - (totalHeight / 2);

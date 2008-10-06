@@ -137,6 +137,17 @@ public class UtilitiesTest extends NbTestCase {
                 "}", "Font(java.lang.String,int,int)", "<not resolved>");
     }
     
+    public void testFuzzyResolve132627() throws Exception {
+        performTest("package test;\n" +
+                    "public class Main extends A {\n" +
+                    "    public void test() {\n" +
+                    "        getClass();\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "class A extends dddd implements Runnable {}\n",
+                    "<not resolved>");
+    }
+    
     private FileObject source;
     
     private void performTest(String sourceCode, String... golden) throws Exception {

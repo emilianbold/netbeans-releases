@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+
 /**
  * @author Tor Norbye
  */
@@ -50,230 +52,238 @@ public class ConvertBlockTypeTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyAstRule createRule() {
+        return new ConvertBlockType();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testHint1() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", null);
+        checkHints(this, createRule(), "testfiles/convertblocks.rb", null);
     }
 
     public void testHint2() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each { ^|foo|");
+        checkHints(this, createRule(), "testfiles/convertblocks.rb", "x.each { ^|foo|");
     }
 
     public void testHint3() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each do ^|foo|");
+        checkHints(this, createRule(), "testfiles/convertblocks.rb", "x.each do ^|foo|");
     }
 
     public void testHint4() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "for i in 1..^10");
+        checkHints(this, createRule(), "testfiles/convertblocks.rb", "for i in 1..^10");
     }
 
     public void testHint5() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "pu^ts foo1");
+        checkHints(this, createRule(), "testfiles/convertblocks.rb", "pu^ts foo1");
     }
     
     public void testHint7() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@scanner.set_prompt d^o");
+        checkHints(this, createRule(), "testfiles/convertblocks4.rb", "@scanner.set_prompt d^o");
     }
 
     public void testHint8() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context1.instance_eval d^o");
+        checkHints(this, createRule(), "testfiles/convertblocks4.rb", "@context1.instance_eval d^o");
     }
 
     public void testHint9() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context4.instance_eval d^o");
+        checkHints(this, createRule(), "testfiles/convertblocks4.rb", "@context4.instance_eval d^o");
     }
 
     public void testHint10() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context2.instance_eval {^");
+        checkHints(this, createRule(), "testfiles/convertblocks4.rb", "@context2.instance_eval {^");
     }
     
     public void testHint11() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks4.rb", "@context3.instance_eval {^");
+        checkHints(this, createRule(), "testfiles/convertblocks4.rb", "@context3.instance_eval {^");
     }
     
     public void testFix1() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each {^ |foo|", "Convert {}-block to a do/end-block\n");
+        applyHint(this, createRule(), "testfiles/convertblocks.rb", "x.each {^ |foo|", "Convert {}-block to a do/end-block\n");
     }
 
     public void testFix2() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each do^ |foo|", "Convert do/end-block to a {}-block\n");
+        applyHint(this, createRule(), "testfiles/convertblocks.rb", "x.each do^ |foo|", "Convert do/end-block to a {}-block\n");
     }
 
     public void testHint6() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ");
+        checkHints(this, createRule(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ");
     }
 
     public void testFix3() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ", "Convert {}-block to a do/end-block\n");
+        applyHint(this, createRule(), "testfiles/convertblocks2.rb", "x.each {^ |foo| ", "Convert {}-block to a do/end-block\n");
     }
 
     public void testFix4() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks.rb", "x.each do^ |foo|", "Convert do/end-block to a {}-block, and collapse to a single line");
+        applyHint(this, createRule(), "testfiles/convertblocks.rb", "x.each do^ |foo|", "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testOneLineHint1() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", null);
+        checkHints(this, createRule(), "testfiles/convertblocks3.rb", null);
     }
     public void testOneLineHint2() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end");
+        checkHints(this, createRule(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end");
     }
     public void testOneLineHint3() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }");
+        checkHints(this, createRule(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }");
     }
     public void testOneLineHint4() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}");
+        checkHints(this, createRule(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}");
     }
     public void testOneLineHint5() throws Exception {
-        checkHints(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end");
+        checkHints(this, createRule(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end");
     }
 
     public void testOneLineHintFix2() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end", "Convert do/end-block to");
+        applyHint(this, createRule(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) do^ |c| h[c] end", "Convert do/end-block to");
     }
     public void testOneLineHintFix3() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }", "Convert {}-block to a do/end-block, and expand to multiple lines");
+        applyHint(this, createRule(), "testfiles/convertblocks3.rb", "self.gsub!(pattern) {^ |c| h[c] }", "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
     public void testOneLineHintFix4() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}", "Convert {}-block to a do/end-block, and expand to multiple lines");
+        applyHint(this, createRule(), "testfiles/convertblocks3.rb", "sort{^|a1, a2| a1[0].id2name <=> a2[0].id2name}", "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
     public void testOneLineHintFix5() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end", "Convert do/end-block to");
+        applyHint(this, createRule(), "testfiles/convertblocks3.rb", "sort do^|a1, a2| a1[0].id2name <=> a2[0].id2name end", "Convert do/end-block to");
     }
 
     public void testHintFix1() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context1.instance_eval d^o",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix2() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context1.instance_eval d^o",
                 "Convert do/end-block to a {}-block\n");
     }
 
     public void testHintFix3() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context1.instance_eval d^o",
                 "Collapse multi-line block to a single line");
     }
     
     public void testHintFix4() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context4.instance_eval d^o",
                 "Convert do/end-block to a {}-block\n");
     }
 
     public void testHintFix5() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context4.instance_eval d^o",
                 "Expand single-line block to multiple lines");
     }
     
     public void testHintFix6() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context2.instance_eval {^",
                 "Convert {}-block to a do/end-block\n");
     }
 
     public void testHintFix7() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context2.instance_eval {^",
                 "Collapse multi-line block to a single line");
     }
     
     public void testHintFix8() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context3.instance_eval {^",
                 "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
 
     public void testHintFix9() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context3.instance_eval {^",
                 "Convert {}-block to a do/end-block\n");
     }
 
     public void testHintFix10() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks4.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks4.rb",
                 "@context3.instance_eval {^",
                 "Expand single-line block to multiple lines");
     }
 
     public void testHintFix11() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks5.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks5.rb",
                 "[\"a\",\"b\",\"c\"].each do^ |word|",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix12() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks5.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks5.rb",
                 "[1,2,4].each {^ |number| double = 2*number; tripple = 3*number; puts double,tripple }",
                 "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
 
     public void testHintFix13() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks6.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks6.rb",
                 "foo do^",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix14() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks6.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks6.rb",
                 "foo do^",
                 "Collapse multi-line block to a single line");
     }
 
     public void testHintFix15() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks7.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks7.rb",
                 "b.create_menu :name => 'default_menu' do ^|d|",
                 //"b.create_menu :name => 'default_menu' do |d|^",
                 "Convert do/end-block to a {}-block\n");
     }
 
     public void testHintFix16() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks8.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks8.rb",
                 "args.each {^ |a| puts \"#{a}\\n\" }",
                 "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
 
     public void testHintFix17() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks8.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks8.rb",
                 "ss = vv.collect{^|kkk, vvv| \":#{kkk.id2name}=>#{vvv.inspect}\"}",
                 "Convert {}-block to a do/end-block, and expand to multiple lines");
     }
 
     public void testHintFix18() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks9.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks9.rb",
                 "create_table :posts d^o |t|",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix19() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks10.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks10.rb",
                 "{^|x| sleep 0.5; yield x}",
                 "Expand single-line block to multiple lines");
     }
 
     public void testHintFix20() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks5.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks5.rb",
                 "en^d",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix21() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks6.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks6.rb",
                 "en^d",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }
 
     public void testHintFix22() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks.rb",
                 "^}",
                 "Convert {}-block to a do/end-block\n");
     }
 
     public void testHintFix23() throws Exception {
-        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks11.rb",
+        applyHint(this, createRule(), "testfiles/convertblocks11.rb",
                 "x.each do^ |foo|",
                 "Convert do/end-block to a {}-block, and collapse to a single line");
     }

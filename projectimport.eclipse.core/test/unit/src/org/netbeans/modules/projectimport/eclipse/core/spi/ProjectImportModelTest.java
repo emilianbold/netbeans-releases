@@ -41,10 +41,13 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
+import org.netbeans.modules.projectimport.eclipse.core.WorkspaceFactory;
 
 public class ProjectImportModelTest extends ProjectImporterTestCase {
 
@@ -69,8 +72,30 @@ public class ProjectImportModelTest extends ProjectImporterTestCase {
         assertEquals("1.6", model.getTargetLevel());
         assertTrue(model.isDebug());
         assertTrue(model.isDeprecation());
-        assertEquals(null, model.getEncoding());
+        assertEquals("UTF-8", model.getEncoding());
         assertEquals("-Xlint:fallthrough -Xlint:finally -Xlint:unchecked", model.getCompilerArgs().toString());
+    }
+    
+    public void testLaunchConfigurations() throws Exception {
+        File unpacked = extractToWorkDir("launch-config.zip");
+        Set<EclipseProject> prjs = WorkspaceFactory.getInstance().load(unpacked).getProjects();
+        EclipseProject prj = null;
+        for (EclipseProject _p : prjs) {
+            if (_p.getName().equals("p")) {
+                prj = _p;
+                break;
+            }
+        }
+        assertNotNull(prj);
+        ProjectImportModel model = new ProjectImportModel(prj, null, null, null);
+        Collection<LaunchConfiguration> configs = model.getLaunchConfigurations();
+        assertEquals(1, configs.size());
+        LaunchConfiguration config = configs.iterator().next();
+        assertEquals("Main", config.getName());
+        assertEquals(LaunchConfiguration.TYPE_LOCAL_JAVA_APPLICATION, config.getType());
+        assertEquals("app.Main", config.getMainType());
+        assertEquals("world", config.getProgramArguments());
+        assertEquals("-Dgreeting=hello", config.getVmArguments());
     }
 
 }

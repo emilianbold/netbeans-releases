@@ -55,6 +55,7 @@ public class MeasureJ2SEPrepareTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Prepare suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEPrepareTest");
 
         suite.addTest(NbModuleSuite.create(PrepareIDEForComplexMeasurements.class, ".*", ".*"));
 

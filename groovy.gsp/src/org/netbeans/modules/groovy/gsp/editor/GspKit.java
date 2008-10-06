@@ -56,7 +56,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;

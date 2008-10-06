@@ -79,7 +79,7 @@ public class JavadocIndexSearch extends PerformanceTestCase {
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.javadoc.search.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Help") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_MenuItem");
         TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_SEARCH_WindowTitle");
     }
     

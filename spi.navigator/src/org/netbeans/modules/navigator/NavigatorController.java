@@ -690,15 +690,22 @@ public final class NavigatorController implements LookupListener, ActionListener
     /** Listens to changes of lookup content of panel's lookup
      * (NavigatorPanel.getLookup()) and updates activated nodes.
      */ 
-    private final class PanelLookupListener implements LookupListener {
+    private final class PanelLookupListener implements LookupListener, Runnable {
         
         public void resultChanged(LookupEvent ev) {
-            // #103981: update also display name of Navigator TopComp
+            if (SwingUtilities.isEventDispatchThread()) {
+                run();
+            } else {
+                SwingUtilities.invokeLater(this);
+            }
+        }
+
+        public void run() {
             updateActNodesAndTitle();
         }
         
     } // end of PanelLookupListener
-    
+
     /** Task to set given node (as data context). Used to be able to coalesce
      * data context changes if selected nodes changes too fast.
      * Listens to own finish for cleanup */

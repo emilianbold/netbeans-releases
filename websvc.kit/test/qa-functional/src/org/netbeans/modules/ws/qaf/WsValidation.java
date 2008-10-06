@@ -174,7 +174,7 @@ public class WsValidation extends WebServicesTestBase {
         op.setPackage(getWsPackage());
         op.finish();
         // needed for slower machines
-        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); //NOI18N
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 60000); //NOI18N
         //TODO: following nodes should be expanded by default - this test should check it as well
         Node wsRootNode = new Node(getProjectRootNode(), WEB_SERVICES_NODE_NAME);
         wsRootNode.expand();
@@ -299,7 +299,7 @@ public class WsValidation extends WebServicesTestBase {
         op.finish();
         //edit code in JSP
         EditorOperator eo = new EditorOperator("index1"); //NOI18N
-        eo.setCaretPosition("</h2>", false); //NOI18N
+        eo.setCaretPosition("</h1>", false); //NOI18N
         eo.insert("\n<!-- xxx -->"); //NOI18N
         eo.select("<!-- xxx -->"); //NOI18N
         callWsOperation(eo, "myStringMethod", eo.getLineNumber()); //NOI18N
@@ -397,7 +397,7 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WsValidation.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(WsValidation.class),
                 "testCreateNewWs",
                 "testAddOperation",
                 "testStartServer",
@@ -501,11 +501,7 @@ public class WsValidation extends WebServicesTestBase {
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
-            try {
-                Thread.sleep(2500);
-            } catch (InterruptedException ex) {
-                //ignore
-            }
+            waitForWsImport("wsimport-client"); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -521,6 +517,8 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+        } else {
+            waitForWsImport("wsimport-client"); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{"WsMsgHandler1"}, fo, isService); //NOI18N
@@ -533,6 +531,8 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+        } else {
+            waitForWsImport("wsimport-client"); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{
@@ -548,6 +548,8 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+        } else {
+            waitForWsImport("wsimport-client"); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{
@@ -563,6 +565,8 @@ public class WsValidation extends WebServicesTestBase {
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+        } else {
+            waitForWsImport("wsimport-client"); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{
@@ -627,7 +631,12 @@ public class WsValidation extends WebServicesTestBase {
 
     protected void waitForWsImport(String targetName) throws IOException {
         OutputTabOperator oto = new OutputTabOperator(targetName); //NOI18N
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 300000); //NOI18N
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N

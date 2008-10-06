@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
 
 /**
  *
@@ -65,6 +66,16 @@ public class DebuggerServer {
         return serverSocket.getLocalPort();
     }
 
+    public void cancelGetDebuggerProxy() {
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+            } catch (IOException ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while closing socket", ex);
+            }
+        }
+    }
+    
     public DebuggerProxy getDebuggerProxy() throws IOException{
         Socket sessionSocket = serverSocket.accept();
         serverSocket.close();

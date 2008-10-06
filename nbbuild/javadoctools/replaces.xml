@@ -165,8 +165,11 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-parsing-api@" value="${javadoc.docs.org-netbeans-modules-parsing-api}"/>
 <replacefilter token="@org-netbeans-spi-quicksearch@" value="${javadoc.docs.org-netbeans-spi-quicksearch}"/>
 <replacefilter token="@org-netbeans-api-java-classpath@" value="${javadoc.docs.org-netbeans-api-java-classpath}"/>
-<replacefilter token="@org-netbeans-modules-websvc-serverapi@" value="${javadoc.docs.org-netbeans-modules-websvc-serverapi}"/>
 <replacefilter token="@org-netbeans-modules-extexecution@" value="${javadoc.docs.org-netbeans-modules-extexecution}"/>
 <replacefilter token="@org-netbeans-modules-print@" value="${javadoc.docs.org-netbeans-modules-print}"/>
 <replacefilter token="@org-netbeans-modules-xml-core@" value="${javadoc.docs.org-netbeans-modules-xml-core}"/>
 <replacefilter token="@org-netbeans-modules-websvc-wsstackapi@" value="${javadoc.docs.org-netbeans-modules-websvc-wsstackapi}"/>
+<replacefilter token="@org-netbeans-swing-outline@" value="${javadoc.docs.org-netbeans-swing-outline}"/>
+<replacefilter token="@org-netbeans-modules-maven@" value="${javadoc.docs.org-netbeans-modules-maven}"/>
+<replacefilter token="@org-netbeans-modules-maven-indexer@" value="${javadoc.docs.org-netbeans-modules-maven-indexer}"/>
+<replacefilter token="@org-netbeans-modules-maven-embedder@" value="${javadoc.docs.org-netbeans-modules-maven-embedder}"/>

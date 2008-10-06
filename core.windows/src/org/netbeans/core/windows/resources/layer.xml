@@ -47,6 +47,8 @@ made subject to such option by the copyright holder.
     Use this folder and subfolders in your XML layer to define
     desktop layout, modes and groups.
     -->
+
+
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-core-windows-options-WinSysAdvancedOption.instance"/>
@@ -90,7 +92,11 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-core-windows-actions-CloseAllButThisAction.instance"/>
             <file name="org-netbeans-core-windows-actions-ToggleFullScreenAction.instance"/>
             <file name="org-netbeans-core-windows-actions-UndockWindowAction.instance"/>
-            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance"/>
+            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.core.windows.actions.ResetWindowsAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.core.windows.actions.Bundle#CTL_ResetWindows"/>
+            </file>
         </folder>    
     </folder>
     
@@ -194,8 +200,9 @@ made subject to such option by the copyright holder.
 	        <attr name="position" intvalue="2900"/>
             </file>
             
-            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.instance">
+            <file name="org-netbeans-core-windows-actions-ResetWindowsAction.shadow">
                 <attr name="position" intvalue="3000"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-ResetWindowsAction.instance"/>
             </file>
             </folder>
     </folder>

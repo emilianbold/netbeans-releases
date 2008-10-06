@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 
 /**
  * resolve file objects under offset
@@ -91,18 +92,25 @@ public class CsmOffsetResolver {
     public static CsmObject findObject(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findObject";
         // not interested in context, only object under offset
-        CsmObject last = findObjectWithContext(file, offset, null);
+        CsmObject last = findObjectWithContext(file, offset, null, null);
+        return last;
+    }
+
+    public static CsmObject findObject(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
+        assert (file != null) : "can't be null file in findObject";
+        // not interested in context, only object under offset
+        CsmObject last = findObjectWithContext(file, offset, null, fileReferncesContext);
         return last;
     }
     
-    public static CsmObject findObjectWithContext(CsmFile file, int offset, CsmContext context) {
+    private static CsmObject findObjectWithContext(CsmFile file, int offset, CsmContext context, FileReferencesContext fileReferncesContext) {
         assert (file != null) : "can't be null file in findObject";
         CsmObject last = null;
         if (context == null) {
             // create dummy context
             context = new CsmContext(offset);
         }
-        CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context);
+        CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
         last = lastObj;
         // for functions search deeper
         if (CsmKindUtilities.isFunction(lastObj)) {
@@ -118,6 +126,7 @@ public class CsmOffsetResolver {
                 Collection<CsmTemplateParameter> templateParams = ((CsmTemplate)fun).getTemplateParameters();
                 CsmTemplateParameter templateParam = CsmOffsetUtilities.findObject(templateParams, context, offset);
                 if (templateParam != null) {
+                    context.setLastObject(templateParam);
                     return templateParam;                   
                 }
             }
@@ -185,9 +194,9 @@ public class CsmOffsetResolver {
         return last;
     }    
     
-    public static CsmContext findContext(CsmFile file, int offset) {
+    public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         CsmContext context = new CsmContext(offset);
-        findObjectWithContext(file, offset, context);
+        findObjectWithContext(file, offset, context, fileReferncesContext);
         return context;
     }    
 }

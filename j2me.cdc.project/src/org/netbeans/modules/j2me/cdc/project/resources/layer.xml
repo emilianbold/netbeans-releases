@@ -104,9 +104,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Templates">
         <folder name="Project">
-            
-            <folder name="J2ME">
-                
+            <folder name="J2ME">                
                 <attr name="position" intvalue="500"/>
                 <file name="emptyCDC">
                     <attr name="position" intvalue="500"/>
@@ -190,8 +188,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AWTXlet.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/AWT"/>
@@ -207,8 +205,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/AGUIXlet.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/panel_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/AGUI"/>
@@ -224,8 +222,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/JFrame.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>         
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
-                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/frame_16.png"/>
+                <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/frame_32.png"/>
                 <attr name="CDC" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/NSIcom"/>
@@ -258,6 +256,7 @@ made subject to such option by the copyright holder.
             <folder name="mbm">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-j2me-cdc-project-mbm-MBMDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.Bundle"/>
                         <attr name="position" intvalue="90049"/>
                     </file>
                 </folder>

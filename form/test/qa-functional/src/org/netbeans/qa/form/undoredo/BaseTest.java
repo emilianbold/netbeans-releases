@@ -75,7 +75,7 @@ public class BaseTest extends ExtJellyTestCase {
     public BaseTest(String testName) {
         super(testName);
     }
-    
+
     public void setUp() throws IOException {
         openProject(DATA_PROJECT_NAME);
     }
@@ -109,7 +109,12 @@ public class BaseTest extends ExtJellyTestCase {
         tbo.push();
     }
 
-    public void testScenario() {
+    //method which avoid testing on solaris platform
+    public void testNoScenario(){
+        System.out.println("Solaris platform was detected");
+    }
+    
+    public void testScenario() {        
         mainWindow = MainWindowOperator.getDefault();
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
@@ -123,7 +128,7 @@ public class BaseTest extends ExtJellyTestCase {
         EditAction editAction = new EditAction();
         editAction.perform(formnode);
         log("Source Editor window opened.");
-        
+
         OpenAction openAction = new OpenAction();
         openAction.perform(formnode);
         log("Form Editor window opened.");
@@ -362,17 +367,11 @@ public class BaseTest extends ExtJellyTestCase {
      */
     void undo(int n) {
         //first switch to FormEditor tab
-        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
 
-
-//        OpenAction openAction = new OpenAction();
-//        openAction.perform(formnode);
-
-//        sleep(500) ;
-        //inspector.selectComponent("[JFrame]");
         for (int i = 0; i < n; i++) {
             sleep(500);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();
+            new ActionNoBlock("Edit|Undo", null).perform();
+            //mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Undo").push();
             sleep(500);
         }
     }
@@ -386,7 +385,8 @@ public class BaseTest extends ExtJellyTestCase {
         //inspector.selectComponent("[JFrame]");
         for (int i = 0; i < n; i++) {
             sleep(1000);
-            mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
+            new ActionNoBlock("Edit|Redo", null).perform();
+            //mainWindow.getToolbarButton(mainWindow.getToolbar("Edit"), "Redo").push();
             sleep(1000);
         }
     }
@@ -441,8 +441,14 @@ public class BaseTest extends ExtJellyTestCase {
      * @param args arguments from command line
      */
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
 
+        if (OS.equals("sunos")) {
+            System.out.println("Solaris is not supported");
+        } else {
+
+            return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testScenario").enableModules(".*").gui(true).clusters(".*"));
+        }
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(BaseTest.class).addTest("testNoScenario"));
 
     }
 }

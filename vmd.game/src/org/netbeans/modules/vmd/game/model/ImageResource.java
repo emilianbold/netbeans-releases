@@ -359,8 +359,15 @@ public class ImageResource implements Identifiable{
 	private int[] translateIndex(int index, int tileWidth, int tileHeight, boolean zeroBasedIndex) {
 		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight, zeroBasedIndex);
 		int[] coordinates = new int[2];
-		coordinates[0] = (index - (zeroBasedIndex ? 0 : 1)) / grid[0].length;
-		coordinates[1] = (index - (zeroBasedIndex ? 0 : 1)) % grid[0].length;
+        // Fix for 129253 - AIOOB when image changed
+        if ( grid.length == 0 ){
+            coordinates[0] = 0;
+            coordinates[1] = 0;
+        }
+        else {
+            coordinates[0] = (index - (zeroBasedIndex ? 0 : 1)) / grid[0].length;
+            coordinates[1] = (index - (zeroBasedIndex ? 0 : 1)) % grid[0].length;
+        }
 		return coordinates;
 	}
 	

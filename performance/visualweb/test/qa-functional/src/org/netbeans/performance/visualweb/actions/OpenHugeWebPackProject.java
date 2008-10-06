@@ -100,7 +100,6 @@ public class OpenHugeWebPackProject extends org.netbeans.modules.performance.uti
     public void close(){
         log("::close");
         ProjectSupport.closeProject(projectName);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static void main(java.lang.String[] args) {

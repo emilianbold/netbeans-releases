@@ -6,23 +6,18 @@ package org.netbeans.modules.groovy.grailsproject.actions;
 
 import java.awt.Dialog;
 import java.util.Set;
-import javax.swing.JComponent;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import java.util.logging.Logger;
-import javax.swing.Action;
-import org.openide.awt.DynamicMenuContent;
-import javax.swing.JMenuItem;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIterator;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
 public final class CreateViewAction extends NodeAction {
@@ -45,28 +40,28 @@ public final class CreateViewAction extends NodeAction {
         WizardDescriptor wiz =  null;
 
         String artifactName = dataObject.getPrimaryFile().getName();
-        NewArtifactWizardIterator it = new NewArtifactWizardIterator(project, SourceCategory.VIEWS, artifactName);
+        NewArtifactWizardIterator it = new NewArtifactWizardIterator(project, SourceCategory.GRAILSAPP_VIEWS, artifactName);
 
         wiz = new WizardDescriptor(it);
-        
+
         assert wiz != null;
-        
+
         wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
 
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
-        
+
         Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
-        
+
         try {
-                dlg.setVisible(true);
-                if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
-                    Set result = wiz.getInstantiatedObjects();
-                }
-            } finally {
-                dlg.dispose();
+            dlg.setVisible(true);
+            if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+                Set result = wiz.getInstantiatedObjects();
             }
+        } finally {
+            dlg.dispose();
+        }
     }
 
     public String getName() {
@@ -103,29 +98,6 @@ public final class CreateViewAction extends NodeAction {
         // LOG.log(Level.WARNING, "CreateViewAction.enable(): " + name);
         return "domain".equals(name);
     }
-
-    public JMenuItem getPopupPresenter() {
-        class SpecialMenuItem extends JMenuItem implements DynamicMenuContent {
-
-            public JComponent[] getMenuPresenters() {
-                if(isEnabled()){
-                    return new JComponent[] {this};
-                    }
-                else {
-                    return new JComponent[] {};
-                    }
-            }
-            public JComponent[] synchMenuPresenters(JComponent[] items) {
-                return getMenuPresenters();
-            }
-        }
-        
-        SpecialMenuItem menuItem = new SpecialMenuItem();
-        
-        Actions.connect(menuItem, (Action)this);
-        return menuItem;
-    }
-
     
 }
 

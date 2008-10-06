@@ -43,10 +43,14 @@ package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.Util;
@@ -56,6 +60,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -170,6 +176,16 @@ final class NewTCIterator extends BasicWizardIterator {
         final String name = model.getName();
         final String packageName = model.getPackageName();
         final String mode = model.getMode();
+
+        boolean actionLessTC;
+        try {
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.openide.windows");
+            actionLessTC = current.compareTo(new SpecificationVersion("6.24")) >= 0; // NOI18N
+        } catch (IOException ex) {
+            Logger.getLogger(NewTCIterator.class.getName()).log(Level.INFO, null, ex);
+            actionLessTC = false;
+        }
+
         
         Map<String,String> replaceTokens = new HashMap<String,String>();
         replaceTokens.put("TEMPLATENAME", name);//NOI18N
@@ -189,9 +205,9 @@ final class NewTCIterator extends BasicWizardIterator {
                 fil = null;
             }
         }
+        String relativeIconPath = null;
         if (fil != null) {
             FileObject fo = FileUtil.toFileObject(fil);
-            String relativeIconPath = null;
             if (!FileUtil.isParentOf(Util.getResourceDirectory(project), fo)) {
                 String iconPath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, 
                                                 "", fo.getNameExt()); //NOI18N
@@ -228,11 +244,13 @@ final class NewTCIterator extends BasicWizardIterator {
                 name, "TopComponent.form"); //NOI18N
         template = CreatedModifiedFiles.getTemplate("templateTopComponent.form");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(tcFormName, template, replaceTokens));
-        
-        final String actionName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
-                name, "Action.java"); //NOI18N
-        template = CreatedModifiedFiles.getTemplate("templateAction.java");//NOI18N
-        fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
+
+        if (!actionLessTC) {
+            final String actionName = getRelativePath(moduleInfo.getSourceDirectoryPath(), packageName,
+                    name, "Action.java"); //NOI18N
+            template = CreatedModifiedFiles.getTemplate("templateAction.java");//NOI18N
+            fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
+        }
         
         final String settingsName = name + "TopComponent.settings"; //NOI18N
         template = CreatedModifiedFiles.getTemplate("templateSettings.xml");//NOI18N
@@ -242,10 +260,46 @@ final class NewTCIterator extends BasicWizardIterator {
         template = CreatedModifiedFiles.getTemplate("templateWstcref.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
                              template, replaceTokens, null, null));
-        
-        fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
-                                                       Collections.<String>emptySet()));
+
         String bundlePath = getRelativePath(moduleInfo.getResourceDirectoryPath(false), packageName, "", "Bundle.properties"); //NOI18N
+        if (actionLessTC) {
+            String path = "Actions/Window/" + packageName.replace('.','-') + "-" + name + "Action.instance"; // NOI18N
+            {
+                Map<String,Object> attrs = new HashMap<String,Object>();
+                attrs.put("instanceCreate", "methodvalue:org.openide.windows.TopComponent.openAction"); // NOI18N
+                attrs.put("component", "methodvalue:" + packageName + '.' + name + "TopComponent.findInstance"); // NOI18N
+                if (relativeIconPath != null) {
+                    attrs.put("iconBase", relativeIconPath); // NOI18N
+                }
+                attrs.put("displayName", "bundlevalue:" + packageName + ".Bundle#CTL_" + name + "Action"); // NOI18N
+                fileChanges.add(
+                    fileChanges.createLayerEntry(
+                        path,
+                        null,
+                        null,
+                        NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name), // NOI18N
+                        attrs
+                    )
+                );
+            }
+
+            {
+                Map<String,Object> attrs = new HashMap<String,Object>();
+                attrs.put("originalFile", path); // NOI18N
+                fileChanges.add(
+                    fileChanges.createLayerEntry(
+                        "Menu/Window/" + name + "Action.shadow", // NOI18N
+                        null,
+                        null,
+                        null,
+                        attrs
+                    )
+                );
+            }
+        } else {
+            fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
+                                                       Collections.<String>emptySet()));
+        }
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
                                 NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
         

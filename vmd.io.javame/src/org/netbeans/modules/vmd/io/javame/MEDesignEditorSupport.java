@@ -66,6 +66,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -80,6 +81,9 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandler;
 import org.netbeans.modules.vmd.api.io.serialization.DocumentErrorHandlerSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
@@ -186,7 +190,12 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
     @Override
     public void edit() {
         useEditPriority = true;
-        
+        DataObjectContext context = IOSupport.getDataObjectContext (dataObject);
+        if (context == null || ProjectUtils.getProject(context) == null) {
+            NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getMessage(MEDesignEditorSupport.class, "MSG_Edit_Templates")); //NOI18N
+            DialogDisplayer.getDefault().notify(message);
+            return;
+        }
         String projectType = IOSupport.resolveProjectType (IOSupport.getDataObjectContext (dataObject));
         if (projectType == null)
             return;
@@ -258,7 +267,7 @@ public final class MEDesignEditorSupport extends J2MEEditorSupport implements Ed
         IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
                 ProjectTypeInfo projectTypeInfo = ProjectTypeInfo.getProjectTypeInfoFor (IOSupport.getDataObjectContext (dataObject).getProjectType ());
-                tc.setIcon (projectTypeInfo != null ? Utilities.loadImage (projectTypeInfo.getIconResource ()) : null);
+                tc.setIcon (projectTypeInfo != null ? ImageUtilities.loadImage (projectTypeInfo.getIconResource ()) : null);
 
                 String displayName = messageName();
                 if (! displayName.equals(tc.getDisplayName()))

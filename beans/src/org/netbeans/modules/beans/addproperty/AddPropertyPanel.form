@@ -18,6 +18,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -62,7 +63,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="boundCheckBox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
-                                      <Component id="propNameTextField" pref="546" max="32767" attributes="0"/>
+                                      <Component id="propNameTextField" pref="554" max="32767" attributes="0"/>
                                       <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
@@ -95,7 +96,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="equalsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="initializerTextField" pref="396" max="32767" attributes="0"/>
+                              <Component id="initializerTextField" pref="404" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="semicolonLabel" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -107,7 +108,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="previewScrollPane" alignment="0" pref="673" max="32767" attributes="2"/>
+                          <Component id="previewScrollPane" alignment="0" pref="686" max="32767" attributes="2"/>
                       </Group>
                   </Group>
               </Group>
@@ -293,7 +294,6 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="accessGroup"/>
         </Property>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.protectedRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

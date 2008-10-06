@@ -63,8 +63,6 @@ import org.openide.util.NbBundle;
 public final class StateTransitionLabelManager extends BasicUMLLabelManager
 {
 
-    public static final String PRECONDITION = "precondition";
-    public static final String POSTCONDITION = "postcondition";
     private Action[] contextActions = null;
 
     public StateTransitionLabelManager(ConnectionWidget widget)

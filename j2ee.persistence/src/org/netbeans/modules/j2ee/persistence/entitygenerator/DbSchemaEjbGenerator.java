@@ -43,10 +43,12 @@ package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.dbschema.ColumnPairElement;
 import org.netbeans.modules.dbschema.DBIdentifier;
@@ -54,6 +56,7 @@ import org.netbeans.modules.dbschema.ForeignKeyElement;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.dbschema.UniqueKeyElement;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
 
 /**
  * This class provides an algorithm to produce a set of cmp beans and relations
@@ -67,6 +70,7 @@ public class DbSchemaEjbGenerator {
     private Map beans = new HashMap();
     private List relations = new ArrayList();
     private SchemaElement schemaElement;
+    private Set<String> tablesReferecedByOtherTables;
     
     /**
      * Creates a generator for a set of beans.
@@ -78,7 +82,26 @@ public class DbSchemaEjbGenerator {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
     
+        tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
         buildCMPSet();
+    }
+    
+    /**
+     * 
+     * @param schemaElement The schema
+     * @return A set of tables that are referenced by at least one another table
+     */
+    public static Set<String> getTablesReferecedByOtherTables(SchemaElement schemaElement) {
+        Set<String> tableNames = new HashSet<String>();
+        TableElement[] allTables = schemaElement.getTables();
+        for(int i = 0; i < allTables.length; i ++ ) {
+            ForeignKeyElement[] fkElements = allTables[i].getForeignKeys();
+            for(int fkix = 0; fkix < fkElements.length; fkix ++ ) {
+                tableNames.add(fkElements[fkix].getReferencedTable().getName().getName());
+            }
+        }
+        
+        return tableNames;
     }
     
     /**
@@ -86,7 +109,7 @@ public class DbSchemaEjbGenerator {
      * a join table regardless of whether the tables it joins are
      * included in the tables to generate.
      */
-    public static boolean isJoinTable(TableElement e) {
+    public static boolean isJoinTable(TableElement e, Set<String> tablesReferecedByOtherTables) {
         ForeignKeyElement[] foreignKeys = e.getForeignKeys();
         if (foreignKeys == null ||
                 foreignKeys.length != 2) {
@@ -110,6 +133,11 @@ public class DbSchemaEjbGenerator {
         
         // issue 90962: a table whose foreign keys are unique is not a join table
         if (isFkUnique(foreignKeys[0]) || isFkUnique(foreignKeys[1])) {
+            return false;
+        }
+        
+        // issue 111397: a table which is referenced by another table is not a join table.
+        if(tablesReferecedByOtherTables.contains(e.getName().getName())) {
             return false;
         }
         
@@ -168,7 +196,7 @@ public class DbSchemaEjbGenerator {
         for (String tableName : genTables.getTableNames()) {
             TableElement tableElement =
                     schemaElement.getTable(DBIdentifier.create(tableName));
-            if (isJoinTable(tableElement)) {
+            if (isJoinTable(tableElement, tablesReferecedByOtherTables)) {
                 joinTables.add(tableElement);
             } else {
                 addBean(tableName);
@@ -179,22 +207,22 @@ public class DbSchemaEjbGenerator {
         }
     }
     
-    private String[] localColumnNames(ForeignKeyElement key) {
+    private ColumnData[] getLocalColumnData(ForeignKeyElement key) {
         ColumnPairElement[] pkPairs = key.getColumnPairs();
-        String[] localColumns = new String[pkPairs.length];
+        ColumnData[] localColumns = new ColumnData[pkPairs.length];
         for (int i = 0; i < pkPairs.length; i++) {
-            localColumns[i] =
-                    pkPairs[i].getLocalColumn().getName().getName();
+            localColumns[i] = new ColumnData(pkPairs[i].getLocalColumn().getName().getName(),
+                    pkPairs[i].getLocalColumn().isNullable());
         }
         return localColumns;
     }
     
-    private String[] referencedColumnNames(ForeignKeyElement key) {
+    private ColumnData[] getReferencedColumnData(ForeignKeyElement key) {
         ColumnPairElement[] pkPairs = key.getColumnPairs();
-        String[] refColumns = new String[pkPairs.length];
+        ColumnData[] refColumns = new ColumnData[pkPairs.length];
         for (int i = 0; i < pkPairs.length; i++) {
-            refColumns[i] =
-                    pkPairs[i].getReferencedColumn().getName().getName();
+            refColumns[i] = new ColumnData(pkPairs[i].getReferencedColumn().getName().getName(),
+                    pkPairs[i].getReferencedColumn().isNullable());
         }
         return refColumns;
     }
@@ -245,6 +273,7 @@ public class DbSchemaEjbGenerator {
                 true,
                 true,
                 false);
+        roleA.setEntityPkgName(roleAHelper.getPackage());
         roleAHelper.addRole(roleA);
         
         RelationshipRole roleB = new RelationshipRole(
@@ -254,6 +283,7 @@ public class DbSchemaEjbGenerator {
                 true,
                 true, 
                 false);
+        roleB.setEntityPkgName(roleBHelper.getPackage());
         roleBHelper.addRole(roleB);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);
@@ -263,28 +293,28 @@ public class DbSchemaEjbGenerator {
         
         roleAHelper.getCMPMapping().getJoinTableMapping().put(roleACmr, table.getName().getName());
         CMPMappingModel.JoinTableColumnMapping joinColMapA = new CMPMappingModel.JoinTableColumnMapping();
-        joinColMapA.setColumns(getColumnNames(foreignKeys[0].getColumns()));
-        joinColMapA.setReferencedColumns(getColumnNames(foreignKeys[0].getReferencedColumns()));
-        joinColMapA.setInverseColumns(getColumnNames(foreignKeys[1].getColumns()));
-        joinColMapA.setReferencedInverseColumns(getColumnNames(foreignKeys[1].getReferencedColumns()));
+        joinColMapA.setColumns(getColumnData(foreignKeys[0].getColumns()));
+        joinColMapA.setReferencedColumns(getColumnData(foreignKeys[0].getReferencedColumns()));
+        joinColMapA.setInverseColumns(getColumnData(foreignKeys[1].getColumns()));
+        joinColMapA.setReferencedInverseColumns(getColumnData(foreignKeys[1].getReferencedColumns()));
         roleAHelper.getCMPMapping().getJoinTableColumnMppings().put(roleACmr, joinColMapA);
                 
         roleBHelper.getCMPMapping().getJoinTableMapping().put(roleBCmr, table.getName().getName());
         CMPMappingModel.JoinTableColumnMapping joinColMapB = new CMPMappingModel.JoinTableColumnMapping();
-        joinColMapB.setColumns(getColumnNames(foreignKeys[1].getColumns()));
-        joinColMapB.setReferencedColumns(getColumnNames(foreignKeys[1].getReferencedColumns()));
-        joinColMapB.setInverseColumns(getColumnNames(foreignKeys[0].getColumns()));
-        joinColMapB.setReferencedInverseColumns(getColumnNames(foreignKeys[0].getReferencedColumns()));
+        joinColMapB.setColumns(getColumnData(foreignKeys[1].getColumns()));
+        joinColMapB.setReferencedColumns(getColumnData(foreignKeys[1].getReferencedColumns()));
+        joinColMapB.setInverseColumns(getColumnData(foreignKeys[0].getColumns()));
+        joinColMapB.setReferencedInverseColumns(getColumnData(foreignKeys[0].getReferencedColumns()));
         roleBHelper.getCMPMapping().getJoinTableColumnMppings().put(roleBCmr, joinColMapB);
 
     }
     
-    private String[] getColumnNames(ColumnElement[] cols) {
-        String[] names = new String[cols.length];
+    private ColumnData[] getColumnData(ColumnElement[] cols) {
+        ColumnData[] columns = new ColumnData[cols.length];
         for (int i = 0; i < cols.length; i++) {
-            names [i] = cols[i].getName().getName();
+            columns [i] = new ColumnData(cols[i].getName().getName(), cols[i].isNullable());
         }
-        return names;
+        return columns;
     }
     
     private static boolean containsSameColumns(ColumnElement[] fkColumns,
@@ -399,6 +429,7 @@ public class DbSchemaEjbGenerator {
                 !oneToOne,
                 !isNullable(key),
                 isNullable(key));
+        roleB.setEntityPkgName(roleBHelper.getPackage());
         roleBHelper.addRole(roleB);
         
         // role A
@@ -426,14 +457,15 @@ public class DbSchemaEjbGenerator {
                 false,
                 false,
                 isNullable(key));
+        roleA.setEntityPkgName(roleAHelper.getPackage());
         roleAHelper.addRole(roleA);
         
         EntityRelation relation = new EntityRelation(roleA, roleB);
         relation.setRelationName(roleA.getEntityName() + '-' + roleB.getEntityName()); // NOI18N
         relations.add(relation);
         
-        roleAHelper.getCMPMapping().getCmrFieldMapping().put(roleACmr, localColumnNames(key));
-        roleBHelper.getCMPMapping().getCmrFieldMapping().put(roleBCmr, referencedColumnNames(key));
+        roleAHelper.getCMPMapping().getCmrFieldMapping().put(roleACmr, getLocalColumnData(key));
+        roleBHelper.getCMPMapping().getCmrFieldMapping().put(roleBCmr, getReferencedColumnData(key));
     }
     
     private void reset() {

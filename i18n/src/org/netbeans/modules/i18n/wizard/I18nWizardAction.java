@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -66,7 +66,7 @@ import org.netbeans.api.project.Project;
 public class I18nWizardAction extends NodeAction {
 
     public I18nWizardAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }
     
     /** Generated serial version UID. */
@@ -137,22 +137,22 @@ public class I18nWizardAction extends NodeAction {
     /** Initializes wizard descriptor. */
     private void initWizard(WizardDescriptor wizardDesc) {
         // Init properties.
-        wizardDesc.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);    // NOI18N
-        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);   // NOI18N
-        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);    // NOI18N
+        wizardDesc.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
+        wizardDesc.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
 
         List<String> contents = new ArrayList<String>(4);
-        contents.add(Util.getString("TXT_SelectSourcesHelp"));
-        contents.add(Util.getString("TXT_SelectResourceHelp"));
-        contents.add(Util.getString("TXT_AdditionalHelp"));
-        contents.add(Util.getString("TXT_FoundStringsHelp"));
+        contents.add(Util.getString("TXT_SelectSourcesHelp"));          //NOI18N
+        contents.add(Util.getString("TXT_SelectResourceHelp"));         //NOI18N
+        contents.add(Util.getString("TXT_AdditionalHelp"));             //NOI18N
+        contents.add(Util.getString("TXT_FoundStringsHelp"));           //NOI18N
         
         wizardDesc.putProperty(
-            WizardDescriptor.PROP_CONTENT_DATA,                                          // NOI18N
+            WizardDescriptor.PROP_CONTENT_DATA,
             contents.toArray(new String[contents.size()])
         ); 
         
-        wizardDesc.setTitle(Util.getString("LBL_WizardTitle"));
+        wizardDesc.setTitle(Util.getString("LBL_WizardTitle"));         //NOI18N
         wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})"));              // NOI18N
 
         wizardDesc.setModal(false);
@@ -160,7 +160,7 @@ public class I18nWizardAction extends NodeAction {
 
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
-        return Util.getString("LBL_WizardActionName");
+        return Util.getString("LBL_WizardActionName");                  //NOI18N
     }
     
     /** Gets the action's help context. Implemenst superclass abstract method. */

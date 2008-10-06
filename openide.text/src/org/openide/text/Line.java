@@ -52,6 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 
 
 /** Represents one line in a text document.
@@ -65,21 +66,29 @@ public abstract class Line extends Annotatable implements Serializable {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 9113186289600795476L;
 
+    static final Logger LOG = Logger.getLogger(Line.class.getName());
+
     /** Property name of the line number */
     public static final String PROP_LINE_NUMBER = "lineNumber"; // NOI18N
 
     /** Shows the line only if the editor is open.
      * @see #show(int) <code>show</code>
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#NONE}
+     * and {@link ShowVisibilityType#NONE} instead.
      */
     public final static int SHOW_TRY_SHOW = 0;
 
     /** Opens the editor if necessary and shows the line.
      * @see #show(int) <code>show</code>
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#NONE} instead.
      */
     public final static int SHOW_SHOW = 1;
 
     /** Opens the editor if necessary, shows the line, and takes the focus.
      * @see #show(int) <code>show</code>
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_GOTO = 2;
 
@@ -88,6 +97,8 @@ public abstract class Line extends Annotatable implements Serializable {
      * @see #show(int) <code>show</code>
      * @see org.openide.windows.TopComponent#toFront()
      * @since 5.8
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
+     * and {@link ShowVisibilityType#FRONT} instead.
      */
     public final static int SHOW_TOFRONT = 3;
 
@@ -98,16 +109,65 @@ public abstract class Line extends Annotatable implements Serializable {
      * and marks it for editor reusal. 
      * @see #show(int) <code>show</code>
      * @since org.openide.text 6.14
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_REUSE = 4;
 
     /** Focuses or opens given editor, marking it as reusable editor if it
-     * was not opened before. Similar to {@link #SHOW_REUSE) but ignores
+     * was not opened before. Similar to {@link #SHOW_REUSE} but ignores
      * currently reusable editor.
      * @see #show(int) <code>show</code>
      * @since org.openide.text 6.14
+     * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE_NEW}
+     * and {@link ShowVisibilityType#FOCUS} instead.
      */
     public final static int SHOW_REUSE_NEW = 5;
+
+    /** ShowOpenType and ShowVisibilityType is replacement for constants SHOW_TRY_SHOW, SHOW_SHOW,
+     * SHOW_GOTO, SHOW_TOFRONT, SHOW_REUSE, SHOW_REUSE_NEW. It is to provide full control
+     * over show method behavior without need to add new constant for missing flag combination.
+     *
+     * <br><br>Note: Any modification of editor marked for reuse resets reuse flag. There is one global static reference
+     * so only one or none editor can be marked for reuse.
+     *
+     * @see #show(ShowOpenType, ShowVisibilityType) <code>show</code>
+     * @see ShowVisibilityType <code>ShowVisibilityType</code>
+     * @since org.openide.text 6.21
+     *
+     */
+    public enum ShowOpenType {
+    /** shows the line only if the editor is open */
+        NONE,
+    /** opens editor if necessary (editor was not opened) and shows the line */
+        OPEN,
+    /** replaces editor marked for reuse (last editor opened using {@link ShowOpenType#REUSE}
+     * or {@link ShowOpenType#REUSE_NEW} and opens editor if necessary, if editor is being opened (editor was not opened)
+     * marks it for reuse, shows the line */
+        REUSE,
+    /** ignores editor marked for reuse (resets reference to editor marked for reuse),
+     * opens editor if necessary, if editor is being opened (editor was not opened)
+     * marks it for reuse, shows the line */
+        REUSE_NEW
+    };
+
+    /** ShowOpenType and ShowVisibilityType is replacement for constants SHOW_TRY_SHOW, SHOW_SHOW,
+     * SHOW_GOTO, SHOW_TOFRONT, SHOW_REUSE, SHOW_REUSE_NEW. It is to provide full control
+     * over show method behavior without need to add new constant for missing flag combination.
+     *
+     * @since org.openide.text 6.21
+     * @see #show(ShowOpenType, ShowVisibilityType) <code>show</code>
+     * @see ShowOpenType <code>ShowOpenType</code>
+     */
+    public enum ShowVisibilityType {
+    /** no action */
+        NONE,
+    /** fronts editor component to become visible */
+        FRONT,
+    /** front editor component to become visible and activates/focuses it. It does
+     * the same as {@link ShowVisibilityType#FRONT} plus activates/focuses editor */
+        FOCUS
+    };
 
     /** Instance of null implementation of Line.Part */
     static final private Line.Part nullPart = new Line.NullPart();
@@ -186,17 +246,76 @@ public abstract class Line extends Annotatable implements Serializable {
 
     /** Show the line.
     * @param kind one of {@link #SHOW_TRY_SHOW}, {@link #SHOW_SHOW}, or {@link #SHOW_GOTO}
-    * @param column the column of this line which should be selected (starting at 0)
+    * @param column the column of this line which should be selected (starting at 0),
+    * value -1 does not change previously selected column
+    * @deprecated Deprecated since 6.21. Use {@link #show(ShowOpenType, ShowVisibilityType, int)} instead.
     */
+    @Deprecated
     public abstract void show(int kind, int column);
 
     /** Shows the line (at the first column).
     * @param kind one of {@link #SHOW_TRY_SHOW}, {@link #SHOW_SHOW}, {@link #SHOW_GOTO},
     * {@link #SHOW_REUSE} or {@link #SHOW_REUSE_NEW}
     * @see #show(int, int)
+    * @deprecated Deprecated since 6.21. Use {@link #show(ShowOpenType, ShowVisibilityType)} instead.
     */
+    @Deprecated
     public void show(int kind) {
         show(kind, 0);
+    }
+    
+    /** Show the line.
+    * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
+    *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
+    * @param visibilityType one of {@link ShowVisibilityType#NONE},
+    *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
+    * @param column the column of this line which should be selected (starting at 0),
+    *   value -1 does not change previously selected column
+    * @since org.openide.text 6.21
+    */
+    public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
+        if (openType == ShowOpenType.NONE) {
+            if (visibilityType == ShowVisibilityType.NONE) {
+                show(SHOW_TRY_SHOW, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_TRY_SHOW, column);
+            }
+        } else if (openType == ShowOpenType.OPEN) {
+            if (visibilityType == ShowVisibilityType.NONE) {
+                show(SHOW_SHOW, column);
+            } else if (visibilityType == ShowVisibilityType.FOCUS) {
+                show(SHOW_GOTO, column);
+            } else if (visibilityType == ShowVisibilityType.FRONT) {
+                show(SHOW_TOFRONT, column);
+            }
+        } else if (openType == ShowOpenType.REUSE) {
+            if (visibilityType == ShowVisibilityType.FOCUS) {
+                show(SHOW_REUSE, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_REUSE, column);
+            }
+        } else if (openType == ShowOpenType.REUSE_NEW) {
+            if (visibilityType == ShowVisibilityType.FOCUS) {
+                show(SHOW_REUSE_NEW, column);
+            } else {
+                LOG.warning("Line.show(ShowOpenType, ShowVisibilityType, int) uses unsupported combination of parameters");
+                show(SHOW_REUSE_NEW, column);
+            }
+        }
+    }
+
+    /** Shows the line (at the first column).
+    * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
+    *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
+    * @param visibilityType one of {@link ShowVisibilityType#NONE},
+    *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
+    * @see #show(ShowOpenType, ShowVisibilityType, int)
+    * @since org.openide.text 6.21
+    */
+    public void show(ShowOpenType openType, ShowVisibilityType visibilityType) {
+        show(openType, visibilityType, 0);
     }
 
     /** Set or clear a (debugger) breakpoint at this line.

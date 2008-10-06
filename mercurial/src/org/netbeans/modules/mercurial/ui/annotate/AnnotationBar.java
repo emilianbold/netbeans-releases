@@ -401,17 +401,20 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 hideBar();
             }
         });
-        popupMenu.add(new JSeparator());
+        JSeparator separator = new JSeparator();
+        popupMenu.add(separator);
         popupMenu.add(menu);
 
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
+        separator.setVisible(false);
         if (recentRevision != null) {
             if (getPreviousRevision(recentRevision) != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision"); // NOI18N
                 diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, getPreviousRevision(recentRevision) }));
                 diffMenu.setVisible(true);
                 rollbackMenu.setVisible(true);
+                separator.setVisible(true);
             }
         }
 
@@ -419,7 +422,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private void revert(final File file, String revision) {
-        final File root = Mercurial.getInstance().getTopmostManagedParent(file);
+        final File root = Mercurial.getInstance().getRepositoryRoot(file);
         if(root == null) return;
         
         File[] files = new File [1];
@@ -523,7 +526,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
             recentRevision = revision;
-            File file = Mercurial.getInstance().getTopmostManagedParent(getCurrentFile());
+            File file = Mercurial.getInstance().getRepositoryRoot(getCurrentFile());
             recentFile = new File(file, al.getFileName());
             recentRevisionCanBeRolledBack = al.canBeRolledBack();
             repaint();

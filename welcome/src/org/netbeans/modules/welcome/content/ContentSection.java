@@ -51,15 +51,15 @@ import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author S. Aubrecht
  */
-public class ContentSection extends JPanel implements Constants {
+public class ContentSection extends BackgroundPanel implements Constants {
 
     private static final int PANEL_MAX_WIDTH = 800;
     private int location;
@@ -74,7 +74,6 @@ public class ContentSection extends JPanel implements Constants {
         this.location = location;
         this.maxSize = maxSize;
         
-        setOpaque( false );
         lblTitle = new JLabel( title );
         lblTitle.setFont( SECTION_HEADER_FONT );
         
@@ -102,7 +101,7 @@ public class ContentSection extends JPanel implements Constants {
             centerImageName = "section_bottom_right.png"; //NOI18N
             break;
         }
-        center = Utilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
+        center = ImageUtilities.loadImage( "org/netbeans/modules/welcome/resources/" + centerImageName ); //NOI18N
     }
 
     @Override

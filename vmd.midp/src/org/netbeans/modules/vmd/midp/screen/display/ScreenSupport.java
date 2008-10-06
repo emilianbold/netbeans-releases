@@ -121,7 +121,7 @@ public final class ScreenSupport {
     }
 
     // TODO Should this method be in VMD Screen Designer module?
-    private static ScreenDeviceInfo getDeviceInfo(final DesignDocument document) {
+    public static ScreenDeviceInfo getDeviceInfo(final DesignDocument document) {
         final ScreenDeviceInfo[] screenDevice = new ScreenDeviceInfo[1];
         if (document == null) {
             return null;

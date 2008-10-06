@@ -47,7 +47,9 @@ import java.beans.VetoableChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
+import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -62,6 +64,10 @@ public class ExplorerManagerTest extends NbTestCase
     private Keys keys;
     private Node root;
     private LinkedList<PropertyChangeEvent> events;
+
+    static {
+        ExplorerManager.SCHEDULE_REMOVE_ASYNCH = false;
+    }
     
     public ExplorerManagerTest(String testName) {
         super(testName);
@@ -72,6 +78,11 @@ public class ExplorerManagerTest extends NbTestCase
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     @Override
@@ -146,13 +157,8 @@ public class ExplorerManagerTest extends NbTestCase
     
     public void testCannotSetNodesNotUnderTheRoot() throws Exception {
         final Node a = new AbstractNode(Children.LEAF);
-        
-        try {
-            em.setSelectedNodes(new Node[] { a });
-            fail("Should throw IllegalArgumentException as the node is not under root");
-        } catch (IllegalArgumentException ex) {
-            // ok, a is not under root
-        }
+        em.setSelectedNodes(new Node[]{a});
+        assertEquals(0, em.getSelectedNodes().length);
     }
     
     
@@ -206,7 +212,8 @@ public class ExplorerManagerTest extends NbTestCase
         Node[] arr = em.getSelectedNodes();
         assertEquals("No nodes can be selected", 0, arr.length);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1110
     public void testGarbageCollectOfExploreredContextIssue124712() throws Exception {
         class K extends Children.Keys<String> {
             public void keys(String... keys) {

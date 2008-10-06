@@ -48,6 +48,6 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.mobility.deployment.nokia.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>nbinst:///modules/org-netbeans-modules-mobility-deployment-nokia.jar</resource>
+        <resource>jar:nbinst:///modules/org-netbeans-modules-mobility-deployment-nokia.jar!</resource>
     </volume>
 </library>

@@ -51,6 +51,6 @@ public class KeyMapSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(BasicShortcuts.class).addTest(BasicShortcuts.class).addTest(KeyMapTest.class));
+                NbModuleSuite.createConfiguration(BasicShortcuts.class).addTest(BasicShortcuts.class).addTest(KeyMapTest.class).clusters(".*").enableModules(".*"));
     }
 }

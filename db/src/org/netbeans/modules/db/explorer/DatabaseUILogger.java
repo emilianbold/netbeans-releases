@@ -53,12 +53,14 @@ import org.openide.util.NbBundle;
 public class DatabaseUILogger {
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.ui.db.explorer"); // NOI18N
+    private static final Logger LOGGER_USG = Logger.getLogger("org.netbeans.ui.metrics.db.explorer"); // NOI18N
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; // NOI18N
 
     private DatabaseUILogger() {}
 
     public static void logConnection(String driverClass) {
         log("UI_CONNECT_DB", driverClass); // NOI18N
+        logUsage("USG_DB_CONNECT", driverClass); // NOI18N
     }
 
     private static void log(String message, Object parameter) {
@@ -67,5 +69,13 @@ public class DatabaseUILogger {
         record.setResourceBundle(NbBundle.getBundle(BUNDLE));
         record.setResourceBundleName(BUNDLE);
         LOGGER.log(record);
+    }
+
+    private static void logUsage(String message, Object parameter) {
+        LogRecord record = new LogRecord(Level.INFO, message);
+        record.setParameters(new Object[] { parameter });
+        record.setResourceBundle(NbBundle.getBundle(BUNDLE));
+        record.setResourceBundleName(BUNDLE);
+        LOGGER_USG.log(record);
     }
 }

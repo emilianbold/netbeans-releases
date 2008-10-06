@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.beans.PropertyEditor;
 
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

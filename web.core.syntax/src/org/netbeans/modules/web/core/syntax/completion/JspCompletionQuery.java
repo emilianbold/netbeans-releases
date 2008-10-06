@@ -47,51 +47,32 @@ import javax.swing.text.BadLocationException;
 import javax.servlet.jsp.tagext.TagInfo;
 import javax.servlet.jsp.tagext.TagAttributeInfo;
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.*;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
-import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
-import org.openide.loaders.DataObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 
 /**
  * JSP completion support finder
  *
+ * @author Marek Fukala
  * @author Petr Nejedly
  * @author Tomasz.Slota@Sun.COM
  */
 
 public class JspCompletionQuery {
+   
+    private static final List<String> JSP_DELIMITERS = Arrays.asList(new String[]{"<%", "<%=", "<%!"});
     
-    /**
-     * @see filterNonStandardXMLEntities(List, List)
-     **/
-    private static final Set<String> stdXMLEntities = new TreeSet<String>();
+    private static final JspCompletionQuery JSP_COMPLETION_QUERY = new JspCompletionQuery();
     
-    static{
-        stdXMLEntities.add("&lt;");
-        stdXMLEntities.add("&gt;");
-        stdXMLEntities.add("&apos;");
-        stdXMLEntities.add("&quot;");
-        stdXMLEntities.add("&amp;");
+    static JspCompletionQuery instance() {
+        return JSP_COMPLETION_QUERY;
     }
     
-    /** Perform the query on the given component. The query usually
-     * gets the component's document, the caret position and searches back
-     * to find the last command start. Then it inspects the text up to the caret
-     * position and returns the result.
-     * @param component the component to use in this query.
-     * @param offset position in the component's document to which the query will
-     *   be performed. Usually it's a caret position.
-     * @param support syntax-support that will be used during resolving of the query.
-     * @return result of the query or null if there's no result.
-     */
-    public CompletionQuery.Result query(JTextComponent component, int offset) {
+    void query(CompletionResultSet result, JTextComponent component, int offset) {
         BaseDocument doc = (BaseDocument)component.getDocument();
         JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
         
@@ -99,136 +80,77 @@ public class JspCompletionQuery {
             SyntaxElement elem = sup.getElementChain( offset );
             if (elem == null)
                 // this is a legal option, when I don't have anything to say just return null
-                return null;
-            
-            CompletionData jspData;
+                return;
+
             switch (elem.getCompletionContext()) {
                 // TAG COMPLETION
             case JspSyntaxSupport.TAG_COMPLETION_CONTEXT :
-                return queryJspTag(component, offset, sup,
+                queryJspTag(result, component, offset, sup,
                         (SyntaxElement.Tag)elem);
+                break;
                 
                 // ENDTAG COMPLETION
             case JspSyntaxSupport.ENDTAG_COMPLETION_CONTEXT :
-                jspData = queryJspEndTag(offset, sup,
-                        (SyntaxElement.EndTag)elem, doc);
-                return result(component, offset, jspData);
+                queryJspEndTag(result, component, offset, sup);
+                break;
                 
                 //DIRECTIVE COMPLETION IN JSP SCRIPTLET (<%| should offer <%@taglib etc.)
             case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT:
-                return queryJspDirectiveInScriptlet(component, offset, sup, elem, doc);
+                queryJspDirectiveInScriptlet(result, offset, sup);
+                //query for jsp delimiters
+                queryJspDelimitersInScriptlet(result, offset, sup);
+                break;
                 
                 // DIRECTIVE COMPLETION
             case JspSyntaxSupport.DIRECTIVE_COMPLETION_CONTEXT :
-                return queryJspDirective(component, offset, sup,
-                        (SyntaxElement.Directive)elem, doc);
+                queryJspDirective(result, component, offset, sup, (SyntaxElement.Directive)elem, doc);
+                break;
                 
                 // EXPRESSION LANGUAGE
             case JspSyntaxSupport.EL_COMPLETION_CONTEXT:
-                return queryEL(component, offset, sup, elem, doc);
+                queryEL(result, component, offset, sup);
+                break;
                 
                 // CONTENT LANGUAGE
             case JspSyntaxSupport.CONTENTL_COMPLETION_CONTEXT :
                 // JSP tags results
-                jspData = queryJspTagInContent(offset, sup, doc);
+                queryJspTagInContent(result, offset, sup, doc);
                 
                 // JSP directive results
-                CompletionQuery.Result jspDirec = queryJspDirectiveInContent(component, offset, sup, doc);
+                queryJspDirectiveInContent(result, component, offset, sup, doc);
                 
-                //return null (do not popup completion) if there are no items in any of the completions
-                if(jspData.completionItems.isEmpty() && jspDirec.getData().isEmpty())
-                    return null;
+                //query for jsp delimiters
+                queryJspDelimitersInContent(result, offset, sup);
+                break;
                 
-                CompletionQuery.Result jspRes = result(component, offset, jspData);
-                
-                //merge result items
-                ArrayList all = new ArrayList();
-                all.addAll(jspDirec.getData());
-                all.addAll(jspRes.getData());
-                
-                CompletionQuery.Result result = new JspCompletionResult(component,
-                        NbBundle.getMessage(JSPKit.class, "CTL_JSP_Completion_Title"), all,
-                        offset, jspData.removeLength, -1);
-                
-                return result;
             }
             
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
-        return null;
     }
     
-    /**
-     * A hack-fix for #70366
-     */
-    private void filterNonStandardXMLEntities(List completionItemsRep, List htmlSuggestions) {
-        Iterator it = htmlSuggestions.iterator();
-        
-        while (it.hasNext()){
-            CompletionQuery.ResultItem item = (CompletionQuery.ResultItem) it.next();
-            
-            String itemText = item.getItemText();
-            boolean filterOut = false;
-            
-            // check if entity is suggested
-            if (itemText.startsWith("&") && itemText.endsWith(";")){
-                // only allow well known XML entities
-                if (!stdXMLEntities.contains(itemText)){
-                    filterOut = true;
-                }
-            }
-            
-            if (!filterOut){
-                completionItemsRep.add(item);
-            }
-        }
-    }
-    
-    /** a new CC api hack - the result item needs to know its offset, formerly got from result - now cannot be used. */
-    private void setResultItemsOffset(List/*<CompletionItem>*/ items, int removeLength, int ccoffset) {
-        Iterator i = items.iterator();
-        while(i.hasNext()) {
-            Object obj = i.next();
-            if(obj instanceof org.netbeans.modules.web.core.syntax.completion.ResultItem)
-                ((org.netbeans.modules.web.core.syntax.completion.ResultItem)obj).setSubstituteOffset(ccoffset - removeLength);
-        }
-    }
-    
-    private void setResultItemsOffset(CompletionData cd, int ccoffset) {
-        setResultItemsOffset(cd.completionItems, cd.removeLength, ccoffset);
-    }
-    
-    /** Gets a list of completion items for JSP tags.
-     * @param component editor component
-     * @param offset position of caret
-     * @param sup JSP syntax support
-     * @param elem syntax element representing the current JSP tag
-     * @return list of completion items
-     */
-    protected CompletionQuery.Result queryJspTag(JTextComponent component, int offset,
+    private void queryJspTag(CompletionResultSet result, JTextComponent component, int offset,
             JspSyntaxSupport sup, SyntaxElement.Tag elem) throws BadLocationException {
-        BaseDocument doc = (BaseDocument)component.getDocument();
+
         // find the current item
-        List compItems = new ArrayList();
-        int removeLength = 0;
-        
         TokenItem item = sup.getItemAtOrBefore(offset);
         
         if (item == null) {
-            return result(component, offset, new CompletionData(compItems, 0));
+            return ;
         }
         
         TokenID id = item.getTokenID();
         String tokenPart = item.getImage().substring(0, offset - item.getOffset());
         String token = item.getImage().trim();
+        int anchor = -1;
         
         // SYMBOL
         if (id == JspTagTokenContext.SYMBOL) {
             if (tokenPart.equals("<")) { // NOI18N
                 // just after the beginning of the tag
-                removeLength = 0;
-                addTagPrefixItems(sup, compItems, sup.getTagPrefixes("")); // NOI18N
+                anchor = offset;
+                addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes("")); // NOI18N
             }
             if (tokenPart.endsWith("\"")) { // NOI18N
                 // try an attribute value
@@ -237,12 +159,12 @@ public class JspCompletionQuery {
                     AttributeValueSupport attSup =
                             AttributeValueSupport.getSupport(true, elem.getName(), attrName);
                     if (attSup != null) {
-                        return attSup.getResult(component, offset, sup, elem, ""); // NOI18N
+                        attSup.result(result, component, offset, sup, elem, ""); // NOI18N
                     }
                 }
             }
             if(tokenPart.endsWith(">") && !tokenPart.endsWith("/>")) {
-                compItems.add(sup.getAutocompletedEndTag(offset));
+                result.addItem(sup.getAutocompletedEndTag(offset));
             }
             
             
@@ -256,17 +178,16 @@ public class JspCompletionQuery {
             if (isBlank(tokenPart.charAt(tokenPart.length() - 1))
                     || tokenPart.equals("\n")) {
                 // blank character - do attribute completion
-                removeLength = 0;
-                addAttributeItems(sup, compItems, elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
+                anchor = offset;
+                addAttributeItems(result, anchor, sup,  elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
             } else {
                 int colonIndex = tokenPart.indexOf(":"); // NOI18N
+                anchor = offset - tokenPart.length();
                 if (colonIndex == -1) {
-                    removeLength = tokenPart.length();
-                    addTagPrefixItems(sup, compItems, sup.getTagPrefixes(tokenPart));
+                    addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
                 } else {
                     String prefix = tokenPart.substring(0, colonIndex);
-                    removeLength = tokenPart.length();
-                    addTagPrefixItems(sup, compItems, prefix, sup.getTags(tokenPart), elem);
+                    addTagPrefixItems(result, anchor, sup, prefix, sup.getTags(tokenPart), elem);
                 }
             }
         }
@@ -276,11 +197,11 @@ public class JspCompletionQuery {
             // inside or after an attribute
             if (isBlank(tokenPart.charAt(tokenPart.length() - 1))) {
                 // blank character - do attribute completion
-                removeLength = 0;
-                addAttributeItems(sup, compItems, elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
+                anchor = offset;
+                addAttributeItems(result, anchor, sup, elem, sup.getTagAttributes(elem.getName(), ""), null); // NOI18N
             } else {
-                removeLength = tokenPart.length();
-                addAttributeItems(sup, compItems, elem, sup.getTagAttributes(elem.getName(), tokenPart), token);
+                anchor = offset - tokenPart.length();
+                addAttributeItems(result, anchor , sup, elem, sup.getTagAttributes(elem.getName(), tokenPart), token);
             }
         }
         
@@ -289,7 +210,9 @@ public class JspCompletionQuery {
             // inside or after an attribute
             String valuePart = tokenPart.trim();
             //return empty completion if the CC is not invoked inside a quotations
-            if(valuePart.length() == 0) return result(component, offset, new CompletionData(compItems, 0));
+            if(valuePart.length() == 0) {
+                return;
+            }
             
             item = item.getPrevious();
             while ((item != null) && (item.getTokenID() == JspTagTokenContext.ATTR_VALUE)) {
@@ -298,59 +221,45 @@ public class JspCompletionQuery {
             }
             // get rid of the first quote
             valuePart = valuePart.substring(1);
-            removeLength = valuePart.length();
             String attrName = findAttributeForValue(sup, item);
             if (attrName != null) {
                 AttributeValueSupport attSup =
                         AttributeValueSupport.getSupport(true, elem.getName(), attrName);
                 if (attSup != null) {
-                    CompletionQuery.Result result = attSup.getResult(component, offset, sup, elem, valuePart);
-                    if(!(attSup instanceof AttrSupports.FilenameSupport))
-                        setResultItemsOffset(result.getData(), valuePart.length(), offset);
-                    return result;
+                    attSup.result(result, component, offset, sup, elem, valuePart);
                 }
             }
             
         }
         
-        return /*List<JspResultItem.PrefixTag>*/ result(component, offset, new CompletionData(compItems, removeLength));
+        if(anchor != -1) {
+            result.setAnchorOffset(anchor);
+        }
+       
     }
     
-    /** Gets a list of completion items for JSP tags.
-     * @param offset position of caret
-     * @param sup JSP syntax support
-     * @param elem syntax element representing the current JSP tag
-     * @return list of completion items
-     */
-    protected CompletionData queryJspEndTag(int offset, JspSyntaxSupport sup,
-            SyntaxElement.EndTag elem, BaseDocument doc) throws BadLocationException {
+    private void queryJspEndTag(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup) throws BadLocationException {
         // find the current item
-        List compItems = new ArrayList();
-        int removeLength = 0;
-        
         TokenItem item = sup.getItemAtOrBefore(offset);
         if (item == null) {
-            return new CompletionData(compItems, 0);
+            return;
         }
-        
-        TokenID id = item.getTokenID();
         String tokenPart = item.getImage().substring(0, offset - item.getOffset());
-        
-        removeLength = tokenPart.length();
-        return new CompletionData(sup.getPossibleEndTags(offset, tokenPart), removeLength);
+        int anchor = offset - tokenPart.length();
+        result.setAnchorOffset(anchor);   
+        result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart));
     }
     
     /** Gets a list of completion items for EL */
-    protected CompletionQuery.Result queryEL(JTextComponent component, int offset, JspSyntaxSupport sup,
-            SyntaxElement elem, BaseDocument doc) throws BadLocationException {
+    private void queryEL(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup) throws BadLocationException {
+        
         ELExpression elExpr = new ELExpression(sup);
-        ArrayList complItems = new ArrayList();
         
         switch (elExpr.parse(offset)){
         case ELExpression.EL_START:
             // implicit objects
             for (ELImplicitObjects.ELImplicitObject implOb : ELImplicitObjects.getELImplicitObjects(elExpr.getReplace())) {
-                complItems.add(new JspCompletionItem.ELImplicitObject(implOb.getName(), implOb.getType()));
+                result.addItem(JspCompletionItem.createELImplicitObject(implOb.getName(), offset - elExpr.getReplace().length(), implOb.getType()));
             }
             
             // defined beans on the page
@@ -358,7 +267,7 @@ public class JspCompletionQuery {
             if (beans != null){
                 for (int i = 0; i < beans.length; i++) {
                     if (beans[i].getId().startsWith(elExpr.getReplace()))
-                        complItems.add(new JspCompletionItem.ELBean(beans[i].getId(), beans[i].getClassName()));
+                        result.addItem(JspCompletionItem.createELBean(beans[i].getId(), offset - elExpr.getReplace().length(), beans[i].getClassName()));
                 }
             }
             //Functions
@@ -366,62 +275,82 @@ public class JspCompletionQuery {
             Iterator iter = functions.iterator();
             while (iter.hasNext()) {
                 ELFunctions.Function fun = (ELFunctions.Function) iter.next();
-                complItems.add(new JspCompletionItem.ELFunction(
-                        fun.getPrefix(),
+                result.addItem(JspCompletionItem.createELFunction(
                         fun.getName(),
+                        offset - elExpr.getReplace().length(),
                         fun.getReturnType(),
+                        fun.getPrefix(),
                         fun.getParameters()));
             }
             break;
         case ELExpression.EL_BEAN:
         case ELExpression.EL_IMPLICIT:
             
-            List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass());
-            complItems.addAll(items);
+            List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), offset - elExpr.getReplace().length());
+            result.addAllItems(items);
             
             break;
         }
         
-        return result(component, offset, new CompletionData(complItems, elExpr.getReplace().length()));
     }
     
     /** Gets a list of JSP directives which can be completed just after <% in java scriptlet context */
-    protected CompletionQuery.Result queryJspDirectiveInScriptlet(JTextComponent component, int offset, JspSyntaxSupport sup,
-            SyntaxElement elem, BaseDocument doc) throws BadLocationException {
-        
-        List compItems = new ArrayList();
+    private void queryJspDirectiveInScriptlet(CompletionResultSet result, int offset, JspSyntaxSupport sup) throws BadLocationException {
         
         TokenItem item = sup.getItemAtOrBefore(offset);
         if (item == null) {
-            return result(component, offset, new CompletionData(compItems, 0));
+            return;
         }
         
         TokenID id = item.getTokenID();
         String tokenPart = item.getImage().substring(0, offset - item.getOffset());
         
-        if(id == JspTagTokenContext.SYMBOL2 && tokenPart.equals("<%"))
-            addDirectiveItems(sup, compItems, sup.getDirectives("")); // NOI18N
+        if(id == JspTagTokenContext.SYMBOL2 && tokenPart.equals("<%")) {
+            addDirectiveItems(result, offset - tokenPart.length(), (List<TagInfo>)sup.getDirectives("")); // NOI18N
+        }
         
-        return result(component, offset, new CompletionData(compItems, 1 /*removeLength*/));
     }
     
-    
-    /** Gets a list of completion items for JSP directives.
-     * @param component editor component
-     * @param offset position of caret
-     * @param sup JSP syntax support
-     * @param elem syntax element representing the current JSP tag
-     * @return list of completion items
-     */
-    protected CompletionQuery.Result queryJspDirective(JTextComponent component, int offset, JspSyntaxSupport sup,
-            SyntaxElement.Directive elem, BaseDocument doc) throws BadLocationException {
-        // find the current item
-        List compItems = new ArrayList();
-        int removeLength = 0;
-        
+    private void queryJspDelimitersInScriptlet(CompletionResultSet result, int offset, JspSyntaxSupport sup) throws BadLocationException {
         TokenItem item = sup.getItemAtOrBefore(offset);
         if (item == null) {
-            return result(component, offset, new CompletionData(compItems, 0));
+            return;
+        }
+        
+        TokenID id = item.getTokenID();
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
+        
+        
+        if(id == JspTagTokenContext.SYMBOL2 && tokenPart.startsWith("<%")) {
+            addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N
+        }
+        
+    }
+    
+     private void queryJspDelimitersInContent(CompletionResultSet result, int offset, JspSyntaxSupport sup) throws BadLocationException {
+        TokenItem item = sup.getItemAtOrBefore(offset);
+        if (item == null) {
+            return;
+        }
+        
+        String image = item.getImage();
+        int tokenPartLen = offset - item.getOffset();
+        String tokenPart = item.getImage().substring(0, tokenPartLen <= image.length() ? tokenPartLen : image.length());
+        
+        if(tokenPart.startsWith("<")) {
+            addDelimiterItems(result, offset - tokenPart.length(), tokenPart); // NOI18N
+        }
+        
+    }
+    
+    private void queryJspDirective(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup,
+            SyntaxElement.Directive elem, BaseDocument doc) throws BadLocationException {
+        // find the current item
+        TokenItem item = sup.getItemAtOrBefore(offset);
+        if (item == null) {
+            return;
         }
         
         TokenID id = item.getTokenID();
@@ -432,8 +361,8 @@ public class JspCompletionQuery {
         if (id.getNumericID() == JspTagTokenContext.SYMBOL_ID) {
             if (tokenPart.startsWith("<")) { // NOI18N
                 //calculate a position of the potential replacement
-                removeLength = tokenPart.length() - 1;
-                addDirectiveItems(sup, compItems, sup.getDirectives("")); // NOI18N
+                int removeLength = tokenPart.length(); 
+                addDirectiveItems(result, offset - removeLength, sup.getDirectives("")); // NOI18N
             }
             if (tokenPart.endsWith("\"")) { // NOI18N
                 // try an attribute value
@@ -442,7 +371,7 @@ public class JspCompletionQuery {
                     AttributeValueSupport attSup =
                             AttributeValueSupport.getSupport(false, elem.getName(), attrName);
                     if (attSup != null) {
-                        return attSup.getResult(component, offset, sup, elem, ""); // NOI18N
+                        attSup.result(result, component, offset, sup, elem, ""); // NOI18N
                     }
                 }
             }
@@ -463,12 +392,11 @@ public class JspCompletionQuery {
                         ||  prevId.getNumericID() == JspTagTokenContext.WHITESPACE_ID
                         ||  prevId.getNumericID() == JspTagTokenContext.EOL_ID) {
                     // blank character - do attribute completion
-                    removeLength = 0;
-                    addAttributeItems(sup, compItems, elem, sup.getDirectiveAttributes(elem.getName(), ""), null); // NOI18N
+                    addAttributeItems(result, offset, sup, elem, sup.getDirectiveAttributes(elem.getName(), ""), null); // NOI18N
                 } else if (prevId.getNumericID() == JspTagTokenContext.SYMBOL_ID && prevToken.equals("<%@")) { // NOI18N
                     // just after the beginning of the directive
-                    removeLength = tokenPart.length() + 2;
-                    addDirectiveItems(sup, compItems, sup.getDirectives("")); // NOI18N
+                    int removeLength = tokenPart.length() + 2;
+                    addDirectiveItems(result, offset - removeLength, sup.getDirectives("")); // NOI18N
                 }
             } else {
                 boolean add = true;
@@ -481,16 +409,17 @@ public class JspCompletionQuery {
                     whitespaceLength = prevItem.getImage().length();
                 
                 
-                List list = sup.getDirectives(tokenPart);
+                List<TagInfo> list = (List<TagInfo>)sup.getDirectives(tokenPart);
                 if (list.size() == 1){
-                    Object directive = list.get(0);
+                    TagInfo directive = list.get(0);
                     //is the cc invoce just after the directive?
-                    if (directive instanceof TagInfo && ((TagInfo)directive).getTagName().equalsIgnoreCase(tokenPart))
+                    if (directive.getTagName().equalsIgnoreCase(tokenPart)) {
                         add = false;
+                    }
                 }
                 if (add){
-                    removeLength = whitespaceLength + tokenPart.length() + 2;
-                    addDirectiveItems(sup, compItems, list);
+                    int removeLength = whitespaceLength + tokenPart.length() + "<%@".length(); 
+                    addDirectiveItems(result, offset - removeLength, list);
                 }
             }
         }
@@ -500,11 +429,10 @@ public class JspCompletionQuery {
             // inside or after an attribute
             if (isBlank(tokenPart.charAt(tokenPart.length() - 1))) {
                 // blank character - do attribute completion
-                removeLength = 0;
-                addAttributeItems(sup, compItems, elem, sup.getDirectiveAttributes(elem.getName(), ""), null); // NOI18N
+                addAttributeItems(result, offset, sup, elem, sup.getDirectiveAttributes(elem.getName(), ""), null); // NOI18N
             } else {
-                removeLength = tokenPart.length();
-                addAttributeItems(sup, compItems, elem, sup.getDirectiveAttributes(elem.getName(), tokenPart), token);
+                int removeLength = tokenPart.length();
+                addAttributeItems(result, offset - removeLength, sup, elem, sup.getDirectiveAttributes(elem.getName(), tokenPart), token);
             }
         }
         
@@ -520,34 +448,27 @@ public class JspCompletionQuery {
             }
             // get rid of the first quote
             valuePart = valuePart.substring(1);
-            removeLength = valuePart.length();
             String attrName = findAttributeForValue(sup, item);
             if (attrName != null) {
                 AttributeValueSupport attSup =
                         AttributeValueSupport.getSupport(false, elem.getName(), attrName);
                 //we cannot set substitute offset for file cc items
                 if (attSup != null) {
-                    CompletionQuery.Result result = attSup.getResult(component, offset, sup, elem, valuePart); // NOI18N
-                    if(!(attSup instanceof AttrSupports.FilenameSupport))
-                        setResultItemsOffset(result.getData(), valuePart.length(), offset);
-                    return result;
+                    attSup.result(result, component, offset, sup, elem, valuePart); // NOI18N
                 }
             }
             
         }
         
-        return result(component, offset, new CompletionData(compItems, removeLength));
     }
     
     
-    protected CompletionData queryJspTagInContent(int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
+    private void queryJspTagInContent(CompletionResultSet result, int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
         // find the current item
-        List compItems = new ArrayList();
-        int removeLength = 0;
         
         TokenItem item = sup.getItemAtOrBefore(offset);
         if (item == null) {
-            return new CompletionData(compItems, 0);
+            return;
         }
         
         String tokenPart = item.getImage().substring(0,
@@ -559,7 +480,7 @@ public class JspCompletionQuery {
         while (ltIndex == -1) {
             item = item.getPrevious();
             if (item == null) {
-                return new CompletionData(compItems, 0);
+                return;
             }
             String newImage = item.getImage();
             ltIndex = newImage.lastIndexOf('<');
@@ -569,46 +490,44 @@ public class JspCompletionQuery {
                 tokenPart = newImage + tokenPart;
             }
             if (tokenPart.length() > 20) {
-                return new CompletionData(compItems, 0);
+                //huh, what the hell is that? I belive it should be > 42 ;-)
+                return;
             }
         }
         // we found ltIndex, tokenPart is either the part of the token we are looking for
         // or '/' + what we are looking for
+        int removeLength = tokenPart.length();
         if (tokenPart.startsWith("/")) { // NOI18N
             tokenPart = tokenPart.substring(1);
-            compItems = sup.getPossibleEndTags(offset, tokenPart, true); //get only first end tag
+            int anchor = offset - removeLength + 1;
+            result.setAnchorOffset(anchor);
+            result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart, true)); //get only first end tag
         } else {
-            addTagPrefixItems(sup, compItems, sup.getTagPrefixes(tokenPart));
+            int anchor = offset - removeLength;
+            result.setAnchorOffset(anchor);
+            addTagPrefixItems(result, anchor, sup, sup.getTagPrefixes(tokenPart));
         }
-        removeLength = tokenPart.length();
-        return new CompletionData(compItems, removeLength);
+
     }
     
-    protected CompletionQuery.Result queryJspDirectiveInContent(JTextComponent component, int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
+    private void queryJspDirectiveInContent(CompletionResultSet result, JTextComponent component, int offset, JspSyntaxSupport sup, BaseDocument doc) throws BadLocationException {
         // find the current item
-        List compItems = new ArrayList();
-        int removeLength = 0;
-        
         TokenItem item = sup.getItemAtOrBefore(offset);
         if (item == null) {
             //return empty completion result
-            return result(component, offset, new CompletionData(compItems, 0));
+            return;
         }
         
         String tokenPart = item.getImage().substring(0,
                 (offset - item.getOffset()) >= item.getImage().length() ? item.getImage().length() : offset - item.getOffset());
         
-        //if (tokenPart.lastIndexOf('<') == -1 || !tokenPart.equals("<")) -- the condition is strange - the some should be !tokenPart.equals("<")
-        if(!tokenPart.equals("<") && !tokenPart.equals("<%")) // NOI18N
+        if(!tokenPart.equals("<") && !tokenPart.equals("<%")) { // NOI18N
             //return empty completion result
-            return result(component, offset, new CompletionData(compItems, 0));
+            return ;
+        }
         
-        //the removeLenght has to be set 0 if the CC is invoked right after <, 1 for <%
-        if("<%".equals(tokenPart)) removeLength = 1; else removeLength = 0; // NOI18N
+        addDirectiveItems(result, offset - tokenPart.length(), sup.getDirectives("")); // NOI18N
         
-        addDirectiveItems(sup, compItems, sup.getDirectives("")); // NOI18N
-        
-        return result(component, offset, new CompletionData(compItems, removeLength));
     }
     
     private boolean isBlank(char c) {
@@ -653,20 +572,20 @@ public class JspCompletionQuery {
      * <code>prefix</code> for list of tag names <code>tagStringItems</code>.
      * @param set - <code>SyntaxElement.Tag</code>
      */
-    private void addTagPrefixItems(JspSyntaxSupport sup, List compItemList, String prefix, List tagStringItems, SyntaxElement.Tag set) {
+    private void addTagPrefixItems(CompletionResultSet result, int anchor, JspSyntaxSupport sup, String prefix, List tagStringItems, SyntaxElement.Tag set) {
         for (int i = 0; i < tagStringItems.size(); i++) {
             Object item = tagStringItems.get(i);
             if (item instanceof TagInfo)
-                compItemList.add(new JspCompletionItem.PrefixTag(prefix , (TagInfo)item, set));
+                result.addItem(JspCompletionItem.createPrefixTag(prefix, anchor, (TagInfo)item, set));
             else
-                compItemList.add(new JspCompletionItem.PrefixTag(prefix + ":" + (String)item)); // NOI18N
+                result.addItem(JspCompletionItem.createPrefixTag(prefix + ":" + (String)item, anchor)); // NOI18N
         }
     }
     
     /** Adds to the list of items <code>compItemList</code> new TagPrefix items for prefix list
      * <code>prefixStringItems</code>, followed by all possible tags for the given prefixes.
      */
-    private void addTagPrefixItems(JspSyntaxSupport sup, List compItemList, List prefixStringItems) {
+    private void addTagPrefixItems(CompletionResultSet result, int anchor, JspSyntaxSupport sup, List<Object> prefixStringItems) {
         for (int i = 0; i < prefixStringItems.size(); i++) {
             String prefix = (String)prefixStringItems.get(i);
             // now get tags for this prefix
@@ -674,9 +593,9 @@ public class JspCompletionQuery {
             for (int j = 0; j < tags.size(); j++) {
                 Object item = tags.get(j);
                 if (item instanceof TagInfo)
-                    compItemList.add(new JspCompletionItem.PrefixTag(prefix , (TagInfo)item));
+                    result.addItem(JspCompletionItem.createPrefixTag(prefix, anchor, (TagInfo)item));
                 else
-                    compItemList.add(new JspCompletionItem.PrefixTag(prefix + ":" + (String)item)); // NOI18N
+                    result.addItem(JspCompletionItem.createPrefixTag(prefix + ":" + (String)item, anchor)); // NOI18N
             }
         }
     }
@@ -684,14 +603,18 @@ public class JspCompletionQuery {
     /** Adds to the list of items <code>compItemList</code> new TagPrefix items with prefix
      * <code>prefix</code> for list of tag names <code>tagStringItems</code>.
      */
-    private void addDirectiveItems(JspSyntaxSupport sup, List compItemList, List directiveStringItems) {
+    private void addDirectiveItems(CompletionResultSet result, int anchor, List<TagInfo> directiveStringItems) {
         for (int i = 0; i < directiveStringItems.size(); i++) {
-            Object item = directiveStringItems.get(i);
-            if(item instanceof TagInfo){
-                TagInfo ti = (TagInfo) item;
-                compItemList.add(new JspCompletionItem.Directive( ti.getTagName(), ti));
-            } else
-                compItemList.add(new JspCompletionItem.Directive( (String)item));
+            TagInfo item = directiveStringItems.get(i);
+            result.addItem(JspCompletionItem.createDirective( item.getTagName(), anchor, item));
+        }
+    }
+    
+    private void addDelimiterItems(CompletionResultSet result, int anchor, String prefix) {
+        for(String delimiter : JSP_DELIMITERS) {
+            if(delimiter.startsWith(prefix)) {
+                result.addItem(JspCompletionItem.createDelimiter(delimiter, anchor));
+            }
         }
     }
     
@@ -703,7 +626,7 @@ public class JspCompletionQuery {
      * @param attributeItems list of strings containing suitable values (String or TagAttributeInfo)
      * @param currentAttr current attribute, may be null
      */
-    private void addAttributeItems(JspSyntaxSupport sup, List compItemList,
+    private void addAttributeItems(CompletionResultSet result, int offset, JspSyntaxSupport sup, 
             SyntaxElement.TagDirective tagDir, List attributeItems, String currentAttr) {
         for (int i = 0; i < attributeItems.size(); i++) {
             Object item = attributeItems.get(i);
@@ -725,62 +648,13 @@ public class JspCompletionQuery {
                         if (attr.equalsIgnoreCase("prefix")  //NOI18N
                                 || (attr.equalsIgnoreCase("uri") && !tagDir.getAttributes().keySet().contains("tagdir")) //NOI18N
                                 || (attr.equalsIgnoreCase("tagdir") && !tagDir.getAttributes().keySet().contains("uri"))) //NOI18N
-                            compItemList.add(new JspCompletionItem.Attribute((TagAttributeInfo)item));
+                            result.addItem(JspCompletionItem.createAttribute(offset, (TagAttributeInfo)item));
                     } else {
-                    compItemList.add(new JspCompletionItem.Attribute((TagAttributeInfo)item));
+                        result.addItem(JspCompletionItem.createAttribute(offset, (TagAttributeInfo)item));
                     } else
-                        compItemList.add(new JspCompletionItem.Attribute((String)item));
+                        result.addItem(JspCompletionItem.createAttribute((String)item, offset));
             }
         }
     }
     
-    private CompletionQuery.Result result(JTextComponent component, int offset, CompletionData complData) {
-        setResultItemsOffset(complData, offset);
-        return new JspCompletionResult(component,
-                NbBundle.getMessage(JSPKit.class, "CTL_JSP_Completion_Title"), complData.completionItems,
-                offset, complData.removeLength, -1);
-    }
-    
-    /** Class which encapsulates a list of completion items and length of
-     * the part which should be replaced. */
-    public static class CompletionData {
-        
-        public List completionItems;
-        public int removeLength;
-        
-        public CompletionData(List items, int length) {
-            this.completionItems = items;
-            this.removeLength = length;
-        }
-        
-        public String toString() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("------ completion items, remove " + removeLength + " : ----------\n"); // NOI18N
-            for (int i = 0; i < completionItems.size(); i++) {
-                CompletionQuery.ResultItem item =
-                        (CompletionQuery.DefaultResultItem)completionItems.get(i);
-                sb.append(item.getItemText());
-                sb.append("\n");   // NOI18N
-            }
-            return sb.toString();
-        }
-        
-        
-    }
-    
-    static interface SubstituteOffsetProvider {
-        public int getSubstituteOffset();
-    }
-    
-    public static class JspCompletionResult extends CompletionQuery.DefaultResult implements SubstituteOffsetProvider {
-        private int substituteOffset;
-        public JspCompletionResult(JTextComponent component, String title, List data, int offset, int len, int htmlAnchorOffset ) {
-            super(component, title, data, offset, len);
-            substituteOffset = htmlAnchorOffset == -1 ? offset - len : htmlAnchorOffset;
-        }
-        
-        public int getSubstituteOffset() {
-            return substituteOffset;
-        }
-    }
 }

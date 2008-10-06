@@ -1,5 +1,6 @@
 org.netbeans.modules.debugger.jpda.actions.StepActionProvider
 org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider
+org.netbeans.modules.debugger.jpda.actions.StepIntoNextMethodActionProvider
 org.netbeans.modules.debugger.jpda.actions.StepOperationActionProvider
 org.netbeans.modules.debugger.jpda.actions.RunIntoMethodActionProvider
 org.netbeans.modules.debugger.jpda.actions.StartActionProvider

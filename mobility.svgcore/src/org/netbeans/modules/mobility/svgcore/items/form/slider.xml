@@ -3,27 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="size_slider" transform="translate(20,110)">
-	    <!-- Metadata information. Please don't edit. -->
-	    <text display="none">type=slider</text>
-
-        <rect x="0" y="-10" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" 
-                       stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="size_slider.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="size_slider.focusout" fill="freeze" to="hidden"/>
-        </rect>
-	<g>
-	    <text display="none">type=rule</text>
-	    <rect  x="10.0" y="1.0" width="180" height="4" fill="rgb(240,240,255)" stroke="black" stroke-width="1"/>
-	</g>
-        <g transform="translate(0,-5)">
-	    <text display="none">type=knob</text>
-            <polygon transform="scale(0.2,0.2)"  points="20,10 80,10 80,40 50,70 20,40" 
-			   fill="rgb(220,220,255)" stroke="black" stroke-width="1"/>
-        </g>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.Slider" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/slider_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/slider_32.png"/>
      

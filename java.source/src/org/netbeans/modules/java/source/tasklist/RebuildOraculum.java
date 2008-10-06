@@ -287,6 +287,12 @@ public class RebuildOraculum {
         
         while (!toHandle.isEmpty()) {
             TypeElement te = toHandle.poll();
+            if (te==null) {
+                //workaround for 6443073
+                //see Symbol.java:601
+                //see JavacTaskImpl.java:367
+                continue;
+            }
             
             types.put(ElementHandle.create(te), getExtendedModifiers(elements, te));
             

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.sql.lexer;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
@@ -72,17 +73,34 @@ public class SQLLexerTest extends NbTestCase {
     }
 
     public void testQuotedIdentifiers() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.putProperty(Language.class, SQLTokenId.language());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence seq = hi.tokenSequence();
-        assertFalse(seq.moveNext());
-        doc.insertString(0, "select \"derby\", `mysql`", null);
-        seq = hi.tokenSequence();
-        System.out.println(dumpTokens(seq));
+        System.out.println(dumpTokens(getTokenSequence("select \"derby\", `mysql`, [mssql], `quo + ted`")));
     }
 
-    private CharSequence dumpTokens(TokenSequence<?> seq) {
+    public void testComments() throws Exception {
+        System.out.println(dumpTokens(getTokenSequence("-- line comment\n# mysql comment\n/* block \ncomment*/")));
+    }
+
+    public void testNewLineInString() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("'new\nline'");
+        assertEquals(SQLTokenId.STRING, seq.token().id());
+    }
+
+    public void testIncompleteString() throws Exception {
+        TokenSequence<SQLTokenId> seq = getTokenSequence("'incomplete");
+        assertEquals(SQLTokenId.INCOMPLETE_STRING, seq.token().id());
+    }
+
+    private static TokenSequence<SQLTokenId> getTokenSequence(String sql) throws BadLocationException {
+        Document doc = new ModificationTextDocument();
+        doc.insertString(0, sql, null);
+        doc.putProperty(Language.class, SQLTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<SQLTokenId> seq = hi.tokenSequence(SQLTokenId.language());
+        seq.moveNext();
+        return seq;
+    }
+
+    private static CharSequence dumpTokens(TokenSequence<?> seq) {
         StringBuilder builder = new StringBuilder();
         Token token = null;
         while (seq.moveNext()) {

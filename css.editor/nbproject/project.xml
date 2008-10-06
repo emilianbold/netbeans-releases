@@ -15,6 +15,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -42,11 +51,20 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.gsf</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>0.75</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>2</release-version>
                         <specification-version>1.1.1</specification-version>
                     </run-dependency>
                 </dependency>
@@ -113,7 +131,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.12</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -188,9 +206,11 @@
             <friend-packages>
                 <friend>org.netbeans.modules.css.devtools</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
+                <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.visualweb.html</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.css.editor.model</package>
+                <package>org.netbeans.modules.css.gsf.api</package>
                 <package>org.netbeans.modules.css.lexer.api</package>
                 <package>org.netbeans.modules.css.parser</package>
             </friend-packages>

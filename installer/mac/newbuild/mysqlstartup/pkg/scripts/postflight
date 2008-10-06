@@ -1,7 +1,0 @@
-#!/bin/sh
-
-#Temporary workaround for Issue 25008: Mac OS X's StartupItem does not work 
-if [ -d /usr/local/MySQLCOM ] ; then 
-    rm -rf "$2"/MySQLCOM 
-    mv /usr/local/MySQLCOM "$2"
-fi

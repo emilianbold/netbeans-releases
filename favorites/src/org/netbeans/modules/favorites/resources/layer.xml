@@ -45,7 +45,10 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Window">
             <file name="org-netbeans-modules-favorites-View.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.view"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.favorites.Actions.view"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/favorites/resources/actionView.png"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#ACT_View"/>
             </file>
             <file name="org-netbeans-modules-favorites-Add.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.add"/>
@@ -80,7 +83,7 @@ made subject to such option by the copyright holder.
       <folder name="Window">
             <file name="ViewFavoritesTabAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="350"/>
             </file>
             </folder>
     </folder>

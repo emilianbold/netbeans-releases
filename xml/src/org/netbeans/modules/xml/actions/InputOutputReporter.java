@@ -60,6 +60,7 @@ import org.openide.util.WeakSet;
 
 
 import org.netbeans.api.xml.cookies.*;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.text.Annotatable;
 import org.openide.text.Annotation;
 
@@ -93,7 +94,7 @@ public final class InputOutputReporter implements CookieObserver {
      * must be called.
      */
     public InputOutputReporter() {        
-        this(Util.THIS.getString("TITLE_XML_check_window"));
+        this(Util.THIS.getString(InputOutputReporter.class, "TITLE_XML_check_window"));
     }
 
     public InputOutputReporter(String name) {

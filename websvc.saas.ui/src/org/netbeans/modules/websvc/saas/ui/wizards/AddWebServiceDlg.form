@@ -13,6 +13,9 @@
       <ResourceString bundle="org/netbeans/modules/websvc/manager/ui/Bundle.properties" key="AddWebServiceDlg.main.ACC_desc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
   </AccessibilityProperties>
+  <Events>
+    <EventHandler event="ancestorAdded" listener="javax.swing.event.AncestorListener" parameters="javax.swing.event.AncestorEvent" handler="formAncestorAdded"/>
+  </Events>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -55,13 +58,13 @@
                               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jTxtpackageName" pref="550" max="32767" attributes="2"/>
+                              <Component id="jTxtpackageName" pref="551" max="32767" attributes="2"/>
                               <EmptySpace min="-2" pref="136" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="errorLabel" pref="754" max="32767" attributes="1"/>
+                      <Component id="errorLabel" pref="769" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -245,9 +248,6 @@
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jTxtpackageNameMouseClicked"/>
       </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {&#xd;&#xa;            public void insertUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void removeUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void changedUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;});&#xd;&#xa;"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>

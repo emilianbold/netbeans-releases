@@ -72,7 +72,7 @@ import org.openide.ErrorManager;
  *              will create the swing models for you.</li>
  *          <li>Use the models in your Swing controls by calling <CODE>setModel()</CODE> or <CODE>setDocument()</CODE></li>
  *      </ol>                                         
- * <b>For storing the models back to the proprties of project.</b>
+ * <b>For storing the models back to the properties of project.</b>
  *       <ol>
  *          <li>Get the EditableProperties you want to store the model in e.g. private or project 
  *              properties</li>
@@ -172,7 +172,7 @@ public class StoreGroup {
 
     /** Creates toggle button model representing a boolean in the StoreGroup. <BR>
      * In case the value is one of "true", "yes" "on" the button model 
-     * will NOT be "selcted". If the property does not exist or is set
+     * will NOT be "selected". If the property does not exist or is set
      * to some other value the result of isPressed will be true.<BR>
      * Call to the store() method stores the model in appropriate form
      * e.g "true/false", "yes/no", "on/off".<BR>
@@ -188,7 +188,7 @@ public class StoreGroup {
     }
 
     /** Creates Document containing the string value of given property. 
-     * If the property does not extsts or the value of it is null the
+     * If the property does not exists or the value of it is null the
      * resulting document will be empty.<BR>
      * Method will throw <CODE>IllegalArgumentException</CODE> if you try to get more
      * than one model for one property.

@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
  * Panel asking for web frameworks to use.
  * @author Radko Najman
  */
-final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private ManagedBeanPanelVisual component;
@@ -74,8 +74,11 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
     }
 
     public Component getComponent() {
-        if (component == null)
-            component = new ManagedBeanPanelVisual(project);
+        if (component == null) {
+            ManagedBeanPanelVisual gui = new ManagedBeanPanelVisual(project);
+            gui.addChangeListener(this);
+            component = gui;
+        }
 
         return component;
     }
@@ -130,4 +133,7 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
+    public void stateChanged(ChangeEvent arg0) {
+        fireChangeEvent();
+    }
 }

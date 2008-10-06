@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -124,12 +125,12 @@ public class CompletionTest extends J2eeTestCase {
 
     private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
     private static boolean projectsOpened = false;//open test projects
-    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
-    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
+    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
+    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
-
+    public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
+    
     protected FileObject testFileObj;
-    protected boolean debug = false;
     
     public CompletionTest() {
         super("CompletionTest");
@@ -144,10 +145,12 @@ public class CompletionTest extends J2eeTestCase {
     @Override
     public void setUp() throws IOException {
         if (!projectsOpened && isRegistered(Server.ANY)){
+            log("Opening files from " + getProjectsDir().getAbsolutePath());
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
-                RecurrentSuiteFactory.resolveServer(file.getName());
+                resolveServer(file.getName());
             }
+            finalizeProjectsOpening();
             projectsOpened = true;
         }
         System.out.println("########  " + getName() + "  #######");
@@ -155,7 +158,7 @@ public class CompletionTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(CompletionTest.class);
-        addServerTests(conf, new String[0]);//register server
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -178,9 +181,12 @@ public class CompletionTest extends J2eeTestCase {
         }
     }
     
-    public File getProjectsDir(){
+    protected File getProjectsDir(){
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
+    }
+
+    protected void finalizeProjectsOpening(){
     }
     
     @Override
@@ -284,11 +290,9 @@ public class CompletionTest extends J2eeTestCase {
                     token = token.getNext();
                     continue;
                 }
-                if (debug) {
-                    String tImage = token.getImage();
-                    int tEnd = token.getOffset() + tImage.length();
-                    System.err.println("# [" + token.getOffset() + "," + tEnd + "] " + tokenID.getName() + " :: " + token.getImage());
-                }
+                String tImage = token.getImage();
+                int tEnd = token.getOffset() + tImage.length();
+                LOG.fine("# [" + token.getOffset() + "," + tEnd + "] " + tokenID.getName() + " :: " + token.getImage());
                 String commentBlock;
                 if (isJavaScript()) {
                     commentBlock = "text";
@@ -356,9 +360,7 @@ public class CompletionTest extends J2eeTestCase {
                 }
                 token = token.getNext();
             } // while (token != null)
-            if (debug) {
-                System.err.println("Steps count:" + Integer.toString(steps.size()));
-            }
+            LOG.info("Steps count:" + Integer.toString(steps.size()));
             run(editor, steps);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException(ex);
@@ -653,11 +655,10 @@ public class CompletionTest extends J2eeTestCase {
     }
     
     protected void ending() throws Exception {
-        if (!GENERATE_GOLDEN_FILES) {
-            compareReferenceFiles();
-        } else {
+        if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);
+        } else {
+            compareReferenceFiles();
         }
-
     }
 }

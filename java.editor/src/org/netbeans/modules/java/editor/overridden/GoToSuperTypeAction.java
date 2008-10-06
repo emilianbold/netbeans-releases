@@ -61,7 +61,9 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.java.GoToSupport;
 import org.netbeans.modules.editor.java.JavaKit;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -83,7 +85,8 @@ public class GoToSuperTypeAction extends BaseAction {
         JavaSource js = JavaSource.forDocument(target.getDocument());
         
         if (js == null) {
-            Toolkit.getDefaultToolkit().beep();
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoToGeneric",1));
+            return;
         }
         
         final List<ElementDescription> result = new ArrayList<ElementDescription>();

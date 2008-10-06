@@ -443,12 +443,12 @@ public class ProjectsRootNode extends AbstractNode {
         protected final void setProjectFiles() {
             Project prj = getLookup().lookup(Project.class);
 
-            if (prj != null) {
+            if (prj != null && /* #145682 */ !(prj instanceof LazyProject)) {
                 setProjectFiles(prj);
             }
         }
 
-        protected final void setProjectFiles(Project project) {
+        private final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
                 sourcesListener = WeakListeners.change(this, sources);
@@ -644,7 +644,9 @@ public class ProjectsRootNode extends AbstractNode {
                 Project newProj = (Project)e.getNewValue();
                 assert newProj != null;
                 if (newProj.getProjectDirectory().equals(fo)) {
-                    ProjectChildren ch = (ProjectChildren)getParentNode().getChildren();
+                    Node parentNode = getParentNode();
+                    if (parentNode != null) {
+                    ProjectChildren ch = (ProjectChildren) parentNode.getChildren();
                     Node n = null;
                     if (logicalView) {
                         n = ch.logicalViewForProject(newProj, null);
@@ -668,7 +670,13 @@ public class ProjectsRootNode extends AbstractNode {
                         assert n != null : "newProject yields null node: " + newProj;
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "change original: {0}", n);
+                    OpenProjectList.LOGGER.log(Level.FINER, "children before change original: {0}", getChildren());
+                    OpenProjectList.LOGGER.log(Level.FINER, "delegate children before change original: {0}", getOriginal().getChildren());
                     changeOriginal(n, true);
+                    OpenProjectList.LOGGER.log(Level.FINER, "delegate after change original: {0}", getOriginal());
+                    OpenProjectList.LOGGER.log(Level.FINER, "name after change original: {0}", getName());
+                    OpenProjectList.LOGGER.log(Level.FINER, "children after change original: {0}", getChildren());
+                    OpenProjectList.LOGGER.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
 
                     BadgingLookup bl = (BadgingLookup)getLookup();
                     if (bl.isSearchInfo()) {
@@ -679,6 +687,8 @@ public class ProjectsRootNode extends AbstractNode {
                         bl.setMyLookups(n.getLookup());
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "done {0}", this);
+                    }
+                    setProjectFiles();
                 } else {
                     OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }

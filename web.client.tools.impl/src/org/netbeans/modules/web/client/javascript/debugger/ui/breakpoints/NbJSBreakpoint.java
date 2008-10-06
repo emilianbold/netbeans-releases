@@ -43,6 +43,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSContextProviderWrapper;
+import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.tools.api.JSAbstractLocation;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
 import org.netbeans.modules.web.client.tools.api.NbJSLocation;
@@ -70,7 +71,7 @@ public abstract class NbJSBreakpoint extends Breakpoint {
     // private Line line;
     private String condition = ""; // NOI18N
     private String printText;
-    private JSAbstractLocation location;
+    protected JSAbstractLocation location;
 
     /**
      * This contructor is to only be used if you do not have a line.
@@ -232,6 +233,8 @@ public abstract class NbJSBreakpoint extends Breakpoint {
     public String getResolvedLocation() {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (session != null) {
+            NbJSDebugger debugger = session.lookupFirst(null, NbJSDebugger.class);
+
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
                 JSAbstractLocation nbJSALoc = getLocation();
@@ -241,7 +244,10 @@ public abstract class NbJSBreakpoint extends Breakpoint {
                 } else if( nbJSALoc instanceof JSLocation ){
                     jsLocation = (JSLocation)nbJSALoc;
                 }
-                if (jsLocation != null) {
+
+                if (debugger != null && jsLocation != null && debugger.isIgnoringQueryStrings() && jsLocation.getURI().getQuery() != null) {
+                    return "";
+                } else if (jsLocation != null) {
                     return jsLocation.getDisplayName();
                 }
             }

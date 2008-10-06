@@ -40,7 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 --><html>
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>CDC Project Properties Dialog Box: General</title>
         <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
@@ -63,9 +64,17 @@ made subject to such option by the copyright holder.
             <li>If you have a source root that needs to be used by several projects, you should create a 
             separate project for the source root and set up compilation dependencies between the projects.
         </ul>
-        <p>You can use the Source/Binary Format combo box at the bottom of the Sources page to set the Java platform version 
-        that the generated Java code should be compatible with. This setting corresponds to the javac -source option.
-
+<p>You can use the Source/Binary Format combo box  
+to set the lowest Java platform version with which the generated Java code should be 
+compatible. This setting corresponds to the javac <tt>-source</tt> option. 
+Setting the source/binary format helps prevent you from using Java language constructs 
+that are not available in the platform version to which you want to deploy. 
+However, setting the source/binary format does not ensure that the platform APIs 
+are used compatibly with that platform version. To make sure that your application 
+is fully compatible with an earlier Java platform version, you need to 
+switch to the <a href="proj_cdcstand_props_libraries.html">Libraries tab</a> 
+and set the Java Platform setting to the minimum version on which you plan
+to deploy.</p>
         <ul class="note">
             <li>Specifying the source/binary format does not change the Java platform whose libraries and executables
             are used to compile and run your project. To set the Java platform that is used for compiling and

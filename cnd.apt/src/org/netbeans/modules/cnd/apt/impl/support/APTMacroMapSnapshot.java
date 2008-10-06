@@ -64,7 +64,10 @@ public final class APTMacroMapSnapshot {
     }
     
     public final APTMacro getMacro(Token token) {
-        Object key = APTUtils.getTokenTextKey(token);
+        return getMacro(token.getText());
+    }
+    
+    public final APTMacro getMacro(String key) {
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);

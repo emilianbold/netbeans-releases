@@ -62,9 +62,10 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
 
@@ -75,18 +76,28 @@ import org.openide.loaders.DataObject;
 public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private CsmFile csmFile;
     private final QueryScope queryScope;
+    private final FileReferencesContext fileReferencesContext;
     
-    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext) {
+    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext) {
         this.csmFile = csmFile;
         this.queryScope = localContext;
+        this.fileReferencesContext = fileReferencesContext;
     }
     
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
-            finder = new CsmFinderImpl(getCsmFile(), CCKit.class);
+            if (fileReferencesContext != null) {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE, true);
+            } else {
+                finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
+            }
         }
         return finder;
+    }
+
+    protected FileReferencesContext getFileReferencesContext() {
+        return fileReferencesContext;
     }
     
     private CsmFile getCsmFile() {
@@ -109,12 +120,14 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
 	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope, inIncludeDirective);
     }
 
-    private static CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
+    private CompletionResolver getCompletionResolver(BaseDocument bDoc, CsmFile csmFile, 
             boolean openingSource, boolean sort, QueryScope queryScope, boolean inIncludeDirective) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
-            Class kit = bDoc.getKitClass();
-            resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
+            String mimeType = CsmCompletionUtils.getMimeType(bDoc);
+            resolver = new CompletionResolverImpl(csmFile, 
+                    openingSource || CsmCompletionUtils.isCaseSensitive(mimeType),
+                    sort, CsmCompletionUtils.isNaturalSort(mimeType), fileReferencesContext);
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
         }
@@ -193,11 +206,11 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, CLASS_ENUMERATOR_PRIORITY);  
         }          
         
-	public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp){
-            return new NbCsmResultItem.NbMethodResultItem(mtd, substituteExp, METHOD_PRIORITY);
+	public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, boolean isDeclaration){
+            return new NbCsmResultItem.NbMethodResultItem(mtd, substituteExp, METHOD_PRIORITY, isDeclaration);
         }
-	public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp){
-            return new NbCsmResultItem.NbConstructorResultItem(ctr, substituteExp, CONSTRUCTOR_PRIORITY);
+	public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, boolean isDeclaration){
+            return new NbCsmResultItem.NbConstructorResultItem(ctr, substituteExp, CONSTRUCTOR_PRIORITY, isDeclaration);
         }
 
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
@@ -225,8 +238,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_LOCAL_MACRO_PRIORITY);  
         }
         
-        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new NbCsmResultItem.NbFileLocalFunctionResultItem(fun, substituteExp, FILE_LOCAL_FUNCTION_PRIORITY); 
+        public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration) {
+            return new NbCsmResultItem.NbFileLocalFunctionResultItem(fun, substituteExp, FILE_LOCAL_FUNCTION_PRIORITY, isDeclaration);
         }
         
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac) {
@@ -245,8 +258,8 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             return new NbCsmResultItem.NbMacroResultItem(mac, GLOBAL_MACRO_PRIORITY);  
         }
 
-        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, GLOBAL_FUN_PRIORITY); 
+        public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration) {
+            return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, GLOBAL_FUN_PRIORITY, isDeclaration);
         }
         
         public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
@@ -284,7 +297,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         }  
         
         public CsmResultItem.GlobalFunctionResultItem createLibGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp) {
-            return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, LIB_FUN_PRIORITY); 
+            return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, LIB_FUN_PRIORITY, false);
         }
         
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {

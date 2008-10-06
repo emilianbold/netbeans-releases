@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -57,6 +56,10 @@ final class FileKey extends ProjectFileNameBasedKey {
     
     /*package*/ FileKey(DataInput aStream) throws IOException {
 	super(aStream);
+    }
+    
+    /*package-local*/ CharSequence getName() {
+        return getFileName();
     }
     
     public String toString() {

@@ -44,6 +44,7 @@ package org.netbeans.performance.enterprise;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.enterprise.actions.*;
 
 /**
@@ -54,7 +55,10 @@ import org.netbeans.performance.enterprise.actions.*;
 public class MeasureEnterpriseActions2Test {
 
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+        
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 2");
+        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseActions2Test");
         
         // EPMeasureActions2
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateSchema.class)

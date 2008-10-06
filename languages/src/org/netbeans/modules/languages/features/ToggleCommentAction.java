@@ -70,61 +70,63 @@ public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
         super(""); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (!target.isEditable() || !target.isEnabled()) {
                 target.getToolkit().beep();
                 return;
             }
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            Caret caret = target.getCaret();
-            TokenHierarchy th = TokenHierarchy.get (doc);
+            final BaseDocument doc = (BaseDocument)target.getDocument();
+            final Caret caret = target.getCaret();
+            final TokenHierarchy th = TokenHierarchy.get (doc);
             if (th == null) {
                 return;
             }
-            TokenSequence ts = th.tokenSequence();
-            boolean isCommented = true;
-            try {
-                doc.atomicLock();
-                if (caret.isSelectionVisible()) {
-                    int startPos = Utilities.getRowStart(doc, target.getSelectionStart());
-                    int endPos = target.getSelectionEnd();
-                    if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
-                        endPos--;
-                    }
-                    int lineCnt = Utilities.getRowCount(doc, startPos, endPos);
-                    List mimeTypes = new ArrayList(lineCnt);
-                    int pos = startPos;
-                    for (int x = lineCnt ; x > 0; x--) {
-                        String mimeType = getRealMimeType(ts, pos);
-                        mimeTypes.add(mimeType);
-                        isCommented = isCommented && isCommentedLine(doc, mimeType, pos);
-                        pos = Utilities.getRowStart(doc, pos, 1);
-                    }
+            final TokenSequence ts = th.tokenSequence();
+            final boolean isCommented = true;
+            doc.runAtomicAsUser (new Runnable () {
+                public void run () {
+                    try {
+                        if (caret.isSelectionVisible()) {
+                            int startPos = Utilities.getRowStart(doc, target.getSelectionStart());
+                            int endPos = target.getSelectionEnd();
+                            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                                endPos--;
+                            }
+                            int lineCnt = Utilities.getRowCount(doc, startPos, endPos);
+                            List mimeTypes = new ArrayList(lineCnt);
+                            int pos = startPos;
+                            boolean commented = isCommented;
+                            for (int x = lineCnt ; x > 0; x--) {
+                                String mimeType = getRealMimeType(ts, pos);
+                                mimeTypes.add(mimeType);
+                                commented = commented && isCommentedLine(doc, mimeType, pos);
+                                pos = Utilities.getRowStart(doc, pos, 1);
+                            }
 
-                    pos = startPos;
-                    for (Iterator iter = mimeTypes.iterator(); iter.hasNext(); ) {
-                        if (isCommented) {
-                            uncommentLine(doc, (String)iter.next(), pos);
-                        } else {
-                            commentLine(doc, (String)iter.next(), pos);
+                            pos = startPos;
+                            for (Iterator iter = mimeTypes.iterator(); iter.hasNext(); ) {
+                                if (commented) {
+                                    uncommentLine(doc, (String)iter.next(), pos);
+                                } else {
+                                    commentLine(doc, (String)iter.next(), pos);
+                                }
+                                pos = Utilities.getRowStart(doc, pos, 1);
+                            }
+                        } else { // selection not visible
+                            int pos = Utilities.getRowStart(doc, target.getSelectionStart());
+                            String mt = getRealMimeType(ts, pos);
+                            if (isCommentedLine(doc, mt, pos)) {
+                                uncommentLine(doc, mt, pos);
+                            } else {
+                                commentLine(doc, mt, pos);
+                            }
                         }
-                        pos = Utilities.getRowStart(doc, pos, 1);
-                    }
-                } else { // selection not visible
-                    int pos = Utilities.getRowStart(doc, target.getSelectionStart());
-                    String mt = getRealMimeType(ts, pos);
-                    if (isCommentedLine(doc, mt, pos)) {
-                        uncommentLine(doc, mt, pos);
-                    } else {
-                        commentLine(doc, mt, pos);
+                    } catch (BadLocationException e) {
+                        target.getToolkit().beep();
                     }
                 }
-            } catch (BadLocationException e) {
-                target.getToolkit().beep();
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
         }
     }
     

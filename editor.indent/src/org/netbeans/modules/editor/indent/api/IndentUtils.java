@@ -50,7 +50,7 @@ import javax.swing.text.Element;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.editor.indent.CodeStylePreferences;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.IndentImpl;
 
 /**

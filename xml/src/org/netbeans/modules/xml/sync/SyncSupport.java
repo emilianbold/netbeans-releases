@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.xml.sync;
 
-import java.io.*;
 
 import org.openide.loaders.*;
-import org.openide.cookies.*;
 import org.openide.nodes.*;
-import org.openide.filesystems.*;
-import org.openide.util.*;
 import java.util.Vector;
 import java.util.Arrays;
+import org.netbeans.modules.xml.util.Util;
 
 /**
  * A generic support for synchronizing text, tree and file representation

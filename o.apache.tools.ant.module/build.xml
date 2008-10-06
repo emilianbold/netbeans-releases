@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="release" depends="init">
+    <target name="netbeans-extra" depends="jar-bridge">
         <mkdir dir="${cluster}/ant/lib"/>
         <copy todir="${cluster}/ant/lib">
             <fileset dir="external/lib"/>
@@ -91,8 +91,6 @@ made subject to such option by the copyright holder.
             </fileset>
         </chmod>
     </target>
-
-    <target name="netbeans-extra" depends="jar-bridge,release"/>
 
     <target name="test-build" depends="jar-bridge,projectized-common.test-build"/>
 
@@ -115,7 +113,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${cluster}">
                 <include name="ant/lib/*.jar"/>
             </fileset>
-            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.7.0.jar"/>
+            <mapper type="glob" from="ant${file.separator}lib${file.separator}*.jar" to="apache-*-1.7.1.jar"/>
         </copy>
         <copy file="${cluster}/ant/nblib/bridge.jar" tofile="${dir}/org-apache-tools-ant-module-bridge.jar"/>
         <!-- XXX ought to only do this in case jnlp.sign.jars=true -->
@@ -160,15 +158,16 @@ made subject to such option by the copyright holder.
         <ant dir="external" target="clean"/>
         <condition property="all.defined">
             <and>
-            <isset property="release.version"/>
-            <isset property="release.path"/>
-        </and>
+                <isset property="release.version"/>
+                <available file="${release.path}" type="dir"/>
+            </and>
         </condition>
         <fail unless="all.defined">
             You need to set the following properties first:
             release.version: version of Ant being bundled, e.g. "1.6"
             release.path: full path to the Ant binary distribution, e.g. "/tmp/apache-ant-1.6.0"
         </fail>
+        <property name="orig.manual" location="${release.path}/docs/manual"/>
         <echo>2.  Creating the Ant manual from ${orig.manual}...</echo>
         <property name="online.manual" location="build/release-work/online-manual"/>
         <delete dir="${online.manual}"/>
@@ -179,7 +178,8 @@ made subject to such option by the copyright holder.
                 <exclude name="api/"/>
             </fileset>
         </copy>
-        <property name="ant-docs.zip" location="../o.apache.tools.ant.module.docs/external/ant-docs-${release.version}.zip"/>
+        <property name="ant-docs" location="../o.apache.tools.ant.module.docs"/>
+        <property name="ant-docs.zip" location="${ant-docs}/external/ant-docs-${release.version}.zip"/>
         <zip zipfile="${ant-docs.zip}" compress="true">
             <fileset dir="${online.manual}"/>
         </zip>
@@ -201,25 +201,30 @@ made subject to such option by the copyright holder.
         </zip>
         <echo>Now some (currently) manual steps for you:
 5.  Mention that the Ant version is ${release.version} in all files in ${here}, e.g.:
-    - ../o.apache.tools.ant.module.docs/antsrc/MakeManual.java
-    - ../o.apache.tools.ant.module.docs/src/org/apache/tools/ant/module/docs/Bundle.properties
-    - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
+    - ${ant-docs}/antsrc/MakeManual.java
+    - ${ant-docs}/src/org/apache/tools/ant/module/docs/Bundle.properties
+    - ../java.helpset/javahelp/org/netbeans/modules/java/helpset/docs/ant/*.html
+    - nbproject/project.properties
+    - ${ant-docs}/nbproject/project.properties
+    - build.xml
+    - arch.xml
     - external/build.xml
-    and rename external/ant-*-license.txt
-    and cvs rm -f the old .zip files and cvs add -kb the new ones
-6.  Run: ant -f ${here}/docs/build.xml preview-javahelp
+    and rename external/ant-*-license.txt (and update the version numbers mentioned in it)
+    and hg rm the old .zip files and hg add the new ones
+    (last two steps also in ${ant-docs}/external)
+6.  Run: ant -f ${ant-docs}/build.xml preview-javahelp
     You can ignore links to api/org/apache/... which will be broken, as well as a few other things.
-    But for real problems in the HTML, commit fixes to ../o.apache.tools.ant.module.docs/manual/ in the ant.apache.org CVS trunk.
-    Sanity-check the helpset and adjust ${here}/docs/antsrc/MakeManual.java as needed.
-7.  Increase spec versions in manifest.mf and ../o.apache.tools.ant.module.docs/manifest.mf.
+    But for real problems in the HTML, commit fixes to ${ant-docs}/manual/ in the ant.apache.org SVN trunk.
+    Sanity-check the helpset and adjust ${ant-docs}/antsrc/MakeManual.java as needed.
+7.  Increase spec versions in nbproject/project.properties and ${ant-docs}/manifest.mf.
 8.  Test everything, including at least:
-    ant -f ${here}/build.xml clean netbeans
-    ant -f ${here}/docs/build.xml clean netbeans
-    ant -f ${here}/test/build.xml cleanresults runtests
-    ant -f ${here}/../java/project/test/build.xml cleanresults runtests
-    ant -f ${here}/../nbbuild/build.xml commit-verification
+    ant -f ${here}/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean netbeans test-unit
+    ant -f ${ant-docs}/build.xml clean netbeans
+    ant -f ${here}/../java.project/build.xml -Dtest-unit-sys-prop.ignore.random.failures=true clean test-unit
+    ant -f ${here}/../build.xml commit-validation
 9.  Submit a patch for https://svn.apache.org/repos/asf/ant/core/trunk/xdocs/external.xml
     mentioning that the bundled version in NB is now ${release.version}.
+10. Edit these instructions in build.xml according to anything you had to do differently.
 
 After that you should be done!
         </echo>

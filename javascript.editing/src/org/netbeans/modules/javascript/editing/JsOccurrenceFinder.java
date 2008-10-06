@@ -40,10 +40,11 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
@@ -52,6 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,6 +64,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
 
     public JsOccurrenceFinder() {
     }
@@ -93,6 +96,13 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
             return;
         }
 
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
+        }
+
         JsParseResult rpr = AstUtilities.getParseResult(info);
         if (rpr == null) {
             return;
@@ -115,7 +125,6 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         Node closest = path.leaf();
 
         VariableVisitor v = rpr.getVariableVisitor();
-        Node scopeNode = v.getDefiningScope(closest);
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
@@ -210,7 +219,16 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         if (closest != null) {
             if (AstUtilities.isNameNode(closest)) {
                 String name = closest.getString();
-                addNodes(scopeNode != null ? scopeNode : root, name, highlights);
+                List<Node> nodes = v.getVarOccurrences(closest);
+                if (nodes != null) {
+                    for (Node node : nodes) {
+                        OffsetRange range = AstUtilities.getNameRange(node);
+                        highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+                    }
+                } else {
+                    Node scopeNode = v.getDefiningScope(closest);
+                    addNodes(scopeNode != null ? scopeNode : root, name, highlights);
+                }
                 closest = null;
             }
         }

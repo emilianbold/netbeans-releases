@@ -100,7 +100,7 @@ public final class SourcesHelper {
             }
             return project.resolveFile(val);
         }
-        public Collection<FileObject> getIncludeRoots() {
+        public Collection<FileObject> getIncludeRoots(boolean minimalSubfolders) {
             File loc = getActualLocation();
             if (loc != null) {
                 FileObject fo = FileUtil.toFileObject(loc);
@@ -109,6 +109,10 @@ public final class SourcesHelper {
                 }
             }
             return Collections.emptySet();
+        }
+        @Override
+        public String toString() {
+            return "Root[" + location + "]";
         }
     }
     
@@ -254,11 +258,14 @@ public final class SourcesHelper {
 
 
         @Override
-        public Collection<FileObject> getIncludeRoots() {
-            Collection<FileObject> supe = super.getIncludeRoots();
-            computeIncludeExcludePatterns();
-            if (supe.size() == 1) {
+        public Collection<FileObject> getIncludeRoots(boolean minimalSubfolders) {
+            Collection<FileObject> supe = super.getIncludeRoots(minimalSubfolders);
+            if (!minimalSubfolders) {
+                return supe;
+            }
+            else if (supe.size() == 1) {
                 Set<FileObject> roots = new HashSet<FileObject>();
+                computeIncludeExcludePatterns();
                 for (File r : matcher.findIncludedRoots()) {
                     FileObject subroot = FileUtil.toFileObject(r);
                     if (subroot != null) {
@@ -292,6 +299,7 @@ public final class SourcesHelper {
     private final List<Root> ownedFiles = new ArrayList<Root>();
     private final List<TypedSourceRoot> typedSourceRoots = new ArrayList<TypedSourceRoot>();
     private int registeredRootAlgorithm;
+    private boolean minimalSubfolders;
     /**
      * If not null, external roots that we registered the last time.
      * Used when a property change is encountered, to see if the set of external
@@ -509,10 +517,65 @@ public final class SourcesHelper {
      *                               given <code>SourcesHelper</code> object
      */
     public void registerExternalRoots(int algorithm) throws IllegalArgumentException, IllegalStateException {
+        registerExternalRoots(algorithm, true);
+    }
+    
+    /**
+     * Register all external source or non-source roots using {@link FileOwnerQuery#markExternalOwner}.
+     * <p>
+     * Only roots added by {@link #addPrincipalSourceRoot} and {@link #addNonSourceRoot}
+     * are considered. They are registered if (and only if) they in fact fall
+     * outside of the project directory, and of course only if the folders really
+     * exist on disk. Currently it is not defined when this file existence check
+     * is done (e.g. when this method is first called, or periodically) or whether
+     * folders which are created subsequently will be registered, so project type
+     * providers are encouraged to create all desired external roots before calling
+     * this method.
+     * </p>
+     * <p>
+     * If the actual value of the location changes (due to changes being
+     * fired from the property evaluator), roots which were previously internal
+     * and are now external will be registered, and roots which were previously
+     * external and are now internal will be unregistered. The (un-)registration
+     * will be done using the same algorithm as was used initially.
+     * </p>
+     * <p>
+     * If a minimalSubfolders is true and an explicit include list is configured 
+     * for a principal source root, only those subfolders which are included 
+     * (or folders directly containing included files)
+     * will be registered, otherwise the whole source root is registered.
+     * Note that the source root, or an included subfolder, will
+     * be registered even if it contains excluded files or folders beneath it.
+     * </p>
+     * <p>
+     * Calling this method causes the helper object to hold strong references to the
+     * current external roots, which helps a project satisfy the requirements of
+     * {@link FileOwnerQuery#EXTERNAL_ALGORITHM_TRANSIENT}.
+     * </p>
+     * <p>
+     * You may <em>not</em> call this method inside the project's constructor, as
+     * it requires the actual project to exist and be registered in {@link ProjectManager}.
+     * Typically you would use {@link org.openide.util.Mutex#postWriteRequest} to run it
+     * later, if you were creating the helper in your constructor, since the project construction
+     * normally occurs in read access.
+     * </p>
+     * @param algorithm an external root registration algorithm as per
+     *                  {@link FileOwnerQuery#markExternalOwner}
+     * @param minimalSubfolders controls how the roots having an explicit include list 
+     * are registered. When true only those subfolders which are included 
+     * (or folders directly containing included files) will be registered,
+     * otherwise the whole source root is registered.
+     * @throws IllegalArgumentException if the algorithm is unrecognized
+     * @throws IllegalStateException if this method is called more than once on a
+     *                               given <code>SourcesHelper</code> object
+     * @since 1.26
+     */
+    public void registerExternalRoots (int algorithm, boolean minimalSubfolders) throws IllegalArgumentException, IllegalStateException {
         if (lastRegisteredRoots != null) {
             throw new IllegalStateException("registerExternalRoots was already called before"); // NOI18N
         }
         registeredRootAlgorithm = algorithm;
+        this.minimalSubfolders = minimalSubfolders;
         remarkExternalRoots();
     }
     
@@ -535,7 +598,7 @@ public final class SourcesHelper {
         // that was last computed, and just check if that has changed... otherwise we wind
         // up calling APH.resolveFileObject repeatedly (for each property change)
         for (Root r : allRoots) {
-            for (FileObject loc : r.getIncludeRoots()) {
+            for (FileObject loc : r.getIncludeRoots(minimalSubfolders)) {
                 if (FileUtil.getRelativePath(pdir, loc) != null) {
                     // Inside projdir already. Skip it.
                     continue;

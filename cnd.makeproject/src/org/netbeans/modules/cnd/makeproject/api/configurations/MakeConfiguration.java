@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -99,22 +101,25 @@ public class MakeConfiguration extends Configuration {
     private PackagingConfiguration packagingConfiguration;
     private RequiredProjectsConfiguration requiredProjectsConfiguration;
     private boolean languagesDirty = true;
-    private PlatformInfo platformInfo;
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue);
+        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
+        this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
+    }    
+
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        developmentHost = new DevelopmentHostConfiguration();
+        developmentHost = new DevelopmentHostConfiguration(host);
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
         fortranRequired = new LanguageBooleanConfiguration();
-        platform = new PlatformConfiguration(compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
+        platform = new PlatformConfiguration(developmentHost, compilerSet.getPlatform(), Platforms.getPlatformDisplayNames());
         makefileConfiguration = new MakefileConfiguration(this);
         dependencyChecking = new BooleanConfiguration(null, isMakefileConfiguration() ? false : MakeOptions.getInstance().getDepencyChecking());
         cCompilerConfiguration = new CCompilerConfiguration(baseDir, null);
@@ -124,7 +129,7 @@ public class MakeConfiguration extends Configuration {
         archiverConfiguration = new ArchiverConfiguration(this);
         packagingConfiguration = new PackagingConfiguration(this);
         requiredProjectsConfiguration = new RequiredProjectsConfiguration();
-        
+
         developmentHost.addPropertyChangeListener(compilerSet);
         developmentHost.addPropertyChangeListener(platform);
     }
@@ -186,31 +191,31 @@ public class MakeConfiguration extends Configuration {
     }
 
     public PlatformInfo getPlatformInfo() {
-        if (platformInfo == null) {
-            platformInfo = new PlatformInfo(getDevelopmentHost().getName(), getPlatform().getValue());
-        }
+        PlatformInfo platformInfo = PlatformInfo.getDefault(getDevelopmentHost().getName());
+//        assert platformInfo.getPlatform() == getPlatform().getValue();
         return platformInfo;
-        
+
     }
-    
+
     public DevelopmentHostConfiguration getDevelopmentHost() {
         return developmentHost;
     }
 
     public void setDevelopmentHost(DevelopmentHostConfiguration developmentHost) {
         this.developmentHost = developmentHost;
-        platformInfo = null;
     }
 
     public PlatformConfiguration getPlatform() {
+//        if (platform.getValue() == -1 && developmentHost.getName().equals("sg155630@eaglet-sr") ) { //TODO: till platform setup bug will be fixed
+//            return new PlatformConfiguration(PlatformTypes.PLATFORM_SOLARIS_INTEL, platform.getNames());
+//        }
         return platform;
     }
 
     public void setPlatform(PlatformConfiguration platform) {
         this.platform = platform;
-        platformInfo = null;
     }
-    
+
     public boolean isApplicationConfiguration() {
         return getConfigurationType().getValue() == TYPE_APPLICATION;
     }
@@ -278,7 +283,7 @@ public class MakeConfiguration extends Configuration {
     public ArchiverConfiguration getArchiverConfiguration() {
         return archiverConfiguration;
     }
-    
+
     public void setPackagingConfiguration(PackagingConfiguration packagingConfiguration) {
         this.packagingConfiguration = packagingConfiguration;
     }
@@ -329,7 +334,7 @@ public class MakeConfiguration extends Configuration {
                 // safe using
                 auxs[i].assign(object);
             } else {
-                System.err.println("Configuration - assign: Object ID "+id+" do not found"); // NOI18N
+                System.err.println("Configuration - assign: Object ID " + id + " do not found"); // NOI18N
             }
         }
     }
@@ -348,7 +353,14 @@ public class MakeConfiguration extends Configuration {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
             } else {
-                copiedAuxs.add(auxs[i]);
+                String id = auxs[i].getId();
+                ConfigurationAuxObject copyAux = (ConfigurationAuxObject) copy.getAuxObject(id);
+                if (copyAux != null) {
+                    copyAux.assign(auxs[i]);
+                    copiedAuxs.add(copyAux);
+                } else {
+                    copiedAuxs.add(auxs[i]);
+                }
             }
         }
         copy.setAuxObjects(copiedAuxs);
@@ -358,7 +370,7 @@ public class MakeConfiguration extends Configuration {
     // Cloning
     @Override
     public Object clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
+        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -381,7 +393,7 @@ public class MakeConfiguration extends Configuration {
         clone.setArchiverConfiguration((ArchiverConfiguration) getArchiverConfiguration().clone());
         clone.setPackagingConfiguration((PackagingConfiguration) getPackagingConfiguration().clone());
         clone.setRequiredProjectsConfiguration((RequiredProjectsConfiguration) getRequiredProjectsConfiguration().clone());
-        
+
         dhconf.addPropertyChangeListener(csconf);
         dhconf.addPropertyChangeListener(pconf);
 
@@ -565,9 +577,17 @@ public class MakeConfiguration extends Configuration {
 
     public String getVariant() {
         String ret = "";
-        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
-        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
-        return ret;
+        if (getCompilerSet().getCompilerSet() == null) {
+            return ret;
+        }
+        return getVariant(getCompilerSet().getCompilerSet(), getPlatform().getValue());
+//        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
+//        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
+//        return ret;
+    }
+    
+    public static String getVariant(CompilerSet compilerSet, int platform) {
+        return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
     public Set/*<Project>*/ getSubProjects() {
@@ -624,9 +644,9 @@ public class MakeConfiguration extends Configuration {
         }
         return subProjectOutputLocations;
     }
-
-    public String getAbsoluteOutputValue() {
-        String output;
+    
+    public String getOutputValue() {
+        String output = null;
         if (isLinkerConfiguration()) {
             output = getLinkerConfiguration().getOutputValue();
         } else if (isArchiverConfiguration()) {
@@ -634,8 +654,13 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else {
-            output = null;
+            assert false;
         }
+        return output;
+    }
+    
+    public String getAbsoluteOutputValue() {
+        String output = getOutputValue();
 
         if (output == null || IpeUtils.isPathAbsolute(output)) {
             return output;
@@ -644,6 +669,14 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
             return output;
         }
+    }
+    
+    public String expandMacros(String val) {
+        // Substitute macros
+        val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
+        val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // NOI18N
+        return val;
     }
 //
 //    private String[] getCompilerSetDisplayNames() {

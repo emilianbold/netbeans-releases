@@ -112,23 +112,24 @@ made subject to such option by the copyright holder.
             </folder> <!-- xml -->
         </folder> <!-- text -->
     </folder> <!-- Editors -->
-    
+   
+<!--   
     <folder name="Plugins">
         <folder name="XML">
             <folder name="GrammarQueryManagers">
-                <!-- register semantics grammar -->
                 <file name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance">
                     <attr name="position" intvalue="100"/>
                 </file>
-            </folder> <!-- GrammarQueryManagers -->
-        </folder> <!-- XML -->
-    </folder> <!-- Plugins -->
-    
+            </folder>
+        </folder>
+    </folder>
+-->    
         <folder name="Loaders">
         <folder name="application">
             <folder name="xslt+xml">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xsl-XSLDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xsl.resources.Bundle"/>
                         <attr name="position" intvalue="900"/>
                     </file>
                 </folder>

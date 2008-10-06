@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Location;
@@ -137,6 +138,8 @@ public class TreeEvaluator {
                 throw (InvalidExpressionException) thr;
             }
             throw isex;
+        } catch (InternalException e) {
+            throw new InvalidExpressionException (e.getLocalizedMessage());
         }
         //return (Value) rootNode.jjtAccept(this, null);
         //return null;

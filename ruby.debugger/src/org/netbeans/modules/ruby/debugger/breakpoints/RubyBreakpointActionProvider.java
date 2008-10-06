@@ -66,7 +66,7 @@ public final class RubyBreakpointActionProvider extends ActionsProviderSupport
             Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     
     public RubyBreakpointActionProvider() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
         PropertyChangeListener l = WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault());
         EditorContextDispatcher.getDefault().addPropertyChangeListener(Util.RUBY_MIME_TYPE, l);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(Util.ERB_MIME_TYPE, l);

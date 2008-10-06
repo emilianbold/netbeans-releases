@@ -47,7 +47,7 @@ import org.openide.util.Lookup;
 
 public class GspDataNode extends DataNode {
     
-    private static final String IMAGE_ICON_BASE = "org/netbeans/modules/groovy/gsp/resources/gsp16.png";
+    public static final String IMAGE_ICON_BASE = "org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png";
     
     public GspDataNode(GspDataObject obj) {
         super(obj, Children.LEAF);

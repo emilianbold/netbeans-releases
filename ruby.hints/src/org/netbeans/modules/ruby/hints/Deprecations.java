@@ -36,12 +36,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.StrNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.jruby.util.ByteList;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -292,7 +292,7 @@ public class Deprecations extends RubyAstRule {
                     if (gemName != null) {
                         list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
                     }
-                    list.setFormatter(new RubyFormatter(), true);
+                    list.setFormatAll(true);
                 } else {
                     list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
                 }

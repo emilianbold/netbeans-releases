@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="OptionsDialog"> 
+    <folder name="OptionsDialog">
         <folder name="CPlusPlus">
-            <file name="EditorOptionsPanelController.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                <attr name="position" intvalue="400"/>
-            </file>
             <folder name="FormatterPreviewExamples">
                 <attr name="position" intvalue="2000"/>
                 <file name="SAMPLE_Spaces.cpp" url="resources/cplusplus/SAMPLE_Spaces.cpp"/>
@@ -18,8 +13,29 @@
                 <file name="SAMPLE_AlignBraces.c" url="resources/cplusplus/SAMPLE_AlignBraces.c"/>
                 <file name="SAMPLE_TabsIndents.cpp" url="resources/cplusplus/SAMPLE_TabsIndents.cpp"/>
                 <file name="SAMPLE_TabsIndents.c" url="resources/cplusplus/SAMPLE_TabsIndents.c"/>
-            </folder>     
-        </folder>     
+            </folder>
+        </folder>
+        <folder name="Editor">
+            <folder name="Formatting">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-c">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                    <folder name="x-c++">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController.getCCController"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
         <folder name="PreviewExamples">
             <folder name="text">
                 <file name="x-c++" url="resources/cplusplus/CCExample"/>
@@ -29,7 +45,7 @@
     </folder>
 
     <folder name="Editors">
-        
+
         <folder name="text">
             <folder name="x-cpp-preprocessor">
                 <folder name="BracesMatchers">
@@ -39,13 +55,17 @@
                 </folder>
             </folder>
             <folder name="x-c++">
-                <file name="Settings.settings" url="resources/CCOptions.settings"/>
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="cpp-preferences.xml" url="cpp-preferences.xml"/>
+                    </folder>
+                </folder>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-                
+
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -55,18 +75,18 @@
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="keybindings.xml" url="resources/DefaultKeyBindings.xml"/>
-                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml"> 
+                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml">
                                 <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/cplusplus/CC-DefaultAbbrevs.xml">
@@ -74,20 +94,20 @@
                         </file>
                     </folder>
                 </folder>
-                
+
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="100"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>                      
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                     </folder>
-                    
+
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1142"/>
                     </file>
                     <file name="format">
                         <attr name="position" intvalue="1284"/>
-                    </file>                    
+                    </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1426"/>
@@ -97,7 +117,7 @@
                         <attr name="position" intvalue="4100"/>
                     </file>
                 </folder>
-                
+
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-c++.instance">
@@ -112,22 +132,26 @@
                         </file>
                     </folder>
                 </folder>
-                
+
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
             </folder>
-            
+
             <folder name="x-c">
-                 <file name="Settings.settings" url="resources/COptions.settings"/>
+                 <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="c-preferences.xml" url="c-preferences.xml"/>
+                    </folder>
+                </folder>
                  <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
-                
+
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -137,18 +161,18 @@
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="keybindings.xml" url="resources/DefaultKeyBindings.xml"/>
-                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml"> 
+                            <file name="keybindings-mac.xml" url="resources/DefaultKeyBindings-Mac.xml">
                                 <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                             </file>
                         </folder>
                     </folder>
                 </folder>
-                
+
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codetemplates.xml" url="resources/cplusplus/C-DefaultAbbrevs.xml">
@@ -156,20 +180,20 @@
                         </file>
                     </folder>
                 </folder>
-                
+
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                     </folder>
-                    
+
                     <file name="SeparatorBeforeFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1142"/>
                     </file>
                     <file name="format">
                         <attr name="position" intvalue="1284"/>
-                    </file>                    
+                    </file>
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1426"/>
@@ -179,7 +203,7 @@
                         <attr name="position" intvalue="4100"/>
                     </file>
                 </folder>
-                
+
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="Separator-before-comment-c.instance">
@@ -193,8 +217,8 @@
                             <attr name="position" intvalue="19300"/>
                         </file>
                     </folder>
-                </folder>    
-                
+                </folder>
+
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-cnd-editor-cplusplus-CppBracesMatcher.instance">
                         <attr name="position" intvalue="0"/>
@@ -203,7 +227,7 @@
              </folder>
         </folder>
     </folder>
-    
+
     <folder name="Services">
         <folder name="IndentEngine">
             <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="resources/CCIndentEngine.settings">

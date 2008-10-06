@@ -61,7 +61,19 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class OutputOperatorTest extends JellyTestCase {
-    
+
+    static final String[] tests = new String[] {
+        "testInvoke",
+        "testGetOutputTab",
+        "testGetText",
+        "testSelectAll",
+        "testCopy",
+        "testFind",
+        "testFindNext",
+        "testWrapText",
+        "testSaveAs",
+        "testClear",
+        "testVerify"};
     public OutputOperatorTest(java.lang.String testName) {
         super(testName);
     }
@@ -91,18 +103,7 @@ public class OutputOperatorTest extends JellyTestCase {
         suite.addTest(new OutputOperatorTest("testVerify"));
         return suite;
          */
-        return (NbTest) createModuleTest(OutputOperatorTest.class, 
-        "testInvoke",
-        "testGetOutputTab",
-        "testGetText",
-        "testSelectAll",
-        "testCopy",
-        "testFind",
-        "testFindNext",
-        "testWrapText",
-        "testSaveAs",
-        "testClear",
-        "testVerify");
+        return (NbTest) createModuleTest(OutputOperatorTest.class, tests);
     }
     
     /** Print out test name. */

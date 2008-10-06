@@ -65,6 +65,7 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -314,7 +315,9 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
                     // Mark collab as needing to be persisted.
                     Object graphModel = getGraphView().getGraphModel();
                     if (graphModel instanceof CollabSQLUIModel) {
+                        DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                         ((CollabSQLUIModel) graphModel).setDirty(true);
+                        
                     }
                 }
                 BasicTopView gvMgr = (BasicTopView) gView.getGraphViewContainer();

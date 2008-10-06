@@ -1,9 +1,5 @@
 /*
- *  ItemResource
- *
- * Created on March 11, 2008, 10:41 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -13,10 +9,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -27,7 +23,7 @@ import javax.ws.rs.PathParam;
 public class ItemResource {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of ItemResource */
     public ItemResource() {
     }
@@ -38,7 +34,7 @@ public class ItemResource {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("application/xml")
+    @Produces("application/xml")
     public String getXml(@PathParam("id")
     String id) {
         //TODO return proper representation object
@@ -52,7 +48,7 @@ public class ItemResource {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("application/xml")
+    @Consumes("application/xml")
     public void putXml(@PathParam("id")
     String id, String content) {
     }

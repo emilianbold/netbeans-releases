@@ -188,11 +188,77 @@
 	<mapID target="previous" url="images/previous.png"/>
 	<mapID target="UsagesWindow" url="EditingSourceFiles/UsagesWindow.html"/>
 	<mapID target="Attaching" url="CandC++ProjectBasics/Attaching.html"/>
-	<mapID target="CofiguringCodeStyle" url="WorkingWithCandC++Projects/ConfiguringCodeStyle.html"/>
+	<mapID target="ConfiguringCodeStyle" url="WorkingWithCandC++Projects/ConfiguringCodeStyle.html"/>
 	<mapID target="ConfiguringSemanticHighlighting" url="WorkingWithCandC++Projects/ConfiguringSemanticHighlighting.html"/>
 	<mapID target="ConfiguringFileExtensions" url="WorkingWithCandC++Projects/ConfiguringFileExtensions.html"/>
 	<mapID target="CandC++Options" url="CandC++ProjectBasics/CandC++Options.html"/>
 	<mapID target="CandC++DisassemblyWIndow" url="CandC++ProjectBasics/CandC++DisassemblyWIndow.html"/>
 	<mapID target="ResolveBuildTools" url="CandC++ProjectBasics/ResolveBuildTools.html"/>
 	<mapID target="ProjectPropsBuild" url="WorkingWithCandC++Projects/ProjectPropsBuild.html"/>
+	<mapID target="ErrorHighlighting" url="EditingSourceFiles/ErrorHighlighting.html"/>
+	<mapID target="CallGraphView" url="EditingSourceFiles/UsingCallGraph.html"/>
+	<mapID target="CandC++MemoryWindow" url="CandC++ProjectBasics/CandC++MemoryWindow.html"/>
+	<mapID target="Packaging" url="CandC++ProjectBasics/Packaging.html"/>
+	<mapID target="RemoteDevelopment" url="WorkingWithCandC++Projects/RemoteDevelopment.html"/>
+	<mapID target="focus" url="images/focus.png"/>
+	<mapID target="error-glyph" url="images/error-glyph.png"/>
+	<mapID target="ProjectPropsPackaging" url="WorkingWithCandC++Projects/ProjectPropsPackaging.html"/>
+	<mapID target="Icons" url="EditingSourceFiles/Icons.html"/>
+	<mapID target="class_16" url="images/class_16.png"/>
+	<mapID target="class_forward_decl" url="images/class_forward_decl.png"/>
+	<mapID target="code_macro_16" url="images/code_macro_16.png"/>
+	<mapID target="const_private" url="images/const_private.png"/>
+	<mapID target="const_protected" url="images/const_protected.png"/>
+	<mapID target="const_public" url="images/const_public.png"/>
+	<mapID target="const_static_private" url="images/const_static_private.png"/>
+	<mapID target="const_static_protected" url="images/const_static_protected.png"/>
+	<mapID target="const_static_public" url="images/const_static_public.png"/>
+	<mapID target="constructors" url="images/constructors.png"/>
+	<mapID target="constructors_private" url="images/constructors_private.png"/>
+	<mapID target="constructors_protected" url="images/constructors_protected.png"/>
+	<mapID target="deconstructors_private" url="images/deconstructors_private.png"/>
+	<mapID target="deconstructors_protected" url="images/deconstructors_protected.png"/>
+	<mapID target="enumeration_16" url="images/enumeration_16.png"/>
+	<mapID target="enumeration_item_16" url="images/enumeration_item_16.png"/>
+	<mapID target="fields" url="images/fields.png"/>
+	<mapID target="fields_private" url="images/fields_private.png"/>
+	<mapID target="fields_protected" url="images/fields_protected.png"/>
+	<mapID target="fields_static" url="images/fields_static.png"/>
+	<mapID target="fields_static_private" url="images/fields_static_private.png"/>
+	<mapID target="fields_static_protected" url="images/fields_static_protected.png"/>
+	<mapID target="friend_class" url="images/friend_class.png"/>
+	<mapID target="friend_method" url="images/friend_method.png"/>
+	<mapID target="friend_operator" url="images/friend_operator.png"/>
+	<mapID target="global_constant" url="images/global_constant.png"/>
+	<mapID target="global_function" url="images/global_function.png"/>
+	<mapID target="global_function_decl" url="images/global_function_decl.png"/>
+	<mapID target="global_operator" url="images/global_operator.png"/>
+	<mapID target="global_operator_static" url="images/global_operator_static.png"/>
+	<mapID target="global_variable" url="images/global_variable.png"/>
+	<mapID target="include_sys_16" url="images/include_sys_16.png"/>
+	<mapID target="include_user_16" url="images/include_user_16.png"/>
+	<mapID target="local_constant" url="images/local_constant.png"/>
+	<mapID target="local_variable" url="images/local_variable.png"/>
+	<mapID target="methods" url="images/methods.png"/>
+	<mapID target="methods_private" url="images/methods_private.png"/>
+	<mapID target="methods_protected" url="images/methods_protected.png"/>
+	<mapID target="methods_static" url="images/methods_static.png"/>
+	<mapID target="methods_static_private" url="images/methods_static_private.png"/>
+	<mapID target="methods_static_protected" url="images/methods_static_protected.png"/>
+	<mapID target="namespace_16" url="images/namespace_16.png"/>
+	<mapID target="namespace_alias" url="images/namespace_alias.png"/>
+	<mapID target="operator_privat" url="images/operator_privat.png"/>
+	<mapID target="operator_protected" url="images/operator_protected.png"/>
+	<mapID target="operator_public" url="images/operator_public.png"/>
+	<mapID target="operator_static" url="images/operator_static.png"/>
+	<mapID target="operator_static_privat" url="images/operator_static_privat.png"/>
+	<mapID target="operator_static_protected" url="images/operator_static_protected.png"/>
+	<mapID target="struct_16" url="images/struct_16.png"/>
+	<mapID target="struct_forward_decl" url="images/struct_forward_decl.png"/>
+	<mapID target="typedef_16" url="images/typedef_16.png"/>
+	<mapID target="union_16" url="images/union_16.png"/>
+	<mapID target="using_declaration_16" url="images/using_declaration_16.png"/>
+	<mapID target="using_namespace_16" url="images/using_namespace_16.png"/>
+	<mapID target="template_parameter_16" url="images/template_parameter_16.png"/>
+	<mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
 </map>

@@ -75,12 +75,15 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -89,11 +92,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -103,6 +108,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -162,42 +168,10 @@ public class SourceUtils {
      * @return the type declaration within which this member or constructor
      * is declared, or null if there is none
      * @throws IllegalArgumentException if the provided element is a package element
+     * @deprecated use {@link ElementUtilities#enclosingTypeElement(javax.lang.model.element.Element)}
      */
-    public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-	Element param = element;
-        
-	if( element.getKind() == ElementKind.PACKAGE ) {
-	    throw new IllegalArgumentException();
-	}
-	
-        if (element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
-            //element is a top level class, returning null according to the contract:
-            return null;
-        }
-        
-	while(element != null && !(element.getEnclosingElement().getKind().isClass() || 
-	       element.getEnclosingElement().getKind().isInterface()) ) {
-	    element = element.getEnclosingElement();
-	}
-        
-        if (element == null) {
-            //#130505:
-            StringBuilder sb = new StringBuilder();
-            
-            while (param != null) {
-                sb.append(param.getKind());
-                sb.append(':');
-                sb.append(param.toString());
-                sb.append('/');
-                param = param.getEnclosingElement();
-            }
-            
-            NullPointerException npe = new NullPointerException();
-            
-            throw Exceptions.attachMessage(npe, sb.toString());
-        }
-	
-	return (TypeElement)element.getEnclosingElement(); // Wrong
+    public static @Deprecated TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
+        return ElementUtilities.enclosingTypeElementImpl(element);
     }
     
     public static TypeElement getOutermostEnclosingTypeElement( Element element ) {
@@ -366,80 +340,20 @@ public class SourceUtils {
      * 
      * @deprecated use {@link getFile(ElementHandle, ClasspathInfo)}
      */
-    public static FileObject getFile (Element element, ClasspathInfo cpInfo) {
-        try {
-        if (element == null || cpInfo == null) {
-            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getFile");  //NOI18N
-        }
+    public static FileObject getFile (Element element, final ClasspathInfo cpInfo) {
+        Parameters.notNull("element", element); //NOI18N
+        Parameters.notNull("cpInfo", cpInfo);   //NOI18N
+        
         Element prev = null;
         while (element.getKind() != ElementKind.PACKAGE) {
             prev = element;
             element = element.getEnclosingElement();
         }
-        if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface()))
+        if (prev == null || (!prev.getKind().isClass() && !prev.getKind().isInterface())) {
             return null;
-        ClassSymbol clsSym = (ClassSymbol)prev;
-        URI uri;
-        if (clsSym.completer != null)
-            clsSym.complete();
-        if (clsSym.sourcefile != null && (uri=clsSym.sourcefile.toUri())!= null && uri.isAbsolute()) {
-            return URLMapper.findFileObject(uri.toURL());
-        }
-        else {
-            if (clsSym.classfile == null)
-                return null;
-            uri = clsSym.classfile.toUri();
-            if (uri == null || !uri.isAbsolute()) {
-                return null;
-            }
-            FileObject classFo = URLMapper.findFileObject(uri.toURL());
-            if (classFo == null) {
-                return null;
-            }
-            ClassPath cp = ClassPathSupport.createProxyClassPath(
-                new ClassPath[] {
-                    createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),
-                    createClassPath(cpInfo,ClasspathInfo.PathKind.OUTPUT),
-                    createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
-            });
-            FileObject root = cp.findOwnerRoot(classFo);
-            if (root == null) {
-                return null;
-            }
-            String parentResName = cp.getResourceName(classFo.getParent(),'/',false);       //NOI18N
-            SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(root.getURL());
-            FileObject[] sourceRoots = result.getRoots();
-            ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
-            List<FileObject> folders = (List<FileObject>) sourcePath.findAllResources(parentResName);
-            boolean caseSensitive = isCaseSensitive ();
-            final String sourceFileName = getSourceFileName (classFo.getName());
-            for (FileObject folder : folders) {
-                FileObject[] children = folder.getChildren();
-                for (FileObject child : children) {
-                    if (((caseSensitive && child.getName().equals (sourceFileName)) ||
-                        (!caseSensitive && child.getName().equalsIgnoreCase (sourceFileName)))
-                        &&
-                    JavaDataLoader.JAVA_EXTENSION.equalsIgnoreCase(child.getExt())) {
-                        return child;
-                    }
-                }
-            }
-            FileObject foundFo;
-            String signature = ClassFileUtil.encodeClassNameOrArray(clsSym);
-            if (sourceRoots.length == 0) {
-                foundFo = findSource (signature,root);
-            }
-            else {
-                foundFo = findSource (signature,sourceRoots);
-            }
-            if (foundFo != null) {
-                return foundFo;
-            }
-        }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return null;
+        }        
+        final ElementHandle<? extends Element> handle = ElementHandle.create(prev);
+        return getFile (handle, cpInfo);
     }
     
     /**
@@ -449,9 +363,8 @@ public class SourceUtils {
      * @return {@link FileObject} or null when the source file cannot be found
      */
     public static FileObject getFile (final ElementHandle<? extends Element> handle, final ClasspathInfo cpInfo) {
-        if (handle == null || cpInfo == null) {
-            throw new IllegalArgumentException ("Cannot pass null as an argument of the SourceUtils.getFile");  //NOI18N
-        }
+        Parameters.notNull("handle", handle);
+        Parameters.notNull("cpInfo", cpInfo);        
         try {
             boolean pkg = handle.getKind() == ElementKind.PACKAGE;
             String[] signature = handle.getSignature();
@@ -652,7 +565,14 @@ out:                    for (URL e : roots) {
                 }
             }
             for (URL binary : binaries) {
-                URL[] result = JavadocForBinaryQuery.findJavadoc(binary).getRoots();
+                Result javadocResult = JavadocForBinaryQuery.findJavadoc(binary);
+                URL[] result = javadocResult.getRoots();
+                for (int cntr = 0; cntr < result.length; cntr++) {
+                    if (!result[cntr].toExternalForm().endsWith("/")) { // NOI18N
+                        Logger.getLogger(SourceUtils.class.getName()).log(Level.WARNING, "JavadocForBinaryQuery.Result: {0} returned non-folder URL: {1}, ignoring", new Object[] {javadocResult.getClass(), result[cntr].toExternalForm()});
+                        result[cntr] = null;
+                    }
+                }
                 ClassPath cp = ClassPathSupport.createClassPath(result);
                 FileObject fo = cp.findResource(pkgName);
                 if (fo != null) {
@@ -943,16 +863,25 @@ out:                    for (URL e : roots) {
      */
     public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject[] sourceRoots) {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>> ();
-        for (FileObject root : sourceRoots) {
-            try {
+        for (final FileObject root : sourceRoots) {
+            try {               
+                final File rootFile = FileUtil.toFile(root);
                 ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
                 ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
                 ClassPath srcPath = ClassPathSupport.createClassPath(new FileObject[] {root});
                 ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
-                final Set<ElementHandle<TypeElement>> classes = cpInfo.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(ClassIndex.SearchScope.SOURCE));
                 JavaSource js = JavaSource.create(cpInfo);
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController control) throws Exception {
+                        final URL rootURL = root.getURL();
+                        Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
+                        List<ElementHandle<TypeElement>> classes = new LinkedList<ElementHandle<TypeElement>>();
+                        for (URL mainClass : mainClasses) {
+                            File mainFo = new File (URI.create(mainClass.toExternalForm()));
+                            if (mainFo.exists()) {
+                                classes.addAll(RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
+                            }
+                        }
                         for (ElementHandle<TypeElement> cls : classes) {
                             TypeElement te = cls.resolve(control);
                             if (te != null) {

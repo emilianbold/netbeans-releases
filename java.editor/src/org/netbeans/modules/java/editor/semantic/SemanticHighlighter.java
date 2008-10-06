@@ -121,7 +121,6 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -289,7 +288,7 @@ public class SemanticHighlighter extends ParserResultTask {
                 if (cancel.get()) {
                     return true;
                 }
-                
+
                 //XXX: finish
                 final int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
                 final int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
@@ -305,7 +304,7 @@ public class SemanticHighlighter extends ParserResultTask {
                 allUnusedImports.add(handle);
                 if (RemoveUnusedImportFix.isEnabled()) {
                     errors.add(ErrorDescriptionFactory.createErrorDescription(
-                            Severity.VERIFIER,
+                            RemoveUnusedImportFix.getSeverity(),
                             NbBundle.getMessage(SemanticHighlighter.class, "LBL_UnusedImport"),
                             new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports),
                             doc,
@@ -426,6 +425,7 @@ public class SemanticHighlighter extends ParserResultTask {
             this.spec = spec;
         }
         
+        @Override
         public String toString() {
             return "Use: " + type;
         }
@@ -448,6 +448,7 @@ public class SemanticHighlighter extends ParserResultTask {
         private long memberSelectBypass = -1;
         
         private SourcePositions sourcePositions;
+        private ExecutableElement recursionDetector;
         
         private DetectorVisitor(org.netbeans.api.java.source.CompilationInfo info, final Document doc, AtomicBoolean cancel) {
             super(cancel);
@@ -594,14 +595,19 @@ public class SemanticHighlighter extends ParserResultTask {
             }
         }
         
-        private Collection<ColoringAttributes> getMethodColoring(ExecutableElement mdecl) {
+        private Collection<ColoringAttributes> getMethodColoring(ExecutableElement mdecl, boolean nct) {
             Collection<ColoringAttributes> c = new ArrayList<ColoringAttributes>();
             
             addModifiers(mdecl, c);
             
-            if (mdecl.getKind() == ElementKind.CONSTRUCTOR)
+            if (mdecl.getKind() == ElementKind.CONSTRUCTOR) {
                 c.add(ColoringAttributes.CONSTRUCTOR);
-            else
+
+                //#146820:
+                if (nct && mdecl.getEnclosingElement() != null && info.getElements().isDeprecated(mdecl.getEnclosingElement())) {
+                    c.add(ColoringAttributes.DEPRECATED);
+                }
+            } else
                 c.add(ColoringAttributes.METHOD);
             
             return c;
@@ -638,10 +644,10 @@ public class SemanticHighlighter extends ParserResultTask {
         private static final Set<Kind> LITERALS = EnumSet.of(Kind.BOOLEAN_LITERAL, Kind.CHAR_LITERAL, Kind.DOUBLE_LITERAL, Kind.FLOAT_LITERAL, Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.STRING_LITERAL);
 
         private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type) {
-            handlePossibleIdentifier(expr, type, null, false);
+            handlePossibleIdentifier(expr, type, null, false, false);
         }
         
-        private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type, Element decl, boolean providesDecl) {
+        private void handlePossibleIdentifier(TreePath expr, Collection<UseTypes> type, Element decl, boolean providesDecl, boolean nct) {
             
             if (Utilities.isKeyword(expr.getLeaf())) {
                 //ignore keywords:
@@ -672,7 +678,7 @@ public class SemanticHighlighter extends ParserResultTask {
             }
             
             if (decl != null && decl instanceof ExecutableElement) {
-                c = getMethodColoring((ExecutableElement) decl);
+                c = getMethodColoring((ExecutableElement) decl, nct);
             }
             
             if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
@@ -719,6 +725,10 @@ public class SemanticHighlighter extends ParserResultTask {
         }
         
         private void addUse(Element decl, Collection<UseTypes> useTypes, TreePath t, Collection<ColoringAttributes> c) {
+            if (decl == recursionDetector) {
+                useTypes.remove(UseTypes.EXECUTE); //recursive execution is not use
+            }
+            
             List<Use> uses = type2Uses.get(decl);
             
             if (uses == null) {
@@ -940,7 +950,12 @@ public class SemanticHighlighter extends ParserResultTask {
             
             scan(tree.getParameters(), paramsUseTypes);
             scan(tree.getThrows(), null);
+
+            recursionDetector = (el != null && el.getKind() == ElementKind.METHOD) ? (ExecutableElement) el : null;
+            
             scan(tree.getBody(), null);
+
+            recursionDetector = null;
         
             return null;
         }
@@ -1156,7 +1171,7 @@ public class SemanticHighlighter extends ParserResultTask {
             }
             
             typeUsed(info.getTrees().getElement(tp), tp);
-	    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true);
+            handlePossibleIdentifier(tp, EnumSet.of(UseTypes.EXECUTE), info.getTrees().getElement(getCurrentPath()), true, true);
             
             Element clazz = info.getTrees().getElement(tp);
             
@@ -1273,7 +1288,15 @@ public class SemanticHighlighter extends ParserResultTask {
             scan(tree.getTypeParameters(), null);
             scan(tree.getExtendsClause(), null);
             scan(tree.getImplementsClause(), null);
+
+            ExecutableElement prevRecursionDetector = recursionDetector;
+
+            recursionDetector = null;
+            
             scan(tree.getMembers(), null);
+
+            recursionDetector = prevRecursionDetector;
+            
             //XXX: end ???
             
             return null;

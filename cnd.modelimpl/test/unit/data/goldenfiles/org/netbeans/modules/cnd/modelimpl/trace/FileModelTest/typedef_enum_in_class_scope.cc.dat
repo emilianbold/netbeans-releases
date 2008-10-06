@@ -12,7 +12,7 @@ Includes:
 Macros:
     <no macros>
 NAMESPACE DEFINITOIN NS [1:1/0-6:2/80] SCOPE: typedef_enum_in_class_scope.cc
-    CLASS C (NS::C ) [2:9/16-4:11/55] lcurly=24 SCOPE: NS 
+    CLASS C (NS::C ) [2:9/16-4:10/54] lcurly=24 SCOPE: NS 
         BASE CLASSES:
         MEMBERS:
             TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum E } EE ;  [3:17/29-3:39/51] SCOPE: C 
@@ -26,7 +26,7 @@ ENUM  [7:9/89-7:13/93] SCOPE: $Global$
 NAMESPACE DEFINITIONS for NS (NS) 
     typedef_enum_in_class_scope.cc  [1:1/0-6:2/80]
 NAMESPACE NS (NS) 
-    CLASS C (NS::C ) [2:9/16-4:11/55] lcurly=24 SCOPE: NS 
+    CLASS C (NS::C ) [2:9/16-4:10/54] lcurly=24 SCOPE: NS 
         BASE CLASSES:
         MEMBERS:
             TYPEDEF EE  [3:17/29-3:39/51] TYPE: NS::C:: TEXT=typedef enum E } EE ;  [3:17/29-3:39/51] SCOPE: C 

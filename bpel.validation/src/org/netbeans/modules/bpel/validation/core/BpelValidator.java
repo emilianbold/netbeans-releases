@@ -45,7 +45,6 @@ import java.util.List;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;

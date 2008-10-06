@@ -76,9 +76,9 @@ public class ExecutionServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         Future<Integer> task = service.run();
         assertNotNull(task);
@@ -96,9 +96,9 @@ public class ExecutionServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         // first run
         Future<Integer> task = service.run();
@@ -136,9 +136,9 @@ public class ExecutionServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         final CountDownLatch latch = new CountDownLatch(1);
-        builder.preExecution(new Runnable() {
+        descriptor = descriptor.preExecution(new Runnable() {
             public void run() {
                 try {
                     latch.await();
@@ -149,7 +149,7 @@ public class ExecutionServiceTest extends NbTestCase {
         });
 
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         // first run
         Future<Integer> task = service.run();
@@ -186,9 +186,9 @@ public class ExecutionServiceTest extends NbTestCase {
         callable.addProcess(process1);
         callable.addProcess(process2);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         final CyclicBarrier barrier = new CyclicBarrier(3);
-        builder.preExecution(new Runnable() {
+        descriptor = descriptor.preExecution(new Runnable() {
             public void run() {
                 try {
                     barrier.await();
@@ -201,7 +201,7 @@ public class ExecutionServiceTest extends NbTestCase {
         });
 
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         Future<Integer> task1 = service.run();
         Future<Integer> task2 = service.run();
@@ -241,12 +241,11 @@ public class ExecutionServiceTest extends NbTestCase {
         TestRunnable preRunnable = new TestRunnable();
         TestRunnable postRunnable = new TestRunnable();
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.preExecution(preRunnable);
-        builder.postExecution(postRunnable);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
+        descriptor = descriptor.preExecution(preRunnable).postExecution(postRunnable);
 
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         Future<Integer> task = service.run();
         assertNotNull(task);
@@ -264,9 +263,9 @@ public class ExecutionServiceTest extends NbTestCase {
         TestCallable callable = new TestCallable();
         callable.addProcess(process);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         Future<Integer> task = service.run();
         assertNotNull(task);
@@ -300,9 +299,9 @@ public class ExecutionServiceTest extends NbTestCase {
 
         callable.addProcess(process1);
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor();
         ExecutionService service = ExecutionService.newService(
-                callable, builder.create(), "Test");
+                callable, descriptor, "Test");
 
         Future<Integer> task1 = service.run();
         assertNotNull(task1);

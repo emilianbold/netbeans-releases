@@ -102,6 +102,11 @@ class DiffActionTooltipWindow implements AWTEventListener {
                 dim.width = (screenBounds.x + screenBounds.width) - (location.x + SCREEN_BORDER);  
             }
             
+            if (dim.width < actionsWindow.getWidth()) {
+                // make the content window at least match the width of the actions window 
+                dim.width = actionsWindow.getWidth();
+            }
+            
             contentWindow.setSize(dim);
 
             contentWindow.setLocation(location.x, location.y + actionsWindow.getHeight() - 1);  // slight visual adjustment

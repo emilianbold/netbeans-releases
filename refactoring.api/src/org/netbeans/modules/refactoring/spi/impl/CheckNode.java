@@ -47,8 +47,8 @@ import javax.swing.tree.*;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.openide.text.PositionBounds;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.plugins.RefactoringTreeElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -177,11 +177,10 @@ public class CheckNode extends DefaultMutableTreeNode {
                         } catch (IOException ioe) {
                             return null;
                         }
-                        tooltip = file.getPath() + ':' + line;
+                        tooltip = FileUtil.getFileDisplayName(file) + ':' + line;
                     }
                 }
             }
-            return null;
         }
         return tooltip;
     }

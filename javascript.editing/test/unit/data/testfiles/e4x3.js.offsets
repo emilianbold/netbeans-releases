@@ -1,5 +1,5 @@
 
-<SCRIPT><VAR>var <NAME>x = <E4X><ADD><ADD><STRING><ESCXMLTEXT><STRING></STRING></ESCXMLTEXT></ADD>&lt;f=</STRING>{}<STRING>/&gt;</STRING></ADD></E4X></NAME></VAR>;
+<SCRIPT><VAR>var <NAME>x = <E4X><ADD><STRING><STRING/><ESCXMLTEXT/><ADD/><ESCXMLTEXT/><STRING/>&lt;f=</STRING>{}<STRING>/&gt;</STRING></ADD></E4X></NAME></VAR>;
         <VAR>var <NAME>breakpointSetResponse =
             <E4X><ADD><ADD><ADD><ADD><ADD><ADD><STRING>&lt;response command="breakpoint_set"
         state=</STRING>{ <ESCXMLTEXT><HOOK><NAME>disabled</NAME> ? <STRING>"disabled"</STRING> : <STRING>"enabled"</STRING></HOOK></ESCXMLTEXT></ADD>}<STRING>

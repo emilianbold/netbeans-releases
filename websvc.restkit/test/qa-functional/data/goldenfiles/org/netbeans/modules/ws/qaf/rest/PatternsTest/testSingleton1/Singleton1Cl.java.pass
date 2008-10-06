@@ -1,9 +1,5 @@
 /*
- *  Singleton1Cl
- *
- * Created on March 11, 2008, 10:41 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,8 +10,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import org.codehaus.jettison.json.JSONString;
 
 /**
@@ -28,7 +24,7 @@ import org.codehaus.jettison.json.JSONString;
 public class Singleton1Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton1Cl */
     public Singleton1Cl() {
     }
@@ -38,7 +34,7 @@ public class Singleton1Cl {
      * @return an instance of org.codehaus.jettison.json.JSONString
      */
     @GET
-    @ProduceMime("application/json")
+    @Produces("application/json")
     public JSONString getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -50,7 +46,7 @@ public class Singleton1Cl {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("application/json")
+    @Consumes("application/json")
     public void putJson(JSONString content) {
     }
 }

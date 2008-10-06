@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -84,11 +85,11 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
     private static final String DEFAULT_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/j2eeServer.gif"; //NOI18N
     private static final String BROKEN_PROJECT_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
     
-    private static final Icon icon = new ImageIcon(Utilities.loadImage(ARCHIVE_ICON));
+    private static final Icon icon = new ImageIcon(ImageUtilities.loadImage(ARCHIVE_ICON));
     
-    private static final Image brokenIcon = Utilities.mergeImages(
-            Utilities.loadImage(DEFAULT_ICON),
-            Utilities.loadImage(BROKEN_PROJECT_BADGE), 
+    private static final Image brokenIcon = ImageUtilities.mergeImages(
+            ImageUtilities.loadImage(DEFAULT_ICON),
+            ImageUtilities.loadImage(BROKEN_PROJECT_BADGE),
             8, 0);
 
     private final PropertyEvaluator evaluator;
@@ -215,33 +216,34 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return platformCache;
     }
 
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
         private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
             this.cs = cs;
         }
 
+        @Override
         protected void addNotify() {
             this.setKeys (this.getKeys());
         }
 
+        @Override
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptySet());
         }
 
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup sg) {
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
-        private List getKeys () {
-            List result;
+        private List<SourceGroup> getKeys () {
+            List<SourceGroup> result;
             
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
             if (j2eePlatform != null) {
                 File[] classpathEntries = j2eePlatform.getClasspathEntries();
-                result = new ArrayList(classpathEntries.length);
+                result = new ArrayList<SourceGroup>(classpathEntries.length);
                 for (int i = 0; i < classpathEntries.length; i++) {
                     FileObject file = FileUtil.toFileObject(classpathEntries[i]);
                     if (file != null) {
@@ -252,7 +254,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                     }
                 }
             } else {
-                result = Collections.EMPTY_LIST;
+                result = Collections.<SourceGroup>emptyList();
             }
             
             return result;

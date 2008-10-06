@@ -60,11 +60,11 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
@@ -539,9 +539,10 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         if (name == null || name.length() == 0){
             setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
-        }else if(! ResourceUtils.isLegalResourceName(name))
+        }else if(! ResourceUtils.isLegalResourceName(name)){
+            setErrorMsg(bundle.getString("Err_InvalidName"));
             return false;
-        else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
+        }else if(! ResourceUtils.isUniqueFileName(name, this.helper.getData().getTargetFileObject(), __ConnectionPoolResource)){
             setErrorMsg(bundle.getString("Err_DuplFileName"));
             return false;
         }

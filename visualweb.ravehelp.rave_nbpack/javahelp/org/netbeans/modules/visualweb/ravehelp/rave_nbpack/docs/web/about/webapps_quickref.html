@@ -6,7 +6,7 @@
 -->
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Web Application Tasks: Quick Reference</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -144,11 +144,14 @@
   </tr>
   <tr valign="top"> 
     <td>Build a project.</td>
-    <td> 
+  <td> 
 	    <ol>		    
 		    <li>Make sure that your <a href="../build/build_externalresource.html">resources are on the classpath</a>.</li>
-        <li>Choose Build &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html">Build 
-          Main Project</a> (F11) or right-click any project node and choose Build.</li>
+        <li>Choose Run &gt; <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_project.html">Build 
+          Main Project</a> (F11) or right-click any project node and choose Clean and Build. The Compile on Save feature automatically builds your project whenever you save the project.
+          <ul class="note">
+    <li><b>Note: </b> The Compile on Save feature builds your project whenever you save the project. You can disable this feature in the Compiling page of the Project Properties dialog box. </li>
+  </ul></li>
       </ol>
     </td>
   </tr>
@@ -191,7 +194,7 @@
     <td> 
       <ul>
 	      <li>Right-click the project and choose
-	      <a href="../debug/debug_webapp.html">Debug Project</a> or choose Run &gt; Debug Main Project (Ctrl-F5). For free-form projects, you must 
+	      <a href="../debug/debug_webapp.html">Debug</a> or choose Debug &gt; Debug Main Project (Ctrl-F5). For free-form projects, you must 
 	      <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_webfree_debug.html">create an Ant target</a> for this purpose.</li>
       </ul>
     </td>
@@ -242,7 +245,7 @@
   <tr valign="top">
     <td>Save a project </td>
     <td><ul>
-      <li>Choose File &gt; Save All. </li>
+      <li>Choose File &gt; Save All. When save a project, the IDE builds the project for you.</li>
     </ul></td>
   </tr>
   <tr valign="top">

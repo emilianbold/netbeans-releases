@@ -271,22 +271,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     }
 
     public HelpCtx getHelpCtx() {
-        String postfix;
-        ElementKind k = RetoucheUtils.getElementKind(jmiObject);
-               
-        if (k == ElementKind.MODULE)
-            postfix = ".Module";//NOI18N
-        //else if (k.isClass() || k.isInterface())
-        else if (k == ElementKind.CLASS)
-            postfix = ".Class";//NOI18N
-        else if (k == ElementKind.METHOD)
-            postfix = ".Method";//NOI18N
-        else if (k == ElementKind.FIELD)
-            postfix = ".Field";//NOI18N
-        else
-            postfix = "";
-        
-        return new HelpCtx(RenameRefactoringUI.class.getName() + postfix);
+        return null;
     }
     
     public boolean isRefactoringBypassRequired() {

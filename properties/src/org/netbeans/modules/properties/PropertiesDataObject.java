@@ -66,8 +66,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import static java.util.logging.Level.FINER;
 
 
@@ -125,23 +123,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         return ((PropertiesDataLoader) getLoader()).getEncoding();
     }
     
-    private Lookup getSuperLookup() {
-        return super.getLookup();
-    }
-    
     @Override
     public Lookup getLookup() {
-        if (lookup == null) {
-            lookup = new ProxyLookup(
-                    Lookups.singleton(getEncoding()),
-                    Lookups.proxy(
-                            new Lookup.Provider() {
-                                    public Lookup getLookup() {
-                                        return getSuperLookup();
-                                    }
-                    }));
-        }
-        return lookup;
+        return getCookieSet().getLookup();
     }
     
     /** Initializes the object. Used by construction and deserialized. */
@@ -151,6 +135,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
         arr[0] = PropertiesOpen.class;
         arr[1] = PropertiesEditorSupport.class;
         getCookieSet().add(arr, this);
+        getCookieSet().assign(PropertiesEncoding.class, getEncoding());
     }
 
     /** Implements <code>CookieSet.Factory</code> interface method. */
@@ -312,11 +297,15 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      */                                                           
     @Override
     protected Node createNodeDelegate () {
-        PropertiesChildren pc = new PropertiesChildren();
+        return new PropertiesDataNode(this);
+    }
 
-        // properties node - creates new types
-        DataNode dn = new PropertiesDataNode(this, pc);
-        return dn;
+    Children getChildren() {
+        return new PropertiesChildren();
+    }
+
+    boolean isMultiLocale() {
+        return secondaryEntries().size() > 0;
     }
 
     /** Returns a structural view of this data object */
@@ -350,6 +339,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
         /** Listens to changes on the dataobject */
         private PropertyChangeListener propertyListener = null;
+        private PropertyChangeListener weakPropListener = null;
 
         
         /** Constructor.*/
@@ -395,13 +385,23 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                 propertyListener = new PropertyChangeListener () {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if(PROP_FILES.equals(evt.getPropertyName())) {
+                            if (isMultiLocale()) {
                             mySetKeys();
+                            } else {
+                                // These children are only used for two or more locales.
+                                // If only default locale is left, disconnect the listener.
+                                // This children object is going to be removed, but
+                                // for some reason it causes problems setting new keys here.
+                                if (propertyListener != null) {
+                                    PropertiesDataObject.this.removePropertyChangeListener(weakPropListener);
+                                    propertyListener = null;
+                        }
+                    }
                         }
                     }
                 }; 
-
-                PropertiesDataObject.this.addPropertyChangeListener(
-                    WeakListeners.propertyChange(propertyListener, PropertiesDataObject.this));
+                weakPropListener = WeakListeners.propertyChange(propertyListener, PropertiesDataObject.this);
+                PropertiesDataObject.this.addPropertyChangeListener(weakPropListener);
             }
         }
 

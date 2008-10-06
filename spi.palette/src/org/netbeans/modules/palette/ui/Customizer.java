@@ -182,6 +182,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         removeButton.setEnabled( canRemove );
         moveUpButton.setEnabled( canMoveUp );
         moveDownButton.setEnabled( canMoveDown );
+        newCategoryButton.setEnabled( new Utils.NewCategoryAction( root ).isEnabled() );
     }
     // -------
 

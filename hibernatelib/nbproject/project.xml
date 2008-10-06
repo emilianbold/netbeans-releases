@@ -30,6 +30,7 @@
                 <subpackages>org.apache</subpackages>
                 <subpackages>javax.sql</subpackages>
                 <subpackages>javax.transaction</subpackages>
+                <subpackages>javax.persistence</subpackages>
                 <subpackages>net.sf</subpackages>
                 <subpackages>antlr</subpackages>
                 <subpackages>org.objectweb</subpackages>
@@ -70,6 +71,12 @@
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/hibernate-annotations.jar</runtime-relative-path>
+            </class-path-extension>           
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/hibernate-commons-annotations.jar</runtime-relative-path>
+            </class-path-extension>           
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/ejb3-persistence.jar</runtime-relative-path>
             </class-path-extension>           
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/jtidy-r8-20060801.jar</runtime-relative-path>

@@ -47,8 +47,11 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.netbeans.modules.glassfish.common.ui.ConnectionPoolCustomizer;
+import org.netbeans.modules.glassfish.common.ui.JdbcResourceCustomizer;
 import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -83,18 +86,18 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                         CommandRunner mgr = new CommandRunner(ip);
                         
                         Decorator decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_CONNECTION_POOL, null);
-                        if(decorator != null) {
+                        if(decorator instanceof ResourceDecorator) {
                             List<ResourceDesc> cpList = mgr.getResources(GlassfishModule.JDBC_CONNECTION_POOL);
                             for(ResourceDesc resource: cpList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, ConnectionPoolCustomizer.class));
                             }
                         }
                         
                         decorator = DecoratorManager.findDecorator(GlassfishModule.JDBC_RESOURCE, null);
-                        if(decorator != null) {
+                        if(decorator instanceof ResourceDecorator) {
                             List<ResourceDesc> jdbcList = mgr.getResources(GlassfishModule.JDBC_RESOURCE);
                             for(ResourceDesc resource: jdbcList) {
-                                keys.add(new Hk2ResourceNode(lookup, resource, decorator));
+                                keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, JdbcResourceCustomizer.class));
                             }
                         }
                     } catch (Exception ex) {

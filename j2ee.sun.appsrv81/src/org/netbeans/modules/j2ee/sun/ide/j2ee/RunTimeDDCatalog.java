@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Element;
@@ -298,7 +299,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
     }
     
     /**

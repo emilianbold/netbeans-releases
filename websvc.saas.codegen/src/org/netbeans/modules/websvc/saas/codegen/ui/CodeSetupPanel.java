@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
-import org.netbeans.modules.websvc.saas.codegen.*;
+import java.awt.Dialog;
+import java.awt.event.KeyEvent;
 import java.awt.Component;
+import java.awt.event.KeyListener;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
@@ -57,7 +59,6 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,33 +74,66 @@ public class CodeSetupPanel extends javax.swing.JPanel {
     private ParamTableModel tableModel;
     private List<ParameterInfo> inputParams;
     private boolean methodNameModified = false;
+    private boolean showParamTypes;
+    private Dialog dialog;
 
-    /** Creates new form InputValuesJPanel */
+    /** Creates new form CodeSetupPanel */
     public CodeSetupPanel(List<ParameterInfo> inputParams) { 
+        this(inputParams, true);
+    }
+    
+    /** Creates new form CodeSetupPanel */
+    public CodeSetupPanel(List<ParameterInfo> inputParams, boolean showParamTypes) { 
         initComponents();
   
         this.inputParams = inputParams;
+        this.showParamTypes = showParamTypes;
         tableModel = new ParamTableModel();
         paramTable.setModel(tableModel);
+        paramTable.addKeyListener(new TableKeyListener());
+    }
+
+    public void setDialog(Dialog d) {
+        this.dialog = d;
+    }
+    
+    private class TableKeyListener implements KeyListener {
+        
+        public TableKeyListener() {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if(e.getKeyCode() == 10) //Carriage return
+                dialog.dispose();
+        }
+
+        public void keyReleased(KeyEvent e) {
+        }
+
     }
 
     private class ParamTable extends JTable {
 
         @Override
         public TableCellEditor getCellEditor(int row, int column) {
-            String paramName = (String) tableModel.getValueAt(row, 0);
-            Class type = (column == 2) ? (Class) tableModel.getValueAt(row, 1) : Boolean.class;
+            if(showParamTypes) {
+                String paramName = (String) tableModel.getValueAt(row, 0);
+                Class type = (column == 2) ? (Class) tableModel.getValueAt(row, 1) : Boolean.class;
 
-            if (Enum.class.isAssignableFrom(type)) {
-                JComboBox combo = new JComboBox(type.getEnumConstants());
-                return new DefaultCellEditor(combo);
-            } else if (type == Boolean.class || type == Boolean.TYPE) {
-                JCheckBox cb = new JCheckBox();
-                cb.setHorizontalAlignment(JLabel.CENTER);
-                cb.setBorderPainted(true);
-                return new DefaultCellEditor(cb);
-            } else if (paramName.toLowerCase().contains(Constants.PASSWORD)) {
-                return new DefaultCellEditor(new JPasswordField());
+                if (Enum.class.isAssignableFrom(type)) {
+                    JComboBox combo = new JComboBox(type.getEnumConstants());
+                    return new DefaultCellEditor(combo);
+                } else if (type == Boolean.class || type == Boolean.TYPE) {
+                    JCheckBox cb = new JCheckBox();
+                    cb.setHorizontalAlignment(JLabel.CENTER);
+                    cb.setBorderPainted(true);
+                    return new DefaultCellEditor(cb);
+                } else if (paramName.toLowerCase().contains(Constants.PASSWORD)) {
+                    return new DefaultCellEditor(new JPasswordField());
+                }
             }
 
             return super.getCellEditor(row, column);
@@ -142,10 +176,19 @@ public class CodeSetupPanel extends javax.swing.JPanel {
     private class ParamTableModel extends AbstractTableModel {
 
         public ParamTableModel() {
+            if(showParamTypes) {
+                columnNames = new String[]{NbBundle.getMessage(CodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(CodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(CodeSetupPanel.class, "LBL_DefaultValue")};
+                types = new Class[]{String.class, Class.class, Object.class};
+                canEdit = new boolean[]{false, false, true};
+            } else {
+                columnNames = new String[]{NbBundle.getMessage(CodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(CodeSetupPanel.class, "LBL_DefaultValue")};
+                types = new Class[]{String.class, Object.class};
+                canEdit = new boolean[]{false, true};
+            }
         }
-        String[] columnNames = new String[]{NbBundle.getMessage(CodeSetupPanel.class, "LBL_Name"), NbBundle.getMessage(CodeSetupPanel.class, "LBL_Type"), NbBundle.getMessage(CodeSetupPanel.class, "LBL_DefaultValue")};
-        Class[] types = new Class[]{String.class, Class.class, Object.class};
-        boolean[] canEdit = new boolean[]{false, false, true};
+        String[] columnNames;
+        Class[] types;
+        boolean[] canEdit;
 
         public String getColumnName(int index) {
             return columnNames[index];
@@ -162,15 +205,26 @@ public class CodeSetupPanel extends javax.swing.JPanel {
         public Object getValueAt(int row, int column) {
             ParameterInfo info = inputParams.get(row);
 
-            switch (column) {
-                case 0:
-                    return info.getName();
-                case 1:
-                    return info.getType();
-                case 2:
-                    return info.getDefaultValue();
-                case 3:
-                    return info.getStyle() == ParamStyle.QUERY;
+            if(showParamTypes) {
+                switch (column) {
+                    case 0:
+                        return info.getName();
+                    case 1:
+                        return info.getType();
+                    case 2:
+                        return info.getDefaultValue();
+                    case 3:
+                        return info.getStyle() == ParamStyle.QUERY;
+                }
+            } else {
+                switch (column) {
+                    case 0:
+                        return info.getName();
+                    case 1:
+                        return info.getDefaultValue();
+                    case 2:
+                        return info.getStyle() == ParamStyle.QUERY;
+                }
             }
 
             return null;
@@ -179,9 +233,12 @@ public class CodeSetupPanel extends javax.swing.JPanel {
         public void setValueAt(Object value, int row, int column) {
             ParameterInfo info = inputParams.get(row);
 
-            if (column == 2) {
+            int columnOffset = 0;
+            if(showParamTypes)
+                columnOffset = 1;
+            if (column == columnOffset+1) {
                 info.setDefaultValue(value);
-            } else if (column == 3) {
+            } else if (column == columnOffset+2) {
                 if(((Boolean) value))
                     info.setStyle(ParamStyle.QUERY);
                 else

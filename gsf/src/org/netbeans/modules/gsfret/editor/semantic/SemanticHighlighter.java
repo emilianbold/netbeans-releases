@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.gsfret.editor.semantic;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,15 +56,13 @@ import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.gsf.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 
 /**
@@ -87,18 +84,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     }
 
     public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-            
-            if (ec == null)
-                return null;
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.global.log(Level.INFO, "SemanticHighlighter: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
+        return DataLoadersBridge.getDefault().getDocument(file);
     }
     
     public @Override void run(CompilationInfo info) {
@@ -119,7 +105,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         final SortedSet<SequenceElement> newColoring = new TreeSet<SequenceElement>();
 
         
-        if (isCancelled()) {
+        if (isCancelled() || info.hasInvalidResults()) {
             return true;
         }
 
@@ -133,10 +119,16 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         long start = System.currentTimeMillis();        
         Set<String> mimeTypes = info.getEmbeddedMimeTypes();
 
+        EditHistory currentHistory = info.getHistory();
+        final int version = currentHistory.getVersion();
+
+
         // Attempt to do less work in embedded scenarios: Only recompute hints for regions
         // that have changed
         LanguageRegistry registry = LanguageRegistry.getInstance();
-        SortedSet<SequenceElement> colorings = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        final GsfSemanticLayer layer = GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc);
+        SortedSet<SequenceElement> colorings = layer.getColorings();
+        int previousVersion = layer.getVersion();
         if (mimeTypes.size() > 1 && info.hasUnchangedResults() && colorings.size() > 0) {
 
             // Sort elements into buckets per language
@@ -160,7 +152,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
 
             // Recompute lists for languages that have changed
-            EditHistory history = info.getHistory();
+            EditHistory history = EditHistory.getCombinedEdits(previousVersion, currentHistory);
+            if (history != null) {
             int offset = history.getStart();
             for (String mimeType : mimeTypes) {
                 if (isCancelled()) {
@@ -230,8 +223,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
                 
-            GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+            layer.setColorings(newColoring, version);
             return true;
+            }
         }
         
         for (String mimeType : mimeTypes) {
@@ -286,7 +280,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         SwingUtilities.invokeLater(new Runnable () {
             public void run() {
-                GsfSemanticLayer.getLayer(SemanticHighlighter.class, doc).setColorings(newColoring/*, addedTokens, removedTokens*/);
+                layer.setColorings(newColoring, version);
             }                
         });            
         

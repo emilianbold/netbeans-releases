@@ -42,6 +42,7 @@ package org.netbeans.modules.quicksearch.web;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -106,7 +107,7 @@ final class Result {
             for( int i=0; i<urlPatterns.length; i++ ) {
                 if( urlPatterns[i].length() == 0 )
                     continue;
-                if( item.getUrl().toLowerCase().matches( urlPatterns[i] ) ) {
+                if( item.getUrl().toLowerCase(Locale.ENGLISH).matches( urlPatterns[i] ) ) {
                     filteredItems.add(item);
                     break;
                 }

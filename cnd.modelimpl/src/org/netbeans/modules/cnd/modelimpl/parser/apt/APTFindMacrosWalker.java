@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 
 /**
@@ -226,9 +227,14 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CsmReferenceKind getKind() {
             return CsmReferenceKind.DECLARATION;
         }
+
+        @Override
+        public CharSequence getText() {
+            return TextCache.getString(super.getText());
+        }        
     }
 
-    private class MacroReference extends OffsetableBase implements CsmReference {
+    private static class MacroReference extends OffsetableBase implements CsmReference {
 
         private CsmObject ref;
         private final String macroName;
@@ -272,7 +278,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         private CsmFile getTargetFile() {
             CsmFile current = UIDCsmConverter.UIDtoFile(mi.targetFile);
-            if (mi.includePath != null) {
+            if (current != null && mi.includePath != null) {
                 ProjectBase targetPrj = ((ProjectBase) current.getProject()).findFileProject(mi.includePath);
                 if (targetPrj != null) {
                     current = targetPrj.getFile(new File(mi.includePath));
@@ -293,6 +299,11 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         
         public CsmReferenceKind getKind() {
             return CsmReferenceKind.DECLARATION;
-        }        
+        }
+
+        @Override
+        public CharSequence getText() {
+            return TextCache.getString(super.getText());
+        }
     }
 }

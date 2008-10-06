@@ -1,0 +1,35 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+
+/**
+ * Write a description of class ${name} here.
+ * 
+ * @author ${user}
+ * @version (a version number or a date)
+ */
+public class ${name} {
+
+    /**
+     * Constructor for objects of class ${name}
+     */
+    public ${name}() {
+    }
+
+    /**
+     * main method, application starts here.
+     * 
+     * @param args execution arguments
+     */
+    public static void main(String[] args) {
+        // put your code here
+        System.out.println("Hello World");
+    }
+}

@@ -45,8 +45,15 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -121,6 +128,8 @@ public class SelectPhpInterpreterPanel extends JPanel {
             message = NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_NoPhpInterpretersFound");
         } else {
             message = " "; // NOI18N
+            // preselect the 1st item
+            phpInterpretersList.setSelectedIndex(0);
         }
         messageLabel.setText(message);
         progressBar.setIndeterminate(false);
@@ -138,61 +147,76 @@ public class SelectPhpInterpreterPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        detectedFilesLabel = new javax.swing.JLabel();
-        phpInterpretersScrollPane = new javax.swing.JScrollPane();
-        phpInterpretersList = new javax.swing.JList();
-        messageLabel = new javax.swing.JLabel();
-        progressBar = new javax.swing.JProgressBar();
+        detectedFilesLabel = new JLabel();
+        phpInterpretersScrollPane = new JScrollPane();
+        phpInterpretersList = new JList();
+        messageLabel = new JLabel();
+        progressBar = new JProgressBar();
 
         detectedFilesLabel.setLabelFor(phpInterpretersList);
-        detectedFilesLabel.setText(org.openide.util.NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PhpInterpreters")); // NOI18N
 
-        phpInterpretersList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        detectedFilesLabel.setText(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PhpInterpreters")); // NOI18N
+        phpInterpretersList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         phpInterpretersList.setEnabled(false);
         phpInterpretersScrollPane.setViewportView(phpInterpretersList);
 
-        messageLabel.setText(org.openide.util.NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PleaseWait")); // NOI18N
+        phpInterpretersList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleName")); // NOI18N
+        phpInterpretersList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersList.AccessibleContext.accessibleDescription")); // NOI18N
+        messageLabel.setLabelFor(progressBar);
 
+        messageLabel.setText(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_PleaseWait")); // NOI18N
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 315, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, phpInterpretersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, progressBar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, detectedFilesLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel))
+                .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                    .add(GroupLayout.LEADING, phpInterpretersScrollPane, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, progressBar, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, detectedFilesLabel)
+                    .add(GroupLayout.LEADING, messageLabel))
                 .addContainerGap())
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 185, Short.MAX_VALUE)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(detectedFilesLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(phpInterpretersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(phpInterpretersScrollPane, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(messageLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0))
+        
         );
+
+        detectedFilesLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleName")); // NOI18N
+        detectedFilesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.detectedFilesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpInterpretersScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        phpInterpretersScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.phpInterpretersScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        progressBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleName")); // NOI18N
+        progressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SelectPhpInterpreterPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel detectedFilesLabel;
-    private javax.swing.JLabel messageLabel;
-    private javax.swing.JList phpInterpretersList;
-    private javax.swing.JScrollPane phpInterpretersScrollPane;
-    private javax.swing.JProgressBar progressBar;
+    private JLabel detectedFilesLabel;
+    private JLabel messageLabel;
+    private JList phpInterpretersList;
+    private JScrollPane phpInterpretersScrollPane;
+    private JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
 
     private final class PhpInterpreterDetector implements Runnable {

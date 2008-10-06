@@ -98,7 +98,7 @@ public class DesignCenter extends UMLTestCase {
     private static String prName= "DesignCentertestHelper";
     private static String project = prName+"|Model";
     private static boolean codeSync=false;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static String defaultNewElementName=org.netbeans.test.uml.designpatterns.utils.Utils.defaultNewElementName;
     private static String defaultReturnType=org.netbeans.test.uml.designpatterns.utils.Utils.defaultReturnType;
     private static String defaultAttributeType=org.netbeans.test.uml.designpatterns.utils.Utils.defaultAttributeType;
@@ -356,7 +356,7 @@ public class DesignCenter extends UMLTestCase {
         //
         assertTrue("There is no Design Center root node or invisible, current root:"+tr.getRoot(),"Design Center".equals(tr.getRoot().toString()) && tr.isRootVisible());
         tr.findPath("DesignPatternCatalog");
-        tr.findPath("Requirements");
+//        tr.findPath("Requirements");
         tr.findPath("DesignPatternCatalog|EJB1.1");
         tr.findPath("DesignPatternCatalog|EJB2.0");
         tr.findPath("DesignPatternCatalog|GoF Design Patterns");

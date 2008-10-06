@@ -1,0 +1,4 @@
+Code completion result for source line:
+SSC|
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTRUCTO SomeSpecialClass - generate                null

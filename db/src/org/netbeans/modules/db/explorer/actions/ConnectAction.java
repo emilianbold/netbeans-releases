@@ -115,6 +115,7 @@ public class ConnectAction extends DatabaseAction {
         return MODE_ALL;
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
@@ -154,7 +155,7 @@ public class ConnectAction extends DatabaseAction {
                     
                     String message = null;
                     if (exc instanceof ClassNotFoundException) {
-                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                        message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), exc.getMessage()); //NOI18N
                     } else {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append(DbUtilities.formatError(bundle().getString("ERR_UnableToConnect"), exc.getMessage())); //NOI18N
@@ -268,7 +269,7 @@ public class ConnectAction extends DatabaseAction {
 
                             try {
                                 if (dbcon.getConnection() == null || dbcon.getConnection().isClosed())
-                                    dbcon.connect();
+                                    dbcon.connectAsync();
                                 else {
                                     dbcon.setSchema(schemaPanel.getSchema());
                                     nfo.setSchema(schemaPanel.getSchema());
@@ -294,7 +295,7 @@ public class ConnectAction extends DatabaseAction {
                                 }
                             } catch (SQLException exc) {
                                 //isClosed() method failed, try to connect
-                                dbcon.connect();
+                                dbcon.connectAsync();
                             }
                             return;
                         }
@@ -364,7 +365,7 @@ public class ConnectAction extends DatabaseAction {
                     failed = false;
                     
                     dbcon.addPropertyChangeListener(connectionListener);
-                    dbcon.connect();
+                    dbcon.connectAsync();
                     
                     progress.start();
                     progress.switchToIndeterminate();
@@ -380,7 +381,7 @@ public class ConnectAction extends DatabaseAction {
                         showDialog(nfo, true);                        
                     }
                 } catch (Exception exc) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), new String[] {exc.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableToConnect"), exc.getMessage()); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     
                     // If the connection fails with a progress bar only, then 
@@ -404,7 +405,7 @@ public class ConnectAction extends DatabaseAction {
             // hack for Pointbase Network Server
 //            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
 //                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                    String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), exc.getMessage()); // NOI18N
 //                    message = MessageFormat.format(bundle().getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null

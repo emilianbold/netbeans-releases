@@ -39,6 +39,7 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
@@ -48,7 +49,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 
 /**
  *
@@ -77,7 +78,12 @@ public class HtmlSemanticAnalyzer implements SemanticAnalyzer {
 
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
-        ParserResult presult = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+        if(!presultIterator.hasNext()) {
+            return;
+        }
+        
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         
         HtmlParserResult htmlResult = (HtmlParserResult) presult;

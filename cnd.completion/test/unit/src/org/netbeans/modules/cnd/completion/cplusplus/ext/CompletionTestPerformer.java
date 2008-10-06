@@ -142,7 +142,7 @@ public class CompletionTestPerformer {
         SyntaxSupport support = doc.getSyntaxSupport();
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
-        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope);
+        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
         CsmCompletionQuery.CsmCompletionResult res = (CsmCompletionQuery.CsmCompletionResult)query.query(editor, doc, caretOffset, support, false, !unsorted);
         
         CompletionItem[] array =  res == null ? new CompletionItem[0] : (CompletionItem[])res.getData().toArray(new CompletionItem[res.getData().size()]);
@@ -163,7 +163,7 @@ public class CompletionTestPerformer {
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
-            String textToInsert, int offsetAfterInsertion, 
+            final String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
             int colIndex) throws BadLocationException, IOException {
         if (!SwingUtilities.isEventDispatchThread()) {
@@ -175,12 +175,21 @@ public class CompletionTestPerformer {
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
         
         if (textToInsert.length() > 0) {
-            doc.atomicLock();
-            try {
-                doc.insertString(offset, textToInsert, null);
-            } finally {
-                Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
-                doc.atomicUnlock();
+            final int insOffset = offset;
+            final BaseDocument insDoc = doc;
+            final BadLocationException ex[] = new BadLocationException[] { null };
+            insDoc.runAtomic(new Runnable() {
+
+                public void run() {
+                    try {
+                        insDoc.insertString(insOffset, textToInsert, null);
+                    } catch (BadLocationException e) {
+                        ex[0] = e;
+                    }
+                }
+            });
+            if (ex[0] != null) {
+                throw ex[0];
             }
             String text = doc.getText(0, doc.getLength());
             parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);

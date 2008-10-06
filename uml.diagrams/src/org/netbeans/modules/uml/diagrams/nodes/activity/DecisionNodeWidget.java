@@ -48,19 +48,20 @@ import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.netbeans.modules.uml.drawingarea.widgets.ResizeToContentMarker;
 
 /**
  *
  * @author thuy
  */
-public class DecisionNodeWidget extends ControlNodeWidget
+public class DecisionNodeWidget extends ControlNodeWidget implements ResizeToContentMarker
 {
     public static final int MIN_NODE_WIDTH =  20;
     public static final int MIN_NODE_HEIGHT = 30;
-    public DecisionNodeWidget(Scene scene)
+    
+    public DecisionNodeWidget(Scene scene, String path)
     {
-        super(scene, true);  // context palette is on
+        super(scene, path); 
     }
     
     @Override
@@ -68,21 +69,21 @@ public class DecisionNodeWidget extends ControlNodeWidget
     {
         if (presentation != null)
         {
-            //IDecisionNode element = (IDecisionNode) presentation.getFirstSubject();
             Scene scene = getScene();
             
             //create main view 
             PolygonWidget polygonWidget = new PolygonWidget(scene,
-                                                                 getWidgetID(),
-                                                                 bundle.getString("LBL_body"));
+                                                 getResourcePath(),
+                                                 bundle.getString("LBL_body"));
              polygonWidget.setMinimumSize(new Dimension(
                                       MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
             polygonWidget.setUseGradient(useGradient);
-            polygonWidget.setCustomizableResourceTypes(
-                    new ResourceType[]{ResourceType.BACKGROUND});
+//            polygonWidget.setCustomizableResourceTypes(
+//                    new ResourceType[]{ResourceType.BACKGROUND});
             polygonWidget.setOpaque(true);
             setCurrentView(polygonWidget);
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

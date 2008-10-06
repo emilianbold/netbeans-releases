@@ -41,9 +41,13 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
@@ -51,6 +55,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -61,6 +66,8 @@ import org.openide.util.NbBundle;
 public class DebugCommand extends Command implements Displayable {
 
     public static final String ID = ActionProvider.COMMAND_DEBUG;
+    public static String DISPLAY_NAME = NbBundle.getMessage(DebugCommand.class, "LBL_DebugProject");
+
     private final DebugLocalCommand debugLocalCommand;
 
     public DebugCommand(PhpProject project) {
@@ -70,9 +77,15 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
+        boolean scriptSelected = isScriptSelected();
+        if (scriptSelected) {
             debugLocalCommand.invokeAction(null);
         } else {
+            eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
                 public void run() {
                         try {
@@ -99,17 +112,18 @@ public class DebugCommand extends Command implements Displayable {
                             invokeAction(context);
                         }
                     } else {
-                        final FileObject fileForProject = fileForProject();
+                        final FileObject fileForProject = fileForProject(true);
                         if (fileForProject != null) {
-                            dbgStarter.start(getProject(), runnable, fileForProject, useInterpreter());
+                            startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
                         } else {
-                            String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
+                            String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
                             String err = NbBundle.getMessage(DebugLocalCommand.class,
                                     "ERR_Missing_IndexFile", idxFileName);//NOI18N
 
                             final Message messageDecriptor = new NotifyDescriptor.Message(err,
                                     NotifyDescriptor.WARNING_MESSAGE);
                             DialogDisplayer.getDefault().notify(messageDecriptor);
+                            getProject().getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
                         }
                     }
                 }
@@ -117,6 +131,16 @@ public class DebugCommand extends Command implements Displayable {
                 runnable.run();
             }
         }
+    }
+
+    protected void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
+            final FileObject debuggedFile, boolean runAsScript) {
+        Callable initDebuggingCallable = Executors.callable(initDebuggingCode, new Cancellable() {
+            public boolean cancel() {
+                return true;
+            }
+        });
+        dbgStarter.start(getProject(), initDebuggingCallable, debuggedFile, runAsScript);
     }
 
     @Override
@@ -130,7 +154,6 @@ public class DebugCommand extends Command implements Displayable {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugProject");
-
+        return DISPLAY_NAME;
     }
 }

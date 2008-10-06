@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
 OpenIDE-Module: org.netbeans.libs.springframework
 OpenIDE-Module-Layer: org/netbeans/libs/springframework/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/springframework/Bundle.properties

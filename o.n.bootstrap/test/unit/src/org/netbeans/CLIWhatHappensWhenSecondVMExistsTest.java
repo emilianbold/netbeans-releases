@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /** Tests that handler can set netbeans.mainclass property in its constructor.
  *
@@ -150,6 +151,7 @@ implements Map {
     }
     
 
+    @RandomlyFails
     public void testGet1000AndExit() throws Exception {
         LOG.info("testGet1000AndExit starts");
         org.netbeans.MainImpl.main(new String[] { "--userdir", getWorkDirPath() });

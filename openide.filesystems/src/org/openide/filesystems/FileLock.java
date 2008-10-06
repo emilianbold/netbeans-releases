@@ -40,11 +40,6 @@
  */
 package org.openide.filesystems;
 
-import java.io.ByteArrayOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-
 /** Represents an acquired lock on a <code>FileObject</code>.
 * Typical usage includes locking the file in the editor on first
 * modification, and then using this object to ensure exclusive access when
@@ -69,18 +64,20 @@ public class FileLock extends Object {
      * Represents a lock which is never valid.
     */
     public static final FileLock NONE = new FileLock() {
-            /** @return false always. */
-            public boolean isValid() {
-                return false;
-            }
-        };
+
+        /** @return false always. */
+        @Override
+        public boolean isValid() {
+            return false;
+        }
+    };
 
     /** Determines if lock is locked or if it was released. */
     private boolean locked = true;
-    private Throwable lockedBy;
+    protected Throwable lockedBy;
 
     public FileLock() {
-        assert (lockedBy = new Throwable()) != null;
+        assert (lockedBy = new Throwable("Locked by:")) != null;  //NOI18N
     }
 
     // ===============================================================================
@@ -120,22 +117,13 @@ public class FileLock extends Object {
     /** Finalize this object. Calls {@link #releaseLock} to release the lock if the program
     * for some reason failed to.
     */
+    @Override
     public void finalize() {
-        assert (!isValid()) : assertMessageForInvalidLocks();
-        releaseLock();
-    }
-
-    private String assertMessageForInvalidLocks() {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        if (lockedBy != null) {
-            Logger.getLogger(FileLock.class.getName()).log(Level.WARNING, null,
-                              new Exception("Not released lock for file: " +
-                                            toString() +
-                                            " (traped in finalizer)").initCause(lockedBy));//NOI18N
+        if(isValid()) {
+            releaseLock();
+            assert false : new Exception("Not released lock for file: " +
+                    toString() +
+                    " (traped in finalizer)", lockedBy);//NOI18N;
         }
-
-        releaseLock();
-        return bos.toString();
     }
 }

@@ -49,10 +49,28 @@ import java.awt.Point;
 public interface ContextPaletteManager
 {
     /**
+     * Notifies the context palette manager that the select element has changed.
      * 
-     * @param p point related to corresponding selection event in scene azes
+     * @param p point related to corresponding selection event in scene.  If 
+     *          null is specified the context palette manager will determine the
+     *          best location to place the palette.
      */
     public void selectionChanged(Point p);
     
+    /**
+     * Cancel the palette action.  The context palette will also be hidden.
+     */
     public void cancelPalette();
+    
+    /**
+     * Retrieves the model used to represent the context palette information.
+     * 
+     * @return the context palette model.
+     */
+    public ContextPaletteModel getModel();
+    
+    /**
+     * Request that the context palette recieve input focus.
+     */
+    public void requestFocus();
 }

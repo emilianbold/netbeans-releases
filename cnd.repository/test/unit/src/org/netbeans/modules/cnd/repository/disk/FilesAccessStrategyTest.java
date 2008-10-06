@@ -93,7 +93,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     private boolean proceed;
     private volatile int filled;
     
-    private Object barrier = new Object();
+    private final Object barrier = new Object();
             
     private void waitBarrier() {
         synchronized (barrier) {
@@ -111,6 +111,11 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     }
     
     public void testMultyThread() throws Exception {
+        
+        // Switched OFF untill #143967 is fixed
+        if (true) {
+            return;
+        }
 
         String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
 

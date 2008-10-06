@@ -64,7 +64,13 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
 
     @Override
     protected void initChildren(Vector children) throws DatabaseException {
+        if (! isConnected()) {
+            return;
+        }
         try {
+            if (!ensureConnected()) {
+                return;
+            }
             String[] types = new String[] {"TABLE"}; // NOI18N
             List recycleBinTables;
             
@@ -176,7 +182,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
     }
     
     @Override
-    protected void notifyChange() {
+    public void notifyChange() {
         super.notifyChange();
         fireRefresh();        
     }

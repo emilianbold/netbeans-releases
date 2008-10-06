@@ -98,6 +98,10 @@ public class EnterpriseSetup extends JellyTestCase {
         openProject("PerformanceTestWebApplication");
     }
     
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+
     public void closeMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }

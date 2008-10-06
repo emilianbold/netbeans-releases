@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
@@ -82,7 +83,8 @@ public class CallStackFrameImpl implements CallStackFrame {
     static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
     static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
                                                       !System.getProperty("java.version").equals("1.6.0_01");
-    
+
+    private JPDAThreadImpl      thread;
     private StackFrame          sf;
     private int                 depth;
     private JPDADebuggerImpl    debugger;
@@ -97,6 +99,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         int                 depth,
         JPDADebuggerImpl    debugger
     ) {
+        this.thread = thread;
         this.sf = sf;
         this.depth = depth;
         this.debugger = debugger;
@@ -318,31 +321,36 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     public LocalVariable[] getMethodArguments() {
-        StackFrame sf = getStackFrame();
-        String url = debugger.getEngineContext().getURL(sf,
-                                                        getDefaultStratum());
-        List<Value> argValues = getArgumentValues(sf);
-        if (argValues == null) return null;
-        MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
-        if (argumentNames == null) return null;
-        LocalVariable[] arguments = new LocalVariable[argumentNames.length];
-        for (int i = 0; i < arguments.length; i++) {
-            com.sun.jdi.Value value = argValues.get(i);
-            if (value instanceof ObjectReference) {
-                arguments[i] =
-                        new ArgumentObjectVariable(debugger,
-                                             (ObjectReference) value,
-                                             argumentNames[i].getName(),
-                                             argumentNames[i].getType());
-            } else {
-                arguments[i] =
-                        new ArgumentVariable(debugger,
-                                             (PrimitiveValue) value,
-                                             argumentNames[i].getName(),
-                                             argumentNames[i].getType());
+        try {
+            StackFrame sf = getStackFrame();
+            String url = debugger.getEngineContext().getURL(sf,
+                                                            getDefaultStratum());
+            List<Value> argValues = getArgumentValues(sf);
+            if (argValues == null) return null;
+            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
+            if (argumentNames == null) return null;
+            int n = Math.min(argValues.size(), argumentNames.length);
+            LocalVariable[] arguments = new LocalVariable[n];
+            for (int i = 0; i < n; i++) {
+                com.sun.jdi.Value value = argValues.get(i);
+                if (value instanceof ObjectReference) {
+                    arguments[i] =
+                            new ArgumentObjectVariable(debugger,
+                                                 (ObjectReference) value,
+                                                 argumentNames[i].getName(),
+                                                 argumentNames[i].getType());
+                } else {
+                    arguments[i] =
+                            new ArgumentVariable(debugger,
+                                                 (PrimitiveValue) value,
+                                                 argumentNames[i].getName(),
+                                                 argumentNames[i].getType());
+                }
             }
+            return arguments;
+        } catch (InvalidStackFrameException e) {
+            return new LocalVariable[0];
         }
-        return arguments;
     }
     
     List<LocalVariable> findOperationArguments(Operation operation) {
@@ -360,7 +368,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                 step.addCountFilter(1);
                 step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
                 step.enable();
-                step.putProperty("silent", Boolean.TRUE);
+                step.putProperty(Operator.SILENT_EVENT_PROPERTY, Boolean.TRUE);
                 final Boolean[] stepDone = new Boolean[] { null };
                 debugger.getOperator().register(step, new Executor() {
                     public boolean exec(com.sun.jdi.event.Event event) {
@@ -552,7 +560,8 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public void popFrame () {
-        debugger.popFrames (sf.thread(), getStackFrame ());
+        StackFrame frame = getStackFrame();
+        debugger.popFrames (frame.thread(), frame);
     }
     
     /**
@@ -562,7 +571,7 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws InvalidStackFrameException when this stack frame becomes invalid
      */
     public JPDAThread getThread () {
-        return debugger.getThread (sf.thread());
+        return thread;//debugger.getThread (sf.thread());
     }
 
     
@@ -573,6 +582,28 @@ public class CallStackFrameImpl implements CallStackFrame {
      * @throws IllegalStateException when the associated thread is not suspended.
      */
     public StackFrame getStackFrame () {
+        try {
+            // Just a validity test
+            sf.thread();
+        } catch (InvalidStackFrameException isfex) {
+            // We're invalid! Try to retrieve the new stack frame.
+            // We could be invalidated due to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6700889
+            try {
+                ThreadReference ref = thread.getThreadReference();
+                if (depth >= ref.frameCount()) {
+                    // The execution has moved elsewhere.
+                    throw isfex;
+                }
+                sf = ref.frame(depth);
+            } catch (IncompatibleThreadStateException ex) {
+                // This was not successful. Throw the original exception.
+                throw isfex;
+            }
+            if (!equalsInfo.equals(new EqualsInfo(debugger, sf, depth))) {
+                // The execution has moved elsewhere.
+                throw isfex;
+            }
+        }
         return sf;
     }
     

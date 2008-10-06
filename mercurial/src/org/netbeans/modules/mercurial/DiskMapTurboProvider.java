@@ -73,9 +73,13 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     synchronized Map<File, FileInformation>  getAllModifiedValues() {
-        if (modifiedFilesChanged() || cachedValues == null) {
+        if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
+            if(files == null) {
+                cachedValues = Collections.unmodifiableMap(cachedValues);
+                return cachedValues;
+            }
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
                 if (file.getName().endsWith(".bin") == false) { // NOI18N
@@ -123,10 +127,6 @@ class DiskMapTurboProvider implements TurboProvider {
             cachedValues = Collections.unmodifiableMap(cachedValues);
         }
         return cachedValues;
-    }
-
-    boolean modifiedFilesChanged() {
-        return cachedStoreSerial != storeSerial;
     }
     
     public boolean recognizesAttribute(String name) {

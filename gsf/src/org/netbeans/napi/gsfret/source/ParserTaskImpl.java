@@ -58,6 +58,7 @@ import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -75,9 +76,6 @@ public class ParserTaskImpl {
         this.listener = listener;
     }
 
-    public void finish() {
-    }
-
     public Iterable<ParserResult> parse(ParserFile... files) throws IOException {
         List<ParserResult> results = new ArrayList<ParserResult>(files.length);
 
@@ -85,31 +83,6 @@ public class ParserTaskImpl {
             if (file == null) {
                 continue;
             }
-
-            //ParserResult result = parser.parseBuffer(currentInfo.getFileObject(), buffer, errorHandler);
-            final ParserResult[] resultHolder = new ParserResult[1];
-            ParseListener listener = // TODO make innerclass
-                new ParseListener() {
-                    public void started(ParseEvent e) {
-                        ParserTaskImpl.this.listener.started(e);
-                    }
-
-                    public void error(Error e) {
-                        ParserTaskImpl.this.listener.error(e);
-                    }
-
-                    public void exception(Exception e) {
-                        ParserTaskImpl.this.listener.exception(e);
-                    }
-
-                    public void finished(ParseEvent e) {
-                        // TODO - check state
-                        if (e.getKind() == ParseEvent.Kind.PARSE) {
-                            resultHolder[0] = e.getResult();
-                        }
-                        ParserTaskImpl.this.listener.finished(e);
-                    }
-                };
 
             List<ParserFile> sourceFiles = new ArrayList<ParserFile>(1);
             sourceFiles.add(file);
@@ -121,66 +94,83 @@ public class ParserTaskImpl {
                 continue;
             }
 
-            String mimeType = file.getFileObject().getMIMEType();
-            LanguageRegistry registry = LanguageRegistry.getInstance();
-            List<Language> languages = registry.getApplicableLanguages(mimeType);
-            //Language language = currentInfo.getLanguage();
+            // We're parsing only one language here!
+            assert language != null;
+            Parser parser = language.getParser(); // Todo - call createParserTask here?
 
-            for (Language l : languages) {
-                // HACK - I really need to iterate over ALL the languages and index all of them
-                if (l != language) {
-                    continue;
-                }
-                
-                EmbeddingModel model = registry.getEmbedding(l.getMimeType(), mimeType);
-                assert language != null;
-                Parser parser = language.getParser(); // Todo - call createParserTask here?
-
-                if (parser != null) {
-                    if (model != null) {
-                        FileObject bufferFo = file.getFileObject();
-                        Document document = UiUtils.getDocument(bufferFo, true);
-                        if (document == null) {
-                            continue;
+            if (parser != null) {
+                //ParserResult result = parser.parseBuffer(currentInfo.getFileObject(), buffer, errorHandler);
+                final ParserResult[] resultHolder = new ParserResult[1];
+                ParseListener delegatingListener = // TODO make innerclass
+                    new ParseListener() {
+                        public void started(ParseEvent e) {
+                            ParserTaskImpl.this.listener.started(e);
                         }
 
-                        Collection<? extends TranslatedSource> translations = model.translate(document);
-                        for (TranslatedSource translatedSource : translations) {
-                            String buffer = translatedSource.getSource();
-                            SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
-                            Parser.Job job = new Parser.Job(sourceFiles, listener, reader, translatedSource);
-                            parser.parseFiles(job);
-
-
-                            ParserResult result = resultHolder[0];
-                            result.setTranslatedSource(translatedSource);
-                            assert result != null;
-                            results.add(result);
+                        public void error(Error e) {
+                            ParserTaskImpl.this.listener.error(e);
                         }
-                    } else {
-                        SourceFileReader reader =
-                            new SourceFileReader() {
-                                public CharSequence read(ParserFile file) throws IOException {
-                                    //assert fileObject == file;
-                                    //assert file.getFileObject() != null : file.getNameExt();
-                                    // #100618: Get more info but don't blow up
-                                    if (file.getFileObject() == null) {
-                                        ErrorManager.getDefault().log("Null fileobject for " + file.getNameExt());
-                                        return "";
-                                    }
-                                    return SourceFileObject.create(file.getFileObject()).getCharContent(false).toString();
-                                }
-                                public int getCaretOffset(ParserFile fileObject) {
-                                    return -1;
-                                }
-                            };
 
-                        Parser.Job job = new Parser.Job(sourceFiles, listener, reader, null);
+                        public void exception(Exception e) {
+                            ParserTaskImpl.this.listener.exception(e);
+                        }
+
+                        public void finished(ParseEvent e) {
+                            // TODO - check state
+                            if (e.getKind() == ParseEvent.Kind.PARSE) {
+                                resultHolder[0] = e.getResult();
+                            }
+                            ParserTaskImpl.this.listener.finished(e);
+                        }
+                    };
+
+                String mimeType = file.getFileObject().getMIMEType();
+                LanguageRegistry registry = LanguageRegistry.getInstance();
+                EmbeddingModel model = registry.getEmbedding(language.getMimeType(), mimeType);
+
+                if (model != null) {
+                    FileObject bufferFo = file.getFileObject();
+                    Document document = GsfUtilities.getDocument(bufferFo, true, true);
+                    if (document == null) {
+                        continue;
+                    }
+
+                    Collection<? extends TranslatedSource> translations = model.translate(document);
+                    for (TranslatedSource translatedSource : translations) {
+                        String buffer = translatedSource.getSource();
+                        SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
+                        Parser.Job job = new Parser.Job(sourceFiles, delegatingListener, reader, translatedSource);
                         parser.parseFiles(job);
+
+
                         ParserResult result = resultHolder[0];
+                        result.setTranslatedSource(translatedSource);
                         assert result != null;
                         results.add(result);
                     }
+                } else {
+                    SourceFileReader reader =
+                        new SourceFileReader() {
+                            public CharSequence read(ParserFile file) throws IOException {
+                                //assert fileObject == file;
+                                //assert file.getFileObject() != null : file.getNameExt();
+                                // #100618: Get more info but don't blow up
+                                if (file.getFileObject() == null) {
+                                    ErrorManager.getDefault().log("Null fileobject for " + file.getNameExt());
+                                    return "";
+                                }
+                                return SourceFileObject.create(file.getFileObject()).getCharContent(false).toString();
+                            }
+                            public int getCaretOffset(ParserFile fileObject) {
+                                return -1;
+                            }
+                        };
+
+                    Parser.Job job = new Parser.Job(sourceFiles, delegatingListener, reader, null);
+                    parser.parseFiles(job);
+                    ParserResult result = resultHolder[0];
+                    assert result != null;
+                    results.add(result);
                 }
             }
         }

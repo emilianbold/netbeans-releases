@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.db.mysql.actions;
 
+import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -51,6 +54,8 @@ import org.openide.util.actions.CookieAction;
  * @author David Van Couvering
  */
 public class CreateDatabaseAction extends CookieAction {
+    private static Logger LOGGER = Logger.getLogger(CreateDatabaseAction.class.getName());
+
     private static final Class[] COOKIE_CLASSES = new Class[] {
         DatabaseServer.class
     };
@@ -100,8 +105,14 @@ public class CreateDatabaseAction extends CookieAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
-        
-        DatabaseServer server = node.getCookie(DatabaseServer.class);
-        CreateDatabasePanel.showCreateDatabaseDialog(server);
+
+        final DatabaseServer server = node.getCookie(DatabaseServer.class);
+
+                try {
+                    CreateDatabasePanel panel = new CreateDatabasePanel(server);
+                    panel.showCreateDatabaseDialog();
+                } catch (DatabaseException dbe) {
+                    Utils.displayErrorMessage(dbe.getMessage());
+                }
     }
 }

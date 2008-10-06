@@ -137,6 +137,9 @@ public class SchemaColumn extends JPanel
         if (rootNode != null) {
             if (rootNode.getCookie(DummySchemaNode.class) == null &&
                     rootNode.getCookie(SchemaNode.class) != null) {
+                //issue 140605: call getChildren.getNodes() once
+                if(rootNode.getChildren() != null)
+                    rootNode.getChildren().getNodes();
                 rootNode = new DummySchemaNode(rootNode);
             }
             getExplorerManager().setRootContext(rootNode);

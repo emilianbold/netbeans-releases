@@ -43,117 +43,63 @@ package org.netbeans.modules.editor.bookmarks;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
+import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.WeakListeners;
+
 
 /**
  * Module installation class for editor.
  *
  * @author Miloslav Metelka
  */
-public class EditorBookmarksModule extends ModuleInstall {
+class EditorBookmarksModule extends ModuleInstall {
 
-    private static final String DOCUMENT_TRACKER_PROP = "EditorBookmarksModule.DOCUMENT_TRACKER_PROP"; //NOI18N
+    private static final String         DOCUMENT_TRACKER_PROP = "EditorBookmarksModule.DOCUMENT_TRACKER_PROP"; //NOI18N
     
-    private PropertyChangeListener editorsTracker;
-    private PropertyChangeListener documentTracker;
-    private PropertyChangeListener openProjectsListener;
-    private static List listeners = new ArrayList(); // List<ChangeListener>
-    private PropertyChangeListener annotationTypesListener;
-    private List lastOpenProjects;
+    private BookmarksInitializer        bookmarksInitializer;
+    private PropertyChangeListener      annotationTypesListener;
 
     public void restored () {
-        editorsTracker = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // event for the editors tracker
-                if (evt.getSource() == EditorRegistry.class) {
-                    if (evt.getPropertyName() == null || EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
-                        JTextComponent jtc = (JTextComponent) evt.getNewValue();
-                        BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
-
-                        PropertyChangeListener l = (PropertyChangeListener) jtc.getClientProperty(DOCUMENT_TRACKER_PROP);
-                        if (l == null) {
-                            jtc.putClientProperty(DOCUMENT_TRACKER_PROP, documentTracker);
-                            jtc.addPropertyChangeListener(documentTracker);
-                        }
-                    }
-                    return;
-                }
-                
-                // event for the document tracker
-                if (evt.getSource() instanceof JTextComponent) {
-                    if (evt.getPropertyName() == null || "document".equals(evt.getPropertyName())) { //NOI18N
-                        Document newDoc = (Document)evt.getNewValue();
-                        if (newDoc != null) {
-                            BookmarkList.get(newDoc); // ask for the list to initialize it
-                        }
-                    }
-                    return;
-                }
-            }
-        };
-        documentTracker = WeakListeners.propertyChange(editorsTracker, null);
-        EditorRegistry.addPropertyChangeListener(editorsTracker);
-        
-        // Start listening on project closing
-        openProjectsListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                List openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
-                // lastOpenProjects will contain the just closed projects
-                lastOpenProjects.removeAll(openProjects);
-                for (Iterator it = lastOpenProjects.iterator(); it.hasNext();) {
-                    Project prj = (Project)it.next();
-                    PersistentBookmarks.saveProjectBookmarks(prj);
-                }
-                lastOpenProjects = new ArrayList(openProjects);
-            }
-        };
-        OpenProjects op = OpenProjects.getDefault();
-        lastOpenProjects = new ArrayList(Arrays.asList(op.getOpenProjects()));
-        op.addPropertyChangeListener(openProjectsListener);
-        
-        SwingUtilities.invokeLater(new Runnable(){
-            public void run(){
-                final Iterator it = EditorRegistry.componentList().iterator();
-                if (!it.hasNext()){
+        BookmarksPersistence.init ();
+        bookmarksInitializer = new BookmarksInitializer ();
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                final Iterator<? extends JTextComponent> it = 
+                    EditorRegistry.componentList ().iterator ();
+                if (!it.hasNext ())
                     return ;
-                }
                 
-                AnnotationType type = AnnotationTypes.getTypes().getType(NbBookmarkImplementation.BOOKMARK_ANNOTATION_TYPE);
-                if (type == null){
+                AnnotationType type = AnnotationTypes.getTypes ().getType 
+                    (Bookmark.BOOKMARK_ANNOTATION_TYPE);
+                if (type == null) {
                     // bookmark type was not added into AnnotationTypes yet, wait for event
-                    AnnotationTypes.getTypes().addPropertyChangeListener(annotationTypesListener = new PropertyChangeListener(){
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            AnnotationType type = AnnotationTypes.getTypes().getType(NbBookmarkImplementation.BOOKMARK_ANNOTATION_TYPE);
-                            if (type != null){
-                                AnnotationTypes.getTypes().removePropertyChangeListener(annotationTypesListener);
-                                while(it.hasNext()) {
-                                    JTextComponent jtc = (JTextComponent)it.next();
-                                    BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
+                    annotationTypesListener = new PropertyChangeListener () {
+                        public void propertyChange (PropertyChangeEvent evt) {
+                            AnnotationType type = AnnotationTypes.getTypes ().getType (Bookmark.BOOKMARK_ANNOTATION_TYPE);
+                            if (type != null) {
+                                AnnotationTypes.getTypes ().removePropertyChangeListener (annotationTypesListener);
+                                while (it.hasNext ()) {
+                                    JTextComponent jtc = (JTextComponent) it.next();
+                                    BookmarkList.get (jtc.getDocument ()); // Initialize the bookmark list
                                 }
                             }
                         }
-                    });
+                    };
+                    AnnotationTypes.getTypes ().addPropertyChangeListener
+                        (annotationTypesListener);
                 } else {
-                    while(it.hasNext()){
-                        JTextComponent jtc = (JTextComponent)it.next();
-                        BookmarkList.get(jtc.getDocument()); // Initialize the bookmark list
-                    }
+                    while (it.hasNext ())
+                        BookmarkList.get (it.next ().getDocument ()); // Initialize the bookmark list
                 }
             }
         });
@@ -162,50 +108,73 @@ public class EditorBookmarksModule extends ModuleInstall {
     /**
      * Called when all modules agreed with closing and the IDE will be closed.
      */
-    public boolean closing() {
+    public boolean closing () {
         // this used to be called from close(), but didn't save properly on JDK6,
         // no idea why, see #120880
-        finish();
-        return super.closing();
+        finish ();
+        return super.closing ();
     }
     
     /**
      * Called when module is uninstalled.
      */
-    public void uninstalled() {
-        finish();
+    public void uninstalled () {
+        finish ();
     }
     
-    private void finish() {
+    private void finish () {
         // Stop listening on projects closing
-        OpenProjects.getDefault().removePropertyChangeListener(openProjectsListener);
-        
-        EditorRegistry.removePropertyChangeListener(editorsTracker);
-        
-        // Save bookmarks for all opened projects with touched bookmarks
-        PersistentBookmarks.saveAllProjectBookmarks();
-        
-        // XXX: notify NbBookmarkManager that the module is uninstalled and BookmarkList can be removed
-        // from doc.clientProperty
-        fireChange();
+        BookmarksPersistence.destroy ();
+        if (bookmarksInitializer != null)
+            bookmarksInitializer.destroy();
     }
+    
+    
+    // innerclasses ............................................................
+    
+    private class BookmarksInitializer implements PropertyChangeListener {
 
-    public static synchronized void addChangeListener(ChangeListener l) {
-        listeners.add(l);
-    }
-    
-    public static synchronized void removeChangeListener(ChangeListener l) {
-        listeners.remove(l);
-    }
-    
-    private static void fireChange() {
-        ChangeEvent ev = new ChangeEvent(EditorBookmarksModule.class);
-        ChangeListener[] ls;
-        synchronized (EditorBookmarksModule.class) {
-            ls = (ChangeListener[]) listeners.toArray(new ChangeListener[listeners.size()]);
+        private PropertyChangeListener      documentListener;
+
+        BookmarksInitializer () {
+            EditorRegistry.addPropertyChangeListener (this);
+            documentListener = WeakListeners.propertyChange (this, null);
         }
-        for (int i = 0; i < ls.length; i++) {
-            ls[i].stateChanged(ev);
+
+        public void propertyChange (PropertyChangeEvent evt) {
+            // event for the editors tracker
+            if (evt.getSource () == EditorRegistry.class) {
+                if (evt.getPropertyName () == null || 
+                    EditorRegistry.FOCUS_GAINED_PROPERTY.equals (evt.getPropertyName ())
+                ) {
+                    JTextComponent jtc = (JTextComponent) evt.getNewValue ();
+                    BookmarkList.get (jtc.getDocument ()); // Initialize the bookmark list
+
+                    PropertyChangeListener l = (PropertyChangeListener) jtc.getClientProperty (DOCUMENT_TRACKER_PROP);
+                    if (l == null) {
+                        jtc.putClientProperty (DOCUMENT_TRACKER_PROP, documentListener);
+                        jtc.addPropertyChangeListener (documentListener);
+                    }
+                }
+                return;
+            }
+
+            // event for the document tracker
+            if (evt.getSource () instanceof JTextComponent) {
+                if (evt.getPropertyName () == null ||
+                    "document".equals (evt.getPropertyName ())
+                ) { //NOI18N
+                    Document newDoc = (Document) evt.getNewValue ();
+                    if (newDoc != null) {
+                        BookmarkList.get (newDoc); // ask for the list to initialize it
+                    }
+                }
+                return;
+            }
+        }
+
+        void destroy () {
+            EditorRegistry.removePropertyChangeListener (this);
         }
     }
 }

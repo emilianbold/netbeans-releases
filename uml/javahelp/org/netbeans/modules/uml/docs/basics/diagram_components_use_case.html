@@ -5,13 +5,14 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
 <title>Use Case Diagram Elements (UML Modeling)</title>
 </head>
 <body>
 <h2>Use Case Diagram Elements</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The following table describes the elements that you can add to Use Case diagrams. The elements are grouped by <a href="palette.html">Modeling Palette</a> section.</p>
+<p>The following table describes the elements that you can add to Use Case diagrams. The elements are grouped by <a href="palette.html">Modeling Palette</a> section  and are also listed if they appear on the Context Menu. </p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tr valign="top">
 <th scope="col" align="left">Element</th>
@@ -40,54 +41,6 @@ Actors can have attributes and operations, which do not appear on the Actor elem
 A physical object can play several roles and thus can be modeled by several Actors.</td>
 </tr>
 <tr valign="top">
-<td>Include</td>
-<td><img src="../images/resources/images/include.png"></td>
-<td>The dependency between Use Cases in which the source use case explicitly incorporates the behavior of another Use Case at a specified location.</td>
-</tr>
-<tr valign="top">
-<td>Extend</td>
-<td><img src="../images/resources/images/extend.png"></td>
-<td>A dependency between Use Cases in which the Use Case extends the behavior of the source.</td>
-</tr>
-<tr valign="top">
-<td>Generalization</td>
-<td><img src="../images/resources/images/generalization.png"></td>
-<td>Generalization is the taxonomic relationship between a more general element and a more specific element that is fully consistent with the first element and that adds additional information. This link is also known as a specialization or inheritance link</td>
-</tr>
-<tr valign="top">
-<td>Association</td>
-<td><img src="../images/resources/images/association.png"></td>
-<td>The link that associates an Actor to a Use Case. This link shows participation of an Actor in a Use Case and is the only relationship between Actors and Use Cases.</td>
-</tr>
-<tr valign="top">
-<th colspan="3" scope="col" align="left">Dependencies Section</th>
-</tr>
-<tr valign="top">
-<td>Dependency</td>
-<td><img src="../images/resources/images/dependency.png"></td>
-<td>The relationship between two elements whose definitions depend on one another in such a way that changes to one can result in changes to the other. For example, when one class mentions another as an operation parameter, or as part of its data, the two classes exhibit dependency.</td>
-</tr>
-<tr valign="top">
-<td>Realize</td>
-<td><img src="../images/resources/images/realize.png"></td>
-<td>A semantic relationship between classifiers. One classifier specifies a contract that another classifier guarantees to carry out. These relationships are used in two places: between interfaces and the classes that realize them, and between use cases and the collaboration that realize them.</td>
-</tr>
-<tr valign="top">
-<td>Usage</td>
-<td><img src="../images/resources/images/usage.png"></td>
-<td>A dependency in which one element (the client) requires the presence of another element (the supplier) for its correct functioning or implementation. </td>
-</tr>
-<tr valign="top">
-<td>Permission</td>
-<td><img src="../images/resources/images/permission.png"></td>
-<td>A dependency that signifies granting of access rights from the supplier model element to a client model element, in which the client requires access to some or all of the constituent elements of the supplier.</td>
-</tr>
-<tr valign="top">
-<td>Abstraction</td>
-<td><img src="../images/resources/images/abstraction.png"></td>
-<td>A boundary relative to the perspective of the viewer. The essential characteristics of an entity that distinguish it from all other kinds of entities.</td>
-</tr>
-<tr valign="top">
 <th colspan="3" scope="col" align="left">Comments Section</th>
 </tr>
 <tr valign="top">
@@ -96,9 +49,60 @@ A physical object can play several roles and thus can be modeled by several Acto
 <td>A Notepad notation. Use Comments to record information for an element or link in a diagram. This information is not included in generated code but is for information only. Each Comment can contain unlimited text, and can be numbered. You can also define a stereotype, and enter a noted element.</td>
 </tr>
 <tr valign="top">
-<td>Link Comment</td>
-<td><img src="../images/resources/images/note-link.png"></td>
-<td>The connection between the comment element and the associated element.</td>
+  <th colspan="3" scope="col" align="left">Context Palette </th>
+</tr>
+<tr valign="top">
+  <td>Include (from Use Case) </td>
+  <td><img src="../images/resources/images/include.png"></td>
+  <td>The dependency between Use Cases in which the source use case explicitly incorporates the behavior of another Use Case at a specified location.</td>
+</tr>
+<tr valign="top">
+  <td>Extend (from Use Case) </td>
+  <td><img src="../images/resources/images/extend.png"></td>
+  <td>A dependency between Use Cases in which the Use Case extends the behavior of the source.</td>
+</tr>
+<tr valign="top">
+  <td>Generalization (from Use Case or Actor) </td>
+  <td><img src="../images/resources/images/generalization.png"></td>
+  <td>Generalization is the taxonomic relationship between a more general element and a more specific element that is fully consistent with the first element and that adds additional information. This link is also known as a specialization or inheritance link</td>
+</tr>
+<tr valign="top">
+  <td>Association (from Use Case or Actor) </td>
+  <td><img src="../images/resources/images/association.png"></td>
+  <td>The link that associates an Actor to a Use Case. This link shows participation of an Actor in a Use Case and is the only relationship between Actors and Use Cases.</td>
+</tr>
+<tr valign="top">
+  <td>Link Comment (from Use Case)</td>
+  <td><img src="../images/resources/images/note-link.png"></td>
+  <td>The connection between the comment element and the associated element.</td>
+</tr>
+<tr valign="top">
+  <th colspan="3" scope="col" align="left">Dependencies Section from Context Menu (from Use Case or Actor) </th>
+</tr>
+<tr valign="top">
+  <td>Dependency</td>
+  <td><img src="../images/resources/images/dependency.png"></td>
+  <td>The relationship between two elements whose definitions depend on one another in such a way that changes to one can result in changes to the other. For example, when one class mentions another as an operation parameter, or as part of its data, the two classes exhibit dependency.</td>
+</tr>
+<tr valign="top">
+  <td>Realize</td>
+  <td><img src="../images/resources/images/realize.png"></td>
+  <td>A semantic relationship between classifiers. One classifier specifies a contract that another classifier guarantees to carry out. These relationships are used in two places: between interfaces and the classes that realize them, and between use cases and the collaboration that realize them.</td>
+</tr>
+<tr valign="top">
+  <td>Usage</td>
+  <td><img src="../images/resources/images/usage.png"></td>
+  <td>A dependency in which one element (the client) requires the presence of another element (the supplier) for its correct functioning or implementation. </td>
+</tr>
+<tr valign="top">
+  <td>Permission</td>
+  <td><img src="../images/resources/images/permission.png"></td>
+  <td>A dependency that signifies granting of access rights from the supplier model element to a client model element, in which the client requires access to some or all of the constituent elements of the supplier.</td>
+</tr>
+<tr valign="top">
+  <td>Abstraction</td>
+  <td><img src="../images/resources/images/abstraction.png"></td>
+  <td>A boundary relative to the perspective of the viewer. The essential characteristics of an entity that distinguish it from all other kinds of entities.</td>
 </tr>
 </table>
 <dl>

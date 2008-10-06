@@ -227,7 +227,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -310,6 +310,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javadoc</friend>
+                <friend>org.netbeans.modules.maven.hints</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
             </friend-packages>
         </data>

@@ -109,7 +109,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 addSourceRoot,
                 removeSourceRoot,
                 upSourceRoot,
-                downSourceRoot);
+                downSourceRoot,false);
         
         EjbJarSourceRootsUi.EditMediator emTSR = EjbJarSourceRootsUi.registerEditMediator(
                 (EjbJarProject)uiProperties.getProject(),
@@ -118,7 +118,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 addTestRoot,
                 removeTestRoot,
                 upTestRoot,
-                downTestRoot);
+                downTestRoot,true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

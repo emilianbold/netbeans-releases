@@ -78,8 +78,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
 
-    private final List<String> tags = new ArrayList<String>();
-    private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
+    private List<String> tags = new ArrayList<String>();
+    private Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
@@ -101,8 +101,29 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
         Mnemonics.setLocalizedText(radioButton, mnemonic);
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        typeID = null;
+        if (values != null) {
+            values.clear();
+            values = null;
+        }
+        tags = null;
     }
 
     private void initComponents() {
@@ -291,9 +312,24 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
             initComponents();
         }
 
+        void cleanUp() {
+            if (combobox != null) {
+                combobox.removeActionListener(this);
+                combobox = null;
+            }
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            combobox.getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+                    
+            
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);

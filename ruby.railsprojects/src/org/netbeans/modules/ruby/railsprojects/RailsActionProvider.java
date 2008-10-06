@@ -55,18 +55,16 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
@@ -77,6 +75,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -135,9 +134,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD,
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
         COMMAND_RAILS_CONSOLE,
@@ -206,8 +202,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return false;
         }
         
-        // 001_whatever.rb
-        return file.getName().matches("\\d\\d\\d_.*"); // NOI18N
+        return MigrateAction.getMigrationVersion(file.getName()) != null;
     }
     
     private FileObject getCurrentFile(Lookup context) {
@@ -358,7 +353,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             
             if (isMigrationFile(file)) {
                 String name = file.getName();
-                String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
+                Long version = MigrateAction.getMigrationVersion(name);
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
                 runner.setFileLocator(new RailsFileLocator(context, project));
@@ -407,10 +402,10 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 }
 
                 // Try to find out which view we're in
-                JTextComponent pane = NbUtilities.getOpenPane();
+                JTextComponent pane = GsfUtilities.getOpenPane();
 
                 if (app != null && pane != null && pane.getCaret() != null) {
-                    FileObject fo = NbUtilities.findFileObject(pane);
+                    FileObject fo = GsfUtilities.findFileObject(pane);
 
                     if (fo != null) {
                         int offset = pane.getCaret().getDot();
@@ -469,42 +464,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
             runServer(path, debugCommand || debugSingleCommand);
             return;
-        } else if (COMMAND_BUILD.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-
-            // TODO - use RakeSupport
-
-            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Rake");
-
-            ProjectInformation info = ProjectUtils.getInformation(project);
-            if (info != null) {
-                displayName = info.getDisplayName();
-            }
-            
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-
-            String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
-                    fileLocator(fileLocator).
-                    classPath(classPath).
-                    addStandardRecognizers().
-                    appendJdkToPath(RubyPlatform.platformFor(project).isJRuby()).
-                    addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
-            return;
-//        } else if (COMMAND_CLEAN.equals(command)) {
-//            executeTask(new File(RubyInstallation.getInstance().getRake()),
-//                        "Rake", "clean", context, null, null); // TODO - internationalize
-//            return;
         }
         
         if (COMMAND_RDOC.equals(command)) {
@@ -667,17 +626,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
-        String options = project.evaluator().getProperty(RailsProjectProperties.RUN_JVM_ARGS);
-
-        if (options != null && options.trim().length() == 0) {
-            options = null;
-        }
+        String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
-        if (options != null) {
-            options = includePath + " " + options; // NOI18N
+        if (rubyOptions != null) {
+            rubyOptions = includePath + " " + rubyOptions; // NOI18N
         } else {
-            options = includePath;
+            rubyOptions = includePath;
         }
 
         FileObject[] srcPath = project.getSourceRoots().getRoots();
@@ -712,12 +667,14 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String jvmArgs = project.evaluator().getProperty(RailsProjectProperties.JVM_ARGS);
         
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
-        desc.initialArgs(options);
+        desc.initialArgs(rubyOptions);
+        desc.jvmArguments(jvmArgs);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
@@ -735,6 +692,9 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     
     public boolean isActionEnabled( String command, Lookup context ) {
+        if (getPlatform() == null) {
+            return false;
+        }
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources
@@ -838,7 +798,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             boolean serverDebug;
             boolean clientDebug;
             
-            if (WebClientToolsSessionStarterService.isAvailable()) {
+            if (!WebClientToolsSessionStarterService.isAvailable()) {
                 // Ignore the debugging options if no Javascript debugger is present
                 clientDebug = false;
                 serverDebug = true;

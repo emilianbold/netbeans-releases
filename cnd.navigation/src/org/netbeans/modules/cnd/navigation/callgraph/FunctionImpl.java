@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.awt.Image;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -54,6 +57,12 @@ import org.openide.util.NbBundle;
 
 public class FunctionImpl implements Function {
 
+    private static final Map<CsmDeclaration.Kind, CsmDeclaration.Kind> preferredIcons = new HashMap<CsmDeclaration.Kind, CsmDeclaration.Kind>();
+
+    static {
+        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
+    }
+    
     private CsmFunction function;
     private String htmlDisplayName = ""; // NOI18N
 
@@ -140,7 +149,7 @@ public class FunctionImpl implements Function {
 
     public Image getIcon() {
         try {
-            return CsmImageLoader.getImage(getDefinition());
+            return CsmImageLoader.getImage(getDefinition(), preferredIcons);
         } catch (AssertionError ex) {
             ex.printStackTrace();
         } catch (Exception ex) {

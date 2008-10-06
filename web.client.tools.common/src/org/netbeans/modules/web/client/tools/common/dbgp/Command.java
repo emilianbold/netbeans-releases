@@ -75,7 +75,7 @@ public class Command {
             dataToSend.append( DATA_SEPARATOR );
             dataToSend.append( encodedData );
         }
-        byte[] bytes = dataToSend.toString().getBytes();
+        byte[] bytes = dataToSend.toString().getBytes(Message.UTF_8);
         byte[] sendBytes = new byte[ bytes.length + 1 ];
         System.arraycopy(bytes , 0, sendBytes, 0, bytes.length );
         sendBytes[ bytes.length ] = 0;
@@ -113,6 +113,10 @@ public class Command {
     @Override
     public String toString() {
         return getArgumentString();
+    }
+    
+    public String getCommandName() {
+        return command;
     }
     
     private String command;

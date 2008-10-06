@@ -96,7 +96,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
         initValues( null, null, null );
-        
+
+        setPreferredSize(PREF_DIM);
+
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
@@ -111,9 +113,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
         
         Sources sources = ProjectUtils.getSources( project );
-                        
-        folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
-        
+
+        if (folders == null) {
+            folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
+        }
+
         if ( folders.length < 2 ) {
             // one source group i.e. hide Location
             locationLabel.setVisible( false );
@@ -131,8 +135,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
         locationComboBox.setSelectedItem( preselectedGroup );               
         // Create OS dependent relative name
-        folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
-        
+        if (preselectedGroup != null) {
+            folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
+        }
+
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
         
@@ -203,12 +209,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         else {
             return text;
         }
-    }
-    
-        
-    @Override
-    public java.awt.Dimension getPreferredSize() {
-        return PREF_DIM;
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -379,7 +379,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 return groups[i];
             }
         }
-        return groups[0];
+        if (groups.length > 0) {
+            return groups[0];
+        }
+        return null;
     }
     
     private String getRelativeNativeName( FileObject root, FileObject folder ) {

@@ -65,11 +65,11 @@ public class JsRenameHandlerTest extends JsTestBase {
     public void testRename7() throws Exception {
         checkRenameSections("testfiles/rename.js", "al^ert(ppp)");
     }
-    
+
     public void testRename8() throws Exception {
         checkRenameSections("testfiles/rename.js", "funct^ion");
     }
-    
+
     public void testRename9a() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", "function(dom^Node, props");
     }
@@ -89,7 +89,7 @@ public class JsRenameHandlerTest extends JsTestBase {
     public void testRename11a() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", "third^param)");
     }
-    
+
     public void testRename11b() throws Exception {
         checkRenameSections("testfiles/webuifunc.js", "{Object}  third^param");
     }
@@ -108,5 +108,17 @@ public class JsRenameHandlerTest extends JsTestBase {
 
     public void testOffsets136162() throws Exception {
         checkRenameSections("testfiles/rename2.js", "f^oo = \"bar\";");
+    }
+
+    public void test137522() throws Exception {
+        checkRenameSections("testfiles/137522.js", "updated.each(function(it^em)");
+    }
+
+    public void test137522b() throws Exception {
+        checkRenameSections("testfiles/137522.js", " test_func_2(it^em);");
+    }
+
+    public void testNesting() throws Exception {
+        checkRenameSections("testfiles/nesting.js", "otherfunc(elem^ent) ");
     }
 }

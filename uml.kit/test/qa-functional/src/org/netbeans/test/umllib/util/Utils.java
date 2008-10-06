@@ -76,7 +76,7 @@ import org.netbeans.test.umllib.testcases.UMLTestCase;
 public class Utils {
     
     public static final long MAX_WAIT_TIME = 300000;
-    public static String WORK_DIR = System.getProperty("xtest.workdir");
+    public static String WORK_DIR = System.getProperty("nbjunit.workdir");
     
     private static String DEFAULT_SCREENSHOT_PREFIX="beforeTearDown";
     
@@ -116,7 +116,7 @@ public class Utils {
     
     public static void makeScreenShotCustom(String testClassName, String lastTestCase,String customPrefix,boolean fullscreen){
         //
-        String workdir=System.getProperty("xtest.workdir");
+        String workdir=System.getProperty("nbjunit.workdir");
         String path=workdir+"/user/" + testClassName+"/"+lastTestCase+"/"+customPrefix+new Date().getTime()+".png";
          //initially limited 1.5 support (workaround for calls from 1.6 java)
             //but start check if test name valid in all cases
@@ -262,7 +262,7 @@ public class Utils {
      * @param customPrefix part of screnshot file name
      */
     public static void makeScreenShotCustom(String customPrefix,boolean fullscreen){
-        String workdir=System.getProperty("xtest.workdir");
+        String workdir=System.getProperty("nbjunit.workdir");
         StackTraceElement[] els=Thread.currentThread().getStackTrace();
         String [] ret=UMLTestCase.getCurrentTestNamesWithCheck();
 

@@ -41,6 +41,9 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +53,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -116,6 +121,53 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         MockLookup.setInstances(new Repo(getWorkDir()));
         FileObject template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Ruby/main.rb");
         assertNotNull("layer registered", template);
+    }
+
+    /**
+     * <strong>Note:</strong> Copy-pasted from APISupport
+     * <p>
+     * Convenience method for loading {@link EditableProperties} from a {@link
+     * FileObject}. New items will alphabetized by key.
+     *
+     * @param propsFO file representing properties file
+     * @exception FileNotFoundException if the file represented by the given
+     *            FileObject does not exists, is a folder rather than a regular
+     *            file or is invalid. i.e. as it is thrown by {@link
+     *            FileObject#getInputStream()}.
+     */
+    public static EditableProperties loadProperties(FileObject propsFO) throws IOException {
+        InputStream propsIS = propsFO.getInputStream();
+        EditableProperties props = new EditableProperties(true);
+        try {
+            props.load(propsIS);
+        } finally {
+            propsIS.close();
+        }
+        return props;
+    }
+
+    /**
+     * <strong>Note:</strong> Copy-pasted from APISupport
+     * <p>
+     * Convenience method for storing {@link EditableProperties} into a {@link
+     * FileObject}.
+     *
+     * @param propsFO file representing where properties will be stored
+     * @param props properties to be stored
+     * @exception IOException if properties cannot be written to the file
+     */
+    public static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
+        FileLock lock = propsFO.lock();
+        try {
+            OutputStream os = propsFO.getOutputStream(lock);
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
 
     private static final class Repo extends Repository {

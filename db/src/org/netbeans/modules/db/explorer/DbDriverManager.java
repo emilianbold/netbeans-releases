@@ -213,6 +213,21 @@ public class DbDriverManager {
         }
         return d;
     }
+
+    /**
+     * Get the driver for a JDBCDriver.  It only tries to load it using Class.forName() -
+     * there is no URL to work with
+     */
+    public Driver getDriver(JDBCDriver jdbcDriver) throws SQLException {
+        ClassLoader l = getClassLoader(jdbcDriver);
+        try {
+            return (Driver)Class.forName(jdbcDriver.getClassName(), true, l).newInstance();
+        } catch (Exception e) {
+            SQLException sqlex = createDriverNotFoundException();
+            sqlex.initCause(e);
+            throw sqlex;
+        }
+    }
     
     /**
      * Gets a driver, but can skip DriverManager and doesn't throw SQLException if a driver can't be found.
@@ -236,13 +251,9 @@ public class DbDriverManager {
         
         // didn't find it, try to load it from jdbcDriver, if any
         if (jdbcDriver != null) {
-            ClassLoader l = getClassLoader(jdbcDriver);
-            try {
-                return (Driver)Class.forName(jdbcDriver.getClassName(), true, l).newInstance();
-            } catch (Exception e) {
-                SQLException sqlex = createDriverNotFoundException();
-                sqlex.initCause(e);
-                throw sqlex;
+            Driver d = getDriver(jdbcDriver);
+            if (d != null) {
+                return d;
             }
         }
         

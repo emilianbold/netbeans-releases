@@ -41,12 +41,8 @@
 
 package org.openide.nodes;
 
-import junit.framework.*;
-import junit.textui.TestRunner;
 import java.beans.*;
-import java.beans.beancontext.*;
 import java.util.*;
-import org.openide.util.Mutex;
 
 import org.netbeans.junit.*;
 
@@ -60,11 +56,6 @@ public class FilterChildrenEventsTest extends NbTestCase {
         super(name);
     }
 
-    public static void main(String[] args) {
-        System.out.println("Running");
-        TestRunner.run(new NbTestSuite(BeanChildrenTest.class));
-    }
-    
     
     public void testNodesNodeDestroyed() throws Exception {
         
@@ -83,21 +74,35 @@ public class FilterChildrenEventsTest extends NbTestCase {
         
         List events = ml.getEvents();
         
-        System.out.println( "Size " + events.size() );
-        
-
         assertTrue("correct events", events.size() == 2 );
     }
     
-    public void testPropertyChange() throws Exception {
-        
-        /*
-        assertEquals("correct subnodes",
-            new HashSet(Arrays.asList(new String[] {"one", "three"})),
-            new HashSet(Arrays.asList(nodes2Names(nodes))));
-         */
+    public void testRefreshOnFavorites() throws Exception {
+        Node[] chNodes = createTestNodes();
+        Children ch = new Children.Array();
+        ch.add(chNodes);
+
+        Node n = new AbstractNode(ch);
+        Chldrn filterCh = new Chldrn(n);
+        FilterNode fn = new FilterNode(n, filterCh);
+
+        Node[] now = fn.getChildren().getNodes();
+        assertEquals("Three", 3, now.length);
+
+        MyListener ml = new MyListener();
+        fn.addNodeListener( ml );
+
+        filterCh.makeInvisible(now[1].getName());
+
+        assertEquals("One event", 1, ml.getEvents().size());
+
+        Node[] after = fn.getChildren().getNodes();
+        assertEquals("Just two", 2, after.length);
+
+        assertSame("First node the same", now[0], after[0]);
+        assertSame("Last node the same", now[2], after[1]);
     }
-    
+
     public void testChildrenAdded() throws Exception {
         Node[] chNodes = createTestNodes();
         Children ch = new Children.Array();
@@ -144,6 +149,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenAdded(NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -152,6 +158,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenRemoved(NodeMemberEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -160,6 +167,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void childrenReordered(NodeReorderEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add( ev );
         }
         
@@ -168,6 +176,7 @@ public class FilterChildrenEventsTest extends NbTestCase {
          *
          */
         public void nodeDestroyed(NodeEvent ev) {
+            ChildFactoryTest.assertNodeAndEvent(ev, Collections.<Node>emptyList());
             events.add( ev );
         }
         
@@ -185,4 +194,37 @@ public class FilterChildrenEventsTest extends NbTestCase {
         }
         
     }
+    static class Chldrn extends FilterNode.Children
+    implements Runnable {
+        final Set<String> toHide = new HashSet<String>();
+
+        public Chldrn (Node node) {
+            super (node);
+        }
+
+        @Override
+        protected Node[] createNodes(Node node) {
+            if (toHide.contains(node.getName())) {
+                return null;
+            }
+            return super.createNodes(node);
+        }
+
+        public void makeInvisible(String name) {
+            toHide.add(name);
+            MUTEX.postWriteRequest(this);
+        }
+        public void makeVisible(String name) {
+            toHide.remove(name);
+            MUTEX.postWriteRequest(this);
+        }
+
+        public void run() {
+            Node[] arr = original.getChildren().getNodes();
+            for (int i = 0; i < arr.length; i++) {
+                refreshKey(arr[i]);
+            }
+        }
+
+    } // end of Chldrn
 }

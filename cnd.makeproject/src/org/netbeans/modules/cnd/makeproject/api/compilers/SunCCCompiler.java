@@ -44,57 +44,13 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.ErrorManager;
 
 public class SunCCCompiler extends SunCCCCompiler {
     private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
     private static final String compilerStderrCommand2 = " -xdumpmacros=defs,sys -E"; // NOI18N
-    
-    private static final String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g0 -xO3 -xhwcprof", // Performance Debug" // NOI18N
-        "-xprofile=tcov +d -xinline=", // Test Coverage // NOI18N
-        "-g0 -xO2", // Dianosable Release // NOI18N
-        "-xO3", // Release // NOI18N
-        "-xO5 -xipo=1 -xdepend -fsimple=1 -xlibmil -xlibmopt -xvector -xbuiltin -sync_stdio=no -xalias_level=simple", // Performance Release // NOI18N
-    };
-    
-    private static final String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "+w", // More Warnings // NOI18N
-        "-xwe", // Convert Warnings to Errors // NOI18N
-    };
-    
-    private static final String[] LIBRARY_LEVEL_OPTIONS = {
-        "-library=no%Cstd,no%Crun -filt=no%stdlib", // NOI18N
-        "-library=no%Cstd -filt=no%stdlib", // NOI18N
-        "-library=iostream,no%Cstd -filt=no%stdlib", // NOI18N
-        "", // NOI18N
-        "-library=stlport4,no%Cstd", // NOI18N
-    };
-    
-    private static final String[] MT_LEVEL_OPTIONS = {
-        "", // None // NOI18N
-        "-mt", // Safe // NOI18N
-        "-xautopar -xvector -xreduction -xloopinfo", // Automatic // NOI18N
-        "-xopenmp", // Open MP // NOI18N
-    };
-    
-    private static final String[] STANDARD_OPTIONS = {
-        "-compat", // Old // NOI18N
-        "-features=no%localfor,no%extinl,no%conststrings", // Legacy // NOI18N
-        "", // Default // NOI18N
-        "-features=no%anachronisms,no%transitions,tmplife", // Modern // NOI18N
-    };
-    
-    private static final String[] LANGUAGE_EXT_OPTIONS = {
-        "-features=no%longlong", // None // NOI18N
-        "", // Default // NOI18N
-        "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
-    };
     
     /** Creates a new instance of SunCCompiler */
     public SunCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -109,68 +65,8 @@ public class SunCCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    public String getDevelopmentModeOptions(int value) {
-        return DEVELOPMENT_MODE_OPTIONS[value];
-    }
-    
-    @Override
-    public String getWarningLevelOptions(int value) {
-        if (value < WARNING_LEVEL_OPTIONS.length)
-            return WARNING_LEVEL_OPTIONS[value];
-        else
-            return ""; // NOI18N
-    }
-    
-    @Override
-    public String getSixtyfourBitsOption(int value) {
-        if (getFlavor() == CompilerFlavor.Sun12) {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return "-m32"; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-m64"; // NOI18N
-            else
-                return ""; // NOI18N
-        } else {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-xarch=generic64"; // NOI18N
-            else
-                return ""; // NOI18N
-        }
-    }
-    
-    @Override
-    public String getStripOption(boolean value) {
-        return value ? "-s" : ""; // NOI18N
-    }
-    
-    // To be overridden
-    @Override
-    public String getMTLevelOptions(int value) {
-        return MT_LEVEL_OPTIONS[value];
-    }
-    
-    // To be overridden
-    @Override
-    public String getLibraryLevelOptions(int value) {
-        return LIBRARY_LEVEL_OPTIONS[value];
-    }
-    
-    // To be overridden
-    @Override
-    public String getStandardsEvolutionOptions(int value) {
-        return STANDARD_OPTIONS[value];
-    }
-    
-    // To be overridden
-    @Override
-    public String getLanguageExtOptions(int value) {
-        return LANGUAGE_EXT_OPTIONS[value];
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getC();
     }
     
     @Override
@@ -190,11 +86,11 @@ public class SunCCCompiler extends SunCCCCompiler {
                         token = line.substring(includeIndex+2);
                     }
                     if ( ! token.equals("-xbuiltin")) { //NOI18N
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token));
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token));
                     }
                     if (token.endsWith("Cstd")) { // NOI18N
                         // See 89872 "Parser Settings" for Sun Compilers Collection are incorrect
-                        systemIncludeDirectoriesList.addUnique(normalizePath(token.substring(0, token.length()-4) + "std")); // NOI18N
+                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(token.substring(0, token.length()-4) + "std")); // NOI18N
                     }
                     // Hack to handle -compat flag. If this flag is added,
                     // the compiler looks in in CC4 and not in CC. Just adding CC4 doesn't
@@ -230,11 +126,6 @@ public class SunCCCompiler extends SunCCCCompiler {
         for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
             System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
         }
-    }
-    
-    @Override
-    protected String getDefaultPath() {
-        return "CC"; // NOI18N
     }
     
     @Override

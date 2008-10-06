@@ -50,6 +50,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -63,7 +64,7 @@ public final class WebClientToolsProjectUtils {
     private static final String CLIENT_DEBUG_PROP = "clientdebug"; // NOI18N
     private static final String SERVER_DEBUG_PROP = "serverdebug"; // NOI18N
     
-    private static final boolean CLIENT_DEBUG_DEFAULT = false;
+    private static final boolean CLIENT_DEBUG_DEFAULT = true;
     private static final boolean SERVER_DEBUG_DEFAULT = true;
     
     public static enum Browser {
@@ -71,7 +72,7 @@ public final class WebClientToolsProjectUtils {
         INTERNET_EXPLORER;
     }
 
-    private static final Browser BROWSER_DEFAULT = Browser.FIREFOX;
+    public static final Browser BROWSER_DEFAULT = Browser.FIREFOX;
     
     public static HtmlBrowser.Factory getFirefoxBrowser() {
         return findBrowser("org.netbeans.modules.extbrowser.FirefoxBrowser"); // NOI18N
@@ -86,9 +87,23 @@ public final class WebClientToolsProjectUtils {
     }
 
     public static boolean getServerDebugProperty(Project project) {
-        return getProjectProperty(project, SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
+        // If no browser is available, always select server-side debugging;
+        // client-side debugging is not automatically de-selected to allow it
+        // to display a relevant error message
+        if (supportedBrowsersAvailable()) {
+            return getProjectProperty(project, SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
+        } else {
+            return true;
+        }
     }
-
+    
+    public static boolean isDebugPropertySet(Project project) {
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
+        assert prefs != null;
+        
+        return prefs.get(CLIENT_DEBUG_PROP, null) != null;
+    }
+    
     public static boolean isFirefox(Project project) {
         return getProjectProperty(project, Browser.FIREFOX.name(), (BROWSER_DEFAULT == Browser.FIREFOX));
     }
@@ -98,48 +113,30 @@ public final class WebClientToolsProjectUtils {
     }
     
     private static boolean getProjectProperty(Project project, String propKey, boolean def) {
-        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
         assert prefs != null;
         
         return prefs.getBoolean(propKey, def);
-    }
+    }    
 
     public static void setProjectProperties(final Project project, final boolean serverDebug, final boolean clientDebug, final Browser browser) {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
 
                 public Boolean run() throws BackingStoreException {
-                    Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
+                    Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
                     assert prefs != null;
 
-                    boolean currentServerValue = prefs.getBoolean(SERVER_DEBUG_PROP, SERVER_DEBUG_DEFAULT);
-                    boolean currentClientValue = prefs.getBoolean(CLIENT_DEBUG_PROP, CLIENT_DEBUG_DEFAULT);
                     boolean isFirefox = (browser == Browser.FIREFOX);
                     boolean isInternetExplorer = (browser == Browser.INTERNET_EXPLORER);
-                    boolean changed = false;
                     
-                    if (currentServerValue != serverDebug) {
-                        prefs.putBoolean(SERVER_DEBUG_PROP, serverDebug);
-                        changed = true;
-                    }
-                    if (currentClientValue != clientDebug) {
-                        prefs.putBoolean(CLIENT_DEBUG_PROP, clientDebug);
-                        changed = true;
-                    }
-
-                    if (isFirefox != isFirefox(project)) {
-                        prefs.putBoolean(Browser.FIREFOX.name(), isFirefox);
-                        changed = true;
-                    }
-
-                    if (isInternetExplorer != isInternetExplorer(project)) {
-                        prefs.putBoolean(Browser.INTERNET_EXPLORER.name(), isInternetExplorer);
-                        changed = true;
-                    }
+                    // always write properties to allow isDebugPropertySet() method
+                    prefs.putBoolean(SERVER_DEBUG_PROP, serverDebug);
+                    prefs.putBoolean(CLIENT_DEBUG_PROP, clientDebug);
+                    prefs.putBoolean(Browser.FIREFOX.name(), isFirefox);
+                    prefs.putBoolean(Browser.INTERNET_EXPLORER.name(), isInternetExplorer);
                     
-                    if (changed) {
-                        prefs.sync();
-                    }
+                    prefs.sync();
 
                     return Boolean.TRUE;
                 }
@@ -159,5 +156,21 @@ public final class WebClientToolsProjectUtils {
         return null;
     }
     
+    public static boolean isFirefoxSupported() {
+        return getFirefoxBrowser() != null;
+    }
     
+    public static boolean isInternetExplorerSupported() {
+        return Utilities.isWindows() && getInternetExplorerBrowser() != null;
+    }
+    
+    /**
+     *  Checks if any supported browsers (Firefox, Internet Explorer on Windows) are
+     *  configured in the IDE
+     * 
+     * @return true if some supported browser is configured
+     */
+    public static boolean supportedBrowsersAvailable() {
+        return isInternetExplorerSupported() || isFirefoxSupported();
+    }
 }

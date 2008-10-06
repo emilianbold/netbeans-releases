@@ -81,6 +81,8 @@ public abstract class AbstractKey implements Key, SelfPersistent {
     public abstract CharSequence getAt(int level);
     
     public abstract CharSequence getUnit();
+
+    public abstract int getUnitId();
     
     public abstract int getSecondaryDepth();
     

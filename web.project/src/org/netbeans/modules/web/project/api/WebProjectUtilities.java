@@ -88,10 +88,12 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
@@ -133,10 +135,10 @@ public class WebProjectUtilities {
     private static final String WEB_INF = "WEB-INF"; //NOI18N
     private static final String SOURCE_ROOT_REF = "${" + WebProjectProperties.SOURCE_ROOT + "}"; //NOI18N
     
-    public static final String MINIMUM_ANT_VERSION = "1.6";
+    public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private static final Logger LOGGER = Logger.getLogger(WebProjectUtilities.class.getName());
-    
+    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/project/ui/resources/"; //NOI18N
     private WebProjectUtilities() {}
     
     /**
@@ -220,7 +222,16 @@ public class WebProjectUtilities {
         
         //create default manifest
         if(confFolderFO != null) {
-            FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/MANIFEST.MF"), confFolderFO, "MANIFEST"); //NOI18N
+            String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
+            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
+            FileLock lock = manifest.lock();
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
+            try {
+                bw.write(manifestText);
+            } finally {
+                bw.close();
+                lock.releaseLock();
+            }
         }
         
         //test folder
@@ -232,11 +243,11 @@ public class WebProjectUtilities {
         // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
         String webXMLContent = null;
         if (J2eeModule.JAVA_EE_5.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.5.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.5.xml")); //NOI18N
         else if (WebModule.J2EE_14_LEVEL.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.4.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.4.xml")); //NOI18N
         else if (WebModule.J2EE_13_LEVEL.equals(j2eeLevel))
-            webXMLContent = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/web-2.3.xml").getInputStream()); //NOI18N
+            webXMLContent = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "web-2.3.xml")); //NOI18N
         assert webXMLContent != null : "Cannot find web.xml template for J2EE specification level:" + j2eeLevel;
         final String webXmlText = webXMLContent;
         FileObject webXML = FileUtil.createData(webInfFO, "web.xml");//NOI18N
@@ -288,6 +299,8 @@ public class WebProjectUtilities {
         if(createJakartaStructure) {
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
         }
+        // Default to conf.dir
+        ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${"+WebProjectProperties.CONF_DIR+"}"); //NOI18N
         
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF + "/lib"); //NOI18N
@@ -326,7 +339,7 @@ public class WebProjectUtilities {
     }
     
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         try {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
@@ -475,8 +488,8 @@ public class WebProjectUtilities {
         
         final File[] testFolders = tstFolders;
         try {
-            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     Element data = antProjectHelper.getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 
@@ -580,14 +593,30 @@ public class WebProjectUtilities {
             // if no conf directory was found, create default directory (#82147)
             projectDir.createFolder(DEFAULT_CONF_FOLDER);
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
-        } else
+        } else {
             ep.setProperty(WebProjectProperties.CONF_DIR, confDir); //NOI18N
+        }
+        // Default to conf.dir
+        ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${"+WebProjectProperties.CONF_DIR+"}"); //NOI18N
+        
+        // #142164: try to find persistence.xml under project's source roots - that's where Eclipse stores is by default
+        for (int i=0; i<sourceFolders.length; i++) {
+            if (new File(sourceFolders[i], "META-INF"+File.separatorChar+"persistence.xml").exists()) { //NOI18N
+                ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${src.dir}" + (i == 0 ? "" : Integer.toString(i+1))+"/META-INF"); //NOI18N
+                break;
+            }
+        }
         
         //create resource.dir property, by default set to "setup"
         //(it would be nice to have a possibily to set this property in the wizard)
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         
-        String webInfDir = createFileReference(referenceHelper, projectDir, wmFO, webInfFolder);
+        String webInfDir;
+        if (webInfFolder != null) {
+            webInfDir = createFileReference(referenceHelper, projectDir, wmFO, webInfFolder);
+        } else {
+            webInfDir = "web/WEB-INF"; // NOI18N
+        }
         ep.setProperty(WebProjectProperties.WEBINF_DIR, webInfDir);
         
         ep.setProperty(WebProjectProperties.JAVA_SOURCE_BASED,javaSourceBased+"");
@@ -617,9 +646,7 @@ public class WebProjectUtilities {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-        }
+        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
 
     private static String configureServerLibrary(final String librariesDefinition,
@@ -729,7 +756,14 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        ep.setProperty(WebProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N
+        boolean deployOnSaveEnabled = false;
+        try {
+            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
+                    .isDeployOnSaveSupported();
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        ep.setProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
         
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
@@ -768,8 +802,8 @@ public class WebProjectUtilities {
         // #113297, #118187
         ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.getDefaultDebugClassPath());
         
-        ep.setProperty("runmain.jvmargs", ""); // NOI18N
-        ep.setComment("runmain.jvmargs", new String[] { // NOI18N
+        ep.setProperty(WebProjectProperties.RUNMAIN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(WebProjectProperties.RUNMAIN_JVM_ARGS, new String[] { // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs_2"), // NOI18N
         }, false);

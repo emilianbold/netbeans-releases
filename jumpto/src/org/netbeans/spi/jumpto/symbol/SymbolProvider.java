@@ -209,8 +209,9 @@ public interface SymbolProvider {
           *
           * @param  symbolDescriptor  symbol descriptor to be added to result
           */
+        @SuppressWarnings("unchecked")
         public void addResult(List<? extends SymbolDescriptor> symbolDescriptor) {
-            result.addAll(symbolDescriptor);
+            ((List)result).addAll(symbolDescriptor);    //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334 
         }
     }
 

@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.ObjectReference;
@@ -131,6 +132,8 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         } catch (InvalidTypeException ex) {
             throw new InvalidExpressionException (ex);
         } catch (ClassNotLoadedException ex) {
+            throw new InvalidExpressionException (ex);
+        } catch (InvalidStackFrameException ex) {
             throw new InvalidExpressionException (ex);
         }
     }

@@ -50,35 +50,45 @@ import org.w3c.dom.Node;
  */
 public class WindowsMessage extends Message {
     private static final String WINDOW = "window"; // NOI18N
-    private static final String FILE_URI = "fileuri";
 
     WindowsMessage(Node node) {
         super(node);
     }
+    
+    public Encoding getEncoding(){
+        String enc = getAttribute(getNode(), Property.ENCODING);
+        return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
+    }       
 
     public List<Window> getWindows() {
         List<Node> nodes = getChildren(getNode(), WINDOW);
         List<Window> result = new ArrayList<Window>(nodes.size());
+        Encoding enc = getEncoding();
         for (Node node : nodes) {
-            result.add(new Window(node));
+            result.add(new Window(node, enc));
         }
         return result;
     }
 
     public static class Window extends BaseMessageChildElement {
-        public Window(Node node) {
+        private Encoding enc;
+        
+        public Window(Node node, Encoding enc) {
             super(node);
+            this.enc = enc;
         }
 
         public String getURI() {
-            return getAttribute(FILE_URI);
+            String uri = getAttribute(FILE_URI);
+            byte[] result = Message.getDecodedBytes(enc, uri);
+            return new String(result).trim();  
         }
 
         public List<Window> getChildren() {
             List<Node> nodes = getChildren(WINDOW);
             List<Window> result = new ArrayList<Window>(nodes.size());
             for (Node node : nodes) {
-                result.add(new Window(node));
+                result.add(new Window(node, enc));
             }
             return result;
         }

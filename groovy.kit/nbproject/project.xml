@@ -30,6 +30,18 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.groovy.refactoring</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.groovy.samples</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.groovy.support</code-name-base>
                     <run-dependency>
                         <specification-version>1.4</specification-version>

@@ -39,14 +39,22 @@
 package org.netbeans.modules.uml.diagrams.edges;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.Action;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IDerivation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
+import org.netbeans.modules.uml.drawingarea.actions.ToggleLabelAction;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -55,6 +63,7 @@ import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
  */
 public class DerivationLabelManager extends BasicUMLLabelManager
 {
+    ResourceBundle bundle = NbBundle.getBundle(DerivationLabelManager.class);
     public DerivationLabelManager(ConnectionWidget widget)
     {
         super(widget);
@@ -83,30 +92,55 @@ public class DerivationLabelManager extends BasicUMLLabelManager
         if(name.equals(BINDING) == true)
         {
             LabelWidget label = new UMLLabelWidget(getScene());
-            
             label.setLabel(buildBindingLabel());
             retVal = label;
+        } 
+        else if (name.equals(BasicUMLLabelManager.NAME))
+        {
+            retVal = super.createLabel(name, type);
         }
-        
-        
         return retVal;
     }
     
     protected String buildBindingLabel()
     {
         IDerivation element = (IDerivation) getModelElement();
-        String retVal = "<<binding>> <"; // NOI18N
-        int len0=retVal.length();
-            
-        for(IUMLBinding binding : element.getBindings())
+        String retVal = "<<binding>> "; // NOI18N
+        int len0 = retVal.length();
+         
+        ETList < IUMLBinding > pBindings = element.getBindings();
+        String sFormalName = "";
+	String sActualName = "";
+        
+        for(IUMLBinding binding : pBindings)
         {
-            if(retVal.length()>len0)retVal+=", ";
-            retVal += binding.getFormal().getNameWithAlias();
-            retVal += "->"; // NO18N
-            retVal += binding.getActual().getNameWithAlias();
+            if ( binding != null)
+            {
+                if (retVal.length() > len0)
+                {
+                    retVal += ", ";
+                }
+                
+                sFormalName = binding.getFormal().getNameWithAlias();
+                sActualName = binding.getActual().getNameWithAlias();
+                
+                if (sFormalName != null && sFormalName.length() > 0) 
+                {
+                    retVal += binding.getFormal().getNameWithAlias();
+                    retVal += "::"; // NO18N
+                }
+                if (sActualName != null)
+                {
+                    if (sActualName.length() == 0)
+                    {
+                        sActualName = "int";
+                    }
+                    retVal += sActualName;
+                }
+            }
         }
 
-        retVal += ">"; // NOI18N
+        //retVal += ">"; // NOI18N
         return retVal;
     }
     
@@ -122,5 +156,32 @@ public class DerivationLabelManager extends BasicUMLLabelManager
 //        }
         super.propertyChange(evt);
         updateLabel(LabelType.EDGE, BINDING, buildBindingLabel());
+    }
+    
+    @Override
+    public Action[] getContextActions(LabelType type)
+    {
+        List<Action> actions = new ArrayList<Action>();
+        if (type == LabelType.EDGE)
+        {
+            boolean visible =  isVisible(BINDING, type);
+            String messageKey = visible ? "LBL_HIDE_BINDING" : "LBL_SHOW_BINDING";
+            EnumSet<LabelType> labelType = EnumSet.of(type);
+            ToggleLabelAction showHideBindingAction = new ToggleLabelAction(this,
+                                                                                   BINDING,
+                                                                                   labelType,
+                                                                                   bundle.getString(messageKey));
+            visible =  isVisible(NAME, type);
+            messageKey = visible ? "LBL_HIDE_EDGE_NAME" : "LBL_SHOW_EDGE_NAME";
+            ToggleLabelAction showHideNameAction = new ToggleLabelAction(this,
+                                                                         NAME,
+                                                                         labelType,
+                                                                         bundle.getString(messageKey));
+            actions.add(showHideBindingAction);
+            actions.add(showHideNameAction);
+        }
+        Action[] retVal = new Action[actions.size()];
+        actions.toArray(retVal);
+        return retVal;
     }
 }

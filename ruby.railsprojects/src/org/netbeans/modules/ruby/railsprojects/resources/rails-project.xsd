@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,37 +41,13 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://www.netbeans.org/ns/ruby-project/1"
-            xmlns="http://www.netbeans.org/ns/ruby-project/1"
+            targetNamespace="http://www.netbeans.org/ns/rails-project/1"
+            xmlns="http://www.netbeans.org/ns/rails-project/1"
             elementFormDefault="qualified">
     <xsd:element name="data">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element name="name" type="xsd:token"/>
-                <xsd:element name="source-roots">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
-                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="test-roots">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
-                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>

@@ -68,7 +68,7 @@ public class FormatContext {
 
     //public Element element;
     public boolean floating; // whether or not the currently formatted box is a floating box
-    public List<FloatingBoxInfo> floats;
+    List<FloatingBoxInfo> floats;
 
     /*
     public String toString() {

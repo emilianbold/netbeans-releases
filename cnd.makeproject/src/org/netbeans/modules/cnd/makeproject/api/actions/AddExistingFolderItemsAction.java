@@ -87,6 +87,9 @@ public class AddExistingFolderItemsAction extends NodeAction {
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         
+        if (!makeConfigurationDescriptor.okToChange()) {
+            return;
+        }
         String seed = null;
         if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
@@ -115,7 +118,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         JTextArea instructionsTextArea = new JTextArea();
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setText(getString("AddExistingFolderItemsTxt")); // NOI8N
+        instructionsTextArea.setText(getString("AddExistingFolderItemsTxt")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
         instructionsTextArea.setBackground(panel.getBackground());
         gridBagConstraints = new java.awt.GridBagConstraints();

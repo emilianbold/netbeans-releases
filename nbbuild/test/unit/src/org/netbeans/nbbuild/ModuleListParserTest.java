@@ -156,33 +156,33 @@ public class ModuleListParserTest extends TestCase {
         assertNotNull("found sister project in suite", e);
         assertEquals("org.netbeans.examples.modules.lib", e.getCnb());
         assertEquals(file(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
-        File jar = file(nball, "nbbuild/netbeans/ide9/modules/org-netbeans-libs-xerces.jar");
+        File jar = file(nball, "nbbuild/netbeans/ide10/modules/org-netbeans-libs-xerces.jar");
         assertTrue("Build all-libs/xerces first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.libs.xerces");
         assertNotNull("found netbeans.org module by its binary", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());
         assertEquals(jar, e.getJar());
         assertEquals("correct CP extensions (using Class-Path header in manifest)",
-                Collections.singletonList(file(nball, "nbbuild/netbeans/ide9/modules/ext/xerces-2.8.0.jar")),
+                Collections.singletonList(file(nball, "nbbuild/netbeans/ide10/modules/ext/xerces-2.8.0.jar")),
                 Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.openide.loaders");
         assertNotNull(e);
         assertEquals("org.openide.loaders", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/platform8/modules/org-openide-loaders.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/platform9/modules/org-openide-loaders.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.bootstrap");
         assertNotNull(e);
         assertEquals("org.netbeans.bootstrap", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/platform8/lib/boot.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/platform9/lib/boot.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
-        jar = file(nball, "nbbuild/netbeans/ide9/modules/org-netbeans-modules-xml-tax.jar");
+        jar = file(nball, "nbbuild/netbeans/ide10/modules/org-netbeans-modules-xml-tax.jar");
         assertTrue("Build all-xml/tax first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.xml.tax", e.getCnb());
         assertEquals(jar, e.getJar());
         assertEquals(Arrays.asList(new File[] {
-            file(nball, "nbbuild/netbeans/ide9/modules/ext/org-netbeans-tax.jar"),
+            file(nball, "nbbuild/netbeans/ide10/modules/ext/org-netbeans-tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
     }
     

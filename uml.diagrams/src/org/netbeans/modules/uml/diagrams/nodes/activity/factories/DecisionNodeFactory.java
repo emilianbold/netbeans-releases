@@ -52,6 +52,6 @@ public class DecisionNodeFactory implements NodeWidgetFactory
 
     public Widget createNode(Scene scene)
     {
-        return new DecisionNodeWidget(scene);
+        return new DecisionNodeWidget(scene, "UML/context-palette/ActivityControl");
     }
 }

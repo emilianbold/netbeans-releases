@@ -48,10 +48,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.text.PositionRef;
 
 /**
@@ -101,20 +100,18 @@ public final class ModificationResult {
     }
     
     private void commit(final FileObject fo, final List<Difference> differences, Writer out) throws IOException {
-        DataObject dObj = DataObject.find(fo);
-        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
         // if editor cookie was found and user does not provided his own
         // writer where he wants to see changes, commit the changes to 
         // found document.
-        if (ec != null && out == null) {
-            Document doc = ec.getDocument();
-            if (doc != null) {
-                if (doc instanceof BaseDocument)
-                    ((BaseDocument)doc).atomicLock();
-                try {
+        final Document doc = DataLoadersBridge.getDefault().getDocument(fo);
+        if (doc != null && out == null) {
+            final IOException[] problemHolder = new IOException[1];
+            Runnable r = new Runnable() {
+                public void run() {
                     for (Difference diff : differences) {
-                        if (diff.isExcluded())
+                        if (diff.isExcluded()) {
                             continue;
+                        }
                         try {
                             switch (diff.getKind()) {
                                 case INSERT:
@@ -131,15 +128,20 @@ public final class ModificationResult {
                         } catch (BadLocationException ex) {
                             IOException ioe = new IOException();
                             ioe.initCause(ex);
-                            throw ioe;
+                            problemHolder[0] = ioe;
                         }
                     }
-                } finally {
-                    if (doc instanceof BaseDocument)
-                        ((BaseDocument)doc).atomicUnlock();
                 }
-                return;
+            };
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).runAtomic(r);
+            } else {
+                r.run();
             }
+            if (problemHolder[0] != null) {
+                throw problemHolder[0];
+            }
+            return;
         }
         InputStream ins = null;
         ByteArrayOutputStream baos = null;           
@@ -164,8 +166,9 @@ public final class ModificationResult {
             }
             int offset = 0;                
             for (Difference diff : differences) {
-                if (diff.isExcluded())
+                if (diff.isExcluded()) {
                     continue;
+                }
                 int pos = diff.getStartPosition().getOffset();
                 int toread = pos - offset;
                 char[] buff = new char[toread];

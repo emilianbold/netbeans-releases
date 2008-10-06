@@ -70,13 +70,27 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  */
 public class APTParseFileWalker extends APTProjectFileBasedWalker {
     
+    /** 
+     * A callback that should be invoked
+     * when each conditional is evaluated
+     */
+    public interface EvalCallback {
+        void onEval(APT apt, boolean result);
+    }
+
     private boolean createMacroAndIncludes;
-    
+    private final EvalCallback evalCallback;
+
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
+        this(base, apt, file, preprocHandler, null);
+    }
+
+    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, EvalCallback evalCallback) {
         super(base, apt, file, preprocHandler);
         this.createMacroAndIncludes = false;
+        this.evalCallback = evalCallback;
     }
-    
+
     public void addMacroAndIncludes(boolean create) {
         this.createMacroAndIncludes = create;
     }
@@ -123,7 +137,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         try {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {
-            APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "NPE when processing file", ex);// NOI18N
 	    DiagnosticExceptoins.register(ex);
         } finally {
             getIncludeHandler().popInclude();
@@ -198,6 +212,12 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             DiagnosticExceptoins.register(e);
             return null;
         }
-    }    
+    }
 
+    @Override
+    protected void onEval(APT apt, boolean result) {
+        if (evalCallback != null) {
+            evalCallback.onEval(apt, result);
+        }
+    }
 }

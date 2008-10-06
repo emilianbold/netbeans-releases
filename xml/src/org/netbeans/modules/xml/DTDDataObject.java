@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml;
 
+import java.io.IOException;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
@@ -51,6 +52,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.netbeans.spi.xml.cookies.*;
 import org.xml.sax.InputSource;
@@ -79,7 +81,7 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         set.add (cookieManager = new DataObjectCookieManager (this, set));
         
         sync = new DTDSyncSupport(this);        
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
+        final TextEditorSupport.TextEditorSupportFactory editorFactory =
             TextEditorSupport.findEditorSupportFactory (this, DTDKit.MIME_TYPE);
         editorFactory.registerCookies (set);
 
@@ -87,6 +89,12 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
         set.add(new CheckXMLSupport(in, CheckXMLSupport.CHECK_PARAMETER_ENTITY_MODE));
         //??? This strange line registers updater of mu cookie set
         new CookieManager (this, set, DTDCookieFactoryCreator.class);
+        //enable "Save As"
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                editorFactory.createEditor().saveAs( folder, fileName );
+            }
+        });        
     }
 
     @Override
@@ -175,7 +183,8 @@ public final class DTDDataObject extends MultiDataObject implements XMLDataObjec
 
             setDefaultAction (SystemAction.get (EditAction.class));
             setIconBase ("org/netbeans/modules/xml/resources/dtdObject"); // NOI18N
-            setShortDescription (Util.THIS.getString ("PROP_DTDDataNode_description"));
+            setShortDescription (Util.THIS.getString (DTDDataObject.class,
+                    "PROP_DTDDataNode_description"));
         }
 
         @Override

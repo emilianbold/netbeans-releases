@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+        <title>Using the Hibernate Query Language Editor</title>
+
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+
+    <body>
+
+        <h2>Using the Hibernate Query Language Editor</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You can use the Hibernate Query Language (HQL) Editor to write, edit and execute HQL queries within the IDE.
+        After you create and test the HQL query in the editor you can copy the query to the source code and mapping files.
+        You can right-click in the query editor window to select, copy and paste queries.</p>
+        
+        <p>The syntax of the HQL query language is very similar to the syntax used in SQL queries
+        but HQL is fully object-oriented and can use objects and properties to represent SQL queries.
+        The syntax of HQL queries is not dependent upon the database the queries are run against. 
+        The HQL queries are converted at runtime to the SQL query appropriate for the database.
+        In addition to supporting standard clauses and aggregate functions, HQL also supports
+        polymorphic queries and subqueries.</p>
+        
+        <p>For more about Hibernate Query Language, see the following Hibernate documentation:</p>
+        <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <param name="content" value="http://www.hibernate.org/hib_docs/reference/en/html/queryhql.html">
+            <param name="text" value="<html><u>HQL: The Hibernate Query Language</u></html>">
+            <param name="textFontSize" value="medium">
+            <param name="textColor" value="blue">
+        </object>
+        </p>
+        
+        <p><b>To create and execute a HQL statement or script:</b></p>
+        <ol>
+            <li>Expand the <tt>&lt;default packages&gt;</tt> node under the Source Packages node in the Projects window.</li>
+            <li>Right-click the <tt>hibernate.cfg.xml</tt> configuration file and choose Run HQL Query to open the HQL Editor.</li>
+            <li>Enter the HQL query in the top pane of the editor window.</li>
+            <li>Click Run HQL (&nbsp; <img src="../images/run_hql_query_16.png" alt="Run SQL">&nbsp;) in the toolbar.
+            Alternatively, you can right-click in the query editor window and choose Run HQL from the popup menu.</li> 
+        </ol>
+        
+        <p>When you execute an HQL query, you see the result of the query in the bottom pane of the HQL editor window.
+        The HQL query is executed against the database specified in the project's Hibernate configuration file (<tt>hibernate.cfg.xml</tt>)
+        that is selected in the editor toolbar.
+	You can click the SQL button above the bottom pane to view the SQL query that corresponds to your HQL query.</p>
+        
+        
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+            <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
+            <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+            <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+        </dl>
+        <hr>
+
+        <small><a href="../credits.html">Legal Notices</a></small> 
+        <table border="0" cellpadding="50">
+            <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+
+</html>
+
+

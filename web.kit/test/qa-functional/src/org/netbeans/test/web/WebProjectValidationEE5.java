@@ -72,7 +72,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  */
 public class WebProjectValidationEE5 extends WebProjectValidation {
 
-    protected static ProjectHelper phelper = new ProjectHelper() {
+    private static ProjectHelper phelper = new ProjectHelper() {
 
         public Node getSourceNode() {
             return new SourcePackagesNode(PROJECT_NAME);
@@ -82,9 +82,8 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 
     static {
         PROJECT_NAME = "WebJ2EE5Project"; // NOI18N
-//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
-    protected TestURLDisplayer urlDisplayer;
+
     private ServerInstance server;
 
     /** Need to be defined because of JUnit */
@@ -99,11 +98,11 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationEE5.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf, 
               "testPreconditions", "testNewWebProject", "testRedeployProject",
               "testNewJSP", "testNewJSP2", /*"testJSPNavigator",*/ "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", "testViewServlet",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", /*"testHTMLNavigator",*/ "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
@@ -134,6 +133,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     }
 
     /** checks if the Server ports are not used */
+    @Override
     public void testPreconditions() throws Exception {
         URLConnection connection = server.getServerURL().openConnection();
         try {
@@ -159,6 +159,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
      * - wait until scanning of java files is finished
      * - check index.jsp is opened
      */
+    @Override
     public void testNewWebProject() throws IOException {
         installJemmyQueue();
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
@@ -175,7 +176,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("GlassFish V2");
+        serverStep.selectServer(getServerNode(Server.GLASSFISH).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
         NewWebProjectJSFFrameworkStepOperator frameworkStep = new NewWebProjectJSFFrameworkStepOperator();
@@ -183,19 +184,12 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-//        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-//        ProjectSupport.waitScanFinished();
-//        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "index.jsp");//NOI18N
-        new Node(webPages, "WEB-INF|web.xml");//NOI18N
-        new Node(webPages, "WEB-INF|sun-web.xml");//NOI18N
-//        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        assertEquals(true,ProjectSupport.closeProject(PROJECT_NAME));
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("WEB-INF|sun-web.xml");
     }
 
+    @Override
     public void testNewDocument() throws IOException {
         Node sample1Node = new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "Web Pages");
         // create a new class
@@ -223,6 +217,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
     //MainWindowOperator.getDefault().waitStatusText("Finished building");
     }
 
+    @Override
     public void testStopServer() throws Exception {
         server.stop();
         //try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
@@ -237,6 +232,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         }
     }
 
+    @Override
     public void testStartServer() throws Exception {
         server.start();
         URL url = server.getServerURL();
@@ -244,15 +240,13 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         connection.connect();
     }
 
-    //********************************************************
-    protected void sleep(int milis) {
-        try {
-            Thread.sleep(milis);
-        } catch (InterruptedException ex) {
-            throw new JemmyException("Interrupted", ex);
-        }
+    @Override
+    public void testFinish() {
+        server.stop();
+        new ActionNoBlock(null, "Close").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
     }
 
+    //********************************************************
     public String getProjectFolder(String project) {
         String strLocation = PROJECT_LOCATION + File.separator + project;
         return strLocation;

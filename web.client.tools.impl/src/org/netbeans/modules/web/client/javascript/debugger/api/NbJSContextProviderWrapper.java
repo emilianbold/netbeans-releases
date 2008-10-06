@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -69,14 +70,17 @@ import org.netbeans.spi.viewmodel.TreeModel;
  */
 public class NbJSContextProviderWrapper {
     
-    private static Map<ContextProvider, NbJSContextProviderWrapper> instances =
-        new WeakHashMap<ContextProvider, NbJSContextProviderWrapper>();
+    private static Map<ContextProvider, WeakReference<NbJSContextProviderWrapper>> instances =
+        new WeakHashMap<ContextProvider, WeakReference<NbJSContextProviderWrapper>>();
     
     public synchronized static NbJSContextProviderWrapper getContextProviderWrapper(ContextProvider contextProvider) {
-        NbJSContextProviderWrapper contextProviderWrapper = instances.get(contextProvider);
+        WeakReference<NbJSContextProviderWrapper> contextProviderWrapperRef = instances.get(contextProvider);
+        NbJSContextProviderWrapper contextProviderWrapper = 
+                contextProviderWrapperRef != null ? contextProviderWrapperRef.get() : null;
+        
         if (contextProviderWrapper == null) {
             contextProviderWrapper = new NbJSContextProviderWrapper(contextProvider);
-            instances.put(contextProvider, contextProviderWrapper);
+            instances.put(contextProvider, new WeakReference<NbJSContextProviderWrapper>(contextProviderWrapper));
         }
         return contextProviderWrapper;
     }

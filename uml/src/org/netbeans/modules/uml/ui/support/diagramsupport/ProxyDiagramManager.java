@@ -64,6 +64,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramInfo;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
@@ -188,19 +189,19 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             if(proxyDiagram != null)
             {
                 diagram = proxyDiagram.getDiagram();
-                if(diagram != null)
+                if(diagram != null) // the diagram is opened
                 {
                     diagram.setDirty(false);
                     lock=diagram.setReadOnly(true);
                 }
-            }
-            
-            IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
-            if(manager != null)
-            {
-                if(diagram!=null)manager.setDiagramDirty(diagram,false);
-                manager.closeDiagram3(proxyDiagram);
-                closedDiagram(proxyDiagram,lock);
+                IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
+                if(manager != null)
+                {
+                    //if(diagram!=null)manager.setDiagramDirty(diagram,false);
+                    manager.closeDiagram3(proxyDiagram);
+                    closedDiagram(proxyDiagram,lock);
+                    fileList.remove(sDiagramFullFilename);
+                }
             }
         }
     }
@@ -218,12 +219,20 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 {
                     try {
                         FileObject parentFolder = diagFO.getParent(); 
-                        String fileNameWithExt = diagFO.getNameExt();
+                        String fileNameWithoutExt = diagFO.getName(); 
                         FileObject destFolderFO = FileUtil.createFolder(parentFolder, "DiagramBackup");
+
+                        FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, diagFO.getExt());
+                        if (destFO != null) 
+                        {
+                            destFO.delete();
+                        }
                         
                         //move diagram file to backupp folder
-                        FileUtil.copyFile(diagFO, destFolderFO, fileNameWithExt);
-                        if(lock!=null)diagFO.delete(lock);
+                        FileUtil.copyFile(diagFO, destFolderFO, fileNameWithoutExt);
+                        
+                        if(lock != null)
+                            diagFO.delete(lock);
                         else diagFO.delete();
 
                         IDrawingAreaEventDispatcher dispatcher = getDispatcher();
@@ -901,7 +910,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 
     
     /**
-     * Looks into the .etlp file for presentation elements that represent the queried model element.
+     * Looks into the .diagram file for presentation elements that represent the queried model element.
      *
      * @param pModelElement [in] The model element to look for in closed diagrams as a presentation element
      * @param sDiagramFilename [in] The etlp file where the model elements may have presentation elements
@@ -911,80 +920,38 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
     {
         ETList<IPresentationTarget> retObj = new ETArrayList<IPresentationTarget>();
         // TODO: Handle single file.
-//        if (pModelElement != null)
-//        {
-//            String xmiid = pModelElement.getXMIID();
-//            
-//            // Now go through the tom file to see if the model element id is in there.
-//            String etlFilename = sDiagramFilename;
-//            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_PRESENTATION_EXT);
-//            File file = new File(etlpFilename);
-//            if (file.exists())
-//            {
-//                IProductArchive pProdArch = new ProductArchiveImpl();
-//                boolean loaded = true;
-//                // Note that this loaded archive could either be a stub or a full up diagram.
-//                // so after we're done looking for normal presentation elements see if there's
-//                // a cdfs table indicating this diagram is a stub.
-//                loaded = pProdArch.load(etlpFilename);
-//                if (loaded)
-//                {
-//                    ETList<IProductArchiveElement> pElems = pProdArch.getElements();
-//                    if (pElems != null)
-//                    {
-//                        int count = pElems.size();
-//                        for (int i=0; i<count; i++)
-//                        {
-//                            IProductArchiveElement ele = pElems.get(i);
-//                            String sMEID = ele.getAttributeString(IProductArchiveDefinitions.MEID_STRING);
-//                            String sPEID = ele.getAttributeString(IProductArchiveDefinitions.PRESENTATIONELEMENTID_STRING);
-//                            
-//                            // Make sure we don't have a label
-//                            IProductArchiveAttribute pLabelAttr = ele.getAttribute(IProductArchiveDefinitions.LABELVIEW_TSLABELKIND);
-//                            IProductArchiveAttribute meidAttr = ele.getAttribute(IProductArchiveDefinitions.MEID_STRING);
-//                            IProductArchiveAttribute peidAttr = ele.getAttribute(IProductArchiveDefinitions.PRESENTATIONELEMENTID_STRING);
-//                            if (meidAttr != null && peidAttr != null && pLabelAttr == null)
-//                            {
-//                                if (sMEID != null && sMEID.equals(xmiid))
-//                                {
-//                                    // We found one instance
-//                                    IPresentationTarget presTarget = new PresentationTarget();
-//                                    presTarget.setPresentationID(sPEID);
-//                                    presTarget.setDiagramFilename(etlFilename);
-//                                    
-//                                    retObj.add(presTarget);
-//                                }
-//                            }
-//                        }
-//                        
-//                        // Now see if this diagram has a cdfs table meaning it's a stub
-//                        ETList<IProductArchiveElement> pAllElems = pProdArch.getAllTableEntries(IProductArchiveDefinitions.DIAGRAM_CDFS_STRING);
-//                        if (pAllElems != null)
-//                        {
-//                            int num = pAllElems.size();
-//                            for (int j=0; j<num; j++)
-//                            {
-//                                IProductArchiveElement pFoundEle = pAllElems.get(j);
-//                                String sMEID = pFoundEle.getID();
-//                                String sTopLevelXMIID = pFoundEle.getAttributeString(IProductArchiveDefinitions.TOPLEVELID_STRING);
-//                                if (sMEID != null && sTopLevelXMIID != null && sMEID.equals(sTopLevelXMIID))
-//                                {
-//                                    IPresentationTarget presTar = new PresentationTarget();
-//                                    presTar.setModelElementID(sMEID);
-//                                    presTar.setTopLevelID(sTopLevelXMIID);
-//                                    presTar.setDiagramFilename(etlFilename);
-//                                    retObj.add(presTar);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                else
-//                {
-//                    //show error for IDS_COULDNOTLOAD etlpFilename
-//                }
-//            }
-//        }
+        if (pModelElement != null)
+        {
+            String xmiid = pModelElement.getXMIID();
+            
+            // Now go through the tom file to see if the model element id is in there.
+            String etlFilename = sDiagramFilename;
+            String etlpFilename = FileSysManip.ensureExtension(etlFilename, FileExtensions.DIAGRAM_LAYOUT_EXT);
+            
+            FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
+            if (fobj != null)
+            {
+                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
+                if (parser != null && parser instanceof DiagramParser)
+                {
+                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
+                    DiagramInfo info = map.get(pModelElement.getXMIID());
+                    if(info != null)
+                    {
+                        // We found some instances
+                        for(String peid : info.getPeidList())
+                        {
+                            IPresentationTarget presTarget = new PresentationTarget();
+                            presTarget.setPresentationID(peid);
+                            presTarget.setDiagramFilename(etlFilename);
+
+                            retObj.add(presTarget);
+                        }
+                     }
+
+                }
+            }
+        }
         return retObj;
     }
     
@@ -1042,7 +1009,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
      * 
      * @param presentation The presentation element that needs to be refreshed.
      */
-    public void refresh(IPresentationElement presentation)
+    public void refresh(IPresentationElement presentation,boolean resizetocontent)
     {
         if (presentation != null)
         {
@@ -1070,7 +1037,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                         IDiagram pDiagram = pProxyDiagram.getDiagram();
                         if (pDiagram != null)
                         {
-                            if(pDiagram.refresh(presentation) == true)
+                            if(pDiagram.refresh(presentation,resizetocontent) == true)
                             {
                                 break;
                             }
@@ -1363,7 +1330,7 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 String independPath = directoryFile.getCanonicalPath();
 
                 StringBuffer filenameBuffer = new StringBuffer();
-                for (int index = 0; index < diagramFiles.length; index++) 
+                if(diagramFiles!=null)for (int index = 0; index < diagramFiles.length; index++) 
                 {
                     filenameBuffer.append(independPath);
 
@@ -1411,28 +1378,29 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 
                 String independPath = directoryFile.getCanonicalPath();
                 StringBuffer filenameBuffer = new StringBuffer();
-
-                for (int index = 0; index < diagramFiles.length; index++) 
-                {
-                    filenameBuffer.append(independPath);
-
-                    if (independPath.charAt(independPath.length() - 1) 
-                        != File.separatorChar) 
-                    {
-                        filenameBuffer.append(File.separatorChar);
-                    }
-
-                    filenameBuffer.append(diagramFiles[index]);
-                    String fullPath = filenameBuffer.toString();
-
-                    if (isValidTSDiagram(independPath, diagramFiles[index])) 
-                    {
-                        diagrams.add(fullPath);
-                    }
-
-                    filenameBuffer.delete(0, filenameBuffer.length());
-                }
                 
+                if (diagramFiles != null)
+                {
+                    for (int index = 0; index < diagramFiles.length; index++)
+                    {
+                        filenameBuffer.append(independPath);
+
+                        if (independPath.charAt(independPath.length() - 1) != File.separatorChar)
+                        {
+                            filenameBuffer.append(File.separatorChar);
+                        }
+
+                        filenameBuffer.append(diagramFiles[index]);
+                        String fullPath = filenameBuffer.toString();
+
+                        if (isValidTSDiagram(independPath, diagramFiles[index]))
+                        {
+                            diagrams.add(fullPath);
+                        }
+
+                        filenameBuffer.delete(0, filenameBuffer.length());
+                    }
+                }
                 
             } 
             

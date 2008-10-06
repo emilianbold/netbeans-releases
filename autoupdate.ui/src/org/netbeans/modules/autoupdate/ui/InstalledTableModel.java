@@ -69,7 +69,11 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     
     private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.InstalledTableModel");
     
-    /** Creates a new instance of InstalledTableModel */
+    private static String col0, col1, col2, col3;
+    
+    /** Creates a new instance of InstalledTableModel
+     * @param units 
+     */
     public InstalledTableModel(List<UpdateUnit> units) {
         setUnits(units);
     }
@@ -159,9 +163,6 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         case 3 :
             res = u.getRelevantElement().isEnabled();
             break;
-        case 4 :
-            res = u.getInstalledVersion();
-            break;
         }
         
         return res;
@@ -187,9 +188,6 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         case 3 :
             res = Boolean.class;
             break;
-        case 4 :
-            res = String.class;
-            break;
         }
         
         return res;
@@ -198,16 +196,26 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     @Override
     public String getColumnName(int column) {
         switch (column) {
-        case 0 :
-            return getBundle ("InstalledTableModel_Columns_Uninstall");
-        case 1 :
-            return getBundle ("InstalledTableModel_Columns_Name");
-        case 2:
-            return getBundle("InstalledTableModel_Columns_Category");
-        case 3 :
-            return getBundle ("InstalledTableModel_Columns_Enabled");                        
-        case 4 :
-            return getBundle ("InstalledTableModel_Columns_Installed");
+            case 0 :
+                if (col0 == null) {
+                    col0 = getBundle ("InstalledTableModel_Columns_Uninstall");
+                }
+                return col0;
+            case 1 :
+                if (col1 == null) {
+                    col1 = getBundle ("InstalledTableModel_Columns_Name");
+                }
+                return col1;
+            case 2 :
+                if (col2 == null) {
+                    col2 = getBundle("InstalledTableModel_Columns_Category");
+                }
+                return col2;
+            case 3 :
+                if (col3 == null) {
+                    col3 = getBundle ("InstalledTableModel_Columns_Enabled");
+                }
+                return col3;
         }
         
         assert false;
@@ -253,8 +261,6 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                     return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
                     return Unit.Installed.compareEnabledState(unit1, unit2);
-                } else if (getColumnName(4).equals(columnIdentifier)) {
-                    return Unit.Installed.compareInstalledVersions(unit1, unit2);
                 }                 
                 return 0;
             }

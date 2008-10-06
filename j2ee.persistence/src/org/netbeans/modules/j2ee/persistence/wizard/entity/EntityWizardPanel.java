@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -103,7 +104,7 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         createPUButton.setVisible(visible);
         Icon icon = null;
         if (warning != null) {
-            icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
+            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/persistence/ui/resources/warning.gif"));
         } else {
             warning = " ";
         }

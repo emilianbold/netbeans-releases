@@ -128,8 +128,6 @@ public class EscapeLineTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "c");
 
         assertFalse("No more tokens", ts.moveNext());
-
-        CndLexerUnitTest.dumpTokens(ts);
     }
    
 }

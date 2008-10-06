@@ -42,25 +42,35 @@ package org.netbeans.modules.cnd.editor.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
-public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorPropertySheet panel;
+public class EditorOptionsPanelController extends OptionsPanelController
+        implements PreviewProvider {
+
+    private JEditorPane previewPane;
+    private final EditorPropertySheet panel;
+    private final CodeStyle.Language language;
     private static final boolean TRACE = false;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
 
     
-    public EditorOptionsPanelController(){
+    public EditorOptionsPanelController(CodeStyle.Language language){
         if (TRACE) System.out.println("EditorOptionsPanelController.ctor()"); // NOI18N
-         panel = new EditorPropertySheet(this);
+        this.language = language;
+        this.panel = new EditorPropertySheet(this, language);
     }
     
     public void update() {
@@ -112,4 +122,33 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
+
+    public JComponent getPreviewComponent() {
+        if (previewPane == null) {
+            previewPane = new JEditorPane();
+            previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(EditorOptionsPanelController.class, "AN_Preview")); //NOI18N
+            previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditorOptionsPanelController.class, "AD_Preview")); //NOI18N
+            previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
+            if (language == CodeStyle.Language.C) {
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-c")); //NOI18N
+            } else {
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-c++")); //NOI18N
+            }
+            previewPane.setEditable(false);
+        }
+        return previewPane;
+    }
+
+    public void refreshPreview() {
+        panel.repaintPreview();
+    }
+
+    public static OptionsPanelController getCController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.C);
+    }
+
+    public static OptionsPanelController getCCController() {
+        return new EditorOptionsPanelController(CodeStyle.Language.CPP);
+    }
+
 }

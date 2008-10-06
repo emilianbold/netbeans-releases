@@ -142,6 +142,9 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
                                     DataObject[] subs = d.getChildren();
                                     for (DataObject o : subs)
                                     {
+                                        Object showPreference = o.getPrimaryFile().getAttribute("showPreference");
+                                        if (showPreference instanceof Boolean && ((Boolean)showPreference).booleanValue() == false)
+                                            continue;
                                         presentationObj = factory.retrieveMetaType("NodePresentation", null);
                                         pe = ((IPresentationElement) presentationObj);
                                         element = (IElement) FactoryRetriever.instance().createType(types[i], null);
@@ -163,7 +166,7 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
                             else
                             {
                                 pe.addSubject(element);
-
+                                
                                 initConstructors(p + "/" + types[i], pe);
                                 if (map.containsKey(element.getExpandedElementType()))
                                 {
@@ -234,6 +237,10 @@ public class PreviewScene extends GraphScene<IPresentationElement, IPresentation
         try
         {
             NodeWidgetFactory c = map.get(element.getFirstSubject().getExpandedElementType());
+            if (c == null) 
+            {
+                c = map.get(element.getFirstSubject().getElementType());
+            }
             UMLNodeWidget widget = (UMLNodeWidget) c.createNode(this);
             widget.initializeNode(element, true);
             return widget;

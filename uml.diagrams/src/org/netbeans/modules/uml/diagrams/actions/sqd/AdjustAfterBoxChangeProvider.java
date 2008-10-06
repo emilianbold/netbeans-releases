@@ -63,11 +63,25 @@ public class AdjustAfterBoxChangeProvider implements ActionProvider {
     public AdjustAfterBoxChangeProvider(LifelineWidget widget)
     {
         llW=widget;
-        oldLineY=llW.getLine().getParentWidget().convertLocalToScene(llW.getLine().getLocation()).y;
+        
+        Widget lineParent = llW.getLine().getParentWidget();
+        
+        oldLineY = 0;
+        if(lineParent != null)
+        {
+            oldLineY = lineParent.convertLocalToScene(llW.getLine().getLocation()).y;
+        }
     }
     
     public void perfomeAction() {
-        int newLineY=llW.getLine().getParentWidget().convertLocalToScene(llW.getLine().getLocation()).y;
+        int newLineY = 0;
+        
+        Widget lineParent = llW.getLine().getParentWidget();
+        if(lineParent != null)
+        {
+            newLineY = lineParent.convertLocalToScene(llW.getLine().getLocation()).y;
+        }
+        
         if((newLineY-oldLineY)!=0)
         {
             if(llW.isCreated())

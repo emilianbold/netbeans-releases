@@ -174,7 +174,6 @@ public class OpenSchemaView extends PerformanceTestCase {
                 throw new RuntimeException("Failed to initiate WeakReferences", e);
             }
         }
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         System.gc();
         new EventTool().waitNoEvent(3000);
     }
@@ -186,6 +185,7 @@ public class OpenSchemaView extends PerformanceTestCase {
             .addTest("testOpenComplexSchemaView")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
     

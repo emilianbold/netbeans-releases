@@ -42,14 +42,11 @@
 package org.netbeans.modules.ant.debugger;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.openide.ErrorManager;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -60,11 +57,8 @@ import org.openide.text.NbDocument;
 import org.openide.text.Line.Part;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Watch;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {

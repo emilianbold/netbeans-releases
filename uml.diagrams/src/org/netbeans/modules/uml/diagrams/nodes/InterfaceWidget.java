@@ -114,6 +114,6 @@ public class InterfaceWidget extends UMLClassWidget
     
     public String getWidgetID()
     {
-        return UMLWidgetIDString.UMLCLASSWIDGET.toString();
+        return UMLWidgetIDString.UMLINTERFACEWIDGET.toString();
     }
 }

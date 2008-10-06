@@ -42,16 +42,23 @@
 package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
 import java.net.URL;
+import java.security.Permission;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import junit.framework.Assert;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.JavaSource;
@@ -60,6 +67,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.SourceUtilsTestUtil.TestSourceLevelQueryImplementation;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.tasklist.FirstParseCatcher;
 import org.netbeans.modules.java.source.tasklist.TaskCache;
@@ -86,6 +94,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         RepositoryUpdater.DELAY = 0;
@@ -106,6 +115,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         super.setUp();
     }
     
+    @Override
     protected void tearDown() throws Exception {
         Logger.getLogger(RepositoryUpdater.class.getName()).removeHandler(handler);
         if (sourceCP != null) {
@@ -304,6 +314,209 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(TaskCache.getDefault().getErrors(fileA).toString(), TaskCache.getDefault().isInError(fileA, false));
         assertFalse(TaskCache.getDefault().getErrors(fileB).toString(), TaskCache.getDefault().isInError(fileB, false));
     }
+
+    public void testFileTouch() throws Exception {
+        prepareTest("package pack; public class A { B.Inner x; }",
+                    "package pack; public class B {public static class Inner {}}");
+        assertFalse(TaskCache.getDefault().getErrors(fileA).toString(),
+                    TaskCache.getDefault().isInError(fileA, false));
+        assertFalse(TaskCache.getDefault().getErrors(fileB).toString(),
+                    TaskCache.getDefault().isInError(fileB, false));
+
+        waitScanFinished();
+        SecurityManager old = System.getSecurityManager();
+        CountingSecurityManager.initialize(".class");
+
+        ClassPath cp = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).iterator().next();
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+
+        System.setSecurityManager(old);
+        CountingSecurityManager.assertCounts("Expected", 0);
+    }
+
+    public void testNoRecompileWhenFileChanged() throws Exception {
+        prepareTest("package pack; public class A { B.Inner x; }",
+                    "package pack; public class B {public static class Inner {}}");
+        assertFalse(TaskCache.getDefault().getErrors(fileA).toString(),
+                    TaskCache.getDefault().isInError(fileA, false));
+        assertFalse(TaskCache.getDefault().getErrors(fileB).toString(),
+                    TaskCache.getDefault().isInError(fileB, false));
+
+        waitScanFinished();
+        ClassPath cp = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).iterator().next();
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+
+        CharSequence cs = Log.enable(RepositoryUpdater.class.getName(), Level.ALL);
+        a.setLastModified(System.currentTimeMillis());
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+        String s = cs.toString();
+        Log.enable(RepositoryUpdater.class.getName(), Level.OFF);
+        assertFalse(s.contains("forcing clean due to dirty root"));
+        assertFalse(s.contains("src/pack/B.java"));
+        assertTrue(s.contains("src/pack/A.java timestamp"));
+    }
+    
+    public void doNotRunNow_testCompilerCrash() throws Exception {
+        prepareTest("package pack; public class A { B.Inner x; }",
+                    "package pack; public class B {public static class Inner {}}");
+        assertFalse(TaskCache.getDefault().getErrors(fileA).toString(),
+                    TaskCache.getDefault().isInError(fileA, false));
+        assertFalse(TaskCache.getDefault().getErrors(fileB).toString(),
+                    TaskCache.getDefault().isInError(fileB, false));
+
+        waitScanFinished();
+        ClassPath cp = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).iterator().next();
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+
+        a.setLastModified(System.currentTimeMillis());
+        SecurityManager old = System.getSecurityManager();
+        System.setSecurityManager(new SecurityManager() {
+
+            @Override
+            public void checkAccept(String host, int port) {
+            }
+
+            @Override
+            public void checkAccess(Thread t) {
+            }
+
+            @Override
+            public void checkAccess(ThreadGroup g) {
+            }
+
+            @Override
+            public void checkAwtEventQueueAccess() {
+            }
+
+            @Override
+            public void checkConnect(String host, int port) {
+            }
+
+            @Override
+            public void checkConnect(String host, int port, Object context) {
+            }
+
+            @Override
+            public void checkCreateClassLoader() {
+            }
+
+            @Override
+            public void checkDelete(String file) {
+            }
+
+            @Override
+            public void checkExec(String cmd) {
+            }
+
+            @Override
+            public void checkExit(int status) {
+            }
+
+            @Override
+            public void checkLink(String lib) {
+            }
+
+            @Override
+            public void checkListen(int port) {
+            }
+
+            @Override
+            public void checkMemberAccess(Class<?> clazz, int which) {
+            }
+
+            @Override
+            public void checkMulticast(InetAddress maddr) {
+            }
+
+            @Override
+            public void checkMulticast(InetAddress maddr, byte ttl) {
+            }
+
+            @Override
+            public void checkPackageAccess(String pkg) {
+            }
+
+            @Override
+            public void checkPackageDefinition(String pkg) {
+            }
+
+            @Override
+            public void checkPermission(Permission perm) {
+            }
+
+            @Override
+            public void checkPermission(Permission perm, Object context) {
+            }
+
+            @Override
+            public void checkPrintJobAccess() {
+            }
+
+            @Override
+            public void checkPropertiesAccess() {
+            }
+
+            @Override
+            public void checkPropertyAccess(String key) {
+            }
+
+            @Override
+            public void checkRead(FileDescriptor fd) {
+            }
+
+            @Override
+            public void checkRead(String file) {
+                if (file.contains("A.java")) {
+                    throw new OutOfMemoryError();
+                }
+            }
+
+            @Override
+            public void checkRead(String file, Object context) {
+            }
+
+            @Override
+            public void checkSecurityAccess(String target) {
+            }
+
+            @Override
+            public void checkSetFactory() {
+            }
+
+            @Override
+            public void checkSystemClipboardAccess() {
+            }
+
+            @Override
+            public boolean checkTopLevelWindow(Object window) {
+                return super.checkTopLevelWindow(window);
+            }
+
+            @Override
+            public void checkWrite(FileDescriptor fd) {
+            }
+
+            @Override
+            public void checkWrite(String file) {
+            }
+
+
+        });
+        CharSequence cs = Log.enable(RepositoryUpdater.class.getName(), Level.ALL);
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { cp });
+        waitScanFinished();
+        System.setSecurityManager(old);
+        String s = cs.toString();
+        Log.enable(RepositoryUpdater.class.getName(), Level.OFF);
+        assertTrue(s.contains("forcing clean due to dirty root"));
+        assertFalse(s.contains("src/pack/A.java timestamp"));
+    }
     
     public void testFileUpdate2() throws Exception {
         prepareTest("package pack; public class A { B.Inner x; }", "package pack; public class B {public static class Inner {}}");
@@ -386,7 +599,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         
         assertFalse(TaskCache.getDefault().isInError(fileB.getParent(), true));
     }
-    
+
     private void waitScanFinished() throws Exception {
         //XXX:
         Thread.sleep(2000);
@@ -448,4 +661,69 @@ public class RepositoryUpdaterTest extends NbTestCase {
             "public class B {\n" +
             "public static void tests() {}\n" +
             "}\n";
+}
+
+final class CountingSecurityManager extends SecurityManager {
+    private static int cnt;
+    private static StringWriter msgs;
+    private static PrintWriter pw;
+    private static String suffix;
+
+    public static void initialize(String suffix) {
+        if (System.getSecurityManager() instanceof CountingSecurityManager) {
+            // ok
+        } else {
+            System.setSecurityManager(new CountingSecurityManager());
+        }
+        cnt = 0;
+        msgs = new StringWriter();
+        pw = new PrintWriter(msgs);
+        CountingSecurityManager.suffix = suffix;
+    }
+
+    public static void assertCounts(String msg, int expectedCnt) {
+        Assert.assertEquals(msg + "\n" + msgs, expectedCnt, cnt);
+        cnt = 0;
+        msgs = new StringWriter();
+        pw = new PrintWriter(msgs);
+    }
+
+    @Override
+    public void checkRead(String file) {
+        if (file.endsWith(suffix)) {
+            cnt++;
+            pw.println("checkRead: " + file);
+            new Exception().printStackTrace(pw);
+        }
+    }
+
+    @Override
+    public void checkRead(String file, Object context) {
+        if (file.endsWith(suffix)) {
+            cnt++;
+            pw.println("checkRead2: " + file);
+        }
+    }
+
+    @Override
+    public void checkWrite(FileDescriptor fd) {
+        cnt++;
+        pw.println("Fd: " + fd);
+    }
+
+    @Override
+    public void checkWrite(String file) {
+        if (file.endsWith(suffix)) {
+            cnt++;
+            pw.println("checkWrite: " + file);
+        }
+    }
+
+    @Override
+    public void checkPermission(Permission perm) {
+    }
+
+    @Override
+    public void checkPermission(Permission perm, Object context) {
+    }
 }

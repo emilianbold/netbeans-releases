@@ -94,6 +94,11 @@ public class HtmlGsfCompletionHandler implements CodeCompletionHandler {
                     ts = ts.embedded(HTMLTokenId.language());
                     if (ts == null) {
                         return CodeCompletionResult.NONE;
+                    } else {
+                        ts.move(offset);
+                        if (!(ts.moveNext() || ts.movePrevious())) {
+                            return CodeCompletionResult.NONE;
+                        }
                     }
                 }
                 Token token = ts.token();

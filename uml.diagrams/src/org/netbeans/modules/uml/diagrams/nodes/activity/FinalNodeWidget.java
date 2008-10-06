@@ -38,13 +38,8 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
-import java.awt.Color;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 
 /**
  *
@@ -52,99 +47,28 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceType;
  */
 public class FinalNodeWidget extends ControlNodeWidget
 {
-    public FinalNodeWidget(Scene scene)
+
+    public FinalNodeWidget(Scene scene, String path)
     {
-        super(scene, "UML/context-palette/ActivityFinal");
+        super(scene, path);
+        setResizable(false);
     }
 
     @Override
     public void initializeNode(IPresentationElement presentation)
     {
         Scene scene = getScene();
-        if ( presentation != null ) 
+        if (presentation != null)
         {
-            //IFinalNode element = (IFinalNode) presentation.getFirstSubject();
-
-            // create the outer circle
-            OvalWidget outerCircleWidget = new OvalWidget(scene, 
-                    DEFAULT_OUTER_RADIUS, "", ""); 
-            outerCircleWidget.setBackground(Color.WHITE);
-            outerCircleWidget.setLayout(LayoutFactory.createAbsoluteLayout());
-
-            // create the inner circle whose radius is half of that of the outer circle
-             OvalWidget innerCircleWidget = new OvalWidget(scene, 
-                    DEFAULT_INNER_RADIUS, getWidgetID(), 
-                    bundle.getString("LBL_innerCircle"));
-             
-            innerCircleWidget.setUseGradient(useGradient);
-            innerCircleWidget.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
-            innerCircleWidget.setOpaque(true);
-            
-            outerCircleWidget.addChild(innerCircleWidget);
-            setCurrentView(outerCircleWidget);
+            DoubleCircleWidget widget = new DoubleCircleWidget(scene, DEFAULT_INNER_RADIUS,
+                    DEFAULT_OUTER_RADIUS, getResourcePath(), bundle.getString("LBL_body"));
+            setCurrentView(widget);
         }
+        super.initializeNode(presentation);
     }
     
     public String getWidgetID()
     {
         return UMLWidgetIDString.FINALNODEWIDGET.toString();
     }
-    
-    @Override
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-    {
-         processStateChange(previousState, state);
-    }
-    
-//    private class CircleWidget extends OvalWidget
-//    {   
-//        boolean childCircle = false;
-//        public CircleWidget(Scene scene, int r, String propID, String propDisplayName, boolean childCircle)
-//        {
-//            super(scene, r, propID, propDisplayName);
-//            this.childCircle = childCircle;
-//        }
-//
-//         @Override
-//        protected Rectangle calculateClientArea()
-//        {
-//             Widget parentWidget = null;
-//             Rectangle  bounds  = null;
-//             if ( childCircle )
-//             {
-//                 parentWidget = this.getParentWidget();
-//                 bounds = parentWidget.getBounds();
-//             }
-//             else 
-//             {
-//                 bounds = this.getBounds(); 
-//             }
-//            
-//            if (bounds == null) 
-//            {
-//                int width = getWidth();
-//                int height = getHeight();
-//                return new Rectangle( -width/2, -height/2, width, height);
-//            }
-//            
-//            if (bounds.width != bounds.height)
-//            {
-//                int cx = GeomUtil.centerX(bounds);
-//                int adjustedLen = Math.min(bounds.width, bounds.height);
-//               Rectangle adjustedBounds = new Rectangle( cx-(adjustedLen/2), bounds.y, adjustedLen, adjustedLen);
-//               bounds = adjustedBounds;
-//            }
-//            
-//            if (childCircle)
-//            {  
-//                Point center = GeomUtil.center(bounds);
-//                int childWidth = bounds.width/2;
-//                bounds = new Rectangle (center.x - (childWidth/2),
-//                        center.y -(childWidth/2), childWidth, childWidth);
-//            }
-//            
-//            return bounds;
-//        }
-//    }   
 }

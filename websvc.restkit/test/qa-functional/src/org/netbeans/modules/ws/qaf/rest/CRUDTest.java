@@ -170,12 +170,14 @@ public class CRUDTest extends RestTestBase {
         //Generating RESTful Web Services from Entity Classes
         String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
         waitDialogClosed(restGenTitle);
+        // wait classpath scanning finished
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 16, getRestNode().getChildren().length);
+        assertEquals("missing nodes?", 16, getRestNode().getChildren().length); //NOI18N
     }
 
     public void testCreateRestClient() throws IOException {
@@ -192,7 +194,7 @@ public class CRUDTest extends RestTestBase {
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clickMouse();
         //choose jdbc/sample connection
-        jcbo.selectItem(1);
+        jcbo.selectItem("jdbc/sample"); //NOI18N
         //skip Connecting to Database dialog
         //wait only for Please Wait dialog
         String waitTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.util.Bundle", "MSG_PleaseWait");
@@ -235,11 +237,11 @@ public class CRUDTest extends RestTestBase {
 
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CRUDTest.class),
-                "testRfE",
-                "testPropAccess",
-                "testDeploy",
-                "testCreateRestClient",
-                "testUndeploy"
-                ).enableModules(".*").clusters(".*"));
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testDeploy", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

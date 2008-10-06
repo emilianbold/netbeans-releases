@@ -63,4 +63,5 @@ public interface JSValue extends JSDebuggerBase {
 
     TypeOf getTypeOf();
     String getDisplayValue();
+    boolean set(String value);
 }

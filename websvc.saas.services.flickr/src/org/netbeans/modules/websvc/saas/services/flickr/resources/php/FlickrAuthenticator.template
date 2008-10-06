@@ -1,19 +1,29 @@
 <?php
 
-    require_once "org_netbeans_saas/RestConnection.php";
-    require_once "__NAME__Profile.php";
+    if (@file_exists("org_netbeans_saas/RestConnection.php")) {
+        include_once "org_netbeans_saas/RestConnection.php";
+    } else {
+        include_once "../org_netbeans_saas/RestConnection.php";
+    }
 
+    include_once "__NAME__Profile.php";
+
+    define("_ATTR_PREFIX", "__NAME__");
+    define("_SAAS", "org_netbeans_saas_");
+    define("_RETURN_URL", "flickr_return_url");
+    define("_AUTH_TOKEN", "flickr_auth_token");
+    define("_FROB", "flickr_frob");
+    define("_EXPIRE", "3600");
+        
     class __NAME__ {
 
         private static $inited = false;
-        private static $ATTR_PREFIX = "__NAME__";
-        private static $RETURN_URL = "flickr_return_url";
         private static $LOGIN_URL;
 
         public static function init() {
             if(self::$inited)
             return;
-            self::$LOGIN_URL = "org_netbeans_saas_flickr/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
+            self::$LOGIN_URL = "org_netbeans_saas_flickr/".str_replace("Authenticator", "Login", _ATTR_PREFIX).".php";
             self::$inited = true;
         }
 
@@ -34,7 +44,7 @@
         }
 
         public static function getAuthToken() {
-            $authToken = $_SESSION["flickr_auth_token"];
+            $authToken = self::getSession(_AUTH_TOKEN);
 
             if ($authToken == null || $authToken == "") {
                 throw new Exception("Failed to get a valid authentication token.");
@@ -43,21 +53,22 @@
         }
 
         public static function login() {
-            $authToken = $_SESSION["flickr_auth_token"];
+            self::init();
+            $authToken = self::getSession(_AUTH_TOKEN);
 
             // If there is already a auth token, we are already logged in.
             // Simply return.
-            if (authToken != null) {
+            if ($authToken != null) {
                 return;
             }
 
-            $frob = $_SESSION["flickr_frob"];
+            $frob = self::getSession(_FROB);
 
             // If there is an auth token instead of a session key, we need to
             // obtain the session key using the auth token.  If there is no
             // auth token, we redirect to the login page.
-            if (frob != null) {
-                $_SESSION["flickr_frob"] = null;
+            if ($frob != null) {
+                self::deleteSession(_FROB);
                 $apiKey = self::getApiKey();
                 $method = "flickr.auth.getToken";
                 $sig = array();
@@ -72,42 +83,90 @@
                 $params["api_sig"] = $apiSig;
                 $params["frob"] = $frob;
                 $conn = new RestConnection(
-                    "http://api.flickr.com/services/rest/", $params);
+                    "http://api.flickr.com/services/rest/", null, $params);
                 $res = $conn->get();
                 $result = $res->getResponseBody();
+                $result = str_replace("<", "&lt;", $result);
+                $result = str_replace(">", "&gt;", $result);
 
                 try {
-                    $authToken = substr(strpos($result, "<token>") + 7,
-                        strpos($result, "</token>"));
-                    $_SESSION["flickr_auth_token"] = $authToken;
+                    $ts = strpos($result, "&lt;token&gt;") + 13;
+                    $te = strpos($result, "&lt;", $ts);
+                    $len = $te - $ts;
+                    $authToken = substr($result, $ts, $len);
+                    self::saveSession(_AUTH_TOKEN, $authToken);
                 } catch (Exception $ex) {
-                    throw new Exception("Failed to get authentication token: " + $result);
+                    throw new Exception("Failed to get authentication token: ".$result);
                 }
 
-                $returnUrl = $_SESSION["flickr_return_url"];
-
+                $returnUrl = self::getSession(_RETURN_URL);
                 if ($returnUrl != null) {
-                    $_SESSION["flickr_return_url"] = null;
-                    header('Location: '.$returnUrl);
+                    self::deleteSession(_RETURN_URL);
+                    self::doRedirect($returnUrl."?auth_token=".$authToken);
                     exit(0);
                 }
             } else {
-                $_SESSION["flickr_return_url"] = $_SERVER['REQUEST_URI'];
+                self::sessionInit();
+                self::saveSession(_RETURN_URL, $_SERVER['REQUEST_URI']);
                 self::doRedirect(self::$LOGIN_URL."?rUrl=".$_SERVER['REQUEST_URI']);
+                exit(0);
             }
         }
-
-        private static function logout() {
+        
+        private static function sessionInit() {
+            session_start();
+            $_SESSION = array();
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time()-42000, '/');
+            }
+            session_destroy();
+        }
+        
+        public static function getSession($name) {
+            if($_SESSION[$name] != null)
+              return $_SESSION[$name];
+            else
+              return $_COOKIE[_SAAS.$name];
         }
 
-        public static function sign($params) {
-            $sig = '';
+        public static function saveSession($name, $value) {
+            setcookie(_SAAS.$name, $value, time() + _EXPIRE, "/");
+            $_SESSION[$name] = $value;
+        }
+        
+        public static function deleteSession($name) {
+            setcookie(_SAAS.$name, "", time() - _EXPIRE, "/");
+            $_SESSION[$name] = null;
+        }
+
+        public static function logout() {
+        }
+
+        public static function sign($params)
+        {
+            $sign = '';
+            $values = array();
             ksort($params);
-            foreach ($params as $k=>$v) {
-                $sig .= "$k=$v";
+            foreach($params as $k => $v) {
+                $sign .= $k . $v;
             }
-            $sig .= self::getSecret();
-            return md5($sig);
+            return  md5(self::getSecret() . $sign);
+        }
+
+        public static function doRedirect($url) {
+            printf("<html>");
+            printf("<head>");
+            printf("<title></title>");
+            printf("<meta http-equiv=\"refresh\" content=\"3; URL=".$url."\">");
+            printf("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">");
+            printf("</head>");
+            printf("<body>");
+            printf("<p align=\"center\">Redirecting...</p>");
+            printf("<p align=\"center\">");
+            printf("<a href= \"".$url."\">".$url."</a></p>");
+            printf("<p align=\"center\">If you are not redirected automatically within a few seconds then please click on the link above.</p>");
+            printf("</body>");
+            printf("</html>");
         }
     }
 ?>

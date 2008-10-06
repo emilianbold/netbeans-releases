@@ -538,7 +538,7 @@ public class PreInstallSummaryPanel extends ErrorMessagePanel {
             "PrISP.error.not.enough.space"); // NOI18N
     public static final String DEFAULT_ERROR_CANNOT_CHECK_SPACE =
             ResourceUtils.getString(PreInstallSummaryPanel.class,
-            "PrISP.error.cannot.check.space");// NOI8N
+            "PrISP.error.cannot.check.space");// NOI18N
     public static final String DEFAULT_ERROR_LOGIC_ACCESS =
             ResourceUtils.getString(PreInstallSummaryPanel.class,
             "PrISP.error.logic.access");// NOI18N

@@ -60,28 +60,30 @@ public final class LocalServerController {
 
     private final JComboBox localServerComboBox;
     private final JButton localServerBrowseButton;
-    private final SourcesFolderNameProvider sourcesFolderNameProvider; // can be null
+    private final SourcesFolderProvider sourcesFolderProvider; // can be null
     private final String browseDialogTitle;
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private /*final*/ MutableComboBoxModel localServerComboBoxModel;
     private final LocalServer.ComboBoxEditor localServerComboBoxEditor;
+    private final BrowseHandler browseHandler;
 
     public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
-            SourcesFolderNameProvider sourcesFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
-        return new LocalServerController(localServerComboBox, localServerBrowseButton, sourcesFolderNameProvider,
+            SourcesFolderProvider sourcesFolderProvider, BrowseHandler browseHandler, String browseDialogTitle, LocalServer... defaultLocalServers) {
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, sourcesFolderProvider, browseHandler,
                 browseDialogTitle, defaultLocalServers);
     }
 
-    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton,
+    public static LocalServerController create(JComboBox localServerComboBox, JButton localServerBrowseButton, BrowseHandler browseHandler,
             String browseDialogTitle, LocalServer... defaultLocalServers) {
-        return new LocalServerController(localServerComboBox, localServerBrowseButton, null, browseDialogTitle,
+        return new LocalServerController(localServerComboBox, localServerBrowseButton, null, browseHandler, browseDialogTitle,
                 defaultLocalServers);
     }
 
     private LocalServerController(JComboBox localServerComboBox, JButton localServerBrowseButton,
-            SourcesFolderNameProvider sourcesFolderNameProvider, String browseDialogTitle, LocalServer... defaultLocalServers) {
+            SourcesFolderProvider sourcesFolderProvider, BrowseHandler browseHandler, String browseDialogTitle, LocalServer... defaultLocalServers) {
         assert localServerComboBox != null;
         assert localServerBrowseButton != null;
+        assert browseHandler != null;
         assert browseDialogTitle != null;
         assert localServerComboBox.isEditable() : "localServerComboBox has to be editable";
         assert localServerComboBox.getEditor().getEditorComponent() instanceof JTextField;
@@ -89,7 +91,8 @@ public final class LocalServerController {
         this.localServerComboBox = localServerComboBox;
         this.localServerBrowseButton = localServerBrowseButton;
 
-        this.sourcesFolderNameProvider = sourcesFolderNameProvider;
+        this.sourcesFolderProvider = sourcesFolderProvider;
+        this.browseHandler = browseHandler;
         this.browseDialogTitle = browseDialogTitle;
         localServerComboBoxModel = new LocalServer.ComboBoxModel(defaultLocalServers);
         JTextField editor = (JTextField) localServerComboBox.getEditor().getEditorComponent();
@@ -111,11 +114,13 @@ public final class LocalServerController {
         localServerBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String newSubfolderName = null;
-                if (sourcesFolderNameProvider != null) {
-                    newSubfolderName = sourcesFolderNameProvider.getSourcesFolderName();
+                if (sourcesFolderProvider != null) {
+                    newSubfolderName = sourcesFolderProvider.getSourcesFolderName();
                 }
-                Utils.browseLocalServerAction(localServerBrowseButton.getParent(), localServerComboBox,
-                        localServerComboBoxModel, newSubfolderName, browseDialogTitle);
+                File currentDirectory = browseHandler.getCurrentDirectory();
+                File newLocation = Utils.browseLocalServerAction(localServerBrowseButton.getParent(), localServerComboBox, localServerComboBoxModel, currentDirectory,
+                        newSubfolderName, browseDialogTitle);
+                browseHandler.locationChanged(newLocation);
             }
         });
     }
@@ -179,5 +184,11 @@ public final class LocalServerController {
             err = Utils.validateProjectDirectory(sourcesLocation, type, allowNonEmpty, allowInRoot);
         }
         return err;
+    }
+
+    // handle browse button - provide default directory & save it if needed
+    public static interface BrowseHandler {
+        File getCurrentDirectory();
+        void locationChanged(File location);
     }
 }

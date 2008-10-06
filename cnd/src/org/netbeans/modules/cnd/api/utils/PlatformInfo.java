@@ -42,8 +42,10 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 
@@ -58,11 +60,11 @@ public final class PlatformInfo {
 
     private ArrayList<String> list = new ArrayList<String>();
     private String pathName = null;
-    private final String host;
+    private final String hkey;
     private final int platform;
 
-    public PlatformInfo(String host, int platform) {
-        this.host = host;
+    private PlatformInfo(String hkey, int platform) {
+        this.hkey = hkey;
         this.platform = platform;
 
         String path = getEnv().get("PATH"); // NOI18N
@@ -88,14 +90,19 @@ public final class PlatformInfo {
                 list.add("C:/WINDOWS/System32"); // NOI18N
                 list.add("C:/WINDOWS"); // NOI18N
                 list.add("C:/WINDOWS/System32/WBem"); // NOI18N
+            } else {
+                System.err.println("PlatformInfo: Path is empty for host " + hkey);
             }
         }
+    }
 
+    public String getHkey() {
+        return hkey;
     }
 
     /**
      * Replace the current path with this new one. We should validate but currently aren't.
-     * 
+     *
      * @param newPath A list of directories to use as a replacement path
      */
     public void setPath(ArrayList<String> newPath) {
@@ -104,7 +111,7 @@ public final class PlatformInfo {
 
     /**
      * Read the PATH from the environment and make an array from it.
-     * 
+     *
      * @return A list of all path directories
      */
     public ArrayList<String> getPath() {
@@ -114,22 +121,29 @@ public final class PlatformInfo {
     /**
      * Return the path with the correct path separator character.
      * This would be named toString() if it weren't a method.
-     * 
+     *
      * @return Path as a string (with OS specific directory separators)
      */
     public String getPathAsString() {
+        if (list.isEmpty()) {
+            return "";
+        }
         StringBuffer buf = new StringBuffer();
 
         for (String dir : list) {
             buf.append(dir);
-            buf.append(File.pathSeparator);
+            buf.append(pathSeparator());
         }
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
     }
 
+    public String getPathAsStringWith(String newDir) {
+        return getPathName() + '=' + getPathAsString() + pathSeparator() + newDir;
+    }
+
     /**
      * Add a directory to the path.
-     * 
+     *
      * @param pos Position where dir should be added
      * @param dir New directory to add to path
      * @throws IndexOutOfBoundsException
@@ -140,7 +154,7 @@ public final class PlatformInfo {
 
     /**
      * Remove a directory (by index) from the path.
-     * 
+     *
      * @param pos Position where dir should be added
      * @throws IndexOutOfBoundsException
      */
@@ -169,10 +183,10 @@ public final class PlatformInfo {
     }
 
     public String findCommand(String cmd) {
-        String cmd2 = null;
-        ArrayList<String> dirlist = getPath();
+        if (cmd != null && cmd.length() > 0) {
+            String cmd2 = null;
+            ArrayList<String> dirlist = getPath();
 
-        if (cmd.length() > 0) {
             if (isWindows() && !cmd.endsWith(".exe")) { // NOI18N
                 cmd2 = cmd + ".exe"; // NOI18N
             }
@@ -192,30 +206,65 @@ public final class PlatformInfo {
         }
         return null;
     }
-    
+
     public String separator() {
         return isWindows() ? "\\" : "/"; // NOI18N
     }
-    
+
     public String pathSeparator() {
         return isWindows() ? ";" : ":"; // NOI18N
     }
-    
+
+    public int getPlatform() {
+        return platform;
+    }
+
     // utility
-    private boolean isWindows() {
+    public boolean isWindows() {
         return platform == PlatformTypes.PLATFORM_WINDOWS;
     }
 
-    private boolean isUnix() {
+    public boolean isUnix() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
 
-    private Map<String, String> getEnv() {
-        return HostInfoProvider.getDefault().getEnv(host);
+    public boolean isLinux() {
+        return platform == PlatformTypes.PLATFORM_LINUX;
     }
-    
-    private boolean fileExists(String path) {
-        return HostInfoProvider.getDefault().fileExists(host, path);
+
+    public boolean isMac() {
+        return platform == PlatformTypes.PLATFORM_MACOSX;
     }
-    
+
+    public boolean isSolaris() {
+        return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
+    }
+
+    public boolean isLocalhost() {
+        return RemoteUtils.isLocalhost(hkey);
+    }
+
+    public Map<String, String> getEnv() {
+        return HostInfoProvider.getDefault().getEnv(hkey);
+    }
+
+    public boolean fileExists(String path) {
+        return HostInfoProvider.getDefault().fileExists(hkey, path);
+    }
+    private static Map<String, PlatformInfo> map = new HashMap<String, PlatformInfo>();
+
+    public static synchronized PlatformInfo getDefault(String hkey) {
+        PlatformInfo pi = map.get(hkey);
+        if (pi == null) {
+            int thePlatform = HostInfoProvider.getDefault().getPlatform(hkey);
+            pi = new PlatformInfo(hkey, thePlatform);
+            map.put(hkey, pi);
+        }
+        return pi;
+    }
+
+    public static PlatformInfo localhost() {
+        return getDefault(CompilerSetManager.LOCALHOST);
+    }
+
 }

@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.codegen;
 
-import javax.lang.model.element.Modifier;
+//import javax.lang.model.element.Modifier;
 
 /**
  *
@@ -108,6 +108,8 @@ public class Constants {
     
     public static final String GET_ANNOTATION = "GET";   //NOI18N
     
+    public static final String HEAD_ANNOTATION = "HEAD";   //NOI18N
+
     public static final String POST_ANNOTATION = "POST";   //NOI18N
     
     public static final String PUT_ANNOTATION = "PUT";   //NOI18N
@@ -126,6 +128,8 @@ public class Constants {
     
     public static final String GET = REST_API_PACKAGE + GET_ANNOTATION;
     
+    public static final String HEAD = REST_API_PACKAGE + HEAD_ANNOTATION;
+     
     public static final String POST = REST_API_PACKAGE + POST_ANNOTATION;
     
     public static final String PUT = REST_API_PACKAGE + PUT_ANNOTATION;
@@ -146,7 +150,7 @@ public class Constants {
     
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
-    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI18N
     
     public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     
@@ -183,23 +187,6 @@ public class Constants {
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
-    
-    public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
-    
-    public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };
-    
-    public static final Modifier[] PROTECTED = new Modifier[] { Modifier.PROTECTED };
-    
-    public static final Modifier[] PRIVATE_STATIC = new Modifier[] {
-        Modifier.PRIVATE, Modifier.STATIC };
-    
-    public static final Modifier[] PUBLIC_STATIC = new Modifier[] {
-        Modifier.PUBLIC, Modifier.STATIC
-    };
-   
-    public static final Modifier[] PUBLIC_STATIC_FINAL = new Modifier[] {
-        Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL
-    };
    
     public static final String JAVA_EXT = "java"; //NI18N
     
@@ -269,7 +256,8 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get", Constants.GET), 
+        GET("get", Constants.GET),
+        HEAD("head", Constants.HEAD),
         PUT("put", Constants.PUT),
         POST("post", Constants.POST),
         DELETE("delete", Constants.DELETE);

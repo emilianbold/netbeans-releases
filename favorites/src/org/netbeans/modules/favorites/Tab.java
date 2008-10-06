@@ -46,13 +46,19 @@ import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.ObjectStreamException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
+import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -60,6 +66,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
@@ -85,6 +92,7 @@ implements Runnable, ExplorerManager.Provider {
     /** data object which should be selected in EQ; synch array when accessing */
     private static final DataObject[] needToSelect = new DataObject[1];
 
+    private static final Logger LOG = Logger.getLogger(Tab.class.getName());
 
     private static transient Tab DEFAULT;
 
@@ -97,7 +105,7 @@ implements Runnable, ExplorerManager.Provider {
     transient private NodeListener rcListener;
     /** validity flag */
     transient private boolean valid = true;
-    
+
     private ExplorerManager manager;
     
     /** Creates */
@@ -480,13 +488,77 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     protected void doSelectNode (DataObject obj) {
+        //#142155: For some selected nodes there is no corresponding dataobject
+        if (obj == null) {
+            return;
+        }
         Node root = getExplorerManager ().getRootContext ();
         if (selectNode (obj, root)) {
             requestActive();
             StatusDisplayer.getDefault().setStatusText(""); // NOI18N
         } else {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
+            FileObject file = chooseFileObject(obj.getPrimaryFile());
+            if (file == null) {
+                return;
+            }
+
+            try {
+                Node[] toShadows = new Node[] {DataObject.find(file).getNodeDelegate()};
+                final DataFolder f = Favorites.getFolder();
+                final DataObject [] arr = f.getChildren();
+                final List<DataObject> listAdd = new ArrayList<DataObject>();
+                DataObject createdDO = null;
+
+                createdDO = Actions.Add.createShadows(f, toShadows, listAdd);
+
+                //This is done to set desired order of nodes in view
+                Actions.Add.reorderAfterAddition(f, arr, listAdd);
+                Actions.Add.selectAfterAddition(createdDO);
+            } catch (DataObjectNotFoundException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
         }
+    }
+
+    /**
+     *
+     * @return FileObject or null if FileChooser dialog is cancelled
+     */
+    private static FileObject chooseFileObject(FileObject file) {
+        FileObject retVal = null;
+        File chooserSelection = null;
+        JFileChooser chooser = new JFileChooser ();
+        chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+        chooser.setDialogTitle(NbBundle.getBundle(Actions.class).getString ("CTL_DialogTitle"));
+        chooser.setApproveButtonText(NbBundle.getBundle(Actions.class).getString ("CTL_ApproveButtonText"));
+        chooser.setSelectedFile(FileUtil.toFile(file));
+        int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Show the chooser
+        if ( option == JFileChooser.APPROVE_OPTION ) {
+            chooserSelection = chooser.getSelectedFile();
+            File selectedFile = FileUtil.normalizeFile(chooserSelection);
+            //Workaround for JDK bug #5075580 (filed also in IZ as #46882)
+            if (!selectedFile.exists()) {
+                if ((selectedFile.getParentFile() != null) && selectedFile.getParentFile().exists()) {
+                    if (selectedFile.getName().equals(selectedFile.getParentFile().getName())) {
+                        selectedFile = selectedFile.getParentFile();
+                    }
+                }
+            }
+            //#50482: Check if selected file exists eg. user can enter any file name to text box.
+            if (!selectedFile.exists()) {
+                String message = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExist",selectedFile.getPath());
+                String title = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExistDlgTitle");
+                DialogDisplayer.getDefault().notify
+                (new NotifyDescriptor(message,title,NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.CLOSED_OPTION },
+                NotifyDescriptor.OK_OPTION));
+            } else {
+                retVal = FileUtil.toFileObject(selectedFile);
+                assert retVal != null;
+            }
+        }
+        return retVal;
     }
 
     /** Old (3.2) deserialization of the ProjectTab */

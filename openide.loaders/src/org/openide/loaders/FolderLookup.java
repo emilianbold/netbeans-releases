@@ -418,12 +418,17 @@ public class FolderLookup extends FolderInstance {
                                 // folder recognizer thread is waiting for more then
                                 // 10s in waitFinished, which signals that there 
                                 // is a very high possibility of a deadlock
-                                fl.err().log(Level.INFO, "Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!", new Exception("Thread dump")); // NOI18N
+                                Exception td = new Exception();
+                                fl.err().log(Level.INFO, "Preventing deadlock #65543: Do not call FolderLookup from inside DataObject operations!", td); // NOI18N
+                                for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+                                    td.setStackTrace(entry.getValue());
+                                    fl.err().log(Level.INFO, "Thread " + entry.getKey(), td);
+                                }
                                 return;
                             }
                         }
                     } catch (InterruptedException ex) {
-                        fl.err().log(Level.WARNING, null, ex);
+                        fl.err().log(Level.INFO, null, ex);
                     }
                 }
             } else {

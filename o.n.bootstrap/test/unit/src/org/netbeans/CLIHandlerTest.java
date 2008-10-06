@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import org.netbeans.junit.*;
 import java.util.*;
 import java.util.logging.Logger;
+import junit.framework.Test;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -64,9 +65,13 @@ public class CLIHandlerTest extends NbTestCase {
         super(name);
     }
     
-    public static junit.framework.Test suite() {
-        //return new CLIHandlerTest("testCLIHandlersCanChangeLocationOfLockFile");
-        return new NbTestSuite(CLIHandlerTest.class);
+    public static Test suite() {
+        Test t = null;
+//        t = new CLIHandlerTest("testFileExistsHasPortButPortIsNotActive");
+        if (t == null) {
+            t = new NbTestSuite(CLIHandlerTest.class);
+        }
+        return t;
     }
     
     protected void setUp() throws Exception {
@@ -168,6 +173,32 @@ public class CLIHandlerTest extends NbTestCase {
         assertEquals("Another port allocated", second.resultPort(), runner.resultPort());
     }
 
+    public void testFileExistsHasPortButPortIsNotActive() throws Exception {
+        String tmp = System.getProperty("netbeans.user");
+
+        File f = new File(tmp, "lock");
+        if (f.exists()) {
+            assertTrue("Clean up previous mess", f.delete());
+            assertTrue(!f.exists());
+        }
+
+        // write down stupid port number
+        FileOutputStream os = new FileOutputStream(f);
+        os.write(0);
+        os.write(0);
+        os.write(80);
+        os.write(26);
+        os.close();
+
+        // blocks after read the keys from the file
+        InitializeRunner second = new InitializeRunner(94);
+
+        // let the second finish
+        second.next();
+
+        assertEquals("Still the same file", f, second.resultFile());
+        assertTrue("finished", second.waitResult());
+    }
     
     public void testHelpIsPrinted() throws Exception {
         class UserDir extends CLIHandler {
@@ -345,10 +376,8 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public void testCLIHandlersCanChangeLocationOfLockFile() throws Exception {
-        File f = File.createTempFile("suffix", "tmp").getParentFile();
-        final File dir = new File(f, "subdir");
-        dir.delete();
-        assertTrue(dir.exists() || dir.mkdir());
+        clearWorkDir();
+        final File dir = getWorkDir();
         
         class UserDir extends CLIHandler {
             private int cnt;
@@ -371,8 +400,6 @@ public class CLIHandlerTest extends NbTestCase {
         assertNotNull("res: ", res);
         assertEquals("Our command line handler is called once", 1, ud.cnt);
         assertEquals("Lock file is created in dir", dir, res.getLockFile().getParentFile());
-        
-        dir.delete();
     }
     
     public void testCLIHandlerCanStopEvaluation() throws Exception {

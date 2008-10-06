@@ -61,10 +61,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.editor.StringMap;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -83,6 +84,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -203,7 +205,7 @@ public final class CsmProjectContentResolver {
         }
         return res;
     }
-    
+
     private CsmProject getProject() {
         return this.project;
     }
@@ -357,6 +359,7 @@ public final class CsmProjectContentResolver {
         }
         Set handledLibs = new HashSet();
         Map<String, CsmObject> res = new HashMap<String, CsmObject>();
+        Collection<CsmObject> libElements = new LinkedHashSet();
         // add libararies elements
         for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
             CsmProject lib = (CsmProject) it.next();
@@ -364,10 +367,20 @@ public final class CsmProjectContentResolver {
                 handledLibs.add(lib);
                 CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
-                res = mergeByFQN(res, filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested));
+                Collection results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
+                if (match) {
+                    libElements.addAll(results);
+                } else {
+                    res = mergeByFQN(res, results);
+                }
             }
         }
-        Collection<CsmObject> out = res.values();
+        Collection<CsmObject> out;
+        if (match) {
+            out = libElements;
+        } else {
+            out = res.values();
+        }
         if (res != null && sort) {
             List<CsmObject> sorted = new ArrayList<CsmObject>(out);
             CsmSortUtilities.sortMembers(sorted, isNaturalSort(), isCaseSensitive());
@@ -440,16 +453,31 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List<CsmVariable> getFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
+    public List<CsmVariable> getFileLocalVariables(CsmContext context, FileReferencesContext fileReferncesContext, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
         List<CsmVariable> out = new ArrayList<CsmVariable>();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
-                CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+                CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();                
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
                     if (!needFileLocalOrDeclFromUnnamedNS) {
-                        fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        List<CsmVariable> cached = null;
+                        if (fileReferncesContext != null  && !fileReferncesContext.isCleaned() && match) {
+                            cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
+                        }
+                        if (cached != null) {
+                            out.addAll(cached);
+                        } else {
+                            fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        }
+                    }
+                    for (Iterator it2 = context.iterator(); it2.hasNext();) {
+                        CsmContext.CsmContextEntry elem2 = (CsmContext.CsmContextEntry) it2.next();
+                        if (CsmKindUtilities.isNamespaceDefinition(elem2.getScope())) {
+                            CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) elem2.getScope();
+                            fillFileLocalIncludeNamespaceVariables(nsd.getNamespace(), strPrefix, match, currentFile, out);
+                        }
                     }
                     break;
                 }
@@ -459,23 +487,34 @@ public final class CsmProjectContentResolver {
     }
     
     public List<CsmFunction> getFileLocalFunctions(CsmContext context, String strPrefix, boolean match, boolean needDeclFromUnnamedNS) {
-        List<CsmFunction> out = new ArrayList<CsmFunction>();
+        Map<CharSequence, CsmFunction> out = new HashMap<CharSequence, CsmFunction>();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
                 CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
                 if (CsmKindUtilities.isFile(elem.getScope())) {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalFunctions(strPrefix, match, currentFile, needDeclFromUnnamedNS, false, out);
+                    for (Iterator it2 = context.iterator(); it2.hasNext();) {
+                        CsmContext.CsmContextEntry elem2 = (CsmContext.CsmContextEntry) it2.next();
+                        if (CsmKindUtilities.isNamespaceDefinition(elem2.getScope())) {
+                            List<CsmFunction> funs = new ArrayList<CsmFunction>();
+                            CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) elem2.getScope();
+                            fillFileLocalIncludeNamespaceFunctions(nsd.getNamespace(), strPrefix, match, currentFile, funs);
+                            for (CsmFunction fun : funs) {
+                                out.put(fun.getSignature(), fun);
+                            }
+                        }
+                    }
                     break;
                 }
             }
         }
-        return out;
+        return new ArrayList<CsmFunction>(out.values());
     }
     
     private void fillFileLocalFunctions(String strPrefix, boolean match, 
             CsmFile file, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
-            Collection<CsmFunction> out) {
+            Map<CharSequence, CsmFunction> out) {
         CsmDeclaration.Kind[] kinds;
         if (needDeclFromUnnamedNS||fromUnnamedNamespace) {
             kinds = new CsmDeclaration.Kind[] {
@@ -495,8 +534,8 @@ public final class CsmProjectContentResolver {
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction fun = (CsmFunction) decl;
                 if (fromUnnamedNamespace || CsmBaseUtilities.isFileLocalFunction(fun)) {
-                    if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
-                        out.add(fun);
+                    if (decl.getName().length() != 0 && matchName(decl.getName(), strPrefix, match)) {
+                        out.put(fun.getSignature().toString(), fun);
                     }
                 }
             } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
@@ -510,7 +549,7 @@ public final class CsmProjectContentResolver {
 
     private void fillFileLocalFunctions(String strPrefix, boolean match, 
             CsmNamespaceDefinition ns, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
-            Collection<CsmFunction> out) {
+            Map<CharSequence, CsmFunction> out) {
         CsmDeclaration.Kind[] kinds;
         if (fromUnnamedNamespace||needDeclFromUnnamedNS) {
             kinds = new CsmDeclaration.Kind[] {
@@ -530,8 +569,8 @@ public final class CsmProjectContentResolver {
             if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction fun = (CsmFunction) decl;
                 if (fromUnnamedNamespace || CsmBaseUtilities.isFileLocalFunction(fun)) {
-                    if (decl.getName().length() != 0 && matchName(decl.getName().toString(), strPrefix, match)) {
-                        out.add(fun);
+                    if (decl.getName().length() != 0 && matchName(decl.getName(), strPrefix, match)) {
+                        out.put(fun.getSignature(), fun);
                     }
                 }
             } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
@@ -562,8 +601,16 @@ public final class CsmProjectContentResolver {
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
         fillFileLocalVariables(strPrefix, match, it, needDeclFromUnnamedNS, fromUnnamedNamespace, out);
     }
-    
-    private void fillFileLocalVariables(String strPrefix, boolean match, 
+
+    private void fillUnionVariables(String strPrefix, boolean match, CsmClass union, Collection<CsmVariable> out) {
+        Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(union, 
+                CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
+                                               match, caseSensitive, true));
+        Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
+        out.addAll(filtered);
+    }
+
+    private void fillNamespaceVariables(String strPrefix, boolean match, 
             CsmNamespaceDefinition ns, boolean needDeclFromUnnamedNS, boolean fromUnnamedNamespace, 
             Collection<CsmVariable> out) {
         CsmDeclaration.Kind[] kinds;
@@ -593,7 +640,7 @@ public final class CsmProjectContentResolver {
                 CharSequence varName = decl.getName();
                 if (fromUnnamedNamespace || CsmKindUtilities.isFileLocalVariable(decl)) {
                     if (varName.length() != 0) {
-                        if(matchName(varName.toString(), strPrefix, match)) {
+                        if(matchName(varName, strPrefix, match)) {
                             out.add((CsmVariable) decl);
                         }
                     } else {
@@ -601,15 +648,8 @@ public final class CsmProjectContentResolver {
                         CsmType type = var.getType();
                         if (type != null) {
                             CsmClassifier clsfr = type.getClassifier();
-                            if (clsfr != null) {
-                                if (CsmKindUtilities.isUnion(clsfr)) {
-                                    CsmClass cls = (CsmClass) clsfr;
-                                    Iterator<CsmMember> i = CsmSelect.getDefault().getClassMembers(cls, 
-                                            CsmSelect.getDefault().getFilterBuilder().createNameFilter(strPrefix,
-                                                                           match, caseSensitive, true));
-                                    Collection filtered = CsmSortUtilities.filterList(i, strPrefix, match, caseSensitive);
-                                    out.addAll(filtered);
-                                }
+                            if (clsfr != null && CsmKindUtilities.isUnion(clsfr)) {
+                                fillUnionVariables(strPrefix, match, (CsmClass)clsfr, out);
                             }
                         }
                     }
@@ -617,7 +657,7 @@ public final class CsmProjectContentResolver {
             } else if (needDeclFromUnnamedNS && CsmKindUtilities.isNamespaceDefinition(decl)) {
                 if (((CsmNamespaceDefinition)decl).getName().length() == 0) {
                     // add all declarations from unnamed namespace as well
-                    fillFileLocalVariables(strPrefix, match, (CsmNamespaceDefinition)decl, needDeclFromUnnamedNS, true, out);
+                    fillNamespaceVariables(strPrefix, match, (CsmNamespaceDefinition)decl, needDeclFromUnnamedNS, true, out);
                 }
             }
         }        
@@ -655,7 +695,86 @@ public final class CsmProjectContentResolver {
             }
         }
     }
+
+    private void fillFileLocalIncludeNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match,
+            CsmFile file, Collection<CsmVariable> out) {
+        CsmDeclaration.Kind[] kinds = new CsmDeclaration.Kind[]{
+            CsmDeclaration.Kind.VARIABLE,
+            CsmDeclaration.Kind.VARIABLE_DEFINITION
+        };
+        Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
+        getFileLocalIncludeNamespaceMembers(ns, file, se);
+        List<CsmVariable> vars = new ArrayList<CsmVariable>();
+        filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
+        vars = filterVariables(vars);
+        out.addAll(vars);
+    }
+
+    private void fillFileLocalIncludeNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match,
+            CsmFile file, List<CsmFunction> out) {
+        CsmDeclaration.Kind kinds[] = {
+            CsmDeclaration.Kind.FUNCTION,
+            CsmDeclaration.Kind.FUNCTION_DEFINITION
+        };
+        Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
+        getFileLocalIncludeNamespaceMembers(ns, file, se);
+
+        List<CsmFunction> funs = new ArrayList<CsmFunction>();
+        filterDeclarations(se.iterator(), funs, kinds, strPrefix, match, false);
+        funs = filterFunctionDefinitions(funs);
+        out.addAll(funs);
+    }
+
+    private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
+            Collection out) {
+        for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
+            if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+                if (nsd.getQualifiedName().equals(ns.getQualifiedName())) {
+                    out.addAll(nsd.getScopeElements());
+                } else if (ns.getQualifiedName().toString().startsWith(nsd.getQualifiedName().toString())) {
+                    getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out);
+                }
+            }
+        }
+    }
     
+    private void getFileLocalIncludeNamespaceMembersFromNested(CharSequence nsName, CsmNamespaceDefinition ns, Collection out) {
+        for (CsmOffsetableDeclaration decl : ns.getDeclarations()) {
+            if(CsmKindUtilities.isNamespaceDefinition(decl)) {
+                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+                if (nsd.getQualifiedName().equals(nsName)) {
+                    out.addAll(nsd.getScopeElements());
+                } else if (nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
+                    getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out);
+                }
+            }
+        }
+    }
+
+//    private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file, int offset,
+//            Collection out) {
+//        for(CsmNamespaceDefinition nsd : CsmUsingResolver.getDefault().findDirectVisibleNamespaceDefinitions(file, offset, project)) {
+//            if (nsd.getQualifiedName().equals(ns.getQualifiedName())) {
+//                out.addAll(nsd.getScopeElements());
+//            } else if (ns.getQualifiedName().toString().startsWith(nsd.getQualifiedName().toString())) {
+//                getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out);
+//            }
+//        }
+//    }
+//    
+//    private void getFileLocalIncludeNamespaceMembersFromNested(CharSequence nsName, CsmNamespaceDefinition ns, Collection out) {
+//        for (CsmOffsetableDeclaration decl : ns.getDeclarations()) {
+//            if(CsmKindUtilities.isNamespaceDefinition(decl)) {
+//                CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
+//                if (nsd.getQualifiedName().equals(nsName)) {
+//                    out.addAll(nsd.getScopeElements());
+//                } else if (nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
+//                    getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out);
+//                }
+//            }
+//        }
+//    }
     
 //    public List getLocalDeclarations(CsmContext context, String strPrefix, boolean match) {
 //        List res = CsmContextUtilities.findLocalDeclarations(context, strPrefix, match, isCaseSensitive());
@@ -679,6 +798,24 @@ public final class CsmProjectContentResolver {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
+    }
+    
+    public List<CsmVariable> getFileLocalNamespaceVariables(CsmNamespace ns, CsmFile file, String strPrefix, boolean match) {
+        List<CsmVariable> out = new ArrayList<CsmVariable>();
+        fillFileLocalIncludeNamespaceVariables(ns, strPrefix, match, file, out);
+        if (isSortNeeded() && out != null) {
+            CsmSortUtilities.sortMembers(out, isNaturalSort(), isCaseSensitive());
+        }
+        return out;
+    }
+
+    public List<CsmFunction> getFileLocalNamespaceFunctions(CsmNamespace ns, CsmFile file, String strPrefix, boolean match) {
+        List<CsmFunction> out = new ArrayList<CsmFunction>();
+        fillFileLocalIncludeNamespaceFunctions(ns, strPrefix, match, file, out);
+        if (isSortNeeded() && out != null) {
+            CsmSortUtilities.sortMembers(out, isNaturalSort(), isCaseSensitive());
+        }
+        return out;
     }
     
     public List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
@@ -707,7 +844,7 @@ public final class CsmProjectContentResolver {
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
             // TODO: consider when we add nested namespaces
-            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName().toString(), strPrefix, match)) {
+            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
                 res.add(nestedNs);
             }
         }  
@@ -780,7 +917,28 @@ public final class CsmProjectContentResolver {
         }
         return res;
     }
-    
+
+    @SuppressWarnings("unchecked")
+    public List<CsmClass> getBaseClasses(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match) {
+        assert (clazz != null);
+        CsmVisibility minVisibility;
+        if (contextDeclaration == null) {
+            // we are in global context and are interested in all base classes
+            minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
+        } else {
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
+        }
+
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new HashSet<CsmClass>(), minVisibility, INIT_INHERITANCE_LEVEL);
+        List<CsmClass> res;
+        if (set != null && set.size() > 0) {
+            res = new ArrayList<CsmClass>(set.values());
+        } else {
+            res = new ArrayList<CsmClass>();
+        }
+        return res;
+    }
+
     public List/*<CsmField>*/ getFields(CsmClass clazz, boolean staticOnly) {
         return getFields(clazz, clazz, "", staticOnly, false, true,false);
     }
@@ -849,51 +1007,36 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
         }
         
-        Map<String, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
+        Map<CharSequence, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
                 new HashSet<CsmClass>(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
         List<CsmMember> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
         } else {
-             res = new ArrayList<CsmMember>();
+            res = new ArrayList<CsmMember>();
         }
         return res;
     }
     
     @SuppressWarnings("unchecked")
-    private Map<String, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
+    private Map<CharSequence, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
             Set<CsmClass> handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, 
             boolean returnUnnamedMembers) {
         assert(clazz != null);
         
         if (handledClasses.contains(clazz)) {
-            return Collections.<String, CsmMember>emptyMap();
+            return Collections.<CharSequence, CsmMember>emptyMap();
         }       
         
         if (minVisibility == CsmVisibility.NONE) {
-            return Collections.<String, CsmMember>emptyMap();
+            return Collections.<CharSequence, CsmMember>emptyMap();
         }
 
-        if (inheritanceLevel == INIT_INHERITANCE_LEVEL) {
-            inheritanceLevel = NO_INHERITANCE;
-            CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
-            if (clazz.equals(contextClass)) {
-                inheritanceLevel = EXACT_CLASS;
-            } else if (contextClass != null) {
-                // check how clazz is visible in context class
-                if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
-                    inheritanceLevel = CHILD_INHERITANCE;
-                }
-                // TODO: think about opposite usage C extends B extends A; C is used in A context
-                // what is by spec? Are there additional visibility for A about C?
-            }            
-        } else if (contextDeclaration != null) {
-            // min visibility can be changed by context declaration properties
-            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel == CHILD_INHERITANCE);
-        }
-        
-        Map<String, CsmMember> res = new StringMap();
+        VisibilityInfoPair visibilityInfo = getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel);
+        minVisibility = visibilityInfo.visibility;
+        inheritanceLevel = visibilityInfo.inheritanceLevel;
+        Map<CharSequence, CsmMember> res = new HashMap<CharSequence, CsmMember>();
         CsmFilter memberFilter = CsmContextUtilities.createFilter(kinds,
                                 strPrefix, match, caseSensitive, returnUnnamedMembers);
         Collection<CsmClass> classesAskedForMembers = new ArrayList(1);
@@ -908,18 +1051,29 @@ public final class CsmProjectContentResolver {
         for (CsmClass csmClass : classesAskedForMembers) {
             handledClasses.add(csmClass);
             Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(csmClass, memberFilter);
+            int unnamedEnumCount = 0;
             while (it.hasNext()) {
                 CsmMember member = it.next();
                 if (isKindOf(member.getKind(), kinds) &&
                         (!staticOnly || member.isStatic()) &&
                         matchVisibility(member, minVisibility)) {
                     CharSequence memberName = member.getName();
-                    if ((matchName(memberName.toString(), strPrefix, match)) ||
+                    if ((matchName(memberName, strPrefix, match)) ||
                             (memberName.length() == 0 && returnUnnamedMembers)) {
+                        CharSequence qname;
                         if (CsmKindUtilities.isFunction(member)) {
-                            res.put(((CsmFunction) member).getSignature().toString(), member);
+                            qname = ((CsmFunction) member).getSignature();
                         } else {
-                            res.put(member.getQualifiedName().toString(), member);
+                            qname = member.getQualifiedName();
+                            if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
+                                // Fix for IZ#139784: last unnamed enum overrides previous ones
+                                qname = new StringBuilder(qname).append('$')
+                                        .append(++unnamedEnumCount).toString();
+                            }
+                        }
+                        // do not replace inner objects by outer ones
+                        if (!res.containsKey(qname)) {
+                            res.put(qname, member);
                         }
                     }
                 }
@@ -931,7 +1085,7 @@ public final class CsmProjectContentResolver {
                 CsmDeclaration.Kind.STRUCT,
                 CsmDeclaration.Kind.CLASS,
             };
-            CsmFilter nestedClassifierFilter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true);
+            CsmFilter nestedClassifierFilter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true); // NOI18N
             it = CsmSelect.getDefault().getClassMembers(csmClass, nestedClassifierFilter);
             while (it.hasNext()) {
                 CsmMember member = it.next();
@@ -939,9 +1093,13 @@ public final class CsmProjectContentResolver {
                         matchVisibility(member, minVisibility)) {
                     CharSequence memberName = member.getName();
                     if (memberName.length() == 0) {
-                        Map<String, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                        Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
-                        res.putAll(set);
+                        // replace by own elements in nested set
+                        if (set != null && set.size() > 0) {
+                            set.putAll(res);
+                            res = set;
+                        }                        
                     }
                 }
             }
@@ -952,24 +1110,13 @@ public final class CsmProjectContentResolver {
                     CsmInheritance inherit = it2.next();
                     CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
                     if (baseClass != null) {
-                        CsmVisibility nextMinVisibility;
-                        int nextInheritanceLevel = inheritanceLevel;
-                        if (inheritanceLevel == NO_INHERITANCE) {
-                            nextMinVisibility = CsmInheritanceUtilities.mergeExtInheritedVisibility(minVisibility, inherit.getVisibility());
-                            nextInheritanceLevel = NO_INHERITANCE;
-                        } else if (inheritanceLevel == EXACT_CLASS) {
-                            // create merged visibility based on direct inheritance
-                            nextMinVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(minVisibility, inherit.getVisibility());
-                            nextInheritanceLevel = CHILD_INHERITANCE;
-                        } else {
-                            assert (inheritanceLevel == CHILD_INHERITANCE);
-                            // create merged visibility based on child inheritance
-                            nextMinVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(minVisibility, inherit.getVisibility());
-                            nextInheritanceLevel = CHILD_INHERITANCE;
-                        }
+                        VisibilityInfoPair nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel);
+                        CsmVisibility nextMinVisibility = nextInfo.visibility;
+                        int nextInheritanceLevel = nextInfo.inheritanceLevel;
 
-                        Map<String, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
+                        Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, returnUnnamedMembers);
+                        // replace by own elements in inherited set
                         if (baseRes != null && baseRes.size() > 0) {
                             baseRes.putAll(res);
                             res = baseRes;
@@ -979,6 +1126,47 @@ public final class CsmProjectContentResolver {
             }            
         }
 
+        return res;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
+            Set<CsmClass> handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
+        assert(csmClass != null);
+
+        if (handledClasses.contains(csmClass)) {
+            return new HashMap<CharSequence, CsmClass>();
+        }
+
+        if (minVisibility == CsmVisibility.NONE) {
+            return new HashMap<CharSequence, CsmClass>();
+        }
+        
+        VisibilityInfoPair visibilityInfo = getContextVisibility(csmClass, contextDeclaration, minVisibility, inheritanceLevel);
+        minVisibility = visibilityInfo.visibility;
+        inheritanceLevel = visibilityInfo.inheritanceLevel;
+
+        Map<CharSequence, CsmClass> res = new HashMap<CharSequence, CsmClass>();
+        // handle base classes in context of original class/function
+        for (Iterator<CsmInheritance> it2 = csmClass.getBaseClasses().iterator(); it2.hasNext();) {
+            CsmInheritance inherit = it2.next();
+            CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
+            if (baseClass != null) {
+                VisibilityInfoPair nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel);
+                CsmVisibility nextMinVisibility = nextInfo.visibility;
+                int nextInheritanceLevel = nextInfo.inheritanceLevel;
+                if (nextMinVisibility != CsmVisibility.NONE) {
+                    Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration,strPrefix, match,
+                            handledClasses, nextMinVisibility, nextInheritanceLevel);
+                    if (matchName(baseClass.getName(), strPrefix, match)) {
+                        baseRes.put(baseClass.getQualifiedName(), baseClass);
+                    }
+                    // replace by own elements in inherited set
+                    baseRes.putAll(res);
+                    res = baseRes;
+                }
+            }
+        }
         return res;
     }
     
@@ -1036,7 +1224,7 @@ public final class CsmProjectContentResolver {
         while (it.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             if (isKindOf(decl.getKind(), kinds)) {
-                String name = decl.getName().toString();
+                CharSequence name = decl.getName();
                 if (matchName(name, strPrefix, match) || (name.length() == 0 && returnUnnamedMembers)) {
                     out.add(decl);
                 }
@@ -1049,7 +1237,7 @@ public final class CsmProjectContentResolver {
         while (in.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) in.next();
             if (isKindOf(decl.getKind(), kinds)) {
-                String name = decl.getName().toString();
+                CharSequence name = decl.getName();
                 if (matchName(name, strPrefix, match) || (name.length() == 0 && returnUnnamedMembers)) {
                     out.add(decl);
                 }
@@ -1065,16 +1253,8 @@ public final class CsmProjectContentResolver {
         }
         return false;
     }
-    
-    private boolean matchName(String name, String strPrefix) {
-        return CsmSortUtilities.matchName(name, strPrefix, false, caseSensitive);
-    }
-    
-    private boolean matchName(String name, String strPrefix, boolean match) {
-        return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
-    }
-    
-    private static boolean matchName(String name, String strPrefix, boolean match, boolean caseSensitive) {
+
+    private boolean matchName(CharSequence name, String strPrefix, boolean match) {
         return CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive);
     }
     
@@ -1123,5 +1303,60 @@ public final class CsmProjectContentResolver {
             }
         }
         return new ArrayList<CsmVariable>(out.values());
-    } 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // staff to help with visibility handling
+    
+    private static final class VisibilityInfoPair {
+        private final int inheritanceLevel;
+        private final CsmVisibility visibility;
+
+        public VisibilityInfoPair(int inheritanceLevel, CsmVisibility visibility) {
+            this.inheritanceLevel = inheritanceLevel;
+            this.visibility = visibility;
+        }
+
+    }
+
+    private VisibilityInfoPair getContextVisibility(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmVisibility minVisibility, int inheritanceLevel) {
+        if (inheritanceLevel == INIT_INHERITANCE_LEVEL) {
+            inheritanceLevel = NO_INHERITANCE;
+            CsmClass contextClass = CsmBaseUtilities.getContextClass(contextDeclaration);
+            if (clazz.equals(contextClass)) {
+                inheritanceLevel = EXACT_CLASS;
+            } else if (contextClass != null) {
+                // check how clazz is visible in context class
+                if (CsmInheritanceUtilities.isAssignableFrom(contextClass, clazz)) {
+                    inheritanceLevel = CHILD_INHERITANCE;
+                }
+                // TODO: think about opposite usage C extends B extends A; C is used in A context
+                // what is by spec? Are there additional visibility for A about C?
+            }
+        } else if (contextDeclaration != null) {
+            // min visibility can be changed by context declaration properties
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, minVisibility, inheritanceLevel == CHILD_INHERITANCE);
+        }
+        return new VisibilityInfoPair(inheritanceLevel, minVisibility);
+    }
+
+    private VisibilityInfoPair getNextInheritanceInfo(CsmVisibility curMinVisibility, CsmInheritance inherit, int curInheritanceLevel) {
+        CsmVisibility nextMinVisibility;
+        int nextInheritanceLevel = curInheritanceLevel;
+        if (curInheritanceLevel == NO_INHERITANCE) {
+            nextMinVisibility = CsmInheritanceUtilities.mergeExtInheritedVisibility(curMinVisibility, inherit.getVisibility());
+            nextInheritanceLevel = NO_INHERITANCE;
+        } else if (curInheritanceLevel == EXACT_CLASS) {
+            // create merged visibility based on direct inheritance
+            nextMinVisibility = CsmInheritanceUtilities.mergeInheritedVisibility(curMinVisibility, inherit.getVisibility());
+            nextInheritanceLevel = CHILD_INHERITANCE;
+        } else {
+            assert (curInheritanceLevel == CHILD_INHERITANCE);
+            // create merged visibility based on child inheritance
+            nextMinVisibility = CsmInheritanceUtilities.mergeChildInheritanceVisibility(curMinVisibility, inherit.getVisibility());
+            nextInheritanceLevel = CHILD_INHERITANCE;
+        }
+        return new VisibilityInfoPair(nextInheritanceLevel, nextMinVisibility);
+    }
+    
 }

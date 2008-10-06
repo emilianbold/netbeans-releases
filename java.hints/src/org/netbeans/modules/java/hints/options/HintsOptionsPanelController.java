@@ -47,7 +47,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
-final class HintsOptionsPanelController extends OptionsPanelController {
+public final class HintsOptionsPanelController extends OptionsPanelController {
     
     private HintsPanel panel;
     
@@ -55,7 +55,9 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     private boolean changed;
                     
     public void update() {
-        panel.update();
+        if (panel != null) {
+            panel.update();
+        }
     }
     
     public void applyChanges() {
@@ -65,7 +67,9 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     }
     
     public void cancel() {
-        panel.cancel();
+        if (panel != null) {
+            panel.cancel();
+        }
     }
     
     public boolean isValid() {

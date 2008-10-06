@@ -56,7 +56,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.util.SharedClassObject;
 

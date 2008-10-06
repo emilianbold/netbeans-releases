@@ -26,6 +26,7 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -34,7 +35,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -55,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
@@ -66,6 +70,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -74,6 +79,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -81,7 +87,7 @@ import org.openide.util.actions.Presenter;
  * Action permitting selection of a configuration for the main project.
  * @author Greg Crawley, Adam Sotona, Jesse Glick
  */
-public class ActiveConfigAction extends CallableSystemAction implements ContextAwareAction {
+public class ActiveConfigAction extends CallableSystemAction implements LookupListener, PropertyChangeListener, ContextAwareAction {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
 
@@ -96,6 +102,8 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     private Project currentProject;
     private ProjectConfigurationProvider pcp;
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
+
+    private Lookup lookup;
 
     public ActiveConfigAction() {
         super();
@@ -140,53 +148,68 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                 activeProjectProviderChanged();
             }
         };
+
+        OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
+
+        lookup = LookupSensitiveAction.LastActivatedWindowLookup.INSTANCE;
+        Lookup.Result resultPrj = lookup.lookupResult(Project.class);
+        Lookup.Result resultDO = lookup.lookupResult(DataObject.class);
+        resultPrj.addLookupListener(WeakListeners.create(LookupListener.class, this, resultPrj));
+        resultDO.addLookupListener(WeakListeners.create(LookupListener.class, this, resultDO));
+
+        DynLayer.INSTANCE.setEnabled(true);
+        refreshView(lookup);
+
     }
 
 
     private synchronized void configurationsListChanged(Collection<? extends ProjectConfiguration> configs) {
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
-            configListCombo.setModel(EMPTY_MODEL);
-            DynLayer.INSTANCE.setEnabled(false);
-            configListCombo.setEnabled(false); // possibly redundant, but just in case
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(EMPTY_MODEL);
+                    configListCombo.setEnabled(false); // possibly redundant, but just in case
+                }
+            });
         } else {
-            DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
+            final DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
             if (pcp.hasCustomizer()) {
                 model.addElement(CUSTOMIZE_ENTRY);
             }
-            configListCombo.setModel(model);
-            DynLayer.INSTANCE.setEnabled(true);
-            configListCombo.setEnabled(true);
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    configListCombo.setModel(model);
+                    configListCombo.setEnabled(true);
+                }
+            });
         }
         if (pcp != null) {
             activeConfigurationChanged(getActiveConfiguration(pcp));
         }
     }
 
-    private synchronized void activeConfigurationChanged(ProjectConfiguration config) {
+    private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
-        listeningToCombo = false;
-        try {
-            configListCombo.setSelectedIndex(-1);
-            if (config != null) {
-                ComboBoxModel m = configListCombo.getModel();
-                for (int i = 0; i < m.getSize(); i++) {
-                    if (config.equals(m.getElementAt(i))) {
-                        final int selIndex = i;
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                listeningToCombo = false;
-                                configListCombo.setSelectedIndex(selIndex);
-                                listeningToCombo = true;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                listeningToCombo = false;
+                try {
+                    configListCombo.setSelectedIndex(-1);
+                    if (config != null) {
+                        ComboBoxModel m = configListCombo.getModel();
+                        for (int i = 0; i < m.getSize(); i++) {
+                            if (config.equals(m.getElementAt(i))) {
+                                configListCombo.setSelectedIndex(i);
+                                break;
                             }
-                        });
-                        break;
+                        }
                     }
+                } finally {
+                    listeningToCombo = true;
                 }
             }
-        } finally {
-            listeningToCombo = true;
-        }
+        });
     }
     
     private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider ppcp) {
@@ -213,7 +236,7 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     }
 
     public void performAction() {
-        assert false;
+        java.awt.Toolkit.getDefaultToolkit().beep();
     }
 
     @Override
@@ -478,6 +501,55 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
+    }
+
+    private void refreshView(Lookup context) {
+
+        Project mainPrj = OpenProjectList.getDefault().getMainProject();
+
+        Project contextPrj = null;
+        if (mainPrj == null) {
+            contextPrj = getProjectFromLookup(context);
+        }
+
+        if (contextPrj != null) {
+            activeProjectChanged(contextPrj);
+        } //else {
+          //  currentProject = null;
+          //  activeProjectChanged(null);
+        //}
+
+    }
+
+    private Project getProjectFromLookup(Lookup context) {
+        Project toReturn = null;
+        List<Project> result = new ArrayList<Project>();
+        if (context != null) {
+            for (Project p : context.lookupAll(Project.class)) {
+                result.add(p);
+            }
+        }
+        if (result.size() > 0) {
+            toReturn = result.get(0);
+        } else {
+            // find a project via DataObject
+            for (DataObject dobj : context.lookupAll(DataObject.class)) {
+                FileObject primaryFile = dobj.getPrimaryFile();
+                toReturn = FileOwnerQuery.getOwner(primaryFile);
+            }
+        }
+        return toReturn;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OpenProjectList.PROPERTY_MAIN_PROJECT) ||
+            evt.getPropertyName().equals(OpenProjectList.PROPERTY_OPEN_PROJECTS) ) {
+            refreshView(lookup);
+        }
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        refreshView(lookup);
     }
 
 }

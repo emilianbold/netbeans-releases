@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
+import org.openide.util.Utilities;
+
 /**
  * Moved platform types from cnd.makeproject to here so CompilerSetManager can use them. Because
  * its an interface, cnd.makeproject's Platform class can implement this interface and still have
@@ -46,7 +48,7 @@ package org.netbeans.modules.cnd.api.compilers;
  * 
  * @author gordonp
  */
-public interface PlatformTypes {
+public class PlatformTypes {
     
     // Platform id's
     public static final int PLATFORM_SOLARIS_SPARC = 0;
@@ -57,4 +59,57 @@ public interface PlatformTypes {
     public static final int PLATFORM_GENERIC = 5;
     public static final int PLATFORM_NONE = 6;
 
+    private static int defaultPlatform = -1;
+
+    protected PlatformTypes(){
+    }
+    
+    public static int getDefaultPlatform() {
+        if (defaultPlatform <= 0) {
+            String arch = System.getProperty("os.arch"); // NOI18N
+            if (Utilities.isWindows())
+                defaultPlatform = PlatformTypes.PLATFORM_WINDOWS;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX)
+                defaultPlatform = PlatformTypes.PLATFORM_LINUX;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && arch.indexOf("86") >= 0) // NOI18N
+                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
+                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
+            else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
+                defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
+            else 
+                defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
+        }
+        return defaultPlatform;
+    }
+
+    public static String toString(int platform) {
+        String out;
+        switch (platform) {
+            case PLATFORM_SOLARIS_SPARC:
+                out = "PLATFORM_SOLARIS_SPARC"; // NOI18N
+                break;
+            case PLATFORM_SOLARIS_INTEL:
+                out = "PLATFORM_SOLARIS_INTEL"; // NOI18N
+                break;
+            case PLATFORM_LINUX:
+                out = "PLATFORM_LINUX"; // NOI18N
+                break;
+            case PLATFORM_WINDOWS:
+                out = "PLATFORM_WINDOWS"; // NOI18N
+                break;
+            case PLATFORM_MACOSX:
+                out = "PLATFORM_MACOSX"; // NOI18N
+                break;
+            case PLATFORM_GENERIC:
+                out = "PLATFORM_GENERIC"; // NOI18N
+                break;
+            case PLATFORM_NONE:
+                out = "PLATFORM_NONE"; // NOI18N
+                break;
+            default:
+                 out = "Error"; // NOI18N
+        }
+        return out;
+    }
 }

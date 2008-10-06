@@ -44,18 +44,22 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -63,23 +67,15 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Exceptions;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 
-import static org.netbeans.modules.ruby.options.CodeStyle.*;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.ruby.RubyFormatter;
+import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -89,22 +85,21 @@ import org.openide.util.NbPreferences;
  *   switching the RHTML toggles?
  */
 public class FmtOptions {
-
-    public static final String expandTabToSpaces = "expandTabToSpaces"; //NOI18N
-    public static final String tabSize = "tabSize"; //NOI18N
-    public static final String indentSize = "indentSize"; //NOI18N
+    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
+    public static final String tabSize = SimpleValueNames.TAB_SIZE;
+    public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
+    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
+    public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH; //NOI18N
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
-    public static final String rightMargin = "rightMargin"; //NOI18N
     
-    public static CodeStyleProducer codeStyleProducer;
-        
     public static Preferences lastValues;
     
-    private static Class<? extends EditorKit> kitClass;
-
+    static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    static final String PROJECT_PROFILE = "project"; // NOI18N
+    static final String usedProfile = "usedProfile"; // NOI18N
     
     private FmtOptions() {}
 
@@ -120,62 +115,34 @@ public class FmtOptions {
         return defaults.get(key);
     }
     
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
-    }
-
-    public static boolean getGlobalExpandTabToSpaces() {
-        org.netbeans.editor.Formatter f = (org.netbeans.editor.Formatter)Settings.getValue(getKitClass(), "formatter");
-        if (f != null) {
-            return f.expandTabs();
-        }
-        return getDefaultAsBoolean(expandTabToSpaces);
-    }
-    
-    public static int getGlobalTabSize() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
-        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
-    }
-
-    // Ruby needs its own indent size; the global "4" isn't a good match
-    //    public static int getGlobalIndentSize() {
-    //        org.netbeans.editor.RubyFormatter f = (org.netbeans.editor.RubyFormatter)Settings.getValue(getKitClass(), "formatter");
-    //        if (f != null)
-    //            return f.getShiftWidth();
-    //        return getDefaultAsInt(indentSize);
-    //    }
-    
-    public static int getGlobalRightMargin() {
-        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
-        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
-    }
-    
-    public static Class<? extends EditorKit> getKitClass() {
-        if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(RubyInstallation.RUBY_MIME_TYPE)).lookup(EditorKit.class); //NOI18N
-            kitClass = kit != null ? kit.getClass() : EditorKit.class;
-        }
-        return kitClass;
-    }
-    
-    
-    public static void flush() {
-        try {
-            getPreferences( getCurrentProfileId()).flush();
-        }
-        catch(BackingStoreException e) {
-            Exceptions.printStackTrace(e);
-        }
-    }
-    
     public static String getCurrentProfileId() {
         return DEFAULT_PROFILE;
     }
     
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
-        return codeStyleProducer.create(p);
-    }
+//    public static boolean getGlobalExpandTabToSpaces() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
+//    }
+//
+//    public static int getGlobalTabSize() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
+//    }
+//
+//    public static int getGlobalSpacesPerTab() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
+//    }
+//
+//    public static int getGlobalIndentSize() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+//    }
+//
+//    public static int getGlobalRightMargin() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
+//    }
     
     public static boolean isInteger(String optionID) {
         String value = defaults.get(optionID);
@@ -188,11 +155,6 @@ public class FmtOptions {
         }
     }
     
-    public static String getLastValue(String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
-        return p.get(optionID, getDefaultAsString(optionID));
-    }
- 
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
@@ -207,12 +169,13 @@ public class FmtOptions {
     private static void createDefaults() {
         String defaultValues[][] = {
             { expandTabToSpaces, TRUE}, //NOI18N
-            { tabSize, "8"}, //NOI18N
+            { tabSize, "2"}, //NOI18N
+            { spacesPerTab, "2"}, //NOI18N
             { indentSize, "2"}, //NOI18N
             { continuationIndentSize, "2"}, //NOI18N
+            { rightMargin, "120"}, //NOI18N
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
-            { rightMargin, "80"}, //NOI18N
         };
         
         defaults = new HashMap<String,String>();
@@ -220,13 +183,12 @@ public class FmtOptions {
         for (java.lang.String[] strings : defaultValues) {
             defaults.put(strings[0], strings[1]);
         }
-
     }
  
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport extends FormatingOptionsPanel.Category implements ActionListener, DocumentListener {
+    public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
         public static final String OPTION_ID = "org.netbeans.modules.ruby.options.FormatingOptions.ID";
                 
@@ -234,53 +196,136 @@ public class FmtOptions {
         private static final int STORE = 1;
         private static final int ADD_LISTENERS = 2;
         
-        private String previewText = NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default");
-        private String forcedOptions[][];
+//        private static final ComboItem  bracePlacement[] = new ComboItem[] {
+//                new ComboItem( BracePlacement.SAME_LINE.name(), "LBL_bp_SAME_LINE" ), // NOI18N
+//                new ComboItem( BracePlacement.NEW_LINE.name(), "LBL_bp_NEW_LINE" ), // NOI18N
+//                new ComboItem( BracePlacement.NEW_LINE_HALF_INDENTED.name(), "LBL_bp_NEW_LINE_HALF_INDENTED" ), // NOI18N
+//                new ComboItem( BracePlacement.NEW_LINE_INDENTED.name(), "LBL_bp_NEW_LINE_INDENTED" ) // NOI18N
+//            };
+//        private static final ComboItem  bracesGeneration[] = new ComboItem[] {
+//                new ComboItem( BracesGenerationStyle.GENERATE.name(), "LBL_bg_GENERATE" ), // NOI18N
+//                new ComboItem( BracesGenerationStyle.LEAVE_ALONE.name(), "LBL_bg_LEAVE_ALONE" ), // NOI18N
+//                new ComboItem( BracesGenerationStyle.ELIMINATE.name(), "LBL_bg_ELIMINATE" ) // NOI18N
+//            };
+//
+//        private static final ComboItem  wrap[] = new ComboItem[] {
+//                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
+//                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
+//                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
+//            };
         
-        private boolean changed = false;
-        private JPanel panel;
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final String previewText;
+//        private String forcedOptions[][];
+        
+//        private boolean changed = false;
+//        private boolean loaded = false;
+        private final String id;
+        protected final JPanel panel;
+        private final List<JComponent> components = new LinkedList<JComponent>();                
+        private JEditorPane previewPane;
+        
+        private final Preferences preferences;
+        private final Preferences previewPrefs;
     
-        public CategorySupport(String nameKey, JPanel panel, String previewText, String[]... forcedOptions) {
-            super(nameKey);
-            this.panel = panel;            
-            this.previewText = previewText == null ? this.previewText : previewText;
-            this.forcedOptions = forcedOptions;
+        protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+            this.preferences = preferences;
+            this.id = id;
+            this.panel = panel;
+            this.previewText = previewText != null ? previewText : NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default"); //NOI18N
+
+            // Scan the panel for its components
+            scan(panel, components);
+
+            // Initialize the preview preferences
+            Preferences forcedPrefs = new PreviewPreferences();
+            for (String[] option : forcedOptions) {
+                forcedPrefs.put( option[0], option[1]);
+            }
+            this.previewPrefs = new ProxyPreferences(preferences, forcedPrefs);
+
+            // Load and hook up all the components
+            loadFrom(preferences);
             addListeners();
         }
         
         protected void addListeners() {
-            scan(panel, ADD_LISTENERS, null);
+            scan(ADD_LISTENERS, null);
         }
         
-        public void update() {
-            scan(panel, LOAD, null);
+        protected void loadFrom(Preferences preferences) {
+//            loaded = true;
+            scan(LOAD, preferences);
+//            loaded = false;
+        }
+//
+//        public void applyChanges() {
+//            storeTo(preferences);
+//        }
+//
+        protected void storeTo(Preferences p) {
+            scan(STORE, p);
+        }
+        
+        protected void notifyChanged() {
+//            if (loaded)
+//                return;
+            storeTo(preferences);
+            refreshPreview();
         }
 
-        public void applyChanges() {
-            scan(panel, STORE, null);
+        // ActionListener implementation ---------------------------------------
+        
+        public void actionPerformed(ActionEvent e) {
+            notifyChanged();
+        }
+        
+        // DocumentListener implementation -------------------------------------
+        
+        public void insertUpdate(DocumentEvent e) {
+            notifyChanged();
         }
 
-        public void storeTo(Preferences preferences) {
-            scan(panel, STORE, preferences);
+        public void removeUpdate(DocumentEvent e) {
+            notifyChanged();
         }
 
-        public void refreshPreview(JEditorPane pane, Preferences p ) {
-            
-            for (String[] option : forcedOptions) {
-                p.put( option[0], option[1]);
+        public void changedUpdate(DocumentEvent e) {
+            notifyChanged();
+        }
+
+        // PreviewProvider methods -----------------------------------------------------
+        
+        public JComponent getPreviewComponent() {
+            if (previewPane == null) {
+                previewPane = new JEditorPane();
+                previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
+                previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
+                previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(RubyMimeResolver.RUBY_MIME_TYPE));
+                previewPane.setEditable(false);
             }
-            
+            return previewPane;
+        }
+
+        public void refreshPreview() {
+            JEditorPane jep = (JEditorPane) getPreviewComponent();
+            try {
+                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                jep.putClientProperty("TextLimitLine", rm); //NOI18N
+            }
+            catch( NumberFormatException e ) {
+                // Ignore it
+            }
 
             int rm = 30;
             try {
-                rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
 
                 // Estimate text line in preview pane
                 
-                JComponent pc = pane;
-                if (pane.getParent() instanceof JViewport) {
-                    pc = (JViewport)pane.getParent();
+                JComponent pc = previewPane;
+                if (previewPane.getParent() instanceof JViewport) {
+                    pc = (JViewport)previewPane.getParent();
                 }
                 Font font = pc.getFont();
                 FontMetrics metrics = pc.getFontMetrics(font);
@@ -297,115 +342,107 @@ public class FmtOptions {
             catch( NumberFormatException e ) {
                 // Ignore it
             }
+
+            jep.setIgnoreRepaint(true);
+            jep.setText(previewText);
             
-            CodeStyle codeStyle = FmtOptions.createCodeStyle(p);
+            CodeStyle codeStyle = CodeStyle.get(previewPrefs);
+            RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
+            formatter.reindent(null, jep.getDocument(), 0, jep.getDocument().getLength(), null, false);
             
-            try {
-                BaseDocument doc = new BaseDocument(null, false);
-                doc.putProperty(org.netbeans.api.lexer.Language.class, RubyTokenId.language());
-
-                doc.insertString(0, previewText, null);
-
-                RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
-                formatter.reformat(doc, 0, doc.getLength(), null);
-
-                String formatted = doc.getText(0, doc.getLength());
-                pane.setText(formatted);
-            }
-            catch (Exception ex){
-                Exceptions.printStackTrace(ex);
-            }
+            jep.setIgnoreRepaint(false);
+            jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
+            jep.repaint(100);
         }
+
+        // PreferencesCustomizer implementation --------------------------------
         
-        public void cancel() {
-            // Usually does not need to do anything
-        }
-
-        public boolean isValid() {
-            return true; // Should almost always be OK
-        }
-
-        public boolean isChanged() {
-            return changed;
-        }
-
-        public JComponent getComponent(Lookup masterLookup) {
+        public JComponent getComponent() {
             return panel;
         }
 
+        public String getDisplayName() {
+            return panel.getName();
+        }
+
+        public String getId() {
+            return id;
+        }
+        
         public HelpCtx getHelpCtx() {
             return null;
         }
-
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-            pcs.addPropertyChangeListener(l);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-            pcs.removePropertyChangeListener(l);
-        }
         
-        void changed() {
-            if (!changed) {
-                changed = true;
-                pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        // PreferencesCustomizer.Factory implementation ------------------------
+
+        public static final class Factory implements PreferencesCustomizer.Factory {
+
+            private final String id;
+            private final Class<? extends JPanel> panelClass;
+            private final String previewText;
+            private final String[][] forcedOptions;
+
+            public Factory(String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+                this.id = id;
+                this.panelClass = panelClass;
+                this.previewText = previewText;
+                this.forcedOptions = forcedOptions;
             }
-            pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-        }
 
-        // ActionListener implementation ---------------------------------------
+            public PreferencesCustomizer create(Preferences preferences) {
+                try {
+                    return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        } // End of CategorySupport.Factory class
         
-        public void actionPerformed(ActionEvent e) {
-            changed();
-        }
-        
-        // DocumentListener implementation -------------------------------------
-        
-        public void insertUpdate(DocumentEvent e) {
-            changed();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            changed();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            changed();
-        }
-                
         // Private methods -----------------------------------------------------
-        
-        private void scan( Container container, int what, Preferences p ) {
-            for (Component c : container.getComponents() ) {
-                if (c instanceof JComponent ) {
+
+        private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
+            switch(operation) {
+            case LOAD:
+                loadData(jc, optionID, p);
+                break;
+            case STORE:
+                storeData(jc, optionID, p);
+                break;
+            case ADD_LISTENERS:
+                addListener(jc);
+                break;
+            }
+        }
+
+        private void scan(int what, Preferences p ) {
+            for (JComponent jc : components) {
+                Object o = jc.getClientProperty(OPTION_ID);
+                if (o instanceof String) {
+                    performOperation(what, jc, (String)o, p);
+                } else if (o instanceof String[]) {
+                    for(String oid : (String[])o) {
+                        performOperation(what, jc, oid, p);
+                    }
+                }
+            }
+        }
+
+        private void scan(Container container, List<JComponent> components) {
+            for (Component c : container.getComponents()) {
+                if (c instanceof JComponent) {
                     JComponent jc = (JComponent)c;
                     Object o = jc.getClientProperty(OPTION_ID);
-                    if ( o != null && o instanceof String ) {
-                        switch( what ) {
-                        case LOAD:
-                            loadData( jc, (String)o );
-                            break;
-                        case STORE:
-                            storeData( jc, (String)o, p );
-                            break;
-                        case ADD_LISTENERS:
-                            addListener( jc );
-                            break;
-                        }
-                    }                    
-                }
-                if ( c instanceof Container ) {
-                    scan((Container)c, what, p);
-                }
+                    if (o instanceof String || o instanceof String[])
+                        components.add(jc);
+                }                    
+                if (c instanceof Container)
+                    scan((Container)c, components);
             }
-
         }
 
         /** Very smart method which tries to set the values in the components correctly
          */ 
-        private void loadData( JComponent jc, String optionID ) {
-            
-            Preferences node = getPreferences(getCurrentProfileId());
+        private void loadData( JComponent jc, String optionID, Preferences node ) {
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;                
@@ -426,34 +463,52 @@ public class FmtOptions {
             }
             
         }
-        
-        private void storeData( JComponent jc, String optionID, Preferences p ) {
-            Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
+
+        private void storeData( JComponent jc, String optionID, Preferences node ) {
             
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;
                 
                 String text = field.getText();
                 
+                // XXX test for numbers
                 if ( isInteger(optionID) ) {
                     try {
-                        int i = Integer.parseInt(text);
+                        int i = Integer.parseInt(text);                        
                     } catch (NumberFormatException e) {
-                        text = getLastValue(optionID);
+                        return;
                     }
                 }
-                
-                // XXX test for numbers
-                node.put(optionID, text);  
+
+                // XXX: watch out, tabSize, spacesPerTab, indentSize and expandTabToSpaces
+                // fall back on getGlopalXXX() values and not getDefaultAsXXX value,
+                // which is why we must not remove them. Proper solution would be to
+                // store formatting preferences to MimeLookup and not use NbPreferences.
+                // The problem currently is that MimeLookup based Preferences do not support subnodes.
+                if (!optionID.equals(tabSize) &&
+                    !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
+                    getDefaultAsString(optionID).equals(text)
+                ) {
+                    node.remove(optionID);
+                } else {
+                    node.put(optionID, text);
+                }
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                node.putBoolean(optionID, checkBox.isSelected());
+                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                    node.remove(optionID);
+                else
+                    node.putBoolean(optionID, checkBox.isSelected());
             } 
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 // Logger.global.info( cb.getSelectedItem() + " " + optionID);
-                node.put(optionID, ((ComboItem)cb.getSelectedItem()).value);
+                String value = ((ComboItem) cb.getSelectedItem()).value;
+                if (getDefaultAsString(optionID).equals(value))
+                    node.remove(optionID);
+                else
+                    node.put(optionID,value);
             }         
         }
         
@@ -475,6 +530,28 @@ public class FmtOptions {
         
             
         private ComboBoxModel createModel( String value ) {
+            
+//            // is it braces placement?
+//            for (ComboItem comboItem : bracePlacement) {
+//                if ( value.equals( comboItem.value) ) {
+//                    return new DefaultComboBoxModel( bracePlacement );
+//                }
+//            }
+//
+//            // is it braces generation?
+//            for (ComboItem comboItem : bracesGeneration) {
+//                if ( value.equals( comboItem.value) ) {
+//                    return new DefaultComboBoxModel( bracesGeneration );
+//                }
+//            }
+//
+//            // is it wrap
+//            for (ComboItem comboItem : wrap) {
+//                if ( value.equals( comboItem.value) ) {
+//                    return new DefaultComboBoxModel( wrap );
+//                }
+//            }
+            
             return null;
         }
         
@@ -488,7 +565,7 @@ public class FmtOptions {
             }    
             return null;
         }
-        
+
         private static class ComboItem {
             
             String value;
@@ -507,9 +584,107 @@ public class FmtOptions {
         }
     }
    
-    public static interface CodeStyleProducer {
+    public static class PreviewPreferences extends AbstractPreferences {
         
-        public CodeStyle create( Preferences preferences );
-    
+        private Map<String,Object> map = new HashMap<String, Object>();
+
+        public PreviewPreferences() {
+            super(null, ""); // NOI18N
+        }
+        
+        protected void putSpi(String key, String value) {
+            map.put(key, value);            
+        }
+
+        protected String getSpi(String key) {
+            return (String)map.get(key);                    
+        }
+
+        protected void removeSpi(String key) {
+            map.remove(key);
+        }
+
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String[] keysSpi() throws BackingStoreException {
+            String array[] = new String[map.keySet().size()];
+            return map.keySet().toArray( array );
+        }
+
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
+
+    // read-only, no subnodes
+    public static final class ProxyPreferences extends AbstractPreferences {
+        
+        private final Preferences[] delegates;
+
+        public ProxyPreferences(Preferences... delegates) {
+            super(null, ""); // NOI18N
+            this.delegates = delegates;
+        }
+        
+        protected void putSpi(String key, String value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String getSpi(String key) {
+            for(Preferences p : delegates) {
+                String value = p.get(key, null);
+                if (value != null) {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        protected void removeSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String[] keysSpi() throws BackingStoreException {
+            Set<String> keys = new HashSet<String>();
+            for(Preferences p : delegates) {
+                keys.addAll(Arrays.asList(p.keys()));
+            }
+            return keys.toArray(new String[ keys.size() ]);
+        }
+
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    } // End of ProxyPreferences class
+    
 }

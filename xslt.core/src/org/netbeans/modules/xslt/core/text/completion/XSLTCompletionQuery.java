@@ -113,7 +113,6 @@ public class XSLTCompletionQuery extends AsyncCompletionQuery implements
         super.prepareQuery(component);
         srcEditorPane = (XSLTCompletionUtil.getXsltDataEditorSupport() == null ? 
             null : (JEditorPane) component);
-        // srcEditorPane = getXsltSourceEditor();
     }
 
     public JEditorPane getSourceEditorComponent() {

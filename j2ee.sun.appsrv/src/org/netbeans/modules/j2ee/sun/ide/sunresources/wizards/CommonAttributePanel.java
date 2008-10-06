@@ -51,13 +51,12 @@ import javax.swing.JTextField;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.filesystems.FileObject;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
@@ -211,6 +210,7 @@ public class CommonAttributePanel extends ResourceWizardPanel {
                               setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else if (!ResourceUtils.isLegalResourceName(jndiName)) {
+                              setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                               return false;
                           } else {
                               FileObject resFolder = this.helper.getData().getTargetFileObject();

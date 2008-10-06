@@ -54,7 +54,7 @@ public class RerunActionTest extends NbTestCase {
         super(name);
     }
 
-    public void testRun() {
+    public void testReRun() {
         RerunAction action = new RerunAction();
         action.actionPerformed(null); // must pass
 

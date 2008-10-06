@@ -34,7 +34,7 @@
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                  <Component id="scrollPane" pref="256" max="32767" attributes="0"/>
+                  <Component id="scrollPane" pref="258" max="32767" attributes="0"/>
                   <EmptySpace min="-2" pref="0" max="-2" attributes="1"/>
               </Group>
           </Group>

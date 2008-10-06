@@ -20,7 +20,16 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.100.1</specification-version>
+                        <specification-version>0.114</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.bytelist</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -33,12 +42,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -82,17 +91,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -111,6 +111,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -152,7 +161,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.0</specification-version>
+                        <specification-version>7.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -222,6 +231,12 @@
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.gsf</code-name-base>

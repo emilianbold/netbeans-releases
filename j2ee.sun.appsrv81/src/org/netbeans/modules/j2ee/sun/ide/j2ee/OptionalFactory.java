@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
+import org.netbeans.modules.j2ee.sun.ide.dm.ServerInstanceDescriptorImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.openide.WizardDescriptor;
 
@@ -56,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManage
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
@@ -141,6 +143,12 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
         return new SunJDBCDriverDeployer(dm);
     }
+
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        if (!(dm instanceof SunDeploymentManager))
+            throw new IllegalArgumentException("");
+        
+        return new ServerInstanceDescriptorImpl((SunDeploymentManager) dm);
+    }
     
-  
 }

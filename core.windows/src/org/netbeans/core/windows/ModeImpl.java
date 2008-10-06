@@ -93,7 +93,7 @@ public final class ModeImpl implements Mode {
      * Implements <code>Mode</code> interface method.
      * @return programmatic name of this mode */
     public String getName () {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return getCentral().getModeName(this);
     }
@@ -103,7 +103,7 @@ public final class ModeImpl implements Mode {
      * @return Human presentable name of this mode implementation
      * @deprecated It is not used anymore. This impl delegated to {@link #getName} method.  */
     public String getDisplayName () {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return getName();
     }
@@ -113,7 +113,7 @@ public final class ModeImpl implements Mode {
      * @return null
      * @deprecated It is not used anymore. */
     public Image getIcon () {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return null;
     }
@@ -123,7 +123,7 @@ public final class ModeImpl implements Mode {
      * Implements <code>Mode</code> interface method. 
      * @return <code>true</code> */
     public boolean canDock(TopComponent tc) {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return true;
     }
@@ -137,7 +137,7 @@ public final class ModeImpl implements Mode {
      * @return true if top component was succesfully docked to this
      * mode, false otherwise */
     public boolean dockInto(TopComponent tc) {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return dockIntoImpl(tc, true);
     }
@@ -146,7 +146,7 @@ public final class ModeImpl implements Mode {
      * Implements <code>Mode</code> interface method.
      * @param rect bounds for the mode */
     public void setBounds (Rectangle bounds) {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         getCentral().setModeBounds(this, bounds);
     }
@@ -156,7 +156,7 @@ public final class ModeImpl implements Mode {
      * @return the bounds of the mode
      */
     public Rectangle getBounds () {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return getCentral().getModeBounds(this);
     }
@@ -168,7 +168,7 @@ public final class ModeImpl implements Mode {
      * @deprecated XXX Don't use anymore.
      */
     public Workspace getWorkspace () {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         // Here is the only fake workspace.
         return WindowManagerImpl.getInstance();
@@ -181,7 +181,7 @@ public final class ModeImpl implements Mode {
      * is docked in this mode.
      */
     public TopComponent[] getTopComponents() {
-        WindowManagerImpl.assertEventDispatchThreadWeak();
+        WindowManagerImpl.warnIfNotInEDT();
         
         return getCentral().getModeTopComponents(this).toArray(new TopComponent[0]);
     }

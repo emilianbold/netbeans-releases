@@ -45,10 +45,12 @@ made subject to such option by the copyright holder.
 
 <filesystem>
    <folder name="UML">
+       <!-- The requirements are not supported in 6.5
       <folder name="designcenter">
          <file name="org.netbeans.modules.uml.requirements.ADRequirementsManager.instance">
             <attr name="id" stringvalue="org.netbeans.modules.uml.ui.products.ad.addesigncentergui.designpatternaddin" />
          </file>
       </folder>
+      -->
   </folder>
 </filesystem>

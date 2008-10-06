@@ -51,24 +51,14 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.lang.TestJoinSectionsTextTokenId;
+import org.netbeans.lib.lexer.lang.TestJoinTextTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.lib.lexer.lang.TestJoinSectionsTopTokenId;
+import org.netbeans.lib.lexer.lang.TestJoinTopTokenId;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
 /**
  * Test embedded sections that should be lexed together.
- * 
- * <p>
- * Top lexer recognizes TestJoinSectionsTopTokenId.TAG  (text v zobacich)
- *                  and TestJoinSectionsTopTokenId.TEXT (everything else).
- *
- * TestJoinSectionsTopTokenId.TAG is branched into
- *                      TestJoinSectionsTextTokenId.BRACES "{...}"
- *                  and TestJoinSectionsTextTokenId.TEXT (everything else)
- * 
- * </p>
- * 
  *
  * @author Miloslav Metelka
  */
@@ -96,24 +86,89 @@ public class JoinSectionsMod1Test extends NbTestCase {
     public void testCreateEmbedding() throws Exception {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        String text = "x(a{y)<z>(})zc";
+        String text = "x{a(y}<z>{)}zc";
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class, TestJoinSectionsTopTokenId.language());
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
         LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
 
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "x", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "x", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.PARENS, "(a{y)", -1);
-        ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.BRACES, "{a(y}", -1);
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<z>", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<z>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.PARENS, "(})", -1);
-        ts.createEmbedding(TestJoinSectionsTextTokenId.parenLanguage, 1, 1, true);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.BRACES, "{)}", -1);
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+    }
+
+    public void testCreateEmptyEmbedding() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "{a}x{}y{}";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.BRACES, "{a}", -1);
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "x", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.BRACES, "{}", -1);
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "y", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.BRACES, "{}", -1);
+        ts.createEmbedding(TestPlainTokenId.language(), 1, 1, true);
+    }
+
+    public void testRemoveFirstSection() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "<a[x y]b><c[z]>";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<a[x y]b>", -1);
+            TokenSequence<?> ts1 = ts.embedded();
+            assertTrue(ts1.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "a", -1);
+            assertTrue(ts1.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.BRACKETS, "[x y]", -1);
+                TokenSequence<?> ts2 = ts1.embedded();
+                assertTrue(ts2.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts2,TestPlainTokenId.WORD, "x", -1);
+                assertTrue(ts2.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts2,TestPlainTokenId.WHITESPACE, " ", -1);
+                assertTrue(ts2.moveNext());
+                LexerTestUtilities.assertTokenEquals(ts2,TestPlainTokenId.WORD, "y", -1);
+                assertFalse(ts2.moveNext());
+            assertTrue(ts1.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts1,TestJoinTextTokenId.TEXT, "b", -1);
+            assertFalse(ts2.moveNext());
+        
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<c[z]>", -1);
+        assertFalse(ts.moveNext());
+
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.remove(0, 9);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
     }
 
     public void testShortDocMod() throws Exception {
@@ -122,7 +177,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         String text = "xay<b>zc";
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class, TestJoinSectionsTopTokenId.language());
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
         LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
 
       doc.remove(6, 1);
@@ -173,23 +228,23 @@ public class JoinSectionsMod1Test extends NbTestCase {
 
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        String text = "a{b<cd>e}f<gh>i{j<kl>m}n";
+        String text = "a(b<cd>e)f<gh>i(j<kl>m)n";
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class,TestJoinSectionsTopTokenId.language());
+        doc.putProperty(Language.class,TestJoinTopTokenId.language());
         
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "a{b", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "a(b", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<cd>", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<cd>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "e}f", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "e)f", -1);
         
         // Get embedded tokens within TEXT tokens. There should be "a" then BRACES start "{b" then BRACES end "e}|" then "f"
-        LanguagePath innerLP = LanguagePath.get(TestJoinSectionsTopTokenId.language()).
-                embedded(TestJoinSectionsTextTokenId.textLanguage);
+        LanguagePath innerLP = LanguagePath.get(TestJoinTopTokenId.language()).
+                embedded(TestJoinTextTokenId.language);
         List<TokenSequence<?>> tsList = hi.tokenSequenceList(innerLP, 0, Integer.MAX_VALUE);
         checkInitialTokens(tsList);
         
@@ -229,9 +284,9 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 1.section "a{b"
         ts = tsList.get(0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "a", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "{b", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "(b", -1);
         Token<?> token = ts.token();
         assertEquals(PartType.START, token.partType());
         assertFalse(ts.moveNext());
@@ -239,7 +294,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 2.section "ef"
         ts = tsList.get(1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "ef", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "ef", -1);
         token = ts.token();
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
@@ -247,7 +302,7 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 3.section "i{j"
         ts = tsList.get(2);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "i{j", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "i(j", -1);
         token = ts.token();
         assertEquals(PartType.MIDDLE, token.partType());
         assertFalse(ts.moveNext());
@@ -255,16 +310,16 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 4.section "m}n"
         ts = tsList.get(3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "m}", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "m)", -1);
         token = ts.token();
         assertEquals(PartType.END, token.partType());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "n", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n", -1);
         assertFalse(ts.moveNext());
         
 
-        // Re-add second closing brace '}'
-        doc.insertString(8, "}", null);
+        // Re-add second closing paren ')'
+        doc.insertString(8, ")", null);
         LexerTestUtilities.assertConsistency(hi);
         //             000000000011111111112222222222
         //             012345678901234567890123456789
@@ -290,9 +345,9 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 1.section
         TokenSequence<?> ts = tsList.get(0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "a", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "a", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "{b", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "(b", -1);
         Token<?> token = ts.token();
         assertEquals(PartType.START, token.partType());
         assertFalse(ts.moveNext());
@@ -300,19 +355,19 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 2.section
         ts = tsList.get(1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "e}", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "e)", -1);
         token = ts.token();
         assertEquals(PartType.END, token.partType());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "f", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "f", -1);
         assertFalse(ts.moveNext());
         
         // 3.section
         ts = tsList.get(2);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "i", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "i", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "{j", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "(j", -1);
         token = ts.token();
         assertEquals(PartType.START, token.partType());
         assertFalse(ts.moveNext());
@@ -320,11 +375,11 @@ public class JoinSectionsMod1Test extends NbTestCase {
         // 4.section
         ts = tsList.get(3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.BRACES, "m}", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.PARENS, "m)", -1);
         token = ts.token();
         assertEquals(PartType.END, token.partType());
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTextTokenId.TEXT, "n", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTextTokenId.TEXT, "n", -1);
         assertFalse(ts.moveNext());
     }
 

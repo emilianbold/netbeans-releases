@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class PersistenceUnitWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private PersistenceUnitWizardPanelDS p;
+    private PersistenceUnitWizardPanelDS datasourcePanel;
     private PersistenceUnitWizardPanelJdbc jdbcPanel;
     private PersistenceUnitWizardPanel panel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -75,8 +75,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     
     public PersistenceUnitWizardDescriptor(Project project) {
         this.project = project;
-        PersistenceProviderSupplier providerSupplier = project.getLookup().lookup(PersistenceProviderSupplier.class);
-        this.isContainerManaged = Util.isSupportedJavaEEVersion(project) && providerSupplier != null && providerSupplier.supportsDefaultProvider();
+        this.isContainerManaged = Util.isContainerManaged(project);
     }
     
     public void addChangeListener(javax.swing.event.ChangeListener l) {
@@ -86,8 +85,8 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     public java.awt.Component getComponent() {
         if (panel == null) {
             if (isContainerManaged) {
-                p = new PersistenceUnitWizardPanelDS(project, this, true);
-                panel = p;
+                datasourcePanel = new PersistenceUnitWizardPanelDS(project, this, true);
+                panel = datasourcePanel;
             } else {
                 jdbcPanel= new PersistenceUnitWizardPanelJdbc(project, this, true);
                 panel = jdbcPanel;
@@ -166,7 +165,7 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     String getDatasource() {
-        return p == null ? null : p.getDatasource();
+        return datasourcePanel == null ? null : datasourcePanel.getDatasource();
     }
     
     boolean isContainerManaged() {
@@ -174,15 +173,15 @@ public class PersistenceUnitWizardDescriptor implements WizardDescriptor.Finisha
     }
     
     boolean isJTA() {
-        return p == null ? false : p.isJTA();
+        return datasourcePanel == null ? false : datasourcePanel.isJTA();
     }
     
     boolean isNonDefaultProviderEnabled() {
-        return p == null ? false : p.isNonDefaultProviderEnabled();
+        return datasourcePanel == null ? false : datasourcePanel.isNonDefaultProviderEnabled();
     }
     
     String getNonDefaultProvider() {
-        return p == null ? null : p.getNonDefaultProvider();
+        return datasourcePanel == null ? null : datasourcePanel.getNonDefaultProvider();
     }
     
     String getTableGeneration() {

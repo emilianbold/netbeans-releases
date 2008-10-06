@@ -1,3 +1,6 @@
+#position 10
 org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighterFactory
+#position 20
 org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighterFactory
+#position 30
 org.netbeans.modules.cnd.highlight.error.HighlightProviderTaskFactory

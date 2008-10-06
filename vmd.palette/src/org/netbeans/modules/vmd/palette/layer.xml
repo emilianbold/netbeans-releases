@@ -5,7 +5,9 @@
         <folder name="application">
             <folder name="x-vmd-palette">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-vmd-palette-PaletteItemDataLoader.instance"/>
+                    <file name="org-netbeans-modules-vmd-palette-PaletteItemDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.palette.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.instance">

@@ -64,6 +64,7 @@ import org.openide.windows.WindowManager;
 public class ClassesCountsViewAction extends AbstractAction {
 
     public ClassesCountsViewAction () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         putValue (
             Action.NAME,
             NbBundle.getMessage (
@@ -72,8 +73,8 @@ public class ClassesCountsViewAction extends AbstractAction {
             )
         );
         putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")) // NOI18N
+            "iconbase",
+            "org/netbeans/modules/debugger/resources/classesView/Classes.png" // NOI18N
         );
     }
 

@@ -45,11 +45,14 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -65,6 +68,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,7 +81,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     private JSDebuggerState debuggerState = JSDebuggerState.NOT_CONNECTED;
 
     private JSWindow[] windows = JSWindow.EMPTY_ARRAY;
-    private JSSource[] sources = JSSource.EMPTY_ARRAY;
+    private HashMap<String, JSSource> sources = new LinkedHashMap<String, JSSource>();
 
     private JSCallStackFrame[] callStackFrames = JSCallStackFrame.EMPTY_ARRAY;
 
@@ -99,19 +103,24 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
-    public final void startDebugging() {
+    public final boolean startDebugging() {
         if (debuggerState.getState() != JSDebuggerState.State.NOT_CONNECTED) {
             throw new IllegalStateException(/* TODO */);
         }
 
-        startDebuggingImpl();
+        return startDebuggingImpl();
     }
 
+    public final void cancelStartDebugging() {    
+        cancelStartDebuggingImpl();
+    }
+    
     protected final long getSequenceId() {
         return sequenceId;
     }
 
-    protected abstract void startDebuggingImpl();
+    protected abstract boolean startDebuggingImpl();
+    protected abstract void cancelStartDebuggingImpl();
 
     public URI getURI() {
         return uri;
@@ -160,25 +169,31 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     // Sources
     public JSSource[] getSources() {
-        return sources;
+        return sources.values().toArray(JSSource.EMPTY_ARRAY);
     }
 
     protected void setSources(JSSource[] jsSources) {
-        JSSource[] oldjsSources = this.sources;
-        this.sources = jsSources;
+        JSSource[] oldjsSources = getSources();
+        for(JSSource source : jsSources) {
+            sources.put(source.getLocation().getURI().toString(), source);
+        }
         propertyChangeSupport.firePropertyChange(PROPERTY_SOURCES,
                 oldjsSources,
-                this.sources);
+                getSources());
     }
 
     public InputStream getInputStreamForURL(URL url) {
-        if (url == null) {
-            return null;
+        if (url != null) {
+            try {
+                return getInputStreamForURLImpl(url.toURI().toString());
+            } catch (URISyntaxException use) {
+                    Log.getLogger().log(Level.INFO, use.getMessage(), use);
+            }
         }
-        return getInputStreamForURLImpl(url);
+        return null;
     }
 
-    protected abstract InputStream getInputStreamForURLImpl(URL url);
+    protected abstract InputStream getInputStreamForURLImpl(String uri);
 
     public JSCallStackFrame[] getCallStackFrames() {
         return callStackFrames;
@@ -209,6 +224,12 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     protected abstract JSProperty getPropertyImpl(JSCallStackFrame callStackFrame, String fullName);
+    
+    public boolean setProperty(JSCallStackFrame callStackFrame, String fullName, String value) {
+        return setPropertyImpl(callStackFrame, fullName, value);
+    }    
+    
+    protected abstract boolean setPropertyImpl(JSCallStackFrame callStackFrame, String fullName, String value);    
 
     public JSProperty[] getProperties(JSCallStackFrame callStackFrame, String fullName) {
         return getPropertiesImpl(callStackFrame, fullName);
@@ -234,7 +255,11 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     protected void fireJSDebuggerEvent(JSDebuggerEvent debuggerEvent) {
         for (JSDebuggerEventListener listener : listeners) {
-            listener.onDebuggerEvent(debuggerEvent);
+            try {
+                listener.onDebuggerEvent(debuggerEvent);
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Exception in debugger event listener", ex);
+            }
         }
     }
 
@@ -291,7 +316,67 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         return "firefox"; // NOI18N
     }
 
+    protected String getBrowserArguments() {
+        if (browser != null) {
+            try {
+                Method method = browser.getClass().getMethod("getBrowserExecutable");
+                NbProcessDescriptor processDescriptor = createPatchedExecutable((NbProcessDescriptor) method.invoke(browser));
+                String arguments = processDescriptor.getArguments();
+                if (arguments != null) {
+                    arguments = arguments.replaceAll("(\\{URL\\})|(\\{params\\})", ""); // NOI18N
+                    return arguments;
+                }
+            } catch (SecurityException e) {
+            } catch (NoSuchMethodException e) {
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+            } catch (InvocationTargetException e) {
+            }
+        }
+        
+        return "";
+    }
+    
+    
+    /**  XXX Taken from extbrowser.UnixBrowserImpl
+     * 
+     * Creates modified NbProcessDescriptor that can be used to start
+     * browser process when <CODE>-remote openURL()</CODE> options
+     * cannot be used.
+     * @return command or <CODE>null</CODE>
+     * @param p Original command.
+     */
+    protected static NbProcessDescriptor createPatchedExecutable (NbProcessDescriptor p) {
+        NbProcessDescriptor newP = null;
+        
+        String [] args = Utilities.parseParameters(p.getArguments());
+        if (args.length > 1) {
+            StringBuffer newArgs = new StringBuffer ();
+            boolean found = false;
+            for (int i=0; i<args.length; i++) {
+                if (newArgs.length() > 0) {
+                    newArgs.append(" ");  // NOI18N
+                }
+                if (args[i].indexOf("-remote") >= 0  // NOI18N
+                &&  args[i+1].indexOf("openURL(") >=0) {  // NOI18N
+                    found = true;
+                    newArgs.append("{URL}");  // NOI18N
+                    i += 1;
+                }
+                else {
+                    newArgs.append(args[i]);  // NOI18N
+                }
+            }
+            if (found) {
+                newP = new NbProcessDescriptor (p.getProcessName(), newArgs.toString(), p.getInfo());
+            }
+        }
+        return newP != null ? newP : p;
+    }
+
+    
     public final void finish(boolean terminate) {
+        sources.clear();
         finishImpl(terminate);
 
         // Terminated by the user

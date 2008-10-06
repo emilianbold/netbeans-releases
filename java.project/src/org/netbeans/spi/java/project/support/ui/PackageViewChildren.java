@@ -153,18 +153,17 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             Object o = names2nodes.get(path);
             PackageNode n;
             DataFolder folder = DataFolder.findFolder(fo);
-            if ( o == NODE_NOT_CREATED ) {
-                n = new PackageNode(root, folder, false);
-            } else { // NODE_NOT_CREATED_EMPTY, PackageNode
-                n = new PackageNode(root, folder);
-            }            
-            names2nodes.put(path, n);
-            return new Node[] {n};
+            if (folder.isValid()) {
+                if ( o == NODE_NOT_CREATED ) {
+                    n = new PackageNode(root, folder, false);
+                } else { // NODE_NOT_CREATED_EMPTY, PackageNode
+                    n = new PackageNode(root, folder);
+                }
+                names2nodes.put(path, n);
+                return new Node[] {n};
+            }
         }
-        else {
-            return new Node[0];
-        }
-        
+        return new Node[0];
     }
     
     RequestProcessor.Task task = RequestProcessor.getDefault().create( this );
@@ -1215,14 +1214,12 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     if (children[i].getPrimaryFile().isData() 
                     && VisibilityQuery.getDefault().isVisible (children[i].getPrimaryFile())) {
                         //Copy only the package level
-                        children[i].copy (dest);
                         if (this.op == DnDConstants.ACTION_MOVE) {
-                            try {
-                                children[i].delete();
-                            } catch (IOException ioe) {
-                                cantDelete = true;
-                            }
+                            children[i].move(dest);
                         }
+                        else {
+                            children[i].copy (dest);
+                        }                                                
                     }
                     else {
                         cantDelete = true;

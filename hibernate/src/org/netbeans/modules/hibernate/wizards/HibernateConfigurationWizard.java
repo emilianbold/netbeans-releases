@@ -82,7 +82,6 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private final String userName = "hibernate.connection.username"; // NOI18N
     private final String password = "hibernate.connection.password"; // NOI18N
     private final String DEFAULT_CONFIGURATION_FILENAME = "hibernate.cfg"; // NOI18N
-    
     private Logger logger = Logger.getLogger(HibernateConfigurationWizard.class.getName());
 
     public static HibernateConfigurationWizard create() {
@@ -95,14 +94,26 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            Project p = Templates.getProject(wizard);
-            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+            HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                logger.info("Unsupported project " + project + ". Exiting config wizard.");
+                panels = new WizardDescriptor.Panel[]{
+                            WizardErrorPanel.getWizardErrorWizardPanel()
+                };
 
-            panels = new WizardDescriptor.Panel[]{
-                targetChooser,
-                descriptor
-            };
+            } else {
+
+                Project p = Templates.getProject(wizard);
+                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+
+                panels = new WizardDescriptor.Panel[]{
+                            targetChooser,
+                            descriptor
+                        };
+            }
+            
             String[] steps = createSteps();
             for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
@@ -135,6 +146,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             if (fo.getName().equals(configFileName)) {
                 return true;
             }
+
         }
         return false;
     }
@@ -159,6 +171,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
+
         index--;
     }
 
@@ -166,6 +179,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
+
         index++;
     }
 
@@ -187,41 +201,51 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         }
 
         String[] res = new String[(beforeSteps.length - 1) + panels.length];
-        for (int i = 0; i < res.length; i++) {
+        for (int i = 0; i <
+                res.length; i++) {
             if (i < (beforeSteps.length - 1)) {
                 res[i] = beforeSteps[i];
             } else {
                 res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
             }
+
         }
         return res;
     }
 
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
-        project = Templates.getProject(wizard);
-        descriptor = new HibernateConfigurationWizardDescriptor(project);
-        if (Templates.getTargetFolder(wizard) == null) {            
+        project =
+                Templates.getProject(wizard);
+        descriptor =
+                new HibernateConfigurationWizardDescriptor(project);
+        if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
-            FileObject location = provider != null ? provider.getLocation() : null;
+            FileObject location = provider != null ? provider.getSourceLocation() : null;
             if (location != null) {
                 Templates.setTargetFolder(wizard, location);
             }
-        }    
-        
+        }
+
         // Set the targetName here. Default name for new files should be in the form : 'hibernate<i>.cfg.xml 
         // and not like : hibernate.cfg<i>.xml.
         if (wizard instanceof TemplateWizard) {
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
+            // Check for unsupported projects. #142296
+            if (hibernateEnv == null) {
+                // Returning without initialization. User will be informed about this using error panel.
+                return;
+            }
             List<FileObject> configFiles = hibernateEnv.getAllHibernateConfigFileObjects();
             String targetName = DEFAULT_CONFIGURATION_FILENAME;
             if (!configFiles.isEmpty() && foundConfigFileInProject(configFiles, DEFAULT_CONFIGURATION_FILENAME)) {
                 int configFilesCount = configFiles.size();
-                targetName = "hibernate" + (configFilesCount++) + ".cfg";
+                targetName = "hibernate" + (configFilesCount++) + ".cfg";  //NOI18N
                 while (foundConfigFileInProject(configFiles, targetName)) {
-                    targetName = "hibernate" + (configFilesCount++) + ".cfg";
+                    targetName = "hibernate" + (configFilesCount++) + ".cfg";  //NOI18N
                 }
             }
+
             ((TemplateWizard) wizard).setTargetName(targetName);
         }
     }
@@ -244,32 +268,48 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
 
         if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {
             int row = sFactory.addProperty2(descriptor.getDialectName());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);
+            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);  //NOI18N
         }
 
         if (descriptor.getDriver() != null && !"".equals(descriptor.getDriver())) {
             int row = sFactory.addProperty2(descriptor.getDriver());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", driver);
+            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", driver);  //NOI18N
         }
+
         if (descriptor.getURL() != null && !"".equals(descriptor.getURL())) {
             int row = sFactory.addProperty2(descriptor.getURL());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", url);
+            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", url);  //NOI18N
         }
+
         if (descriptor.getUserName() != null && !"".equals(descriptor.getUserName())) {
             int row = sFactory.addProperty2(descriptor.getUserName());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", userName);
+            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", userName);  //NOI18N
         }
+
         if (descriptor.getPassword() != null && !"".equals(descriptor.getPassword())) {
             int row = sFactory.addProperty2(descriptor.getPassword());
-            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", password);
+            sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", password);  //NOI18N
         }
+
         try {
             HibernateCfgDataObject hdo = (HibernateCfgDataObject) newOne;
             hdo.addSessionFactory(sFactory);
             hdo.save();
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = project.getLookup().lookup(HibernateEnvironment.class);
-            logger.info("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+            logger.info(
+                    "Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+
+            if(!hibernateEnvironment.canLoadDBDriver(hdo.getHibernateConfiguration())) {
+                logger.info("DB Driver not registered with the project. Registering now..");
+                logger.info("DB Driver registered : " + hibernateEnvironment.registerDBDriver(
+                        descriptor.getDriver(),
+                        hdo.getPrimaryFile()
+                        ));
+            }
+
+
+
 
             return Collections.singleton(hdo.getPrimaryFile());
 
@@ -277,7 +317,5 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             Exceptions.printStackTrace(e);
             return Collections.EMPTY_SET;
         }
-
-
     }
 }

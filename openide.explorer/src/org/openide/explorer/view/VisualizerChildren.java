@@ -41,7 +41,6 @@
 package org.openide.explorer.view;
 
 import org.openide.nodes.*;
-
 import java.util.*;
 
 
@@ -51,35 +50,168 @@ import java.util.*;
 * @author Jaroslav Tulach
 */
 final class VisualizerChildren extends Object {
+    /** empty visualizer children for any leaf */
+    public static final VisualizerChildren EMPTY = new VisualizerChildren();   
+    
     /** parent visualizer */
     public final VisualizerNode parent;
 
-    /** list of all objects here (VisualizerNode) */
-public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
-
+    /** visualizer nodes (children) */
+    private final List<VisualizerNode> visNodes;
+    
+    private List<Node> snapshot;
+    
+    /** Empty VisualizerChildren. */
+    private VisualizerChildren () {
+        visNodes = Collections.EMPTY_LIST;
+        parent = null;
+    }    
+    
     /** Creates new VisualizerChildren.
-    * Can be called only from EventQueue.
-    */
-    public VisualizerChildren(VisualizerNode parent, Node[] nodes) {
+     * Can be called only from EventQueue.
+     */
+    public VisualizerChildren(VisualizerNode parent, int size, List<Node> snapshot) {
         this.parent = parent;
-
-        int s = nodes.length;
-
-        for (int i = 0; i < s; i++) {
-            VisualizerNode v = VisualizerNode.getVisualizer(this, nodes[i]);
-            list.add(v);
+        visNodes = new ArrayList<VisualizerNode>(size);
+        for (int i = 0; i < size; i++) {
+            visNodes.add(null);
         }
+        this.snapshot = snapshot;
     }
 
+    /** recomputes indexes for all nodes.
+     * @param tn tree node that we are looking for
+     * @return true if there is non-null object inside
+     */
+    private final boolean recomputeIndexes(VisualizerNode tn) {
+        assert visNodes.size() == snapshot.size() : "visnodes.size()=" + visNodes.size()
+                + " snapshot.size()=" + snapshot.size();
+
+        boolean isNonNull = false;
+        for (int i = 0; i < visNodes.size(); i++) {
+            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            if (node != null) {
+                node.indexOf = i;
+                isNonNull = true;
+            }
+        }
+
+        if (tn != null && tn.indexOf == -1) {
+            // not computed => force computation
+            for (int i = 0; i < visNodes.size(); i++) {
+                VisualizerNode visNode = (VisualizerNode) getChildAt(i);
+                visNode.indexOf = i;
+                if (visNode == tn) {
+                    return isNonNull;
+                }
+            }
+        }
+        return isNonNull;
+    }  
+    
+    public javax.swing.tree.TreeNode getChildAt(int pos) {
+        if (pos >= visNodes.size()) {
+            return VisualizerNode.EMPTY;
+        }
+        VisualizerNode visNode = visNodes.get(pos);
+        if (visNode == null) {
+            Node node = snapshot.get(pos);
+            visNode = VisualizerNode.getVisualizer(this, node);
+            visNode.indexOf = pos;
+            visNodes.set(pos, visNode);
+        }
+        return visNode;
+    }
+    
+    public int getChildCount() {
+        return visNodes.size();
+    }
+
+    public java.util.Enumeration children(final boolean create) {
+        return new java.util.Enumeration() {
+
+            private int index;
+
+            public boolean hasMoreElements() {
+                return index < visNodes.size();
+            }
+
+            public Object nextElement() {
+                return create ? getChildAt(index++) : visNodes.get(index++);
+            }
+        };
+    }
+
+    /** Delegated to us from VisualizerNode
+     * 
+     */
+    public int getIndex(final javax.swing.tree.TreeNode p1) {
+        VisualizerNode visNode = (VisualizerNode) p1;
+        if (visNode.indexOf != -1) {
+            if (visNode.indexOf >= visNodes.size() || visNodes.get(visNode.indexOf) != visNode) {
+                return -1;
+            }
+        } else {
+            recomputeIndexes(visNode);
+        }
+        return visNode.indexOf;
+    }
+
+    final String dumpIndexes(VisualizerNode visNode) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY) + ", Lazy: " // NOI18N
+                + snapshot.getClass().getName().endsWith("LazySnapshot")); // NOI18N
+        sb.append("\nSeeking for: ").append(visNode.toId()); // NOI18N
+        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null // NOI18N
+                ? ((VisualizerNode)visNode.getParent()).toId() : "null"); // NOI18N
+        sb.append("\nSeeking in : ").append(parent != null ? parent.toId() : "null").append("\n"); // NOI18N
+        addVisNodesInfo(sb);
+        return sb.toString();
+    }
+    
+    private void addVisNodesInfo(StringBuilder sb) {
+        for (int i = 0; i < visNodes.size(); i++) {
+            VisualizerNode node = (VisualizerNode) visNodes.get(i);
+            sb.append("  ").append(i); // NOI18N
+            if (node != null) {
+                sb.append(" = ").append(node.toId()); // NOI18N
+            } else {
+                sb.append(" = null"); // NOI18N
+            }
+            sb.append('\n'); // NOI18N
+        }        
+    }
+    
+    final String dumpEventInfo(VisualizerEvent ev) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nEvent: " + ev.getClass().getName()); // NOI18N
+        sb.append("\nOriginal event: " + ev.originalEvent.getClass().getName()); // NOI18N
+        sb.append("\ncurrent vis. nodes:"); // NOI18N
+        addVisNodesInfo(sb);
+        sb.append("\nIndexes: "); // NOI18N
+        int[] arr = ev.getArray();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Integer.toString(arr[i]));
+            sb.append(" "); // NOI18N
+        }
+        sb.append("\n"); // NOI18N
+        sb.append(ev.originalEvent.toString());
+        return sb.toString();
+    }
+    
     /** Notification of children addded event. Modifies the list of nodes
-    * and fires info to all listeners.
-    */
+     * and fires info to all listeners.
+     */
     public void added(VisualizerEvent.Added ev) {
-        ListIterator<VisualizerNode> it = list.listIterator();
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
+        }        
+        snapshot = ev.getSnapshot();
+        ListIterator<VisualizerNode> it = visNodes.listIterator();
         boolean empty = !it.hasNext();
 
         int[] indxs = ev.getArray();
-        Node[] nodes = ev.getAdded();
 
         int current = 0;
         int inIndxs = 0;
@@ -88,89 +220,61 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
             while (current++ < indxs[inIndxs]) {
                 it.next();
             }
-
-            it.add(VisualizerNode.getVisualizer(this, nodes[inIndxs]));
+            it.add(null);
             inIndxs++;
         }
 
-        VisualizerNode parent = this.parent;
+        boolean isNonNull = recomputeIndexes(null);
 
+        VisualizerNode parent = this.parent;
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
-
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).added(ev);
             }
-
             parent = (VisualizerNode) parent.getParent();
         }
-
         if (empty) {
             // change of state
-            this.parent.notifyVisualizerChildrenChange(list.size(), this);
+            this.parent.notifyVisualizerChildrenChange(isNonNull, this);
         }
-    }
-
-    private static boolean sameContains(List l, Object elem) {
-        for (Iterator it = l.iterator(); it.hasNext();) {
-            if (it.next() == elem) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /** Notification that children has been removed. Modifies the list of nodes
-    * and fires info to all listeners.
-    */
-    public void removed(VisualizerEvent.Removed ev) {
-        List remList = Arrays.asList(ev.getRemovedNodes());
+     * and fires info to all listeners.
+     */
+   public void removed(VisualizerEvent.Removed ev) {
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
+        }
+        snapshot = ev.getSnapshot();
+        int[] idxs = ev.getArray();
+        if (idxs.length == 0) {
+            return;
+        }
+        
+        assert visNodes.size() > idxs[idxs.length - 1] : dumpEventInfo(ev);
 
-        Iterator it = list.iterator();
-
-        VisualizerNode vis;
-
-        int[] indx = new int[remList.size()];
-        int count = 0;
-        int remSize = 0;
-
-        while (it.hasNext()) {
-            // take visualizer node
-            vis = (VisualizerNode) it.next();
-
-            // check if it will removed
-            if (sameContains(remList, vis.node)) {
-                indx[remSize++] = count;
-
-                // remove this VisualizerNode from children
-                it.remove();
-
-                // bugfix #36389, add the removed node to VisualizerEvent
-                ev.removed.add(vis);
-            }
-
-            count++;
+        for (int i = idxs.length - 1; i >= 0; i--) {
+            VisualizerNode visNode = visNodes.remove(idxs[i]);
+            ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
-        // notify event about changed indexes
-        ev.setRemovedIndicies(indx);
+        recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
-
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
-
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).removed(ev);
             }
-
             parent = (VisualizerNode) parent.getParent();
         }
 
-        if (list.isEmpty()) {
+        if (visNodes.isEmpty()) {
             // now is empty
-            this.parent.notifyVisualizerChildrenChange(0, this);
+            this.parent.notifyVisualizerChildrenChange(true, this);
         }
     }
 
@@ -180,35 +284,48 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
      * which may be in an inconsistent state.
      */
     private int[] reorderByComparator(Comparator<VisualizerNode> c) {
-        VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
+        VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
+
+        for (int i = 0; i < old.length; i++) {
+            if (old[i] == null) {
+                Node node = snapshot.get(i);
+                old[i] = VisualizerNode.getVisualizer(this, node);
+                old[i].indexOf = i;
+            }
+        }
+
         Arrays.sort(old, c);
 
         int[] idxs = new int[old.length];
-
         for (int i = 0; i < idxs.length; i++) {
-            idxs[i] = list.indexOf(old[i]);
+            idxs[i] = visNodes.indexOf(old[i]);
         }
 
-        list.clear();
-        list.addAll(Arrays.asList(old));
-
+        visNodes.clear();
+        visNodes.addAll(Arrays.asList(old));
         return idxs;
     }
 
     /** Notification that children has been reordered. Modifies the list of nodes
-    * and fires info to all listeners.
-    */
+     * and fires info to all listeners.
+     */
     public void reordered(VisualizerEvent.Reordered ev) {
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
+        }
+        if (ev.getSnapshot() != null) {
+            snapshot = ev.getSnapshot();
+        }
+
         if (ev.getComparator() != null) {
             //#37802
             ev.array = reorderByComparator(ev.getComparator());
         } else {
             int[] indxs = ev.getArray();
-            VisualizerNode[] old = list.toArray(new VisualizerNode[list.size()]);
+            VisualizerNode[] old = visNodes.toArray(new VisualizerNode[visNodes.size()]);
             VisualizerNode[] arr = new VisualizerNode[old.length];
-
             int s = indxs.length;
-
             try {
                 for (int i = 0; i < s; i++) {
                     // arr[indxs[i]] = old[i];
@@ -243,22 +360,21 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
                 return;
             }
 
-            assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
-            "; list=" + list + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));
-            list.clear();
-            list.addAll(Arrays.asList(arr));
-            assert !list.contains(null);
+            /*assert !Arrays.asList(arr).contains(null) : "Null element in reorderer list " + Arrays.asList(arr) +
+            "; list=" + visNodes + " indxs=" + Arrays.asList(org.openide.util.Utilities.toObjectArray(indxs));*/
+            visNodes.clear();
+            visNodes.addAll(Arrays.asList(arr));
+            //assert !visNodes.contains(null);
         }
+        recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
 
         while (parent != null) {
             Object[] listeners = parent.getListenerList();
-
             for (int i = listeners.length - 1; i >= 0; i -= 2) {
                 ((NodeModel) listeners[i]).reordered(ev);
             }
-
             parent = (VisualizerNode) parent.getParent();
         }
     }

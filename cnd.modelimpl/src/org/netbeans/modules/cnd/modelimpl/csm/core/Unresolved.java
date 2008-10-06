@@ -78,7 +78,8 @@ public final class Unresolved implements Disposable {
 	
         public UnresolvedClass(String name) {
             super(name, unresolvedFile, null);
-	    init(unresolvedNamespace, null);
+            initScope(unresolvedNamespace, null);
+            initQualifiedName(unresolvedNamespace, null);
         }
 	
 	public void register() {
@@ -173,6 +174,10 @@ public final class Unresolved implements Disposable {
         }
         
         public CsmProject getProject() {
+            return _getProject();
+        }
+
+        private synchronized CsmProject _getProject() {
             if( projectRef == null ) {
                 assert projectUID != null;
                 return (ProjectBase)UIDCsmConverter.UIDtoProject(projectUID);
@@ -250,7 +255,7 @@ public final class Unresolved implements Disposable {
         onDispose();
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);

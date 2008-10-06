@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.editor.model.CssRule;
 import org.netbeans.modules.css.visual.ui.StyleBuilderAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -94,11 +95,12 @@ public final class StyleBuilderTopComponent extends TopComponent {
         initComponents();
         
         setToolTipText(NbBundle.getMessage(StyleBuilderAction.class, "HINT_CSSStyleBuilderTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         NO_RULE_SELECTED_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Out_Of_Rule"));
         BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Broken_Model"));
         
+        setPanelMode(OUT_OF_RULE);
     }
     
      public void setContent(CssRuleContext content){

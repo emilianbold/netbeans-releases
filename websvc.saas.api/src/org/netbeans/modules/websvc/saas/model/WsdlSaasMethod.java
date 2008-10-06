@@ -36,13 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.model;
 
-import com.sun.tools.ws.processor.model.Operation;
-import com.sun.tools.ws.processor.model.java.JavaMethod;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+//import com.sun.tools.ws.processor.model.Operation;
+//import com.sun.tools.ws.processor.model.java.JavaMethod;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 
 /**
@@ -51,14 +51,14 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Method;
  */
 public class WsdlSaasMethod extends SaasMethod {
     WsdlSaasPort parent;
-    WsdlPort port;
-    WsdlOperation operation;
+    WSPort port;
+    WSOperation operation;
 
     public WsdlSaasMethod(WsdlSaas saas, Method method) {
         super(saas, method);
     }
-    
-    public WsdlSaasMethod(WsdlSaasPort port, WsdlOperation operation) {
+
+    public WsdlSaasMethod(WsdlSaasPort port, WSOperation operation) {
         super(port.getParentSaas(), null);
         this.parent = port;
         this.port = port.getWsdlPort();
@@ -68,43 +68,46 @@ public class WsdlSaasMethod extends SaasMethod {
     public String getName() {
         if (getMethod() != null) {
             return getMethod().getName();
-    }
+        }
         assert operation != null : "Should have non-null operation when filter method does not exist";
         return operation.getName();
+    }
+
+    public String getDisplayName() {
+        return getName();
     }
     
     @Override
     public WsdlSaas getSaas() {
         return (WsdlSaas) super.getSaas();
     }
-    
-    public WsdlOperation getWsdlOperation() {
+
+    public WSOperation getWsdlOperation() {
         init();
         return operation;
-                }
+    }
 
-    public WsdlPort getWsdlPort() {
+    public WSPort getWsdlPort() {
         init();
         return port;
-        }
+    }
 
     public JavaMethod getJavaMethod() {
-        Operation op = (Operation)getWsdlOperation().getInternalJAXWSOperation();
-        return (op != null) ? op.getJavaMethod() : null;
-                }
+        return getWsdlOperation().getJavaMethod();
+    }
 
     private void init() {
         if (port == null || operation == null) {
             assert getMethod() != null : "Should have non-null filter method";
-            for (WsdlPort p : getSaas().getWsdlModel().getPorts()) {
-                if (! p.getName().equals(getMethod().getPortName())) {
+            for (Object p : getSaas().getWsdlModel().getPorts()) {
+                if (! ((WSPort)p).getName().equals(getMethod().getPortName())) {
                     continue;
-    }
-                port = p;
-    
-                for (WsdlOperation op : port.getOperations()) {
-                    if (op.getName().equals(getMethod().getOperationName())) {
-                        operation = op;
+                }
+                port = (WSPort) p;
+
+                for (Object op : port.getOperations()) {
+                    if (((WSOperation)op).getName().equals(getMethod().getOperationName())) {
+                        operation = (WSOperation) op;
                         return;
                     }
                 }
@@ -112,5 +115,4 @@ public class WsdlSaasMethod extends SaasMethod {
             }
         }
     }
-    
 }

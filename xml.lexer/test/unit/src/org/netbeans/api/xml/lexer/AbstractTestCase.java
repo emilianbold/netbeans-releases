@@ -47,8 +47,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.editor.BaseDocument;
 
 /**
  * The XMLTokenIdTest tests the parsing algorithm of XMLLexer.
@@ -96,7 +95,7 @@ public class AbstractTestCase extends TestCase {
                  
     protected static Document getResourceAsDocument(String path) throws Exception {
         InputStream in = XMLTokenIdTest.class.getResourceAsStream(path);
-        Document sd = (Document)new NbEditorDocument(NbEditorKit.class);
+        Document sd = new BaseDocument(true, "text/xml"); //NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {

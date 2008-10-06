@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -190,7 +191,8 @@ public class TemplateWizardTest extends NbTestCase {
     public void testNextOnIterImpl () {
         doNextOnIterImpl (false);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1429
     public void testNextOnIterImplWithNotification () {
         doNextOnIterImpl (true);
     }

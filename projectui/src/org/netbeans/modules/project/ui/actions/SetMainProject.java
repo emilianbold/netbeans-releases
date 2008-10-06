@@ -49,11 +49,13 @@ import java.util.Arrays;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu.Separator;
 import javax.swing.JRadioButtonMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -143,6 +145,11 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         subMenu.removeAll();
         ActionListener jmiActionListener = new MenuItemActionListener(); 
         
+        JRadioButtonMenuItem jmiNone = new JRadioButtonMenuItem((javax.swing.Icon) null, false);
+        Mnemonics.setLocalizedText(jmiNone, NbBundle.getMessage(SetMainProject.class, "LBL_NoneMainProject_Name"));
+        jmiNone.addActionListener(jmiActionListener);
+        subMenu.add(jmiNone);
+        subMenu.add(new Separator());
         
         // Fill menu with items
         for ( int i = 0; i < projects.length; i++ ) {
@@ -161,19 +168,29 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
     }
     
     private void selectMainProject() {
-        
+
+        boolean prjSelected = false;
+        JRadioButtonMenuItem noneItem = null;
         for( int i = 0; i < subMenu.getItemCount(); i++ ) {
             JMenuItem jmi = subMenu.getItem( i );
-            Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-            
-            if ( jmi instanceof JRadioButtonMenuItem ) {
-                if ( OpenProjectList.getDefault().isMainProject( project ) ) {
-                    ((JRadioButtonMenuItem)jmi).setSelected( true );                    
-                }   
-                else {
-                    ((JRadioButtonMenuItem)jmi).setSelected( false );                    
+            if (jmi != null) {
+                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
+                if (project == null) {
+                    noneItem = (JRadioButtonMenuItem) jmi;
                 }
-            }    
+                if ( jmi instanceof JRadioButtonMenuItem ) {
+                    if ( OpenProjectList.getDefault().isMainProject( project ) ) {
+                        ((JRadioButtonMenuItem)jmi).setSelected( true );
+                        prjSelected = true;
+                    }
+                    else {
+                        ((JRadioButtonMenuItem)jmi).setSelected( false );
+                    }
+                }
+            }
+        }
+        if (!prjSelected && noneItem != null) {
+            noneItem.setSelected(true);
         }
         
     }
@@ -202,10 +219,7 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
                 Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-                if ( project != null ) {
-                    OpenProjectList.getDefault().setMainProject( project );
-                }
-                
+                OpenProjectList.getDefault().setMainProject(project);
             }
             
         }

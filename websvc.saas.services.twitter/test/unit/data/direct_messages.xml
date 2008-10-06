@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<direct-messages type="array">
+    <direct_message>
+        <id>35449255</id>
+        <text>this is to help twitter schema</text>
+        <sender_id>16044600</sender_id>
+        <recipient_id>14276146</recipient_id>
+        <created_at>Fri Aug 29 17:20:46 +0000 2008</created_at>
+        <sender_screen_name>unknownNuser</sender_screen_name>
+        <recipient_screen_name>jlukas</recipient_screen_name>
+        <sender>
+            <id>16044600</id>
+            <name>unknownNuser</name>
+            <screen_name>unknownNuser</screen_name>
+            <location></location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>1</followers_count>
+        </sender>
+        <recipient>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </recipient>
+    </direct_message>
+    <direct_message>
+        <id>35449232</id>
+        <text>want to pick a Jamba Juice for me while you're there?</text>
+        <sender_id>16044600</sender_id>
+        <recipient_id>14276146</recipient_id>
+        <created_at>Fri Aug 29 17:20:29 +0000 2008</created_at>
+        <sender_screen_name>unknownNuser</sender_screen_name>
+        <recipient_screen_name>jlukas</recipient_screen_name>
+        <sender>
+            <id>16044600</id>
+            <name>unknownNuser</name>
+            <screen_name>unknownNuser</screen_name>
+            <location></location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>1</followers_count>
+        </sender>
+        <recipient>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </recipient>
+    </direct_message>
+</direct-messages>

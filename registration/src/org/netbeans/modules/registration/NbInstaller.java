@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.registration;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,8 +86,7 @@ public class NbInstaller extends ModuleInstall {
                 moduleEnabled = true;
                 LOG.log(Level.FINE,"Set moduleEnabled: " + moduleEnabled);
             }
-        }
-        
+        }        
         RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
         a.setEnabled(moduleEnabled);
         
@@ -96,15 +97,40 @@ public class NbInstaller extends ModuleInstall {
         
         try {
             NbServiceTagSupport.createNbServiceTag
-            (NbBundle.getMessage(NbInstaller.class,"nb.product.name"),
+            (NbServiceTagSupport.getProductName(),
              System.getProperty("java.version"));
-            //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0");
+            if (isCndShouldBeRegistered()) {
+                NbServiceTagSupport.createCndServiceTag
+                (NbServiceTagSupport.getProductName(),
+                System.getProperty("java.version"));
+            }
+
+            //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0","","","","v2");
+            //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0","","","","v3");
             //NbServiceTagSupport.createJdkServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.getRegistrationHtmlPage(PRODUCT_ID);
             NbConnection.init();
         } catch (IOException ex) {
             LOG.log(Level.INFO,"Error: Cannot create service tag:",ex);
         }
+    }
+
+    private static boolean isCndShouldBeRegistered() {
+           //This return platfomX dir but we need install dir
+        File f = new File(System.getProperty("netbeans.home"));
+        
+        File nbInstallDir = f.getParentFile();
+        String[] cndlist = nbInstallDir.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.startsWith("cnd");
+            }
+        });
+        
+        if (cndlist != null && cndlist.length != 0) {            
+            LOG.log(Level.FINE,"cnd cluster should be registered");
+            return true;
+        }        
+       return false;
     }
     
     static boolean isModuleEnabled () {

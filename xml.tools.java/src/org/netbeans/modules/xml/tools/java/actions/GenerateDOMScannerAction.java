@@ -36,12 +36,20 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.xml.tools.java.actions;
 
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.actions.CollectDTDAction;
 import org.netbeans.modules.xml.tools.generator.XMLGenerateAction;
 import org.netbeans.modules.xml.tools.java.generator.GenerateDOMScannerSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -49,27 +57,49 @@ import org.openide.util.NbBundle;
  *
  * @author Sonali
  */
-    public class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
-        /** generated Serialized Version UID */
-        private static final long serialVersionUID = 2567846356902367312L;
+public class GenerateDOMScannerAction extends XMLGenerateAction implements CollectDTDAction.DTDAction {
 
-        /* Human presentable name of the action. This should be
-         * presented as an item in a menu.
-         * @return the name of the action
-         */
-        public String getName () {
-            return NbBundle.getMessage(GenerateDOMScannerAction.class, "PROP_GenerateDOMScanner");
-        }
+    /** generated Serialized Version UID */
+    private static final long serialVersionUID = 2567846356902367312L;
 
-        /* Help context where to find more about the action.
-         * @return the help context for this action
-         */
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (GenerateDOMScannerAction.class);
-        }
+    /* Human presentable name of the action. This should be
+     * presented as an item in a menu.
+     * @return the name of the action
+     */
+    public String getName() {
+        return NbBundle.getMessage(GenerateDOMScannerAction.class, "PROP_GenerateDOMScanner");
+    }
 
-        protected Class getOwnCookieClass () {
-            return GenerateDOMScannerSupport.class;
+    /* Help context where to find more about the action.
+     * @return the help context for this action
+     */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(GenerateDOMScannerAction.class);
+    }
+
+    protected Class getOwnCookieClass() {
+        return GenerateDOMScannerSupport.class;
+    }
+
+    protected boolean enable(Node[] node) {
+        if (node.length == 0) {
+            return false;
         }
-    } // end of inner class GenerateDOMScannerAction
+        DataObject dobj = (DataObject) node[0].getLookup().lookup(DataObject.class);
+        if (dobj == null) {
+            return false;
+        }
+        FileObject fo = dobj.getPrimaryFile();
+        Project project = FileOwnerQuery.getOwner(fo);
+        if(project == null)
+            return false;
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] srcGrps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (srcGrps == null || srcGrps.length == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } 
     
+}

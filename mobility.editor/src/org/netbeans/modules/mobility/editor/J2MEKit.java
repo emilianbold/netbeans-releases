@@ -58,15 +58,14 @@ import javax.swing.KeyStroke;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import javax.swing.text.TextAction;
 
-import org.netbeans.spi.project.ProjectConfigurationProvider;
+import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.mobility.antext.preprocessor.PPLine;
 import org.netbeans.modules.editor.MainMenuAction;
-import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.mobility.editor.actions.AddElifBlockAction;
 import org.netbeans.modules.mobility.editor.actions.AddProjectConfigurationAction;
 import org.netbeans.modules.mobility.editor.actions.CreateDebugBlockAction;
@@ -82,27 +81,21 @@ import org.openide.util.NbBundle;
  * @author Adam Sotona
  *
  */
-public class J2MEKit extends JavaKit {
+public class J2MEKit extends NbEditorKit {
     
     static final long serialVersionUID = -5445285962533684922L;
     
     public static final String generatePreprocessorPopupAction = "generate-preprocessor-popup"; // NOI18N
     public static final String PROJECT_CLIENT_PROPERTY = "projoject-client-property"; // NOI18N
-    
-    protected Action[] createActions() {
-        return TextAction.augmentList(super.createActions(), new Action[]{
-            new GeneratePreprocessorPopupAction(),
-            new AddProjectConfigurationAction(),
-            new CreateIfElseBlockAction(),
-            new AddElifBlockAction(),
-            new CreateDebugBlockAction(),
-            new RecommentAction()
-        });
+
+    @Override
+    public String getContentType() {
+        return "text/x-java"; //NOI18N
     }
 
     @Override
     public Document createDefaultDocument() {
-        Document doc = new J2MEEditorDocument(this.getClass());
+        Document doc = new J2MEEditorDocument(getContentType());
         Object mimeType = doc.getProperty("mimeType"); //NOI18N
         if (mimeType == null){
             doc.putProperty("mimeType", getContentType()); //NOI18N
@@ -159,6 +152,7 @@ public class J2MEKit extends JavaKit {
                     if (helpID != null && (helpID instanceof String))
                         item.putClientProperty("HelpID", helpID);//NOI18N
                     menu.add(item);
+                    Mnemonics.setLocalizedText(item, item.getText());
                 }
             }
         }

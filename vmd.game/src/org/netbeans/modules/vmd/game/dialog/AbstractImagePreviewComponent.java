@@ -45,14 +45,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
+import javax.swing.JPanel;
+
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author kherink
  */
-public abstract class AbstractImagePreviewComponent extends JComponent {
+public abstract class AbstractImagePreviewComponent extends JPanel {
 
 	public AbstractImagePreviewComponent() {
 		this.setBorder(null);

@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.j2me.cdc.project.ui.wizards;
 
+import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -322,6 +324,11 @@ public class ImportCDCProjectPanel extends javax.swing.JPanel implements Documen
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((ImportCDCProjectPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }            
         }
         
         public void storeSettings(final Object obj) {

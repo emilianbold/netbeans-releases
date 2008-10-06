@@ -84,7 +84,7 @@ public class DocOffsetableImpl implements CsmOffsetable {
         return new DocOffsPositionImpl(getDocument(),  getEndOffset());
     }
 
-    public String getText() {
+    public CharSequence getText() {
         return "";
     }
     

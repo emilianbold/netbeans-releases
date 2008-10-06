@@ -244,11 +244,28 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else canGenerate = false;
 
+            if (formEditorSupport.getGuardedSectionManager() == null) {
+                // Issue 143655 - opening of big file canceled
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        formEditorSupport.close();
+                    }
+                });
+                return;
+            }
             SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
             SimpleSection variablesSection = formEditorSupport.getVariablesSection();
 
             if (initComponentsSection == null || variablesSection == null) {
                 System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+
+                formModel.setReadOnly(true);
+                NotifyDescriptor d = new NotifyDescriptor.Message(
+                        FormUtils.getBundleString("MSG_ERR_GuardesBlocks"), // NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE);
+                d.setTitle(FormUtils.getBundleString("MSG_ERR_GuardesBlocksTitle")); // NOI18N
+                DialogDisplayer.getDefault().notifyLater(d);
+
                 canGenerate = false;
             }
 
@@ -382,19 +399,30 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 @Override
                 public PropertyEditor getExpliciteEditor() { // getPropertyEditor
-                    Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
-                    if (local == null)
-                        local = Boolean.valueOf(formModel.getSettings().getVariablesLocal());
-                    return Boolean.TRUE.equals(local) ?
-                        new ModifierEditor(Modifier.FINAL)
-                        :
-                        new ModifierEditor(Modifier.PUBLIC
-                                           | Modifier.PROTECTED
-                                           | Modifier.PRIVATE
-                                           | Modifier.STATIC
-                                           | Modifier.FINAL
-                                           | Modifier.TRANSIENT
-                                           | Modifier.VOLATILE);
+                    return new ModifierEditor() {
+                        private void updateMask() {
+                            Boolean local = (Boolean) component.getAuxValue(AUX_VARIABLE_LOCAL);
+                            if (local == null) {
+                                local = formModel.getSettings().getVariablesLocal();
+                            }
+                            int mask = Boolean.TRUE.equals(local) ? Modifier.FINAL
+                                    : Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE |
+                                      Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE;
+                            setMask(mask);
+                        }
+
+                        @Override
+                        public void setAsText(String string) throws IllegalArgumentException {
+                            updateMask();
+                            super.setAsText(string);
+                        }
+
+                        @Override
+                        public Component getCustomEditor() {
+                            updateMask();
+                            return super.getCustomEditor();
+                        }
+                    };
                 }
             };
             modifProp.setShortDescription(bundle.getString("MSG_JC_VariableModifiersDesc")); // NOI18N
@@ -3261,13 +3289,7 @@ class JavaCodeGenerator extends CodeGenerator {
     /** Gets the body (text) of event handler of given name. */
     String getEventHandlerText(String handlerName) {
         InteriorSection section = getEventHandlerSection(handlerName);
-        if (section != null) {
-            // XXX try to use section.getBody instead
-            String tx = section.getText();
-            tx = tx.substring(tx.indexOf("{")+1, tx.lastIndexOf("}")).trim() + "\n"; // NOI18N
-            return tx;
-        }
-        return null;
+        return (section == null) ? null : section.getBody();
     }
 
     private String getEventHandlerAnnotation(String handlerName, boolean removeAnnotations) {
@@ -4170,7 +4192,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public boolean supportsCustomEditor() {
-            return true;
+            return !formModel.isReadOnly();
         }
     }
 

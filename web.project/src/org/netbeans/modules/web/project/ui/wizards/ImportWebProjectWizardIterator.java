@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -74,7 +73,11 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.Utils;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -121,7 +124,7 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         handle.start(3);
         handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         
         File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
@@ -199,6 +202,13 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         
         resultSet.add(dir);
         
+        // save last project location
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);
+        }
+
+        
         Project earProject = (Project) wiz.getProperty(ProjectServerWizardPanel.EAR_APPLICATION);
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
         if (earProject != null && createdWebProject != null) {
@@ -219,6 +229,22 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
 
         handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+        
+        Object[] parameters2 = new Object[5];
+        parameters2[0] = ""; // NOI18N
+        try {
+            if (serverInstanceID != null) {
+                parameters2[0] = Deployment.getDefault().getServerInstance(serverInstanceID).getServerDisplayName();
+            }
+        }
+        catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters2[1] = createData.getJavaEEVersion();
+        parameters2[2] = createData.getSourceLevel();
+        parameters2[3] = createData.getSourceStructure();
+        parameters2[4] = new StringBuffer();
+        Utils.logUsage(NewWebProjectWizardIterator.class, "USG_PROJECT_CREATE_WEB", parameters2); // NOI18N
         
         return resultSet;
     }

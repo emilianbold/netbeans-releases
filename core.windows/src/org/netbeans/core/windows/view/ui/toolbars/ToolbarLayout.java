@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JFrame;
 import org.openide.awt.ToolbarPool;
 import org.openide.windows.WindowManager;
 
@@ -196,13 +197,8 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
             //Insets insets = parent.getInsets();
             //int maxPosition = parent.getWidth() - (insets.left + insets.right) - HGAP;
             Insets insets = WindowManager.getDefault().getMainWindow().getInsets();
-            int maxPosition;
             Frame f = WindowManager.getDefault().getMainWindow();
-            if ((f.getExtendedState() & Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
-                maxPosition = f.getWidth() - HGAP;
-            } else {
-                maxPosition = f.getWidth() - (insets.left + insets.right) - HGAP;
-            }
+            int maxPosition = f.getWidth() - (insets.left + insets.right) - HGAP;
             Component comp;
             ToolbarConstraints constr;
 

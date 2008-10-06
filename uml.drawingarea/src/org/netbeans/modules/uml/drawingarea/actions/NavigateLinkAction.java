@@ -42,7 +42,6 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +50,6 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
@@ -112,7 +110,10 @@ public class NavigateLinkAction extends WidgetAction.Adapter
 //
 //                            // to place the already traversed entry to the end
                             Widget nodeW=Util.getParentNodeWidget(target);
-                            if(!oppositeWidgets.contains(nodeW))oppositeWidgets.add(nodeW);
+                            if(nodeW != null && !oppositeWidgets.contains(nodeW) )
+                            {
+                                oppositeWidgets.add(nodeW);
+                            }
 //                            ((Anchor) dep).removeEntry(entry);
 //                            ((Anchor) dep).addEntry(entry);
                         }
@@ -162,6 +163,10 @@ public class NavigateLinkAction extends WidgetAction.Adapter
     
      private void positionWidget(Widget widget, Point point)
     {
+         if ( widget == null)
+         {
+             return;
+         }
         Scene scene = widget.getScene();
 
         JComponent view = scene.getView();
@@ -182,7 +187,7 @@ public class NavigateLinkAction extends WidgetAction.Adapter
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
             }
         }
     }

@@ -1,0 +1,4 @@
+Code completion result for source line:
+$v2 = new cls136188|();
+(QueryType=COMPLETION, NameKind=PREFIX)
+CLASS      Cls136188                                  issue136188.php

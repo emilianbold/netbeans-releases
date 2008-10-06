@@ -159,6 +159,8 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(jButtonRename, gridBagConstraints);
+        jButtonRename.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerConfigManager.class, "ACSN_CustConfManRename")); // NOI18N
+        jButtonRename.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CustConfManRename")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveConfig, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Remove")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

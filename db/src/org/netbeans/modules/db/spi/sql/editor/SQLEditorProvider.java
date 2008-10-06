@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.spi.sql.editor;
 
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.openide.loaders.DataObject;
 
 /**
  * This interface provides an SQL editor. It is used every time the Database

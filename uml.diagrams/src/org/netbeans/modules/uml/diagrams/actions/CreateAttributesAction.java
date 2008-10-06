@@ -40,35 +40,77 @@
  */
 package org.netbeans.modules.uml.diagrams.actions;
 
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IInterface;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
+import org.netbeans.modules.uml.diagrams.nodes.FeatureWidget;
+import org.netbeans.modules.uml.diagrams.nodes.ICommonFeature;
+import org.netbeans.modules.uml.diagrams.nodes.UMLClassWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
-public final class CreateAttributesAction extends CookieAction
+public final class CreateAttributesAction extends SceneCookieAction
 {
 
     protected void performAction(Node[] activatedNodes)
     {
         IClassifier classifier = activatedNodes[0].getLookup().lookup(IClassifier.class);
-        if(classifier == null)
+        IPresentationElement pe = activatedNodes[0].getLookup().lookup(IPresentationElement.class);
+        ObjectScene scene=activatedNodes[0].getLookup().lookup(ObjectScene.class);
+        if(classifier == null)  // activated node is not classifier
         {
             IAttribute attr = activatedNodes[0].getLookup().lookup(IAttribute.class);
-            if(attr != null)
+            if(attr != null)      // activated node is attribute node
             {
                 classifier = attr.getFeaturingClassifier();
+                if((classifier == null) && (attr.getAssociationEnd() != null))
+                {
+                    IAssociationEnd end = attr.getAssociationEnd();
+                    IAttribute qualifier = end.createQualifier3();
+                    end.addQualifier(qualifier);
+                }
+            } else   
+            {
+                // Fix  iz#145341
+                IOperation op = activatedNodes[0].getLookup().lookup(IOperation.class);
+                if (op != null)    // activated node is operation node
+                {
+                    classifier = op.getFeaturingClassifier();
+                }
             }
-        }
+       }
         
-        if(classifier != null)
+        if (classifier != null)
         {
             IAttribute attr = classifier.createAttribute3();
             classifier.addAttribute(attr);
+            Widget nW = scene.findWidget(pe);
+            SwitchableWidget cW = null;
+            
+            if (nW instanceof SwitchableWidget)
+            {
+                cW = (SwitchableWidget) nW;
+            } else if (nW instanceof FeatureWidget)
+            {
+                cW = (SwitchableWidget) Util.getParentWidgetByClass(nW, SwitchableWidget.class);
+            }
+            
+            if (cW != null && cW instanceof ICommonFeature)
+            {
+                ((ICommonFeature)cW).setSelectedAttribute(attr);
+            }
         }
     }
 
@@ -84,7 +126,8 @@ public final class CreateAttributesAction extends CookieAction
 
     protected Class[] cookieClasses()
     {
-        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IAttribute.class};
+        // Added IOperation.class to Fix iz#145341
+        return new Class[]{IClass.class, IInterface.class, IEnumeration.class, IAttribute.class, IOperation.class};
     }
 
     @Override

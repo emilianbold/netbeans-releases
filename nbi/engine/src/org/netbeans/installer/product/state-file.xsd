@@ -81,13 +81,8 @@
     
     <xsd:simpleType name="platform-type">
         <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="all"/>
-            <xsd:enumeration value="windows"/>
-            <xsd:enumeration value="linux"/>
-            <xsd:enumeration value="solaris-x86"/>
-            <xsd:enumeration value="solaris-sparc"/>
-            <xsd:enumeration value="macosx-ppc"/>
-            <xsd:enumeration value="macosx-x86"/>
+            <xsd:pattern 
+                value="([A-Za-z0-9\-\._])+"/>
         </xsd:restriction>
     </xsd:simpleType>
     

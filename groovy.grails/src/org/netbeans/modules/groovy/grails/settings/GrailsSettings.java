@@ -29,11 +29,21 @@ package org.netbeans.modules.groovy.grails.settings;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.RuntimeHelper;
 import org.netbeans.modules.groovy.grails.api.GrailsEnvironment;
+import org.openide.util.Exceptions;
+import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -48,6 +58,10 @@ public final class GrailsSettings {
     private static final String GRAILS_ENV_KEY = "grailsPrj-Env-"; // NOI18N
     private static final String GRAILS_DEPLOY_KEY = "grailsPrj-Deploy-"; // NOI18N
     private static final String GRAILS_AUTODEPLOY_KEY = "grailsPrj-Autodeploy-"; // NOI18N
+
+    // Which browser to use for client side debugging Firfox or Internet Explorer ?
+    // Possible values for this key are FIREFOX and INTERNET_EXPLORER
+    private static final String GRAILS_DEBUG_BROWSER_KEY = "grailsPrj-DebugBrowser-"; // NOI18N
 
     private static GrailsSettings instance;
 
@@ -73,9 +87,14 @@ public final class GrailsSettings {
     }
 
     public String getGrailsBase() {
+        String base = null;
         synchronized (this) {
-            return getPreferences().get(GRAILS_HOME_KEY, null);
+            base = getPreferences().get(GRAILS_HOME_KEY, null);
         }
+        if (base == null || base.length() <= 0) {
+            base = findGroovyPlatform();
+        }
+        return base;
     }
 
     public void setGrailsBase(String path) {
@@ -142,6 +161,19 @@ public final class GrailsSettings {
         getPreferences().put(getDeployKey(prj), dir);
     }
 
+    // Which browser to use for client side debugging Firfox or Internet Explorer ?
+    public String getDebugBrowserForProject(Project prj) {
+        assert prj != null;
+        return getPreferences().get(getDebugBrowserKey(prj), null);
+    }
+
+    public void setDebugBrowserProject(Project prj, String browser) {
+        assert prj != null;
+        assert browser != null;
+
+        getPreferences().put(getDebugBrowserKey(prj), browser);
+    }
+
     private String getProjectName(Project prj) {
         assert prj != null;
 
@@ -170,7 +202,68 @@ public final class GrailsSettings {
         return GRAILS_AUTODEPLOY_KEY + getProjectName(prj);
     }
 
+    private String getDebugBrowserKey(Project prj) {
+        assert prj != null;
+        return GRAILS_DEBUG_BROWSER_KEY + getProjectName(prj);
+    }
+
     private Preferences getPreferences() {
         return NbPreferences.forModule(GrailsSettings.class);
+    }
+
+    private String findGroovyPlatform() {
+        String groovyPath = System.getenv(RuntimeHelper.GRAILS_HOME_PROPERTY);
+        if (groovyPath == null) {
+            for (String dir : dirsOnPath()) {
+                File f = null;
+                if (Utilities.isWindows()) {
+                    f = new File(dir, RuntimeHelper.WIN_EXECUTABLE_FILE);
+                } else {
+                    f = new File(dir, RuntimeHelper.NIX_EXECUTABLE_FILE);
+                }
+                if (f.isFile()) {
+                    try {
+                        groovyPath = f.getCanonicalFile().getParentFile().getParent();
+                        break;
+                    } catch (Exception e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            }
+        }
+        return groovyPath;
+    }
+
+    /**
+     * Returns an {@link Iterable} which will uniquely traverse all valid
+     * elements on the <em>PATH</em> environment variables. That means,
+     * duplicates and elements which are not valid, existing directories are
+     * skipped.
+     *
+     * @return an {@link Iterable} which will traverse all valid elements on the
+     * <em>PATH</em> environment variables.
+     */
+
+    /*FIXME: This method has been copied from the ruby.platform module.
+     *  ruby.platform/src/org/netbeans/modules/ruby/platform/Util.java
+     *
+     * I don't know if it could be included into a shared module.
+    */
+    public static Iterable<String> dirsOnPath() {
+        String rawPath = System.getenv("PATH"); // NOI18N
+        if (rawPath == null) {
+            rawPath = System.getenv("Path"); // NOI18N
+        }
+        if (rawPath == null) {
+            return Collections.emptyList();
+        }
+        Set<String> candidates = new LinkedHashSet<String>(Arrays.asList(rawPath.split(File.pathSeparator)));
+        for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
+            String dir = it.next();
+            if (!new File(dir).isDirectory()) { // remove non-existing directories (#124562)
+                it.remove();
+            }
+        }
+        return NbCollections.iterable(candidates.iterator());
     }
 }

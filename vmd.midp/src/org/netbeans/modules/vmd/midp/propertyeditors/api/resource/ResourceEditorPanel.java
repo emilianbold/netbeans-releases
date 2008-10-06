@@ -72,14 +72,18 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -87,7 +91,7 @@ import org.openide.util.Utilities;
  *
  * @author Anton Chechel
  */
-class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness {
+class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElementListener, ListSelectionListener, ActionListener, UserCodeAwareness, CleanUp {
 
     private static final String ACTION_ADD_RESOURCE = "addResource"; // NOI18N
     private static final String ACTION_REMOVE_RESOURCE = "removeResource"; // NOI18N
@@ -104,6 +108,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     private JPanel ucPanel;
     private CardLayout ucCardLayout;
 
+    
+
     ResourceEditorPanel(PropertyEditorResourceElement element, String noneComponentAsText, JRadioButton radioButton) {
         if (noneComponentAsText == null || noneComponentAsText.length() == 0) {
             throw new IllegalArgumentException("Incorrect value of noneComponentAsText: " + noneComponentAsText); // NOI18N
@@ -115,14 +121,28 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         if (radioButton == null) {
             throw new IllegalArgumentException("Null radioButton value"); // NOI18N
-        } 
+        }
         this.element = element;
         this.noneComponentAsText = noneComponentAsText;
         this.radioButton = radioButton;
         changedComponents = new HashSet<String>();
-
         initComponents(element.getJComponent());
-        element.addPropertyEditorResourceElementListener(this);
+
+    }
+
+    public void clean(DesignComponent component) {
+        if (wrappersMap != null) {
+            wrappersMap.clear();
+        }
+        element = null;
+        wrappersMap = null;
+        changedComponents = null;
+        componentsList = null;
+        radioButton = null;
+        icon = null;
+        ucCardLayout = null;
+        ucPanel = null;
+        this.removeAll();
     }
 
     private void initComponents(JComponent component) {
@@ -131,8 +151,13 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         componentsList = new JList(new DefaultListModel());
         componentsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        componentsList.addListSelectionListener(this);
         componentsList.setCellRenderer(new ComponentsListRenderer());
+
+        componentsList.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ASCN_ResourcesList"));
+        componentsList.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ResourceEditorPanel.class, "ASCD_ResourcesList"));
+        //componentsList.addListSelectionListener(this);
 //        componentsList.setPreferredSize(new Dimension(120, 140));
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(componentsList);
@@ -192,7 +217,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         constraints.fill = GridBagConstraints.BOTH;
         add(createUCAwarePanel(component), constraints);
 
-        icon = new ImageIcon(Utilities.loadImage(element.getIconPath()));
+        icon = new ImageIcon(ImageUtilities.loadImage(element.getIconPath()));
         componentsList.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -200,7 +225,21 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             }
 
             public void focusLost(FocusEvent e) {
+            }
+        });
 
+        this.addAncestorListener(new AncestorListener() {
+
+            public void ancestorAdded(AncestorEvent event) {
+                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+                componentsList.addListSelectionListener(ResourceEditorPanel.this);
+            }
+
+            public void ancestorRemoved(AncestorEvent event) {
+                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+            }
+
+            public void ancestorMoved(AncestorEvent event) {
             }
         });
     }
@@ -285,6 +324,9 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     }
 
     public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
         Object selectedName = getSelectedComponentName();
         if (selectedName == null || noneComponentAsText.equals(selectedName)) {
             element.setDesignComponentWrapper(null);
@@ -294,6 +336,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             element.setDesignComponentWrapper(wrapper);
             setUserCode(isUserCodeInside(wrapper));
         }
+        element.listSelectionHappened();
     }
 
     public void elementChanged(PropertyEditorResourceElementEvent event) {

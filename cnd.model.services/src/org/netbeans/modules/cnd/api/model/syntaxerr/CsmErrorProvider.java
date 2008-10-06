@@ -39,48 +39,152 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
-import org.netbeans.editor.BaseDocument;
+import org.openide.util.RequestProcessor;
 
 /**
  * An abstract error provider.
  * @author Vladimir Kvashin
  */
-public abstract class CsmErrorProvider {
+public abstract class CsmErrorProvider implements NamedEntity {
 
-    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true);
+    //
+    // Interface part
+    //
 
-    private static class Merger extends CsmErrorProvider {
-        
-        private final Lookup.Result<CsmErrorProvider> res;
-        
-        private Merger() {
+    /** Represents a request for getting errors for a particular file   */
+    public interface Request {
+
+        /** A file to process */
+        CsmFile getFile();
+
+        /** Determines whether the caller wants to cancel the processing of the request */
+        boolean isCancelled();
+
+        Document getDocument();
+    }
+
+    /** Response for adding errors for a particular file */
+    public interface Response {
+
+        /** Is called for each error */
+        void addError(CsmErrorInfo errorInfo);
+
+        /** Is called once the processing is done */
+        void done();
+    }
+
+    public final void getErrors(Request request, Response response) {
+        if (validate(request)) {
+            doGetErrors(request, response);
+        }
+        response.done();
+    }
+
+    protected boolean validate(CsmErrorProvider.Request request) {
+        return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
+    }
+
+    public boolean isEnabledByDefault() {
+        return true;
+    }
+    
+    protected abstract void doGetErrors(Request request, Response response);
+
+    public static boolean disableAsLibraryHeaderFile(CsmFile file) {
+        // in release mode we skip library files, because it's very irritating
+        // for user to see errors in system libraries
+        return CndUtils.isReleaseMode() && (file != null) && file.isHeaderFile() && 
+                (file.getProject() != null) && file.getProject().isArtificial();
+    }
+    //
+    // Implementation part
+    //
+
+    private static final boolean ENABLE = getBoolean("cnd.csm.errors", true); //NOI18N
+    private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true); //NOI18N
+
+    private static abstract class BaseMerger extends CsmErrorProvider {
+
+        protected final Lookup.Result<CsmErrorProvider> res;
+
+        public BaseMerger() {
             res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
         }
 
+        protected abstract void getErrorsImpl(Request request, Response response);
+
         @Override
-        public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-            Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-            if (ENABLE) {
-                for( CsmErrorProvider provider : res.allInstances() ) {
-                    result.addAll(provider.getErrors(doc, file));
-                }
+        protected boolean validate(CsmErrorProvider.Request request) {
+            // all real providers should call super
+            return ENABLE;
+        }
+
+        @Override
+        public void doGetErrors(Request request, Response response) {
+            if (! isPartial(request.getFile())) {
+                getErrorsImpl(request, response);
             }
-            return result;
+        }
+
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+   }
+
+    private static class SynchronousMerger extends BaseMerger {
+        
+        @Override
+        public void getErrorsImpl(Request request, Response response) {
+            for( CsmErrorProvider provider : res.allInstances() ) {
+                if (request.isCancelled()) {
+                    break;
+                }
+                provider.getErrors(request, response);
+            }
+        }
+    }
+
+    private static class AsynchronousMerger extends BaseMerger {
+
+        @Override
+        public void getErrorsImpl(final Request request, final Response response) {
+            final Collection<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>();
+            for( final CsmErrorProvider provider : res.allInstances() ) {
+                if (request.isCancelled()) {
+                    break;
+                }
+                RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (!request.isCancelled()){
+                            provider.getErrors(request, response);
+                        }
+                    }
+                });
+                tasks.add(task);
+            }
+            for (RequestProcessor.Task task : tasks) {
+                task.waitFinished();
+            }
         }
     }
     
     /** default instance */
-    private static CsmErrorProvider DEFAULT = new Merger();
+    private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
     
     public static final synchronized  CsmErrorProvider getDefault() {
         return DEFAULT;
     }
-
-    public abstract Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file);
 
     private static boolean getBoolean(String name, boolean result) {
         String value = System.getProperty(name);
@@ -89,4 +193,28 @@ public abstract class CsmErrorProvider {
         }
         return result;
     }
+
+    /**
+     * Determines whether this file contains part of some declaration,
+     * i.e. whether it was included in the middle of some other declaration
+     */
+    private static boolean isPartial(CsmFile isIncluded) {
+        //Collection<CsmFile> files = CsmIncludeHierarchyResolver.getDefault().getFiles(isIncluded);
+        Collection<CsmReference> directives = CsmIncludeHierarchyResolver.getDefault().getIncludes(isIncluded);
+        for (CsmReference directive : directives) {
+            if (directive != null  ) {
+                int offset = directive.getStartOffset();
+                CsmFile containingFile = directive.getContainingFile();
+                if (containingFile != null) {
+                    for (CsmOffsetableDeclaration decl : containingFile.getDeclarations()) {
+                        if (decl.getStartOffset() <= offset && offset < decl.getEndOffset()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+	return false;
+    }
+
 }

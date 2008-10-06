@@ -46,6 +46,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IExtensionPoint;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IUseCase;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -59,6 +60,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -111,9 +113,9 @@ public class ExtensionPointWidget extends FeatureWidget implements PropertyChang
     @Override
     protected String formatElement()
     {
-        String str = ((IExtensionPoint) getElement()).getName();
+        String str = ((IExtensionPoint) getElement()).getNameWithAlias();
         if (str.equalsIgnoreCase(""))
-            return "unnamed";
+            return NbBundle.getMessage (Util.class, "UNNAMED");
         else
             return str;
     }

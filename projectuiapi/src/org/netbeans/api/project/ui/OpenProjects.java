@@ -86,6 +86,7 @@ public final class OpenProjects {
     
     private OpenProjects() {
         this.trampoline = Utilities.getOpenProjectsTrampoline();
+        addPropertyChangeListener( new OpenProjectsListener() );
     }
 
     /**

@@ -51,7 +51,17 @@ NetBeans.Logger = {};
             NetBeans.Constants.ConsoleServiceCID,
             NetBeans.Constants.ConsoleServiceIF);
         }
-        consoleService.logStringMessage(message);
+        consoleService.logStringMessage("NETBEANS-LOGGER-MSG: " + message);
+    }
+
+    this.getLogger = function() {
+        if ( !consoleService ) {
+            consoleService = NetBeans.Utils.CCSV(
+            NetBeans.Constants.ConsoleServiceCID,
+            NetBeans.Constants.ConsoleServiceIF);
+        }
+
+        return consoleService;
     }
     
     this.log = function( message, level ){
@@ -67,4 +77,14 @@ NetBeans.Logger = {};
         }
     }
     
+    this.logException = function(exception) {
+        if (typeof exception == 'string') {
+            exception = new Error(exception);
+        }
+        
+        this.logMessage(exception.toString());
+        if (exception.stack) {
+          this.logMessage(exception.stack);
+        }
+    }    
 }).apply(NetBeans.Logger);

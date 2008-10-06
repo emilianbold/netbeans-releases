@@ -1,1 +1,2 @@
 org.netbeans.modules.debugger.jpda.ui.CurrentThreadAnnotationListener
+org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsListener

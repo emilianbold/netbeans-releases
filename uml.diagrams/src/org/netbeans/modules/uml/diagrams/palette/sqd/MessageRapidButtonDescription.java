@@ -41,17 +41,24 @@
 package org.netbeans.modules.uml.diagrams.palette.sqd;
 
 import java.awt.Image;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.actions.sqd.ConnectAction;
 import org.netbeans.modules.uml.diagrams.actions.sqd.LifelineSynchMessageConnectorDecorator;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessagesConnectProvider;
+import org.netbeans.modules.uml.diagrams.edges.sqd.MessageWidget;
+import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -126,7 +133,7 @@ public class MessageRapidButtonDescription implements ContextPaletteButtonModel
                                                                     layer, 
                                                                     connector,iKind);
             
-            retVal = new WidgetAction[] {action};
+            retVal = new WidgetAction[] {action, new KeyExecutor()};
         }
 
         return retVal; 
@@ -207,5 +214,62 @@ public class MessageRapidButtonDescription implements ContextPaletteButtonModel
     public void setFactory(RelationshipFactory factory)
     {
         this.factory = factory;
+    }
+
+    protected class KeyExecutor extends WidgetAction.Adapter
+    {
+        @Override
+        public State keyPressed(Widget widget, WidgetKeyEvent event)
+        {
+            if(Util.isPaletteExecute(event) == true)
+            {
+                if (widget.getScene() instanceof DesignerScene)
+                {
+                    DesignerScene scene = (DesignerScene) widget.getScene();
+                    List<IPresentationElement> selectedObjects = scene.getOrderedSelection();
+                    if (selectedObjects.size() >= 2)
+                    {
+                        Widget from = null;
+                        Widget to = null;
+                        MessageWidget message = null;
+
+                        for (IPresentationElement curElement : selectedObjects)
+                        {
+                            if ((scene.isNode(curElement) == true) &&
+                                    (from == null))
+                            {
+                                from = scene.findWidget(curElement);
+                            }
+                            else if ((scene.isNode(curElement) == true) &&
+                                    (to == null))
+                            {
+                                to = scene.findWidget(curElement);
+                            }
+                            else if ((scene.isEdge(curElement) == true) &&
+                                    (message == null))
+                            {
+                                Widget testWidget = scene.findWidget(curElement);
+                                if (testWidget instanceof MessageWidget)
+                                {
+                                    message = (MessageWidget) testWidget;
+                                }
+                            }
+                        }
+
+
+                        //if ((from != null) && (to != null))
+                        {
+                            if (scene.getEngine() instanceof SequenceDiagramEngine)
+                            {
+                                SequenceDiagramEngine engine = (SequenceDiagramEngine) scene.getEngine();
+                                engine.createMessageOnSelection(from, to, message, iKind);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return super.keyPressed(widget, event);
+        }
     }
 }

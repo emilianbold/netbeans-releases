@@ -45,66 +45,116 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.indent.api.Indent;
+import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.TokenItem;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Libor Kotouc
  */
 public final class JSFPaletteUtilities {
+    private static final String JSF_CORE_PREFIX = "f";  //NOI18N
+    private static final String JSF_CORE_URI = "http://java.sun.com/jsf/core";  //NOI18N
+    private static final String JSF_HTML_PREFIX = "h";  //NOI18N
+    private static final String JSF_HTML_URI = "http://java.sun.com/jsf/html";  //NOI18N
     
-    public static void insert(String s, JTextComponent target) 
-    throws BadLocationException 
-    {
+    public static String findJsfCorePrefix(JTextComponent target) {
+        String res = getTagLibPrefix(target, JSF_CORE_URI);
+        if (res == null)
+            insertTagLibRef(target, JSF_CORE_PREFIX, JSF_CORE_URI);
+        return (res != null) ? res : JSF_CORE_PREFIX;
+    }
+    
+    public static String findJsfHtmlPrefix(JTextComponent target) {
+        String res = getTagLibPrefix(target, JSF_HTML_URI);
+        if (res == null)
+            insertTagLibRef(target, JSF_HTML_PREFIX, JSF_HTML_URI);
+        return (res != null) ? res : JSF_HTML_PREFIX;
+    }
+    
+    public static String getTagLibPrefix(JTextComponent target, String tagLibUri) {
+        FileObject fobj = getFileObject(target);
+        if (fobj != null) {
+            JspParserAPI.ParseResult result = JspContextInfo.getContextInfo(fobj).getCachedParseResult(target.getDocument(), fobj, false, true);
+            if (result != null && result.getPageInfo() != null) {
+                 for (TagLibraryInfo tli : result.getPageInfo().getTaglibs()) {
+                     if (tagLibUri.equals(tli.getURI()))
+                         return tli.getPrefixString();
+                 }
+            }
+        }
+        return null;
+    }
+    
+    private static void insertTagLibRef(JTextComponent target, final String prefix, final String uri) {
+        Document doc = target.getDocument();
+        if (doc != null && doc instanceof BaseDocument) {
+            final BaseDocument baseDoc = (BaseDocument) doc;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        int pos = 0;  // FIXME: compute better where to insert tag lib definition?
+                        String definition = "<%@taglib prefix=\"" + prefix + "\" uri=\"" + uri + "\"%>\n";  //NOI18N
+                        baseDoc.insertString(pos, definition, null);
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            };
+            baseDoc.runAtomic(edit);
+        }
+    }
+        
+    private static FileObject getFileObject(JTextComponent target) {
+        BaseDocument doc = (BaseDocument) target.getDocument();
+        DataObject dobj = NbEditorUtilities.getDataObject(doc);
+        FileObject fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile() : null;
+        return fobj;
+    }
+    
+    public static void insert(String s, JTextComponent target) throws BadLocationException {
         insert(s, target, true);
     }
     
-    public static void insert(String s, JTextComponent target, boolean reformat) 
-    throws BadLocationException 
-    {
-        Document _doc = target.getDocument();
-        if (_doc == null || !(_doc instanceof BaseDocument)) {
-            return;
-        }
+    public static void insert(String s, final JTextComponent target, final boolean reformat) throws BadLocationException {
+        Document doc = target.getDocument();
+        if (doc != null && doc instanceof BaseDocument) {
+            final String str = (s == null) ? "" : s;
         
-        //check whether we are not in a scriptlet 
-//        JspSyntaxSupport sup = (JspSyntaxSupport)(doc.getSyntaxSupport().get(JspSyntaxSupport.class));
-//        int start = target.getCaret().getDot();
-//        TokenItem token = sup.getTokenChain(start, start + 1);
-//        if (token != null && token.getTokenContextPath().contains(JavaTokenContext.contextPath)) // we are in a scriptlet
-//            return false;
+            final BaseDocument baseDoc = (BaseDocument) doc;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        int start = insert(str, target, baseDoc);
 
-        if (s == null)
-            s = "";
-        
-        BaseDocument doc = (BaseDocument)_doc;
-        Indent indent = Indent.get(doc);
-        indent.lock();
-        try {
-            doc.atomicLock();
-            try {
-                int start = insert(s, target, _doc);
-                if (reformat && start >= 0 && _doc instanceof BaseDocument) {
-                    // format the inserted text
-                    int end = start + s.length();
-                    indent.reindent(start, end);
+                        // format the inserted text
+                        if (reformat && start >= 0) {
+                            int end = start + str.length();
+                            Reformat reformat = Reformat.get(baseDoc);
+                            reformat.lock();
+                            try {
+                                reformat.reformat(start, end);
+                            } finally {
+                                reformat.unlock();
+                            }
+                        }
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
-        } finally {
-            indent.unlock();
+            };
+            baseDoc.runAtomic(edit);
         }
-        
     }
     
-    private static int insert(String s, JTextComponent target, Document doc) 
-    throws BadLocationException 
-    {
-
+    private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
         int start = -1;
         try {
             //at first, find selected text range
@@ -116,8 +166,8 @@ public final class JSFPaletteUtilities {
             //replace selected text by the inserted one
             start = caret.getDot();
             doc.insertString(start, s, null);
+        } catch (BadLocationException ble) {
         }
-        catch (BadLocationException ble) {}
         
         return start;
     }

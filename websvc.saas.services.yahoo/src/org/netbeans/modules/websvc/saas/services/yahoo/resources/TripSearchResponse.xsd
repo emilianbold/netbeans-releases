@@ -1,48 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:yahoo:travel" xmlns="urn:yahoo:travel" elementFormDefault="qualified">
-
-	<xs:element name="ResultSet">
-		<xs:complexType>
-			<xs:sequence>
-				<xs:element name="Result" type="ResultType" minOccurs="0" maxOccurs="100"/>
-			</xs:sequence>
-			<xs:attribute name="totalResultsAvailable" type="xs:integer"/>
-			<xs:attribute name="totalResultsReturned" type="xs:integer"/>
-			<xs:attribute name="firstResultPosition" type="xs:integer"/>
-		</xs:complexType>
-	</xs:element>
-
-	<xs:complexType name="ResultType">
-		<xs:sequence>
-			<xs:element name="YahooID" type="xs:string"/>
-			<xs:element name="Title" type="xs:string"/>
-			<xs:element name="Summary" type="xs:string"/>
-			<xs:element name="Destinations" type="xs:string"/>
-			<xs:element name="CreateDate" type="xs:string"/>
-			<xs:element name="Duration" type="xs:integer" minOccurs="0"/>
-			<xs:element name="Image" type="ImageType" minOccurs="0"/>
-			<xs:element name="Geocode" type="GeocodeType" minOccurs="0"/>
-			<xs:element name="Url" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-		</xs:sequence>
-		<xs:attribute name="id" type="xs:integer"/>
-	</xs:complexType>
-
-	
-	<xs:complexType name="GeocodeType">
-		<xs:sequence>
-			<xs:element name="Latitude" type="xs:decimal"/>
-			<xs:element name="Longitude" type="xs:decimal"/>
-		</xs:sequence>
-		<xs:attribute name="precision" type="xs:string"/>
-	</xs:complexType>
-
-	<xs:complexType name="ImageType">
-		<xs:sequence>
-			<xs:element name="Url" type="xs:string"/>
-			<xs:element name="Height" type="xs:integer" minOccurs="0"/>
-			<xs:element name="Width" type="xs:integer" minOccurs="0"/>
-		</xs:sequence>
-	</xs:complexType>
-
+    <xs:element name="ResultSet">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Result" minOccurs="0" maxOccurs="100">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="YahooID" type="xs:string"/>
+                            <xs:element name="Title" type="xs:string"/>
+                            <xs:element name="Summary" type="xs:string"/>
+                            <xs:element name="Destinations" type="xs:string"/>
+                            <xs:element name="CreateDate" type="xs:string"/>
+                            <xs:element name="Duration" type="xs:integer" minOccurs="0"/>
+                            <xs:element name="Image" type="ImageType" minOccurs="0"/>
+                            <xs:element name="Geocode" type="GeocodeType" minOccurs="0"/>
+                            <xs:element name="Url" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="id" type="xs:integer"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="totalResultsAvailable" type="xs:integer"/>
+            <xs:attribute name="totalResultsReturned" type="xs:integer"/>
+            <xs:attribute name="firstResultPosition" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Result">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Author" type="xs:string"/>
+                <xs:element name="Title" type="xs:string"/>
+                <xs:element name="Summary" type="xs:string"/>
+                <xs:element name="CreateDate" type="xs:integer"/>
+                <xs:element name="UpdateDate" type="xs:integer"/>
+                <xs:element name="Duration" type="xs:integer" minOccurs="0"/>
+                <xs:element name="Image" type="ImageType" minOccurs="0"/>
+                <xs:element name="Tag" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element name="Destination" type="DestinationType" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="DestinationType">
+        <xs:sequence>
+            <xs:element name="Title" type="xs:string"/>
+            <xs:element name="Geocode" type="GeocodeType" minOccurs="0"/>
+            <xs:element name="AirportCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="WeatherCode" type="xs:string" minOccurs="0"/>
+            <xs:element name="Item" type="ItemType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="GeocodeType">
+        <xs:sequence>
+            <xs:element name="Latitude" type="xs:decimal"/>
+            <xs:element name="Longitude" type="xs:decimal"/>
+        </xs:sequence>
+        <xs:attribute name="precision" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="ImageType">
+        <xs:sequence>
+            <xs:element name="Url" type="xs:string"/>
+            <xs:element name="Height" type="xs:integer" minOccurs="0"/>
+            <xs:element name="Width" type="xs:integer" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ItemType">
+        <xs:sequence>
+            <xs:element name="Title" type="xs:string"/>
+            <xs:element name="Summary" type="xs:string"/>
+            <xs:element name="Category" type="xs:string" minOccurs="0"/>
+            <xs:element name="Image" type="ImageType" minOccurs="0"/>
+            <xs:element name="Geocode" type="GeocodeType" minOccurs="0"/>
+            <xs:element name="Address" type="AddressType" minOccurs="0"/>
+            <xs:element name="Phone" type="xs:string" minOccurs="0"/>
+            <xs:element name="Url" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="Note" type="xs:string" minOccurs="0"/>
+            <xs:element name="UserRating" type="xs:integer" minOccurs="0"/>
+            <xs:element name="Tag" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:integer"/>
+    </xs:complexType>
+    <xs:complexType name="AddressType">
+        <xs:sequence>
+            <xs:element name="Address1" type="xs:string"/>
+            <xs:element name="Address2" type="xs:string"/>
+            <xs:element name="City" type="xs:string"/>
+            <xs:element name="State" type="xs:string"/>
+            <xs:element name="Country" type="xs:string"/>
+            <xs:element name="PostalCode" type="xs:string"/>
+            <xs:element name="Neighborhood" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>
 <!-- ws05.search.scd.yahoo.com compressed/chunked Sat Feb  2 19:59:15 PST 2008 -->

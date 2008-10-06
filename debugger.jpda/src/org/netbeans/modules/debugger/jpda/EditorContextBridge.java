@@ -285,7 +285,7 @@ public class EditorContextBridge {
             Integer i = null;
             try {
                 i = (Integer) cp1.getClass().getMethod("getCurrentOffset", new Class[] {}).
-                        invoke(getContext(), new Object[] {});
+                        invoke(cp1, new Object[] {});
             } catch (java.lang.reflect.InvocationTargetException itex) {
                 Throwable tex = itex.getTargetException();
                 if (tex instanceof RuntimeException) {
@@ -301,7 +301,7 @@ public class EditorContextBridge {
             if (i == null || i.intValue() < 1) {
                 try {
                     i = (Integer) cp2.getClass().getMethod("getCurrentOffset", new Class[] {}).
-                            invoke(getContext(), new Object[] {});
+                            invoke(cp2, new Object[] {});
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable tex = itex.getTargetException();
                     if (tex instanceof RuntimeException) {

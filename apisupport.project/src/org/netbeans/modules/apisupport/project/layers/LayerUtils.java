@@ -73,6 +73,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -107,7 +108,7 @@ import org.xml.sax.SAXException;
  * @author Jesse Glick
  */
 public class LayerUtils {
-    
+
     private LayerUtils() {}
     
     /**
@@ -667,8 +668,18 @@ public class LayerUtils {
      * Get the platform JARs associated with a standalone module project.
      */
     public static Set<File> getPlatformJarsForStandaloneProject(Project project) {
+        NbPlatform platform = getPlatformForProject(project);
+        return getPlatformJars(platform, null, null, null);
+    }
+
+    /**
+     * Returns platform for project with fallback to default platform.
+     * 
+     * @param Project, must contain {@link NbModuleProvider} in lookup.
+     * @return Platform for project
+     */
+    public static NbPlatform getPlatformForProject(Project project) {
         NbModuleProvider mod = project.getLookup().lookup(NbModuleProvider.class);
-        //TODO create a utility method to do this if needed in more places
         NbPlatform platform = null;
         File platformDir = mod.getActivePlatformLocation();
         if (platformDir != null) {
@@ -677,7 +688,7 @@ public class LayerUtils {
         if (platform == null || !platform.isValid()) {
             platform = NbPlatform.getDefaultPlatform();
         }
-        return getPlatformJars(platform, null, null, null);
+        return platform;
     }
     
     public static Set<File> getPlatformJarsForSuiteComponentProject(Project project, SuiteProject suite) {
@@ -722,13 +733,7 @@ public class LayerUtils {
         ModuleEntry[] entries = platform.getModules();
         Set<File> jars = new HashSet<File>(entries.length);
         for (ModuleEntry entry : entries) {
-            if (!includedClustersS.isEmpty() && !includedClustersS.contains(entry.getClusterDirectory().getName())) {
-                continue;
-            }
-            if (includedClustersS.isEmpty() && excludedClustersS.contains(entry.getClusterDirectory().getName())) {
-                continue;
-            }
-            if (excludedModulesS.contains(entry.getCodeNameBase())) {
+            if (SingleModuleProperties.isExcluded(entry, excludedModulesS, includedClustersS, excludedClustersS)) {
                 continue;
             }
             jars.add(entry.getJarLocation());

@@ -74,6 +74,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -96,7 +97,7 @@ import org.w3c.dom.Text;
  * @author Chris Webster
  */
 public final class BpelproProject implements Project, AntProjectListener, ProjectPropertyProvider {
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/bpel/project/resources/bpelProject.png")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bpel/project/resources/bpelProject.png")); // NOI18N
 
     public static final String ARTIFACT_TYPE_JBI_ASA = "CAPS.asa";
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-bpel-project.jar";

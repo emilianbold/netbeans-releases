@@ -51,6 +51,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 
@@ -68,7 +69,7 @@ public class LanguagesDataLoaderBeanInfo extends SimpleBeanInfo {
     * @return returns the Image loader's icon
     */
     public Image getIcon (final int type) {
-        return org.openide.util.Utilities.loadImage ("org/netbeans/modules/languages/resources/defaultIcon.png"); // NOI18N
+        return ImageUtilities.loadImage ("org/netbeans/modules/languages/resources/defaultIcon.png"); // NOI18N
     }
     
     public PropertyDescriptor[] getPropertyDescriptors() {

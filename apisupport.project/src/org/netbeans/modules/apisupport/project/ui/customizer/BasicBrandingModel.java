@@ -265,13 +265,12 @@ public class BasicBrandingModel {
                 BufferedImage bi = new BufferedImage(
                         width,
                         height,
-                        BufferedImage.TYPE_INT_RGB);
+                        BufferedImage.TYPE_INT_ARGB);
                 
                 Graphics2D g2 = bi.createGraphics();
                 ImageIcon image = new ImageIcon(icon.getBrandingSource());
                 g2.drawImage(image.getImage(),0, 0, 
-                        width, height, 
-                        Color.LIGHT_GRAY,null);//NOI18N
+                        width, height, null);
                 
                 g2.dispose();
                 try {

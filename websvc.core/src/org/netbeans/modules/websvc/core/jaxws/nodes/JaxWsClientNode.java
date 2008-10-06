@@ -96,6 +96,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -168,32 +169,32 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
                 if (modelGenerationFinished)
                     return getServiceImage();
                 else
-                    return org.openide.util.Utilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8); 
+                    return ImageUtilities.mergeImages(getServiceImage(), getWaitingBadge(), 15, 8);
             } else {
-                java.awt.Image dirtyNodeImage = org.openide.util.Utilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
+                java.awt.Image dirtyNodeImage = ImageUtilities.mergeImages(getServiceImage(), getErrorBadge(), 6, 6);
                 if (modelGenerationFinished)
                     return dirtyNodeImage;
                 else
-                    return org.openide.util.Utilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
+                    return ImageUtilities.mergeImages(dirtyNodeImage, getWaitingBadge(), 15, 8);
             }
         }
     }
     
     private java.awt.Image getServiceImage() {
         if (cachedServiceBadge == null) {
-            cachedServiceBadge = org.openide.util.Utilities.loadImage(SERVICE_BADGE);
+            cachedServiceBadge = ImageUtilities.loadImage(SERVICE_BADGE);
         }            
         return cachedServiceBadge;        
     }
     private java.awt.Image getErrorBadge() {
         if (cachedErrorBadge == null) {
-            cachedErrorBadge = org.openide.util.Utilities.loadImage(ERROR_BADGE);
+            cachedErrorBadge = ImageUtilities.loadImage(ERROR_BADGE);
         }            
         return cachedErrorBadge;        
     }
     private java.awt.Image getWaitingBadge() {
         if (cachedWaitingBadge == null) {
-            cachedWaitingBadge = org.openide.util.Utilities.loadImage(WAITING_BADGE);
+            cachedWaitingBadge = ImageUtilities.loadImage(WAITING_BADGE);
         }            
         return cachedWaitingBadge;        
     }
@@ -499,10 +500,12 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         List<URL> list = new ArrayList<URL>();
         for (int i=0;i<bindingFiles.length;i++) {
             FileObject fo = bindingsFolder.getFileObject(bindingFiles[i]);
-            try {
-                list.add(fo.getURL());
-            } catch (FileStateInvalidException ex) {
-                // if there is problem no bindings will be added
+            if (fo != null) {
+                try {
+                    list.add(fo.getURL());
+                } catch (FileStateInvalidException ex) {
+                    // if there is problem no bindings will be added
+                }
             }
         }
         URL[] bindings = new URL[list.size()];

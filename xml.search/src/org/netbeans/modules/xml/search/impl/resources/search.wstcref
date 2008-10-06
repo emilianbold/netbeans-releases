@@ -42,7 +42,7 @@
 <!DOCTYPE tc-ref PUBLIC "-//NetBeans//DTD Top Component in Mode Properties 2.0//EN" "http://www.netbeans.org/dtds/tc-ref2_0.dtd">
 
 <tc-ref version="2.0">
-    <module name="org.netbeans.modules.xml.search/1" spec="1.1"/>
+    <module name="org.netbeans.modules.xml.search" spec="6.5"/>
     <tc-id id="search"/>
     <state opened="false"/>
 </tc-ref>

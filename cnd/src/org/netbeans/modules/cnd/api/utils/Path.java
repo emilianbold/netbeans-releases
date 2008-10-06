@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.cnd.api.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 

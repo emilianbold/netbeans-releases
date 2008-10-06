@@ -53,32 +53,29 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 public class ServiceChildren extends Children.Keys<WsdlPort> {
+
     WsdlService wsdlService;
-    
+
     public ServiceChildren(WsdlService wsdlService) {
-        this.wsdlService=wsdlService;
+        this.wsdlService = wsdlService;
     }
-    
+
     @Override
     protected void addNotify() {
         updateKeys();
     }
-    
+
     @Override
     protected void removeNotify() {
         setKeys(Collections.<WsdlPort>emptySet());
     }
-    
+
     private void updateKeys() {
-        List<WsdlPort> keys =  wsdlService.getPorts();
+        List<WsdlPort> keys = wsdlService.getPorts();
         setKeys(keys == null ? new ArrayList<WsdlPort>() : keys);
     }
-    
+
     protected Node[] createNodes(WsdlPort key) {
-            if(key.getAddress() != null){  //Determine if it is a SOAP port
-                return new Node[] {new PortNode(key)};
-            }
-            return new Node[0];
+        return new Node[]{new PortNode(key)};
     }
-    
 }

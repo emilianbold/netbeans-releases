@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -88,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public final class ColorModel {
@@ -108,6 +110,7 @@ public final class ColorModel {
     }
     
     public boolean isCustomProfile (String profile) {
+        if (!getProfiles ().contains (profile)) return true;
         return EditorSettings.getDefault().isCustomFontColorProfile (profile);
     }
     
@@ -140,7 +143,7 @@ public final class ColorModel {
             URL iconURL = annotationType.getGlyph ();
             Image image = null;
             if (iconURL.getProtocol ().equals ("nbresloc")) { // NOI18N
-                image = org.openide.util.Utilities.loadImage(iconURL.getPath().substring(1));
+                image = ImageUtilities.loadImage(iconURL.getPath().substring(1));
             } else {
                 image = Toolkit.getDefaultToolkit ().getImage (iconURL);
             }
@@ -421,7 +424,14 @@ public final class ColorModel {
             
             editorPane.setEnabled(false);
             editorPane.setText(exampleText);
-            editorPane.setCaretPosition(0);
+
+            // scroll the view, but leave the caret where it is, otherwise it will
+            // change the selected category (#143058)
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    editorPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+                }
+            });
         }
         
         private String [] loadPreviewExample(String mimeType) {
@@ -442,7 +452,7 @@ public final class ColorModel {
                 }
                 if (exampleFile != null) {
                     if (exampleFile.getMIMEType().equals("content/unknown")) { //NOI18N
-                        exampleMimeType = "text/x-java"; //NOI18N
+                        exampleMimeType = "text/x-all-languages"; //NOI18N
                     } else {
                         exampleMimeType = exampleFile.getMIMEType();
                     }
@@ -510,8 +520,11 @@ public final class ColorModel {
             languageToMimeType = new HashMap<String, String>();
             Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
             for(String mimeType : mimeTypes) {
-                languageToMimeType.put(
-                    EditorSettings.getDefault().getLanguageName(mimeType),
+                String name = EditorSettings.getDefault().getLanguageName (mimeType);
+                if (name.equals (mimeType))
+                    continue;
+                languageToMimeType.put (
+                    name,
                     mimeType
                 );
             }

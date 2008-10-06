@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.rubyproject.rake;
 
+import java.io.IOException;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
@@ -55,6 +56,22 @@ public class RakeSupportTest extends RubyProjectTestBase {
         assertNotNull("clean task found", task);
         assertEquals("clean task found", "clean", task.getTask());
         assertNull("dummy task does not exist", RakeSupport.getRakeTask(project, "dummy"));
+    }
+
+    public void testIsRakeFile() throws IOException {
+        String[] rakefiles = {"Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb"};
+        for (String rakefile : rakefiles) {
+            assertTrue(rakefile + " is rakefile", RakeSupport.isRakeFile(touch(getWorkDir(), rakefile)));
+        }
+        assertTrue("a.rake is rakefile", RakeSupport.isRakeFile(touch(getWorkDir(), "a.rake")));
+    }
+
+    public void testIsMainRakeFile() throws IOException {
+        String[] rakefiles = {"Rakefile", "Rakefile.rb", "rakefile", "rakefile.rb"};
+        for (String rakefile : rakefiles) {
+            assertTrue(rakefile + " is main rakefile", RakeSupport.isMainRakeFile(touch(getWorkDir(), rakefile)));
+        }
+        assertFalse("a.rake is not main rakefile", RakeSupport.isMainRakeFile(touch(getWorkDir(), "a.rake")));
     }
 
 }

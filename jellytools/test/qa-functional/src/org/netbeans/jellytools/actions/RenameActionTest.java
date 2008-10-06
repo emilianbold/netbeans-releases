@@ -75,8 +75,7 @@ public class RenameActionTest extends JellyTestCase {
         suite.addTest(new RenameActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(RenameActionTest.class, 
-                "testPerformPopup", "testPerformAPI");
+        return createModuleTest(RenameActionTest.class);
     }
 
     @Override

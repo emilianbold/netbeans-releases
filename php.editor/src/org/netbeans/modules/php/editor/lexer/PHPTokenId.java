@@ -222,8 +222,8 @@ public enum PHPTokenId implements TokenId {
     PHPDOC_COMMENT_END(null, "comment"), //NOI18N
     PHPDOC_COMMENT(null, "comment"), //NOI18N
     UNKNOWN_TOKEN(null, "error"), //NOI18N
-    PHP_HEREDOC_TAG(null, "php"), //NOI18N
-    PHP_NOWDOC_TAG(null, "php"), //NOI18N
+    PHP_HEREDOC_TAG(null, "heredocdelimiter"), //NOI18N
+    PHP_NOWDOC_TAG(null, "heredocdelimiter"), //NOI18N
     PHP_TOKEN(null, "php"), //NOI18N
     PHP__FUNCTION__(null, "constant"), //NOI18N
     PHP_CASTING(null, "keyword"), //NOI18N
@@ -254,47 +254,67 @@ public enum PHPTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
-    private static final Language<PHPTokenId> language =
-            new LanguageHierarchy<PHPTokenId>() {
 
-                @Override
-                protected Collection<PHPTokenId> createTokenIds() {
-                    return EnumSet.allOf(PHPTokenId.class);
-                }
+    private static final PHPLanguageHierarchy languageHierarchy = new PHPLanguageHierarchy();
 
-                @Override
-                protected Map<String, Collection<PHPTokenId>> createTokenCategories() {
-                    Map<String, Collection<PHPTokenId>> cats = new HashMap<String, Collection<PHPTokenId>>();
-                    return cats;
-                }
+    private static class PHPLanguageHierarchy extends LanguageHierarchy<PHPTokenId> {
 
-                @Override
-                protected Lexer<PHPTokenId> createLexer(LexerRestartInfo<PHPTokenId> info) {
-                    return GSFPHPLexer.create(info);
-                }
+        private boolean inPHP;
 
-                @Override
-                protected String mimeType() {
-                    return PHPLanguage.PHP_MIME_TYPE;
-                }
-                
-                @Override
-                protected LanguageEmbedding<?> embedding(Token<PHPTokenId> token,
-                    LanguagePath languagePath, InputAttributes inputAttributes) {
-                    PHPTokenId id = token.id();
-                    if (id == T_INLINE_HTML) {
-                        return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } 
-                    else if (id == PHPDOC_COMMENT) {
-                        return LanguageEmbedding.create(PHPDocCommentTokenId.language(), 0, 0);
-                    }
+        public PHPLanguageHierarchy() {
+            this.inPHP = false;
+        }
 
-                    return null; // No embedding
-                }
-                
-            }.language();
+        protected void setInPHP(boolean inPHP) {
+            this.inPHP = inPHP;
+        }
+
+        @Override
+        protected Collection<PHPTokenId> createTokenIds() {
+            return EnumSet.allOf(PHPTokenId.class);
+        }
+
+        @Override
+        protected Map<String, Collection<PHPTokenId>> createTokenCategories() {
+            Map<String, Collection<PHPTokenId>> cats = new HashMap<String, Collection<PHPTokenId>>();
+            return cats;
+        }
+
+        @Override
+        protected Lexer<PHPTokenId> createLexer(LexerRestartInfo<PHPTokenId> info) {
+            return GSFPHPLexer.create(info, inPHP);
+        }
+
+        @Override
+        protected String mimeType() {
+            return PHPLanguage.PHP_MIME_TYPE;
+        }
+
+        @Override
+        protected LanguageEmbedding<?> embedding(Token<PHPTokenId> token,
+                LanguagePath languagePath, InputAttributes inputAttributes) {
+            PHPTokenId id = token.id();
+            if (id == T_INLINE_HTML) {
+                return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
+            }
+            else if (id == PHPDOC_COMMENT) {
+                return LanguageEmbedding.create(PHPDocCommentTokenId.language(), 0, 0);
+            }
+
+            return null; // No embedding
+        }
+    }
 
     public static Language<PHPTokenId> language() {
-        return language;
+        languageHierarchy.setInPHP(false);
+        return languageHierarchy.language();
+    }
+
+
+    // This is hack. The right was is that the php is emebeded by default in to
+    // a top level language. In NB 6.5 
+    public static Language<PHPTokenId> languageInPHP() {
+        languageHierarchy.setInPHP(true);
+        return languageHierarchy.language();
     }
 }

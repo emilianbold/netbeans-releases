@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,6 +43,7 @@ package org.netbeans.test.j2ee.wizard;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  *
@@ -54,21 +55,48 @@ public class WizardsTest extends J2eeTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(suite(,
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
+        conf = conf.enableModules(".*").clusters(".*");
+        return isRegistered(Server.GLASSFISH)
+                ? NbModuleSuite.create(conf.addTest(Suite.class))
+                : NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
     }
 
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WizardsTest.class);
-        conf = addServerTests(conf,"testDefaultNewEJBModWizard","testLocalSessionBean",
-        "testRemoteSessionBean","testLocalRemoteSessionBean","testLocalStatefulSessionBean",
-        "testRemoteStatefulSessionBean","testLocalRemoteStatefulSessionBean","testLocalEntityBean",
-        "testRemoteEntityBean","testLocalRemoteEntityBean","testQueueMdbBean","testTopicMdbBean",
-        "testServiceLocatorInEjb","testCachingServiceLocatorInEjb","testBuildDefaultNewEJBMod",
-        "testNewEJBModWizard","testLocalBeanEntityBean","testRemoteBeanEntityBean","testLocalRemoteBeanEntityBean",
-        "testDefaultNewWebModWizard","testServiceLocatorInWeb","testCachingServiceLocatorInWeb",
-        "testBuildDefaultNewWebMod","testDefaultNewJ2eeAppWizard","closeProjects");
-        conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+    public static class Suite extends NbTestSuite {
+        
+        public Suite() {
+            super();
+            addTest(new NewProjectWizardsTest("testDefaultNewEJBModWizard", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testQueueMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testTopicMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInEjb", "1.4"));
+//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInEjb", "1.4"));
+            addTest(new NewFileWizardsTest("testBuildDefaultNewEJBMod", "1.4"));
+
+            addTest(new NewProjectWizardsTest("testNewEJBModWizard", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalBeanEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testRemoteBeanEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testLocalRemoteBeanEntityBean", "1.4"));
+
+            addTest(new NewProjectWizardsTest("testDefaultNewWebModWizard", "1.4"));
+            addTest(new NewFileWizardsTest("testServiceLocatorInWeb", "1.4"));
+//            addTest(new NewFileWizardsTest("testCachingServiceLocatorInWeb", "1.4"));
+
+            addTest(new NewFileWizardsTest("testBuildDefaultNewWebMod", "1.4"));
+
+            addTest(new NewProjectWizardsTest("testDefaultNewJ2eeAppWizard", "1.4"));
+            addTest(new NewProjectWizardsTest("closeProjects", "1.4"));
+        }
     }
 }

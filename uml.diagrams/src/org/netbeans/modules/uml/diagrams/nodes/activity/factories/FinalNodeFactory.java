@@ -52,6 +52,6 @@ public class FinalNodeFactory implements NodeWidgetFactory
 
     public Widget createNode(Scene scene)
     {
-        return new FinalNodeWidget(scene);
+        return new FinalNodeWidget(scene, "UML/context-palette/ActivityFinal");
     }
 }

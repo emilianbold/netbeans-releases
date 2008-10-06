@@ -53,7 +53,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -64,10 +63,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
-import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -251,19 +246,6 @@ public class Utilities {
         } else {
             logger.log (Level.INFO, "No URLDisplayer found.");
         }
-    }
-    
-    public static List<UpdateElement> getRequiredElements(UpdateUnit unit, UpdateElement el, OperationContainer<OperationSupport> container) {
-        List<UpdateElement> reqs = Collections.emptyList();
-        if (container.canBeAdded(unit, el)) {
-            OperationInfo<OperationSupport> info = container.add (unit,el);
-            reqs = new LinkedList<UpdateElement> (info.getRequiredElements());
-        }
-        return reqs;
-    }        
-        
-    public static boolean isGtk () {
-        return "GTK".equals (UIManager.getLookAndFeel ().getID ()); // NOI18N
     }
     
     public static String getDownloadSizeAsString (int size) {
@@ -478,7 +460,7 @@ public class Utilities {
         return System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
     }
     
-    private static Collection<String> getFirstClassModules () {
+    public static Collection<String> getFirstClassModules () {
         if (first_class_modules != null) {
             return first_class_modules;
         }

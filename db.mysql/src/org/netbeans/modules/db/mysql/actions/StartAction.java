@@ -38,22 +38,21 @@
  */
 package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.impl.StartManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.DatabaseServer.ServerState;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
  * @author David Van Couvering
  */
 public class StartAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = 
-            new Class[] { DatabaseServer.class };
+    private static final Class[] COOKIE_CLASSES = new Class[] { DatabaseServer.class };
     
     public StartAction() {
         putValue("noIconInMenu", Boolean.TRUE);
@@ -80,14 +79,20 @@ public class StartAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
-        return server != null && !server.isConnected();
+        if (server == null) {
+            return false;
+        }
 
+        ServerState state = server.getState();
+
+        // Don't be too picky here, you never know what's really going on for sure...
+        return state != ServerState.CONNECTED && !StartManager.getDefault().isStartRequested();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-                String path = server.getStartPath();
+        final DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        String path = server.getStartPath();
         String message = Utils.getMessage("MSG_NoStartPath");
         PropertiesDialog dialog = new PropertiesDialog(server);
 
@@ -102,17 +107,12 @@ public class StartAction extends CookieAction {
                 return;
             }
             
-            path = server.getAdminPath();
+            path = server.getStartPath();
         }
 
-        try { 
-            server.start();
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), 
-                    dbe);
-        }
+        StartManager.getDefault().start(server);
     }
-    
+
     @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;

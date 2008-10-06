@@ -62,9 +62,12 @@ import static org.netbeans.modules.gsf.api.Index.*;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.elements.IndexedVariable;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
@@ -83,7 +86,7 @@ import org.openide.util.Exceptions;
  */
 public final class RubyIndex {
 
-    private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
     
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT = "Object"; // NOI18N
@@ -1335,6 +1338,32 @@ public final class RubyIndex {
         
         return tables;
     }
+
+    public Set<IndexedVariable> getGlobals(String prefix, NameKind kind) {
+        // Query index for database related properties
+        
+        String searchField = RubyIndexer.FIELD_GLOBAL_NAME;
+        Set<SearchResult> result = new HashSet<SearchResult>();
+        // Only include globals from the user's sources, not in the libraries!
+        search(searchField, prefix, kind, result, SOURCE_SCOPE);
+
+        Set<IndexedVariable> globals = new HashSet<IndexedVariable>();
+        for (SearchResult map : result) {
+            assert map != null;
+
+            String[] names = map.getValues(RubyIndexer.FIELD_GLOBAL_NAME);
+            if (names != null) {
+                String fileUrl = map.getPersistentUrl();
+                for (String name : names) {
+                    int flags = 0;
+                    IndexedVariable var = IndexedVariable.create(this, name, name, null, fileUrl, null, name, flags, ElementKind.GLOBAL);
+                    globals.add(var);
+                }
+            }
+        }
+        
+        return globals;
+    }
     
     public Set<IndexedField> getInheritedFields(String classFqn, String prefix, NameKind kind, boolean inherited) {
         boolean haveRedirected = false;
@@ -1713,7 +1742,7 @@ public final class RubyIndex {
     }
     
     // For testing only
-    static void setClusterUrl(String url) {
+    public static void setClusterUrl(String url) {
         clusterUrl = url;
     }
 
@@ -1739,18 +1768,19 @@ public final class RubyIndex {
         } else {
             // FIXME: use right platform
             RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            String s = getGemHomeURL(platform);
+            if (platform != null) {
+                String s = getGemHomeURL(platform);
 
-            if (s != null && url.startsWith(s)) {
-                return GEM_URL + url.substring(s.length());
-            }
+                if (s != null && url.startsWith(s)) {
+                    return GEM_URL + url.substring(s.length());
+                }
 
-            s = platform.getHomeUrl();
+                s = platform.getHomeUrl();
 
-            if (url.startsWith(s)) {
-                url = RUBYHOME_URL + url.substring(s.length());
-
-                return url;
+                if (url.startsWith(s)) {
+                    url = RUBYHOME_URL + url.substring(s.length());
+                    return url;
+                }
             }
         }
 
@@ -1772,8 +1802,8 @@ public final class RubyIndex {
                 Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
-                    url = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
-                    FileObject fo = URLMapper.findFileObject(new URL(url));
+                    String u = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
+                    FileObject fo = URLMapper.findFileObject(new URL(u));
                     if (fo != null) {
                         return fo;
                     }
@@ -1788,10 +1818,13 @@ public final class RubyIndex {
                     if (!platform.hasRubyGemsInstalled()) {
                         continue;
                     }
-                    url = platform.getGemManager().getGemHomeUrl() + url.substring(GEM_URL.length());
-                    FileObject fo = URLMapper.findFileObject(new URL(url));
-                    if (fo != null) {
-                        return fo;
+                    GemManager gemManager = platform.getGemManager();
+                    if (gemManager != null) {
+                        String u = gemManager.getGemHomeUrl() + url.substring(GEM_URL.length());
+                        FileObject fo = URLMapper.findFileObject(new URL(u));
+                        if (fo != null) {
+                            return fo;
+                        }
                     }
                 }
                 

@@ -322,7 +322,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     private ModeImpl createModeFromConfig(ModeConfig mc) {
         if(DEBUG) {
             debugLog(""); // NOI18N
-            debugLog("Creating mode name=\"" + mc.name + "\""); // NOI8N
+            debugLog("Creating mode name=\"" + mc.name + "\""); // NOI18N
         }
         
         ModeImpl mode;

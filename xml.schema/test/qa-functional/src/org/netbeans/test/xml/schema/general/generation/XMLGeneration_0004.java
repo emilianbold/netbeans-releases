@@ -41,48 +41,16 @@
 
 package org.netbeans.test.xml.schema.general.generation;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -107,18 +75,6 @@ public class XMLGeneration_0004 extends XMLGeneration {
     public XMLGeneration_0004(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0004.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0004(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -147,7 +103,6 @@ public class XMLGeneration_0004 extends XMLGeneration {
     {
       startTest( );
 
-      // TODO
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
       prn.select( );
@@ -155,6 +110,12 @@ public class XMLGeneration_0004 extends XMLGeneration {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "External XML Schema Document(s)" );
@@ -185,6 +146,10 @@ public class XMLGeneration_0004 extends XMLGeneration {
     public void CheckAdded( )
     {
       startTest( );
+
+      // Generation is slow under some unknown conditions, it's better
+      // to wait for a while...
+      Sleep( 10000 );
 
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode(

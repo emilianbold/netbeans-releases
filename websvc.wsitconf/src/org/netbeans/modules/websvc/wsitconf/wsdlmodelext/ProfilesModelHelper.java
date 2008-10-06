@@ -268,7 +268,11 @@ public class ProfilesModelHelper {
                                 encTokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             }
                             if (encTokenKind != null) {
-                                return ComboConstants.PROF_USERNAME;
+                                tokenType = SecurityTokensModelHelper.getTokenType(encTokenKind);
+                                if (ComboConstants.USERNAME.equals(tokenType)) {
+                                    return ComboConstants.PROF_USERNAME;
+                                }
+                                return ComboConstants.PROF_STSISSUEDSUPPORTING;
                             }
                             tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                             if (ComboConstants.ISSUED.equals(tokenType)) { // profile 13
@@ -296,6 +300,7 @@ public class ProfilesModelHelper {
                         if (c instanceof BindingOperation) {
                             BindingInput input = ((BindingOperation)c).getBindingInput();
                             WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                            if (tokenKind == null) tokenKind = SecurityTokensModelHelper.getSupportingToken(input, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                             if (ComboConstants.SAML.equals(tokenType)) { // profile7
                                 return ComboConstants.PROF_SAMLSENDER;
@@ -307,8 +312,10 @@ public class ProfilesModelHelper {
                             if (secConv) {
                                 Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
                                 tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                                if (tokenKind == null) tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             } else {
                                 tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                                if (tokenKind == null) tokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             }
                             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                             if (ComboConstants.SAML.equals(tokenType)) { // profile7
@@ -632,7 +639,11 @@ public class ProfilesModelHelper {
 //                spmh.enableMustSupportRefKeyIdentifier(wss, true);
                 spmh.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                stmh.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                if (configVersion.equals(ConfigVersion.CONFIG_1_0)) {
+                    tokenType = stmh.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                } else {
+                    tokenType = stmh.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
+                }
             } else if (ComboConstants.PROF_SAMLHOLDER.equals(profile)) {        // #8
                 WSDLComponent bt = spmh.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = stmh.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.SAML);

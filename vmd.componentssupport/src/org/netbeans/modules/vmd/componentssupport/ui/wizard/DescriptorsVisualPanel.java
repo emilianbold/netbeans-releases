@@ -51,11 +51,12 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author  den
+ * @author  ads
  */
 public class DescriptorsVisualPanel extends javax.swing.JPanel {
 
@@ -64,11 +65,16 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
     private static final String AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE;  // NOI18N
     
     private static final String DLD_DELETE_TITLE = "MSG_ComponentDeleteTitle";  // NOI18N
-    private static final String DLD_DELETE_MSG = "MSG_ComponentDeleteMsg";  // NOI18N
+    private static final String DLD_DELETE_MSG   = "MSG_ComponentDeleteMsg";    // NOI18N
+
+    private static final String ACSN_DESC_PANEL  = "ACSN_DescPanel"; // NOI18N
+    private static final String ACSD_DESC_PANEL  = "ACSD_DescPanel"; // NOI18N
 
     /** Creates new form DescriptorsVisualPanel */
     public DescriptorsVisualPanel() {
         initComponents();
+
+        initAccessibility();
 
         myCompDescrList.setModel(new CompDescriptorsListModel());
         myCompDescrList.getSelectionModel().setSelectionMode(
@@ -82,6 +88,10 @@ public class DescriptorsVisualPanel extends javax.swing.JPanel {
         updateRemoveButton();
     }
 
+    protected HelpCtx getHelp() {
+        return new HelpCtx(DescriptorsVisualPanel.class);
+    }
+    
     private void updateRemoveButton() {
         if (myCompDescrList.isSelectionEmpty()) {
             myRemoveButton.setEnabled(false);
@@ -182,12 +192,12 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
     myInnerDescriptor = new WizardDescriptor( iterator );
     myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
     myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
-    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );
+    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );//GEN-LAST:event_addPressed
     Dialog dialog = DialogDisplayer.getDefault().createDialog( myInnerDescriptor );
     dialog.setVisible( true );
     readData(myWizardDescriptor);
 
-}//GEN-LAST:event_addPressed
+}                           
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myCompDescrList.getSelectedIndex();
@@ -197,7 +207,7 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     String name = (String)components.get(index).get(NewComponentDescriptor.CC_PREFIX);
     String title = getMessage(DLD_DELETE_TITLE);
     String msg = getMessage(DLD_DELETE_MSG, name);
-    if (!UIUtils.userConfirmOkCancel(title, msg)){
+    if (!UIUtils.userConfirmOkCancel(title, msg)){//GEN-LAST:event_removePressed
         return;
     }
     
@@ -206,8 +216,14 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     
     //remove from WizardDescriptor
     components.remove(index);
-}//GEN-LAST:event_removePressed
+}                              
 
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSN_DESC_PANEL));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSD_DESC_PANEL));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;

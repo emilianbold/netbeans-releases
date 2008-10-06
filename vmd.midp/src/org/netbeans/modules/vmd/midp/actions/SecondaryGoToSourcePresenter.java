@@ -65,5 +65,17 @@ public abstract class SecondaryGoToSourcePresenter extends Presenter {
             }
         };
     }
+    
+    public static Presenter createForwarder (final String propertyName) {
+        return new SecondaryGoToSourcePresenter() {
+            protected boolean matches (GuardedSection section) {
+                DesignComponent forward = getComponent ().readProperty (propertyName).getComponent ();
+                if (forward == null)
+                    return false;
+                GoToSourcePresenter presenter = forward.getPresenter (GoToSourcePresenter.class);
+                return presenter != null  &&  presenter.matches (section);
+            }
+        };
+    }
 
 }

@@ -1,12 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2008 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="4Jul07">
-<!-- p2 -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Running an Applet</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -16,6 +15,12 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
+<p>If you
+  <a href="applet_create.html#applet-jnlp">create an applet as part of a Java WebStart-enabled project</a>, you can run
+the applet by running the project.</p>
+<p>If your applet is not part of a WebStart-enabled project, the applet is
+not run as part of the project.</p>
+<p><b>To run an applet invidually:</b></p>
 <ol>
   <li>Right-click an applet class in the Projects window or Files window.</li>
   <li>Select Run File from the pop-up menu.
@@ -23,22 +28,21 @@
   The <i>myappletclass</i>.html launcher file, with the applet embedded, is created 
   in the <tt>build</tt> folder and launched in the Applet Viewer. 
   </li>
-  <ul><li>To run or debug an applet with the parameters you need to edit the launcher, 
+  <p>To run or debug an applet with the parameters, you need to edit the launcher,
 	  copy it from the <tt>build</tt> folder
   to the package where the applet class lives in the <tt>src</tt> folder. Make sure that the
   <i>myappletclass</i>.html launcher file has the same name as the applet class. Now edit
   the <i>myappletclass</i>.html launcher file as needed. When you build the project, the
   <i>myappletclass</i>.html launcher file is copied from the <tt>src</tt> folder to the <tt>build</tt>
-  folder.
-<table cellpadding="3" cellspacing="0" border="0">
-   <tr valign="top">
-      <td><img src="../../../images/tip.gif" alt="tip">&nbsp;</td>
-      <td valign=top align=left> <p>The <i>myappletclass</i>.html launcher file 
+folder.</p>
+
+  <ul class="note">
+  <li><b>Note:</b> The <i>myappletclass</i>.html launcher file
 	      in your <tt>build</tt> folder is overwritten each time
 	      you run or debug the applet. Therefore, do not modify the <i>myappletclass</i>.html launcher file
-	      in your <tt>build</tt> folder.</p></td>
-      </tr>
-</table></li>
+	      in your <tt>build</tt> folder.</li>
+</ul>
+</li>
 <li>To exclude the <i>myappletclass</i>.html launcher file from the JAR file, 
 right-click the project, choosing Properties, clicking Packaging, and
  adding an expression to exclude them.

@@ -79,11 +79,14 @@ public abstract class Message {
     private static final String INIT                = "init";            // NOI18N
     private static final String ONLOAD              = "onload";          // NOI18N
     private static final String SOURCES             = "sources";         // NOI18N
+    private static final String RELOADSOURCES      = "reloadsources";    // NOI18N
     private static final String WINDOWS             = "windows";         // NOI18N
     private static final String RESPONSE            = "response";        // NOI18N
     private static final String STREAM              = "stream";          // NOI18N
-    private static final String HTTP                = "http";
-    static final String             ISO_CHARSET     = "ISO-8859-1";      // NOI18N
+    private static final String HTTP                = "http";            // NOI18N 
+    static final String FILE_URI                    = "fileuri";         // NOI18N    
+    static final String ISO_CHARSET                 = "ISO-8859-1";      // NOI18N
+    static final String UTF_8                       = "UTF-8";           // NOI18N
     private static final int        MAX_PACKET_SIZE = 1024;
     protected static final String     HTML_APOS     = "&apos;";       // NOI18N
     protected static final String     HTML_QUOTE    = "&quot;";       // NOI18N
@@ -152,6 +155,8 @@ public abstract class Message {
             return new OnloadMessage( node );
         } else if ( SOURCES.equals( rootName) ) {
             return new SourcesMessage( node );
+        } else if ( RELOADSOURCES.equals( rootName ) ) {
+            return new ReloadSourcesMessage(node);
         } else if ( WINDOWS.equals( rootName) ) {
             return new WindowsMessage( node );
         } else if ( STREAM.equals( rootName )) {
@@ -168,7 +173,8 @@ public abstract class Message {
        byte[] result = new byte[0];
        if (Encoding.NONE.equals(enc) || enc == null){
             try {
-                result = value.getBytes(Message.ISO_CHARSET);
+                //XML response will be in UTF-8 format
+                result = value.getBytes(Message.UTF_8);
             } catch (UnsupportedEncodingException uee) {
                 Log.getLogger().log(Level.INFO,uee.getMessage(), uee);
             }
@@ -190,6 +196,10 @@ public abstract class Message {
     }        
     
     protected static String getNodeValue( Node node ){
+        return replaceHtmlEntities( getNodeValueImpl(node).toString() );
+    }
+    
+    protected static StringBuilder getNodeValueImpl( Node node ){
         NodeList list = node.getChildNodes();
         StringBuilder builder = new StringBuilder();
         for ( int i=0;  i<list.getLength() ;  i++) {
@@ -201,8 +211,8 @@ public abstract class Message {
                 builder.append( child.getNodeValue() );
             }
         }
-        return replaceHtmlEntities( builder.toString() );
-    }
+        return builder;
+    }    
 
     protected static String getAttribute( Node node , String attrName ){
         Node attr = node.getAttributes().getNamedItem( attrName );
@@ -259,7 +269,7 @@ public abstract class Message {
 
     private static void logDebugInfo( byte[] bytes ) {
         try {
-            Log.getLogger().log(Level.FINE, new String( bytes , ISO_CHARSET));
+            Log.getLogger().log(Level.FINE, new String( bytes , UTF_8));
         } catch (UnsupportedEncodingException e) {
             assert false;
         }
@@ -314,7 +324,7 @@ public abstract class Message {
             byte byt = integer.byteValue();
             bytes[i++] = byt;
         }
-        String str = new String( bytes , ISO_CHARSET );
+        String str = new String( bytes , UTF_8  );
         try {
             return Integer.parseInt(str);
         } catch( NumberFormatException e ) {
@@ -328,15 +338,17 @@ public abstract class Message {
             return null;
         }
         try {
-            Document doc = BUILDER.parse( new ByteArrayInputStream( bytes ) );
-            return doc.getDocumentElement();
+            synchronized (BUILDER) {
+                Document doc = BUILDER.parse(new ByteArrayInputStream(bytes));
+                return doc.getDocumentElement();
+            }
         } catch (SAXException e) {
             notifyPacketError(e);
         }
         return null;
     }
 
-    private static String replaceHtmlEntities( String str ) {
+    protected static String replaceHtmlEntities( String str ) {
         if ( str.indexOf( "&" ) == -1 ) {
             return str;
         } else {

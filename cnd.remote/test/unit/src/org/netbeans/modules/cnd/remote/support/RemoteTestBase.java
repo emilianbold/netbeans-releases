@@ -39,7 +39,15 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
@@ -80,4 +88,40 @@ public abstract class RemoteTestBase extends BaseTestCase {
         return hostName;
     }
 
+    public static class FakeCompilerSet extends CompilerSet {
+
+        private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
+
+        public FakeCompilerSet() {
+            super(PlatformTypes.getDefaultPlatform());
+        }
+
+        @Override
+        public List<Tool> getTools() {
+            return tools;
+        }
+
+        private static class FakeTool extends BasicCompiler {
+
+            private List<String> fakeIncludes = new ArrayList<String>();
+
+            private FakeTool() {
+                super("fake", CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
+                fakeIncludes.add("/usr/include"); //NOI18N
+                fakeIncludes.add("/usr/local/include"); //NOI18N
+                fakeIncludes.add("/usr/sfw/include"); //NOI18N
+                //fakeIncludes.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
+            }
+
+            @Override
+            public List getSystemIncludeDirectories() {
+                return fakeIncludes;
+            }
+
+            @Override
+            public CompilerDescriptor getDescriptor() {
+                return null;
+            }
+        }
+    }
 }

@@ -48,8 +48,12 @@ import javax.swing.JCheckBox;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout.ParallelGroup;
 import org.jdesktop.layout.GroupLayout.SequentialGroup;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticEntitiesProvider;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticEntity;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +83,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         SemanticHighlightingOptions.instance().setKeepMarks(cbKeepMarks.isSelected());
 
         for (Entity e : entities) {
-            SemanticHighlightingOptions.instance().setEnabled(e.se.getName(), e.cb.isSelected());
+            NamedEntityOptions.instance().setEnabled(e.se, e.cb.isSelected());
         }
 
         isChanged = false;
@@ -90,7 +94,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         cbKeepMarks.setSelected(SemanticHighlightingOptions.instance().getKeepMarks());
 
         for (Entity e : entities) {
-            e.cb.setSelected(SemanticHighlightingOptions.instance().isEnabled(e.se.getName()));
+            e.cb.setSelected(NamedEntityOptions.instance().isEnabled(e.se));
         }
         
         updateValidation();
@@ -122,25 +126,32 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private static class Entity {
 
-        public final SemanticEntity se;
+        public final NamedEntity se;
         public final JCheckBox cb;
 
-        public Entity(SemanticEntity se, JCheckBox cb) {
+        public Entity(NamedEntity se, JCheckBox cb) {
             this.se = se;
             this.cb = cb;
         }
     }
     private List<Entity> entities = new ArrayList<Entity>();
     JCheckBox cbMacros;
+    
+    private void addEntity(NamedEntity ne) {
+        JCheckBox cb = new JCheckBox();
+        cb.setMnemonic(getString("Show-" + ne.getName() + "-mnemonic").charAt(0)); //NOI18N
+        cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + ne.getName() + "-AD")); //NOI18N
+        cb.setText(getString("Show-" + ne.getName())); //NOI18N
+        cb.setOpaque(false);
+        entities.add(new Entity(ne, cb));
+    }
 
     private void initGeneratedComponents() {
         for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
-            JCheckBox cb = new JCheckBox();
-            cb.setMnemonic(getString("Show-" + se.getName() + "-mnemonic").charAt(0)); //NOI18N
-            cb.getAccessibleContext().setAccessibleDescription(getString("Show-" + se.getName() + "-AD")); //NOI18N
-            cb.setText(getString("Show-" + se.getName())); //NOI18N
-            cb.setOpaque(false);
-            entities.add(new Entity(se, cb));
+            addEntity(se);
+        }
+        for (NamedEntity ee : Lookup.getDefault().lookupResult(CsmErrorProvider.class).allInstances()) {
+            addEntity(ee);
         }
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(jPanel1);
@@ -220,6 +231,9 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SemanticHighlightingOptionsPanel.class, "SemanticHighlightingOptionsPanel_AN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SemanticHighlightingOptionsPanel.class, "SemanticHighlightingOptionsPanel_AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMarkOccurrencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMarkOccurrencesActionPerformed

@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -65,8 +67,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -81,7 +83,9 @@ public final class Actions extends Object {
     /** Used to keep current dir from JFileChooser for Add to Favorites action
      * on root node. */
     private static File currentDir = null;
-    
+
+    private static final Logger LOG = Logger.getLogger(Actions.class.getName());
+
     private Actions () {
         // noinstances
     }
@@ -104,7 +108,7 @@ public final class Actions extends Object {
         public View() {
             putValue(NAME, NbBundle.getMessage(Actions.class,
                     "ACT_View"));
-            Image image = Utilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
+            Image image = ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
             putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
         }
         
@@ -150,14 +154,12 @@ public final class Actions extends Object {
             if (activatedNodes.length != 1) {
                 return false;
             }
-            return true;
-            /*
             DataObject dobj = (DataObject)activatedNodes[0].getCookie(DataObject.class);
             if (dobj == null) {
                 return false;
             }
-            return Tab.findDefault().containsNode(dobj);
-             */
+            return true;
+            /*return Tab.findDefault().containsNode(dobj);*/
           }
 
         public String getName() {
@@ -242,9 +244,8 @@ public final class Actions extends Object {
                 if (shad != null && shad.getFolder() == Favorites.getFolder()) {
                     try {
                         shad.delete();
-                    }
-                    catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 }
             }
@@ -375,14 +376,13 @@ public final class Actions extends Object {
                     toShadows = new Node[] {DataObject.find(fo).getNodeDelegate()};                
                 } 
                 
-                
-                createdDO = createShadows(f, toShadows, listAdd);    
+                createdDO = createShadows(f, toShadows, listAdd);
                 
                 //This is done to set desired order of nodes in view                             
                 reorderAfterAddition(f, arr, listAdd);
                 selectAfterAddition(createdDO);               
             } catch (DataObjectNotFoundException e) {
-                Exceptions.printStackTrace(e);  
+                LOG.log(Level.WARNING, null, e);
             }
         }
         
@@ -413,7 +413,8 @@ public final class Actions extends Object {
                     }
                 }
                 //#50482: Check if selected file exists eg. user can enter any file name to text box.
-                if (!selectedFile.exists()) {
+                //#144985: Create new File because of inconsistence in File.exists (JDK bug 6751997)
+                if (!new File(selectedFile, "").exists()) {
                     String message = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExist",selectedFile.getPath());
                     String title = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExistDlgTitle");
                     DialogDisplayer.getDefault().notify
@@ -429,7 +430,7 @@ public final class Actions extends Object {
             return retVal;
         }
         
-        private void selectAfterAddition(final DataObject createdDO) {
+        static void selectAfterAddition(final DataObject createdDO) {
             final Tab projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
@@ -460,7 +461,7 @@ public final class Actions extends Object {
             }
         }
 
-        private static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List<DataObject> listAdd) {
+        static DataObject createShadows(final DataFolder favourities, final Node[] activatedNodes, final List<DataObject> listAdd) {
             DataObject createdDO = null;
             for (int i = 0; i < activatedNodes.length; i++) {
                 DataObject obj = (DataObject) activatedNodes[i].getCookie(DataObject.class);
@@ -474,16 +475,15 @@ public final class Actions extends Object {
                         } else {
                             listAdd.add(obj.createShadow(favourities));
                         }
-                    }
-                    catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        LOG.log(Level.WARNING, null, ex);
                     }
                 }
             }
             return createdDO;
         }
 
-        private static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List<DataObject> listAdd) {
+        static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List<DataObject> listAdd) {
             List<DataObject> listDest = new ArrayList<DataObject>();
             if (listAdd.size() > 0) {
                 //Insert new nodes just before last (root) node
@@ -515,7 +515,7 @@ public final class Actions extends Object {
                 try {
                     favourities.setOrder(newOrder);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
         }

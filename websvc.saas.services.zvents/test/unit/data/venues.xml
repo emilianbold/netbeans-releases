@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>2</stream_count>
+    <venue_type>
+        <id>1</id>
+        <name>Bar</name>
+    </venue_type>
+    <venue_type>
+        <id>11</id>
+        <name>Museum / Planetarium</name>
+    </venue_type>
+</rsp>

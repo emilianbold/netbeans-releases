@@ -60,6 +60,7 @@ public class EqualityAndHashCodeTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws java.lang.Exception {
         link2 = new Link("link2", true, "/link2");
         

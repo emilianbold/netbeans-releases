@@ -283,9 +283,11 @@ public class SearchForJavaAction extends WizardAction {
             if (parent.exists() && parent.isDirectory()) {
                 locations.add(parent);
                 final boolean isWindows = SystemUtils.isWindows();
+                final boolean isSolaris = SystemUtils.isSolaris();
                 final File[] children = parent.listFiles(new FileFilter() {
                     public boolean accept(final File pathname) {
                         return pathname.isDirectory() && 
+                                (!isSolaris || !pathname.equals(new File("/export/sybase"))) && //workaround for #143292
                                 (isWindows || !pathname.getName().startsWith("."));
                     }
                 });

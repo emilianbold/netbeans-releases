@@ -183,7 +183,9 @@ public class TestUtil {
 
             LP(Area area) {
                 this.area = area;
-                lps.add(this);
+                synchronized (lps) {
+                    lps.add(this);
+                }
             }
 
             public TestLibraryImplementation[] getLibraries() {
@@ -220,9 +222,11 @@ public class TestUtil {
                 libs.put(area, l);
             }
             l.add(lib);
-            for (LP lp : lps) {
-                if (lp.area.equals(area)) {
-                    lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
+            synchronized (lps) { // CME from LibraryManagerTest.testArealLibraryManagers in NB-Core-Build #1290
+                for (LP lp : lps) {
+                    if (lp.area.equals(area)) {
+                        lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
+                    }
                 }
             }
             return lib;
@@ -231,9 +235,11 @@ public class TestUtil {
         public void remove(TestLibraryImplementation library) throws IOException {
             for (Map.Entry<Area,List<TestLibraryImplementation>> entry : libs.entrySet()) {
                 if (entry.getValue().remove(library)) {
-                    for (LP lp : lps) {
-                        if (lp.area.equals(entry.getKey())) {
-                            lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
+                    synchronized (lps) {
+                        for (LP lp : lps) {
+                            if (lp.area.equals(entry.getKey())) {
+                                lp.pcs.firePropertyChange(LibraryProvider.PROP_LIBRARIES, null, null);
+                            }
                         }
                     }
                 }

@@ -43,12 +43,9 @@ package org.netbeans.modules.viewmodel;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyEditor;
-import java.lang.IllegalAccessException;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +63,6 @@ import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
@@ -75,6 +71,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -332,9 +329,10 @@ public class TreeModelNode extends AbstractNode {
                             "Model: " + model + ".getDisplayName (" + object + 
                             ") = null!"
                         );
-                    ErrorManager.getDefault().notify(t);
+                    Exceptions.printStackTrace(t);
+                } else {
+                    setName (name, false);
                 }
-                setName (name, false);
             } catch (UnknownTypeException e) {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
@@ -829,9 +827,7 @@ public class TreeModelNode extends AbstractNode {
             WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
-                    throw (NullPointerException) ErrorManager.getDefault().annotate(
-                            new NullPointerException(),
-                            "model: " + model + "\nparent: " + object);
+                    throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
                 WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
                 if (wr == null) continue;
@@ -1103,8 +1099,14 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             try {
                 model.setValueAt (object, id, v);
+                v = model.getValueAt(object, id); // Store the new value
                 synchronized (properties) {
-                    properties.put (id, v);
+                    if (v instanceof String) {
+                        properties.put (id, removeHTML ((String) v));
+                        properties.put (id + "#html", htmlValue ((String) v));
+                    } else {
+                        properties.put (id, v);
+                    }
                 }
                 firePropertyChange (id, null, null);
             } catch (UnknownTypeException e) {

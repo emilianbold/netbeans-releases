@@ -50,36 +50,51 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.openide.util.Lookup;
 
-public class CCCCompiler extends BasicCompiler {
+public abstract class CCCCompiler extends BasicCompiler {
     private static File tmpFile = null;
     
     public CCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
     
-    // To be overridden
     public String getMTLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
+            return compiler.getMultithreadingFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getLibraryLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLibraryFlags() != null && compiler.getLibraryFlags().length > value){
+            return compiler.getLibraryFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getStandardsEvolutionOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getStandardFlags() != null && compiler.getStandardFlags().length > value){
+            return compiler.getStandardFlags()[value];
+        }
         return ""; // NOI18N
     }
     
-    // To be overridden
     public String getLanguageExtOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getLanguageExtensionFlags() != null && compiler.getLanguageExtensionFlags().length > value){
+            return compiler.getLanguageExtensionFlags()[value];
+        }
         return ""; // NOI18N
     }
     
@@ -91,27 +106,35 @@ public class CCCCompiler extends BasicCompiler {
             if (path == null) {
                 path = ""; // NOI18N
             }
-            ArrayList<String> envp = new ArrayList<String>();
-            for (String key : System.getenv().keySet()) {
-                String value = System.getenv().get(key);
-                if (key.equals(Path.getPathName())) {
-                    envp.add(Path.getPathName() + "=" + path + File.pathSeparatorChar + value); // NOI18N
-                }
-                else {
-                    String entry = key + "=" + (value != null ? value : ""); // NOI18N
-                    envp.add(entry);
-                }
-            }
+            PlatformInfo pi = PlatformInfo.getDefault(getHostKey());
+            Map<String, String> env = pi.getEnv();
             if (!getHostKey().equals(CompilerSetManager.LOCALHOST)) {
                 CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
                 if (provider != null) {
-                    provider.run(getHostKey(), remote_command(command, stdout));
-                    reader = new BufferedReader(new StringReader(provider.toString()));
+                    String newPath = env.get(pi.getPathName());
+                    newPath = newPath == null? "" : newPath + pi.pathSeparator();
+                    newPath += path;
+                    env.put(pi.getPathName(), newPath);
+
+                    provider.run(getHostKey(), remote_command(command, stdout), env);
+                    reader = new BufferedReader(new StringReader(provider.getOutput()));
                 } else {
+                    Logger.getLogger("cnd.remote.logger").warning("CommandProvider for remote run is not found"); //NOI18N
                     return;
                 }
             } else {
-                process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
+                List<String> newEnv = new ArrayList<String>();
+                for (String key : env.keySet()) {
+                    String value = env.get(key);
+                    if (key.equals(pi.getPathName())) {
+                        newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
+                    }
+                    else {
+                        String entry = key + "=" + (value != null ? value : ""); // NOI18N
+                        newEnv.add(entry);
+                    }
+                }
+                process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])newEnv.toArray(new String[newEnv.size()])); // NOI18N
                 if (stdout) {
                     is = process.getInputStream();
                 } else {
@@ -128,22 +151,20 @@ public class CCCCompiler extends BasicCompiler {
             }
         }
     
+    //TODO: move to a more convenient place and remove fixed tempfile name
     private String remote_command(String command, boolean use_stdout) {
-        String diversion = use_stdout ? "" : "2>&1 > /dev/null";
+        String diversion = use_stdout ? "" : "2>&1 > /dev/null"; // NOI18N
         return "touch /tmp/xyz.c; " + command + " /tmp/xyz.c " + diversion + "; rm -f /tmp/xyz.c"; // NOI18N
     }
     
     // To be overridden
-    public void saveSystemIncludesAndDefines() {
-    }
+    public abstract void saveSystemIncludesAndDefines();
     
     // To be overridden
-    public void resetSystemIncludesAndDefines() {
-    }
+    public abstract void resetSystemIncludesAndDefines();
     
     // To be overridden
-    protected void parseCompilerOutput(BufferedReader reader) {
-    }
+    protected abstract void parseCompilerOutput(BufferedReader reader);
     
     /**
      * Determines whether the given macro presents in the list
@@ -201,8 +222,8 @@ public class CCCCompiler extends BasicCompiler {
     
     protected String getUniqueID() {
         if (getCompilerSet() == null || getCompilerSet().isAutoGenerated())
-            return getClass().getName() + getPath().hashCode() + "."; // NOI18N
+            return getClass().getName() + getHostKey().hashCode() + getPath().hashCode() + "."; // NOI18N
         else
-            return getClass().getName() + getCompilerSet().getName() + getPath().hashCode() + "."; // NOI18N
+            return getClass().getName() + getCompilerSet().getName() + getHostKey().hashCode() + getPath().hashCode() + "."; // NOI18N
     }
 }

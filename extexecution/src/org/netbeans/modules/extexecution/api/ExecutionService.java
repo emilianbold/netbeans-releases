@@ -89,11 +89,26 @@ import org.openide.windows.OutputWriter;
  * restart buttons. It will also obey various descriptor properties such as
  * whether or not to show a progress bar.
  * <p>
- * All processes launched by this class are terminated on VM exit.
+ * All processes launched by this class are terminated on VM exit (if
+ * these are not finished or terminated earlier).
  * <p>
- * Note that once service is run for the first time. Subsequents runs can be
+ * Note that once service is run for the first time, subsequents runs can be
  * invoked by the user (rerun button) if it is allowed to do so
  * ({@link ExecutionDescriptor#isControllable()}).
+ *
+ * <div class="nonnormative">
+ * <p>
+ * Sample usage - executing ls command:
+ * <pre>
+ *     ExecutionDescriptor descriptor = new ExecutionDescriptor()
+ *          .frontWindow(true).controllable(true);
+ *
+ *     ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
+ *
+ *     ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "ls command");
+ *     Future&lt;Integer&gt task = service.run();
+ * </pre>
+ * </div>
  *
  * @author Petr Hejl
  * @see #newService(java.util.concurrent.Callable, org.netbeans.modules.extexecution.api.ExecutionDescriptor, java.lang.String)
@@ -149,7 +164,7 @@ public final class ExecutionService {
 
     /**
      * Creates new execution service. Service will wrap up the processes
-     * created by <code>processCreator</code>.
+     * created by <code>processCreator</code> and will manage them.
      *
      * @param processCreator callable returning the process to wrap up
      * @param descriptor descriptor describing the configuration of service
@@ -161,14 +176,29 @@ public final class ExecutionService {
         return new ExecutionService(processCreator, displayName, descriptor);
     }
 
-
     /**
-     * Runs the process described by this service. The call does not blocked
-     * and the task is represented by the returned value.
+     * Runs the process described by this service. The call does not block
+     * and the task is represented by the returned value. Integer returned
+     * as a result of the {@link Future} is exit code of the process.
+     * <p>
+     * The output tabs are reused (if caller does not use the custom one,
+     * see {@link ExecutionDescriptor#getInputOutput()}) - the tab to reuse
+     * (if any) is selected by having the same name and same buttons
+     * (control and option). If there is no output tab to reuse new one
+     * is opened.
+     * <p>
+     * This method can be invoked multiple times returning the different and
+     * unrelated {@link Future}s. On each call <code>Callable&lt;Process&gt;</code>
+     * passed to {@link #newService(java.util.concurrent.Callable, org.netbeans.modules.extexecution.api.ExecutionDescriptor, java.lang.String)}
+     * is invoked in order to create the process. If the process creation fails
+     * (throwing an exception) returned <code>Future</code> will throw
+     * {@link java.util.concurrent.ExecutionException} on {@link Future#get()}
+     * request.
      * <p>
      * For details on execution control see {@link ExecutionDescriptor}.
      *
-     * @return task representing the actual run
+     * @return task representing the actual run, value representing result
+     *             of the {@link Future} is exit code of the process
      */
     public Future<Integer> run() {
         return run(null);
@@ -255,7 +285,8 @@ public final class ExecutionService {
                     throw ex;
                 } finally {
                     try {
-                        interrupted = interrupted || Thread.interrupted();
+                        // fully evaluated - we want to clear interrupted status in any case
+                        interrupted = interrupted | Thread.interrupted();
 
                         if (!interrupted) {
                             if (outStream != null) {

@@ -57,16 +57,16 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Kvasihn
  */
 public final class LibProjectImpl extends ProjectBase {
-    
+
     private final String includePath;
-    
+
     private LibProjectImpl(ModelImpl model, String includePathName) {
         super(model, includePathName, includePathName);
         this.includePath = includePathName;
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
-    
+
     public static LibProjectImpl createInstance(ModelImpl model, String includePathName) {
 	ProjectBase instance = null;
         assert includePathName != null;
@@ -88,43 +88,43 @@ public final class LibProjectImpl extends ProjectBase {
            assert ((LibProjectImpl)instance).includePath != null;
         }
 	return (LibProjectImpl) instance;
-	
+
     }
-    
+
     protected String getPath(){
         return includePath;
     }
-    
+
     @Override
     protected void ensureFilesCreated() {
     }
-    
+
     protected boolean isStableStatus() {
         return true;
     }
-    
+
     @Override
     protected Collection<Key> getLibrariesKeys() {
         return Collections.EMPTY_SET;
     }
-    
+
     /** override parent to avoid inifinite recursion */
     @Override
     public Collection<CsmProject> getLibraries() {
         return Collections.EMPTY_SET;
     }
-    
+
     public void onFileRemoved(FileImpl file) {}
     public void onFileRemoved(List<NativeFileItem> file) {}
     public void onFileAdded(NativeFileItem file) {}
     public void onFileAdded(List<NativeFileItem> file) {}
     public void onFilePropertyChanged(NativeFileItem nativeFile) {}
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
-    
-    
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
-        // add library file to the tail
-        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.TAIL);
+
+
+    @Override
+    protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
+        return ParserQueue.Position.TAIL;
     }
 
     public boolean isArtificial() {
@@ -143,21 +143,21 @@ public final class LibProjectImpl extends ProjectBase {
     @Override
     protected void removeNativeFileItem(CsmUID<CsmFile> file) {
     }
-    
+
     @Override
     protected void clearNativeFileContainer() {
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
-    
+
     @Override
     public void write(DataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
         aStream.writeUTF(this.includePath);
     }
-    
+
     public LibProjectImpl (DataInput aStream)  throws IOException {
         super(aStream);
         this.includePath = FilePathCache.getString(aStream.readUTF()).toString();

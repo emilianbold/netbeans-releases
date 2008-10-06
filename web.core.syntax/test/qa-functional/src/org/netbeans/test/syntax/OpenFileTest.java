@@ -73,4 +73,9 @@ public class OpenFileTest extends BasicOpenFileTest {
         openStandaloneTokenFile("testIssue131552.html");
         closeFile();
     }
+
+    public void testIssue144605() throws Exception {
+        openStandaloneTokenFile("testIssue144605.html");
+        closeFile();
+    }
 }

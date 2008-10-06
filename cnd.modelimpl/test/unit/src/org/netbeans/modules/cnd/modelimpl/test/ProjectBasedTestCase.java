@@ -45,17 +45,18 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
-import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
-import org.netbeans.modules.cnd.test.BaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -75,7 +76,7 @@ import org.openide.loaders.DataObject;
  * 
  * @author Vladimir Voskresensky
  */
-public abstract class ProjectBasedTestCase extends BaseTestCase {
+public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
     private TestModelHelper projectHelper = null;
     private List<String>    sysIncludes = Collections.<String>emptyList();
@@ -121,10 +122,18 @@ public abstract class ProjectBasedTestCase extends BaseTestCase {
     }
     
     protected final void initDocumentSettings() {
-        Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
-        Settings.addInitializer(new CCSettingsInitializer(CKit.class));
+        String methodName = ProjectBasedTestCase.class.getName() + ".getIdentifierAcceptor";
+        Preferences prefs;
+        prefs = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        prefs.put(EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, methodName);
+        prefs = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+        prefs.put(EditorPreferencesKeys.IDENTIFIER_ACCEPTOR, methodName);
     }
-    
+
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.JAVA_IDENTIFIER;
+    }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

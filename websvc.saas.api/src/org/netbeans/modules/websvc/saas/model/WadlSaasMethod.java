@@ -36,12 +36,12 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -53,14 +53,21 @@ import org.openide.util.Exceptions;
  * @author nam
  */
 public class WadlSaasMethod extends SaasMethod {
+
+    private static final String GET = "GET";
+    private static final String POST = "POST";
+    private static final String PUT = "PUT";
+    private static final String DELETE = "DELETE";
     private Resource[] path;
     private WadlSaasResource parent;
     private org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod;
+    private String name;
+    private String displayName;
 
     public WadlSaasMethod(WadlSaas wadlSaas, Method method) {
         super(wadlSaas, method);
     }
-    
+
     public WadlSaasMethod(WadlSaasResource parent, org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod) {
         this(parent.getSaas(), (Method) null);
         this.parent = parent;
@@ -70,34 +77,85 @@ public class WadlSaasMethod extends SaasMethod {
     @Override
     public String getName() {
         if (getMethod() == null) {
-            if (wadlMethod.getId() != null) {
-                return wadlMethod.getId();
-            } else {
-                String mimes = wadlMethod.getResponse().getParam().toString();
-                return wadlMethod.getName() + " : " + mimes;
+            if (name == null) {
+                name = wadlMethod.getId();
+
+                if (name == null) {
+                    name = wadlMethod.getName();
+                    Set<String> medias = null;
+
+                    if (GET.equals(name)) {
+                        medias = SaasUtil.getMediaTypesFromJAXBElement(
+                                wadlMethod.getResponse().getRepresentationOrFault());
+                    } else if (PUT.equals(name) || POST.equals(name)) {
+                        medias = SaasUtil.getMediaTypes(
+                                wadlMethod.getRequest().getRepresentation());
+                    }
+
+                    name = name.toLowerCase();
+                    if (medias != null && medias.size() > 0) {
+                        for (String m : medias) {
+                            name += "_" + m;
+                        }
+
+                        name = name.replaceAll("\\W", "_").replaceAll("_+", "_").replaceAll("_$", "");
+                    }
+                }
             }
+            return name;
         }
+
         return super.getName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        if (getMethod() == null) {
+            if (displayName == null) {
+                displayName = wadlMethod.getId();
+
+                if (displayName == null) {
+                    displayName = wadlMethod.getName();
+                    Set<String> medias = null;
+
+                    if (GET.equals(displayName)) {
+                        medias = SaasUtil.getMediaTypesFromJAXBElement(
+                                wadlMethod.getResponse().getRepresentationOrFault());
+                    } else if (PUT.equals(displayName) || POST.equals(displayName)) {
+                        medias = SaasUtil.getMediaTypes(
+                                wadlMethod.getRequest().getRepresentation());
+                    }
+
+                    if (medias != null && medias.size() > 0) {
+                        displayName += medias;
+                    }
+                }
+            }
+
+            return displayName;
+        }
+
+        return super.getDisplayName();
     }
 
     @Override
     public WadlSaas getSaas() {
         return (WadlSaas) super.getSaas();
     }
-    
+
     public WadlSaasResource getParentResource() {
         return parent;
     }
-    
+
     public Resource[] getResourcePath() {
         Application wadl = null;
         try {
             wadl = getSaas().getWadlModel();
-        } catch(IOException e) {
+        } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return new Resource[0];
         }
-        
+
         if (path == null || path.length == 0) {
             List<Resource> result = new ArrayList<Resource>();
             if (super.getMethod() == null) {
@@ -136,7 +194,7 @@ public class WadlSaasMethod extends SaasMethod {
 
         resultPath.add(0, current);
     }
-    
+
     public org.netbeans.modules.websvc.saas.model.wadl.Method getWadlMethod() {
         if (wadlMethod == null) {
             if (getHref() != null && getHref().length() > 0) {
@@ -147,7 +205,7 @@ public class WadlSaasMethod extends SaasMethod {
                         wadlMethod = SaasUtil.wadlMethodFromIdRef(getSaas().getWadlModel(), getHref());
                     }
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe); 
+                    Exceptions.printStackTrace(ioe);
                 }
             } else {
                 throw new IllegalArgumentException("Element method " + getName() + " should define attribute 'href'");
@@ -156,4 +214,7 @@ public class WadlSaasMethod extends SaasMethod {
         return wadlMethod;
     }
     
+    public String toString() {
+        return getDisplayName();
+    }
 }

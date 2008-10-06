@@ -1,9 +1,5 @@
 /*
- *  PeopleResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,17 +10,18 @@ import java.util.Collection;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import converter.PeopleConverter;
 import converter.PersonConverter;
-
 
 /**
  *
@@ -34,19 +31,12 @@ import converter.PersonConverter;
 @Path("/people/")
 public class PeopleResource {
     @Context
-    private UriInfo context;
-    
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+  
     /** Creates a new instance of PeopleResource */
     public PeopleResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public PeopleResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -55,7 +45,7 @@ public class PeopleResource {
      * @return an instance of PeopleConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public PeopleConverter get(@QueryParam("start")
     @DefaultValue("0")
     int start, @QueryParam("max")
@@ -65,10 +55,13 @@ public class PeopleResource {
     int expandLevel, @QueryParam("query")
     @DefaultValue("SELECT e FROM Person e")
     String query) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            return new PeopleConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            persistenceSvc.beginTx();
+            return new PeopleConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
-            PersistenceService.getInstance().close();
+            persistenceSvc.commitTx();
+            persistenceSvc.close();
         }
     }
 
@@ -79,15 +72,16 @@ public class PeopleResource {
      * @return an instance of PersonConverter
      */
     @POST
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response post(PersonConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Person entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            Person entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getId() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getId() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -101,7 +95,9 @@ public class PeopleResource {
     @Path("{id}/")
     public PersonResource getPersonResource(@PathParam("id")
     String id) {
-        return new PersonResource(id, context);
+        PersonResource resource = resourceContext.getResource(PersonResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -110,7 +106,8 @@ public class PeopleResource {
      * @return a collection of Person instances
      */
     protected Collection<Person> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -119,6 +116,7 @@ public class PeopleResource {
      * @param entity the entity to persist
      */
     protected void createEntity(Person entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
     }
 }

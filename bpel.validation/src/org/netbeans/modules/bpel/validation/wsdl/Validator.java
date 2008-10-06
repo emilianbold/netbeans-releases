@@ -42,7 +42,6 @@ package org.netbeans.modules.bpel.validation.wsdl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -97,10 +96,9 @@ public final class Validator extends WsdlValidator {
   private void visitChildren(Definitions definitions) {
     Collection<ExtensibilityElement> collection = definitions.getChildren(ExtensibilityElement.class);
 //out("collection: " + elements);
-    Iterator<ExtensibilityElement> iterator = collection.iterator();
 
-    while (iterator.hasNext()) {
-      visitExtensibility(iterator.next());
+    for (ExtensibilityElement element : collection) {
+      visitExtensibility(element);
     }
   }
 

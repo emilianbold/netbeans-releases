@@ -45,12 +45,10 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
@@ -59,11 +57,11 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.TextBatchProcessor;
 import org.netbeans.editor.FinderFactory;
-import org.netbeans.editor.StringMap;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 
@@ -125,6 +123,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     /** Whether java 1.5 constructs are recognized. */
     private boolean java15;
+    
+    private int lastSeparatorOffset = -1;
 
     public CsmSyntaxSupport(BaseDocument doc) {
         super(doc);
@@ -134,16 +134,25 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
 
     abstract protected CsmFinder getFinder();
+    abstract protected FileReferencesContext getFileReferencesContext();
 
     @Override
     protected void documentModified(DocumentEvent evt) {
         super.documentModified(evt);
-        classFieldMaps.clear();
-        fileVariableMaps.clear();
+        //classFieldMaps.clear();
+        //fileVariableMaps.clear();
     }
 
     protected void setJava15(boolean java15) {
         this.java15 = java15;
+    }
+
+    void setLastSeparatorOffset(int lastSeparatorOffset) {
+        this.lastSeparatorOffset = lastSeparatorOffset;
+    }
+
+    int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
     }
 
     @Override
@@ -165,44 +174,44 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             return 0;
         final int posLine = Utilities.getLineOffset(getDocument(), pos);
         TextBatchProcessor tbp = new TextBatchProcessor() {
-                                     public int processTextBatch(BaseDocument doc, int startPos, int endPos,
-                                                                 boolean lastBatch) {
-                                         try {
-                                             int[] blks = getCommentBlocks(endPos, startPos);
-                                             FinderFactory.CharArrayBwdFinder cmdFinder
-                                             = new FinderFactory.CharArrayBwdFinder(COMMAND_SEPARATOR_CHARS);
-                                             int lastSeparatorOffset = findOutsideBlocks(cmdFinder, startPos, endPos, blks);
-                                             if (lastSeparatorOffset<1) return lastSeparatorOffset;
-                                             TokenID separatorID = getTokenID(lastSeparatorOffset);
-                                             if (separatorID.getNumericID() == CCTokenContext.RBRACE_ID) {
-                                                 int matchingBrkPos[] = findMatchingBlock(lastSeparatorOffset, true);
-                                                 if (matchingBrkPos != null){
-                                                     int prev = Utilities.getFirstNonWhiteBwd(getDocument(), matchingBrkPos[0]);
-                                                     if (prev > -1 && getTokenID(prev).getNumericID() == CCTokenContext.RBRACKET_ID){
-                                                         return getLastCommandSeparator(prev);
-                                                     }
-                                                 }
-                                             } else if (separatorID.getCategory() == CCTokenContext.CPP) {
-                                                 // found preprocessor directive, skip till the end of it
-                                                 int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
-                                                 assert (separatorLine <= posLine);
-                                                 if (separatorLine != posLine) {
-                                                     lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
-                                                 }
-                                             }
-                                             if (separatorID.getNumericID() != CCTokenContext.LBRACE_ID &&
-                                                 separatorID.getNumericID() != CCTokenContext.RBRACE_ID &&
-                                                 separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID &&
-                                                 separatorID.getCategory() != CCTokenContext.CPP){
-                                                     lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
-                                             }
-                                             return lastSeparatorOffset;
-                                         } catch (BadLocationException e) {
-                                             e.printStackTrace();
-                                             return -1;
-                                         }
-                                     }
-                                 };
+                 public int processTextBatch(BaseDocument doc, int startPos, int endPos,
+                                             boolean lastBatch) {
+                     try {
+                         int[] blks = getCommentBlocks(endPos, startPos);
+                         FinderFactory.CharArrayBwdFinder cmdFinder
+                         = new FinderFactory.CharArrayBwdFinder(COMMAND_SEPARATOR_CHARS);
+                         int lastSeparatorOffset = findOutsideBlocks(cmdFinder, startPos, endPos, blks);
+                         if (lastSeparatorOffset<1) return lastSeparatorOffset;
+                         TokenID separatorID = getTokenID(lastSeparatorOffset);
+                         if (separatorID.getNumericID() == CCTokenContext.RBRACE_ID) {
+                             int matchingBrkPos[] = findMatchingBlock(lastSeparatorOffset, true);
+                             if (matchingBrkPos != null){
+                                 int prev = Utilities.getFirstNonWhiteBwd(getDocument(), matchingBrkPos[0]);
+                                 if (prev > -1 && getTokenID(prev).getNumericID() == CCTokenContext.RBRACKET_ID){
+                                     return getLastCommandSeparator(prev);
+                                 }
+                             }
+                         } else if (separatorID.getCategory() == CCTokenContext.CPP) {
+                             // found preprocessor directive, skip till the end of it
+                             int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
+                             assert (separatorLine <= posLine);
+                             if (separatorLine != posLine) {
+                                 lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
+                             }
+                         }
+                         if (separatorID.getNumericID() != CCTokenContext.LBRACE_ID &&
+                             separatorID.getNumericID() != CCTokenContext.RBRACE_ID &&
+                             separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID &&
+                             separatorID.getCategory() != CCTokenContext.CPP){
+                                 lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
+                         }
+                         return lastSeparatorOffset;
+                     } catch (BadLocationException e) {
+                         e.printStackTrace();
+                         return -1;
+                     }
+                 }
+             };
         int lastPos = getDocument().processText(tbp, pos, 0);
 
         //ensure we return last command separator from last
@@ -234,6 +243,18 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     *   the finder is asked to find the class just by the given name
     */
     public CsmClassifier getClassFromName(String className, boolean searchByName) {
+        return getClassFromName(this.getFinder(), className, searchByName);
+    }
+
+    /** Get the class from name. The import sections are consulted to find
+    * the proper package for the name. If the search in import sections fails
+    * the method can ask the finder to search just by the given name.
+    * @param className name to resolve. It can be either the full name
+    *   or just the name without the package.
+    * @param searchByName if true and the resolving through the import sections fails
+    *   the finder is asked to find the class just by the given name
+    */
+    public CsmClassifier getClassFromName(CsmFinder finder, String className, boolean searchByName) {
         // XXX handle primitive type
         CsmClassifier ret = null;
 //        CsmClass ret = JavaCompletion.getPrimitiveClass(className);
@@ -242,7 +263,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 //            ret = getIncludeProc().getClassifier(className);
 //        }
         if (ret == null && searchByName) {
-            List clsList = getFinder().findClasses(null, className, true, false);
+            List clsList = finder.findClasses(null, className, true, false);
             if (clsList != null && clsList.size() > 0) {
                 if (!clsList.isEmpty()) { // more matching classes
                     ret = (CsmClassifier)clsList.get(0); // get the first one
@@ -262,8 +283,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     }
 
     /** Get the class or function definition that belongs to the given position */
-    public CsmOffsetableDeclaration getDefinition(int pos) {
-        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos);
+    public CsmOffsetableDeclaration getDefinition(int pos, FileReferencesContext fileContext) {
+        return CompletionUtilities.findFunDefinitionOrClassOnPosition(getDocument(), pos, fileContext);
     }
 
     public boolean isStaticBlock(int pos) {
@@ -400,6 +421,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 boolean bestMatch = !acceptMoreParameters;
                 int matched = 0;
                 for (int j = 0; accept && j < parmTypeCnt; j++) {
+                    if (methodParms[j] == null) {
+                        System.err.println("Null parameter "+j+" in function "+m.getUID()); //NOI18N
+                        bestMatch = false;
+                        continue;
+                    }
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType)parmTypeList.get(j);
                     if (t != null) {
@@ -480,10 +506,10 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     /////////////////////////////////////////////////
 
     /** Map holding the [position, class-fields-map] pairs */
-    private HashMap classFieldMaps = new HashMap();
+    //private HashMap classFieldMaps = new HashMap();
 
     /** Map holding the [position, class-fields-map] pairs */
-    private HashMap fileVariableMaps = new HashMap();
+    //private HashMap fileVariableMaps = new HashMap();
 
     /** Find the type of the variable. The default behavior is to first
     * search for the local variable declaration and then possibly for
@@ -492,6 +518,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     * @return it returns Object to enable the custom implementations
     *   to return the appropriate instances.
     */
+    @Deprecated
     @Override
     public Object findType(String varName, int varPos) {
         CsmType type = null;
@@ -527,72 +554,84 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         return type;
     }
 
+    @Deprecated
     public Map getClassFieldMap(int offset) {
-        Integer posI = new Integer(offset);
-        Map varMap = (Map)classFieldMaps.get(posI);
-        if (varMap == null) {
-            varMap = buildClassFieldMap(offset);
-            classFieldMaps.put(posI, varMap);
-        }
-        return varMap;
+        return Collections.EMPTY_MAP;
+        //Integer posI = new Integer(offset);
+        //Map varMap = (Map)classFieldMaps.get(posI);
+        //if (varMap == null) {
+        //    varMap = buildClassFieldMap(offset);
+        //    classFieldMaps.put(posI, varMap);
+        //}
+        //return varMap;
     }
 
+    @Deprecated
     public Map getFileVariableMap(int offset) {
-        Integer posI = new Integer(offset);
-        Map varMap = (Map)fileVariableMaps.get(posI);
-        if (varMap == null) {
-            varMap = buildFileVariableMap(offset);
-            fileVariableMaps.put(posI, varMap);
-        }
-        return varMap;
+        return Collections.EMPTY_MAP;
+        //Integer posI = new Integer(offset);
+        //Map varMap = (Map)fileVariableMaps.get(posI);
+        //if (varMap == null) {
+        //    varMap = buildFileVariableMap(offset);
+        //    fileVariableMaps.put(posI, varMap);
+        //}
+        //return varMap;
     }
 
     ///////////////////////////////////////////////////////////////////////////
     //                  build variable maps
     ///////////////////////////////////////////////////////////////////////////
 
+    @Deprecated
     @Override
     protected Map buildLocalVariableMap(int offset) {
-        int methodStartPos = getMethodStartPosition(offset);
-        if (methodStartPos >= 0 && methodStartPos < offset) {
-            List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset);
-            return list2Map(res);
-        }
-        return null;
+        return Collections.EMPTY_MAP;
+        //int methodStartPos = getMethodStartPosition(offset);
+        //if (methodStartPos >= 0 && methodStartPos < offset) {
+        //    List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset, null);
+        //    return list2Map(res);
+        //}
+        //return null;
     }
 
+    @Deprecated
     @Override
     protected Map buildGlobalVariableMap(int offset) {
-        List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
+        //return list2Map(res);
     }
 
+    @Deprecated
     protected Map buildClassFieldMap(int offset) {
-        List res = CompletionUtilities.findClassFields(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findClassFields(getDocument(), offset);
+        //return list2Map(res);
     }
 
+    @Deprecated
     protected Map buildFileVariableMap(int offset) {
-        List res = CompletionUtilities.findFileVariables(getDocument(), offset);
-        return list2Map(res);
+        return Collections.EMPTY_MAP;
+        //List res = CompletionUtilities.findFileVariables(getDocument(), offset);
+        //return list2Map(res);
     }
 
     // utitlies
 
-    private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
-        if (vars == null || vars.size() == 0) {
-            return null;
-        }
-        Map res = new StringMap();
-        for (Iterator it = vars.iterator(); it.hasNext();) {
-            Object elem = it.next();
-            if (elem instanceof CsmVariable) {
-                CsmVariable var = (CsmVariable) elem;
-                res.put(var.getName().toString(), var.getType());
-            }
-        }
-        return res;
-    }
+//    private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
+//        if (vars == null || vars.size() == 0) {
+//            return null;
+//        }
+//        Map res = new StringMap();
+//        for (Iterator it = vars.iterator(); it.hasNext();) {
+//            Object elem = it.next();
+//            if (elem instanceof CsmVariable) {
+//                CsmVariable var = (CsmVariable) elem;
+//                res.put(var.getName().toString(), var.getType());
+//            }
+//        }
+//        return res;
+//    }
 
     @Override
     protected boolean isAbbrevDisabled(int offset) {
@@ -631,16 +670,35 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean isIncludeCompletionDisabled(int offset) {
         boolean completionDisabled = true;
-        TokenItem token = getTokenItem(offset);
-        token = shiftToNonWhiteBwd(token);
-        if (token != null) {
-            completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+        TokenItem endToken = getTokenItem(offset);
+        if (endToken != null) {
+            TokenItem token = shiftToNonWhiteBwd(endToken);
+            if (token != null) {
+                completionDisabled = !isOffsetInToken(token, INCLUDE_COMPLETION_TOKENS, offset);
+                if (completionDisabled) {
+                    // check whether right after #include or #include_next directive
+                    switch (token.getTokenID().getNumericID()) {
+                        case CCTokenContext.CPPINCLUDE_ID:
+                        case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                            return completionDisabled = false;
+                    }
+                }
+            }
+            // check for "#include prefix" (IZ 119931)
             if (completionDisabled) {
-                // check whether right after #include or #include_next directive
-                switch(token.getTokenID().getNumericID()) {
-                case CCTokenContext.CPPINCLUDE_ID:
-                case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                    return completionDisabled = false;
+                token = endToken.getPrevious();
+                if (token != null && token.getTokenID().getNumericID() == CCTokenContext.IDENTIFIER_ID) {
+                    token = token.getPrevious();
+                    if (token != null) {
+                        token = shiftToNonWhiteBwd(token);
+                        if (token != null) {
+                            switch (token.getTokenID().getNumericID()) {
+                                case CCTokenContext.CPPINCLUDE_ID:
+                                case CCTokenContext.CPPINCLUDE_NEXT_ID:
+                                    return completionDisabled = false;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -728,7 +786,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
         boolean showCompletion = false;
-        char typedChar = typedText.charAt(0);
+        char typedChar = typedText.charAt(typedText.length() - 1);
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
 
             int dotPos = target.getCaret().getDot();

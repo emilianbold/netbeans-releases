@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 
 /**
@@ -75,8 +75,8 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        return new CategorySupport(preferences, "LBL_CodeGeneration", new FmtCodeGeneration(), null); // NOI18N
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("code-generation", FmtCodeGeneration.class, null);
     }
     
     /** This method is called from within the constructor to
@@ -118,9 +118,8 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         importUpButton = new javax.swing.JButton();
         importDownButton = new javax.swing.JButton();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
+        setName(org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_CodeGeneration")); // NOI18N
         setOpaque(false);
-        setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(preferLongerNamesLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_Naming")); // NOI18N

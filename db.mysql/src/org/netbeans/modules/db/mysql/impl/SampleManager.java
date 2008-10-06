@@ -39,19 +39,16 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.api.sql.execute.SQLExecuteCookie;
-import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
 import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.cookies.CloseCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.JarFileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,93 +58,71 @@ import org.openide.util.NbBundle;
  */
 public class SampleManager {
     /**
-     *  Enumeration of valid sample database names
+     * Get the list of sample names that the manager knows how to create
+     *
+     * @return
      */
-    public enum SampleName {
-        sample, vir, travel
-    };
+    public static List<String> getSampleNames() {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
 
-    private static final String MODULE_JAR_FILE = 
-            "modules/org-netbeans-modules-db-mysql.jar";
-    private static final String RESOURCE_DIR_PATH =
-            "org/netbeans/modules/db/mysql/resources";
-    
-    public static boolean isSampleName(String name) {
-        SampleName[] samples = SampleName.values();
-        for ( SampleName sample : samples ) {
-            if (sample.toString().equals(name)) {
-                return true;
+        List<String> sampleNames = new ArrayList<String>();
+        for (SampleProvider provider : providers) {
+            sampleNames.addAll(provider.getSampleNames());
+        }
+        return sampleNames;
+    }
+
+    /**
+     * Determine if a give database name is for a sample database
+     *
+     * @param name the name of the database
+     * @return true if this is the name of a samlpe database
+     */
+    public static boolean isSample(String name) {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
+
+        List<String> sampleNames = new ArrayList<String>();
+        for (SampleProvider provider : providers) {
+            sampleNames.addAll(provider.getSampleNames());
+        }
+        return sampleNames.contains(name);
+    }
+
+    private static SampleProvider getProvider(String sampleName) {
+        Collection<SampleProvider> providers = SampleProviderHelper.getProviders();
+
+        for (SampleProvider provider : providers) {
+            if (provider.supportsSample(sampleName)) {
+                return provider;
             }
         }
-        
-        return false;
+
+        return null;
     }
-    
+
+    /**
+     * Create the tables and other database objects for a MySQL sample database.
+     * This method talks to the database synchronously and therefore can not
+     * be called on the AWT event thread.
+     *
+     * @param sampleName the name of the sample to create
+     * @param dbconn the connection to use when creating the sample
+     * @throws org.netbeans.api.db.explorer.DatabaseException if something goes wrong.
+     *   If an error occurs, it is more than likely that the databases objects were partially
+     *   created.  The caller will need to clean up if it knows how, or ask the user to clean up.
+     */
     public static void createSample(String sampleName, DatabaseConnection dbconn) 
-            throws DatabaseException {     
-        if ( ! isSampleName(sampleName)) {
-            throw new DatabaseException(NbBundle.getMessage(
-                    DatabaseServer.class, 
-                    "MSG_NoSuchSample", sampleName));
-        }
-             
-        DataObject sqlDO = getSQLDataObject(sampleName);
-        
-        try {
-            if ( ! DatabaseUtils.ensureConnected(dbconn) ) {
-                return;
-            } 
-            
-            OpenCookie openCookie = (OpenCookie)sqlDO.getCookie(OpenCookie.class);
-            openCookie.open();
-
-            SQLExecuteCookie sqlCookie = (SQLExecuteCookie)sqlDO.getCookie(
-                    SQLExecuteCookie.class);
-
-            sqlCookie.setDatabaseConnection(dbconn);
-            sqlCookie.execute();
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(
-                    Utils.getMessage(
-                        "MSG_ErrorExecutingSampleSQL", sampleName, 
-                        e.getMessage()));
-            dbe.initCause(e);
-            throw dbe;
-        } finally {
-            if ( sqlDO != null ) {
-                CloseCookie closeCookie = 
-                        (CloseCookie)sqlDO.getCookie(CloseCookie.class);
-                
-                if ( closeCookie != null ) {
-                    closeCookie.close();
-                }
-            }
-        }
-
-    }
-        
-    private static DataObject getSQLDataObject(String sampleName) 
             throws DatabaseException {
-        
-        try {
-            File jarfile = InstalledFileLocator.getDefault().locate(
-                MODULE_JAR_FILE, null, false); // NOI18N
-    
-            JarFileSystem jarfs = new JarFileSystem();
-
-            jarfs.setJarFile(jarfile);
-
-            String filename = "/create-" + sampleName + ".sql";
-            FileObject sqlFO = jarfs.findResource(RESOURCE_DIR_PATH + filename);
-
-            return DataObject.find(sqlFO);
-        } catch (Exception e) {
-            DatabaseException dbe = new DatabaseException(
-                    Utils.getMessage(
-                        "MSG_ErrorLoadingSampleSQL", sampleName, 
-                        e.getMessage()));
-            dbe.initCause(e);
-            throw dbe;
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("You can not call this method from the event dispatch thread");
         }
+
+        SampleProvider provider = getProvider(sampleName);
+
+        if (provider == null) {
+                throw new DatabaseException(Utils.getMessage("MSG_NoSuchSample", sampleName));
+        }
+        
+        provider.create(sampleName, dbconn);
     }
 }

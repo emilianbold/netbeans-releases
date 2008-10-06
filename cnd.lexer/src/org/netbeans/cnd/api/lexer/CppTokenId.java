@@ -184,10 +184,12 @@ public enum CppTokenId implements TokenId {
 
     INT_LITERAL(null, "number"), // NOI18N
     LONG_LITERAL(null, "number"), // NOI18N
+    LONG_LONG_LITERAL(null, "number"), // NOI18N
     FLOAT_LITERAL(null, "number"), // NOI18N
     DOUBLE_LITERAL(null, "number"), // NOI18N
     UNSIGNED_LITERAL(null, "number"), // NOI18N
     UNSIGNED_LONG_LITERAL(null, "number"), // NOI18N
+    UNSIGNED_LONG_LONG_LITERAL(null, "number"), // NOI18N
     CHAR_LITERAL(null, "character"), // NOI18N
     STRING_LITERAL(null, "string"), // NOI18N
     
@@ -394,6 +396,7 @@ public enum CppTokenId implements TokenId {
             EnumSet<CppTokenId> l = EnumSet.of(
                 CppTokenId.INT_LITERAL,
                 CppTokenId.LONG_LITERAL,
+                CppTokenId.LONG_LONG_LITERAL,
                 CppTokenId.FLOAT_LITERAL,
                 CppTokenId.DOUBLE_LITERAL,
                 CppTokenId.UNSIGNED_LITERAL,
@@ -436,11 +439,9 @@ public enum CppTokenId implements TokenId {
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3,
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);
                 case STRING_LITERAL:
-                    return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 1,
-                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
+                    return LanguageEmbedding.create(CppStringTokenId.languageDouble(), 0, 0);
                 case CHAR_LITERAL:
-                    return LanguageEmbedding.create(CppStringTokenId.languageSingle(), 1,
-                            (token.partType() == PartType.COMPLETE) ? 1 : 0);
+                    return LanguageEmbedding.create(CppStringTokenId.languageSingle(), 0, 0);
                 case PREPROCESSOR_DIRECTIVE:
                     return LanguageEmbedding.create(languagePreproc, 0, 0);
             }

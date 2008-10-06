@@ -79,11 +79,12 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.Utils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 
 
@@ -289,12 +290,15 @@ public class CompletionProviderImpl implements CompletionProvider {
                 String projectType = (String) feature.getValue("project_type");
                 if (projectType != null) {
                     if (fileObject == null) return null;
-                    Project p = FileOwnerQuery.getOwner (fileObject);
-                    if (p == null) return null;
-                    Object o = p.getLookup ().lookup (ActionProvider.class);
-                    if (o == null) return null;
-                    if (o.getClass ().getName ().indexOf (projectType) < 0)
+                    if (!Utils.isOfProjectType(fileObject, projectType)) {
                         return null;
+                    }
+//                    Project p = FileOwnerQuery.getOwner (fileObject);
+//                    if (p == null) return null;
+//                    Object o = p.getLookup ().lookup (ActionProvider.class);
+//                    if (o == null) return null;
+//                    if (o.getClass ().getName ().indexOf (projectType) < 0)
+//                        return null;
                 }
                 String completionType = (String) feature.getValue ("type");
                 if (completionType != null) return completionType;

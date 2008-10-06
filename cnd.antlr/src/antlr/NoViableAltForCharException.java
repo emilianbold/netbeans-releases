@@ -46,4 +46,15 @@ public class NoViableAltForCharException extends RecognitionException {
         }
         return mesg;
     }
+
+    @Override
+    public String getTokenText() {
+        if ((foundChar >= ' ') && (foundChar <= '~')) {
+            return "'" + foundChar + "'";
+        }
+        else {
+           return "0x"+Integer.toHexString((int)foundChar).toUpperCase();
+        }
+    }
+
 }

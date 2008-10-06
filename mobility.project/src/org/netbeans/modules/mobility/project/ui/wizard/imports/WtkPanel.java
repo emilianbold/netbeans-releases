@@ -451,6 +451,11 @@ public class WtkPanel extends javax.swing.JPanel {
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((WtkPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }            
         }
         
         public void storeSettings(final Object obj) {

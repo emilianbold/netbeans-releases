@@ -79,14 +79,25 @@ final class JavadocCompletionUtils {
      * and <code>&#42;/</code> except
      * indentation prefixes <code>'&#32;&#32;&#32;&#32;*'</code>
      * on each line.
-     * <p>Note: this should be called under a document lock.</p>
+     * <p>Note: the method takes a document lock.</p>
      * 
      * @param doc a document to search
      * @param offset an offset in document
      * @return <code>true</code> if the offset refers to a javadoc content
      */
-    public static boolean isJavadocContext(Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+    public static boolean isJavadocContext(final Document doc, final int offset) {
+        final boolean[] result = {false};
+        doc.render(new Runnable() {
+
+            public void run() {
+                result[0] = isJavadocContext(TokenHierarchy.get(doc), offset);
+            }
+        });
+        return result[0];
+    }
+    
+    static boolean isJavadocContext(TokenHierarchy hierarchy, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(hierarchy, offset);
         if (!movedToJavadocToken(ts, offset)) {
             return false;
         }
@@ -117,6 +128,12 @@ final class JavadocCompletionUtils {
 
         while (ts.moveNext()) {
             TokenId tid = ts.token().id();
+            if (tid == JavaTokenId.BLOCK_COMMENT) {
+                if ("/**/".contentEquals(ts.token().text())) { // NOI18N
+                    // see #147533
+                    return null;
+                }
+            }
             if (!IGNORE_TOKES.contains(tid)) {
                 offsetBehindJavadoc = ts.offset();
                 // it is magic for TreeUtilities.pathFor
@@ -173,7 +190,7 @@ final class JavadocCompletionUtils {
      * @return javadoc token sequence or null.
      */
     static TokenSequence<JavadocTokenId> findJavadocTokenSequence(CompilationInfo javac, Element e) {
-        if (e == null || javac.getElementUtilities().isSynthetic(e))
+        if (e == null || javac.getElementUtilities().isSynthetic(e) || javac.getElements().getDocComment(e) == null)
             return null;
         
         Tree tree = javac.getTrees().getTree(e);
@@ -189,6 +206,12 @@ final class JavadocCompletionUtils {
         Token<JavaTokenId> token = null;
         while (s.movePrevious()) {
             token = s.token();
+            if (token.id() == JavaTokenId.BLOCK_COMMENT) {
+                if ("/**/".contentEquals(token.text())) { // NOI18N
+                    // see #147533
+                    break;
+                }
+            }
             if (!IGNORE_TOKES.contains(token.id())) {
                 break;
             }
@@ -196,7 +219,7 @@ final class JavadocCompletionUtils {
         if (token == null || token.id() != JavaTokenId.JAVADOC_COMMENT) {
             return null;
         }
-        
+
         return s.embedded(JavadocTokenId.language());
     }
 

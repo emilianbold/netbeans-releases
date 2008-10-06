@@ -70,11 +70,10 @@ public class HandlerWithParamName extends BaseCompletionHandler implements
     }
     
     private List<XSLTCompletionResultItem> getTemplatesParamNameList() {
-        if ((schemaModel == null) || (surroundTag == null) || 
-            (attributeName == null) || (xslModel == null)) 
+        if ((surroundTag == null) || (attributeName == null) || (xslModel == null)) 
             return Collections.emptyList();
         
-        String tagName = surroundTag.getTagName(); //getLocalName();
+        String tagName = surroundTag.getTagName();
         if (! tagName.contains(XSLT_TAG_NAME_WITH_PARAM))
             return Collections.emptyList();
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))

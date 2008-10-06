@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>netbeans</artifactId>
+        <groupId>org.codehaus.mevenide</groupId>
+        <version>3.2-SNAPSHOT</version>
+    </parent>
+    <groupId>org.codehaus.mevenide</groupId>
+    <artifactId>gsf</artifactId>
+    <packaging>nbm</packaging>
+    <version>3.2-SNAPSHOT</version>
+    <name>Netbeans Maven2 GSF support</name>
+    <description>A generic support for additional languages on top of Apache Maven projects.</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${netbeans.release}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-gsfpath-api</artifactId>
+            <version>RELEASE61</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.mevenide</groupId>
+            <artifactId>nb-mvn-embedder</artifactId>
+            <version>${mevenide.nb.release}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.mevenide</groupId>
+            <artifactId>nb-project</artifactId>
+            <version>${mevenide.nb.release}</version>
+        </dependency>
+        
+        
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

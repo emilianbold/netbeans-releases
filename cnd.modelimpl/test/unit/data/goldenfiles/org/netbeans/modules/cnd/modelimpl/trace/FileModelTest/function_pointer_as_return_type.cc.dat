@@ -17,7 +17,7 @@ FUNCTION get_ptr [1:1/0-1:45/44] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:get_ptr(const char)
     PARAMETERS:
         opCode [1:15/14-1:32/31]  TYPE: const char TEXT=const char  [1:15/14-1:25/24]  INIT: null  SCOPE: get_ptr 
-    RETURNS int TEXT=int(*)(int,int)  [1:1/0-1:7/6]
+    RETURNS int TEXT=int(*)(int ,int )  [1:1/0-1:7/6]
 FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE plus(int,int)
     UNIQUE NAME f:plus(int,int)
@@ -44,7 +44,7 @@ FUNCTION DEFINITION get_ptr  [6:1/131-11:2/236] FunctionDDImpl SCOPE: $Global$
     DECLARATION: get_ptr  [1:1/0-1:45/44]
     PARAMETERS:
         opCode [6:15/145-6:32/162]  TYPE: const char TEXT=const char  [6:15/145-6:25/155]  INIT: null  SCOPE: get_ptr 
-    RETURNS int TEXT=int(*)(int,int)  [6:1/131-6:7/137]
+    RETURNS int TEXT=int(*)(int ,int )  [6:1/131-6:7/137]
     STATEMENT COMPOUND  [6:45/175-11:2/236] SCOPE: get_ptr 
         STATEMENT IF  [7:9/178-10:31/234] SCOPE: Stmt  [6:45/175-11:2/236]
             CONDITION EXPRESSION text='opCode == '+''
@@ -67,7 +67,7 @@ FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:genxGetAlloc(genxWriter)
     PARAMETERS:
          [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int TEXT=int*(*)(void*,int)  [18:1/310-18:8/317]
+    RETURNS *int TEXT=int*(*)(void* ,int )  [18:1/310-18:8/317]
 FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE genxGetAlloc(genxWriter)
     UNIQUE NAME f:genxGetAlloc(genxWriter)
@@ -85,7 +85,7 @@ FUNCTION get_ptr [1:1/0-1:45/44] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:get_ptr(const char)
     PARAMETERS:
         opCode [1:15/14-1:32/31]  TYPE: const char TEXT=const char  [1:15/14-1:25/24]  INIT: null  SCOPE: get_ptr 
-    RETURNS int TEXT=int(*)(int,int)  [1:1/0-1:7/6]
+    RETURNS int TEXT=int(*)(int ,int )  [1:1/0-1:7/6]
 FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE plus(int,int)
     UNIQUE NAME f:plus(int,int)
@@ -112,7 +112,7 @@ FUNCTION DEFINITION get_ptr  [6:1/131-11:2/236] FunctionDDImpl SCOPE: $Global$
     DECLARATION: get_ptr  [1:1/0-1:45/44]
     PARAMETERS:
         opCode [6:15/145-6:32/162]  TYPE: const char TEXT=const char  [6:15/145-6:25/155]  INIT: null  SCOPE: get_ptr 
-    RETURNS int TEXT=int(*)(int,int)  [6:1/131-6:7/137]
+    RETURNS int TEXT=int(*)(int ,int )  [6:1/131-6:7/137]
     STATEMENT COMPOUND  [6:45/175-11:2/236] SCOPE: get_ptr 
         STATEMENT IF  [7:9/178-10:31/234] SCOPE: Stmt  [6:45/175-11:2/236]
             CONDITION EXPRESSION text='opCode == '+''
@@ -126,7 +126,7 @@ FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:genxGetAlloc(genxWriter)
     PARAMETERS:
          [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
-    RETURNS *int TEXT=int*(*)(void*,int)  [18:1/310-18:8/317]
+    RETURNS *int TEXT=int*(*)(void* ,int )  [18:1/310-18:8/317]
 FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE genxGetAlloc(genxWriter)
     UNIQUE NAME f:genxGetAlloc(genxWriter)

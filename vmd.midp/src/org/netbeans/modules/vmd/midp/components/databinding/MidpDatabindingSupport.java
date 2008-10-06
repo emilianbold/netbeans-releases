@@ -185,4 +185,11 @@ public final class MidpDatabindingSupport {
         DescriptorRegistry registry = document.getDescriptorRegistry();
         return registry.isInHierarchy(IndexableDataAbstractSetCD.TYPEID, typeID);
     }
+
+    public static synchronized void removeUnusedConnector(DesignComponent component, String propertyName) {
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyName);
+        if (connector != null) {
+            component.getDocument().deleteComponent(connector);
+        }
+    }
 }

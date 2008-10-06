@@ -47,7 +47,13 @@ public class CodeUtils {
 
 	public static String capitalize(String str) {
 		assert str != null;
-		assert str.length() > 0;
+        /* Fix for IZ#145512 - [65cat] AssertionError at
+         * org.netbeans.modules.vmd.game.model.CodeUtils.capitalize
+		 * assert str.length() > 0;
+         */
+        if ( str.length() == 0 ){
+            return str;
+        }
 		StringBuffer sb = new StringBuffer();
 		sb.append(str.substring(0, 1).toUpperCase());
 		sb.append(str.substring(1));
@@ -56,7 +62,13 @@ public class CodeUtils {
 
 	public static String decapitalize(String str) {
 		assert str != null;
-		assert str.length() > 0;
+		/*
+                 * Fix for IZ#144199 - [65cat] AssertionError at org.netbeans.modules.vmd.game.model.CodeUtils.decapitalize
+                 * assert str.length() > 0;
+                 */ 
+                if ( str.length() == 0 ){
+                    return str;
+                }
 		StringBuffer sb = new StringBuffer();
 		sb.append(str.substring(0, 1).toLowerCase());
 		sb.append(str.substring(1));

@@ -43,19 +43,22 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.lib.ddl.DDLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 
 public class AddIndexDialog {
@@ -177,31 +180,32 @@ public class AddIndexDialog {
 
             ActionListener listener = new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                        
                         try {
                             result = false;
-                            AddIndexDDL ddl = new AddIndexDDL(spec,
-                                    ((String)info.get(DatabaseNodeInfo.SCHEMA)),
-                                      tablename);
-                            
-                            boolean wasException = ddl.execute(getIndexName(),
-                                    cbx_uq.isSelected(),
-                                    getSelectedColumns());
+                            boolean wasException = DbUtilities.doWithProgress(null, new Callable<Boolean>() {
+                                public Boolean call() throws Exception {
+                                    AddIndexDDL ddl = new AddIndexDDL(spec,
+                                            ((String)info.get(DatabaseNodeInfo.SCHEMA)),
+                                              tablename);
+
+                                    return ddl.execute(getIndexName(), cbx_uq.isSelected(), getSelectedColumns());
+                                }
+                            });
 
                             if (!wasException) {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
                             result = true;
-                        } catch (Exception e) {
-                            LOGGER.log(Level.WARNING, "Unable to create index", e);
-                                                      
-                            DbUtilities.reportError(bundle.getString(
-                                "ERR_UnableToAddIndex"), e.getMessage());
-                            
-                            return;
+                        } catch (InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof DDLException) {
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            } else {
+                                LOGGER.log(Level.INFO, null, cause);
+                                DbUtilities.reportError(bundle.getString("ERR_UnableToAddIndex"), e.getMessage());
+                            }
                         }
                     }
                 }

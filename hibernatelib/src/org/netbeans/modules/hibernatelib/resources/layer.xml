@@ -4,6 +4,8 @@
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="hibernate.xml" url="hibernate.xml"/>
+            <file name="ejb3-persistence.xml" url="ejb3-persistence.xml"/>
+            <file name="hibernate-persistence.xml" url="hibernate-persistence.xml"/>
         </folder>
     </folder>
 </filesystem>

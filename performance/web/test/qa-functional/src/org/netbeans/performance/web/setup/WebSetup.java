@@ -107,6 +107,10 @@ public class WebSetup extends JellyTestCase {
         buildProject("PerformanceTestFolderWebApp");
     }
         
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+    
     private void buildProject(String name) {
         new BuildProjectAction().perform(new ProjectsTabOperator().
             getProjectRootNode(name));

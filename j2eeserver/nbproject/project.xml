@@ -278,7 +278,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -322,6 +322,10 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.web.project</code-name-base>
                         <recursive/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.ejbjarproject</code-name-base>
+                        <recursive/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
@@ -334,6 +338,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.spi</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.spi.config</package>
+                <package>org.netbeans.modules.j2ee.deployment.plugins.spi.support</package>
                 <package>org.netbeans.modules.j2ee.deployment.profiler.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.profiler.spi</package>
             </public-packages>

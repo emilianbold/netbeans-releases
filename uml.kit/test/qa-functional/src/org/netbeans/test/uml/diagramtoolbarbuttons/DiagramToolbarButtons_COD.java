@@ -64,7 +64,7 @@ public class DiagramToolbarButtons_COD extends UMLTestCase {
     private static String prName = "UMLProjectDTlbBtn";
     private static String codName = "DCollaboration";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

@@ -40,6 +40,7 @@
 package org.netbeans.modules.css.gsf;
 
 import org.netbeans.modules.css.editor.Property;
+import org.netbeans.modules.css.editor.PropertyModel.Element;
 
 /**
  * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 
@@ -48,20 +49,20 @@ import org.netbeans.modules.css.editor.Property;
  */
 public class CssValueElement extends CssPropertyElement {
     
-    private String value; 
+    private Element value; 
     
-    public CssValueElement(Property property, String value) {
+    public CssValueElement(Property property, Element value) {
         super(property);
         this.value = value;
     }
 
-    public String value() {
+    public Element value() {
         return value;
     }
     
     @Override
     public String getName() {
-        return value();
+        return value().toString();
     }
 
 }

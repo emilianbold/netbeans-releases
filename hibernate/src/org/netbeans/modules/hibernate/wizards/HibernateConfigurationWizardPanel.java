@@ -85,6 +85,10 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel {
             txtDialect.setText(Util.getDialectName(dbConn.getDriverClass()));
         }
     }
+    
+    private void checkAndRegisterDBDriver() {
+        
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.

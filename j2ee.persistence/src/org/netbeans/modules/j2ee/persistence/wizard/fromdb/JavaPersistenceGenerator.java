@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.persistence.wizard.fromdb;
 
 import com.sun.source.tree.*;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
@@ -63,6 +64,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -71,8 +74,13 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
@@ -83,7 +91,10 @@ import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
+import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper.State;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -229,13 +240,36 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
     public void init(WizardDescriptor wiz) {
         // get the table names for all entities in the project
-        // Project project = Templates.getProject(wiz);
-        // try {
-        //     processEntities(PersistenceUtils.getEntityClasses(project));
-        // } catch (IOException e) {
-        //     ErrorManager.getDefault().notify(e);
-        // }
-        // processEntities(PersistenceUtils.getAnnotationEntityClasses(project));
+        Project project = Templates.getProject(wiz);
+        final MetadataModelReadHelper<EntityMappingsMetadata, Set<Entity>> readHelper;
+        EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        if(entityClassScope == null) {
+            return;
+        }
+           
+        MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
+        readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
+            public Set<Entity> run(EntityMappingsMetadata metadata) {
+                Set<Entity> result = new HashSet<Entity>();
+                for (Entity entity : metadata.getRoot().getEntity()) {
+                    result.add(entity);
+                }
+                return result;
+            }
+        });
+        
+        readHelper.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if (readHelper.getState() == State.FINISHED) {
+                    try {
+                        processEntities(readHelper.getResult());
+                    } catch (ExecutionException ex) {
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Failed to get entity classes: ", ex); //NOI18N
+                    }
+                }
+            }
+        });
+        readHelper.start();
     }
 
     private void processEntities(Set<Entity> entityClasses) {
@@ -508,10 +542,17 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 //add @Id() only if not in an embeddable PK class
                 if (isPKMember && !needsPKClass) {
                     annotations.add(genUtils.createAnnotation("javax.persistence.Id")); // NOI18N
+                    if(m.isAutoIncrement()) {
+                        // Can only support strategy=GenerationType.IDENTITY.
+                        // See issue 76357 - desc 17
+                        List<ExpressionTree> annArguments = new ArrayList<ExpressionTree>();
+                        annArguments.add(genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "IDENTITY")); // NOI18N
+                        annotations.add(genUtils.createAnnotation("javax.persistence.GeneratedValue", annArguments)); //NOI18N
+                    }
                 } 
                 
                 // Add @Basic(optional=false) for not nullable columns
-                if (!isPKMember && !m.isNullable()) {
+                if (!m.isNullable()) {
                     List<ExpressionTree> basicAnnArguments = new ArrayList();
                     basicAnnArguments.add(genUtils.createAnnotationArgument("optional", false)); //NOI18N
                     annotations.add(genUtils.createAnnotation("javax.persistence.Basic", basicAnnArguments)); //NOI18N
@@ -616,8 +657,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     generateMember((EntityMember)object);
                 }
                 afterMembersGenerated();
-                for (Object object : entityClass.getRoles()) {
-                    generateRelationship((RelationshipRole)object);
+                for (RelationshipRole roleObject : entityClass.getRoles()) {
+                    generateRelationship(roleObject);
                 }
                 finish();
 
@@ -869,7 +910,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 String memberName = role.getFieldName();
 
                 // XXX getRelationshipFieldType() does not work well when entity classes
-                // are not all generated to the same package
+                // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeMirror fieldType = copy.getElements().getTypeElement(typeName).asType();
                 if (role.isToMany()) {
@@ -883,55 +924,67 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (role.isCascade()) {
                     annArguments.add(genUtils.createAnnotationArgument("cascade", "javax.persistence.CascadeType", "ALL")); // NOI18N
                 }
-                if (role.equals(role.getParent().getRoleB())) {
+                if (role.equals(role.getParent().getRoleB())) { // Role B
                     annArguments.add(genUtils.createAnnotationArgument("mappedBy", role.getParent().getRoleA().getFieldName())); // NOI18N
-                } else {
-                    if (role.isMany() && role.isToMany()) {
+                } else {  // Role A
+                    if (role.isMany() && role.isToMany()) { // ManyToMany
                         List<ExpressionTree> joinTableAnnArguments = new ArrayList<ExpressionTree>();
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("name", (String) dbMappings.getJoinTableMapping().get(role.getFieldName()))); //NOI18N
 
                         CMPMappingModel.JoinTableColumnMapping joinColumnMap = dbMappings.getJoinTableColumnMppings().get(role.getFieldName());
 
                         List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
-                        String[] colNames = joinColumnMap.getColumns();
-                        String[] refColNames = joinColumnMap.getReferencedColumns();
-                        for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                        ColumnData[] columns = joinColumnMap.getColumns();
+                        ColumnData[] refColumns = joinColumnMap.getReferencedColumns();
+                        for(int colIndex = 0; colIndex < columns.length; colIndex++) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refColNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("name", columns[colIndex].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refColumns[colIndex].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !columns[colIndex].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                            }
                             joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
                         }
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("joinColumns", joinCols)); // NOI18N
 
                         List<AnnotationTree> inverseCols = new ArrayList<AnnotationTree>();
-                        String[] invColNames = joinColumnMap.getInverseColumns();
-                        String[] refInvColNames = joinColumnMap.getReferencedInverseColumns();
-                        for(int colIndex = 0; colIndex < invColNames.length; colIndex++) {
+                        ColumnData[] invColumns = joinColumnMap.getInverseColumns();
+                        ColumnData[] refInvColumns = joinColumnMap.getReferencedInverseColumns();
+                        for(int colIndex = 0; colIndex < invColumns.length; colIndex++) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", invColNames[colIndex])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refInvColNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("name", invColumns[colIndex].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refInvColumns[colIndex].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !invColumns[colIndex].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                            }
                             inverseCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
                         }
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("inverseJoinColumns", inverseCols)); // NOI18N
 
                         annotations.add(genUtils.createAnnotation("javax.persistence.JoinTable", joinTableAnnArguments)); // NOI18N
-                    } else {
-                        String[] colNames = (String[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
+                    } else { // ManyToOne, OneToMany, OneToOne
+                        ColumnData[] columns = (ColumnData[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
                         CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
-                        String[] invColNames = (String[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
-                        if (colNames.length == 1) {
+                        ColumnData[] invColumns = (ColumnData[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
+                        if (columns.length == 1) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", colNames[0])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[0])); //NOI18N
-                            makeReadOnlyIfNecessary(pkColumnNames, colNames[0], attrs);
+                            attrs.add(genUtils.createAnnotationArgument("name", columns[0].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[0].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !columns[0].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false));
+                            }
+                            makeReadOnlyIfNecessary(pkColumnNames, columns[0].getColumnName(), attrs);
                             annotations.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
                         } else {
                             List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
-                            for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                            for(int colIndex = 0; colIndex < columns.length; colIndex++) {
                                 List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                                attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
-                                attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[colIndex])); //NOI18N
-                                makeReadOnlyIfNecessary(pkColumnNames, colNames[colIndex], attrs);
+                                attrs.add(genUtils.createAnnotationArgument("name", columns[colIndex].getColumnName())); //NOI18N
+                                attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[colIndex].getColumnName())); //NOI18N
+                                if(regenTablesAttrs && !columns[colIndex].isNullable()) {
+                                    attrs.add(genUtils.createAnnotationArgument("nullable", false));
+                                }
+                                makeReadOnlyIfNecessary(pkColumnNames, columns[colIndex].getColumnName(), attrs);
                                 joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
                             }
                             ExpressionTree joinColumnsNameAttrValue = genUtils.createAnnotationArgument(null, joinCols);
@@ -971,6 +1024,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
             }
+            
+            
 
             /**
              * Creates the <code>serialVersionUID</code> field with
@@ -1044,8 +1099,17 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             private String getRelationshipFieldType(RelationshipRole role, String pkg) {
                 RelationshipRole rA = role.getParent().getRoleA();
                 RelationshipRole rB = role.getParent().getRoleB();
-                RelationshipRole otherRole = role.equals(rA) ? rB : rA;                
-                return pkg.length() == 0 ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); // NOI18N
+                RelationshipRole otherRole = role.equals(rA) ? rB : rA;
+                
+                // To address issue 139804
+                // First, check if the entity package name is set in the role.
+                // If yes, then that's the package
+                // If no, then default to the passed in pkg
+                if(role.getEntityPkgName() != null) {
+                    return otherRole.getEntityPkgName() + "." + otherRole.getEntityName(); // NOI18N
+                } else {
+                    return pkg.length() == 0 ? otherRole.getEntityName() : pkg + "." + otherRole.getEntityName(); // NOI18N
+                }
             }
 
             private void makeReadOnlyIfNecessary(List<String> pkColumnNames, String testColumnName, List<ExpressionTree> attrs) {

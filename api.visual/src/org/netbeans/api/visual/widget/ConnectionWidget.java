@@ -157,7 +157,7 @@ public class ConnectionWidget extends Widget {
         endPointShape = PointShape.NONE;
         router = RouterFactory.createDirectRouter ();
         routingRequired = true;
-        connectionWidgetLayout = new ConnectionWidgetLayout (this);
+        connectionWidgetLayout = new ConnectionWidgetLayout ();
         setLayout (connectionWidgetLayout);
         stroke = STROKE_DEFAULT;
         paintControlPoints = false;

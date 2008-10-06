@@ -38,65 +38,91 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.1
+VERSION=0.9
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
 OPATH=$PATH
 PATH=/usr/bin:/bin:$PATH
 
-declare -a csets=
+declare -a csets=('')
 declare i=0
 
-uname=$(type -P uname)
+uname=$(type -p uname)
 OS=$($uname -s)
 ARCH=$($uname -m)
 
-# Now restore the original path, but append a few directories
-# where compiler sets may be found.
-if [ "$OS" == "SunOS" ]
+if [ -n "$1" ]
 then
-    PATH=$OPATH:/opt/sfw/bin:/usr/sfw/bin:/opt/SUNWspro/bin
+	# If parameter was provides just look there for compiler sets
+	PATHSLIST=$1
 else
-    PATH=$OPATH:/usr/bin:/bin
+	# Now restore the original path, but append a few directories
+	# where compiler sets may be found.
+	if [ "$OS" == "SunOS" ]
+	then
+	    PATH=$OPATH:/opt/sfw/bin:/usr/sfw/bin:/opt/SUNWspro/bin
+	    if [ "$ARCH" == "i86pc" -a -x /usr/xpg4/bin/grep ] && /usr/xpg4/bin/grep -sq OpenSolaris /etc/release /dev/null
+	    then
+	        PATH=$PATH:/opt/SunStudioExpress/bin
+	    fi
+	else
+	    PATH=$OPATH:/usr/bin:/bin
+	fi
+
+	# First line read should be platform information
+	echo "$OS $ARCH"
+
+	PATHSLIST=$PATH
 fi
 
-# First line read should be platform information
-echo "$OS $ARCH"
-
-# Now find the compiler collections from the user's PATH
+# Now find the compiler collections from the $PATHSLIST
 IFS=:
-for f in $PATH
+for f in $PATHSLIST
 do
     line=
+    flavor=
     if [ "${f:0:1}" != "/" ]
     then
 	continue	# skip relative directories
     fi
 
-    if [ "$OS" == "SunOS" -a \( -x "$f/cc" -o -x "$f/CC" \) ]
+    if [ "${f:0:8}" = "/usr/ucb" ]
+    then
+	continue	# skip /usr/ucb (IZ #142780)
+    fi
+
+    if [ \( "$OS" == "SunOS" -a \( -x "$f/cc" -o -x "$f/CC" \) \) -o \
+	 \( "$OS" == "Linux" -a -x "$f/CC" -a ! -x "$f/gcc" \) ]
     then
 	inv=${f/prod//}/../inventory
-	if [ -d "$inv/v17n1" ]
+	if [ "$f" == "/opt/SunStudioExpress/bin" ]
 	then
-	    line="Sun13;$f"
+	    line="SunStudioExpress;$f"
+	    flavor="SunStudioExpress;"
 	elif [ -d "$inv/v16n1" ]
 	then
-	    line="Sun12;$f"
+	    line="SunStudio_12;$f"
+	    flavor="SunStudio_12;"
 	elif [ -d "$inv/v15n1" ]
 	then
-	    line="Sun11;$f"
+	    line="SunStudio_11;$f"
+	    flavor="SunStudio_11;"
 	elif [ -d "$inv/v14n1" ]
 	then
-	    line="Sun10;$f"
+	    line="SunStudio_10;$f"
+	    flavor="SunStudio_10;"
 	elif [ -d "$inv/v13n1" ]
 	then
-	    line="Sun9;$f"
+	    line="SunStudio_9;$f"
+	    flavor="SunStudio_9;"
 	elif [ -d "$inv/v12n1" ]
 	then
-	    line="Sun8;$f"
+	    line="SunStudio_8;$f"
+	    flavor="SunStudio_8;"
 	else
-	    line="sun;$f"
+	    line="SunStudio;$f"
+	    flavor="SunStudio;"
 	fi
 
 	if [ -x "$f/cc" ]
@@ -107,6 +133,13 @@ do
 	then
 	    line="$line;CC"
 	fi
+	if [ -x "$f/f95" ]
+	then
+	    line="$line;f95"
+	elif [ -x "$f/f90" ]
+	then
+	    line="$line;f90"
+	fi
 	if [ -x "$f/dmake" ]
 	then
 	    line="$line;dmake"
@@ -116,9 +149,10 @@ do
         then
             line="$line;gdb=$gdb"
         fi
-    elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
+    elif [ -x "$f/gcc" -o -x "$f/g++" ]
     then
 	line="GNU;$f"
+	flavor="GNU;"
 	if [ -x "$f/gcc" ]
 	then
 	    line="$line;gcc"
@@ -127,9 +161,22 @@ do
 	then
 	    line="$line;g++"
 	fi
+	if [ -x "$f/gfortran" ]
+	then
+	    line="$line;gfortran"
+	elif [ -x "$f/g77" ]
+	then
+	    line="$line;g77"
+	fi
 	if [ -x "$f/gdb" ]
 	then
 	    line="$line;gdb"
+        else
+            gdb=$(type -p gdb)
+            if [ -n "$gdb" ]
+            then
+                line="$line;gdb=$gdb"
+            fi
 	fi
 	if [ -x "$f/make" -a "$OS" != "SunOS" ]
 	then
@@ -142,25 +189,22 @@ do
     fi
     if [ -n "$line" ]
     then
-	if [ "$i" == "0" ]
+	found=
+	len=${#flavor}
+	for ((j=0; $j<$i; j=$j+1))
+	do
+	    # check the flavor of ${cset[$j]} and skip if its a duplicate
+	    cpart="${cset[$j]}"
+	    if [ "${cpart:0:$len}" == "$flavor" ]
+	    then
+		found=true
+		break
+	    fi
+	done
+	if [ -z "$found" ]
 	then
 	    cset[$i]=$line
 	    ((i=$i+1))
-	else
-	    found=
-	    for ((j=0; $j<$i; j=$j+1))
-	    do
-		if [ "${cset[$j]}" == "$line" ]
-		then
-		    found=true
-		    break
-		fi
-	    done
-	    if [ -z "$found" ]
-	    then
-		cset[$i]=$line
-		((i=$i+1))
-	    fi
 	fi
     fi
 done

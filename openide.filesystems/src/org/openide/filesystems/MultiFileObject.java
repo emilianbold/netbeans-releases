@@ -91,6 +91,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
     /** Reference to lock or null */
     private Reference<MfLock> lock;
+    
+    /** Stack trace of locking thread. */
+    protected Throwable lockedBy;
 
     /** listener */
     private FileChangeListener weakL;
@@ -637,8 +640,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             FileLock f = (FileLock) lock.get();
 
             if (f != null) {
-                // [PENDING] construct localized message
-                throw new FileAlreadyLockedException(getPath());
+                FileAlreadyLockedException alreadyLockedException = new FileAlreadyLockedException(getPath());
+                alreadyLockedException.initCause(lockedBy);
+                throw alreadyLockedException;
             }
         }
 
@@ -647,8 +651,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
         lock = new WeakReference<MfLock>(l);
 
-        //    Thread.dumpStack ();
-        //    System.out.println ("Locking file: " + this); // NOI18N
+        assert (lockedBy = new Throwable("Locked by:")) != null;  //NOI18N
         return l;
     }
 
@@ -1062,7 +1065,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 if (this.getFileObject(name, ext) != null) {
-                    FSException.io("EXC_DataAlreadyExist", n, fs.getDisplayName()); // NOI18N
+                    FSException.io("EXC_DataAlreadyExist", n, fs.getDisplayName(), getPath()); // NOI18N
                 }
 
                 String fullName = getPath() + PATH_SEP + n;
@@ -1127,7 +1130,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 String newFullName = parent.getPath() + PATH_SEP + name;
 
-                if (isData()) {
+                if (isData() && ext != null && ext.trim().length() > 0) {
                     newFullName += (EXT_SEP + ext);
                 }
 

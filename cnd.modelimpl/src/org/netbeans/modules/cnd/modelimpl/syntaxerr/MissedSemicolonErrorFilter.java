@@ -44,7 +44,7 @@ import antlr.RecognitionException;
 import antlr.Token;
 import antlr.collections.impl.BitSet;
 import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class MissedSemicolonErrorFilter extends BaseParserErrorFilter {
 
     @Override
-    public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, ReadOnlyTokenBuffer buffer, BaseDocument doc) {
+    public void filter(Collection<RecognitionException> parserErrors, Collection<CsmErrorInfo> result, ReadOnlyTokenBuffer buffer, CsmFile file) {
         for (RecognitionException e : parserErrors) {
             BitSet expected = getExpected(e);
             if (expected.member(CPPTokenTypes.SEMICOLON)) {
@@ -72,7 +72,7 @@ public class MissedSemicolonErrorFilter extends BaseParserErrorFilter {
                         col = t.getColumn();
                     }
                 }
-                result.add(toErrorInfo(text, line, col, doc)); //NOI18N
+                result.add(toErrorInfo(text, line, col, file));
                 result.remove(e);
                 break;
 //                BitSet t = (BitSet) expected.clone();

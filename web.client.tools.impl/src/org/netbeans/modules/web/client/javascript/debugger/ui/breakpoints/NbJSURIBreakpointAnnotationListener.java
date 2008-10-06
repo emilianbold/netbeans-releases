@@ -41,23 +41,36 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
 
 public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnnotationListener {
 
     private final List<NbJSURIBreakpoint> uriBreakpoints = new CopyOnWriteArrayList<NbJSURIBreakpoint>();
-    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new HashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
+    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new ConcurrentHashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
     
+    private final Map<Annotation, Breakpoint> lingeringAnnotations = new WeakHashMap<Annotation, Breakpoint>();
+    private final List<WeakReference<NbJSBreakpointAnnotation>> nonEngineAnnotations = new ArrayList<WeakReference<NbJSBreakpointAnnotation>>();
+
     @Override
     public String[] getProperties() {
         return new String[] { DebuggerManager.PROP_BREAKPOINTS, DebuggerManager.PROP_DEBUGGER_ENGINES };
@@ -106,12 +119,23 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
         for( NbJSURIBreakpoint uriBreakpoint : uriBreakpoints){
             addBreakpointAnnotation(uriBreakpoint, engine);
         }
+        
         super.engineAdded(engine);
     }
 
     @Override
     public void engineRemoved(DebuggerEngine engine){
+        assert engine != null;
+
         /* Remove the engine */
+        Map<NbJSURIBreakpoint, Annotation> map = engineToBreakpointsToAnnotations.get(engine);
+        if (map != null) {
+            synchronized (lingeringAnnotations) {
+                for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()) {
+                    lingeringAnnotations.put(entry.getValue(), entry.getKey());
+                }
+            }
+        }
         engineToBreakpointsToAnnotations.remove(engine);
         
         /* I don't think I need to remove the annotation because it is closing. */
@@ -121,35 +145,95 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
     @Override
     protected final void addBreakpointAnnotation(final NbJSBreakpoint b){ 
         assert b instanceof NbJSURIBreakpoint;
+        
+        // #146102
+        boolean addedOwner = false;
+        NbJSURIBreakpoint bp = (NbJSURIBreakpoint)b;
+        Line line = bp.getOwnerLine();
+        DataObject dobj = line != null ? line.getLookup().lookup(DataObject.class) : null;
+        FileObject ownerFile = dobj != null ? dobj.getPrimaryFile() : null;
+        
         for( DebuggerEngine engine : engineToBreakpointsToAnnotations.keySet()){ 
-            addBreakpointAnnotation((NbJSURIBreakpoint)b,engine);
+            addedOwner = addedOwner || addBreakpointAnnotation((NbJSURIBreakpoint)b,engine,ownerFile);
         }
+        
+        if (!addedOwner && line != null) {
+            NbJSBreakpointAnnotation debugAnnotation = new NbJSBreakpointAnnotation(line, b);
+            synchronized (nonEngineAnnotations) {
+                nonEngineAnnotations.add(new WeakReference<NbJSBreakpointAnnotation>(debugAnnotation));
+            }
+        }
+        
         b.addPropertyChangeListener(getEnableBreakpointPropertyChangeListener());
     }
     
     @Override
     protected final void removeBreakpointAnnotation(final NbJSBreakpoint b){
         assert b instanceof NbJSURIBreakpoint;
+
+        boolean annotationFound = false;
+
         for( DebuggerEngine engine : engineToBreakpointsToAnnotations.keySet()){ 
             removeBreakpointAnnotation((NbJSURIBreakpoint)b,engine);
+            annotationFound = true;
+        }
+        
+        synchronized (nonEngineAnnotations) {
+            Iterator<WeakReference<NbJSBreakpointAnnotation>> listIter = nonEngineAnnotations.iterator();
+            while (listIter.hasNext()) {
+                NbJSBreakpointAnnotation nextAnnotation = listIter.next().get();
+                if (nextAnnotation == null) {
+                    listIter.remove();
+                } else if (nextAnnotation.getBreakpoint() == b) {
+                    nextAnnotation.detach();
+                    listIter.remove();
+                }
+            }
+        }
+        
+        synchronized (lingeringAnnotations) {
+            if (!annotationFound && lingeringAnnotations.containsValue(b)) {
+                Set<Annotation> keysToRemove = new LinkedHashSet<Annotation>();
+                for (Entry<Annotation, Breakpoint> entry : lingeringAnnotations.entrySet()) {
+                    if (entry.getValue() == b) {
+                        Annotation annotation = entry.getKey();
+                        if (annotation != null) {
+                            annotation.detach();
+                        }
+                        keysToRemove.add(annotation);
+                    }
+                }
+                
+                for (Annotation annotation : keysToRemove) {
+                    lingeringAnnotations.remove(annotation);
+                }
+            }
         }
         assert enableBreakpointPropertyChangeListener != null;
         b.removePropertyChangeListener(enableBreakpointPropertyChangeListener);
     }
     
+    private final boolean addBreakpointAnnotation(final NbJSURIBreakpoint b, final DebuggerEngine engine) {
+        return addBreakpointAnnotation(b, engine, null);
+    }
 
     /**
      * Adds a breakpoint for a given engine
      * @param b the breakpoint to add
      * @param engine for which to add the breakpoint
      */
-    private final void addBreakpointAnnotation(final NbJSURIBreakpoint b, final DebuggerEngine engine) {
+    private final boolean addBreakpointAnnotation(final NbJSURIBreakpoint b, final DebuggerEngine engine, final FileObject ownerFile) {
         Line line = b.getLine(engine);
+        
         if (line != null) {
             Annotation debugAnnotation = new NbJSBreakpointAnnotation(line, b);
             Map<NbJSURIBreakpoint,Annotation>map = engineToBreakpointsToAnnotations.get(engine);
             map.put(b, debugAnnotation);
+            
+            return ownerFile != null && b.getFileObject(engine) == ownerFile;
         }
+        
+        return false;
     }
     
     /**

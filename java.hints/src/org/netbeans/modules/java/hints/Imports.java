@@ -62,8 +62,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
+ * Implementation of all hints for import statements
  *
  * @author phrebejk
+ * @author Max Sauer
  */
 public class Imports extends AbstractHint implements  PreferenceChangeListener {
   
@@ -88,8 +90,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
     private Imports( ImportHintKind kind ) {
         super( kind.defaultOn(), true, HintSeverity.WARNING );
         this.kind = kind;        
-        treeKinds = kind == ImportHintKind.DELEGATE ? EnumSet.of(Tree.Kind.COMPILATION_UNIT) :
-                                              EnumSet.noneOf(Tree.Kind.class);
+        treeKinds = EnumSet.of(Tree.Kind.IMPORT);
     }
 
     public static Imports createDelegate() {
@@ -137,15 +138,151 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         return treeKinds;        
     }
 
-    public List<ErrorDescription> run(CompilationInfo compilationInfo, TreePath treePath) {
-        
-        // XXX
-        //if ( shouldRun() ) 
-        
-        
-        return analyseImports( compilationInfo );        
+    public List<ErrorDescription> run(CompilationInfo ci, TreePath treePath) {
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+
+        Tree t = treePath.getLeaf();
+        if (t.getKind() != Tree.Kind.IMPORT) {
+            return null;
+        }
+
+        ImportTree it = (ImportTree) t;
+
+        if (it.isStatic() || !(it.getQualifiedIdentifier() instanceof MemberSelectTree)) {
+            return null; // XXX
+        }
+
+        MemberSelectTree ms = (MemberSelectTree) it.getQualifiedIdentifier();
+        Fix allFix = null;
+
+        switch (kind) {
+            case STAR:
+                Imports starImport = getDelegate().star;
+                if (starImport != null &&
+                        starImport.isEnabled() &&
+                        "*".equals(ms.getIdentifier().toString())) { // NOI18N
+
+                    result.add(ErrorDescriptionFactory.createErrorDescription(
+                            starImport.getSeverity().toEditorSeverity(),
+                            starImport.getDisplayName(),
+                            NO_FIXES,
+                            ci.getFileObject(),
+                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
+                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
+                }
+                break;
+            case DEFAULT_PACKAGE:
+                // Has to be done in order to provide 'remove all' fix
+                allFix = null;
+                List<ImportTree> defaultList = getAllImportsOfKind(ci, ImportHintKind.DEFAULT_PACKAGE);
+                if (defaultList.size() > 1) {
+                    allFix = createFix(ci, defaultList, ImportHintKind.DEFAULT_PACKAGE);
+                }
+                Imports defPackage = getDelegate().defaultPackage;
+                if (defPackage != null && defPackage.isEnabled() && ms.getExpression().toString().equals(DEFAULT_PACKAGE)) {
+                    List<Fix> fixes = new ArrayList<Fix>();
+                    fixes.add(createFix(ci, it, ImportHintKind.DEFAULT_PACKAGE));
+                    if (allFix != null) {
+                        fixes.add(allFix);
+                    }
+                    result.add(ErrorDescriptionFactory.createErrorDescription(
+                            defPackage.getSeverity().toEditorSeverity(),
+                            defPackage.getDisplayName(),
+                            fixes,
+                            ci.getFileObject(),
+                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
+                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
+                }
+                break;
+
+            case SAME_PACKAGE:
+                ExpressionTree packageName = ci.getCompilationUnit().getPackageName();
+                allFix = null;
+                List<ImportTree> sameList = getAllImportsOfKind(ci, ImportHintKind.SAME_PACKAGE);
+                if (sameList.size() > 1) {
+                    allFix = createFix(ci, sameList, ImportHintKind.SAME_PACKAGE);
+                }
+                Imports samePack = getDelegate().samePackage;
+
+                if (samePack != null &&
+                        samePack.isEnabled() &&
+                        packageName != null &&
+                        ms.getExpression().toString().equals(packageName.toString())) {
+                    List<Fix> fixes = new ArrayList<Fix>();
+                    fixes.add(createFix(ci, it, ImportHintKind.SAME_PACKAGE));
+                    if (allFix != null) {
+                        fixes.add(allFix);
+                    }
+                    result.add(ErrorDescriptionFactory.createErrorDescription(
+                            samePack.getSeverity().toEditorSeverity(),
+                            samePack.getDisplayName(),
+                            fixes,
+                            ci.getFileObject(),
+                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
+                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
+                }
+
+                break;
+            case FORBIDDEN:
+                Imports forbidPackage = getDelegate().forbiddenPackage;
+                String[] regexps = getRegexps(forbidPackage.getPreferences(null));
+                if (forbidPackage != null &&
+                        forbidPackage.isEnabled() &&
+                        isForbidden(ms.getExpression().toString(), regexps)) {
+                    result.add(ErrorDescriptionFactory.createErrorDescription(
+                            forbidPackage.getSeverity().toEditorSeverity(),
+                            forbidPackage.getDisplayName(),
+                            NO_FIXES,
+                            ci.getFileObject(),
+                            (int) ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), it),
+                            (int) ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), it)));
+                }
+
+                break;
+            default:
+                return null;
+        }
+
+
+        return result;
     }
-        
+
+    private List<ImportTree> getAllImportsOfKind(CompilationInfo ci, ImportHintKind kind) {
+        //allow only default and samepackage
+        assert (kind == ImportHintKind.DEFAULT_PACKAGE || kind == ImportHintKind.SAME_PACKAGE);
+
+        CompilationUnitTree cut = ci.getCompilationUnit();
+        List<ImportTree> result = new ArrayList<ImportTree>(3);
+
+        List<? extends ImportTree> imports = cut.getImports();
+        for (ImportTree it : imports) {
+            if (it.isStatic()) {
+                continue; // XXX
+            }
+            if (it.getQualifiedIdentifier() instanceof MemberSelectTree) {
+                MemberSelectTree ms = (MemberSelectTree) it.getQualifiedIdentifier();
+                if (kind == ImportHintKind.DEFAULT_PACKAGE) {
+                    if (getDelegate().defaultPackage != null &&
+                            getDelegate().defaultPackage.isEnabled() &&
+                            ms.getExpression().toString().equals(DEFAULT_PACKAGE)) {
+                        result.add(it);
+                    }
+                }
+                if (kind == ImportHintKind.SAME_PACKAGE) {
+                    ExpressionTree packageName = cut.getPackageName();
+                    if (getDelegate().samePackage != null &&
+                            getDelegate().samePackage.isEnabled() &&
+                            packageName != null &&
+                            ms.getExpression().toString().equals(packageName.toString())) {
+                        result.add(it);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+
     public void cancel() {
         
     }
@@ -192,6 +329,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
     public void preferenceChange(PreferenceChangeEvent evt) {
         if ( kind == ImportHintKind.UNUSED ) {
             RemoveUnusedImportFix.setEnabled(isEnabled());
+            RemoveUnusedImportFix.setSeverity(getDelegate().unused.getSeverity().toEditorSeverity());
         }
     }
 
@@ -203,130 +341,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         }
         return delegate;
     }
-    
-    private List<ErrorDescription> analyseImports( CompilationInfo ci ) {
-        
-        CompilationUnitTree cut = ci.getCompilationUnit();
-        ExpressionTree packageName = cut.getPackageName();
-        
-        List<? extends ImportTree> imports = cut.getImports();
-        
-        List<ImportTree> defaultList = new ArrayList<ImportTree>(3);
-        List<ImportTree> sameList = new ArrayList<ImportTree>(3);
-        List<ImportTree> forbiddenList = new ArrayList<ImportTree>(3);
-        List<ImportTree> starList = new ArrayList<ImportTree>(3);
-        
-        String[] regexps = getRegexps(forbiddenPackage.getPreferences(null));
-        
-        
-        // Check imports
-        for (ImportTree it : imports) {
-            if ( it.isStatic() ) {
-                continue; // XXX
-            }
-            
-            
-            if ( it.getQualifiedIdentifier() instanceof MemberSelectTree ) {
-                MemberSelectTree ms = (MemberSelectTree)it.getQualifiedIdentifier();
-                
-                if ( defaultPackage != null &&
-                     defaultPackage.isEnabled() && 
-                     ms.getExpression().toString().equals(DEFAULT_PACKAGE) ) {
-                    defaultList.add(it);
-                }
-                
-                else if ( samePackage != null &&
-                          samePackage.isEnabled() && 
-                          packageName != null &&   
-                          ms.getExpression().toString().equals(packageName.toString())) {
-                    sameList.add(it); 
-                }
-                else if ( forbiddenPackage != null &&
-                          forbiddenPackage.isEnabled() &&
-                          isForbidden( ms.getExpression().toString(), regexps) ) {
-                    
-                    forbiddenList.add(it);
-                }
-                else if ( star != null &&
-                          star.isEnabled() &&
-                          "*".equals(ms.getIdentifier().toString()) ) { // NOI18N
-                    starList.add(it);
-                }
-            }
-        }
-        
-        // Create the descriptions
-        
-        
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        
-        
-        Fix allFix = null;
-        
-        // Default package                
-        if ( defaultList.size() > 1 ) {
-            allFix  = createFix(ci, defaultList, ImportHintKind.DEFAULT_PACKAGE);
-        }
-        for (ImportTree importTree : defaultList) {
-            List<Fix> fixes = new ArrayList<Fix>();
-            fixes.add( createFix(ci, importTree, ImportHintKind.DEFAULT_PACKAGE) );
-            if ( allFix != null ) {
-                fixes.add( allFix );
-            }            
-            result.add(ErrorDescriptionFactory.createErrorDescription(
-                defaultPackage.getSeverity().toEditorSeverity(), 
-                defaultPackage.getDisplayName(), 
-                fixes,
-                ci.getFileObject(),
-                (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), importTree ),
-                (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), importTree ) ) ); 
-        }
 
-        // Same package
-        allFix = null;
-        if ( sameList.size() > 1 ) {
-            allFix  = createFix(ci, sameList, ImportHintKind.SAME_PACKAGE);
-        }
-        for (ImportTree importTree : sameList) {
-            List<Fix> fixes = new ArrayList<Fix>();
-            fixes.add( createFix(ci, importTree, ImportHintKind.SAME_PACKAGE) );
-            if ( allFix != null ) {
-                fixes.add( allFix );
-            }            
-            result.add(ErrorDescriptionFactory.createErrorDescription(
-                samePackage.getSeverity().toEditorSeverity(), 
-                samePackage.getDisplayName(), 
-                fixes, 
-                ci.getFileObject(),
-                (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), importTree ),
-                (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), importTree ) ) ); 
-        }
-        
-        // Forbidden package
-        for (ImportTree importTree : forbiddenList) {
-            result.add(ErrorDescriptionFactory.createErrorDescription(
-                forbiddenPackage.getSeverity().toEditorSeverity(), 
-                forbiddenPackage.getDisplayName(), 
-                NO_FIXES, 
-                ci.getFileObject(),
-                (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), importTree ),
-                (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), importTree ) ) ); 
-        }
-        
-        // Star import
-        for (ImportTree importTree : starList) {
-            result.add(ErrorDescriptionFactory.createErrorDescription(
-                star.getSeverity().toEditorSeverity(), 
-                star.getDisplayName(), 
-                NO_FIXES, 
-                ci.getFileObject(),
-                (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), importTree ),
-                (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), importTree ) ) ); 
-        }
-        
-        return result;
-    }
-    
     private Fix createFix( CompilationInfo ci, ImportTree tree, ImportHintKind ihk ) {
         return createFix(ci, Collections.<ImportTree>singletonList(tree), ihk);
     }

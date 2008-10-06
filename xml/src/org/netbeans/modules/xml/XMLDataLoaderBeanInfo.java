@@ -41,9 +41,10 @@
 package org.netbeans.modules.xml;
 
 import java.beans.*;
-import java.util.*;
 import java.awt.Image;
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -55,8 +56,10 @@ public class XMLDataLoaderBeanInfo extends SimpleBeanInfo {
 
     private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/resources/"; // NOI18N
 
-    private static final String PROP_EXT = Util.THIS.getString ("PROP_Extensions"); // NOI18N
-    private static final String HINT_EXT = Util.THIS.getString ("HINT_Extensions"); // NOI18N
+    private static final String PROP_EXT = Util.THIS.getString (
+            XMLDataLoaderBeanInfo.class, "PROP_Extensions"); // NOI18N
+    private static final String HINT_EXT = Util.THIS.getString (
+            XMLDataLoaderBeanInfo.class, "HINT_Extensions"); // NOI18N
 
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.
@@ -121,9 +124,9 @@ public class XMLDataLoaderBeanInfo extends SimpleBeanInfo {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
             (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
 
-            return Utilities.loadImage (ICON_DIR_BASE + "xmlObject.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xmlObject.gif"); // NOI18N
         } else {
-            return Utilities.loadImage (ICON_DIR_BASE + "xmlObject32.gif"); // NOI18N
+            return ImageUtilities.loadImage (ICON_DIR_BASE + "xmlObject32.gif"); // NOI18N
         }
     }
 

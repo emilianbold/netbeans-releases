@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.Set;
 
 import org.openide.cookies.SaveCookie;
@@ -67,7 +69,7 @@ public abstract class CndDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
-    private CppEditorSupport cppEditorSupport;
+    private Reference<CppEditorSupport> cppEditorSupport;
     private BinaryExecSupport binaryExecSupport;
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -101,10 +103,12 @@ public abstract class CndDataObject extends MultiDataObject {
     }
 
     private synchronized CppEditorSupport createCppEditorSupport() {
-        if (cppEditorSupport == null) {
-            cppEditorSupport = new CppEditorSupport(getPrimaryEntry().getDataObject());
+        CppEditorSupport support = (cppEditorSupport == null) ? null : cppEditorSupport.get();
+        if (support == null) {
+            support = new CppEditorSupport(getPrimaryEntry().getDataObject());
+            cppEditorSupport = new SoftReference<CppEditorSupport>(support);
         }
-        return cppEditorSupport;
+        return support;
     }
 
     private synchronized BinaryExecSupport createBinaryExecSupport() {

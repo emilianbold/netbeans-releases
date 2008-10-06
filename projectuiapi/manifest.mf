@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.projectuiapi/1
 OpenIDE-Module-Implementation-Version: 6
 OpenIDE-Module-Localizing-Bundle: org/netbeans/spi/project/ui/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/project/uiapi/layer.xml
 OpenIDE-Module-Needs: org.netbeans.modules.project.uiapi.ActionsFactory,
     org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,
     org.netbeans.modules.project.uiapi.ProjectChooserFactory

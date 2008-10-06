@@ -47,10 +47,14 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
+    /*package*/static final String IMAGE_ICON_BASE = 
+                "org/netbeans/modules/asm/core/resources/file_asm_16.png"; // NOI18N
     
+    @Override
     public BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
@@ -59,9 +63,9 @@ public class AsmDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    @Override
     public Image getIcon(int type) {
-        return super.getIcon(type); // TODO add a custom icon here
-        
+        return ImageUtilities.loadImage(IMAGE_ICON_BASE);
     }
     
 }

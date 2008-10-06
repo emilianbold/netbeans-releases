@@ -708,4 +708,23 @@ public class ProductArchiveImpl implements IProductArchive
       return element != null &&
            element.getAttribute(IProductArchiveDefinitions.TABLE_ENTRY_DELETED) != null;
    }
+   
+      public IProductArchiveElement getDiagramElement(String sID)
+    {
+        if (m_Document != null && m_Loaded && sID != null && sID.length() > 0)
+        {
+            Element root = m_Document.getRootElement();
+            if (root != null)
+            {
+                String query = ".//" + sID;
+                Node foundNode = XMLManip.selectSingleNode(root, query);
+                if (foundNode instanceof Element)
+                {
+                    return new ProductArchiveElementImpl((Element) foundNode);
+                }
+            }
+        }
+        return null;
+    }
+
 }

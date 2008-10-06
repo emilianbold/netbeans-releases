@@ -1,5 +1,0 @@
-WARNING templates.cpp [91-101]: Unable to resolve identifier nestedtype
-WARNING templates.cpp [103-114]: Unable to resolve identifier nestedtype2
-WARNING templates.cpp [136-141]: Unable to resolve identifier sayHi
-WARNING templates.cpp [181-186]: Unable to resolve identifier sayHi
-WARNING templates.cpp [201-212]: Unable to resolve identifier sayHiStatic

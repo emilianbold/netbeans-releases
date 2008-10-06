@@ -77,6 +77,7 @@ import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakSet;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -141,15 +142,12 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
-    private static String toolTipPackageModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Modified_Locally");
-    private static String toolTipPackageContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
-            + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Package_Contains_Conflicts");
-    private static String toolTipContainsModifiedLocally = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+    private static String toolTipModified = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipContainsConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+    private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
+    private WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -215,7 +213,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean folderAnnotation = false;
                 
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
@@ -268,7 +266,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 File parentFile = file.getParentFile();
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[]{file, folderToScan, parentFile});
@@ -286,6 +284,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 mostImportantInfo = info;
             }
         }
+        if(mostImportantInfo == null) return null; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
@@ -311,18 +310,17 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + status); // NOI18N
         }
-        return statusText != null ? ImageUtilities.assignToolTipToImage(icon, statusText) : null;
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         boolean isVersioned = false;
-        boolean containsFiles = context.getRootFiles().size() > 1;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
             // There is an assumption here that annotateName was already
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file, true);
+            FileInformation info = cache.getCachedStatus(file);
             if (info != null && (info.getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;
@@ -347,8 +345,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -366,8 +363,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                         }
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict);
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -378,8 +374,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         if (modified && !allExcluded) {
             Image badge = ImageUtilities.assignToolTipToImage(
-                    ImageUtilities.loadImage(badgeModified, true),
-                    containsFiles ? toolTipContainsModifiedLocally : toolTipPackageModifiedLocally);
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified);
             return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;
@@ -387,8 +382,15 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     private synchronized Map<File, FileInformation> getLocallyChangedFiles() {
-        if(modifiedFiles == null || cache.modifiedFilesChanged()) {
-            Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> m = null;
+        for (Map<File, FileInformation> sm : allModifiedFiles) {
+            m = sm;
+            break;
+        }
+        if(modifiedFiles == null || map != m) {
+            allModifiedFiles.clear();
+            allModifiedFiles.add(map);
             modifiedFiles = new HashMap<File, FileInformation>();
             for (Iterator i = map.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -397,7 +399,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                     modifiedFiles.put(file, info);
                 }
             }
-        }
+        } 
         return modifiedFiles;
     }
 
@@ -618,7 +620,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             File root = null; 
             for (File file : rootFiles) {
                 root = file;
-                repo = Mercurial.getInstance().getTopmostManagedParent(root);
+                repo = Mercurial.getInstance().getRepositoryRoot(root);
                 break;
             }
             if (!repo.getAbsolutePath().equals(root.getAbsolutePath())) {
@@ -642,7 +644,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 }
             }
             for (File file : rootFiles) {            
-                repo = Mercurial.getInstance().getTopmostManagedParent(file);
+                repo = Mercurial.getInstance().getRepositoryRoot(file);
                 if (!repo.getAbsolutePath().equals(parentFile.getAbsolutePath())) {
                     // not from repo root => do not annnotate with folder name 
                     return uptodateFormat.format(new Object [] { nameHtml, ""});

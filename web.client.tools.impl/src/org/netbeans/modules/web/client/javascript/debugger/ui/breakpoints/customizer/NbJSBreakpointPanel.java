@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.customizer;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -136,12 +137,12 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             tfFileName.getPreferredSize().height));
         tfURL.setText(resolvedLocation);
         tfLineNumber.setText(Integer.toString(orLineNum));
-        
-        
-        conditionsPanel = new NbJSBreakpointConditionsPanel(breakpoint);
+        if ( breakpoint != null ){
+            conditionsPanel = new NbJSBreakpointConditionsPanel(breakpoint);
+        } else {
+            conditionsPanel = new NbJSBreakpointConditionsPanel();
+        }
         cPanel.add(conditionsPanel, "Center");
-//        actionsPanel = new  NbJSBreakpointActionsPanel():
-//        pActions.add (actionsPanel, "Center");
     }
 
     private static int getMaxLineNumber(final FileObject fileObject) {
@@ -278,11 +279,14 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
 
         fileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "L_Line_Breakpoint_File_Name")); // NOI18N
         fileLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name")); // NOI18N
-        tfFileName.getAccessibleContext().setAccessibleDescription("null");
+        tfFileName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ File")); // NOI18N
+        tfFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name_Description")); // NOI18N
         lineNumLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N
         lineNumLabel.getAccessibleContext().setAccessibleDescription("null");
-        tfLineNumber.getAccessibleContext().setAccessibleName("Line number");
-        tfLineNumber.getAccessibleContext().setAccessibleDescription("null");
+        tfLineNumber.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ LineNumber")); // NOI18N
+        tfLineNumber.getAccessibleContext().setAccessibleDescription(bundle.getString("A11Y_TF_LineNumber_Desc")); // NOI18N
+        tfURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ ResolvedURL")); // NOI18N
+        tfURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ ResolvedURL_TF_Desc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -330,6 +334,9 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             
             if (createBreakpoint) {
                 breakpoint = NbJSBreakpointManager.addBreakpoint(line);
+                if( conditionsPanel != null ){
+                    conditionsPanel.setBreakpoint(breakpoint);
+                }
             }
             
             if ( breakpoint instanceof NbJSFileObjectBreakpoint ){
@@ -380,12 +387,14 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         if (lineNum < 0) {
             return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec");
         }
-        
+                
         if (breakpoint != null ){
             if ( breakpoint instanceof NbJSURIBreakpoint)
                 return validateURIMsg( sourceName, lineNum);
             else if (breakpoint instanceof NbJSBreakpoint )
                 return validateFileNameMsg(sourceName, lineNum);
+        } else if ( breakpoint == null ){
+            return validateFileNameMsg(sourceName, lineNum);
         }
         return null;
     }
@@ -396,7 +405,9 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
             if ( engine != null ){
                 NbJSDebugger debugger = (NbJSDebugger)engine.lookupFirst(null, NbJSDebugger.class);
-                fileObject = debugger.getFileObjectForSource(JSFactory.createJSSource(uri));
+                if(debugger != null) {
+                    fileObject = debugger.getFileObjectForSource(JSFactory.createJSSource(uri));
+                }
             }
         }
         
@@ -414,14 +425,23 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
     }
 
     private String validateFileNameMsg(String fileName, int lineNum) {
+        if (fileName == null || fileName.equals("")){
+            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
+            
+        }
+        File file = new File(fileName);
+        if(file == null || !file.exists() || file.isDirectory()) {
+            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
+        }
 
-        FileObject fileObject = (breakpoint != null ) ? breakpoint.getFileObject() : null;
-        
+        FileObject fileObject = (breakpoint != null ) ? breakpoint.getFileObject() : null;        
         if (fileObject == null ){
             try {
                 fileObject = URLMapper.findFileObject(new URL("file:" + fileName));
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
+            } catch ( IllegalArgumentException iae){
+                return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
             }
         }
         

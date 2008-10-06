@@ -40,8 +40,8 @@
  */
 package org.netbeans.modules.xml.text;
 
+import org.netbeans.modules.xml.util.Util;
 import java.io.*;
-import java.awt.event.*;
 import java.text.*;
 import java.util.Enumeration;
 import java.lang.ref.WeakReference;
@@ -77,7 +77,8 @@ import org.netbeans.modules.xml.cookies.*;
  * <p>
  * Listens for: text document change (edit), timers and document status change (loading).
  */
-public class TextEditorSupport extends DataEditorSupport implements EditorCookie.Observable, EditCookie, CloseCookie, PrintCookie {
+public class TextEditorSupport extends DataEditorSupport implements EditorCookie.Observable,
+        OpenCookie, EditCookie, CloseCookie, PrintCookie {
 // ToDo:
 // + extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject
     
@@ -336,7 +337,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             //!!! just write nothing //?? save say as UTF-8            
             ErrorManager emgr = ErrorManager.getDefault();
             IOException ioex = new IOException("Unsupported encoding " + enc); // NOI18N
-            emgr.annotate(ioex, Util.THIS.getString("MSG_unsupported_encoding", enc));
+            emgr.annotate(ioex, Util.THIS.getString(
+                    TextEditorSupport.class, "MSG_unsupported_encoding", enc));
             throw ioex;
         }
     }
@@ -367,7 +369,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         } catch (UnsupportedEncodingException ex) {
             //ask user what next?
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
-                    java.text.MessageFormat.format(Util.THIS.getString("TEXT_SAVE_AS_UTF"), new Object[] {enc}));
+                    java.text.MessageFormat.format(Util.THIS.getString(
+                    TextEditorSupport.class, "TEXT_SAVE_AS_UTF"), new Object[] {enc}));
             Object res = DialogDisplayer.getDefault().notify(descriptor);
             if (res.equals(NotifyDescriptor.YES_OPTION)) {
                 updateDocumentWithNewEncoding(doc);
@@ -497,7 +500,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         try {
             openDocument(); //use sync version of call  - prepare encodingErr
             if (encodingErr) {
-                String pattern = Util.THIS.getString("TEXT_WRONG_ENCODING");
+                String pattern = Util.THIS.getString(
+                        TextEditorSupport.class, "TEXT_WRONG_ENCODING");
                 String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                 
@@ -513,7 +517,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
             open();
             if(isDocumentLoaded()) {
                 if (encodingErr) {
-                    String pattern = Util.THIS.getString("TEXT_WRONG_ENCODING");
+                    String pattern = Util.THIS.getString(
+                            TextEditorSupport.class, "TEXT_WRONG_ENCODING");
                     String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                     
@@ -527,7 +532,8 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                 }
             }
         } catch (IOException ex) {
-            String pattern = Util.THIS.getString("TEXT_LOADING_ERROR");
+            String pattern = Util.THIS.getString(
+                    TextEditorSupport.class, "TEXT_LOADING_ERROR");
             String msg = MessageFormat.format(pattern, new Object[] { getDataObject().getPrimaryFile().toString() /*compatibleEntry.getFile().toString()*/});
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
         }
@@ -709,6 +715,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         protected Class[] supportedCookies() {
             return new Class[] { EditorCookie.class,
                     EditorCookie.Observable.class,
+                    OpenCookie.class,
                     EditCookie.class,
                     CloseCookie.class,
                     PrintCookie.class,
@@ -739,7 +746,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         
         /**
          */
-        private final synchronized TextEditorSupport createEditor() { // atomic test and set
+        public final synchronized TextEditorSupport createEditor() { // atomic test and set
             TextEditorSupport editorSupport = null;
             
             if ( editorRef != null ) {

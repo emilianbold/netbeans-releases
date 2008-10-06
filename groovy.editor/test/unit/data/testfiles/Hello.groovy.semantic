@@ -28,7 +28,7 @@ class |>CLASS:Hello1<| {
 
 }
 
-class  |>CLASS:SecondTestClass<| {
+class |>CLASS:SecondTestClass<| {
 
     |>CONSTRUCTOR:SecondTestClass<| (int f) {
     }
@@ -46,7 +46,9 @@ class |>CLASS:ThirdTestClass<| {
     }
 }
 
-Hello hello = new Hello()
+class |>CLASS:FourthClass<| {}
+
+Hello1 hello = new Hello1()
 hello.field1 = 9
 
 println "End."

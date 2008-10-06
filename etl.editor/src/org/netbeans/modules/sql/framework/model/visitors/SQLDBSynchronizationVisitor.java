@@ -62,6 +62,7 @@ import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
+import org.netbeans.modules.sql.framework.model.impl.PrimaryKeyImpl;
 
 
 
@@ -233,6 +234,7 @@ public class SQLDBSynchronizationVisitor {
 
                 List collabColumns = collabTable.getColumnList();
                 List newColumns = newTable.getColumnList();
+
                 for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
                     SQLDBColumn oldCol = (SQLDBColumn) itr.next();
                     int sqlTypeCode = oldCol.getJdbcType();
@@ -244,6 +246,43 @@ public class SQLDBSynchronizationVisitor {
                 }
                 for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
                     mergeNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable, tableModel);
+                }
+                
+                if ((newTable.getPrimaryKey() != null)) {
+                    List<String> pkCols = newTable.getPrimaryKey().getColumnNames();
+                    for (String col : pkCols) {
+                        mLogger.fine("DB PK Column(s):" + col.toString());
+                    }
+                    mLogger.fine("DB PK : " + newTable.getPrimaryKey().toString());
+                } else {
+                    mLogger.fine("Database table " + newTable.getName() + " has no PK");
+                }
+                
+                if ((collabTable.getPrimaryKey() != null)) {
+                    List<String> pkCols = collabTable.getPrimaryKey().getColumnNames();
+                    for (String col : pkCols) {
+                        mLogger.fine("Collab Table PK Column(s):" + col.toString());
+                    }
+                    mLogger.fine("Collab Table PK : " + collabTable.getPrimaryKey().toString());
+                }
+                else {
+                    mLogger.fine("Collab Table " + collabTable.getName() + " has no PK.");
+                }
+                                
+                ((AbstractDBTable) collabTable).setPrimaryKey((PrimaryKeyImpl) newTable.getPrimaryKey());
+
+                if ((collabTable.getPrimaryKey() != null)) {
+                    String nbBundle1 = collabTable.getQualifiedName() + " - Primary Key: ("
+                            + collabTable.getPrimaryKey().toString() + ")";
+                    
+                    ValidationInfo vInfo = new ValidationInfoImpl(collabTable, nbBundle1, ValidationInfo.VALIDATION_INFO);
+                    infoList.add(vInfo);
+                    return;
+                } else {
+                    String nbBundle1 = collabTable.getQualifiedName() + " has no Primary Key.";
+                    ValidationInfo vInfo = new ValidationInfoImpl(collabTable, nbBundle1, ValidationInfo.VALIDATION_INFO);
+                    infoList.add(vInfo);
+                    return;
                 }
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX

@@ -39,6 +39,7 @@
 package org.netbeans.modules.web.client.tools.api;
 
 import java.net.URI;
+import java.util.Set;
 
 /**
  * This represents a location in the context of a Web Browser.
@@ -49,5 +50,11 @@ public interface JSLocation extends JSAbstractLocation {
 
     public URI getURI();
 
+    public Set<URI> getEquivalentURIs();
+    
+    public void addEquivalentURI(URI uri);
+    
+    public void removeEquivalentURI(URI uri);
+    
     public int getLineNumber();
 }

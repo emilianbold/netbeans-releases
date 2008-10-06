@@ -52,6 +52,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -72,6 +73,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +86,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
@@ -92,6 +96,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -155,11 +160,11 @@ import org.openide.util.Utilities;
 public class RepositoryUpdater implements PropertyChangeListener, FileChangeListener, ClassPathRootsListener.ClassPathRootsChangedListener {
         
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
+    private static final Logger ACTIVITY_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName()+".activity");  //NOI18N
     private static final Set<String> warnedIgnoredRoots = Collections.synchronizedSet(new HashSet<String>());
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
-    private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     static final String GOING_TO_RECOMPILE = "Going to recompile: {0}"; //NOI18N
     static final String CONTAINS_TASKLIST_DATA = "containsTasklistData"; //NOI18N
     static final String CONTAINS_TASKLIST_DEPENDENCY_DATA = "containsTasklistDependencyData"; //NOI18N
@@ -167,6 +172,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     static final String EXTRA_COMPILER_OPTIONS = "extraCompilerOptions"; //NOI18N
     static final String CLASSPATH_ATTRIBUTE = "classPath"; //NOI18N
+    static final String DIGEST = "digest"; //NOI18N
     
     //non-final, non-private for tests...
     static int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -183,7 +189,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final RequestProcessor WORKER = new RequestProcessor(RepositoryUpdater.class.getName(),1);
     private Work currentWork;
     private boolean dirty;
-    private int noSubmited;
+    private volatile int noSubmited;
     private volatile boolean notInitialized;         //Transient state during IDE start
     private final AtomicBoolean closed;
     private Map<ClassPath, Set<URL>> classPath2Roots;
@@ -206,6 +212,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private int compileScheduled;
     
     private int lockRU;
+
+    private final Map<URL, String> root2DebugData = new HashMap<URL, String>();
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
@@ -233,7 +241,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public Map<URL,List<URL>> getDependencies () {
         return new HashMap<URL,List<URL>> (this.deps);
     }
-    
+
     private synchronized void open () throws IllegalStateException {
         if (notInitialized) {
             try {
@@ -273,8 +281,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 || /*XXX: jlahoda: should not be necessary, IMO*/evt.getSource() == this.cp)) {
             ClassPath changedCp = (ClassPath) evt.getNewValue();
             assert changedCp != null;
-            if (LOGGER.isLoggable(Level.FINER))
-                LOGGER.log(Level.FINER, "changedCp={0}", changedCp.toString());
+            if (LOGGER.isLoggable(Level.FINE))
+                LOGGER.log(Level.FINE, "ClassPath change, cp={0}", changedCp.toString());
             for (ClassPath.Entry e : changedCp.entries()) {
                 URL root = e.getURL();
                 scheduleCompilation(root,root, true, false);
@@ -286,10 +294,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    public void rootsChanged(Collection<ClassPath> changedCp) {
+    public void rootsChanged(Collection<ClassPath> changedCp, File binary) {
         assert changedCp != null;
         if (LOGGER.isLoggable(Level.FINER)) {
             LOGGER.log(Level.FINER, "modified roots changedCp={0}", changedCp.toString());
+        }
+
+        FileObject fo = binary != null ? FileUtil.toFileObject(binary) : null;
+
+        if (fo != null && isBinary(fo) && VisibilityQuery.getDefault().isVisible(fo)) {
+            final URL root = getOwningBinaryRoot(fo);
+            if (root != null) {
+                try {
+                    submit(Work.binary(fo, root));
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         
         List<URL> roots = new LinkedList<URL>();
@@ -332,8 +353,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
 
-        if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "roots for filter change={0}", roots.toString());
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "roots for filter change={0}", roots.toString());
         }
         submit(Work.filterChange(roots, false));
     }
@@ -467,15 +488,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final boolean isFolder = fo.isFolder();
         try {
             boolean vs = false;
-            if ((isJava(fo) || isFolder || (vs=VirtualSourceProviderQuery.hasVirtualSource(fo))) && VisibilityQuery.getDefault().isVisible(fo)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo));
-                }
+            if ((isJava(fo) || isFolder || (vs=VirtualSourceProviderQuery.hasVirtualSource(fo))) && VisibilityQuery.getDefault().isVisible(fo)) {                
                 final URL root = getOwningSourceRoot (fo);
-                if (root != null) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Owner: " + root);
-                    }
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file deleted: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root);
+                }
+                if (root != null) {                    
                     markRootTasklistDirty(root);
                     submit(Work.delete(fo,root,isFolder,vs));
                     if (TasklistSettings.isTasklistEnabled()) {
@@ -487,6 +505,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 an.updateInError(toRefresh);
                             }
                         }
+                        JavaTaskProvider.refresh(fo);
                     }
                 }
             }
@@ -505,14 +524,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();        
         try {
             if ((isJava(fo) || VirtualSourceProviderQuery.hasVirtualSource(fo)) && VisibilityQuery.getDefault().isVisible(fo)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Java file created: " + FileUtil.getFileDisplayName(fo));
-                }
                 final URL root = getOwningSourceRoot (fo);        
-                if (root != null) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Owner: " + root);
-                    }
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Java file created: " + FileUtil.getFileDisplayName(fo) + " Owner: " + root);
+                }                
+                if (root != null) {                    
                     markRootTasklistDirty(root);
                     File f = FileUtil.toFile(fo);
                     
@@ -543,15 +559,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final FileObject fo = fe.getFile();
         try {
             if ((isJava(fo) || VirtualSourceProviderQuery.hasVirtualSource(fo)) && VisibilityQuery.getDefault().isVisible(fo)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Java file changed: " + FileUtil.getFileDisplayName(fo));
-                }
                 final URL root = getOwningSourceRoot (fo);
                 File file = FileUtil.toFile(fo);
-                if (root != null && file != null) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Owner: " + root);
-                    }
+                if (LOGGER.isLoggable(Level.FINE)) {                    
+                    LOGGER.fine("Java file changed: " + FileUtil.getFileDisplayName(fo) + " Owner: "+root);
+                }                                
+                if (root != null && file != null) {                    
                     markRootTasklistDirty(root);
                     assureCompiledWithDeps(root, file);
                 }
@@ -674,7 +687,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     public void rebuildRoot(URL toRebuild, boolean forceClean) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Rebuild Root Called", new Exception());
+            LOGGER.log(Level.FINE, "Rebuild Root: " + toRebuild, new Exception());
         }
 
         submit(Work.filterChange(Collections.singletonList(toRebuild), forceClean));
@@ -682,7 +695,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     public void rebuildAll(boolean forceClean) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Rebuild All Called", new Exception());
+            LOGGER.log(Level.FINE, "Rebuild All." , new Exception());
         }
         
         List<URL> toRebuild = new LinkedList<URL>();
@@ -771,7 +784,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             
             if (lockRU == 0) {
                 //the task either does not exist, or has been already started - create new one:
-                LOGGER.log(Level.FINE, "creating a new task for root: {0}", root.toExternalForm());
+                LOGGER.log(Level.FINER, "creating a new task for root: {0}", root.toExternalForm());
                 final Collection<File> storedFilesFin = storedFiles;
                 t = WORKER.create(new Runnable() {
                     public void run() {
@@ -779,10 +792,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             compileScheduled--;
                         }
                         submit(Work.compileWithDeps(root, storedFilesFin));
+                        noSubmited--;
                     }
                 });
                 url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 compileScheduled++;
+                noSubmited++;
             } else {
                 url2CompileWithDepsTask.remove(root);
             }
@@ -896,8 +911,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     t = WORKER.create(new Runnable() {
                         public void run() {
                             submit(Work.compileWithDeps(root, storedFilesFin));
+                            noSubmited--;
                         }
                     });
+                    noSubmited++;
                     url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 }
 
@@ -980,6 +997,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         try {
             result.load(in);
+        } catch (IllegalArgumentException iae) {
+            //Issue #138704: Invalid unicode encoding in attribute file.
+            //Return newly constructed Properties, the result
+            //may already contain some pairs.
+            LOGGER.warning("Broken attribute file: " + f.getAbsolutePath());    //NOI18N
+            return new Properties();
         } finally {
             in.close();
         }
@@ -1266,6 +1289,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         public void run () throws IOException {
+            ACTIVITY_LOGGER.finest("START");    //NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1274,7 +1298,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     boolean continuation = false;
                     try {
                     final WorkType type = work.getType();                        
-                    LOGGER.finest("Request for: " + type);      //NOI18N
+                    LOGGER.finer ("Request for: " + type);      //NOI18N
                     switch (type) {
                         case FILTER_CHANGED:
                         {
@@ -1301,7 +1325,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     final URL rootURL = it.previous();
                                     it.remove();
-                                    updateFolder (rootURL,rootURL, true, mw.getForceClean(), handle);
+                                    updateFolder (rootURL,rootURL, true, mw.getForceClean());
                                 }                                
                             } catch (final TopologicalSortException tse) {
                                     final IllegalStateException ise = new IllegalStateException ();                                
@@ -1424,6 +1448,30 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 completed = true;
+
+                                //UI Gestures:
+                                Object[] data = new Object[2 * root2DebugData.size() + 1];
+                                int index = 0;
+
+                                data[index++] = Index.getCacheFolder().getName();
+                                
+                                for (Entry<URL, String> e : root2DebugData.entrySet()) {
+                                    File cacheFile = Index.getClassFolder(e.getKey(), true);
+
+                                    if (cacheFile != null) {
+                                        data[index] = cacheFile.getParentFile().getName();
+                                    }
+
+                                    index++;
+                                    data[index++] = e.getValue();
+                                }
+
+                                root2DebugData.clear();
+
+                                LogRecord rec = new LogRecord(Level.CONFIG, RepositoryUpdater.class.getName());
+                                rec.setParameters(data);
+
+                                Logger.getLogger("org.netbeans.ui.java.RepositoryUpdater").log(rec);
                             } finally {
                                 if (!completed && !continuation) {
                                     resetDirty (ticket);
@@ -1453,7 +1501,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     JavaSourceAccessor.getINSTANCE().revalidate(js);
                                 }
                             }
-                            LOGGER.fine(String.format("Complete binary scan time: %d ms. Complete source scan time: %d ms.", cbst, csst));      //NOI18N
+                            LOGGER.finer(String.format("Complete binary scan time: %d ms. Complete source scan time: %d ms.", cbst, csst));      //NOI18N
                             break;
                         case COMPILE:
                         {
@@ -1462,10 +1510,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 final URL file = sw.getFile();
                                 final URL root = sw.getRoot ();
                                 if (sw.isFolder()) {
-                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
+                                    handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                                     handle.start();
                                     try {
-                                        updateFolder (file, root, sw.isInitialCompilation(), false, handle);
+                                        updateFolder (file, root, sw.isInitialCompilation(), false);
                                     } finally {
                                         handle.finish();
                                     }
@@ -1527,7 +1575,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                                     long e = System.currentTimeMillis();
 
-                                    LOGGER.log(Level.FINE, "Enumerating files with errors for root: {0} took: {1} ms.", new Object[]{root, e - s});
+                                    LOGGER.log(Level.FINER, "Enumerating files with errors for root: {0} took: {1} ms.", new Object[]{root, e - s});
 
                                     assureRecompiled(root, toReparse);
                                 } catch (URISyntaxException e) {
@@ -1574,6 +1622,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             } catch (InterruptedException e) {
                 //Never thrown
                 Exceptions.printStackTrace(e);
+            }
+            finally {
+                ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
             }
         }
         
@@ -1627,10 +1678,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             cycleDetector.pop ();
         }
 
-        private void gatherResourceForParseFilesFromRoot(Collection<File> files, File rootFile, final File cacheRoot, Map<String, List<File>> resources) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "going to compute resources");
-                LOGGER.log(Level.FINE, "files={0}", files);
+        private void gatherResourceForParseFilesFromRoot(Collection<? extends File> files, File rootFile, final File cacheRoot, Map<String, List<File>> resources) {
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "going to compute resources");
+                LOGGER.log(Level.FINEST, "files={0}", files);
             }
 
             String rootName = cacheRoot.getAbsolutePath();
@@ -1642,20 +1693,20 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             for (File toProcess : files) {
                 String relative = FileObjects.stripExtension(FileObjects.getRelativePath(rootFile, toProcess));
 
-                LOGGER.log(Level.FINE, "relative={0}", relative);
+                LOGGER.log(Level.FINEST, "relative={0}", relative);
 
                 File f = new File(cacheRoot, relative + '.' + FileObjects.RS);
 
-                LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[]{f.getAbsolutePath(), f.exists()});
+                LOGGER.log(Level.FINEST, "f={0}, exists={1}", new Object[]{f.getAbsolutePath(), f.exists()});
 
                 if (f.exists()) {
                     gatherResources(cacheRoot, f, len, resources);
                     continue;
                 }
 
-                f = new File(cacheRoot, relative + '.' + FileObjects.SIG);
+                f = new File(cacheRoot, relative + '.' + FileObjects.CLASS);
 
-                LOGGER.log(Level.FINE, "f={0}, exists={1}", new Object[]{f.getAbsolutePath(), f.exists()});
+                LOGGER.log(Level.FINEST, "f={0}, exists={1}", new Object[]{f.getAbsolutePath(), f.exists()});
 
                 if (f.exists()) {
                     gatherResources(cacheRoot, f, len, resources);
@@ -1678,8 +1729,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
 
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "resources={0}", resources);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "resources={0}", resources);
             }
         }
         
@@ -1694,6 +1745,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         return true;
                     }
                     final URL rootURL = it.next();
+                    updateProgress (rootURL);
                     try {
                         it.remove();
                         final ClassIndexImpl ci = ClassIndexManager.getDefault().createUsagesQuery(rootURL,false);                                        
@@ -1702,7 +1754,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         BinaryAnalyser ba = ci.getBinaryAnalyser();
                         BinaryAnalyser.Result finished = null;
                         try {
-                            finished = ba.start(rootURL, handle, canceled, closed);
+                            finished = ba.start(rootURL, canceled, closed);
                         } finally {
                             if (finished == null || finished == BinaryAnalyser.Result.FINISHED) {                            
                                     time = ba.finish();
@@ -1724,7 +1776,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     Exceptions.printStackTrace(e);
                             }                            
                         }
-                        LOGGER.fine (String.format("Indexing of: %s took: %d ms",rootURL.toExternalForm(),time));
+                        LOGGER.finer (String.format("Indexing of: %s took: %d ms",rootURL.toExternalForm(),time));
                     } catch (Throwable e) {
                         if (e instanceof ThreadDeath) {
                             throw (ThreadDeath) e;
@@ -1751,8 +1803,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final URL rootURL = it.previous();
                         it.remove();                                                                                
                         if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
-                            long startT = System.currentTimeMillis();                        
-                            updateFolder (rootURL,rootURL, true, false, handle);
+                            long startT = System.currentTimeMillis();
+                            updateProgress (rootURL);
+                            updateFolder (rootURL,rootURL, true, false);
                             long time = System.currentTimeMillis() - startT;                        
                             if (PERF_TEST) {
                                 try {
@@ -1763,7 +1816,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         Exceptions.printStackTrace(e);
                                 }
                             }
-                            LOGGER.fine(String.format("Scannig of %s took %d ms.", rootURL.toExternalForm(), time));
+                            LOGGER.finer(String.format("Scannig of %s took %d ms.", rootURL.toExternalForm(), time));
                         }
                     } catch (Throwable e) {
                         if (e instanceof ThreadDeath) {
@@ -1780,13 +1833,50 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             return true;
         }
         
+        private void updateProgress (final URL url) {
+            assert url != null;
+            if (handle == null) {
+                return;
+            }            
+            URL tmp = FileUtil.getArchiveFile(url);
+            if (tmp == null) {
+                tmp = url;
+            }
+            try {
+                if ("file".equals(tmp.getProtocol())) {
+                    final File file = new File(new URI(tmp.toString()));                    
+                    handle.progress(file.getAbsolutePath());
+                }
+                else {
+                    handle.progress(tmp.toString());
+                }
+            } catch (URISyntaxException ex) {
+                handle.progress(tmp.toString());
+            }            
+        }
+        
         private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
-                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                boolean clean, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
-                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel) throws IOException {
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual)
+                throws IOException 
+        {
+            parseFiles(root, classCache, isInitialCompilation, children,
+                    virtualChildren, clean, filter, resources, compiledFiles,
+                    toRecompile, misplacedSource2FQNs, allowCancel, generateVirtual,
+                    null, null);
+        }
+
+        private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
+                Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
+                boolean clean, JavaFileFilterImplementation filter,
+                Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual,
+                FileList digest, File folderFile) throws IOException {
+        
             assert !allowCancel || compiledFiles != null;
-            LOGGER.fine("parseFiles: " + root);            
+            LOGGER.finer("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -1853,7 +1943,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     clean = true;
                 }
                 
-                clean |= ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false,false)), true);
+                if (ensureAttributeValue(root, CLASSPATH_ATTRIBUTE, classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false,false)), true)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("forcing clean due to difderent classpaths, original: "+
+                                getAttribute(root, CLASSPATH_ATTRIBUTE, "")+
+                                "new:"+
+                                classPathToString(ClasspathInfoAccessor.getINSTANCE().create(bootPath, compilePath, sourcePath,null,true,false,false)));
+                    }
+                    clean = true;
+                }
 
                 if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
                     if (ensureAttributeValue(root, CONTAINS_TASKLIST_DATA, "true", true)) {
@@ -1867,15 +1965,24 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
 
-            LinkedList<Pair<JavaFileObject,File>> toCompile = new LinkedList<Pair<JavaFileObject,File>>();
+            LinkedList<CompileTuple> toCompile = new LinkedList<CompileTuple>();
             ClassIndexImpl uqImpl = ClassIndexManager.getDefault().createUsagesQuery(root, true);
             if (uqImpl == null) {
                 //IDE is exiting, indeces are already closed.
                 return;
             }
+            if (digest != null && !digest.resolveDigest(root) && !clean) {
+                // no need to recompile whole root and no change detected
+                // in source root.
+                return;
+            }
+            if (resources == null && folderFile != null) {
+                resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
+            }
             SourceAnalyser sa = uqImpl.getSourceAnalyser();
             assert sa != null;
             boolean invalidIndex = isInitialCompilation && !sa.isValid();
+            LOGGER.fine("forcing clean because of invalid index");
             Set<File> rs = new HashSet<File> ();
             
             //XXX: getting encoding for the folder is (technically speaking) incorrect:
@@ -1887,7 +1994,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         try {
                             existingFilesInError.add(FileUtil.normalizeFile(new File(u.toURI())));
                         } catch (URISyntaxException ex) {
-                            LOGGER.log(Level.FINE, null, ex);
+                            LOGGER.log(Level.FINEST, null, ex);
                         }
                     }
                 } else {
@@ -1926,7 +2033,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                             LOGGER.finest(message);
                         }
-                        toCompile.add(Pair.<JavaFileObject,File>of(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
+                        toCompile.add(new CompileTuple(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                     } else {                        
                         final int index = relativePath.lastIndexOf('.');  //NOI18N
                         final String offset = (index > -1) ? relativePath.substring(0,index) : relativePath;
@@ -1935,7 +2042,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             if (LOGGER.isLoggable(Level.FINEST)) {
                                 LOGGER.finest("Compiling " + child.getPath()+" no cache for it" );      //NOI18N
                             }
-                            toCompile.add(Pair.<JavaFileObject,File>of(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
+                            toCompile.add(new CompileTuple(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                         } else {
                             boolean rsf = files.get(0).getName().endsWith(FileObjects.RS);
                             String sourceName = null;
@@ -1943,7 +2050,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 if (LOGGER.isLoggable(Level.FINEST)) {
                                     LOGGER.finest("Compiling " + child.getPath()+ " timestamp (cache: "+files.get(0).lastModified()+" source: "+child.lastModified()+")" ); //NOI18N
                                 }
-                                toCompile.add(Pair.<JavaFileObject,File>of(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
+                                toCompile.add(new CompileTuple(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
                                 String rsFileBinaryName = null;
                                 for (File toDelete : files) {
                                     toDelete.delete();
@@ -2017,7 +2124,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 if (LOGGER.isLoggable(Level.FINEST)) {
                                     LOGGER.finest("Compiling " + child.getPath()+ " timestamp (cache: "+files.get(0).lastModified()+" source: "+child.lastModified()+")" ); //NOI18N
                                 }
-                                toCompile.add(Pair.<JavaFileObject,File>of(FileObjects.fileFileObject(child, rootFile, filter, encoding), child));
+                                virtualFilesToCompile.add(child);
                                 for (File toDelete : files) {
                                     toDelete.delete();                                   
                                     String className = FileObjects.getBinaryName(toDelete,classCache);                                        
@@ -2041,7 +2148,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 for (File toDelete : files) {
                     if (!rs.contains(toDelete)) {
                         toDelete.delete();
-                        if (toDelete.getName().endsWith(FileObjects.SIG)) {
+                        if (toDelete.getName().endsWith(FileObjects.CLASS)) {
                             String className = FileObjects.getBinaryName(toDelete,classCache);
                             sa.delete(className,null);
                             if (removed != null) {
@@ -2055,17 +2162,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,sourcePath,
                     filter,true,this.ignoreExcludes.contains(root),!virtualFilesToCompile.isEmpty());
             if (!virtualFilesToCompile.isEmpty()) {
-                final Iterable<FileObjects.InferableJavaFileObject> fos = VirtualSourceProviderQuery.translate(virtualFilesToCompile, rootFile);
-                for (FileObjects.InferableJavaFileObject fo : fos) {
-                    ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, fo);
-                    toCompile.add(Pair.<JavaFileObject,File>of(fo,null));
-                }                
-            }
-            if (!toCompile.isEmpty()) {
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
+                final Iterable<VirtualSourceProviderQuery.Binding> fos = VirtualSourceProviderQuery.translate(virtualFilesToCompile, rootFile);
+                for (VirtualSourceProviderQuery.Binding fo : fos) {
+                    ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, fo.virtual);
+                    if (generateVirtual) {
+                        toCompile.add(new CompileTuple(fo.virtual,fo.original,fo.index));
+                    }
                 }
+            }
+            if (!toCompile.isEmpty()) {                
                 //System.err.println("toCompile=" + toCompile);
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
                         compiledFiles, allowCancel ? canceled : null, added,
@@ -2119,7 +2224,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }            
         }
         
-        private void updateFolder(final URL folder, final URL root, final boolean isInitialCompilation, boolean clean, final ProgressHandle handle) throws IOException {
+        private void updateFolder(final URL folder, final URL root, final boolean isInitialCompilation, boolean clean) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -2148,10 +2253,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     return ;
                 }
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-                }
                 //Preprocessor support
                 JavaFileFilterImplementation filter = filters.get(root);
                 if (filter == null) {
@@ -2165,29 +2266,36 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 final File classCache = Index.getClassFolder(rootFile);
                 final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
-                Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
+                Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
                 Set<File> compiledFiles = new HashSet<File>();
+                if (isInitialCompilation) {
+                    root2DebugData.put(root, children.getJavaFiles().size() + ":" + children.getVirtualJavaFiles().size());
+                }
                 parseFiles(root, classCache, isInitialCompilation,
                         children.getJavaFiles(), children.getVirtualJavaFiles(),
-                        clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false);
+                        clean, filter, null, compiledFiles, null, misplacedSource2FQNs,
+                        false, true, children, folderFile);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "misplaces classes detected");
-                        LOGGER.log(Level.FINE, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
+                    LOGGER.log(Level.FINE, "misplaces classes detected");
+                    if (LOGGER.isLoggable(Level.FINEST)) {                        
+                        LOGGER.log(Level.FINEST, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
                     }
                     
-                    resources.clear();
+                    resources = new HashMap<String, List<File>>();
                     
                     gatherResourceForParseFilesFromRoot(compiledFiles, rootFile, classCache, resources);
                     
                     parseFiles(root, classCache, isInitialCompilation,
                             compiledFiles, children.getVirtualJavaFiles(),
-                            true, handle, filter, resources, null, null, misplacedSource2FQNs, false);
+                            true, filter, resources, null, null, misplacedSource2FQNs, false,false);
                 }
             } catch (OutputFileManager.InvalidSourcePath e) {
                 //Deleted project, ignore
+            }
+            catch (MissingPlatformError mp) {
+                //No platform ignore
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
@@ -2229,7 +2337,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         for (File toDelete : files) {
                             toDelete.delete();
                             final String ext = FileObjects.getExtension(toDelete.getName());
-                            if (FileObjects.SIG.equals(ext)) {
+                            if (FileObjects.CLASS.equals(ext)) {
                                 String className = FileObjects.getBinaryName (toDelete,classCache);
                                 if (sourceName != null && !rsFileBinaryName.equals(className)) {
                                     classNamesToDelete.add(Pair.<String,String>of(className,sourceName));
@@ -2240,12 +2348,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 removed.add (ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
                                 removedFiles.add(toDelete);
                             }
-                            else if (FileObjects.RS.equals(ext)) {
+                            else if (FileObjects.RS.equals(ext) || FileObjects.RX.equals(ext)) {
                                 //The RS files comes as first in toDelete
                                 sourceName = relativePath;
                                 rsFileBinaryName = FileObjects.getBinaryName (toDelete,classCache);
                             }
-                            //Nothing to do for RX files
                         }
                     }
                     else {
@@ -2254,71 +2361,77 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false, virtual);   //Todo: shouldn't use rather root for virtual files, does virtual source provide ClassPath?
                     ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
                     if (entry == null || entry.includes(fo)) {                        
-                        final CompilerListener listener = new CompilerListener ();
+                        final CompilerListener listener = new CompilerListener ();                        
                         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         final String sourceLevel = SourceLevelQuery.getSourceLevel(fo); //Todo: shouldn't use rather root for virtual files, does virtual source provide source level?
-                        JavaFileObject active = null;
+                        final Collection<CompileTuple> active = new LinkedList<CompileTuple>();
                         if (virtual) {
-                            final Iterable<FileObjects.InferableJavaFileObject> jfos = VirtualSourceProviderQuery.translate(Collections.singleton(fileFile), rootFile);
-                            boolean one2oneGuard = false;
-                            for (FileObjects.InferableJavaFileObject jfo : jfos) {
-                                assert !one2oneGuard : "Virtual source " + fileFile.getAbsolutePath() +" provided more java files!";    //NOI18N
-                                ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, jfo);
-                                active = jfo;
-                                one2oneGuard = true;
+                            final Iterable<VirtualSourceProviderQuery.Binding> jfos = VirtualSourceProviderQuery.translate(Collections.singleton(fileFile), rootFile);
+                            for (VirtualSourceProviderQuery.Binding jfo : jfos) {
+                                ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, jfo.virtual);
+                                active.add (new CompileTuple(jfo.virtual,jfo.original,jfo.index));
                             }
-                            assert active != null : "Virtual source " + fileFile.getAbsolutePath() +" provided no java files!";    //NOI18N
+
                         }
                         else {
-                            active = FileObjects.nbFileObject(fo, rootFo, filter, false);
+                            active.add (new CompileTuple(FileObjects.nbFileObject(fo, rootFo, filter, false),fileFile));
                         }
-                        if (active != null) {   //Prevent NPE when VirtualSourceProvider behaves wrongly
-                            JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel,null);
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
-                            }
+                        if (!active.isEmpty()) {
+                            JavacTaskImpl jt =  JavacParser.createJavacTask(cpInfo, listener, sourceLevel,null);                           
+                            if (LOGGER.isLoggable(Level.FINEST)) {
+                                LOGGER.finest("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
+                            }                            
                             jt.setTaskListener(listener);
-                            Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-                            Iterable<? extends TypeElement> classes = jt.enter();
-                            if (toRebuild != null) {
-                                Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
-                                toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
+                            boolean hasMain = false;
+                            for (CompileTuple tuple : active) {
+                                Iterable<? extends CompilationUnitTree> trees = jt.parse(tuple.jfo);
+                                Iterable<? extends TypeElement> classes = jt.enterTrees(trees);
+                                if (toRebuild != null) {
+                                    Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
+                                    toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
+                                }
+                                jt.analyze ();
+                                boolean[] main = new boolean[1];
+                                sa.analyse(trees, jt, fm, tuple.virtual, tuple.indexable,
+                                        tuple.virtual ? FileObjects.fileFileObject(tuple.file, rootFile, null) : tuple.jfo,
+                                        added, main);
+                                Log.instance(jt.getContext()).nerrors = 0;
+                                hasMain |= main[0];                                
                             }
-                            jt.analyze ();
-                            boolean[] main = new boolean[1];
-                            sa.analyse(trees, jt, fm, active, added, main);
-
-                            ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), main[0]);
-
+                            ExecutableFilesIndex.DEFAULT.setMainClass(root, fo.getURL(), hasMain);
                             for (Pair<String,String> s : classNamesToDelete) {
                                 sa.delete(s);
                             }
 
-                            List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                            URI u = active.toUri();
-                            for (Diagnostic d : listener.errors) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            for (Diagnostic d : listener.warnings) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            if (!virtual && TasklistSettings.isTasklistEnabled()) { //Don't report errors in virtual files
-                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
-
-                                if (TasklistSettings.isBadgesEnabled()) {
-                                    //XXX: maybe move to the common path (to be used also in the else branch:
-                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                    if (an != null) {
-                                        an.updateInError(toRefresh);
+                            if (!virtual) { //Don't report errors in virtual files
+                                assert active.size() == 1;
+                                
+                                JavaFileObject jfo = active.iterator().next().jfo;
+                                List<Diagnostic> diag = new ArrayList<Diagnostic>();
+                                for (Diagnostic d : listener.errors) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
                                     }
                                 }
+                                for (Diagnostic d : listener.warnings) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
+                                    }
+                                }
+                                if (TasklistSettings.isTasklistEnabled()) {
+                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
 
-                                JavaTaskProvider.refresh(fo);
+                                    if (TasklistSettings.isBadgesEnabled()) {
+                                        //XXX: maybe move to the common path (to be used also in the else branch:
+                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                        if (an != null) {
+                                            an.updateInError(toRefresh);
+                                        }
+                                    }
+
+                                    JavaTaskProvider.refresh(fo);
+                                }
                             }
                             for (JavaFileObject generated : jt.generate()) {
                                 if (generated instanceof OutputFileObject) {
@@ -2326,9 +2439,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 } else {
                                     //XXX: log (presumably should not happen)
                                 }
-                            }
-                            Log.instance(jt.getContext()).nerrors = 0;
+                            }                            
                             listener.cleanDiagnostics();
+                            jt.finish();
                         } else {
                             //Todo: clean up this repeated code
                             for (Pair<String,String> s : classNamesToDelete) {
@@ -2360,6 +2473,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 } catch (OutputFileManager.InvalidSourcePath e) {
                     return ;
                 }
+                 catch (MissingPlatformError mp) {
+                     //Broken platform, ignore
+                     return;
+                 }
             }
         }
         
@@ -2451,11 +2568,15 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser(); 
+            ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(root, false);
+            if (uq == null) {
+                return ; //IDE is exiting, indeces are already closed.
+            }
+            final BinaryAnalyser ba = uq.getBinaryAnalyser();
             if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
                 //todo: may also need interruption.
                 try {
-                    BinaryAnalyser.Result finished = ba.start(root, handle, new AtomicBoolean(false), new AtomicBoolean(false));
+                    BinaryAnalyser.Result finished = ba.start(root, new AtomicBoolean(false), new AtomicBoolean(false));
                     while (finished == BinaryAnalyser.Result.CANCELED) {
                         finished = ba.resume();
                     }
@@ -2473,9 +2594,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 recompileScheduled = false;
             }
             
-            Logger.getLogger(RepositoryUpdater.class.getName()).log(Level.FINE, GOING_TO_RECOMPILE, toRecompile);
+            LOGGER.log(Level.FINEST, GOING_TO_RECOMPILE, toRecompile);
             
-            toRecompile = compileFileFromRoots(toRecompile, true, null);
+            toRecompile = compileFileFromRoots(toRecompile, true, false, null);
             
             if (!toRecompile.isEmpty()) {
                 synchronized (RepositoryUpdater.this) {
@@ -2521,7 +2642,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     depsToRecompile.put(root, toRebuild);
                 }
             } else {
-                Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, depsToRecompile);
+                Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, true, depsToRecompile);
 
                 assert result.isEmpty(); //not cancellable
             }
@@ -2543,7 +2664,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, final boolean cancellable,  Map<URL, Collection<File>> depsToRecompile) throws IOException {
+        private Map<URL, Collection<File>> compileFileFromRoots(Map<URL, Collection<File>> toRecompile, final boolean cancellable,  final boolean useVirtual, final Map<URL, Collection<File>> depsToRecompile) throws IOException {
             List<URL> handledRoots = new LinkedList<URL>();
             
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_RefreshingWorkspace"));
@@ -2584,7 +2705,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
                         List<? extends File> virtualFiles;
-                        if (rootsWithVirtualSource.contains(root)) {
+                        if (useVirtual && rootsWithVirtualSource.contains(root)) {
                             final FileList list = new FileList(rootFile);
                             virtualFiles = list.getVirtualJavaFiles();
                         }
@@ -2593,12 +2714,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         parseFiles(root, cacheRoot, false,
                                 files, virtualFiles,
-                                true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable);
+                                true, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, true);
 
                         if (!misplacedSource2FQNs.isEmpty()) {
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.log(Level.FINE, "misplaces classes detected");
-                                LOGGER.log(Level.FINE, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
+                            LOGGER.log(Level.FINE, "misplaces classes detected");
+                            if (LOGGER.isLoggable(Level.FINEST)) {                                
+                                LOGGER.log(Level.FINEST, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
                             }
 
                             resources.clear();
@@ -2606,7 +2727,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             
                             parseFiles(root, cacheRoot, false,
                                     files, virtualFiles,
-                                    true, handle, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable);
+                                    true, filter, resources, compiledFiles, thisDepsToRecompile, misplacedSource2FQNs, cancellable, false);
                         }
                         
                         if (thisDepsToRecompile != null && !thisDepsToRecompile.isEmpty()) {
@@ -2627,6 +2748,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                     } catch (OutputFileManager.InvalidSourcePath e) {
                         //Deleted project
+                        it.remove();
+                    }
+                    catch (MissingPlatformError e) {
+                        //Broken platform, ignore
                         it.remove();
                     }
 
@@ -2669,7 +2794,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
              
              if (f != null) {
                  sb.append("(");
-                 if (f.exists()) {
+                 if (f.isFile()) {
                      sb.append(f.lastModified());
                  } else {
                      sb.append("-1");
@@ -2698,6 +2823,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final List<File> javaFiles = new LinkedList<File>();
         private final List<File> virtualJavaFiles = new LinkedList<File>();
         private boolean initialized;
+        private String digest;
 
         public FileList (final File root) {
             assert root != null;
@@ -2718,8 +2844,45 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private synchronized void init () {
             if (!initialized) {                
                 collectFiles (root, javaFiles, virtualJavaFiles);
+                computeDigest(root, javaFiles);
                 initialized = true;
             }
+        }
+
+        private boolean resolveDigest(URL rootUrl) {
+            try {
+                return ensureAttributeValue(rootUrl, DIGEST, digest, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return true;
+            }
+        }
+
+        private void computeDigest(File root, final List<File> javaFiles) {
+            StringBuilder sb = new StringBuilder(200);
+            for (File f : javaFiles) {
+                sb.append(f.getPath()).append(f.lastModified());
+            }
+            try {
+                MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
+                byte[] b = sb.toString().getBytes();
+                byte[] digest = md5.digest(b);
+                this.digest = printDigest(digest);
+            } catch (NoSuchAlgorithmException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private String printDigest(byte[] digest) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < digest.length; i++) {
+                String hex = Integer.toHexString(0xFF & digest[i]);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+            return sb.toString();
         }
         
         private static void collectFiles (final File root, final List<? super File> javaFiles,
@@ -2732,9 +2895,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         collectFiles(child, javaFiles, virtualJavaFiles);
                     }
                     else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION)) { //NOI18N
-                        if (!PACKAGE_INFO.equals(name) && child.length()>0) {
-                            javaFiles.add(child);
-                        }
+                        javaFiles.add(child);
                     }
                     else if (VirtualSourceProviderQuery.hasVirtualSource(child)) {
                         virtualJavaFiles.add(child);
@@ -2771,17 +2932,17 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         void cleanDiagnostics () {
             if (!this.errors.isEmpty()) {
-                if (LOGGER.isLoggable(Level.FINE)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
                     for (Diagnostic msg : this.errors) {
-                        LOGGER.fine(msg.toString());      //NOI18N
+                        LOGGER.finer(msg.toString());      //NOI18N
                     }
                 }
                 this.errors.clear();
             }
             if (!this.warnings.isEmpty()) {
-                if (LOGGER.isLoggable(Level.FINE)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
                     for (Diagnostic msg: this.warnings) {
-                        LOGGER.fine(msg.toString());      //NOI18N
+                        LOGGER.finer(msg.toString());      //NOI18N
                     }
                 }
                 this.warnings.clear();
@@ -2842,7 +3003,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     
     static Callback CALLBACK = null;
     
-    private static Set<URL> batchCompile (final LinkedList<Pair<JavaFileObject,File>> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
+    private static Set<URL> batchCompile (final LinkedList<CompileTuple> toCompile, final FileObject rootFo, final ClasspathInfo cpInfo, final SourceAnalyser sa,
         final Set<URI> dirtyFiles, Set<File> compiledFiles, AtomicBoolean canceled, final Set<? super ElementHandle<TypeElement>> added,
         final AtomicBoolean ideClosed, Set<File> toRecompile, Map<URI, List<String>> misplacedSource2FQNs, Set<File> addedFiles) throws IOException {
         assert toCompile != null;
@@ -2850,9 +3011,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         assert cpInfo != null;
         File rootFile = FileUtil.toFile(rootFo);
         assert rootFile != null;
-        JavaFileObject active = null;
-        File           activeFile = null;
-        Pair<JavaFileObject, File> activePair = null;
+        CompileTuple activeTuple = null;
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();
         final Map<URI, List<String>> misplacedSource2FQNsLocal = new HashMap<URI, List<String>>(misplacedSource2FQNs);
@@ -2864,11 +3023,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             JavacTaskImpl jt = null;
             try {                
-                List<Pair> bigFiles = new LinkedList<Pair>();
+                List<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
                 int state = 0;
                 boolean isBigFile = false;
                 final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
-                while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
+                while (!toCompile.isEmpty() || !bigFiles.isEmpty() || activeTuple != null) {
                     if (canceled != null && canceled.getAndSet(false)) {
                         return toRefresh;
                     }
@@ -2890,31 +3049,30 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             System.gc();
                             continue;
                         }
-                        if (active == null) {
+                        if (activeTuple == null) {
                             if (!toCompile.isEmpty()) {
-                                activePair = toCompile.remove(0);
-                                active = activePair.first;
-                                activeFile = activePair.second;
+                                activeTuple = toCompile.remove(0);
                                 isBigFile = false;
                             } else {
-                                activePair = bigFiles.remove(0);
-                                active = activePair.first;
-                                activeFile = activePair.second;
+                                activeTuple = bigFiles.remove(0);
                                 isBigFile = true;
                             }
                             
                             if (CALLBACK != null) {
-                                CALLBACK.willCompile(active);
+                                CALLBACK.willCompile(activeTuple.jfo);
                             }
                         }
                         if (jt == null) {
                             jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
+                            if (LOGGER.isLoggable(Level.FINER)) {
+                                LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N
                             }
                         }
-                        Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.finest("Parsing file: " + activeTuple.jfo.toUri());   //NOI18N
+                        }
+                        Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {activeTuple.jfo});
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -2924,8 +3082,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 if (isBigFile) {
                                     break;
                                 } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
+                                    bigFiles.add(activeTuple);
+                                    activeTuple = null;
                                     state = 0;
                                 }
                             } else {
@@ -2935,14 +3093,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         Iterable<? extends TypeElement> types = jt.enterTrees(trees);
-                        if (activeFile != null) {
+                        if (!activeTuple.virtual && activeTuple.file != null) {
                             //When the active file is not set (generated virtual source) ignore top level check
-                            String expectedTopLevelClassName = activeFile.getName();
+                            String expectedTopLevelClassName = activeTuple.file.getName();
 
                             expectedTopLevelClassName = expectedTopLevelClassName.substring(0, expectedTopLevelClassName.length() - ".java".length());
 
                             //check for classes living elsewhere:
                             for (TypeElement topLevel : types) {
+                                if (topLevel==null) {
+                                    //workaround for 6443073
+                                    //see Symbol.java:601
+                                    //see JavacTaskImpl.java:367
+                                    //see also #144315
+                                    continue;
+                                }
+
                                 if (!expectedTopLevelClassName.equals(topLevel.getSimpleName().toString())) {
                                     List<String> classes = new LinkedList<String>();
                                     JavacElements elements = JavacElements.instance(jt.getContext());
@@ -2951,7 +3117,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         classes.add(elements.getBinaryName(e).toString());
                                     }
 
-                                    misplacedSource2FQNs.put(activeFile.toURI(), classes);
+                                    misplacedSource2FQNs.put(activeTuple.file.toURI(), classes);
 
                                     break;
                                 }
@@ -2968,8 +3134,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 if (isBigFile) {
                                     break;
                                 } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
+                                    bigFiles.add(activeTuple);
+                                    activeTuple = null;
                                     state = 0;
                                 }
                             } else {
@@ -2989,8 +3155,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 if (isBigFile) {
                                     break;
                                 } else {
-                                    bigFiles.add(activePair);
-                                    active = null;
+                                    bigFiles.add(activeTuple);
+                                    activeTuple = null;
                                     state = 0;
                                 }
                             } else {
@@ -3001,20 +3167,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         }
                         if (sa != null) {
                             boolean[] main = new boolean[1];
-                            sa.analyse(trees, jt, fileManager, active, added, main);
-                            if (activeFile != null) {
+                            sa.analyse(trees, jt, fileManager, activeTuple.virtual, activeTuple.indexable,
+                                    activeTuple.virtual ? FileObjects.fileFileObject(activeTuple.file, rootFile, null) : activeTuple.jfo,
+                                    added, main);
+                            if (activeTuple.file != null) {
                                 //When the active file is not set (generated virtual source) ignore executable flag
-                                ExecutableFilesIndex.DEFAULT.setMainClass(rootFo.getURL(), activeFile.toURI().toURL(), main[0]);
+                                ExecutableFilesIndex.DEFAULT.setMainClass(rootFo.getURL(), activeTuple.file.toURI().toURL(), main[0]);
                             }
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                        URI u = active.toUri();
+                        URI u = activeTuple.jfo.toUri();
                         for (Iterator<Diagnostic> it = listener.errors.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(d.toString());
+                            if (LOGGER.isLoggable(Level.FINER)) {
+                                LOGGER.finer(d.toString());
                             }
-                            if (active.equals(d.getSource())) {
+                            if (activeTuple.jfo.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();
                             }
@@ -3022,29 +3190,29 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         
                         for (Iterator<Diagnostic> it = listener.warnings.iterator(); it.hasNext(); ) {
                             Diagnostic d = it.next();
-                            if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(d.toString());
+                            if (LOGGER.isLoggable(Level.FINER)) {
+                                LOGGER.finer(d.toString());
                             }
-                            if (active.equals(d.getSource())) {
+                            if (activeTuple.jfo.equals(d.getSource())) {
                                 diag.add(d);
                                 it.remove();
                             }
                         }
                         
-                        if (TasklistSettings.isTasklistEnabled() && activeFile != null) {
-                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeFile, diag));
+                        if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null && !activeTuple.virtual) {
+                            toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeTuple.file, diag));
                         }
                         Log.instance(jt.getContext()).nerrors = 0;
-                        if (compiledFiles != null && activeFile != null) {
+                        if (compiledFiles != null && !activeTuple.virtual) {
                             //compiledFiles are not tracked for virtual sources
-                            compiledFiles.add(activeFile);
+                            compiledFiles.add(activeTuple.file);
                         }
-                        if (toRecompile != null && activeFile != null) {
+                        if (toRecompile != null && !activeTuple.virtual) {
                             //todo: enable rebuild oraculum for virtual files
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
-                            toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeFile.toURI().toURL(), cpInfo, members));
+                            toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeTuple.file.toURI().toURL(), cpInfo, members));
                         }
-                        for (JavaFileObject generated : jt.generate()) {
+                        for (JavaFileObject generated : jt.generate(types)) {   //Analyzing genlist may be a bit faster
                             if (generated instanceof OutputFileObject) {
                                 if (addedFiles != null) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
@@ -3053,14 +3221,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 //XXX: log (presumably should not happen)
                             }
                         }
-                        active = null;
-                        activeFile = null;
-                        activePair = null;
+                        activeTuple = null;
                         state  = 0;
                     } catch (CouplingAbort a) {
                         //coupling error
                         //TODO: check if the source sig file ~ the source java file:
-                        couplingAbort(a, active);
+                        couplingAbort(a, activeTuple.jfo);
                         if (jt != null) {
                             jt.finish();
                         }
@@ -3074,7 +3240,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
                             final String message = String.format("batchCompile caused an exception Root: %s File: %s Bootpath: %s Classpath: %s Sourcepath: %s",
                                         FileUtil.getFileDisplayName(rootFo),
-                                        active.toUri().toString(),
+                                        activeTuple.jfo.toUri().toString(),
                                         bootPath == null   ? null : bootPath.toString(),
                                         classPath == null  ? null : classPath.toString(),
                                         sourcePath == null ? null : sourcePath.toString()
@@ -3088,6 +3254,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             //Handled above
                             throw (OutputFileManager.InvalidSourcePath) t;
                         }
+                        else if (t instanceof MissingPlatformError) {
+                            //Handled above
+                            throw (MissingPlatformError) t;
+                        }
                         else {
                             if (jt != null) {
                                 jt.finish();
@@ -3097,11 +3267,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             //otherwise tasklist will reschedule the parse again
                             //and the RepositoryUpdater ends in infinite loop of reparse.
                             if (compiledFiles != null) {
-                                compiledFiles.add(activeFile);
+                                compiledFiles.add(activeTuple.file);
                             }
-                            final URI activeURI = active.toUri();
+                            final URI activeURI = activeTuple.jfo.toUri();
                             jt = null;
-                            active = null;                            
+                            activeTuple = null;                            
                             listener.cleanDiagnostics();
                             if (!(t instanceof Abort)) {                                
                                 final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
@@ -3280,20 +3450,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
         }
-        else if (extIndex+1+FileObjects.SIG.length() == path.length() && path.endsWith(FileObjects.SIG)) {
-            int index = path.indexOf('$',oi);  //NOI18N
-            if (index == -1) {
-                path = path.substring(oi,extIndex);
-            } else {
-                path = path.substring(oi,index);
-            }
-            List<File> files = result.get(path);
-            if (files == null) {
-                files = new LinkedList<File>();
-                result.put(path,files);
-            }
-            files.add(f);
-        } else if (extIndex+1+FileObjects.CLASS.length() == path.length() && path.endsWith(FileObjects.CLASS)) {
+        else if (extIndex+1+FileObjects.CLASS.length() == path.length() && path.endsWith(FileObjects.CLASS)) {
             int index = path.indexOf('$',oi);  //NOI18N
             if (index == -1) {
                 path = path.substring(oi,extIndex);
@@ -3330,12 +3487,79 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         try {
             String binaryName;
             while ((binaryName=in.readLine())!=null) {
-                File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.SIG);
+                File sf = new File (root, FileObjects.convertPackage2Folder(binaryName)+'.'+FileObjects.CLASS);
                 files.add(sf);                                        
             }
         } finally {
             in.close();
         }
+    }
+    
+    private static Collection<? extends ElementHandle<TypeElement>> readRefFile (final File f) throws IOException {
+        final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (f), "UTF-8"));
+        try {
+            String binaryName;
+            while ((binaryName=in.readLine())!=null) {
+                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, binaryName));
+            }
+        } finally {
+            in.close();
+        }
+        return result;
+    }
+    
+    public static Collection<? extends ElementHandle<TypeElement>> getRelatedFiles (final File source, final File root) throws IOException {
+        assert source != null;
+        assert root != null;
+        List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+        String path = FileObjects.getRelativePath(root, source);
+        File cache = Index.getClassFolder(root.toURI().toURL());
+        File f = new File (cache,path+'.'+FileObjects.RX);      //NOI18N
+        boolean rf = false;
+        if (f.exists()) {
+            rf = true;                                   
+            result.addAll(RepositoryUpdater.readRefFile(f));
+        }
+        int index = path.lastIndexOf('.');                      //NOI18N
+        if (index>0) {
+            path = path.substring(0, index);
+        }
+        f = new File (cache,path+'.'+FileObjects.RS);           //NOI18N
+        if (f.exists()) {
+            rf = true;
+            result.addAll(RepositoryUpdater.readRefFile(f));
+
+        }
+        if (!rf) {            
+            index = path.lastIndexOf (File.separatorChar);
+            final String parentPath = index == -1 ? "" : path.substring(0,index);
+            final String parentPackage = FileObjects.convertFolder2Package(parentPath,File.separatorChar);
+            final File container = new File (cache,parentPath);
+            final String name = path.substring(index+1);
+            String[] patterns = new String[] {
+                name + '.',     //NOI18N
+                name + '$'      //NOI18N
+            };
+            final File[] content  = container.listFiles();
+            if (content != null) {
+                for (File file : content) {
+                    String fname = file.getName();
+                    for (int i=0; i< patterns.length; i++) {
+                        if (fname.startsWith(patterns[i])) {
+                            index = fname.lastIndexOf('.');
+                            if (index > 0) {
+                                fname = fname.substring(0,index);
+                            }
+                            String binName = parentPackage.length() == 0 ? fname : parentPackage + '.' + fname; //NOI18N
+                            result.add (ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, binName));
+                            break;
+                        }
+                    }
+                }                
+            }                                    
+        }
+        return result;
     }
     
     private static ClassPath.Entry getClassPathEntry (final ClassPath cp, final URL root) {
@@ -3408,7 +3632,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (classSource == null) {
                         writer.println("no content"); //NOI18N
                     } else {
-                        if (classSource.getName().toLowerCase().endsWith(".sig")) { // NOI18N
+                        if (classSource.getName().toLowerCase().endsWith('.'+FileObjects.SIG)) { // NOI18N
                             writer.println(classSource.getCharContent(true));
                         } else {
                             writer.println("not a sig file"); // NOI18N
@@ -3436,6 +3660,27 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     "be created or all dump files were already used. Please " + // NOI18N
                     "check that you have write permission to '" + dumpDir + "' and " + // NOI18N
                     "clean all *.dump files in that directory."); // NOI18N
+        }
+    }
+    
+    private static class CompileTuple {
+        public final JavaFileObject jfo;
+        public final File file;
+        public final boolean virtual;
+        public final boolean indexable;
+        
+        public CompileTuple (final JavaFileObject jfo, final File file) {
+            this.jfo = jfo;
+            this.file = file;
+            this.virtual = false;
+            this.indexable = true;
+        }
+        
+        public CompileTuple (final JavaFileObject jfo, final File file, boolean indexable) {
+            this.jfo = jfo;
+            this.file = file;
+            this.virtual = true;
+            this.indexable = indexable;
         }
     }
 

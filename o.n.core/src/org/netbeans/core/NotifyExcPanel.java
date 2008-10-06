@@ -76,6 +76,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -122,12 +123,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     
     /** the last position of the exception dialog window */
     private static Rectangle lastBounds;
+    
+    private static int extraH = 0, extraW = 0;
 
     /** Constructor.
     */
     private NotifyExcPanel () {
-        setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH,SIZE_PREFERRED_HEIGHT));
-
         java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(NotifyExcPanel.class);
         next = new JButton ();
         Mnemonics.setLocalizedText(next, bundle.getString("CTL_NextException"));
@@ -177,6 +178,8 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         descriptor.setModal( isModalDialogPresent() 
                 && WindowManager.getDefault().getMainWindow().isVisible() );
         
+        setPreferredSize(new Dimension(SIZE_PREFERRED_WIDTH + extraW, SIZE_PREFERRED_HEIGHT + extraH));
+
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         if( null != lastBounds )
             dialog.setBounds( lastBounds );
@@ -211,6 +214,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 try {
                     Object o = ((Callable<?>)h).call();
                     assert o instanceof JButton;
+                    JButton b = (JButton) o;
+                    extraH += b.getPreferredSize ().height;
+                    extraW += b.getPreferredSize ().width;
                     arr.add(o);
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -587,7 +593,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     public static Component getNotificationVisualizer() {
         //do not create flashing icon if not allowed in system properties
         if( null == flasher ) {
-            ImageIcon img1 = new ImageIcon( Utilities.loadImage("org/netbeans/core/resources/exception.gif", true) );
+            ImageIcon img1 = new ImageIcon( ImageUtilities.loadImage("org/netbeans/core/resources/exception.gif", true) );
             flasher = new ExceptionFlasher( img1 );
         }
         return flasher;

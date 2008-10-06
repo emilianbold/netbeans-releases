@@ -39,24 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.RequestProcessor;
-
 
 /**
- *
  * @author Martin Roskanin
  */
 public class TestUtilities {
-
 
     private TestUtilities(){
     }
@@ -71,7 +67,7 @@ public class TestUtilities {
      *  @return false if the given maxMiliSeconds time elapsed and the requiredValue wasn't obtained
      */
     public static boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
-        int time = (int) maxMiliSeconds / 100;
+        int time = maxMiliSeconds / 100;
         while (time > 0) {
             Object resolvedValue = resolver.getValue();
             if (requiredValue == null && resolvedValue == null){
@@ -81,7 +77,7 @@ public class TestUtilities {
                 return true;
             }
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 time=0;
             }
@@ -98,82 +94,24 @@ public class TestUtilities {
         Object getValue();
     }
     
-    private static void deleteFileImpl(File workDir, String path) throws IOException{
-        FileObject fo = FileUtil.toFileObject(new File(workDir, path));
+    public static void deleteFile(final File workDir, final String path) throws IOException {
+        File f = new File(workDir, path);
+        FileObject fo = FileUtil.toFileObject(f);
         if (fo == null) {
-            fo = Repository.getDefault().getDefaultFileSystem().findResource(path); // NOI18N
-            if (fo == null){
-                return;
-            }
+            throw new FileNotFoundException(f.getAbsolutePath());
         }
-        fo.delete();        
-    }
-    
-    public static void deleteFile(final File workDir, final String path) {
-        // delete a file from a different thread
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                try {
-                    deleteFileImpl(workDir, path);
-                } catch (IOException ioe){
-                    ioe.printStackTrace();
-                }
-            }
-        });
-        
-        try {
-            task.waitFinished(1000);
-        } catch (InterruptedException e) {
-            // ignore
-        }
+        fo.delete();
     }
 
-    private static void createFileImpl(File workDir, String path) throws IOException{
+    public static void createFile(final File workDir, final String path) throws IOException {
         FileObject fo = FileUtil.toFileObject(workDir);
         if (fo == null) {
             throw new IOException("Can't map '" + workDir.getAbsolutePath() + "' to the filesystem repository.");
         }
-
-        String [] pathElements = path.split("/", -1);
-        for (int i = 0; i < pathElements.length; i++ ) {
-            String elementName = pathElements[i];
-
-            if (elementName.length() == 0) {
-                continue;
-            }
-            
-            FileObject f = fo.getFileObject(elementName);
-            if (f != null && f.isValid()) {
-                fo = f;
-            } else {
-                if (i + 1 < pathElements.length) {
-                    fo = fo.createFolder(elementName);
-                } else {
-                    // The last element in the path
-                    fo = fo.createData(elementName);
-                }
-            }
-            
-            fo.refresh();
-        }
-    }
-    
-    public static void createFile(final File workDir, final String path) {
-        // create a file from a different thread
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable(){
-            public void run(){
-                try {
-                    createFileImpl(workDir, path);
-                } catch (IOException ioe){
-                    ioe.printStackTrace();
-                }
-            }
-        });
-        
-        try {
-            task.waitFinished(1000);
-        } catch (InterruptedException e) {
-            // ignore
+        if (path.endsWith("/")) {
+            FileUtil.createFolder(fo, path.substring(0, path.length() - 1));
+        } else {
+            FileUtil.createData(fo, path);
         }
     }
 
@@ -186,7 +124,7 @@ public class TestUtilities {
     }
 
     public static void consumeAllMemory() {
-        ArrayList list = new ArrayList();
+        List<byte[]> list = new ArrayList<byte[]>();
         long size = 0;
         try {
             for(int i = 0; i < 1000000; i++) {

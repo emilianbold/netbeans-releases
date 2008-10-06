@@ -69,6 +69,7 @@ import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -159,7 +160,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }    
     
     private boolean isOutsideRuby(Lookup lookup, FileObject fo) {
-        if (RubyUtils.isRhtmlFile(fo)) {
+        if (RubyUtils.isRhtmlOrYamlFile(fo)) {
             // We're attempting to refactor in an RHTML file... If it's in
             // the editor, make sure we're trying to refactoring in a Ruby section;
             // if not, we shouldn't grab it. (JavaScript refactoring won't get
@@ -167,6 +168,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             // in the caret section
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
+                // TODO - use editor registry
                 JTextComponent textC = ec.getOpenedPanes()[0];
                 Document d = textC.getDocument();
                 if (!(d instanceof BaseDocument)) {
@@ -203,7 +205,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         
-        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(fo)) { //NOI18N
+        if ((dob!=null) && RubyUtils.canContainRuby(fo)) { //NOI18N
             return true;
         }
         return false;
@@ -277,7 +279,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(cc);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?
                 System.out.println("FAILURE - can't refactor uncompileable sources");
@@ -292,9 +294,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         }
         
         public final void run() {
+            FileObject fo = null;
             try {
                 Source source = RetoucheUtils.getSource(textC.getDocument());
                 source.runUserActionTask(this, false);
+                Collection<FileObject> fileObjects = source.getFileObjects();
+                if (fileObjects.size() > 0) {
+                    fo = fileObjects.iterator().next();
+                }
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 return ;
@@ -302,6 +309,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             TopComponent activetc = TopComponent.getRegistry().getActivated();
             
             if (ui!=null) {
+                if (fo != null) {
+                    ClasspathInfo classpathInfoFor = RetoucheUtils.getClasspathInfoFor(fo);
+                    if (classpathInfoFor == null) {
+                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotFindClasspath"));
+                        return;
+                    }
+                }
+                
                 UI.openRefactoringUI(ui, activetc);
             } else {
                 String key = "ERR_CannotRenameLoc"; // NOI18N
@@ -311,6 +326,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, key));
             }
         }
+
         
         protected abstract RefactoringUI createRefactoringUI(RubyElementCtx selectedElement,int startOffset,int endOffset, CompilationInfo info);
     }
@@ -329,7 +345,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(info);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 Element element = AstElement.create(info, root);
                 RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
@@ -369,7 +385,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(info);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 RubyParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
@@ -380,8 +396,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         // In Java, we look for a class with the name corresponding to the file.
                         // It's not as simple in Ruby.
                         AstElement element = els.get(0);
-                        org.jruby.ast.Node node = element.getNode();
+                        org.jruby.nb.ast.Node node = element.getNode();
                         RubyElementCtx representedObject = new RubyElementCtx(root, node, element, info.getFileObject(), info);
+                        representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);
                     }
                 }

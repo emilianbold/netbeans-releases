@@ -42,74 +42,89 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsArtifacts;
 
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
 public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplates  {
 
-    private static final String[] PROPERTIES_FILE = new String[] {
-        "Templates/Other/properties.properties"
-    };
+    public static final String GROOVY_CLASS = "Templates/Groovy/GroovyClass.groovy";
+    public static final String GROOVY_SCRIPT = "Templates/Groovy/GroovyScript.groovy";
+    public static final String GSP = "Templates/Groovy/_view.gsp";
+    
+    public static final String DOMAIN_CLASS = "Templates/Groovy/DomainClass.groovy";
+    public static final String CONTROLLER = "Templates/Groovy/Controller.groovy";
+    public static final String INTEGRATION_TEST = "Templates/Groovy/IntegrationTest.groovy";
+    public static final String GANT_SCRIPT = "Templates/Groovy/GantScript.groovy";
+    public static final String SERVICE = "Templates/Groovy/Service.groovy";
+    public static final String TAG_LIB = "Templates/Groovy/TagLib.groovy";
+    public static final String UNIT_TEST = "Templates/Groovy/UnitTest.groovy";
 
-    private static final String[] GROOVY_TEMPLATES = new String[] {
-        "Templates/Groovy/GroovyClass.groovy",
-        "Templates/Other/Folder"
-    };
-
-    private static final String[] GSP_TEMPLATES = new String[] {
-        "Templates/Groovy/_view.gsp",
-        "Templates/Other/Folder"
-    };
-
-    private static final String[] FOLDER_ONLY = new String[] {
-        "Templates/Other/Folder"
-    };
-
-    private static final String[] GROOVY_FILE = new String[] {
-        "Templates/Groovy/GroovyClass.groovy"
-    };
-
-    private static final String[] TYPES = new String[] {
-        "simple-files"
-    };
-
-    private final SourceGroup g;
-
-    private final String dirName;
+    private static final String FOLDER = "Templates/Other/Folder";
+    private static final String PROPERTIES = "Templates/Other/properties.properties";
+    private static final String SIMPLE_FILES = "simple-files";
+    
+    private final SourceGroup sourceGroup;
+    private final GrailsProject project;
 
     // this constructor is to keep track which Node displays
     // which SourceGroup to provide different "New File..." templates.
 
-    public TemplatesImpl(SourceGroup g) {
-        this.g = g;
-        this.dirName =  TreeRootNode.getDirName(g);
+    public TemplatesImpl(GrailsProject project, SourceGroup sourceGroup) {
+        this.project = project;
+        this.sourceGroup = sourceGroup;
     }
 
     public String[] getPrivilegedTemplates() {
-        switch (TreeRootNode.getCategoryForName(dirName)) {
-            case CONFIGURATION:
-                return GROOVY_TEMPLATES.clone();
-            case TAGLIB:
-                return GROOVY_FILE.clone();
-            case TESTS:
-                return FOLDER_ONLY.clone();
-            case SRC:
-                return FOLDER_ONLY.clone();
-            case VIEWS:
-                return GSP_TEMPLATES.clone();
-            case WEBAPP:
-                return GSP_TEMPLATES.clone();
-            default:
-                return PROPERTIES_FILE.clone();
+        SourceCategory sourceCategory = GrailsArtifacts.getCategoryForFolder(
+                project.getProjectDirectory(), sourceGroup.getRootFolder());
+        if (sourceCategory != null) {
+            switch (sourceCategory) {
+                case GRAILSAPP_CONF:
+                    return new String[] { GROOVY_CLASS };
+                case SCRIPTS:
+                    return new String[] { GANT_SCRIPT, GROOVY_SCRIPT };
+                case GRAILSAPP_DOMAIN:
+                    return new String[] { DOMAIN_CLASS, GROOVY_CLASS };
+                case GRAILSAPP_CONTROLLERS:
+                    return new String[] { CONTROLLER, GROOVY_CLASS };
+                case GRAILSAPP_TAGLIB:
+                    return new String[] { TAG_LIB, GROOVY_CLASS };
+                case TEST_INTEGRATION:
+                    return new String[] { INTEGRATION_TEST, GROOVY_CLASS };
+                case TEST_UNIT:
+                    return new String[] { UNIT_TEST, GROOVY_CLASS };
+                case GRAILSAPP_SERVICES:
+                    return new String[] { SERVICE, GROOVY_CLASS };
+                case GRAILSAPP_UTILS:
+                case SRC_GROOVY:
+                    return new String[] { GROOVY_CLASS, GROOVY_SCRIPT };
+                case GRAILSAPP_VIEWS:
+                case WEBAPP:
+                    return new String[] { GSP, FOLDER };
+                case GRAILSAPP_I18N:
+                    return new String[] { PROPERTIES };
+                case SRC_JAVA:
+                    return new String[] {
+                        "Templates/Classes/Class.java",
+                        "Templates/Classes/Interface.java",
+                        "Templates/Classes/Enum.java",
+                        "Templates/Classes/AnnotationType.java",
+                        "Templates/Classes/Exception.java",
+                        "Templates/Classes/Package.java",
+                    };
+            }
         }
+        return new String[] {};
     }
 
     public String[] getRecommendedTypes() {
-        return TYPES.clone();
+        return new String[] { SIMPLE_FILES };
     }
-
-
-
+    
 }

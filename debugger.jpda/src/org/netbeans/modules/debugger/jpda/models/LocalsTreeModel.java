@@ -442,7 +442,11 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 getCurrentCallStackFrame ();
             if (callStackFrame == null) 
                 return new String [] {"No current thread"};
-            StackFrame stackFrame = callStackFrame.getStackFrame ();
+            StackFrame stackFrame = null;
+            try {
+                stackFrame = callStackFrame.getStackFrame ();
+            } catch (InvalidStackFrameException e) {
+            }
             if (stackFrame == null) 
                 return new String [] {"No current thread"};
             try {
@@ -512,6 +516,8 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                 return new String[] { "NativeMethodException" };
             } catch (InternalException ex) {
                 return new String [] {ex.getMessage ()};
+            } catch (InvalidStackFrameException isfex) {
+                return new String [] {"No current thread"};
             }
         } // synchronized
     }

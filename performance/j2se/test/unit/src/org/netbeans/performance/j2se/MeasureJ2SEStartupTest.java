@@ -55,11 +55,13 @@ public class MeasureJ2SEStartupTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Startup suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEStartupTest");
 
-        suite.addTest(NbModuleSuite.create(MeasureWarmUp.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OutOfTheBoxStartup.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ComplexJavaProjectStartup.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ComplexNBProjectStartup.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MeasureWarmUp.class)
+        .addTest(OutOfTheBoxStartup.class)
+        .addTest(ComplexJavaProjectStartup.class)
+        .addTest(ComplexNBProjectStartup.class)
+        .enableModules(".*").clusters(".*")));
 
         return suite;
     }

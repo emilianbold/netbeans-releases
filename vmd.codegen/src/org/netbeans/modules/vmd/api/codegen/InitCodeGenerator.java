@@ -118,7 +118,7 @@ public final class InitCodeGenerator {
 
         Setter setter = findSetter (constructors, requiredToBeSet, false);
         if (setter == null) {
-            Debug.warning ("No constructor found", component); // NOI18N
+//            Debug.warning ("No constructor found", component); // NOI18N
         } else {
             do {
                 for (String parameter : setter.getParameters ())

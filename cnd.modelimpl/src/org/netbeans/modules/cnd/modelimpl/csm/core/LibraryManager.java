@@ -79,7 +79,7 @@ public final class LibraryManager {
     }
     
     private final Map<String, LibraryEntry> librariesEntries = new ConcurrentHashMap<String, LibraryEntry>();
-    private Object lock = new Object();
+    private final Object lock = new Object();
     
     /**
      * Returns collection of artificial libraries used in project
@@ -288,7 +288,7 @@ public final class LibraryManager {
             }
             if (needFire){
                 final LibraryEntry passEntry = entry;
-                CsmModelAccessor.getModel().enqueue(new Runnable() {
+                ModelImpl.instance().enqueueModelTask(new Runnable() {
                     public void run() {
                         ListenersImpl.getImpl().fireProjectOpened((ProjectBase)passEntry.getLibrary().getObject());
                     }

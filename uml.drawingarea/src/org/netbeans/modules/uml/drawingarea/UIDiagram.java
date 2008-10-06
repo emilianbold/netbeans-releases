@@ -41,10 +41,17 @@
 package org.netbeans.modules.uml.drawingarea;
 
 
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.swing.SwingUtilities;
 import org.dom4j.Node;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -54,16 +61,24 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.Diagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
+import org.netbeans.modules.uml.core.metamodel.diagrams.GraphicExportDetails;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction;
 import org.netbeans.modules.uml.core.metamodel.diagrams.ICoreRelationshipDiscovery;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicExportDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IGraphicMapLocation;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
+import org.netbeans.modules.uml.core.metamodel.diagrams.NodeMapLocation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.umlsupport.ETRect;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
+import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
+import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.drawingarea.dataobject.UMLDiagramDataObject;
+import org.netbeans.modules.uml.drawingarea.image.DiagramImageWriter;
+import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -214,9 +229,87 @@ public class UIDiagram extends Diagram {
     /**
      * Saves the diagram as a graphic
      */
-    public IGraphicExportDetails saveAsGraphic(String sFilename, int nKind, double scale) {
-        IGraphicExportDetails retVal = null;
+    public IGraphicExportDetails saveAsGraphic(final String sFilename, int nKind, final double scale) {
+        
+        IGraphicExportDetails retVal = new GraphicExportDetails();
+        retVal.setFrameBoundingRect(new ETRect(scene.getLocation().x, scene.getLocation().y,
+                                    scene.getClientArea().width * scale, 
+                                    scene.getClientArea().height * scale));
+        retVal.setGraphicBoundingRect(new ETRect(scene.getLocation().x, scene.getLocation().y,
+                                    scene.getClientArea().width * scale, 
+                                    scene.getClientArea().height * scale));
+        ETArrayList<IGraphicMapLocation> locations = new ETArrayList<IGraphicMapLocation>();
+
+        ArrayList<Widget> list = new ArrayList<Widget>();
+        getNodes(scene, scene, list);
+        // put the top widget at the front of list
+        Collections.reverse(list);
+        
+        for (Widget w: list)
+        {
+            IPresentationElement pe = (IPresentationElement)scene.findObject(w);
+            IElement e = pe.getFirstSubject();
+            Rectangle rect = new Rectangle(w.convertLocalToScene(w.getBounds()));
+            rect.translate(scene.getLocation().x, scene.getLocation().y);
+            rect = new Rectangle((int)(rect.x * scale), (int)(rect.y * scale), 
+                    (int)(rect.width * scale), (int)(rect.height * scale));
+            NodeMapLocation nodeM = new NodeMapLocation(e, rect);
+            locations.add(nodeM);
+        }
+        
+        // edge map is not used for now
+//        for (IPresentationElement pe: scene.getEdges())
+//        {
+//            EdgeMapLocation nodeM = new EdgeMapLocation();
+//            IElement e = pe.getFirstSubject();
+//
+//            nodeM.setElement(e);
+//            Widget w = scene.findWidget(pe);
+//            if (w instanceof ConnectionWidget)
+//            {
+//                ETArrayList<IETPoint> points = new ETArrayList<IETPoint>();
+//                for (Point p : ((ConnectionWidget) w).getControlPoints())
+//                {
+//                    p.translate(scene.getLocation().x, scene.getLocation().y);
+//
+//                    points.add(new ETPoint(p));
+//                }
+//                nodeM.setPoints(points);
+//                locations.add(nodeM);
+//            }
+//        }
+        
+        retVal.setMapLocations(locations);        
+                 
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            public void run()
+            {
+                try
+                {
+                    FileImageOutputStream fo = new FileImageOutputStream(new File(sFilename));
+                    DiagramImageWriter.write(scene, fo, scale);
+                } catch (Exception e)
+                {
+                    Logger.getLogger("UML").severe("unable to create diagram image file: " + e.getMessage());
+                }
+            }
+        });
+            
         return retVal;
+    }
+    
+    private ArrayList<Widget> getNodes(DesignerScene scene, Widget widget, ArrayList<Widget> list)
+    {
+        for (Widget w: widget.getChildren())
+        {
+            if (scene.isNode(scene.findObject(w)) && w instanceof UMLNodeWidget)
+            {
+                list.add(w);             
+            }
+            getNodes(scene, w, list);
+        }       
+        return list;
     }
     
     public String getName() {
@@ -245,8 +338,14 @@ public class UIDiagram extends Diagram {
     
     public String getAlias() 
     {
+        String retVal = alias;
         
-        return alias;
+        if((retVal == null) || (retVal.length() <= 0))
+        {
+            retVal = getName();
+        }
+        
+        return retVal;
     }
     
     public void setAlias(String value) 
@@ -354,10 +453,25 @@ public class UIDiagram extends Diagram {
     
     public void setNamespace(INamespace value) 
     {   
-        if(value.isSame(space) == false)
+        boolean isSame = true;
+        if (space != null)
         {
-            space = value;
-            setOwner(space);
+            isSame = space.isSame(value);
+        } 
+        else if (value != null) 
+        {
+            isSame = false;
+        }
+        
+        if (!isSame)  //if the namespace is being changed, fire an event
+        {
+             space = value;
+             if (getNotify()) 
+            {
+                fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
+                        DiagramAreaEnumerations.DAPK_NAMESPACE);
+             }
+             setOwner(space);
         }
     }
     
@@ -389,40 +503,81 @@ public class UIDiagram extends Diagram {
                                           boolean bDeselectAllOthers) 
     {
         Widget w=scene.findWidget(pPresentationElement);
-        Rectangle bnd=w.getBounds();
-        bnd=w.convertLocalToScene(bnd);
-        bnd=scene.convertSceneToView(bnd);
-        Rectangle viewRect=getScene().getView().getVisibleRect();
-        //
-        viewRect.width-=20;
-        if(bnd.width<viewRect.width)
+        if(w!=null)
         {
-            int diff=viewRect.width-bnd.width;
-            bnd.width=viewRect.width;
-            bnd.x-=diff/2;
-            if(bnd.x<0)bnd.x=0;
+            Rectangle bnd=w.getBounds();
+            bnd=w.convertLocalToScene(bnd);
+            centerRectangle(bnd);
+
+            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
+            if(manager != null)
+            {
+                manager.cancelPalette();
+            }
+
+            Set selected=new HashSet(bDeselectAllOthers ? new HashSet() : scene.getSelectedObjects());
+            selected.add(pPresentationElement);
+            scene.userSelectionSuggested(selected, false);
+            scene.validate();
+
+            if(manager != null)
+            {
+                manager.selectionChanged(null);
+            }
         }
-        viewRect.height=20;
-        if(bnd.height<viewRect.height)
-        {
-            int diff=viewRect.height-bnd.height;
-            bnd.height=viewRect.height;
-            bnd.y-=diff/2;
-            if(bnd.y<0)bnd.y=0;
-        }
-        //
-        getScene().getView().scrollRectToVisible(bnd);
-        //
-        //now about selection
-        Set selected=new HashSet(bDeselectAllOthers ? new HashSet() : scene.getSelectedObjects());
-        selected.add(pPresentationElement);
-        scene.setSelectedObjects(selected);
     }
     
     /**
      * Centers the diagram on this presentation object
      */
-    public void centerPresentationElement2(String sXMIID, boolean bSelectIt, boolean bDeselectAllOthers) {
+    public void centerPresentationElement(String sXMIID, 
+                                           boolean bSelectIt, 
+                                           boolean bDeselectAllOthers) 
+    {
+        ElementLocator locator = new ElementLocator();
+        IElement element = locator.findElementByID(getProject(), sXMIID);
+        if (element instanceof IPresentationElement)
+        {
+            IPresentationElement presentation = (IPresentationElement) element;
+            centerPresentationElement(presentation, bSelectIt, bDeselectAllOthers);
+        }
+    }
+    
+    /**
+     * Centers the diagram on this presentation object
+     * 
+     * @param point The point in scene coordinates.
+     */
+    public void centerPoint(Point point) 
+    {
+        Point viewPoint = scene.convertSceneToView(point);
+        Rectangle viewRect = getScene().getView().getVisibleRect();
+        
+        viewRect.x = viewPoint.x - (viewRect.width / 2);
+        if(viewRect.x < 0)
+        {
+            viewRect.x = 0;
+        }
+
+        viewRect.y = viewPoint.y - (viewRect.height / 2);
+        if(viewRect.y < 0)
+        {
+            viewRect.y = 0;
+        }
+        
+        getScene().getView().scrollRectToVisible(viewRect);
+    }
+    
+    /**
+     * Centers the diagram on a specified rectangle
+     * 
+     * @param sceneRect The rectangle in scene coordinates.
+     */
+    public void centerRectangle(Rectangle sceneRect)
+    {
+//        Rectangle viewRect = getScene().convertSceneToView(sceneRect);
+        centerPoint(new Point(sceneRect.x + (sceneRect.width / 2),
+                              sceneRect.y + (sceneRect.height / 2)));
     }
     
     public void hasGraphObjects(boolean bHasObjects) {
@@ -463,23 +618,94 @@ public class UIDiagram extends Diagram {
         /* (non-Javadoc)
          * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#getAllItems()
          */
-    public ETList<IPresentationElement> getAllItems() {
-        ETList < IPresentationElement > retVal = null;
+    public ETList<IPresentationElement> getAllItems() 
+    {
+        ETList < IPresentationElement > retVal = 
+                new ETArrayList < IPresentationElement >();
+        
+        for(Object item : getScene().getObjects())
+        {
+            if (item instanceof IPresentationElement)
+            {
+                retVal.add((IPresentationElement) item);
+                
+            }
+        }
         
         return retVal;
     }
     
         /* (non-Javadoc)
-         * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#getAllItems2(org.netbeans.modules.uml.core.metamodel.core.foundation.IElement)
+         * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#getAllItems(org.netbeans.modules.uml.core.metamodel.core.foundation.IElement)
          */
-    public ETList<IPresentationElement> getAllItems(IElement pModelElement) {
-        ETList < IPresentationElement > retVal = null;
+    public ETList<IPresentationElement> getAllItems(IElement pModelElement) 
+    {
+        ETList < IPresentationElement > retVal = 
+                new ETArrayList < IPresentationElement >();
+        
+        for(IPresentationElement item : pModelElement.getPresentationElements())
+        {
+            if(scene.findWidget(item) != null)
+            {
+                retVal.add(item);
+            }
+        }
         
         return retVal;
     }
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#receiveBroadcast(org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction)
-         */
+    
+    /**
+     * Returns a list of all the model elements on the diagram.
+    */
+    public ETList<IElement> getModelElements()
+    {
+        ETList < IElement > retVal = 
+                new ETArrayList < IElement >();
+        
+        for(Object item : getScene().getObjects())
+        {
+            if (item instanceof IPresentationElement)
+            {
+                IPresentationElement element = (IPresentationElement)item;
+                retVal.add(element.getFirstSubject());
+                
+            }
+        }
+        
+        return retVal;
+    }
+
+    /**
+     * Select all the objects on the diagram that are of the indicated type
+     * 
+     * @param type The type of the model element.
+     * @return  The list of presentation elements that represent the specified
+     *          model element type.
+    */
+    public ETList<IPresentationElement> getAllByType( String type )
+    {
+        ETList < IPresentationElement > retVal = 
+                new ETArrayList < IPresentationElement >();
+        
+        for(Object item : getScene().getObjects())
+        {
+            if (item instanceof IPresentationElement)
+            {
+                IPresentationElement element = (IPresentationElement)item;
+                if(type.equals(element.getFirstSubjectsType()) == true)
+                {
+                    retVal.add(element);
+                }
+                
+            }
+        }
+        
+        return retVal;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram#receiveBroadcast(org.netbeans.modules.uml.core.metamodel.diagrams.IBroadcastAction)
+     */
     public void receiveBroadcast(IBroadcastAction pAction) {
     }
     
@@ -488,9 +714,10 @@ public class UIDiagram extends Diagram {
      * is associated with the presentation element.
      * 
      * @param presentation The presentation element that needs to be refreshed.
+     * @param resizetocontent resize elements to content after update
      * @return true if the presenation element was found and refreshed.
      */
-    public boolean refresh(IPresentationElement presentation)
+    public boolean refresh(IPresentationElement presentation,boolean resizetocontent)
     {
         boolean retVal = false;
         
@@ -498,13 +725,13 @@ public class UIDiagram extends Diagram {
         if (widget instanceof UMLNodeWidget)
         {
             UMLNodeWidget node = (UMLNodeWidget) widget;
-            node.refresh();
+            node.refresh(resizetocontent);
             retVal = true;
         }
         else if (widget instanceof UMLEdgeWidget)
         {
             UMLEdgeWidget edge = (UMLEdgeWidget) widget;
-            edge.refresh();;
+            edge.refresh(resizetocontent);
             retVal = true;
         }
         
@@ -774,5 +1001,20 @@ public class UIDiagram extends Diagram {
     public boolean getNotify()
     {
         return this.notify;
+    }
+    
+    public int getFrameWidth()
+    {
+        return scene.getClientArea().width;
+    }
+    
+    public int getFrameHeight()
+    {
+        return scene.getClientArea().height;
+    }
+    
+    public double getCurrentZoom()
+    {
+        return scene.getZoomFactor();
     }
 }

@@ -1,15 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2008 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 -->
 
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 
 <title>Customizing the Tomcat Web Server</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
@@ -61,16 +61,24 @@
     </ul>
 <h3>Startup Tab </h3>
 <ul>
-	<li><b>Use Custom Catalina Script.</b> Specifies whether to use custom Catalina script or not. This is unchecked by default.</li>
+    <li><b>Use Custom Catalina Script.</b> When selected the server is started using a custom a Catalina script. 
+    Click Browse to specify the location of the custom script. This is deselected by default.</li>
     <li><b>Force Stop.</b> Specifies whether to use the force shutdown (shutdown is followed by the kill command). This is unchecked by default. This function is disabled on Windows. </li>
-    <li><b>Debugger Transport.</b> Specifies whether to use shared memory or socked based transport for debugging. Shared Memory is default on Windows, socket on other systems. Shared Memory is enabled only on Windows.</li>
-   <ul>
-     <li><b>Shared memory Name.</b> specifies the shared memory name. This function is enabled only on Windows.</li>
-     <li><b>Socket Port.</b> Specifies the socket port number. </li>  
-   </ul> 
-     
-   
+    <li><b>Debugger Transport.</b> Enables you to select either shared memory or socket based transport for debugging.
+       <ul>
+         <li><b>Shared Memory Name.</b> When selected, the transport is set to <tt>dt_shmem</tt>.
+         You can type a shared memory name or use the default name. This option is selected by default on Windows.</li>
+         <li><b>Socket Port.</b> When selected the Java Platform Debugger Architecture (JPDA) transport is set to <tt>dt_socket</tt> and the 
+         JPDA address is set to the specified socket port number when the server is started in debug mode.</li>  
+       </ul>
+       <ul class="note">
+        <li>
+        The Shared Memory transport option is only available on Windows.
+        If you want to use the JPDA socket transport for debugging on Windows, select Socket Port and specify the JPDA port number.</li>
+        </ul>
+    </li>
    </ul>
+
 <h3>Platform Tab </h3>
 <ul>
 	<li><b>Java Platform.</b> Specifies the Java Platform the server will use. </li>

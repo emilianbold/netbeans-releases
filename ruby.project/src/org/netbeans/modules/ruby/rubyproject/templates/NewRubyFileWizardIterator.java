@@ -141,7 +141,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         return res;
     }
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
+    public Set<FileObject> instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
         String targetName = Templates.getTargetName( wiz );
         
@@ -152,8 +152,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
         DataObject dTemplate = DataObject.find( template );
 
         // Work around #109569
-        @SuppressWarnings("unchecked")
-        Map<String,Object> props = new HashMap(wiz.getProperties());
+        Map<String, Object> props = new HashMap<String, Object>(wiz.getProperties());
         props.remove("project"); // NOI18N
 
         DataObject dobj = dTemplate.createFromTemplate( df, targetName, props);

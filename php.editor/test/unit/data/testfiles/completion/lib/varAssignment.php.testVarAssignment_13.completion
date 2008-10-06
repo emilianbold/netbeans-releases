@@ -1,0 +1,5 @@
+Code completion result for source line:
+$fncVarC1=$fncVarC->|ccreateC();//test 13
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     cCreateA()                      [PUBLIC]   clsCVarAssignment
+METHOD     ccreateC()                      [PUBLIC]   clsCVarAssignment

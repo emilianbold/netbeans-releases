@@ -1,22 +1,25 @@
 [<|, < jsp:root >, <jsp:root, 106]
+<%
+<%!
+<%=
 < jsp:attribute >
 < jsp:body >
 < jsp:declaration >
-< jsp:directive.include />
-< jsp:directive.page />
+< jsp:directive.include / >
+< jsp:directive.page / >
 < jsp:element >
 < jsp:expression >
 < jsp:fallback >
 < jsp:forward >
-< jsp:getProperty />
+< jsp:getProperty / >
 < jsp:include >
 < jsp:output >
-< jsp:param />
+< jsp:param / >
 < jsp:params >
 < jsp:plugin >
 < jsp:root >
 < jsp:scriptlet >
-< jsp:setProperty />
+< jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
 <a>

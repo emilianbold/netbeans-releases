@@ -103,6 +103,14 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             desc.addPropertyChangeListener(WeakListeners.propertyChange(this, desc));
         }
     }
+        
+    boolean isRemovable() {
+        CatalogReader reader = (CatalogReader)getBean();
+        if (CatalogSettings.getDefault().isRemovable(reader)) {
+            return true;
+        }
+        return false;
+    }
     
     CatalogReader getCatalogReader() {
         return catalog;
@@ -330,11 +338,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
                 for (int i = 0; i<activatedNodes.length; i++) {
                     Node me = activatedNodes[i];
                     Object self = me.getCookie(CatalogNode.class);
-                    if (self instanceof CatalogNode) {
-                        CatalogReader reader = (CatalogReader) ((CatalogNode)self).getBean();
-                        if (CatalogSettings.getDefault().isRemovable(reader)) {
-                            return true;
-                        }
+                    if (self instanceof CatalogNode) {                        
+                        return ((CatalogNode)self).isRemovable();
                     }
                 }
             }

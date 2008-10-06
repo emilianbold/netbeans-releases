@@ -358,9 +358,11 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         
         if (toNodeFinderList.isEmpty() && (currentBpelDesignContext != null)) {
             // add warning message about wrong "toExpr"
-            DesignContextControllerImpl2.addErrMessage(
-                currentBpelDesignContext.getValidationErrMsgBuffer(), 
-                toExpr.getExpressionString(), "to");
+            if (toExpr != null) {
+                DesignContextControllerImpl2.addErrMessage(
+                    currentBpelDesignContext.getValidationErrMsgBuffer(),
+                    toExpr.getExpressionString(), "to");
+            }
         }
         //
         PreprocessedGraphLocation graphLocation = 

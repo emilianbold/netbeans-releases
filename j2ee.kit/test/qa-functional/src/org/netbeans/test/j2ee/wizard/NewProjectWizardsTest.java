@@ -71,13 +71,15 @@ import org.netbeans.test.j2ee.lib.Utils;
  * @see <a href="http://qa.netbeans.org/modules/j2ee/promo-f/testspec/j2ee-wizards-testspec.html">J2EE Wizards Test Specification</a>
  */
 public class NewProjectWizardsTest extends JellyTestCase {
+    private static final String CATEGORY_WEB = "Java Web";
+    private static final String CATERGORY_JAVA_EE = "Java EE";
     
     private static final int EJB = 0;
     private static final int WEB = 1;
     private static final int J2EE_DEFAULT = 3;
     private static final int APP_CLIENT_DEFAULT = 4;
     
-    private static final String projectLocation = System.getProperty("xtest.sketchpad");
+    private static String projectLocation = null;
     private String projectName;
     private String version;
     private Reporter reporter;
@@ -93,11 +95,16 @@ public class NewProjectWizardsTest extends JellyTestCase {
     
     @Override
     public void setUp() throws Exception {
-        reporter = Reporter.getReporter((NbTestCase)this);
+        super.setUp();
+        if (projectLocation == null) {
+            projectLocation = getWorkDir().getParentFile().getParentFile().getCanonicalPath();
+        }
+        reporter = Reporter.getReporter((NbTestCase) this);
     }
-    
+
     @Override
     public void tearDown() throws Exception {
+        super.tearDown();
         reporter.close();
     }
     
@@ -118,7 +125,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
         Utils.openOutputTab();
         projectName = "def EJB Mod" + version;
         NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject("Enterprise", "EJB Module");
+                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
         NewProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -134,7 +141,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     public void testNewEJBModWizard() throws Exception {
         projectName = "BadModule" + version;
         NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject("Enterprise", "EJB Module");
+                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"EJB Module");
         NewProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -152,7 +159,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     public void testDefaultAppClientWizard() throws Exception {
         projectName = "App client" + version;
         NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject("Enterprise", "Enterprise Application Client");
+                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application Client");
         NewProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -169,7 +176,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     public void testDefaultNewWebModWizard() throws Exception {
         projectName = "def Web app" + version;
         NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject("Web", "Web Application");
+                = WizardUtils.createNewProject(CATEGORY_WEB,"Web Application");
         NewProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);
@@ -186,7 +193,7 @@ public class NewProjectWizardsTest extends JellyTestCase {
     public void testDefaultNewJ2eeAppWizard() throws Exception {
         projectName = "def EAR app" + version;
         NewProjectWizardOperator wiz
-                = WizardUtils.createNewProject("Enterprise", "Enterprise Application");
+                = WizardUtils.createNewProject(CATERGORY_JAVA_EE,"Enterprise Application");
         NewProjectNameLocationStepOperator op
                 = WizardUtils.setProjectNameLocation(projectName,
                 projectLocation);

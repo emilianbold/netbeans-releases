@@ -50,13 +50,14 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -148,13 +149,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             return super.preCheck();
         }
         CsmObject referencedObject = (CsmObject) uid.getObject();
-        if (referencedObject == null) {
+        if (!CsmBaseUtilities.isValid(referencedObject)) {
             return invalidContext;
-        }
-        if (CsmKindUtilities.isValidable(referencedObject)) {
-            if (!((CsmValidable)referencedObject).isValid()) {
-                return invalidContext;
-            }
         }
         return super.preCheck();
     }
@@ -196,7 +192,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (isFindUsages()) {
             if (CsmKindUtilities.isMethod(referencedObject)) {
                 CsmMethod method = (CsmMethod)referencedObject;
-                if (CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
+                if (isFindOverridingMethods() && CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                     out.addAll(CsmVirtualInfoQuery.getDefault().getOverridenMethods(method, isSearchFromBaseClass()));
                 }
             }
@@ -238,11 +234,16 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
+        Interrupter interrupter = new Interrupter(){
+            public boolean cancelled() {
+                return cancelRequest;
+            }
+        };
         for (CsmFile file : files) {
             if (cancelRequest) {
                 break;
             }
-            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds);
+            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
             for (CsmReference csmReference : refs) {
                 elements.add(CsmRefactoringElementImpl.create(csmReference, true));
             }      

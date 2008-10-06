@@ -45,9 +45,13 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -90,34 +94,41 @@ public class DerbyWaiter {
         }
     }
     
-    private synchronized void registerConnections() {
-        if (registered) {
-            return;
-        }
-        
-        JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
-        if (isMigration) {
-            DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
-            DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
-            if (drvsArray.length > 0) {
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527);   //NOI18N    
-                SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527);   //NOI18N              
+    private void registerConnections() {
+        synchronized(this) {
+            if (registered) {
+                return;
             }
-            return;
-        }        
 
-        // Register sample database
-        if (drvsArray.length > 0) {
-            if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/travel [travel on TRAVEL]") == null) {
-                SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527); //NOI18N
-            }
-            if (ConnectionManager.getDefault().getConnection("jdbc:derby://localhost:1527/vir [vir on VIR]") == null) {
-                SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527); //NOI18N
-            }
-            
+            // We do this ahead of time to prevent another thread from
+            // double-registering the connections.
             registered = true;
-            JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);                        
-        }                
+        }
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ProgressHandle progress = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(DerbyWaiter.class, "REGISTERING_JAVADB_DATABASES"));
+                progress.start();
+                
+                JDBCDriver[] drvsArray = JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET);
+                if (isMigration) {
+                    DatabaseSettingsImporter.getInstance().locateAndRegisterDrivers();
+                    DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(true);
+                    if (drvsArray.length > 0) {
+                        SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527);   //NOI18N    
+                        SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527);   //NOI18N
+                    }
+                } else if (drvsArray.length > 0) {
+                    // Register sample database
+                    SampleDatabaseCreator.createAll("travel", "travel", "travel", "TRAVEL", "startup/samples/travel.zip", true, "localhost", 1527); //NOI18N                    
+                    SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "startup/samples/vir.zip", true, "localhost", 1527); //NOI18N
+                    JDBCDriverManager.getDefault().removeDriverListener(jdbcDriverListener);
+                }
+
+                progress.finish();
+            }
+        });
     }
 }
 

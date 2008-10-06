@@ -101,7 +101,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 	return CharSequenceKey.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N    
     }
 
-    private CsmEnum _getEnumeration() {
+    private synchronized CsmEnum _getEnumeration() {
         CsmEnum enumeration = this.enumerationRef;
         if (enumeration == null) {
             enumeration = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);
@@ -116,7 +116,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         onDispose();
     } 
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.enumerationRef = UIDCsmConverter.UIDtoDeclaration(this.enumerationUID);

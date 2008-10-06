@@ -44,8 +44,6 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-groovy">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.editor.Bundle"/>
-
                 <folder name="Actions">
                     <file name="org-netbeans-modules-groovy-editor-actions-FixImportsAction.instance"/>
                 </folder>
@@ -60,15 +58,6 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
-                <!-- folder name="HyperlinkProviders">
-                    <file name="GroovyHyperlinkProvider.instance">
-                        <attr name="instanceClass" 
-                              stringvalue="org.netbeans.modules.groovy.editor.GroovyHyperlinkProvider"/>
-                        <attr name="instanceOf" 
-                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
-                    </file>
-                </folder -->
-
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-editor-java-codetemplates.xml" url="DefaultAbbrevs.xml">
@@ -126,8 +115,8 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-groovy">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

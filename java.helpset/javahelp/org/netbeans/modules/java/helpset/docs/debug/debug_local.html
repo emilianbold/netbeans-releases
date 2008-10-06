@@ -6,6 +6,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Starting a Local Debugging Session</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -20,7 +21,7 @@
   opens the debugger windows and prints debugger output to the Output window. 
 </p>
 <h3>Debugging the Main Project</h3>
-<p>All of the debugging commands in the Run menu are run on the main project. No 
+<p>All of the debugging commands in the Debug menu are run on the main project. No 
 matter what file or project is selected in the Projects window or Source Editor, 
 these commands begin the debugging session in the main class of the main project. </p>
 <table border="1" cellpadding="5" cellspacing="0">
@@ -30,19 +31,19 @@ these commands begin the debugging session in the main class of the main project
     <th align="left" scope="col" valign="top"><b>Description</b></th>
   </tr>
   <tr> 
-    <td valign="top">Run  &gt; Debug Main Project</td>
+    <td valign="top">Debug  &gt; Debug Main Project</td>
     <td valign="top">Ctrl-F5 or <img src="images/Start.gif" alt="Start icon"></td>
     <td valign="top">Runs the program until it reaches a breakpoint or exception 
       or until the program terminates normally. </td>
   </tr>
   <tr> 
-    <td valign="top">Run&nbsp;&gt; Step Into</td>
+    <td valign="top">Debug &gt; Step Into</td>
     <td valign="top">F7 or <img src="images/StepInto.gif" alt="Step Into icon"></td>
     <td valign="top">Runs the program to the first line after the <tt>main</tt> 
       routine and pauses execution before any changes have been made to the state of the program. </td>
   </tr>
   <tr> 
-    <td valign="top">Run  &gt; Run to Cursor</td>
+    <td valign="top">Debug  &gt; Run to Cursor</td>
     <td valign="top">F4 or <img src="images/RunToCursor.gif" alt="Run to Cursor icon"></td>
     <td valign="top">Runs the program to the cursor location in the Source Editor 
       and pauses the program. The file you have selected in the Source Editor 
@@ -51,15 +52,15 @@ these commands begin the debugging session in the main class of the main project
 </table>
 <h3>Debugging an Individual Project</h3>
 <ul>
-  <li>Right-click the project in the Projects window and choose Debug Project. 
+  <li>Right-click the project in the Projects window and choose Debug. 
       <p> The IDE runs the project in the debugger until execution stops or a breakpoint is reached.</p> 
   </li>
 </ul>
 
 <h3>Debugging an Individual File</h3>
 <ul>
-  <li>Select any runnable file in the Projects window and choose Run  &gt; Run File &gt; Debug <tt>my_file</tt>.
-        <p>The IDE runs the file in the debugger until execution stops or a breakpoint is reached.</p> 
+  <li>Select any runnable file in the Projects window and choose Debug &gt; Debug <tt>my_file</tt>.
+    <p>The IDE runs the file in the debugger until execution stops or a breakpoint is reached.</p> 
   </li>
 </ul>
 

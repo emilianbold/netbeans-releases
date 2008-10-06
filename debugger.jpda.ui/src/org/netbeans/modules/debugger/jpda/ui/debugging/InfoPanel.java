@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -47,66 +47,106 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
  *
- * @author  Dan
+ * @author  Daniel Prusa
  */
 public class InfoPanel extends javax.swing.JPanel {
 
     private static final int PANEL_HEIGHT = 40;
-    
+
+    private static final int FILTERS = 0;
+    private static final int HITS = 1;
+    private static final int DEADLOCKS = 2;
+    private static final int DEADLOCKS_BY_DEBUGGER = 3;
+    private static final int STEP_BRKP = 4;
+
     private Color hitsPanelColor;
     private Color deadlockPanelColor;
     private Color filterPanelColor;
+    private Color stepBrkpColor;
     private int tapPanelMinimumHeight;
     private TapPanel tapPanel;
-    
+    private Item[] items;
+
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
     private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
-    
+    private JPDAThread debuggerDeadlockThread;
+    private WeakReference<JPDADebugger> stepBrkpDebuggerRef;
+    private DebuggingView debuggingView;
+
     /** Creates new form InfoPanel */
-    public InfoPanel(TapPanel tapPanel) {
+    public InfoPanel(TapPanel tapPanel, DebuggingView debuggingView) {
         this.tapPanel = tapPanel;
-        filterPanelColor = tapPanel.getBackground(); // [TODO]
-        hitsPanelColor = DebuggingView.hitsColor; // [TODO]
-        deadlockPanelColor = hitsPanelColor; // DebuggingView.deadlockColor; // [TODO]
-        tapPanelMinimumHeight = tapPanel.getMinimumHeight(); // 8 pixels [TODO]
-        
+        this.debuggingView = debuggingView;
+        filterPanelColor = tapPanel.getBackground();
+        hitsPanelColor = DebuggingView.hitsColor;
+        deadlockPanelColor = hitsPanelColor;
+        stepBrkpColor = hitsPanelColor;
+        tapPanelMinimumHeight = tapPanel.getMinimumHeight();
+
         initComponents();
-        
-        filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-        
-        initFilterPanel(filterPanel);
+
+        items = new Item[5];
+        items[FILTERS] = new Item(filterPanelColor, PANEL_HEIGHT, createFilterToolBar()); // options and filters
+        items[HITS] = new Item(hitsPanelColor, PANEL_HEIGHT, hitsInnerPanel); // breakpoint hits
+        items[DEADLOCKS] = new Item(hitsPanelColor, PANEL_HEIGHT, deadlocksInnerPanel); // deadlock
+        items[DEADLOCKS_BY_DEBUGGER] = new Item(deadlockPanelColor, PANEL_HEIGHT * 2, debuggerDeadlocksInnerPanel); // deadlock caused by debugger
+        items[STEP_BRKP] = new Item(stepBrkpColor, PANEL_HEIGHT * 2, stepBrkpInnerPanel); // step interrupted by breakpoint)
+
+        items[FILTERS].getPanel().setBorder(new EmptyBorder(1, 2, 1, 5)); // [TODO]
+
         arrowButton = createArrowButton();
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         hitsInnerPanel.add(arrowButton, gridBagConstraints);
-        
-        hideHitsPanel();
-        hideDeadlocksPanel();
+
+        removeAll();
+        items[FILTERS].makeVisible(false, true, null);
+        items[HITS].makeInvisible();
+        items[DEADLOCKS].makeInvisible();
+        items[DEADLOCKS_BY_DEBUGGER].makeInvisible();
+        items[STEP_BRKP].makeInvisible();
+        for (int x = items.length - 1; x >= 0; x--) {
+            add(items[x].scrollPane);
+            if (x > 0) {
+                add(items[x].separator);
+            }
+        }
     }
 
     void clearBreakpointHits() {
@@ -134,27 +174,14 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
     void addBreakpointHit(final JPDAThread thread, final int newHitsCount) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (threadToMenuItem.get(thread) != null) {
                     return;
                 }
-                String displayName;
-                try {
-                    displayName = DebuggingNodeModel.getDisplayName(thread, false);
-                } catch (UnknownTypeException e) {
-                    displayName = thread.getName();
-                }
-                Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
-                Icon icon = image != null ? new ImageIcon(image) : null;
-                JMenuItem item = new JMenuItem(displayName, icon);
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        thread.makeCurrent();
-                    }
-                });
+                JMenuItem item = createMenuItem(thread);
                 threadToMenuItem.put(thread, item);
                 arrowMenu.add(item);
                 setHitsText(newHitsCount);
@@ -164,7 +191,70 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
+    void setBreakpointHits(final List<JPDAThread> hits) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                arrowMenu.removeAll();
+                threadToMenuItem.clear();
+                for (JPDAThread thread : hits) {
+                    JMenuItem item = createMenuItem(thread);
+                    threadToMenuItem.put(thread, item);
+                    arrowMenu.add(item);
+                }
+                if (hits.size() == 0) {
+                    hideHitsPanel();
+                } else {
+                    setHitsText(hits.size());
+                    showHitsPanel();
+                }
+            }
+        });
+    }
+
+    public void recomputeMenuItems(final List<JPDAThread> hits) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                arrowMenu.removeAll();
+                threadToMenuItem.clear();
+                for (JPDAThread thread : hits) {
+                    JMenuItem item = createMenuItem(thread);
+                    threadToMenuItem.put(thread, item);
+                    arrowMenu.add(item);
+                }
+            }
+        });
+    }
+
+    private JMenuItem createMenuItem(final JPDAThread thread) {
+        String displayName;
+        try {
+            displayName = DebuggingNodeModel.getDisplayName(thread, false);
+            Method method = thread.getClass().getMethod("getDebugger"); // [TODO]
+            JPDADebugger debugger = (JPDADebugger)method.invoke(thread);
+            method = debugger.getClass().getMethod("getSession");
+            Session session = (Session) method.invoke(debugger);
+            Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+            if (session != currSession) {
+                String str = NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_Session", // [TODO] bundle
+                        session.getName());
+                displayName = displayName.charAt(0) + str + ", " + displayName.substring(1);
+            }
+        } catch (Exception e) { // [TODO]
+            displayName = thread.getName();
+        }
+        Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+        Icon icon = image != null ? new ImageIcon(image) : null;
+        JMenuItem item = new JMenuItem(displayName, icon);
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                debuggingView.makeThreadCurrent(thread);
+            }
+        });
+        return item;
+    }
+
     private void setHitsText(int hitsNumber) {
         String text;
         if (hitsNumber == 1) {
@@ -174,7 +264,7 @@ public class InfoPanel extends javax.swing.JPanel {
         }
         hitsLabel.setText(text);
     }
-    
+
     void setShowDeadlock(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -186,73 +276,175 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
+    void setShowThreadLocks(final JPDAThread thread, final List<JPDAThread> lockerThreads) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (lockerThreads != null) {
+                    showDebuggerDeadlockPanel(thread, lockerThreads);
+                } else {
+                    hideDebuggerDeadlockPanel();
+                }
+            }
+        });
+    }
+
+    void setShowStepBrkp(final JPDADebugger debugger, final JPDAThread thread, final JPDABreakpoint breakpoint) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (breakpoint != null) {
+                    showStepBrkpPanel(debugger, thread, breakpoint);
+                } else {
+                    hideStepBrkpPanel();
+                }
+            }
+        });
+    }
+
     // **************************************************************************
-    
+
+    private void hidePanel(int index) {
+        Item item = items[index];
+        if (!item.isVisible()) {
+            return;
+        }
+        item.makeInvisible();
+        boolean wasOnTop = true;
+        for (int i = index + 1; i < items.length; i++) {
+            if (items[i].isVisible()) {
+                wasOnTop = false;
+                break;
+            } // if
+        }  // for
+        if (wasOnTop) {
+            for (int i = index - 1; i >= 0; i--) {
+                if (items[i].isVisible()) {
+                    items[i].setTop(true);
+                    break;
+                } // if
+            } // for
+        } // if
+    }
+
+    private void showPanel(int index) {
+        Item item = items[index];
+        if (item.isVisible()) {
+            return;
+        }
+        boolean isOnTop = true;
+        for (int i = index + 1; i < items.length; i++) {
+            if (items[i].isVisible()) {
+                isOnTop = false;
+                break;
+            } // if
+        }  // for
+        Item previousTop = null;
+        if (isOnTop) {
+            for (int i = index - 1; i >= 0; i--) {
+                if (items[i].isVisible()) {
+                    previousTop = items[i];
+                    break;
+                } // if
+            } // for
+        } // if
+        item.makeVisible(true, isOnTop, previousTop);
+    }
+
     private void hideHitsPanel() {
-        if (!hitsPanel.isVisible()) {
-            return;
-        }
-        hitsPanel.setVisible(false);
-        hitsSeparator.setVisible(false);
-        if (!deadlocksPanel.isVisible()) {
-            filterTopSpacePanel.setVisible(false);
-            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-            tapPanel.setBackground(filterPanelColor);
-        }
+        hidePanel(HITS);
     }
-    
+
     private void showHitsPanel() {
-        if (hitsPanel.isVisible()) {
-            return;
-        }
-        if (!deadlocksPanel.isVisible()) {
-            hitsTopSpacePanel.setVisible(false);
-            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
-        } else {
-            hitsTopSpacePanel.setVisible(true);
-            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
-        }
-        hitsPanel.setVisible(true);
-        hitsSeparator.setVisible(true);
-        filterTopSpacePanel.setVisible(true);
-        if (!deadlocksPanel.isVisible()) {
-            tapPanel.setBackground(hitsPanelColor);
-        }
+        showPanel(HITS);
     }
-    
+
     private void hideDeadlocksPanel() {
-        if (!deadlocksPanel.isVisible()) {
-            return;
-        }
-        deadlocksPanel.setVisible(false);
-        deadlocksSeparator.setVisible(false);
-        if (hitsPanel.isVisible()) {
-            hitsTopSpacePanel.setVisible(false);
-            hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-            tapPanel.setBackground(hitsPanelColor);
-        } else {
-            filterTopSpacePanel.setVisible(false);
-            tapPanel.setBackground(filterPanelColor);
-            filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-        }
+        hidePanel(DEADLOCKS);
     }
-    
+
     private void showDeadlocksPanel() {
-        if (deadlocksPanel.isVisible()) {
+        showPanel(DEADLOCKS);
+    }
+
+    private void hideDebuggerDeadlockPanel() {
+        hidePanel(DEADLOCKS_BY_DEBUGGER);
+    }
+
+    private boolean isInStep(JPDAThread t) {
+        // TODO: Make JPDAThread.isInStep()
+        try {
+            java.lang.reflect.Method isInStepMethod = t.getClass().getMethod("isInStep", new Class[] {});
+            return (Boolean) isInStepMethod.invoke(t, new Object[] {});
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+
+    private void showDebuggerDeadlockPanel(JPDAThread thread, List<JPDAThread> lockerThreads) {
+        //this.debuggerDeadlockThreads = lockerThreads;
+        this.debuggerDeadlockThread = thread;
+        String infoResource;
+        String resumeResource;
+        String resumeTooltipResource;
+        int numThreads = lockerThreads.size();
+        if (numThreads == 1) {
+            if (isInStep(thread)) {
+                infoResource = "InfoPanel.debuggerDeadlocksLabelThread.text"; // NOI18N
+                resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButtonThread.tooltip";
+            } else {
+                infoResource = "InfoPanel.debuggerDeadlocksLabelThread.Method.text"; // NOI18N
+                resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButtonThread.Method.tooltip"; // NOI18N
+            }
+            resumeResource = "InfoPanel.resumeDebuggerDeadlockLabelThread.text"; // NOI18N
+            debuggerDeadlocksLabel.setToolTipText(null);
+            resumeDebuggerDeadlockButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+                    resumeTooltipResource, lockerThreads.get(0).getName()));
+        } else {
+            if (isInStep(thread)) {
+                infoResource = "InfoPanel.debuggerDeadlocksLabel.text"; // NOI18N
+                resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButton.tooltip"; // NOI18N
+            } else {
+                infoResource = "InfoPanel.debuggerDeadlocksLabel.Method.text"; // NOI18N
+                resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButton.Method.tooltip"; // NOI18N
+            }
+            resumeResource = "InfoPanel.resumeDebuggerDeadlockLabel.text"; // NOI18N
+            StringBuilder threadNamesBuilder = new StringBuilder(lockerThreads.get(0).getName());
+            for (int i = 1; i < lockerThreads.size(); i++) {
+                threadNamesBuilder.append(", ");
+                threadNamesBuilder.append(lockerThreads.get(i).getName());
+            }
+            String threadNames = threadNamesBuilder.toString();
+            debuggerDeadlocksLabel.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+                    "InfoPanel.debuggerDeadlocksLabel.tooltip",
+                    threadNames));
+            resumeDebuggerDeadlockButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+                    resumeTooltipResource, threadNames));
+        }
+        debuggerDeadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+                infoResource,
+                lockerThreads.get(0).getName()));
+        resumeDebuggerDeadlockLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+                resumeResource));
+        if (items[DEADLOCKS].isVisible()) {
+            // Show only if there is not a real deadlock.
             return;
         }
-        hitsTopSpacePanel.setVisible(true);
-        filterTopSpacePanel.setVisible(true);
-        deadlocksPanel.setVisible(true);
-        deadlocksSeparator.setVisible(true);
-        tapPanel.setBackground(deadlockPanelColor);
-        deadlocksPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT - tapPanelMinimumHeight));
-        filterPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
-        hitsPanel.setPreferredSize(new Dimension(0, PANEL_HEIGHT));
+        showPanel(DEADLOCKS_BY_DEBUGGER);
     }
-    
+
+    private void hideStepBrkpPanel() {
+        hidePanel(STEP_BRKP);
+    }
+
+    private void showStepBrkpPanel(JPDADebugger debugger, JPDAThread thread, JPDABreakpoint breakpoint) {
+        this.stepBrkpDebuggerRef = new WeakReference<JPDADebugger>(debugger);
+        String text = org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.stepBrkpLabel.text", thread.getName()); // NOI18N
+        stepBrkpLabel.setText(text);
+        stepBrkpLabel.setToolTipText(text);
+        showPanel(STEP_BRKP);
+    }
+
     private JButton createArrowButton() {
         arrowMenu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
@@ -266,7 +458,7 @@ public class InfoPanel extends javax.swing.JPanel {
                     Object item = arrowMenu.getComponent(0);
                     for (Map.Entry<JPDAThread, JMenuItem> entry : threadToMenuItem.entrySet()) {
                         if (entry.getValue() == item) {
-                            entry.getKey().makeCurrent();
+                            debuggingView.makeThreadCurrent(entry.getKey());
                         } // if
                     } // for
                 } // if
@@ -274,10 +466,9 @@ public class InfoPanel extends javax.swing.JPanel {
         });
         return button;
     }
-    
-    private void initFilterPanel (JPanel filterPanel) {
-        filterPanel.setBorder(new EmptyBorder(1, 2, 1, 5));
-        final FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
+
+    private JToolBar createFilterToolBar() {
+        final FiltersDescriptor filtersDesc = FiltersDescriptor.getInstance();
         // configure toolbar
         JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
         toolbar.setFloatable(false);
@@ -296,19 +487,28 @@ public class InfoPanel extends javax.swing.JPanel {
         // add toggle buttons
         Dimension space = new Dimension(3, 0);
         for (int i = 0; i < toggles.size(); i++) {
-            final int index = i;
-            final JToggleButton curToggle = toggles.get(i);
-            curToggle.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    filtersDesc.setSelected(index, curToggle.isSelected());
-                }
-            });
+            JToggleButton curToggle = toggles.get(i);
+            curToggle.addActionListener(new ToggleButtonActionListener(i));
             toolbar.add(curToggle);
             if (i != toggles.size() - 1) {
                 toolbar.addSeparator(space);
             }
         }
-        filterPanel.add(toolbar, BorderLayout.CENTER);
+        return toolbar;
+    }
+
+    private static class ToggleButtonActionListener implements ActionListener {
+
+        private int index;
+
+        public ToggleButtonActionListener(int index) {
+            this.index = index;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JToggleButton curToggle = (JToggleButton) e.getSource();
+            FiltersDescriptor.getInstance().setSelected(index, curToggle.isSelected());
+        }
     }
 
     private JToggleButton createToggle (FiltersDescriptor filtersDesc, int index) {
@@ -321,10 +521,21 @@ public class InfoPanel extends javax.swing.JPanel {
         toggleButton.setMargin(new Insets(2,3,2,3));
         toggleButton.setToolTipText(filtersDesc.getTooltip(index));
         toggleButton.setFocusable(false);
-        filtersDesc.connectToggleButton(index, toggleButton); // [TODO] ?
+        filtersDesc.connectToggleButton(index, toggleButton);
         return toggleButton;
     }
-    
+
+    private void resumeThreadToFreeMonitor(JPDAThread thread) {
+        // Do not have monitor breakpoints in the API.
+        // Have to do that in the implementation module.
+        try {
+            java.lang.reflect.Method resumeToFreeMonitorMethod = thread.getClass().getMethod("resumeBlockingThreads");
+            resumeToFreeMonitorMethod.invoke(thread);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -335,35 +546,120 @@ public class InfoPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        deadlocksPanel = new javax.swing.JPanel();
-        deadlocksBottomSpacePanel = new javax.swing.JPanel();
+        stepBrkpInnerPanel = new javax.swing.JPanel();
+        infoIcon3 = new javax.swing.JLabel();
+        stepBrkpLabel = new javax.swing.JLabel();
+        stepBrkpIgnoreButton = new javax.swing.JButton();
+        debuggerDeadlocksInnerPanel = new javax.swing.JPanel();
+        infoIcon2 = new javax.swing.JLabel();
+        debuggerDeadlocksLabel = new javax.swing.JLabel();
+        resumeDebuggerDeadlockLabel = new javax.swing.JLabel();
+        emptyPanel2 = new javax.swing.JPanel();
+        resumeDebuggerDeadlockButton = new javax.swing.JButton();
         deadlocksInnerPanel = new javax.swing.JPanel();
         infoIcon1 = new javax.swing.JLabel();
         deadlocksLabel = new javax.swing.JLabel();
         emptyPanel1 = new javax.swing.JPanel();
-        deadlocksSeparator = new javax.swing.JPanel();
-        hitsPanel = new javax.swing.JPanel();
-        hitsTopSpacePanel = new javax.swing.JPanel();
-        hitsBottomSpacePanel = new javax.swing.JPanel();
         hitsInnerPanel = new javax.swing.JPanel();
         infoIcon = new javax.swing.JLabel();
         hitsLabel = new javax.swing.JLabel();
         emptyPanel = new javax.swing.JPanel();
-        hitsSeparator = new javax.swing.JPanel();
-        filterPanel = new javax.swing.JPanel();
-        filterTopSpacePanel = new javax.swing.JPanel();
-        filterBottomSpacePanel = new javax.swing.JPanel();
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
-        deadlocksPanel.setBackground(deadlockPanelColor);
-        deadlocksPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        deadlocksPanel.setLayout(new java.awt.BorderLayout());
+        stepBrkpInnerPanel.setOpaque(false);
+        stepBrkpInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        deadlocksBottomSpacePanel.setBackground(java.awt.Color.green);
-        deadlocksBottomSpacePanel.setOpaque(false);
-        deadlocksBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
-        deadlocksPanel.add(deadlocksBottomSpacePanel, java.awt.BorderLayout.SOUTH);
+        infoIcon3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon3.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon3.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        stepBrkpInnerPanel.add(infoIcon3, gridBagConstraints);
+
+        stepBrkpLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.stepBrkpLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        stepBrkpInnerPanel.add(stepBrkpLabel, gridBagConstraints);
+
+        stepBrkpIgnoreButton.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.stepBrkpIgnoreButton.text")); // NOI18N
+        stepBrkpIgnoreButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.stepBrkpIgnoreButton.tooltip")); // NOI18N
+        stepBrkpIgnoreButton.setMargin(new java.awt.Insets(0, 3, 0, 3));
+        stepBrkpIgnoreButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepBrkpIgnoreButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        stepBrkpInnerPanel.add(stepBrkpIgnoreButton, gridBagConstraints);
+
+        add(stepBrkpInnerPanel);
+
+        debuggerDeadlocksInnerPanel.setOpaque(false);
+        debuggerDeadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
+        debuggerDeadlocksInnerPanel.setLayout(new java.awt.GridBagLayout());
+
+        infoIcon2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/wrong_pass.png"))); // NOI18N
+        infoIcon2.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        debuggerDeadlocksInnerPanel.add(infoIcon2, gridBagConstraints);
+
+        debuggerDeadlocksLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
+        debuggerDeadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.debuggerDeadlocksLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 9);
+        debuggerDeadlocksInnerPanel.add(debuggerDeadlocksLabel, gridBagConstraints);
+
+        resumeDebuggerDeadlockLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.resumeDebuggerDeadlockLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        debuggerDeadlocksInnerPanel.add(resumeDebuggerDeadlockLabel, gridBagConstraints);
+
+        emptyPanel2.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        debuggerDeadlocksInnerPanel.add(emptyPanel2, gridBagConstraints);
+
+        resumeDebuggerDeadlockButton.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.resumeDebuggerDeadlockButton.text")); // NOI18N
+        resumeDebuggerDeadlockButton.setMargin(new java.awt.Insets(0, 3, 0, 3));
+        resumeDebuggerDeadlockButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resumeDebuggerDeadlockButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 2.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 9);
+        debuggerDeadlocksInnerPanel.add(resumeDebuggerDeadlockButton, gridBagConstraints);
+
+        add(debuggerDeadlocksInnerPanel);
 
         deadlocksInnerPanel.setOpaque(false);
         deadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
@@ -394,29 +690,7 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         deadlocksInnerPanel.add(emptyPanel1, gridBagConstraints);
 
-        deadlocksPanel.add(deadlocksInnerPanel, java.awt.BorderLayout.CENTER);
-
-        add(deadlocksPanel);
-
-        deadlocksSeparator.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
-        deadlocksSeparator.setMaximumSize(new java.awt.Dimension(32767, 1));
-        deadlocksSeparator.setMinimumSize(new java.awt.Dimension(10, 1));
-        deadlocksSeparator.setPreferredSize(new java.awt.Dimension(0, 1));
-        add(deadlocksSeparator);
-
-        hitsPanel.setBackground(hitsPanelColor);
-        hitsPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        hitsPanel.setLayout(new java.awt.BorderLayout());
-
-        hitsTopSpacePanel.setBackground(java.awt.Color.cyan);
-        hitsTopSpacePanel.setOpaque(false);
-        hitsTopSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
-        hitsPanel.add(hitsTopSpacePanel, java.awt.BorderLayout.NORTH);
-
-        hitsBottomSpacePanel.setBackground(java.awt.Color.green);
-        hitsBottomSpacePanel.setOpaque(false);
-        hitsBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
-        hitsPanel.add(hitsBottomSpacePanel, java.awt.BorderLayout.SOUTH);
+        add(deadlocksInnerPanel);
 
         hitsInnerPanel.setOpaque(false);
         hitsInnerPanel.setLayout(new java.awt.GridBagLayout());
@@ -443,52 +717,220 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         hitsInnerPanel.add(emptyPanel, gridBagConstraints);
 
-        hitsPanel.add(hitsInnerPanel, java.awt.BorderLayout.CENTER);
-
-        add(hitsPanel);
-
-        hitsSeparator.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
-        hitsSeparator.setMaximumSize(new java.awt.Dimension(32767, 1));
-        hitsSeparator.setMinimumSize(new java.awt.Dimension(10, 1));
-        hitsSeparator.setPreferredSize(new java.awt.Dimension(0, 1));
-        add(hitsSeparator);
-
-        filterPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        filterPanel.setLayout(new java.awt.BorderLayout());
-
-        filterTopSpacePanel.setBackground(java.awt.Color.cyan);
-        filterTopSpacePanel.setOpaque(false);
-        filterTopSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
-        filterPanel.add(filterTopSpacePanel, java.awt.BorderLayout.NORTH);
-
-        filterBottomSpacePanel.setBackground(java.awt.Color.green);
-        filterBottomSpacePanel.setOpaque(false);
-        filterBottomSpacePanel.setPreferredSize(new java.awt.Dimension(0, 8));
-        filterPanel.add(filterBottomSpacePanel, java.awt.BorderLayout.SOUTH);
-
-        add(filterPanel);
+        add(hitsInnerPanel);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void resumeDebuggerDeadlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resumeDebuggerDeadlockButtonActionPerformed
+        //final List<JPDAThread> threadsToResume = debuggerDeadlockThreads;
+        final JPDAThread blockedThread = debuggerDeadlockThread;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                resumeThreadToFreeMonitor(blockedThread);
+            }
+        });
+        hideDebuggerDeadlockPanel();
+    }//GEN-LAST:event_resumeDebuggerDeadlockButtonActionPerformed
+
+    private void stepBrkpIgnoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBrkpIgnoreButtonActionPerformed
+        if (stepBrkpDebuggerRef != null) {
+            JPDADebugger d = stepBrkpDebuggerRef.get();
+            if (d != null) {
+                try {
+                    d.getClass().getMethod("resume").invoke(d);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }//GEN-LAST:event_stepBrkpIgnoreButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel deadlocksBottomSpacePanel;
     private javax.swing.JPanel deadlocksInnerPanel;
     private javax.swing.JLabel deadlocksLabel;
-    private javax.swing.JPanel deadlocksPanel;
-    private javax.swing.JPanel deadlocksSeparator;
+    private javax.swing.JPanel debuggerDeadlocksInnerPanel;
+    private javax.swing.JLabel debuggerDeadlocksLabel;
     private javax.swing.JPanel emptyPanel;
     private javax.swing.JPanel emptyPanel1;
-    private javax.swing.JPanel filterBottomSpacePanel;
-    private javax.swing.JPanel filterPanel;
-    private javax.swing.JPanel filterTopSpacePanel;
-    private javax.swing.JPanel hitsBottomSpacePanel;
+    private javax.swing.JPanel emptyPanel2;
     private javax.swing.JPanel hitsInnerPanel;
     private javax.swing.JLabel hitsLabel;
-    private javax.swing.JPanel hitsPanel;
-    private javax.swing.JPanel hitsSeparator;
-    private javax.swing.JPanel hitsTopSpacePanel;
     private javax.swing.JLabel infoIcon;
     private javax.swing.JLabel infoIcon1;
+    private javax.swing.JLabel infoIcon2;
+    private javax.swing.JLabel infoIcon3;
+    private javax.swing.JButton resumeDebuggerDeadlockButton;
+    private javax.swing.JLabel resumeDebuggerDeadlockLabel;
+    private javax.swing.JButton stepBrkpIgnoreButton;
+    private javax.swing.JPanel stepBrkpInnerPanel;
+    private javax.swing.JLabel stepBrkpLabel;
     // End of variables declaration//GEN-END:variables
+
+    public class Item {
+        private Color backgroundColor;
+        private int preferredHeight;
+        private JPanel topGapPanel;
+        private JPanel bottomGapPanel;
+        private JPanel outerPanel;
+        private JComponent innerPanel;
+        private JScrollPane scrollPane;
+        private JPanel separator;
+        private boolean animationRunning = false;
+        private boolean isTop = false;
+
+        Item(Color backgroundColor, int preferredHeight, JComponent innerPanel) {
+            this.backgroundColor = backgroundColor;
+            this.preferredHeight = preferredHeight;
+            this.innerPanel = innerPanel;
+            topGapPanel = createGapPanel();
+            bottomGapPanel = createGapPanel();
+            separator = createSeparator();
+            outerPanel = new JPanel();
+            outerPanel.setBackground(backgroundColor);
+            outerPanel.setLayout(new BorderLayout());
+            outerPanel.add(BorderLayout.NORTH, topGapPanel);
+            outerPanel.add(BorderLayout.CENTER, innerPanel);
+            outerPanel.add(BorderLayout.SOUTH, bottomGapPanel);
+            outerPanel.setPreferredSize(new Dimension(0, preferredHeight));
+            scrollPane = new JScrollPane();
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            scrollPane.setPreferredSize(new Dimension(0, preferredHeight));
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setViewportView(outerPanel);
+        }
+
+        public JPanel getPanel() {
+            return outerPanel;
+        }
+
+        public boolean isVisible() {
+            return scrollPane.isVisible() || animationRunning;
+        }
+
+        private JPanel createGapPanel() {
+            JPanel panel = new JPanel();
+            panel.setOpaque(false);
+            panel.setPreferredSize(new java.awt.Dimension(0, tapPanelMinimumHeight));
+            return panel;
+        }
+
+        private JPanel createSeparator() {
+            JPanel panel = new JPanel();
+            panel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+            panel.setMaximumSize(new java.awt.Dimension(32767, 1));
+            panel.setMinimumSize(new java.awt.Dimension(10, 1));
+            panel.setPreferredSize(new java.awt.Dimension(0, 1));
+            return panel;
+        }
+
+        private synchronized void makeInvisible() {
+            scrollPane.setVisible(false);
+            separator.setVisible(false);
+            if (animationRunning) {
+                animationRunning = false;
+            }
+            setTop(isTop);
+        }
+
+        private synchronized void makeVisible(boolean animate, final boolean top, final Item lastTop) {
+            if (animationRunning) {
+                return;
+            }
+            int height = top ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
+            if (!animate) {
+                setTop(top);
+                if (top && lastTop != null) {
+                    lastTop.setTop(false);
+                }
+                scrollPane.setPreferredSize(new Dimension(0, height));
+                outerPanel.setPreferredSize(new Dimension(0, height));
+                scrollPane.setVisible(true);
+                separator.setVisible(true);
+            } else {
+                scrollPane.setPreferredSize(new Dimension(0, 1));
+                outerPanel.setPreferredSize(new Dimension(0, height));
+                animationRunning = true;
+                isTop = top;
+                if (isTop && lastTop != null) {
+                    lastTop.setTop(false);
+                }
+                topGapPanel.setVisible(!isTop);
+                if (animationRunning) {
+                    scrollPane.setVisible(true);
+                    separator.setVisible(true);
+                    tapPanel.revalidate();
+                }
+                if (isTop) {
+                    tapPanel.setBackground(backgroundColor);
+                }
+                int delta = 1;
+                int currHeight = 1;
+                Timer animationTimer = new Timer(20, null);
+                animationTimer.addActionListener(new AnimationTimerListener(animationTimer, delta, currHeight));
+                animationTimer.setCoalesce(false);
+                animationTimer.start();
+            } // else
+        }
+
+        private class AnimationTimerListener implements ActionListener {
+
+            private int delta;
+            private int currHeight;
+            private Timer animationTimer;
+            private long time = 0l;
+
+            public AnimationTimerListener(Timer animationTimer, int delta, int currHeight) {
+                this.delta = delta;
+                this.currHeight = currHeight;
+                this.animationTimer = animationTimer;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                long now = System.nanoTime();
+                int step;
+                if (time > 0) {
+                    // Do bigger step if time is running out...
+                    step = delta*((int) (now - time)/(animationTimer.getDelay()*1000000) + 1);
+                    //System.err.println("interval = "+(now-time)/1000000+"step = "+step);
+                } else {
+                    step = delta;
+                }
+                time = now;
+                currHeight += step;
+                int height = isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
+                if (currHeight > height) {
+                    currHeight = height;
+                }
+                scrollPane.setPreferredSize(new Dimension(0, currHeight));
+                //System.err.println("currHeight = "+currHeight);
+                revalidate();
+                doLayout();
+                if (currHeight >= (isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight)) {
+                    animationTimer.stop();
+                    synchronized (Item.this) {
+                        animationRunning = false;
+                    }
+                }
+            }
+        }
+
+        private synchronized void setTop(boolean isTop) {
+            this.isTop = isTop;
+            if (isTop) {
+                topGapPanel.setVisible(false);
+                if (!animationRunning) {
+                    outerPanel.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
+                    scrollPane.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
+                }
+                tapPanel.setBackground(backgroundColor);
+            } else {
+                topGapPanel.setVisible(true);
+                outerPanel.setPreferredSize(new Dimension(0, preferredHeight));
+                scrollPane.setPreferredSize(new Dimension(0, preferredHeight));
+            }
+        }
+
+    }
 
 }

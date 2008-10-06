@@ -93,5 +93,5 @@ token #91 WHITESPACE
 token #92 PHP_CONSTANT_ENCAPSED_STRING "3: ok\n"
 token #93 PHP_SEMICOLON ;
 token #94 WHITESPACE \n
-token #95 PHP_CLOSETAG ?>\n
-token #96 T_INLINE_HTML --EXPECT--\n1: ok\n2: ok\n3: ok\n
+token #95 PHP_CLOSETAG ?>
+token #96 T_INLINE_HTML \n--EXPECT--\n1: ok\n2: ok\n3: ok\n

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.mysql.nodes;
 
+import java.awt.Image;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.actions.DisconnectServerAction;
 import org.netbeans.modules.db.mysql.nodes.DatabaseNode;
@@ -129,8 +130,12 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
         // The display name changes depending on the 
         // state of the server instance
         String oldName = getDisplayName();
+        String oldShortDescription = getShortDescription();
         setDisplayName(server.getDisplayName());
-        this.fireNameChange(oldName, getDisplayName());
+        fireNameChange(oldName, getDisplayName());
+        setShortDescription(server.getShortDescription());
+        fireShortDescriptionChange(oldShortDescription, getShortDescription());
+        fireIconChange();
     }
                 
     @Override
@@ -155,6 +160,11 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
     @Override
     public boolean canDestroy() {
         return true;
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return server.getIcon();
     }
     
     @Override

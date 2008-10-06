@@ -67,8 +67,7 @@ public class SaveAllActionTest extends SaveActionTest {
         suite.addTest(new SaveAllActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(SaveAllActionTest.class, 
-                "testPerformMenu", "testPerformAPI");
+        return createModuleTest(SaveAllActionTest.class);
     }
 
     /** Use for internal test execution inside IDE

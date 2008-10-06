@@ -43,6 +43,8 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import java.awt.event.MouseEvent;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPopupMenu;
 
 import org.openide.awt.MouseUtils;
@@ -62,6 +64,8 @@ import org.openide.util.WeakListeners;
  */
 public abstract class PanelView extends javax.swing.JPanel {
     
+    private static final Logger LOGGER = Logger.getLogger(PanelView.class.getName());
+
     private Node root;
     /** not null if popup menu enabled */
     transient boolean sectionHeaderClicked;
@@ -187,8 +191,11 @@ public abstract class PanelView extends javax.swing.JPanel {
     public boolean setManagerSelection(Node[] nodes) {
         try{
             getExplorerManager().setSelectedNodes(nodes);
-        }
-        catch (PropertyVetoException e) {
+        } catch (PropertyVetoException e) {
+            return false;
+        } catch (IllegalArgumentException iae) {
+            // see #140613
+            LOGGER.log(Level.WARNING, "Failed to select the given nodes.", iae);
             return false;
         }
         return true;

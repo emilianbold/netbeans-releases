@@ -57,13 +57,11 @@ import org.netbeans.modules.uml.drawingarea.view.WidgetViewManager;
 public class ActivityJoinForkWidget extends JoinForkWidget implements WidgetViewManager
 {
 
-    public ActivityJoinForkWidget(Scene scene)
+    public ActivityJoinForkWidget(Scene scene, String path)
     {
-        super(scene, DEFAULT_WIDTH, DEFAULT_HEIGHT,
-              "UML/context-palette/ActivityFork");
+        super(scene, DEFAULT_WIDTH, DEFAULT_HEIGHT, path);
         addToLookup(this);
     }
-
 
     @Override
     public void propertyChange(PropertyChangeEvent event)

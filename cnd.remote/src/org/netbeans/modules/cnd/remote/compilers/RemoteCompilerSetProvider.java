@@ -39,42 +39,50 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
+import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
+import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author gordonp
  */
-public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformTypes {
+public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
-    private Logger log = Logger.getLogger("cnd.remote.logger");
-    
-    public void init(String name) {
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private String hkey;
+
+    public void init(String hkey) {
+        this.hkey = hkey;
         manager = new CompilerSetScriptManager();
-        new RemoteScriptSupport(name, manager);
+        new RemoteScriptSupport(hkey, manager);
+
     }
     
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
-            log.warning("Got null response on platform");
-            platform = "";
+            log.warning("RCSP.getPlatform: Got null response on platform"); //NOI18N
+            platform = ""; //NOI18N
         }
         if (platform.startsWith("Windows")) { // NOI18N
-            return PLATFORM_WINDOWS;
+            return PlatformTypes.PLATFORM_WINDOWS;
         } else if (platform.startsWith("Linux")) { // NOI18N
-            return PLATFORM_LINUX;
+            return PlatformTypes.PLATFORM_LINUX;
         } else if (platform.startsWith("SunOS")) { // NOI18N
-            return platform.contains("86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+            return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
         } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
-            return PLATFORM_MACOSX;
+            return PlatformTypes.PLATFORM_MACOSX;
         } else {
-            return PLATFORM_GENERIC;
+            return PlatformTypes.PLATFORM_GENERIC;
         }
     }
 
@@ -85,4 +93,17 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider, PlatformT
     public String getNextCompilerSetData() {
         return manager.getNextCompilerSetData();
     }
+
+    public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets) {
+        return SystemIncludesUtils.load(hkey, sets);
+    }
+
+    public String[] getCompilerSetData(String hkey, String path) {
+        RemoteCommandSupport rcs = new RemoteCommandSupport(hkey, CompilerSetScriptManager.SCRIPT + " " + path); //NOI18N
+        if (rcs.run() == 0) {
+            return rcs.getOutput().split("\n"); // NOI18N
+        }
+        return null;
+    }
+
 }

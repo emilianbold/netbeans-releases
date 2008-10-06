@@ -64,7 +64,7 @@ public class BirdToggleViewAction extends AbstractAction
         controller = scene.createBirdView();
         
         ImageUtil util = ImageUtil.instance();
-        putValue(Action.SMALL_ICON, util.getIcon("birdeye.png"));
+        putValue(Action.SMALL_ICON, util.getIcon("rectangular_magnifying_glass.png"));
         //putValue(Action.NAME, NbBundle.getMessage(getClass(), "CTL_BIRDEYE"));
         
         zoomManager = manager;

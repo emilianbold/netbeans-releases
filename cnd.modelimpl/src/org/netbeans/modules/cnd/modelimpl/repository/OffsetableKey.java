@@ -60,7 +60,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     private final int startOffset;
     private final int endOffset;
     
-    private final char kind;
+    private final int hashCode;
     private final CharSequence name;
     
     protected OffsetableKey(CsmOffsetable obj, String kind, CharSequence name) {
@@ -72,16 +72,16 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	this.startOffset = startOffset;
 	this.endOffset = endOffset;
         assert kind.length()==1;
-	this.kind = kind.charAt(0);
 	this.name = name;
+        this.hashCode = (_hashCode() << 8) | (kind.charAt(0) & 0xff);
     }
     
     /*package-local*/ char getKind(){
-        return kind;
+        return (char)(hashCode & 0xff);
     }
 
     /*package-local*/ CharSequence getName(){
-        if (name != null && name.length() >= 0 && isDigit(name.charAt(0))) {
+        if (name != null && 0 < name.length() && isDigit(name.charAt(0))) {
             return CharSequenceKey.empty();
         }
         return name;
@@ -118,7 +118,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	super.write(aStream);
 	aStream.writeInt(this.startOffset);
 	aStream.writeInt(this.endOffset);
-	aStream.writeChar(this.kind);
+	aStream.writeInt(this.hashCode);
 	assert this.name != null;
 	aStream.writeUTF(this.name.toString());
     }
@@ -127,14 +127,14 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	super(aStream);
 	this.startOffset = aStream.readInt();
 	this.endOffset = aStream.readInt();
-	this.kind = aStream.readChar();
+	this.hashCode = aStream.readInt();
 	this.name = NameCache.getManager().getString(aStream.readUTF());
 	assert this.name != null;
     }
     
     @Override
     public String toString() {
-	return name + "[" + kind + " " + startOffset + "-" + endOffset + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
+	return name + "[" + getKind() + " " + startOffset + "-" + endOffset + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
     }
     
     @Override
@@ -145,32 +145,36 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	OffsetableKey other = (OffsetableKey)obj;
 	return  this.startOffset == other.startOffset &&
 		this.endOffset == other.endOffset &&
-		this.kind == other.kind &&
+		this.getKind() == other.getKind() &&
 		this.name.equals(other.name);
     }
     
     @Override
     public int hashCode() {
+        return hashCode;
+    }
+
+    private final int _hashCode() {
 	int retValue;
 	
 	retValue = 17*super.hashCode() + name.hashCode();
-	retValue = 17*retValue + kind;
 	retValue = 17*retValue + startOffset;
 	retValue = 17*retValue + endOffset;
 	return retValue;
     }
+
     
     public int compareTo(Object o) {
 	if (this == o) {
 	    return 0;
 	}
 	OffsetableKey other = (OffsetableKey)o;
-	assert (kind ==other.kind);
+	assert (getKind() == other.getKind());
 	//FUXUP assertion: unit and file tables should be deserialized before files deserialization.
 	//instead compare indexes.
 	//assert (this.getFileName().equals(other.getFileName()));
 	//assert (this.getProjectName().equals(other.getProjectName()));
-	assert (this.unitIndex == other.unitIndex);
+	assert (this.getUnitId() == other.getUnitId());
 	assert (this.fileNameIndex == other.fileNameIndex);
 	int ofs1 = this.startOffset;
 	int ofs2 = other.startOffset;
@@ -194,7 +198,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	} else {
 	    switch(level - superDepth) {
 		case 0:
-		    return new String(new char[]{this.kind});
+		    return new String(new char[]{getKind()});
 		case 1:
 		    return this.name;
 		default:

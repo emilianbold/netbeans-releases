@@ -186,8 +186,28 @@ public class CsmCompletionExpression {
     /** Preproc directive */
     public static final int PREPROC_DIRECTIVE_OPEN = 39;
 
+    public static final int TERNARY_OPERATOR = 40;
+
+    /** 'for' keyword */
+    public static final int FOR = 41;
+
+    /** 'if' keyword */
+    public static final int IF = 42;
+
+    /** 'switch' keyword */
+    public static final int SWITCH = 43;
+
+    /** 'while' keyword */
+    public static final int WHILE = 44;
+
+    /** Parenthesis like in 'if (condition)' */
+    public static final int SPECIAL_PARENTHESIS = 45;
+
+    /** Parenthesis like in 'if (condition)' */
+    public static final int SPECIAL_PARENTHESIS_OPEN = 46;
+
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = PREPROC_DIRECTIVE_OPEN;
+    private static final int LAST_ID = SPECIAL_PARENTHESIS_OPEN;
 
     private static final int cppTokenIDsLength
         = EnumSet.allOf(CppTokenId.class).size();
@@ -390,8 +410,8 @@ public class CsmCompletionExpression {
             }
             return false;
             
-        case DOT:
-        case ARROW:
+//        case DOT:
+//        case ARROW:
         case SCOPE:
             int prmCnt = exp.getParameterCount();
             for (int i = 0; i < prmCnt; i++) {
@@ -586,6 +606,20 @@ public class CsmCompletionExpression {
             return "PREPROC_DIRECTIVE"; // NOI18N
         case PREPROC_DIRECTIVE_OPEN:
             return "PREPROC_DIRECTIVE_OPEN"; // NOI18N
+        case TERNARY_OPERATOR:
+            return "TERNARY_OPERATOR"; // NOI18N
+        case FOR:
+            return "FOR"; // NOI18N
+        case IF:
+            return "IF"; // NOI18N
+        case SWITCH:
+            return "SWITCH"; // NOI18N
+        case WHILE:
+            return "WHILE"; // NOI18N
+        case SPECIAL_PARENTHESIS:
+            return "SPECIAL_PARENTHESIS"; // NOI18N
+        case SPECIAL_PARENTHESIS_OPEN:
+            return "SPECIAL_PARENTHESIS_OPEN"; // NOI18N
         default:
             return "Unknown expID " + expID; // NOI18N
         }

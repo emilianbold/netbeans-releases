@@ -793,4 +793,282 @@ No.
 </answer>
 
 
+
+
+
+<!--
+        <question id="arch-overall" when="init">
+            Describe the overall architecture. 
+            <hint>
+            What will be API for 
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi" shape="rect">
+                clients and what support API</a>? 
+            What parts will be pluggable?
+            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
+            to describe your general APIs and specify their
+            <a href="http://openide.netbeans.org/tutorial/api-design.html#category-private" shape="rect">
+            stability categories</a>.
+            If possible please provide simple diagrams.
+            </hint>
+        </question>
+-->
+ <answer id="arch-overall">
+  <p>
+   XXX no answer for arch-overall
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="arch-quality" when="init">
+            How will the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html" shape="rect">quality</a>
+            of your code be tested and 
+            how are future regressions going to be prevented?
+            <hint>
+            What kind of testing do
+            you want to use? How much functionality, in which areas,
+            should be covered by the tests? How you find out that your
+            project was successful?
+            </hint>
+        </question>
+-->
+ <answer id="arch-quality">
+  <p>
+   XXX no answer for arch-quality
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="arch-time" when="init">
+            What are the time estimates of the work?
+            <hint>
+            Please express your estimates of how long the design, implementation,
+            stabilization are likely to last. How many people will be needed to
+            implement this and what is the expected milestone by which the work should be 
+            ready?
+            </hint>
+        </question>
+-->
+ <answer id="arch-time">
+  <p>
+   XXX no answer for arch-time
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="arch-usecases" when="init">
+            <hint>
+                Content of this answer will be displayed as part of page at
+                http://www.netbeans.org/download/dev/javadoc/usecases.html 
+                You can use tags &lt;usecase name="name&gt; regular html description &lt;/usecase&gt;
+                and if you want to use an URL you can prefix if with @TOP@ to begin
+                at the root of your javadoc
+            </hint>
+        
+            Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase" shape="rect">
+            use cases</a> of the new API. Who will use it under
+            what circumstances? What kind of code would typically need to be written
+            to use the module?
+        </question>
+-->
+ <answer id="arch-usecases">
+  <p>
+   XXX no answer for arch-usecases
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="arch-where" when="impl">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the Hg web client at
+                http://hg.netbeans.org/
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   XXX no answer for compat-deprecation
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="deploy-dependencies" when="final">
+            What do other modules need to do to declare a dependency on this one,
+            in addition to or instead of the normal module dependency declaration
+            (e.g. tokens to require)?
+            <hint>
+                Provide a sample of the actual lines you would add to a module manifest
+                to declare a dependency, for example OpenIDE-Module-Requires: some.token.
+                If other modules should not depend on this module, or should just use a
+                simple regular module dependency, you can just answer "nothing". If you
+                intentionally expose a semistable API to clients using implementation
+                dependencies, you should mention that here (but there is no need to give
+                an example of usage).
+            </hint>
+        </question>
+-->
+ <answer id="deploy-dependencies">
+  <p>
+   XXX no answer for deploy-dependencies
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  <p>
+   XXX no answer for exec-ant-tasks
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="exec-threading" when="init">
+            What threading models, if any, does your module adhere to? How the
+            project behaves with respect to threading?
+            <hint>
+                Is your API threadsafe? Can it be accessed from any threads or
+                just from some dedicated ones? Any special relation to AWT and
+                its Event Dispatch thread? Also
+                if your module calls foreign APIs which have a specific threading model,
+                indicate how you comply with the requirements for multithreaded access
+                (synchronization, mutexes, etc.) applicable to those APIs.
+                If your module defines any APIs, or has complex internal structures
+                that might be used from multiple threads, declare how you protect
+                data against concurrent access, race conditions, deadlocks, etc.,
+                and whether such rules are enforced by runtime warnings, errors, assertions, etc.
+                Examples: a class might be non-thread-safe (like Java Collections); might
+                be fully thread-safe (internal locking); might require access through a mutex
+                (and may or may not automatically acquire that mutex on behalf of a client method);
+                might be able to run only in the event queue; etc.
+                Also describe when any events are fired: synchronously, asynchronously, etc.
+                Ideas: <a href="http://core.netbeans.org/proposals/threading/index.html#recommendations" shape="rect">Threading Recommendations</a> (in progress)
+            </hint>
+        </question>
+-->
+ <answer id="exec-threading">
+  <p>
+   XXX no answer for exec-threading
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="perf-spi" when="init">
+            How the performance of the plugged in code will be enforced?
+            <hint>
+            If you allow foreign code to be plugged into your own module, how
+            do you enforce that it will behave correctly and quickly and will not
+            negatively influence the performance of your own module?
+            </hint>
+        </question>
+-->
+ <answer id="perf-spi">
+  <p>
+   XXX no answer for perf-spi
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   XXX no answer for security-grant
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   XXX no answer for security-policy
+  </p>
+ </answer>
+
 </api-answers>

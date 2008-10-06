@@ -32,6 +32,7 @@ import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -128,7 +129,7 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                 // Need to see deeper to the referenced element
                 return;
             }
-            myFound.add(sc);
+            addSchemaComponent(sc);
             return;
         }
         if (mLookForAttributes && sc instanceof Attribute) {
@@ -148,5 +149,40 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                 myFound.add(sc);
             }
         }
+    }
+
+    private void addSchemaComponent(SchemaComponent element) {
+        if (!(element instanceof Named)) {
+            myFound.add(element);
+            return;
+        }
+
+        boolean flag = true;
+
+        for (SchemaComponent el : myFound) {
+            if (el instanceof Named) {
+                String name1 = ((Named) el).getName();
+                String name2 = ((Named) element).getName();
+                String nameSp1 = element.getModel().getEffectiveNamespace(element);
+                String nameSp2 = el.getModel().getEffectiveNamespace(el);
+
+                if (name1 != null && name1.equals(name2) &&
+                        equalsNemeSpase(nameSp1, nameSp2))
+                {
+                    //              myFound.remove(el);
+                    flag = false;
+                    break;
+                }
+            }
+        }
+
+        if (flag) {
+            myFound.add(element);
+        }
+    }
+
+    private boolean equalsNemeSpase(Object o1, Object o2) {
+        if (o1 == null || o2 == null) { return true; }
+        return o1.equals(o2);
     }
 }

@@ -166,7 +166,7 @@ public class GroovyParserTest extends GroovyTestBase {
     }    
     
     
-    public void testSanatizerLimitations() throws Exception {
+    public void testSanatizerRemoveDotBeforeError() throws Exception {
         
         copyStringToFileObject(testFO,
                 "def m() {\n" +
@@ -182,10 +182,7 @@ public class GroovyParserTest extends GroovyTestBase {
         
         CompilationInfo info = getInfo(testFO);
         ASTNode root = AstUtilities.getRoot(info);
-        // The code above is brocken (x. unfinisched method/memeber access)
-        // *AND* can not be repaired at the time of this writing (# 131317) 
-        // by the sanatizer, therefore we expect a null here.
-        assertNull(root);
+        assertNotNull(root);
     }
     
 //    public void testDuplicateDefinitions() throws Exception {

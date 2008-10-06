@@ -42,9 +42,6 @@
 package org.netbeans.modules.j2ee.archive.wizard;
 
 import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -93,10 +90,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -156,199 +150,182 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     }
     
     
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         return instantiate(null, null);
     }
     
-    private Set/*<FileObject>*/ instantiate(String distArchive, ProgressHandle ph) throws IOException {
+    private Set<FileObject> instantiate(String distArchive, ProgressHandle ph) throws IOException {
         // test to see if we should really continue for a jar HERE...
         final File archiveFile = (File) wiz.getProperty(PROJECT_ARCHIVE_PROP);
         Object type = wiz.getProperty(PROJECT_TYPE_PROP);
-        Set retVal = null;
-        if (ArchiveProjectProperties.PROJECT_TYPE_VALUE_UNKNOWN.equals(type)) {
-            // do a bit of digging...
-            JarFile jf = new JarFile(archiveFile);
-            boolean isJar = isEjbJar(jf);
-            boolean isCar = hasMain(jf);
-            if (!isJar && !isCar) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(DeployableWizardIterator.class,
-                        "ERR_Cannot_Deteremine_Type"), NotifyDescriptor.WARNING_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                retVal = Collections.EMPTY_SET;
-            }
+            
+        File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJECT_DIR_PROP));
+        final FileObject dir = FileUtil.createFolder(dirF);
+
+        final AntProjectHelper h = ProjectGenerator.createProject(dir,
+                ArchiveProjectType.TYPE);
+        ReferenceHelper rH = new ReferenceHelper(h,
+                h.createAuxiliaryConfiguration(),h.getStandardPropertyEvaluator());
+
+        //
+        // persist the project attributes
+        //
+        Element data = h.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        Element nameEl = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, PROJECT_NAME_PROP); // NOI18N
+        nameEl.appendChild(doc.createTextNode(wiz.getProperty(PROJECT_NAME_PROP).toString()));
+        data.appendChild(nameEl);
+        Element minant = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, ANT_VERSION_PROP); // NOI18N
+        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
+        data.appendChild(minant);
+        Element sourceRoots = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, SOURCE_JAR_CONST);  //NOI18N
+        data.appendChild(sourceRoots);
+        String jarReference = rH.createForeignFileReference(FileUtil.normalizeFile(archiveFile), JavaProjectConstants.ARTIFACT_TYPE_JAR);
+        sourceRoots.appendChild(doc.createTextNode(jarReference));
+        h.putPrimaryConfigurationData(data, true);
+        //
+        // write the properties file
+        //
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        Deployment deployment = Deployment.getDefault();
+        final Object serverInstanceID = wiz.getProperty(PROJECT_TARGET_PROP);
+
+        ep.setProperty(ArchiveProjectProperties.J2EE_SERVER_TYPE,
+                deployment.getServerID(JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID)));
+        ep.setProperty(ArchiveProjectProperties.SOURCE_ARCHIVE,
+                jarReference);
+        ep.setProperty(ArchiveProjectProperties.DIST_DIR,ArchiveProjectProperties.DIST_DIR_VALUE);
+        ep.setProperty(ArchiveProjectProperties.WAR_NAME,archiveFile.getName());
+        ep.setProperty(ArchiveProjectProperties.ARCHIVE_TYPE, (String) type);
+        ep.setProperty(ArchiveProjectProperties.PROXY_PROJECT_DIR, ArchiveProjectProperties.TMP_PROJ_DIR_VALUE);
+        if (null == distArchive) {
+            ep.setProperty(ArchiveProjectProperties.DIST_ARCHIVE, "${dist.dir}/${war.name}");//NOI18N
+        } else {
+            ep.setProperty(ArchiveProjectProperties.DIST_ARCHIVE, distArchive);
         }
-        if (null == retVal) {
-            File dirF = FileUtil.normalizeFile((File) wiz.getProperty(PROJECT_DIR_PROP));
-            final FileObject dir = FileUtil.createFolder(dirF);
-            
-            final AntProjectHelper h = ProjectGenerator.createProject(dir,
-                    ArchiveProjectType.TYPE);
-            ReferenceHelper rH = new ReferenceHelper(h,
-                    h.createAuxiliaryConfiguration(),h.getStandardPropertyEvaluator());
-            
-            //
-            // persist the project attributes
-            //
-            Element data = h.getPrimaryConfigurationData(true);
-            Document doc = data.getOwnerDocument();
-            Element nameEl = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, PROJECT_NAME_PROP); // NOI18N
-            nameEl.appendChild(doc.createTextNode(wiz.getProperty(PROJECT_NAME_PROP).toString()));
-            data.appendChild(nameEl);
-            Element minant = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, ANT_VERSION_PROP); // NOI18N
-            minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
-            data.appendChild(minant);
-            Element sourceRoots = doc.createElementNS(ArchiveProjectType.PROJECT_CONFIGURATION_NS, SOURCE_JAR_CONST);  //NOI18N
-            data.appendChild(sourceRoots);
-            String jarReference = rH.createForeignFileReference(FileUtil.normalizeFile(archiveFile), JavaProjectConstants.ARTIFACT_TYPE_JAR);
-            //Element root = doc.createElementNS (ArchiveProjectType.PROJECT_CONFIGURATION_NS,"root");   //NOI18N
-            sourceRoots.appendChild(doc.createTextNode(jarReference));
-            h.putPrimaryConfigurationData(data, true);
-            //
-            // write the properties file
-            //
-            EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            Deployment deployment = Deployment.getDefault();
-            final Object serverInstanceID = wiz.getProperty(PROJECT_TARGET_PROP);
-            
-            ep.setProperty(ArchiveProjectProperties.J2EE_SERVER_TYPE,
-                    deployment.getServerID(JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID)));
-            ep.setProperty(ArchiveProjectProperties.SOURCE_ARCHIVE,
-                    jarReference);
-            ep.setProperty(ArchiveProjectProperties.DIST_DIR,ArchiveProjectProperties.DIST_DIR_VALUE);
-            ep.setProperty(ArchiveProjectProperties.WAR_NAME,archiveFile.getName());
-            ep.setProperty(ArchiveProjectProperties.ARCHIVE_TYPE, (String) type);
-            ep.setProperty(ArchiveProjectProperties.PROXY_PROJECT_DIR, ArchiveProjectProperties.TMP_PROJ_DIR_VALUE);
-            //String distArchive = (String) wiz.getProperty(DIST_ARCHIVE_PROP);
+        if (ArchiveProjectProperties.PROJECT_TYPE_VALUE_WAR.equals(ep.getProperty(ArchiveProjectProperties.ARCHIVE_TYPE))) {
+            ep.setProperty(ArchiveProjectProperties.CONTENT_DIR,"${proxy.project.dir}/web");//NOI18N
+            ep.setProperty(ArchiveProjectProperties.CONF_DIR, "${proxy.project.dir}/web/WEB-INF");//NOI18N
+        } else {
+            ep.setProperty(ArchiveProjectProperties.CONTENT_DIR,"${proxy.project.dir}/src/java");//NOI18N
+            ep.setProperty(ArchiveProjectProperties.CONF_DIR, "${proxy.project.dir}/src/conf");     //NOI18N
+        }
+
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+
+        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        // ant deployment support
+        File projectFolder = dirF; // FileUtil.toFile(dirFO);
+        try {
+            AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ArchiveProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
+                    ArchiveProjectProperties.mapType((String) wiz.getProperty(PROJECT_TYPE_PROP)),
+                    JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+        }
+        File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
+        if (deployAntPropsFile != null) {
+            ep.setProperty(ArchiveProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
+        }
+        ep.setProperty(ArchiveProjectProperties.J2EE_SERVER_INSTANCE, JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+
+        final Project p = ProjectManager.getDefault().findProject(dir);
+        ProjectManager.getDefault().saveProject(p);
+
+        // explode the project here....
+        final ArchiveProject ap = (ArchiveProject) p.getLookup().lookup(ArchiveProject.class);
+        if (null != ap) {
             if (null == distArchive) {
-                ep.setProperty(ArchiveProjectProperties.DIST_ARCHIVE, "${dist.dir}/${war.name}");//NO18N
-            } else {
-                ep.setProperty(ArchiveProjectProperties.DIST_ARCHIVE, distArchive);
-            }
-            if (ArchiveProjectProperties.PROJECT_TYPE_VALUE_WAR.equals(ep.getProperty(ArchiveProjectProperties.ARCHIVE_TYPE))) {
-                ep.setProperty(ArchiveProjectProperties.CONTENT_DIR,"${proxy.project.dir}/web");//NO18N
-                ep.setProperty(ArchiveProjectProperties.CONF_DIR, "${proxy.project.dir}/web/WEB-INF");//NO18N
-            } else {
-                ep.setProperty(ArchiveProjectProperties.CONTENT_DIR,"${proxy.project.dir}/src/java");//NO18N
-                ep.setProperty(ArchiveProjectProperties.CONF_DIR, "${proxy.project.dir}/src/conf");     //NO18N
-            }
-            
-            h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-            
-            ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            // ant deployment support
-            File projectFolder = dirF; // FileUtil.toFile(dirFO);
-            try {
-                AntDeploymentHelper.writeDeploymentScript(new File(projectFolder, ArchiveProjectProperties.ANT_DEPLOY_BUILD_SCRIPT),
-                        ArchiveProjectProperties.mapType((String) wiz.getProperty(PROJECT_TYPE_PROP)),
-                        JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-            }
-            File deployAntPropsFile = AntDeploymentHelper.getDeploymentPropertiesFile(JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
-            if (deployAntPropsFile != null) {
-                ep.setProperty(ArchiveProjectProperties.DEPLOY_ANT_PROPS_FILE, deployAntPropsFile.getAbsolutePath());
-            }
-            ep.setProperty(ArchiveProjectProperties.J2EE_SERVER_INSTANCE, JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID));
-            h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-            
-            final Project p = ProjectManager.getDefault().findProject(dir);
-            ProjectManager.getDefault().saveProject(p);
-            
-            // explode the project here....
-            final ArchiveProject ap = (ArchiveProject) p.getLookup().lookup(ArchiveProject.class);
-            if (null != ap) {
-                if (null == distArchive) {
-                    // start thread to unzip the project tree
-                    Runnable t = new  Runnable() {
-                        public void run() {
-                            final Thread t = Thread.currentThread();
-                            ProgressHandle ph  = ProgressHandleFactory.createHandle(//"DISPLAY NAME",
+                // start thread to unzip the project tree
+                Runnable t = new  Runnable() {
+                    public void run() {
+                        final Thread t = Thread.currentThread();
+                        ProgressHandle ph  = ProgressHandleFactory.createHandle(//"DISPLAY NAME",
+                                NbBundle.getMessage(DeployableWizardIterator.class,
+                                "TITLE_PROJECT_CREATE_STATUS"),     // NOI18N 
+                                new Cancellable() {
+                            public boolean cancel() {
+                                t.interrupt();
+                                return true;
+                            }                                
+                        });
+                        ph.start();
+                        boolean cleanup = false;
+                        try {
+                            explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
+                                    JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),ph);
+                            ph.progress(
                                     NbBundle.getMessage(DeployableWizardIterator.class,
-                                    "TITLE_PROJECT_CREATE_STATUS"),     // NOI18N 
-                                    new Cancellable() {
-                                public boolean cancel() {
-                                    t.interrupt();
-                                    return true;
-                                }                                
-                            });
-                            ph.start();
-                            boolean cleanup = false;
-                            try {
-                                explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
-                                        JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),ph);
+                                    "MESS_OPEN_PROJECT"));  //NOI18N
+                            OpenProjects.getDefault().open(new Project[] {p},false);
+                        } catch (java.nio.channels.ClosedByInterruptException cbie) {
+                            // I see this when i shoot the thread...
+                            // so I will just clean up...
+                            cleanup = true;
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                    cbie);
+                        } catch (IOException ioe) {
+                            // I don't know exactly what is up here
+                            cleanup = true;
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                    ioe);
+                        } catch (SAXException saxe) {
+                            // could not parse the application.xml file...
+                            cleanup = true;
+                            ErrorManager.getDefault().notify(ErrorManager.WARNING,
+                                    saxe);
+                        } catch (RuntimeException rte) {
+                            cleanup = true;
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                    rte);
+                        } finally {
+                            if (cleanup) {
                                 ph.progress(
                                         NbBundle.getMessage(DeployableWizardIterator.class,
-                                        "MESS_OPEN_PROJECT"));  //NOI18N
-                                OpenProjects.getDefault().open(new Project[] {p},false);
-                            } catch (java.nio.channels.ClosedByInterruptException cbie) {
-                                // I see this when i shoot the thread...
-                                // so I will just clean up...
-                                cleanup = true;
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                        cbie);
-                            } catch (IOException ioe) {
-                                // I don't know exactly what is up here
-                                cleanup = true;
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                        ioe);
-                            } catch (SAXException saxe) {
-                                // could not parse the application.xml file...
-                                cleanup = true;
-                                ErrorManager.getDefault().notify(ErrorManager.WARNING,
-                                        saxe);
-                            } catch (RuntimeException rte) {
-                                cleanup = true;
-                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                        rte);
-                            } finally {
-                                if (cleanup) {
+                                        "MESS_CLEAN_UP"));      // NOI18N
+                                try {
+                                    Thread.sleep(500);
                                     ph.progress(
                                             NbBundle.getMessage(DeployableWizardIterator.class,
-                                            "MESS_CLEAN_UP"));      // NOI18N
-                                    try {
-                                        Thread.currentThread().sleep(500);
-                                        ph.progress(
-                                                NbBundle.getMessage(DeployableWizardIterator.class,
-                                                "MESS_CLEAN_UP2"));     // NOI18N
-                                        dir.delete();
-                                        Thread.currentThread().sleep(500);
-                                        ap.getAntProjectHelper().notifyDeleted();
-                                    } catch (InterruptedException ie) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                ie);
-                                    } catch (IOException ex) {
-                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                ex);
-                                    }
+                                            "MESS_CLEAN_UP2"));     // NOI18N
+                                    dir.delete();
+                                    Thread.sleep(500);
+                                    ap.getAntProjectHelper().notifyDeleted();
+                                } catch (InterruptedException ie) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                            ie);
+                                } catch (IOException ex) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                            ex);
                                 }
-                                ph.finish();
-                                wiz.putProperty(PROJECT_DIR_PROP,null);//NO18N
-                                wiz.putProperty(PROJECT_NAME_PROP,null);//NO18N
-                                wiz = null;
                             }
+                            ph.finish();
+                            wiz.putProperty(PROJECT_DIR_PROP,null);
+                            wiz.putProperty(PROJECT_NAME_PROP,null);
+                            wiz = null;
                         }
-                    };
-                    RequestProcessor.getDefault().post(t);
-                } else {
-                    try {
-                        explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
-                                JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),
-                                ph);
-                    } catch (SAXException saxe) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(saxe);
-                        throw ioe;
                     }
+                };
+                RequestProcessor.getDefault().post(t);
+            } else {
+                try {
+                    explodeTheProject(dir, archiveFile, ap, (String) wiz.getProperty(PROJECT_TYPE_PROP),
+                            JavaEePlatformUiSupport.getServerInstanceID(serverInstanceID),
+                            ph);
+                } catch (SAXException saxe) {
+                    IOException ioe = new IOException();
+                    ioe.initCause(saxe);
+                    throw ioe;
                 }
             }
-            
-            File parent = dirF.getParentFile();
-            if (parent != null && parent.exists()) {
-                ProjectChooser.setProjectsFolder(parent);
-            }
-            retVal = Collections.EMPTY_SET;
         }
-        return retVal;
+
+        File parent = dirF.getParentFile();
+        if (parent != null && parent.exists()) {
+            ProjectChooser.setProjectsFolder(parent);
+        }
+        return Collections.EMPTY_SET;
     }
     
     
@@ -385,9 +362,9 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, (Integer) i);//NO18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, (Integer) i);//NOI18N
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);//NO18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);//NOI18N
             }
         }
     }
@@ -397,7 +374,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
     }
     
     public String name() {
-        return MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/archive/wizard/Bundle").getString("{0}_of_{1}"),//NO18N
+        return MessageFormat.format(NbBundle.getBundle(DeployableWizardIterator.class).getString("{0}_of_{1}"), //NOI18N
                 new Object[] {(Integer)(index + 1), (Integer) panels.length});
     }
     
@@ -442,9 +419,9 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         t.run();
     }
     
-    static private boolean isEjbJar(JarFile jf) throws IOException {
+    static boolean isEjbJar(JarFile jf) throws IOException {
         boolean retVal = false;
-        if (jf.getEntry("META-INF/ejb-jar.xml") != null) {
+        if (jf.getEntry("META-INF/ejb-jar.xml") != null) {  //NOI18N
             retVal = true;
         } else {
             retVal = EJBAnnotationDetector.containsSomeAnnotatedEJBs(jf);
@@ -452,14 +429,14 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         return retVal;
     }
     
-    static private boolean hasMain(JarFile jf) {
+    static boolean hasMain(JarFile jf) {
         boolean retVal = false;
         // throws IOE
         try {
             Manifest mf = jf.getManifest();
             if (null != mf) {
                 Attributes attrs = mf.getMainAttributes();
-                retVal = attrs.getValue("Main-Class") != null;
+                retVal = attrs.getValue("Main-Class") != null;  //NOI18N
             }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
@@ -545,7 +522,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                 final FileObject javaDir, boolean isRar) throws FileNotFoundException, IOException, SAXException {
             FileObject confDir;
             // this should work for ejb-jar/rar/car archives...
-            confDir = srcDir.createFolder("conf");
+            confDir = srcDir.createFolder("conf");  //NOI18N
             // run the annotation detector here for jar/car descrimination
             if (!isEar && !isRar && !isCar && !isJar) {
                 JarFile jf = new JarFile(FileUtil.toFile(srcArchive));
@@ -702,18 +679,18 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
         
         
         private AntProjectHelper handleWarFile(final FileObject javaDir) throws FileNotFoundException, IOException {
-            FileObject webDir = subDir.createFolder("web");
+            FileObject webDir = subDir.createFolder("web");  //NOI18N
             //
             unZipFile(srcArchive.getInputStream(), webDir);
-            FileObject webInf = webDir.getFileObject("WEB-INF");
+            FileObject webInf = webDir.getFileObject("WEB-INF");  //NOI18N
             // The web-inf is a MUST HAVE
             if (null == webInf) {
                 throw new FileNotFoundException(NbBundle.getMessage(DeployableWizardIterator.class,
-                        "ERROR_MISSING_WEB_INF",webDir, srcArchive));
+                        "ERROR_MISSING_WEB_INF",webDir, srcArchive));  //NOI18N
             }
             FileObject webDotXml = null;
             if (webInf.isFolder()) {
-                webDotXml = webInf.getFileObject("web.xml");
+                webDotXml = webInf.getFileObject("web.xml");  //NOI18N
             }            
             WebProjectCreateData createData = new WebProjectCreateData();
             createData.setProjectDir(FileUtil.toFile(subDir));
@@ -728,7 +705,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             createData.setBuildfile(GeneratedFilesHelper.BUILD_XML_PATH);
             createData.setJavaSourceBased(false);
             createData.setWebInfFolder(webInf);
-            createData.setSourceLevel("1.5");
+            createData.setSourceLevel("1.5");  //NOI18N
             return WebProjectUtilities.importProject(createData);
         }
         
@@ -770,7 +747,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                     
                 }
             } else {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, NbBundle.getMessage(ArchiveProject.class,"WARN_EAR_ARCH_MISSING_APPLICATION_XML"));
+                ErrorManager.getDefault().log(ErrorManager.WARNING, NbBundle.getMessage(ArchiveProject.class,"WARN_EAR_ARCH_MISSING_APPLICATION_XML"));  //NOI18N
             }
         }
         
@@ -786,7 +763,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
             wizDesc.putProperty(PROJECT_DIR_PROP,
                     FileUtil.toFile(projDest));
             FileObject archive = root.getFileObject(ArchiveProjectProperties.TMP_PROJ_DIR_VALUE).
-                    getFileObject("src").getFileObject("java").getFileObject(pathInEar);
+                    getFileObject("src").getFileObject("java").getFileObject(pathInEar);  //NOI18N
             wizDesc.putProperty(PROJECT_ARCHIVE_PROP,
                     FileUtil.toFile(archive));
             wizDesc.putProperty(PROJECT_NAME_PROP,
@@ -814,7 +791,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                         FileUtil.createFolder(projectRoot, entry.getName());
                     } else {
                         final ZipEntry fentry = entry;
-                        if (fentry.getName().endsWith(".xml")){ //need atomic action because we do not want half complete xml file later one in other threads
+                        if (fentry.getName().endsWith(".xml")){   //NOI18N //need atomic action because we do not want half complete xml file later one in other threads
                             FileSystem fs = projectRoot.getFileSystem();
                             fs.runAtomicAction(new FileSystem.AtomicAction() {
                                 public void run() throws IOException {
@@ -840,7 +817,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                     WebApp wa = org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getDDRoot(f);
                     String t = wa.getVersion();
                     if (!"2.5".equals(t)) { // NOI18N
-                        versionVal = "1."+t.charAt(t.length()-1);
+                        versionVal = "1."+t.charAt(t.length()-1);  //NOI18N
                     }
                 }
                 if (f.getName().startsWith("ejb")) {                                //NOI18N
@@ -853,7 +830,7 @@ public class DeployableWizardIterator implements WizardDescriptor.InstantiatingI
                 if (f.getName().startsWith("application-")) {                       //NOI18N
                     AppClient ac = org.netbeans.modules.j2ee.dd.api.client.DDProvider.getDefault().getDDRoot(f);
                     String t = ac.getVersion().toString();
-                    if (!"5".equals(t)) {
+                    if (!"5".equals(t)) {  //NOI18N
                         versionVal = t;
                     }                    
                 }

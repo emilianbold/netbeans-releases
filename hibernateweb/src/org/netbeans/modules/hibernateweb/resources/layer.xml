@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="org-codehaus-mevenide-netbeans">
+            <!-- remove once the maven support becomes part of the IDE -->
             <folder name="Lookup">
                 <file name="org.netbeans.modules.hibernate.service.HibernateProjectLookupExtender.instance"/>
             </folder>

@@ -48,9 +48,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 
 /**
  * Visitor which tracks variables through scopes and answers questions about them.
@@ -431,9 +431,79 @@ public class VariableVisitor implements ParseTreeVisitor {
         return vars;
     }
 
+    /** Return all occurrences of the given node's variable (which can be a read/write to
+     * a given variable. It will not include object literals, function calls or global vars. */
+    public List<Node> getVarOccurrences(Node node) {
+        assert AstUtilities.isNameNode(node);
+        if (node.getType() == Token.FUNCNAME || node.getType() == Token.OBJLITNAME) {
+            return null;
+        }
+        if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                node.getParentNode().getFirstChild() == node) {
+            return null;
+        }
+
+        String name = node.getString();
+        Scope scope = scopes.findScope(node);
+        if (scope == null) {
+            return null;
+        }
+        if (scope.parent == null && (scope.locals == null || !scope.locals.contains(name))) {
+            // Global variable - not defined anywhere
+            return null;
+        }
+
+        List<Scope> targets = new ArrayList<Scope>();
+        // Look upwards until we find the declaration of this node
+        for (Scope s = scope; s != null; s = s.parent) {
+            if (s.locals != null && s.locals.contains(name)) {
+                scope = s;
+                targets.add(s);
+                break;
+            }
+            if (s == scope ||
+                (scope.readVars != null && scope.readVars.contains((name))) ||
+                (scope.writtenVars != null && scope.writtenVars.contains((name)))) {
+                targets.add(s);
+            }
+        }
+
+        if (scope.nested != null) {
+            addNestedScopeVars(scope.nested, targets, name);
+        }
+
+        List<Node> nodes = new ArrayList<Node>();
+        for (Scope s : targets) {
+            s.addNodes(s.node, Collections.singleton(name), nodes);
+        }
+
+        return nodes;
+    }
+
+    private void addNestedScopeVars(List<Scope> scopes, List<Scope> dest, String name) {
+        for (Scope scope : scopes) {
+            if (scope.locals != null && scope.locals.contains(name)) {
+                // Ugh... what about redefinitions?
+                return;
+            }
+            if ((scope.readVars != null && scope.readVars.contains((name))) ||
+                (scope.writtenVars != null && scope.writtenVars.contains((name)))) {
+                dest.add(scope);
+            }
+
+            if (scope.nested != null) {
+                addNestedScopeVars(scope.nested, dest, name);
+            }
+        }
+    }
+
     public Map<String,List<Node>> getLocalVars(Node node) {
         Scope scope = scopes.findScope(node);
         Map<String,List<Node>> result = new HashMap<String,List<Node>>();
+        // Make this more efficient by pre-processing our node lists such that I only
+        // look for local nodes in the function once.... Right now I'm searching multiple
+        // times through the same functions, once for each variable. That's wrong...
+        // I should at a minimum just do a set lookup
         for (Scope s = scope; s != null; s = s.parent) {
             for (String name : s.locals) {
                 List<Node> list = s.findVarNodes(name);

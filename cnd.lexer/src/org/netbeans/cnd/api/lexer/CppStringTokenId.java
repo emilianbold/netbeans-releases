@@ -54,38 +54,45 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 /**
  * Token ids for C/C++ string language
  * (embedded in C/C++ string or character literals).
- * 
+ *
  * based on JavaStringTokenId
- * 
+ *
  * @author Vladimir Voskresenky
  * @version 1.00
  */
 public enum CppStringTokenId implements TokenId {
 
-    TEXT("string"), //NOI18N
-    BACKSPACE("string-escape"), //NOI18N
-    ANSI_COLOR("string-escape"), //NOI18N
-    FORM_FEED("string-escape"), //NOI18N
-    NEWLINE("string-escape"), //NOI18N
-    CR("string-escape"), //NOI18N
-    TAB("string-escape"), //NOI18N
-    SINGLE_QUOTE("string-escape"), //NOI18N
-    DOUBLE_QUOTE("string-escape"), //NOI18N
-    BACKSLASH("string-escape"), //NOI18N
-    OCTAL_ESCAPE("string-escape"), //NOI18N
-    OCTAL_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
-    UNICODE_ESCAPE("string-escape"), //NOI18N
-    UNICODE_ESCAPE_INVALID("string-escape-invalid"), //NOI18N
-    ESCAPE_SEQUENCE_INVALID("string-escape-invalid"); //NOI18N
+    TEXT(null, "string"), //NOI18N
+    PREFIX("L", "string"), // NOI18N
+    SINGLE_QUOTE("'", "string"), // NOI18N
+    DOUBLE_QUOTE("\"", "string"), // NOI18N
+    BACKSPACE("\\b", "string-escape"), //NOI18N
+    ANSI_COLOR(null, "string-escape"), //NOI18N
+    FORM_FEED("\\f","string-escape"), //NOI18N
+    NEWLINE("\\n","string-escape"), //NOI18N
+    CR("\\r","string-escape"), //NOI18N
+    TAB("\\t","string-escape"), //NOI18N
+    SINGLE_QUOTE_ESCAPE("\\\"", "string-escape"), //NOI18N
+    DOUBLE_QUOTE_ESCAPE("\\'", "string-escape"), //NOI18N
+    BACKSLASH_ESCAPE("\\\\","string-escape"), //NOI18N
+    OCTAL_ESCAPE(null, "string-escape"), //NOI18N
+    OCTAL_ESCAPE_INVALID(null, "error"), //NOI18N
+    HEX_ESCAPE(null, "string-escape"), //NOI18N
+    HEX_ESCAPE_INVALID(null, "error"), //NOI18N
+    UNICODE_ESCAPE(null, "string-escape"), //NOI18N
+    UNICODE_ESCAPE_INVALID(null, "error"), //NOI18N
+    ESCAPE_SEQUENCE_INVALID(null, "error"); //NOI18N
 
     private final String primaryCategory;
+    private final String fixedText;
 
-    CppStringTokenId() {
-        this(null);
+    CppStringTokenId(String fixedText, String primaryCategory) {
+        this.primaryCategory = primaryCategory;
+        this.fixedText = fixedText;
     }
 
-    CppStringTokenId(String primaryCategory) {
-        this.primaryCategory = primaryCategory;
+    public String fixedText() {
+        return fixedText;
     }
 
     public String primaryCategory() {
@@ -97,7 +104,7 @@ public enum CppStringTokenId implements TokenId {
 
     static {
         languageDouble = new StringHierarchy(true).language();
-        languageSingle = new StringHierarchy(true).language();
+        languageSingle = new StringHierarchy(false).language();
     }
 
     public static Language<CppStringTokenId> languageDouble() {
@@ -107,18 +114,18 @@ public enum CppStringTokenId implements TokenId {
     public static Language<CppStringTokenId> languageSingle() {
         return languageSingle;
     }
-    
+
     private static final class StringHierarchy extends LanguageHierarchy<CppStringTokenId> {
         private final boolean dblQuoted;
         public StringHierarchy(boolean doubleQuotedString) {
             this.dblQuoted = doubleQuotedString;
         }
-        
+
         @Override
         protected Collection<CppStringTokenId> createTokenIds() {
             return EnumSet.allOf(CppStringTokenId.class);
         }
-        
+
         @Override
         protected Map<String, Collection<CppStringTokenId>> createTokenCategories() {
             return null; // no extra categories
@@ -133,5 +140,5 @@ public enum CppStringTokenId implements TokenId {
         protected String mimeType() {
             return this.dblQuoted ? "text/x-cpp-string-double" : "text/x-cpp-string-single"; //NOI18N
         }
-    }    
+    }
 }

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
 import java.awt.event.ActionEvent;
@@ -47,6 +46,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -54,9 +54,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public class ParserSettingsPanel extends JPanel implements ChangeListener, ActionListener, IsChangedListener {
@@ -65,16 +68,17 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private boolean updating = false;
     private boolean modified = false;
     private ToolsPanel tp;
-
+//    private boolean initialized = false;
+    
     /**
      * Creates new form ParserSettingsPanel
      */
     public ParserSettingsPanel() {
         setName("TAB_CodeAssistanceTab"); // NOI18N
         initComponents();
-        
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
-            setOpaque( false );
+
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            setOpaque(false);
         }
 
         //infoTextArea.setBackground(collectionPanel.getBackground());
@@ -86,8 +90,8 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         if (tp != null) {
             // This gets called from commitValidation and tp is null - its not a run-time problem
             // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
-            tp.addCompilerSetChangeListener(this);
-            tp.addIsChangedListener(this);
+            ToolsPanel.addCompilerSetChangeListener(this);
+            ToolsPanel.addIsChangedListener(this);
         }
     }
 
@@ -97,27 +101,82 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
-    private void updateCompilerCollections(CompilerSet cs) {
-        compilerCollectionComboBox.removeAllItems();
-        for (CompilerSet cs2 : tp.getCompilerSetManager().getCompilerSets()) {
-            compilerCollectionComboBox.addItem(cs2);
+    private static class CompilerSetPresenter {
+
+        public CompilerSet cs;
+        private String displayName;
+
+        public CompilerSetPresenter(CompilerSet cs, String displayName) {
+            this.cs = cs;
+            this.displayName = displayName;
         }
 
-        if (cs == null) {
-            cs = tp.getCompilerSetManager().getCompilerSet(0);
+        @Override
+        public String toString() {
+            return displayName;
         }
-        if (cs != null) {
-            compilerCollectionComboBox.setSelectedItem(cs);
+    }
+
+    public CompilerSetManager getCompilerSetManager(String serverName) {
+        return ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(serverName);
+    }
+    
+    private void updateCompilerCollections(CompilerSet csToSelect) {
+        compilerCollectionComboBox.removeAllItems();
+
+        CompilerSetPresenter toSelect = null;
+        List<CompilerSetPresenter> allCS = new ArrayList<CompilerSetPresenter>();
+        ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (serverList != null) {
+            String[] servers = serverList.getServerNames();
+            if (servers.length > 1) {
+                for (String serverName : servers) {
+                    for (CompilerSet cs : getCompilerSetManager(serverName).getCompilerSets()) {
+                        CompilerSetPresenter csp = new CompilerSetPresenter(cs, serverName + " : " + cs.getName()); //NOI18N
+                        if (csToSelect == cs) {
+                            toSelect = csp;
+                        }
+                        allCS.add(csp);
+                    }
+                }
+            } else {
+                assert CompilerSetManager.LOCALHOST.equals(servers[0]);
+            }
+        }
+
+        if (allCS.size() == 0) {
+            // localhost only mode (either cnd.remote is not installed or no devhosts were specified
+            for (CompilerSet cs : getCompilerSetManager(CompilerSetManager.LOCALHOST).getCompilerSets()) {
+                CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
+                if (csToSelect == cs) {
+                    toSelect = csp;
+                }
+                allCS.add(csp);
+            }
+        }
+
+        for (CompilerSetPresenter cs : allCS) {
+            compilerCollectionComboBox.addItem(cs);
+        }
+
+        if (toSelect == null) {
+            if (compilerCollectionComboBox.getItemCount() > 0) {
+                compilerCollectionComboBox.setSelectedIndex(0);
+            }
+        }
+        else {
+            compilerCollectionComboBox.setSelectedItem(toSelect);
         }
         updateTabs();
     }
 
-    private void updateTabs() {
+    private synchronized void updateTabs() {
         tabbedPane.removeAll();
-        CompilerSet compilerCollection = (CompilerSet) compilerCollectionComboBox.getSelectedItem();
-        if (compilerCollection == null) {
+        CompilerSetPresenter csp = ((CompilerSetPresenter) compilerCollectionComboBox.getSelectedItem());
+        if (csp == null || csp.cs == null) {
             return;
         }
+        CompilerSet compilerCollection = csp.cs;
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
         Tool cCompiler = compilerCollection.getTool(Tool.CCompiler);
@@ -129,20 +188,21 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             toolSet.add(cppCompiler);
         }
         for (Tool tool : toolSet) {
-            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(compilerCollection.getName() + tool.getPath());
+            String key = csp.displayName + tool.getPath(); // display name has collection name and hkey
+            PredefinedPanel predefinedPanel = (PredefinedPanel) predefinedPanels.get(key);
             if (predefinedPanel == null) {
                 predefinedPanel = new PredefinedPanel((CCCCompiler) tool, this);
-                predefinedPanels.put(compilerCollection.getName() + tool.getPath(), predefinedPanel);
-                //modified = true; // See 126368
+                predefinedPanels.put(key, predefinedPanel);
+            //modified = true; // See 126368
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
         }
     }
-    
+
     public void setModified(boolean val) {
         modified = val;
     }
-    
+
     public boolean isModified() {
         return modified;
     }
@@ -153,7 +213,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < openProjects.length; i++) {
-            NativeProjectProvider npv = (NativeProjectProvider) openProjects[i].getLookup().lookup(NativeProjectProvider.class );
+            NativeProjectProvider npv = (NativeProjectProvider) openProjects[i].getLookup().lookup(NativeProjectProvider.class);
             if (npv != null) {
                 npv.fireFilesPropertiesChanged();
             }
@@ -259,7 +319,6 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private javax.swing.JPanel tabPanel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
-
     private static String getString(String s) {
         return NbBundle.getMessage(ParserSettingsPanel.class, s);
     }
@@ -270,6 +329,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
+//            init();
             compilerCollectionComboBox.removeActionListener(this);
             updateCompilerCollections(tp.getCurrentCompilerSet());
             compilerCollectionComboBox.addActionListener(this);
@@ -341,4 +401,19 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private PredefinedPanel[] getPredefinedPanels() {
         return (PredefinedPanel[]) predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
+    
+//    private synchronized void init() {
+//        if (!initialized) {
+//            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+//            if (registry != null) {
+//                ServerRecord record = registry.getDefaultRecord();
+//                if (record != null) {
+//                    Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
+//                    rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
+//                    record.validate(); // ensure the development host is initialized
+//                }
+//            }
+//        }
+//        initialized = true;
+//    }
 }

@@ -60,11 +60,13 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 public class Utils {
 
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.web.project"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.project"); // NOI18N
 
     // COPIED FROM TOMCAT
     private static final String JAVA_KEYWORDS[] = {
@@ -249,7 +251,7 @@ public class Utils {
      * @return the components of the path
      */
     private static final String [] split(String path, String pat) {
-        Vector comps = new Vector();
+        Vector<String> comps = new Vector<String>();
         int pos = path.indexOf(pat);
         int start = 0;
         while( pos >= 0 ) {
@@ -265,7 +267,7 @@ public class Utils {
         }
         String [] result = new String[comps.size()];
         for(int i=0; i < comps.size(); i++) {
-            result[i] = (String)comps.elementAt(i);
+            result[i] = comps.elementAt(i);
         }
         return result;
     }
@@ -360,5 +362,25 @@ public class Utils {
             logRecord.setParameters(params);
         }
         UI_LOGGER.log(logRecord);
+    }
+
+    /**
+     * Logs usage data.
+     *
+     * @param srcClass source class
+     * @param message message key
+     * @param params message parameters, may be <code>null</code>
+     */
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
 }

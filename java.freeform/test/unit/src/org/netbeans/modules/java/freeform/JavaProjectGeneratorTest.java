@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -70,19 +71,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.w3c.dom.Element;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
-import org.netbeans.modules.ant.freeform.FreeformProjectType;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Tests for JavaProjectGenerator.
@@ -101,8 +93,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        Lookup.getDefault().lookup(ModuleInfo.class);
         clearWorkDir();
+    }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
     }
     
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName, boolean notSoEmpty) throws Exception {
@@ -283,9 +279,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             new String[]{"ide-action", "action"}, 
             new String[]{null, null});
 
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
     
     /**
@@ -343,7 +337,8 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             assertElement((Element)elements.get(i), expectedNames[i], expectedValues[i], expectedAttrName[i], expectedAttrValue[i]);
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1002
     public void testSourceFolders() throws Exception {
         AntProjectHelper helper = createEmptyProject("proj3", "proj-3", true);
         FileObject base = helper.getProjectDirectory();
@@ -455,9 +450,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
             new String[]{"folder2", "type2", "location2"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test rewriting of source folder of some type
         
@@ -490,9 +483,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"label", "type", "location"}, 
             new String[]{"folder3", "type2", "location3"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testSourceViews() throws Exception {
@@ -609,9 +600,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
             new String[]{"folder2", "location2"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test rewriting of source view of some style
         
@@ -647,9 +636,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"label", "location"}, 
             new String[]{"folder3", "location3"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testJavaCompilationUnits() throws Exception {
@@ -792,9 +779,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElement(el2, "classpath", "sec-classpath1", "mode", "compile");
         el2 = (Element)l1.get(3);
         assertElement(el2, "classpath", "sec-classpath2", "mode", "boot");
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // test updating
             
@@ -817,9 +802,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(l1, 
             new String[]{"package-root"}, 
             new String[]{"foo-package-root"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testCompilationUnitUpgrades() throws Exception {
@@ -847,9 +830,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(Util.findSubElements(el2),
             new String[] {"package-root"},
             new String[] {"pkgroot1"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         // Now check that setting isTests = true on that element forces a /2 save.
         units = new ArrayList();
         cu = new JavaProjectGenerator.JavaCompilationUnit();
@@ -871,9 +852,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(Util.findSubElements(el2),
             new String[] {"package-root", "unit-tests"},
             new String[] {"pkgroot1", null});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         // Now try fresh save of /2-requiring data (using javadoc).
         assertTrue("removed /2 data", aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true));
         units = new ArrayList();
@@ -898,9 +877,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertElementArray(Util.findSubElements(el2),
             new String[] {"package-root", "javadoc-built-to", "javadoc-built-to"},
             new String[] {"pkgroot1", "javadoc1", "javadoc2"});
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
 
     public void testGuessExports() throws Exception {
@@ -1043,9 +1020,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             new String[]{JavaProjectConstants.ARTIFACT_TYPE_JAR, "something/else.jar", "bldtrg"});
         el2 = (Element)subElements.get(4);
         assertElement(el2, "view", null);
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
         // now test updating
         
@@ -1075,9 +1050,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             new String[]{JavaProjectConstants.ARTIFACT_TYPE_JAR, "aaa/bbb.jar", "ccc"});
         el2 = (Element)subElements.get(3);
         assertElement(el2, "view", null);
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
             
     }
     
@@ -1154,9 +1127,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         el2 = (Element)subElements.get(1);
         assertElement(el2, "project", "C:\\dev\\projB");
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         
         // now test updating
         
@@ -1176,9 +1147,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subElements = Util.findSubElements(subprojectsEl);
         assertEquals("project depends on one subproject", 0, subElements.size());
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         
     }    
 
@@ -1251,9 +1220,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertEquals("build-folder has one subelement", 1, Util.findSubElements(el2).size());
         assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB");
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         
         // now test updating
         
@@ -1275,9 +1242,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subElements = Util.findSubElements(foldersEl);
         assertEquals("project has no build-folder", 0, subElements.size());
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         
     }    
     
@@ -1307,9 +1272,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertEquals("build-file has one subelement", 1, Util.findSubElements(el2).size());
         assertElement((Element)Util.findSubElements(el2).get(0), "location", "C:\\dev\\projB\\library.jar");
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
         
         // now test updating
         buildFiles = new ArrayList();
@@ -1331,9 +1294,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         subElements = Util.findSubElements(foldersEl);
         assertEquals("project has no build-file", 0, subElements.size());
         
-        // validate against schema:
         ProjectManager.getDefault().saveAllProjects();
-        validate(p);
     }
     
     private static class Listener implements ChangeListener {
@@ -1361,49 +1322,6 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             jos.close();
         } finally {
             os.close();
-        }
-    }
-
-    private static String[] getSchemas() throws Exception {
-        return new String[] {
-            FreeformProjectGenerator.class.getResource("resources/freeform-project-general.xsd").toExternalForm(),
-            JavaProjectGenerator.class.getResource("resources/freeform-project-java.xsd").toExternalForm(),
-            JavaProjectGenerator.class.getResource("resources/freeform-project-java-2.xsd").toExternalForm(),
-            AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm(),
-        };
-    }
-    
-    public static void validate(Project proj) throws Exception {
-        File projF = FileUtil.toFile(proj.getProjectDirectory());
-        File xml = new File(new File(projF, "nbproject"), "project.xml");
-        SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
-        f.setNamespaceAware(true);
-        f.setValidating(true);
-        SAXParser p = f.newSAXParser();
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
-            "http://www.w3.org/2001/XMLSchema");
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", getSchemas());
-        try {
-            p.parse(xml.toURI().toString(), new Handler());
-        } catch (SAXParseException e) {
-            assertTrue("Validation of XML document "+xml+" against schema failed. Details: "+
-            e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage(), false);
-        }
-    }
-    
-    private static final class Handler extends DefaultHandler {
-        public void warning(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void error(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void fatalError(SAXParseException e) throws SAXException {
-            throw e;
         }
     }
 

@@ -6,24 +6,6 @@
             <code-name-base>org.netbeans.modules.websvc.saas.api</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.apache.tools.ant.module</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.29</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.18</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -33,29 +15,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.11</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>4</release-version>
-                        <specification-version>1.37</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <code-name-base>org.netbeans.libs.jaxb</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.14</specification-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -77,30 +42,21 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.jaxws21</code-name-base>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodelapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.jaxws21api</code-name-base>
+                    <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodel</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.3</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -110,6 +66,41 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.wsdl.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -149,7 +140,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.12</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -159,7 +150,7 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.delicious</code-name-base>
                     </test-dependency>
-<!--
+                    <!--
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.websvc.saas.services.youtube</code-name-base>
                     </test-dependency>
@@ -187,16 +178,20 @@
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.components.strikeiron</friend>
-                <friend>org.netbeans.modules.websvc.kit</friend>
+                <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.php</friend>
+                <friend>org.netbeans.modules.websvc.saas.kit</friend>
                 <friend>org.netbeans.modules.websvc.saas.services.strikeiron</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
+                <package>org.netbeans.modules.websvc.saas.model</package>
                 <package>org.netbeans.modules.websvc.saas.model.jaxb</package>
                 <package>org.netbeans.modules.websvc.saas.model.wadl</package>
-                <package>org.netbeans.modules.websvc.saas.model</package>
-                <package>org.netbeans.modules.websvc.saas.spi.websvcmgr</package>
                 <package>org.netbeans.modules.websvc.saas.spi</package>
+                <package>org.netbeans.modules.websvc.saas.spi.websvcmgr</package>
                 <package>org.netbeans.modules.websvc.saas.util</package>
             </friend-packages>
         </data>

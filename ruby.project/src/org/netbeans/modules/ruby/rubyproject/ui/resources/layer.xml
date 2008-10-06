@@ -45,24 +45,10 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Ruby">
             <file name="org-netbeans-modules-ruby-rubyproject-rake-RakeRunnerAction.instance"/>
-        </folder>
-        <folder name="Window">
             <file name="org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
         </folder>
     </folder>
     
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Other">
-                <attr name="position" intvalue="1700"/>
-                <file name="IrbAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-ruby-rubyproject-IrbAction.instance"/>
-                    <attr name="position" intvalue="900"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
     <folder name="Shortcuts">
         <file name="OS-R.shadow">
             <attr name="originalFile" stringvalue="Actions/Ruby/org-netbeans-modules-ruby-rubyproject-rake-RakeRunnerAction.instance"/>
@@ -209,6 +195,12 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyCompositePanelProvider.createRun"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-ruby,application/x-httpd-eruby"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
             
             <folder name="Nodes">
@@ -220,13 +212,12 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="org.netbeans.modules.ruby">
-        <folder name="options">
-            <file name="Platform.instance">
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="RubyOptions.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.RubyOptionsAdvancedPanel"/>
-                <attr name="position" intvalue="300"/>
             </file>
-        </folder>
+        </folder>        
     </folder>
     
     <folder name="Windows2">
@@ -236,7 +227,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="IrbTopComponent.wstcref" url="IrbTopComponentWstcref.xml">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="1800"/>
                 </file>
             </folder>
         </folder>
@@ -325,4 +316,13 @@ made subject to such option by the copyright holder.
     </folder>
     -->
     
+    <folder name="ProjectXMLCatalog">
+        <folder name="ruby-project">
+            <file name="1.xsd" url="../../resources/ruby-project.xsd"/>
+        </folder>
+        <folder name="ruby-project-private">
+            <file name="1.xsd" url="../../resources/ruby-project-private.xsd"/>
+        </folder>
+    </folder>
+
 </filesystem>

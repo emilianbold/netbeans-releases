@@ -56,9 +56,11 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 public class ExtendedTokenSequence {
     private final TokenSequence<CppTokenId> ts;
     private final DiffLinkedList diffs;
-    /*package local*/ ExtendedTokenSequence(TokenSequence<CppTokenId> ts, DiffLinkedList diffs){
+    private int tabSize;
+    /*package local*/ ExtendedTokenSequence(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, int tabSize){
         this.ts = ts;
         this.diffs = diffs;
+        this.tabSize = tabSize;
     }
 
     /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces, boolean isIndent){
@@ -131,14 +133,29 @@ public class ExtendedTokenSequence {
                          return column;
                     case DOXYGEN_COMMENT:
                     case BLOCK_COMMENT:
+                    {
                         String text = ts.token().text().toString();
                         int i = text.lastIndexOf('\n');
                         if (i < 0){
                             column+=text.length();
                             break;
                         } 
-                        column+=text.length()-i+1;
+                        column += text.length()-i+1;
                         return column;
+                    }
+                    case WHITESPACE:
+                    {
+                        String text = ts.token().text().toString();
+                        for(int i = 0; i < text.length(); i++){
+                            char c = text.charAt(i);
+                            if (c == '\t'){
+                                column = (column/tabSize+1)* tabSize;
+                            } else {
+                                column+=1;
+                            }
+                        }
+                        break;
+                    }
                     default:
                         column+=ts.token().length();
                         break;
@@ -166,6 +183,34 @@ public class ExtendedTokenSequence {
                         break;
                     default:
                         return ts.token();
+                }
+            }
+            return null;
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
+    /*package local*/ Token<CppTokenId> lookNextImportant(int i){
+        int index = ts.index();
+        try {
+            while(ts.moveNext()){
+                switch (ts.token().id()) {
+                    case WHITESPACE:
+                    case ESCAPED_WHITESPACE:
+                    case NEW_LINE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                    case DOXYGEN_COMMENT:
+                    case PREPROCESSOR_DIRECTIVE:
+                        break;
+                    default:
+                        i--;
+                        if (i <= 0) {
+                            return ts.token();
+                        }
+                        break;
                 }
             }
             return null;
@@ -203,7 +248,7 @@ public class ExtendedTokenSequence {
             ts.moveNext();
         }
     }
-    
+
     /*package local*/ Token<CppTokenId> lookPreviousStatement(){
         int index = ts.index();
         int balance = 0;
@@ -500,6 +545,28 @@ public class ExtendedTokenSequence {
         }
     }
 
+    /*package local*/ boolean isOpenBraceLastLineToken(int braceDepth) {
+        int index = ts.index();
+        try {
+            while(true) {
+                if (!ts.movePrevious()){
+                    return false;
+                }
+                if (ts.token().id() == LBRACE){
+                    braceDepth--;
+                    if (braceDepth == 0){
+                        return isLastLineToken();
+                    }
+                } else if (ts.token().id() == RBRACE){
+                    braceDepth++;
+                }
+            }
+        } finally {
+            ts.moveIndex(index);
+            ts.moveNext();
+        }
+    }
+
     /*package local*/ int[] getNewLinesBeforeDeclaration(int start) {
         int res[] = new int[] {-1,-1, 0};
         int index = ts.index();
@@ -508,6 +575,7 @@ public class ExtendedTokenSequence {
             ts.moveIndex(start);
             while(true) {
                 if (!ts.movePrevious()){
+                    res[0] = 0;
                     return res;
                 }
                 if (ts.token().id() == NEW_LINE || ts.token().id() == WHITESPACE){
@@ -631,6 +699,7 @@ public class ExtendedTokenSequence {
                 int end = diff.getEndOffset();
                 String text = diff.getText();
                 if (startOffset > end || endOffset < start) {
+                    System.err.println("What?" + startOffset + ":" + start + "-" + end);// NOI18N
                     continue;
                 }
                 if (endOffset < end) {

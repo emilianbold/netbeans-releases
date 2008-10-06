@@ -108,7 +108,15 @@ public class UncaughtExceptionTest extends HintsTestBase {
     public void testBug113380b() throws Exception {
 	performTestDoNotPerform("TestBug113380", 14, 17);
     }
-    
+
+    /**
+     * Surround with try-catch should be offered inside initializers
+     * @throws java.lang.Exception
+     */
+    public void testSurroundWithTCInsideInitializer() throws Exception {
+        performTestDoNotPerform("TestInitializer", 7, 17);
+    }
+
     public void testBug88923() throws Exception {
         performTestDoNotPerform("TestBug88923", 8, 11);
     }

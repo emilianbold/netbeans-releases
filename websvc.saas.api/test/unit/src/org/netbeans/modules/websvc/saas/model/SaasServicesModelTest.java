@@ -156,7 +156,7 @@ public class SaasServicesModelTest extends NbTestCase {
         SaasServicesModel instance = SaasServicesModel.getInstance();
         SaasGroup delicious = instance.getTopGroup("Delicious");
         SaasGroup myDelicious = instance.createGroup(delicious, "myDelicious");
-        WadlSaas saas = instance.createWadlService(myDelicious, url, null);
+        WadlSaas saas = (WadlSaas) instance.createSaasService(myDelicious, url, null);
         assertEquals(1, saas.getResources().size());
     }
 
@@ -167,7 +167,7 @@ public class SaasServicesModelTest extends NbTestCase {
         SaasServicesModel instance = SaasServicesModel.getInstance();
         SaasGroup delicious = instance.getTopGroup("Delicious");
         SaasGroup myDelicious = instance.createGroup(delicious, "myDelicious");
-        instance.createWadlService(myDelicious, url, null);
+        instance.createSaasService(myDelicious, url, null);
         
         instance.reset();
         

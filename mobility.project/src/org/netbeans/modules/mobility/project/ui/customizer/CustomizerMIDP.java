@@ -303,6 +303,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
     
     private void initAllProfiles(final String deviceName, final boolean reset) {
         synchronized (lock) {
+            Map<String,J2MEPlatform.J2MEProfile> optProfiles =
+                    new HashMap<String,J2MEPlatform.J2MEProfile>();
             final J2MEPlatform.Device device = name2device.get(deviceName);
             final HashSet<String> profNames = new HashSet<String>();
             String defaultCfg = null, defaultProf = null;
@@ -319,6 +321,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                     } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(prof[i].getType()) && prof[i].isDefault()) {
                         defaultProf = prof[i].toString();
                     } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(prof[i].getType()) && prof[i].isDefault()) {
+                        optProfiles.put( prof[i].toString() , prof[i] );
                         defaultOpts.add(prof[i].toString());
                     }
                 }
@@ -361,14 +364,12 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             final Set<String> optValues = getOptionalValues();
             jPanelOptional.setVisible(false);
             jPanelOptional.removeAll();
-            for (final JCheckBox cb : optional ) {
+            for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles, profNames) ) {
                 final String APIname = cb.getActionCommand();
                 final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
-                if (profNames.contains(APIname)) {
-                    jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-                    cb.setEnabled(!useDefault);
-                    cb.setSelected(selected);
-                }
+                jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+                cb.setEnabled(!useDefault);
+                cb.setSelected(selected);
             }
             jPanelOptional.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
             jPanelOptional.setVisible(true);
@@ -377,6 +378,65 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             saveOptionalAPIs();
             saveClassPath();
         }
+    }
+
+    /*
+     * Fix for IZ#142571 - Misleading optional packages in project properties
+     */
+    private  java.util.List<JCheckBox> removeDuplicateOptProfiles(
+            Map<String,J2MEPlatform.J2MEProfile> profiles , Set<String> profileNames)
+    {
+
+        java.util.List<JCheckBox> result = new ArrayList<JCheckBox>( optional.size());
+        for ( JCheckBox checkBox : optional ){
+            if (profileNames.contains( checkBox.getActionCommand())) {
+                result.add( checkBox );
+            }
+        }
+
+        Map<String,JCheckBox> checkBoxes = new HashMap<String, JCheckBox>();
+        Map<String,JCheckBox> name2checkBoxes = new HashMap<String, JCheckBox>();
+        Set<String> duplicateNames =  new HashSet<String>();
+        for ( JCheckBox option: result){
+            checkBoxes.put( option.getActionCommand(), option);
+            if( name2checkBoxes.containsKey( option.getText() )){
+                duplicateNames.add( option.getText());
+            }
+            else {
+                name2checkBoxes.put( option.getText(), option);
+            }
+        }
+
+        java.util.Collection<J2MEPlatform.J2MEProfile> values = profiles.values();
+        Map<String,J2MEPlatform.J2MEProfile> classpaths =
+                new HashMap<String,J2MEPlatform.J2MEProfile>();
+        Set<J2MEPlatform.J2MEProfile> duplicateClassPaths =
+                new HashSet<J2MEPlatform.J2MEProfile>();
+        for ( J2MEPlatform.J2MEProfile profile : values){
+            String classpath = profile.getClassPath();
+            if ( classpaths.containsKey( classpath)){
+                duplicateClassPaths.add( profile);
+            }
+            else {
+                classpaths.put( classpath, profile );
+            }
+        }
+
+        for ( J2MEPlatform.J2MEProfile profile : duplicateClassPaths){
+            J2MEPlatform.J2MEProfile pair = classpaths.get( profile.getClassPath() );
+
+            JCheckBox checkBox = checkBoxes.get( profile.toString() );
+            JCheckBox pairCheckBox = checkBoxes.get( pair.toString() );
+            if ( duplicateNames.contains(pairCheckBox.getText() )){
+                result.remove( pairCheckBox);
+                classpaths.put(profile.getClassPath(), profile  );
+            }
+            else {
+                result.remove( checkBox);
+            }
+        }
+
+        return result;
     }
         
     private Set<String> getOptionalValues() {

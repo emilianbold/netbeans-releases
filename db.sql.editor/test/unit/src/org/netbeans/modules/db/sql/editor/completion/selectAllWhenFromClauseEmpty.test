@@ -1,0 +1,12 @@
+select | from
+
+--
+<unknown>
+  customers*
+    customer
+      customer_id
+  accounting
+    invoice
+      invoice_id
+    purchase_order
+      order_id

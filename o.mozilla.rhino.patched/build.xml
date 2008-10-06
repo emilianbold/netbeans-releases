@@ -21,6 +21,18 @@
             </fileset>
         </unzip>
 
+        <!-- Repackage the sources as org.mozilla.nb such that we have no class name
+             conflicts if people try to have Rhino as a scripting engine -->
+        <mkdir dir="${src.dir}/org/mozilla/nb"/>
+        <move file="${src.dir}/org/mozilla/javascript" tofile="${src.dir}/org/mozilla/nb/javascript"/>
+        <move file="${src.dir}/org/mozilla/classfile" tofile="${src.dir}/org/mozilla/nb/classfile"/>
+        <replace dir="${patched_source}">
+            <include name="**"/>
+            <replacefilter token="org.mozilla" value="org.mozilla.nb"/>
+            <replacefilter token="org-mozilla" value="org-mozilla-nb"/>
+            <replacefilter token="org/mozilla" value="org/mozilla/nb"/>
+        </replace>
+
         <!-- Insert module description bundle etc. -->
         <copy todir="${src.dir}" overwrite="true">
             <fileset dir="src" />
@@ -35,6 +47,51 @@
         </copy>
         <delete file="${src.dir}/build.xml"/>
         <delete file="${src.dir}/manifest"/>
+
+
+        <!-- Try to delete classes we don't use to prune down the distro a bit - we only need the parser -->
+        <!--
+        ... This is not yet done, so it's commented out
+        <delete dir="${src.dir}/org/mozilla/patched/classfile"/>
+        <delete dir="${src.dir}/org/mozilla/patched/javascript">
+            
+            <include name="optimizer/**"/>
+            <include name="regexp/**"/>
+            <include name="xml/**"/>
+            <include name="jdk11/**"/>
+            <include name="jdk13/**"/>
+            <include name="jdk15/**"/>
+            <include name="serialize/**"/>
+            <include name="continuations/**"/>
+            <include name="debug/**"/>
+
+            <include name="Java*.java"/>
+            <include name="Native*.java"/>
+            <include name="*SecurityController.java"/>
+            <include name="*ScriptableObject.java"/>
+            <include name="*FunctionObject.java"/>
+            <include name="Interpreter*.java"/>
+            <include name="Wrap*.java"/>
+
+            <include name="JavaMembers.java"/>
+            <include name="IdFunctionCall.java"/>
+            <include name="ClassCache.java"/>
+            <include name="Arguments.java"/>
+            <include name="InterpretedFunction.java"/>
+            <include name="BaseFunction.java"/>
+            <include name="ImporterTopLevel.java"/>
+            <include name="Codegen.java"/>
+            <include name="LazilyLoadedCtor.java"/>
+            <include name="RhinoException.java"/>
+            <include name="EcmaError.java"/>
+            <include name="VMBridge.java"/>
+            <include name="EvaluatorException.java"/>
+            <include name="SpecialRef.java"/>
+            <include name="MemberBox.java"/>
+            <include name="InterfaceAdapter.java"/>
+        </delete>
+        -->
+
     </target>    
 
     <target name="clean" depends="projectized-common.clean">

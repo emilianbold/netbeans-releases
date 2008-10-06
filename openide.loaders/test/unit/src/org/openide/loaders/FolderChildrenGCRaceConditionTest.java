@@ -41,22 +41,15 @@
 
 package org.openide.loaders;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.*;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
-
-import org.openide.filesystems.*;
-
-import org.netbeans.junit.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
 import org.openide.util.RequestProcessor;
-
 
 public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
     public FolderChildrenGCRaceConditionTest() {
@@ -67,6 +60,7 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
     	super.setUp();
         clearWorkDir();
@@ -76,7 +70,8 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
             arr[i].delete();
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1087
     public void testChildrenCanBeSetToNullIfGCKicksIn () throws Exception {
         FileObject f = FileUtil.createData(Repository.getDefault().getDefaultFileSystem().getRoot(), "folder/node.txt");
         
@@ -85,7 +80,7 @@ public class FolderChildrenGCRaceConditionTest extends LoggingTestCaseHid {
         
         Node[] arr = n.getChildren().getNodes(true);
         assertEquals("Ok, one", 1, arr.length);
-        final WeakReference ref = new WeakReference(arr[0]);
+        final Reference<?> ref = new WeakReference<Node>(arr[0]);
         arr = null;
         
         class R implements Runnable {

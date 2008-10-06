@@ -5,7 +5,7 @@
  * Use is subject to license terms.
 -->
 <html>
-<head>
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Options Window: Editor</title>
         <link rel="StyleSheet" href="../ide.css" type="text/css">
     </head>
@@ -21,8 +21,12 @@
         
         <ul>
             <li><b>General.</b> This tab enables you to customize global code folding and code completion settings.</li>
-            <li><b>Indentation.</b> This tab enables you to customize global indentation for files in the Source Editor.</li>
+            <li><b>Formatting.</b> This tab enables you to customize global indentation for files in the Source Editor.</li>
             <li><b>Code Templates.</b> This tab enables you to customize the abbreviations for terms that you want the editor to expand automatically.</li>
+            <li><b>Hints.</b> This tab enables you to customize hints and tips that help you as you type in the Source Editor.</li>
+            <li><b>Mark Occurrences.</b> This tab enables you to specify which occurrences of Java keywords will be marked
+             when the cursor is on one of their instances.</li>
+            <li><b>Tasklist.</b> This tab enables you to customize the task list.</li>
             <li><b>Macros.</b> This tab enables you to customize Source Editor macros and to set shortcuts for macros.</li>
         </ul>
  
@@ -43,20 +47,25 @@
             options for how to complete an expression.  
             <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p></li>
             <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
-            only one possible completion for the expression. The expression is completed automatically. </li>
+            only one possible completion for the expression. The expression is completed automatically, but
+            only if you invoke code completion explicitly, not if you simply type "." behind an identifier. </li>
             <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
             that you are typing. </li>
             <li><b>Show Deprecated Members in Code Completion.</b> If selected, any deprecrated class elements that are available are shown 
             in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
             <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket, 
             brace, or quotation mark after you type the first one.</li>
+            <li><b>Auto Popup Documentation Window.</b> When selected, the documentation window appears
+             automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</li>
+            <li><b>Guess Filled Method Arguments.</b> Specifies whether the names of local variables and fields
+            with matching types are generated as the method call arguments, instead of parameter names.</li>
         </ul>
             
             <!--The code completion feature works by displaying a completion box that suggests possible ways of completing the expression that you are typing. 
             In addition, a box also appears that shows the Javadoc documentation for the item currently selected in the completion box.</li>
             -->
 
-            <h3>Indentation tab</h3>
+            <h3>Formatting tab</h3>
         <p>This tab enables you to specify the following Java source code formatting settings:</p>
         <ul>
             <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.

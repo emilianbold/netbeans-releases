@@ -54,6 +54,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.layout.GroupLayout;
@@ -61,6 +62,8 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.editors2.JTableHeaderEditor;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
 import org.netbeans.modules.form.editors2.TableModelEditor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -789,18 +792,21 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_resizableColumnChoiceActionPerformed
 
     private void moveDownRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownRowButtonActionPerformed
+        stopCellEditing(rowsTable);
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index+1);
         rowsTable.getSelectionModel().setSelectionInterval(index+1, index+1);
     }//GEN-LAST:event_moveDownRowButtonActionPerformed
 
     private void moveUpRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpRowButtonActionPerformed
+        stopCellEditing(rowsTable);
         int index = rowsTable.getSelectedRow();
         rowTableModel.moveRow(index, index-1);
         rowsTable.getSelectionModel().setSelectionInterval(index-1, index-1);
     }//GEN-LAST:event_moveUpRowButtonActionPerformed
 
     private void deleteRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRowButtonActionPerformed
+        stopCellEditing(rowsTable);
         int[] index = rowsTable.getSelectedRows();
         for (int i=index.length-1; i>=0; i--) {
             rowTableModel.removeRow(index[i]);
@@ -809,11 +815,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_deleteRowButtonActionPerformed
 
     private void insertRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertRowButtonActionPerformed
+        stopCellEditing(rowsTable);
         rowTableModel.addRow(rowTableModel.getRowCount());
         rowCountSpinner.setValue(rowTableModel.getRowCount());
     }//GEN-LAST:event_insertRowButtonActionPerformed
 
     private void rowCountSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rowCountSpinnerStateChanged
+        stopCellEditing(rowsTable);
         int rowNo = ((Integer)rowCountSpinner.getValue()).intValue();
         ensureRowCount(rowNo);
     }//GEN-LAST:event_rowCountSpinnerStateChanged
@@ -825,11 +833,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_tabbedPaneStateChanged
 
     private void columnCountSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_columnCountSpinnerStateChanged
+        stopCellEditing(columnsTable);
         int columnNo = ((Integer)columnCountSpinner.getValue()).intValue();
         ensureColumnCount(columnNo);
     }//GEN-LAST:event_columnCountSpinnerStateChanged
 
     private void moveDownColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownColumnButtonActionPerformed
+        stopCellEditing(columnsTable);
         int index = columnsTable.getSelectedRow();
         columnsTable.clearSelection();
         ColumnInfo column = columns.remove(index);
@@ -841,6 +851,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_moveDownColumnButtonActionPerformed
 
     private void moveUpColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpColumnButtonActionPerformed
+        stopCellEditing(columnsTable);
         int index = columnsTable.getSelectedRow();
         columnsTable.clearSelection();
         ColumnInfo column = columns.remove(index);
@@ -852,6 +863,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_moveUpColumnButtonActionPerformed
 
     private void deleteColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteColumnButtonActionPerformed
+        stopCellEditing(columnsTable);
         boolean hardcoded = modelHardcodedChoice.isSelected();
         int[] index = columnsTable.getSelectedRows();
         for (int i=index.length-1; i>=0; i--) {
@@ -866,6 +878,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }//GEN-LAST:event_deleteColumnButtonActionPerformed
 
     private void insertColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertColumnButtonActionPerformed
+        stopCellEditing(columnsTable);
         columns.add(new ColumnInfo(columnModelProperty, columns.size()));
         if (modelHardcodedChoice.isSelected()) {
             rowTableModel.addColumn(rowTableModel.getColumnCount());
@@ -890,6 +903,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     private void modelHardcodedChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelHardcodedChoiceActionPerformed
         updateModelCustomizers();
     }//GEN-LAST:event_modelHardcodedChoiceActionPerformed
+
+    private static void stopCellEditing(JTable table) {
+        TableCellEditor editor = table.getCellEditor();
+        if (editor != null) {
+            editor.stopCellEditing();
+        }
+    }
 
     private int lastSelectedCustomizer = -1;
     private void updateModelCustomizers() {
@@ -1169,6 +1189,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             try {
                 modelProperty.setValue(new FormProperty.ValueWithEditor(rowTableModel, new TableModelEditor()));
             } catch (Exception ex) {
+                String message = NbBundle.getMessage(getClass(), "MSG_TableCustomizer_ModelPropertyError"); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
@@ -1417,9 +1439,14 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                         }
                     }
                 }
+                // Issue 140846
+                int columnCount = rowTableModel.getColumnCount();
+                for (int i=columns.size()-1; i>=columnCount; i--) {
+                    columns.remove(i);
+                }
             } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            }            
+            }
         } else if (modelBoundChoice.isSelected()) {
             MetaBinding binding = bindingProperty.getValue();
             if (binding != null) {

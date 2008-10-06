@@ -41,6 +41,7 @@
 package org.netbeans.modules.j2ee.jboss4.ide;
 
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.jboss4.config.JBossDatasourceManager;
@@ -98,5 +99,10 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
          return new JBDriverDeployer((JBDeploymentManager) dm);
      }
-    
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return new JBInstanceDescriptor((JBDeploymentManager) dm);
+    }
+
 }

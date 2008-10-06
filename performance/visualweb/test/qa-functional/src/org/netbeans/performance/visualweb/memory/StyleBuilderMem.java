@@ -50,7 +50,6 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.PaletteOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -172,12 +171,6 @@ public class StyleBuilderMem extends org.netbeans.modules.performance.utilities.
     public void close(){
         log("::close");
 
-        try {
-            surface.closeDiscard();
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
         try {
             VWPFootprintUtilities.deleteProject(project_name);
         } catch(Exception ee) {

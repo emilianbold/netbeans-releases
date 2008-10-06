@@ -46,7 +46,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 /**
  *
  * @author peter
@@ -54,6 +53,7 @@
 package org.netbeans.test.localhistory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -62,42 +62,44 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.test.localhistory.operators.OutlineViewOperator;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
-
-
+import org.openide.util.Exceptions;
 
 /**
  * @author pvcs
  */
 public class LocalHistoryViewTest extends JellyTestCase {
-    
+
     public static final String TMP_PATH = "/tmp";
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "JavaApp";
     public File projectPath;
     public PrintStream stream;
+    private static ShowLocalHistoryOperator slho;
+    private static EditorOperator eo;
+    private static Node node;
+    private static String fileContent;
     String os_name;
-    Operator.DefaultStringComparator comOperator; 
-    Operator.DefaultStringComparator oldOperator; 
-    
+    Operator.DefaultStringComparator comOperator;
+    Operator.DefaultStringComparator oldOperator;
+
     /** Creates a new instance of LocalHistoryViewTest */
     public LocalHistoryViewTest(String name) {
         super(name);
     }
-    
-    protected void setUp() throws Exception {        
+
+    @Override
+    protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
         //System.out.println(os_name);
-        System.out.println("### "+getName()+" ###");
-        
+        System.out.println("### " + getName() + " ###");
+
     }
-    
+
     protected boolean isUnix() {
         boolean unix = false;
         if (os_name.indexOf("Windows") == -1) {
@@ -105,55 +107,73 @@ public class LocalHistoryViewTest extends JellyTestCase {
         }
         return unix;
     }
-    
+
     public static void main(String[] args) {
         // TODO code application logic here
         TestRunner.run(suite());
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(LocalHistoryViewTest.class).addTest(
-        "testLocalHistoryInvoke").enableModules(".*").clusters(".*"));
+                "testLocalHistoryInvoke",
+                "testLocalHistoryRevertFromHistory",
+                "testLocalHistoryDeleteFromHistory",
+                "testLocalHistoryRevisionCountAfterModification",
+                "testLocalHistoryNewFileInNewPackage",
+                "testLocalHistoryRevertDeleted",
+                "testLocalHistoryRevisionCountAfterModification2")
+                .enableModules(".*")
+                .clusters(".*"));
     }
-    
-    public void testLocalHistoryInvoke() throws Exception {
-//        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-//        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
-//        TestKit.closeProject(PROJECT_NAME);
-//        
-//        new File(TMP_PATH).mkdirs();
-//        projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
-//        ProjectSupport.waitScanFinished();
-        openDataProjects(PROJECT_NAME);
-        Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");    
-        
+
+    private void sleep(int timeInMs) {
+        try {
+            Thread.sleep(timeInMs);
+        } catch (InterruptedException ex) {
+            fail("Interrupted: stop thread in sleep(int tms) method");
+        }
+    }
+
+    public void testLocalHistoryInvoke() {
+        try {
+            openDataProjects(PROJECT_NAME);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            fail("Unable to open project: " + PROJECT_NAME);
+        }
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         node.performPopupAction("Open");
-        EditorOperator eo = new EditorOperator("Main.java");
+        eo = new EditorOperator("Main.java");
         eo.deleteLine(2);
         eo.saveDocument();
-
-        ShowLocalHistoryOperator slho = ShowLocalHistoryOperator.invoke(node);
+        slho = ShowLocalHistoryOperator.invoke(node);
         slho.verify();
-        
-        slho.performPopupAction(1, "Revert from History");
-        Thread.sleep(1000);
-        int versions=slho.getVersionCount();
-        assertEquals("1. Wrong number of versions!", 2, versions);
-        
-        slho.performPopupAction(2, "Delete from History");        
-        Thread.sleep(500);
+    }
 
-        versions=slho.getVersionCount();
+    public void testLocalHistoryRevertFromHistory() {
+        slho.performPopupAction(1, "Revert from History");
+        sleep(1500);
+        int versions = slho.getVersionCount();
+        assertEquals("1. Wrong number of versions!", 2, versions);
+    }
+
+    public void testLocalHistoryDeleteFromHistory() {
+        slho.performPopupAction(2, "Delete from History");
+        sleep(1500);
+        int versions = slho.getVersionCount();
         assertEquals("2. Wrong number of versions!", 1, versions);
-        
+    }
+
+    public void testLocalHistoryRevisionCountAfterModification() {
         eo.insert("// modification //", 11, 1);
         eo.save();
-        
-        Thread.sleep(500);
-        versions=slho.getVersionCount();
+        sleep(1500);
+        int versions = slho.getVersionCount();
         assertEquals("3. Wrong number of versions!", 2, versions);
         slho.close();
-        
+    }
+
+    public void testLocalHistoryNewFileInNewPackage() {
         TestKit.createNewPackage(PROJECT_NAME, "NewPackage");
         TestKit.createNewElement(PROJECT_NAME, "NewPackage", "NewClass");
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage|NewClass.java");
@@ -162,34 +182,39 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo.deleteLine(5);
         eo.insert(os_name, 12, 1);
         eo.saveDocument();
-        String fileContent=eo.getText();
-        
+        fileContent = eo.getText();
         slho = ShowLocalHistoryOperator.invoke(node);
-        Thread.sleep(500);
-        versions = slho.getVersionCount();
+        sleep(1500);
+        int versions = slho.getVersionCount();
         assertEquals("4. Wrong number of versions!", 1, versions);
         slho.close();
+    }
+
+    public void testLocalHistoryRevertDeleted() {
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
         node.performPopupActionNoBlock("Delete");
-        NbDialogOperator dialog = new NbDialogOperator("Confirm Object Deletion");
-        dialog.yes();
-        node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
+//        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+        NbDialogOperator dialog = new NbDialogOperator("Delete");
+        dialog.ok();
+        node = new SourcePackagesNode(PROJECT_NAME);
         node.performPopupAction("Local History|Revert Deleted");
-
+        sleep(1000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage|NewClass.java");
-        slho = ShowLocalHistoryOperator.invoke(node);        
-        Thread.sleep(500);
-        versions = slho.getVersionCount();
+        slho = ShowLocalHistoryOperator.invoke(node);
+        sleep(1500);
+        int versions = slho.getVersionCount();
         assertEquals("5. Wrong number of versions!", 2, versions);
+    }
+
+    public void testLocalHistoryRevisionCountAfterModification2() {
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass.java");
         assertEquals("Content of file differs after revert!", fileContent, eo.getText());
         eo.deleteLine(5);
         eo.insert(os_name, 12, 1);
-        eo.save();        
-        Thread.sleep(500);
-        versions=slho.getVersionCount();
+        eo.save();
+        sleep(1500);
+        int versions = slho.getVersionCount();
         assertEquals("6. Wrong number of versions!", 3, versions);
-        closeOpenedProjects();
     }
 }

@@ -28,6 +28,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,19 +42,45 @@ public class NestedLocalTest extends HintTestBase {
         super(testName);
     }
 
-//    // Not working yet
-//    public void testRegistered() throws Exception {
-//        ensureRegistered(new NestedLocal());
-//    }
-    
+    private RubyAstRule createRule() {
+        return new NestedLocal();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testHint1() throws Exception {
-        checkHints(this, new NestedLocal(), "testfiles/nestedlocals.rb", null);
+        checkHints(this, createRule(), "testfiles/nestedlocals.rb", null);
+    }
+
+    public void testHintEmpty() throws Exception {
+        checkHints(this, createRule(), "testfiles/empty.rb", null);
+    }
+
+    public void testHintEmpty2() throws Exception {
+        checkHints(this, createRule(), "testfiles/empty.rb", "^");
+    }
+    
+    public void testFix1() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals.rb", caretLine, "Rename the inner variable");
+    }
+
+    public void testFix2() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals.rb", caretLine, "Rename the outer variable");
+    }
+
+    public void testFix3() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals2.rb", caretLine, "Rename the outer variable");
     }
 
     public void testNestedLocals() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new NestedLocal(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }

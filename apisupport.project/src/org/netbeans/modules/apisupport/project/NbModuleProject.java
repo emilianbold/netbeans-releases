@@ -51,7 +51,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -89,6 +88,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -118,6 +118,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * A NetBeans module project.
@@ -129,7 +130,7 @@ public final class NbModuleProject implements Project {
             "org/netbeans/modules/apisupport/project/resources/module.png"; // NOI18N
     
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
-            Utilities.loadImage(NB_PROJECT_ICON_PATH));
+            ImageUtilities.loadImage(NB_PROJECT_ICON_PATH));
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
     static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N
@@ -158,7 +159,7 @@ public final class NbModuleProject implements Project {
         typeProvider = new NbModuleProviderImpl();
         if (typeProvider.getModuleType() == NbModuleProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(getProjectDirectoryFile()) == null) {
             // #69097: preferable to throwing an assertion error later...
-            throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
+            throw new IOException("netbeans.org-type module requires at least nbbuild: " + FileUtil.getFileDisplayName(helper.getProjectDirectory())); // NOI18N
         }
         eval = new Evaluator(this, typeProvider);
         // XXX could add globs for other package roots too
@@ -190,14 +191,11 @@ public final class NbModuleProject implements Project {
             // Special hack for core - ignore core/javahelp
             sourcesHelper.addTypedSourceRoot("javahelp", SOURCES_TYPE_JAVAHELP, NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
         }
-        Iterator it = getExtraCompilationUnits().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Element ecu = (Element) entry.getValue();
-            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
+            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
-            FileObject pkgroot = (FileObject) entry.getKey();
-            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
+            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA,
+                    /* XXX should schema incl. display name? */entry.getKey().getNameExt(), null, null);
         }
         // #56457: support external source roots too.
         ProjectManager.mutex().postWriteRequest(new Runnable() {
@@ -205,9 +203,21 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        lookup = createLookup(new Info(), aux, helper, fileBuilt, sourcesHelper);
+    }
+
+    public @Override String toString() {
+        return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
+    }
+    
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
         Lookup baseLookup = Lookups.fixed(
             this,
-            new Info(),
+            info,
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
@@ -242,17 +252,11 @@ public final class NbModuleProject implements Project {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
             new FileEncodingQueryImpl());
-        lookup = LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
+        return  LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
-    
-    public @Override String toString() {
-        return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
-    }
-    
-    public Lookup getLookup() {
-        return lookup;
-    }
-    
+
+
+
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -428,16 +432,13 @@ public final class NbModuleProject implements Project {
     }
     
     private File getNbroot() {
-        return getNbroot(null);
-    }
-    private File getNbroot(PropertyEvaluator eval) {
         File dir = getProjectDirectoryFile();
         File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
             return nbroot;
         } else {
             // OK, not it.
-            NbPlatform platform = getPlatform(eval);
+            NbPlatform platform = getPlatform();
             if (platform != null) {
                 URL[] roots = platform.getSourceRoots();
                 for (int i = 0; i < roots.length; i++) {
@@ -455,10 +456,7 @@ public final class NbModuleProject implements Project {
     }
     
     public File getNbrootFile(String path) {
-        return getNbrootFile(path, null);
-    }
-    File getNbrootFile(String path, PropertyEvaluator eval) {
-        File nbroot = getNbroot(eval);
+        File nbroot = getNbroot();
         if (nbroot != null) {
             return new File(nbroot, path.replace('/', File.separatorChar));
         } else {
@@ -500,48 +498,6 @@ public final class NbModuleProject implements Project {
             }
         }
         return ml;
-        /*
-        } catch (IOException e) {
-            // #60094: see if we can fix it quietly by resetting platform to default.
-            FileObject platformPropertiesFile = null;
-            if (typeProvider.getModuleType() == NbModuleProvider.STANDALONE) {
-                platformPropertiesFile = getProjectDirectory().getFileObject("nbproject/platform.properties"); // NOI18N
-            } else if (typeProvider.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
-                PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(
-                        getHelper().getStockPropertyPreprovider(),
-                        new PropertyProvider[] {
-                            getHelper().getPropertyProvider("nbproject/private/suite-private.properties"), // NOI18N
-                            getHelper().getPropertyProvider("nbproject/suite.properties"), // NOI18N
-                        });
-                String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
-                if (suiteDirS != null) {
-                    FileObject suiteDir = getHelper().resolveFileObject(suiteDirS);
-                    if (suiteDir != null) {
-                        platformPropertiesFile = suiteDir.getFileObject("nbproject/platform.properties"); // NOI18N
-                    }
-                }
-            }
-            if (platformPropertiesFile != null) {
-                try {
-                    EditableProperties ep = Util.loadProperties(platformPropertiesFile);
-                    if (!NbPlatform.PLATFORM_ID_DEFAULT.equals(ep.getProperty("nbplatform.active"))) { // NOI18N
-                        ep.setProperty("nbplatform.active", NbPlatform.PLATFORM_ID_DEFAULT); // NOI18N
-                        Util.storeProperties(platformPropertiesFile, ep);
-                    } else {
-                        // That wasn't it, never mind.
-                        throw e;
-                    }
-                } catch (IOException e2) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e2);
-                    // Well, throw original exception.
-                    throw e;
-                }
-                // Try again!
-                return ModuleList.getModuleList(getProjectDirectoryFile());
-            }
-            throw e;
-        }
-         */
     }
     
     /**
@@ -552,26 +508,23 @@ public final class NbModuleProject implements Project {
      *         fallback is true but even the default platform is not available
      */
     public NbPlatform getPlatform(boolean fallback) {
-        NbPlatform p = getPlatform(null);
+        NbPlatform p = getPlatform();
         if (fallback && (p == null || !p.isValid())) {
             p = NbPlatform.getDefaultPlatform();
         }
         return p;
     }
     
-    private NbPlatform getPlatform(PropertyEvaluator eval) {
-        File file = getPlatformFile(eval);
+    private NbPlatform getPlatform() {
+        File file = getPlatformFile();
         if (file == null) {
             return null;
         }
         return NbPlatform.getPlatformByDestDir(file);
     }
     
-    private File getPlatformFile(PropertyEvaluator eval) {
-        if (eval == null) {
-            eval = evaluator();
-        }
-        String prop = eval.getProperty("netbeans.dest.dir"); // NOI18N
+    private File getPlatformFile() {
+        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (prop == null) {
             return null;
         }
@@ -721,7 +674,12 @@ public final class NbModuleProject implements Project {
     public void setRunInAtomicAction(boolean runInAtomicAction) {
         eval.setRunInAtomicAction(runInAtomicAction);
     }
-        
+    
+    /** See issue #69440 for more details. */
+    public boolean isRunInAtomicAction() {
+        return eval.isRunInAtomicAction();
+    }
+    
     private final class Info implements ProjectInformation, PropertyChangeListener {
         
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
@@ -887,7 +845,7 @@ public final class NbModuleProject implements Project {
         }
         
         public File getActivePlatformLocation() {
-            return NbModuleProject.this.getPlatformFile(null);
+            return NbModuleProject.this.getPlatformFile();
         }
 
         

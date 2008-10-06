@@ -68,14 +68,14 @@ public class InternationalizeDialog extends PerformanceTestCase {
     public InternationalizeDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
     }
     
     /** Creates a new instance of InternationalizeDialog */
     public InternationalizeDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
     }
     
     public void testInternationalizeDialog() {
@@ -85,7 +85,7 @@ public class InternationalizeDialog extends PerformanceTestCase {
     @Override
     public void initialize() {
         BUNDLE = "org.netbeans.modules.i18n.Bundle";
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
         TITLE = Bundle.getStringTrimmed(BUNDLE,"CTL_I18nDialogTitle");
         
         // open a java file in the editor

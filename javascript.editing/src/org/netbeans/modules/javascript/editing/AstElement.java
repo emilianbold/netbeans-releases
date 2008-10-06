@@ -43,9 +43,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
-import org.mozilla.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
+import org.mozilla.nb.javascript.FunctionNode;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -138,7 +138,7 @@ public class AstElement extends JsElement {
                 }
             } else if (node.isStringNode()) {
                 name = node.getString();
-            } else if (node.getType() == Token.CALL) {
+            } else if (node.getType() == Token.CALL || node.getType() == Token.NEW) {
                 name = AstUtilities.getCallName(node, false);
             }
         }
@@ -278,6 +278,7 @@ public class AstElement extends JsElement {
         return js;
     }
     
+    @SuppressWarnings("fallthrough")
     public static AstElement getElement(CompilationInfo info, Node node) {
         if (node.element != null) {
             return (AstElement)node.element;

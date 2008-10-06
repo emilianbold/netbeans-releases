@@ -59,16 +59,17 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
+	<set property="gf.sub.dir" value="glassfishv3-prelude"/>
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/glassfishv3-tp2">
+            <fileset dir="${data.directory}/${gf.sub.dir}">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="glassfishv3-tp2"/>
-                <include name="glassfishv3-tp2/**"/>
+                <include name="${gf.sub.dir}"/>
+                <include name="${gf.sub.dir}/**"/>
             </fileset>
         </delete>
 

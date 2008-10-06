@@ -38,230 +38,121 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.support;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author PeterLiu
  */
 public class WebXmlHelper {
+
     private static final String PERSISTENCE_UNIT_REF_PREFIX = "persistence/";       //NOI81N
+
     private static final String PERSISTENCE_UNIT_REF_TAG = "persistence-unit-ref";      //NOI18N
+
     private static final String PERSISTENCE_UNIT_REF_NAME_TAG = "persistence-unit-ref-name";        //NOI18N
+
     private static final String PERSISTENCE_UNIT_NAME_TAG = "persistence-unit-name";    //NOI18N
+
     private static final String PERSISTENCE_CONTEXT_REF_TAG = "persistence-context-ref";      //NOI18N
+
     private static final String PERSISTENCE_CONTEXT_REF_NAME_TAG = "persistence-context-ref-name";        //NOI18N
-   
-    private static int TIME_TO_WAIT = 300;
     
-    public static void addPersistenceUnitRef(Project project, String puName) {
+    private static final String RESOURCE_REF_TAG = "resource-ref";      //NOI18N
+    
+    private static final String RESOURCE_REF_NAME_TAG = "res-ref-name";        //NOI18N
+    
+    private static final String RESOURCE_TYPE_TAG = "res-type";        //NOI18N
+    
+    private static final String RESOURCE_AUTH_TAG = "res-auth";       //NOI18N
+    
+    private static final String USER_TRANSACTION = "UserTransaction";        //NOI18N
+ 
+    private static final String USER_TRANSACTION_CLASS = "javax.transaction.UserTransaction";   //NOI18N   
+
+    private static final String CONTAINER = "Container";        //NOI18N
+    
+    private Project project;
+    private String puName;
+    private DOMHelper helper;
+
+    public WebXmlHelper(Project project, String puName) {
+        this.project = project;
+        this.puName = puName;
+    }
+
+    public void configure() {
         FileObject fobj = getWebXml(project);
+
+        if (fobj == null)  return;
         
-        if (fobj != null) {
-            Document document = getDocument(fobj);          
-            String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;          
-            NodeList nodeList = document.getElementsByTagName(PERSISTENCE_UNIT_REF_NAME_TAG);
-            int len = nodeList.getLength();
+        helper = new DOMHelper(fobj);
+     
+        addPersistenceContextRef();
         
-            for (int i = 0; i < len; i++) {
-                Element element =  (Element) nodeList.item(i);
-          
-                if (containsValue(element, refName)) {
-                    return;
-                }
-            }
-   
-            Element refElement = document.createElement(PERSISTENCE_UNIT_REF_TAG);
-            Element refNameElement = createElement(document, PERSISTENCE_UNIT_REF_NAME_TAG, refName);
-            Element puNameElement = createElement(document, PERSISTENCE_UNIT_NAME_TAG, puName);
-            
-            refElement.appendChild(refNameElement);
-            refElement.appendChild(puNameElement);    
-            document.getDocumentElement().appendChild(refElement);
-                
-            writeDocument(fobj, document);
+        if (RestUtils.hasJTASupport(project)) {
+            addUserTransactionResourceRef();
         }
+        helper.save();
+    }
+
+    private void addPersistenceUnitRef() {
+        String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
+        Element refElement = helper.findElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName);
+
+        if (refElement != null) {
+            return;
+        }
+        
+        refElement = helper.createElement(PERSISTENCE_UNIT_REF_TAG);
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_REF_NAME_TAG, refName));
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName));
+
+        helper.appendChild(refElement);
+    }
+
+    private void addPersistenceContextRef() {
+        String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;
+        Element refElement = helper.findElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
+
+        if (refElement != null) {
+            return;
+        }
+
+        refElement = helper.createElement(PERSISTENCE_CONTEXT_REF_TAG);
+        refElement.appendChild(helper.createElement(PERSISTENCE_CONTEXT_REF_NAME_TAG, refName));
+        refElement.appendChild(helper.createElement(PERSISTENCE_UNIT_NAME_TAG, puName));
+
+        helper.appendChild(refElement);
+    }
+
+    private void addUserTransactionResourceRef() {
+        Element refElement = helper.findElement(RESOURCE_REF_NAME_TAG, USER_TRANSACTION);
+
+        if (refElement != null) {
+            return;
+        }
+
+        refElement = helper.createElement(RESOURCE_REF_TAG);
+        refElement.appendChild(helper.createElement(RESOURCE_REF_NAME_TAG, USER_TRANSACTION));
+        refElement.appendChild(helper.createElement(RESOURCE_TYPE_TAG, USER_TRANSACTION_CLASS));
+        refElement.appendChild(helper.createElement(RESOURCE_AUTH_TAG, CONTAINER));
+
+        helper.appendChild(refElement);
     }
     
-      public static void addPersistenceContextRef(Project project, String puName) {
-        FileObject fobj = getWebXml(project);
-        
-        if (fobj != null) {
-            Document document = getDocument(fobj);          
-            String refName = PERSISTENCE_UNIT_REF_PREFIX + puName;          
-            NodeList nodeList = document.getElementsByTagName(PERSISTENCE_CONTEXT_REF_NAME_TAG);
-            int len = nodeList.getLength();
-        
-            for (int i = 0; i < len; i++) {
-                Element element =  (Element) nodeList.item(i);
-          
-                if (containsValue(element, refName)) {
-                    return;
-                }
-            }
-   
-            Element refElement = document.createElement(PERSISTENCE_CONTEXT_REF_TAG);
-            Element refNameElement = createElement(document, PERSISTENCE_CONTEXT_REF_NAME_TAG, refName);
-            Element puNameElement = createElement(document, PERSISTENCE_UNIT_NAME_TAG, puName);
-            
-            refElement.appendChild(refNameElement);
-            refElement.appendChild(puNameElement);    
-            document.getDocumentElement().appendChild(refElement);
-                
-            writeDocument(fobj, document);
-        }
-    }
-    
-    private static FileObject getWebXml(Project project) {
+    private FileObject getWebXml(Project project) {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
-            return rs.getWebXml();
+            return ((WebProjectRestSupport) rs).getWebXml();
         }
         return null;
     }
-  
-    private static Element createElement(Document document,
-            String tag, String value) {
-        Element element = document.createElement(tag);
-        Text text = document.createTextNode(value);
-        element.appendChild(text);
-        
-        return element;
-    }
-    
-    private static boolean containsValue(Element element, String value) {
-        Node child = element.getFirstChild();
-        
-        if (child instanceof Text) {
-            return (((Text) child).getWholeText().equals(value));
-        }
-        
-        return false;
-    }
-  
-    private static void writeDocument(final FileObject fobj, final Document document) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                FileLock lock = null;
-                OutputStream os = null;
-                
-                try {
-                    DocumentType docType = document.getDoctype();
-                    TransformerFactory factory = TransformerFactory.newInstance();
-                    Transformer transformer = factory.newTransformer();
-                    DOMSource source = new DOMSource(document);
-                    
-                    lock = fobj.lock();
-                    os = fobj.getOutputStream(lock);
-                    StreamResult result = new StreamResult(os);
-                    
-                    //transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, docType.getPublicId());
-                    //transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, docType.getSystemId());
-                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");        //NOI18N
-                    transformer.setOutputProperty(OutputKeys.METHOD, "xml");        //NOI18N
-                    transformer.transform(source, result);
-                    
-                    //transformer.transform(source, new StreamResult(System.out));
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                }
-            }
-        }, TIME_TO_WAIT);
-    }
-    
-    private static Document getDocument(FileObject fobj) {
-        Document document = null;
-        DocumentBuilder builder = getDocumentBuilder();
-        
-        if (builder == null)
-            return null;
-        
-        FileLock lock = null;
-        InputStream is = null;
-        
-        try {
-            lock = fobj.lock();
-            is = fobj.getInputStream();
-            document = builder.parse(is);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
-                
-        return document;
-    }
-    
-    
-    private static DocumentBuilder getDocumentBuilder() {
-        DocumentBuilder builder = null;
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
-        factory.setIgnoringComments(false);
-        factory.setIgnoringElementContentWhitespace(false);
-        factory.setCoalescing(false);
-        factory.setExpandEntityReferences(false);
-        factory.setValidating(false);
-        
-        try {
-            builder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return builder;
-    }
-    
 }

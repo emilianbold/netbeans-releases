@@ -41,8 +41,11 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -51,15 +54,14 @@ import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
-//    private static boolean lastMainClassCheck = true; // XXX Store somewhere
-
-    private PanelConfigureProject panel;
-//    private boolean valid;
+    private final PanelConfigureProject panel;
     
-    public PanelOptionsVisual(PanelConfigureProject panel, int type) {
+    public PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
         
@@ -73,45 +75,8 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         Util.preselectWizardPlatform(platforms);
 
-
-
-
         fireChangeEvent();
-        switch (type) {
-//            case NewRailsProjectWizardIterator.TYPE_LIB:
-//                setAsMainCheckBox.setVisible( false );
-//                createMainCheckBox.setVisible( false );
-//                mainClassTextField.setVisible( false );
-//                break;
-            case NewRailsProjectWizardIterator.TYPE_APP:
-                //createMainCheckBox.addActionListener( this );
-                //createMainCheckBox.setSelected( lastMainClassCheck );
-                //mainClassTextField.setEnabled( lastMainClassCheck );
-                break;
-            case NewRailsProjectWizardIterator.TYPE_EXT:
-                setAsMainCheckBox.setVisible( true );
-                //createMainCheckBox.setVisible( false );
-                //mainClassTextField.setVisible( false );
-                break;
-        }
-        
         initWarCheckBox();
-        
-        //this.mainClassTextField.getDocument().addDocumentListener( new DocumentListener () {
-        //   
-        //    public void insertUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //    public void removeUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //    public void changedUpdate(DocumentEvent e) {
-        //        mainClassChanged ();
-        //    }
-        //    
-        //});
     }
 
     public @Override void removeNotify() {
@@ -120,27 +85,18 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void initWarCheckBox() {
-        RubyPlatform platform = getPlatform();
-        boolean jruby = platform != null ? platform.isJRuby() : false;
-        warCheckBox.setEnabled(jruby);
-        if (!jruby) {
-            warCheckBox.setSelected(false);
-        }
+        warCheckBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                fireChangeEvent();
+            }
+        });
     }
     
     public void propertyChange(PropertyChangeEvent event) {
         if ("roots".equals(event.getPropertyName())) {
             fireChangeEvent();
         }
-        //if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
-        //    String newProjectName = NewRailsProjectWizardIterator.getPackageName((String) event.getNewValue());
-        //    if (!Utilities.isJavaIdentifier(newProjectName)) {
-        //        newProjectName = NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName); 
-        //    }
-        //    this.mainClassTextField.setText (MessageFormat.format(
-        //        NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
-        //    ));
-        //}
     }
     
     /** This method is called from within the constructor to
@@ -151,8 +107,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setAsMainCheckBox = new javax.swing.JCheckBox();
-        jrubyUsedLabel = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         manageButton = new javax.swing.JButton();
@@ -161,11 +115,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
         setPreferredSize(new java.awt.Dimension(226, 100));
-
-        setAsMainCheckBox.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jrubyUsedLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
@@ -202,27 +151,22 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(setAsMainCheckBox)
-                    .add(warCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverLabel)
-                            .add(rubyPlatformLabel))
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 349, Short.MAX_VALUE)
-                            .add(platforms, 0, 349, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jrubyUsedLabel))
+                    .add(serverLabel)
+                    .add(rubyPlatformLabel))
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverComboBox, 0, 223, Short.MAX_VALUE)
+                    .add(platforms, 0, 223, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(manageButton)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(warCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(setAsMainCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
                     .add(manageButton)
@@ -231,15 +175,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
                     .add(serverComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(19, 19, 19)
-                .add(jrubyUsedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(warCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
-        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSD_setAsMainCheckBox")); // NOI18N
         warCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WarFile")); // NOI18N
         rubyPlatformLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_RubyPlatformLabel")); // NOI18N
         manageButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_RubyHomeBrowse")); // NOI18N
@@ -274,31 +214,22 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     RubyPlatform getPlatform() {
         return PlatformComponentFactory.getPlatform(platforms);
     }
+
+    boolean needWarSupport() {
+        return warCheckBox.isSelected();
+    }
     
     boolean valid(WizardDescriptor settings) {
+        if (warCheckBox.isSelected() && !isJdk()) {
+            settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));
+        }
         if (PlatformComponentFactory.getPlatform(platforms) == null) {
             return false;
         }
-//        if (warCheckBox.isSelected() && !getPlatform().isJRuby()) {
-//            settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 
-//                    NbBundle.getMessage(PanelOptionsVisual.class, "JRubyRequired") ); //NOI18N
-//            return false;
-//        }
-        //if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
-        //    if (!valid) {
-        //        settings.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-        //            NbBundle.getMessage(PanelOptionsVisual.class,"ERROR_IllegalMainClassName")); //NOI18N
-        //    }
-        //    return this.valid;
-        //}
-        //else {
-            return true;
-        //}
+        return true;
     }
     
     void read(WizardDescriptor d) {
-        // XXX
-//        RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
@@ -306,41 +237,31 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     void store(WizardDescriptor d) {
-        d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
-        d.putProperty(NewRailsProjectWizardIterator.GOLDSPIKE_WN, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
+        d.putProperty( /*XXX Define somewhere */ "setAsMain", Boolean.FALSE); // NOI18N
+        d.putProperty(NewRailsProjectWizardIterator.WAR_SUPPORT, warCheckBox.isSelected() && warCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty(NewRailsProjectWizardIterator.PLATFORM, platforms.getModel().getSelectedItem());
         d.putProperty(NewRailsProjectWizardIterator.SERVER_INSTANCE, serverComboBox.getModel().getSelectedItem());
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jrubyUsedLabel;
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
     private javax.swing.JLabel rubyPlatformLabel;
     private javax.swing.JComboBox serverComboBox;
     private javax.swing.JLabel serverLabel;
-    private javax.swing.JCheckBox setAsMainCheckBox;
     private javax.swing.JCheckBox warCheckBox;
     // End of variables declaration//GEN-END:variables
-    
-    //private void mainClassChanged () {
-    //    
-    //    String mainClassName = this.mainClassTextField.getText ();
-    //    StringTokenizer tk = new StringTokenizer (mainClassName, "."); //NOI18N
-    //    boolean valid = true;
-    //    while (tk.hasMoreTokens()) {
-    //        String token = tk.nextToken();
-    //        if (token.length() == 0 || /* !Utilities.isJavaIdentifier(token)*/ token.equals(" ")) {
-    //            valid = false;
-    //            break;
-    //        }            
-    //    }
-    //    this.valid = valid;
-    //    fireChangeEvent();
-    //}
     
     private void fireChangeEvent() {
         this.panel.fireChangeEvent();
     }
-    
+
+    private boolean isJdk() {
+        String jdkHome = System.getProperty("jdk.home"); //NOI18N
+        if (Utilities.isMac()) {
+            return true; // AFAIK Macs can't have a JRE only
+        }
+        File jreDir = new File(jdkHome, "jre"); //NOI18N
+        return jreDir.exists() && jreDir.isDirectory();
+    }
 }

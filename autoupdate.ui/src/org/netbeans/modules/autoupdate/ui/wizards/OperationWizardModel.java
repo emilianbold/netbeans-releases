@@ -45,6 +45,8 @@ import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,14 +77,15 @@ public abstract class OperationWizardModel {
     private Set<UpdateElement> requiredElements = null;
     private Set<UpdateElement> customHandledElements = null;
     private Set<UpdateElement> allElements = null;
+    private HashMap<UpdateElement, Collection<UpdateElement>> required2primary = new HashMap<UpdateElement, Collection<UpdateElement>> ();
     private JButton originalCancel = null;
     private JButton originalNext = null;
     private JButton originalFinish = null;
     private boolean reconized = false;
     static Dimension PREFFERED_DIMENSION = new Dimension (530, 400);
-    private static int MAX_TO_REPORT = 10;
+    private static int MAX_TO_REPORT = 3;
     static String MORE_BROKEN_PLUGINS = "OperationWizardModel_MoreBrokenPlugins"; // NOI18N
-    
+    private TreeMap<String, Set<UpdateElement>> dep2plugins = null;
     abstract OperationType getOperation ();
     abstract OperationContainer getBaseContainer ();
     abstract OperationContainer<OperationSupport> getCustomHandledContainer ();
@@ -121,9 +124,34 @@ public abstract class OperationWizardModel {
     public Set<UpdateElement> getRequiredUpdateElements () {
         if (requiredElements == null) {
             requiredElements = new HashSet<UpdateElement> ();
+            dep2plugins = new TreeMap<String, Set<UpdateElement>> ();
             
             for (OperationInfo<?> info : getBaseInfos ()) {
-                requiredElements.addAll (info.getRequiredElements ());
+                Set<UpdateElement> reqs = info.getRequiredElements ();
+                Set<String> broken = info.getBrokenDependencies ();
+                if (! broken.isEmpty()) {
+                    for (String brokenDep : broken) {
+                        // pay special attention to missing JDK
+                        if (brokenDep.toLowerCase ().startsWith ("package")) {
+                            brokenDep = "package";
+                        }
+                        if (dep2plugins.get (brokenDep) == null) {
+                            dep2plugins.put (brokenDep, new HashSet<UpdateElement> ());
+                        }
+                        dep2plugins.get (brokenDep).add (info.getUpdateElement ());
+                    }
+                    if (dep2plugins.keySet ().size () >= MAX_TO_REPORT) {
+                        dep2plugins.put (MORE_BROKEN_PLUGINS, null);
+                        break;
+                    }
+                }
+                for (UpdateElement el : reqs) {
+                    if (required2primary.get (el) == null) {
+                        required2primary.put (el, new HashSet<UpdateElement> ());
+                    }
+                    required2primary.get (el).add (info.getUpdateElement ());
+                }
+                requiredElements.addAll (reqs);
             }
             
             Collection<UpdateElement> pending = new HashSet<UpdateElement> ();
@@ -149,7 +177,7 @@ public abstract class OperationWizardModel {
     }
     
     public boolean hasBrokenDependencies () {
-        return ! getBrokenDependencies ().isEmpty ();
+        return ! getBrokenDependency2Plugins ().isEmpty ();
     }
     
     public boolean hasCustomComponents () {
@@ -181,22 +209,41 @@ public abstract class OperationWizardModel {
         return getBaseContainer ().listAll ();
     }
     
-    public SortedMap<String, Set<String>> getBrokenDependencies () {
-        SortedMap<String, Set<String>> brokenDeps = new TreeMap<String, Set<String>> ();
+    public SortedMap<String, Set<UpdateElement>> getBrokenDependency2Plugins () {
+        if (dep2plugins != null) {
+            return dep2plugins;
+        }
+        
+        dep2plugins = new TreeMap<String, Set<UpdateElement>> ();
 
-        int brokenPlugins = 0;
         for (OperationInfo<?> info : getBaseInfos ()) {
             Set<String> broken = info.getBrokenDependencies ();
             if (! broken.isEmpty()) {
-                brokenDeps.put (info.getUpdateElement ().getDisplayName (),
-                        new HashSet<String> (broken));
-                if (++brokenPlugins >= MAX_TO_REPORT) {
-                    brokenDeps.put (MORE_BROKEN_PLUGINS, null);
+                for (String brokenDep : broken) {
+                    // pay special attention to missing JDK
+                    if (brokenDep.toLowerCase ().startsWith ("package")) {
+                        brokenDep = "package";
+                    }
+                    if (dep2plugins.get (brokenDep) == null) {
+                        dep2plugins.put (brokenDep, new HashSet<UpdateElement> ());
+                    }
+                    dep2plugins.get (brokenDep).add (info.getUpdateElement ());
+                }
+                if (dep2plugins.keySet ().size () >= MAX_TO_REPORT) {
+                    dep2plugins.put (MORE_BROKEN_PLUGINS, null);
                     break;
                 }
             }
         }
-        return brokenDeps;
+        return dep2plugins;
+    }
+    
+    public Collection<UpdateElement> findPrimaryPlugins (UpdateElement el) {
+        Collection<UpdateElement> res = new HashSet<UpdateElement> (Collections.singleton (el));
+        if (required2primary.containsKey (el)) {
+            res = required2primary.get (el);
+        }
+        return res;
     }
     
     public Set<UpdateElement> getAllUpdateElements () {

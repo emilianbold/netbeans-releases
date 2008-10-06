@@ -59,7 +59,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.text.NbDocument;
 

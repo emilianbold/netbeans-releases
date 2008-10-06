@@ -48,7 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ResourceBundle;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -163,9 +162,11 @@ public class ConnectionDialog {
     }        
     
     private void updateValid() {
-        boolean valid = ConnectionDialog.this.mediator.getValid();
+        boolean valid = mediator.getValid();
         descriptor.setValid(valid);
-        tabs.setEnabledAt(1, valid);
+        
+        boolean isConnected = mediator.isConnected();
+        tabs.setEnabledAt(1, valid && isConnected);
     }
     
     /**

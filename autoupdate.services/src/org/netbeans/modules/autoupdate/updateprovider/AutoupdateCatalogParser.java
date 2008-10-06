@@ -44,290 +44,495 @@ package org.netbeans.modules.autoupdate.updateprovider;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.autoupdate.services.Trampoline;
+import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.netbeans.spi.autoupdate.UpdateItem;
-import org.openide.xml.XMLUtil;
+import org.netbeans.spi.autoupdate.UpdateLicense;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class AutoupdateCatalogParser {
+public class AutoupdateCatalogParser extends DefaultHandler {
+    private final Map<String, UpdateItem> items;
+    private final AutoupdateCatalogProvider provider;
+    private final EntityResolver entityResolver;
+    private final URI baseUri;
     
-    public static final String TAG_MODULE_UPDATES = "module_updates"; // NOI18N
-    public static final String TAG_MODULE = "module"; // NOI18N
-    public static final String TAG_MODULE_GROUP = "module_group"; // NOI18N
-    public static final String ATTR_MODULE_GROUP_NAME = "name"; // NOI18N
-    public static final String TAG_FEATURE = "feature"; // NOI18N
-    public static final String TAG_LICENSE = "license"; // NOI18N
-    public static final String TAG_NOTIFICATION = "notification"; // NOI18N
-    public static final String ATTR_NOTIFICATION_URL = "url"; // NOI18N
-    public static final String TAG_ERROR = "error"; // NOI18N
-    public static final String TAG_AUTH_ERROR = "auth_error"; // NOI18N
-    public static final String TAG_OTHER_ERROR = "other_error"; // NOI18N
-    public static final String ATTR_MESSAGE_ERROR = "message"; // NOI18N
-    public static final String TAG_ELEMENT_L10N = "l10n"; // NOI18N
-    public static final String TAG_MANIFEST = "manifest"; // NOI18N
-    private static final String TIME_STAMP_ATTRIBUTE_NAME = "timestamp"; // NOI18N
+    private AutoupdateCatalogParser (Map<String, UpdateItem> items, AutoupdateCatalogProvider provider, URI base) {
+        this.items = items;
+        this.provider = provider;
+        this.entityResolver = org.netbeans.updater.XMLUtil.createAUResolver ();
+        this.baseUri = base;
+    }
+    
+    private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
+    
+    private static enum ELEMENTS {
+        module_updates, module_group, notification, module, description,
+        module_notification, external_package, manifest, l10n, license
+    }
+    
+    private static final String MODULE_UPDATES_ATTR_TIMESTAMP = "timestamp"; // NOI18N
+    
+    private static final String MODULE_GROUP_ATTR_NAME = "name"; // NOI18N
+    
+    private static final String NOTIFICATION_ATTR_URL = "url"; // NOI18N
+    
+    private static final String LICENSE_ATTR_NAME = "name"; // NOI18N
+    
+    private static final String MODULE_ATTR_CODE_NAME_BASE = "codenamebase"; // NOI18N
+    private static final String MODULE_ATTR_HOMEPAGE = "homepage"; // NOI18N
+    private static final String MODULE_ATTR_DISTRIBUTION = "distribution"; // NOI18N
+    private static final String MODULE_ATTR_DOWNLOAD_SIZE = "downloadsize"; // NOI18N
+    private static final String MODULE_ATTR_NEEDS_RESTART = "needsrestart"; // NOI18N
+    private static final String MODULE_ATTR_MODULE_AUTHOR = "moduleauthor"; // NOI18N
+    private static final String MODULE_ATTR_RELEASE_DATE = "releasedate"; // NOI18N
+    private static final String MODULE_ATTR_IS_GLOBAL = "global"; // NOI18N
+    private static final String MODULE_ATTR_TARGET_CLUSTER = "targetcluster"; // NOI18N
+    private static final String MODULE_ATTR_EAGER = "eager"; // NOI18N
+    private static final String MODULE_ATTR_AUTOLOAD = "autoload"; // NOI18N
+    private static final String MODULE_ATTR_LICENSE = "license"; // NOI18N
+    
+    private static final String MANIFEST_ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    
     private static final String TIME_STAMP_FORMAT = "ss/mm/hh/dd/MM/yyyy"; // NOI18N
     
-    private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogParser");
+    private static final String L10N_ATTR_LOCALE = "langcode"; // NOI18N
+    private static final String L10N_ATTR_BRANDING = "brandingcode"; // NOI18N
+    private static final String L10N_ATTR_MODULE_SPECIFICATION = "module_spec_version"; // NOI18N
+    private static final String L10N_ATTR_MODULE_MAJOR_VERSION = "module_major_version"; // NOI18N
+    private static final String L10N_ATTR_LOCALIZED_MODULE_NAME = "OpenIDE-Module-Name"; // NOI18N
+    private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
+    
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
     
-    public static Map<String, UpdateItem> getUpdateItems (URL url, URL providerUrl) {
+    public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
-        Map<String, String> licenses = getLicenses (url, providerUrl);
-        Date d = getAutoupdateCatalogDate (url, providerUrl);
-        String catalogDate = null;
-        if (d != null) {
-            catalogDate = Utilities.formatDate(d);
-        }
-        
+        URI base;
         try {
-            
-            List<SimpleItem> simpleItems = createSimpleItems (getDocument (url, providerUrl));
-            for (SimpleItem simple : simpleItems) {
-                if (simple instanceof SimpleItem.License) {
-                    continue;
-                }
-                UpdateItem update = simple.toUpdateItem (licenses, catalogDate);
-                items.put (simple.getId (), update);
+            if (provider != null) {
+                base = provider.getUpdateCenterURL().toURI();
+            } else {
+                base = url.toURI();
             }
-            
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setValidating(true);
+                SAXParser saxParser = factory.newSAXParser();
+                saxParser.parse(getInputSource(url, provider, base), new AutoupdateCatalogParser(items, provider, base));
+            } catch (Exception ex) {
+                ERR.log(Level.INFO, "Failed to parse " + base, ex);
+            }
+        } catch (URISyntaxException ex) {
+            ERR.log(Level.INFO, null, ex);
         }
-        
         return items;
     }
     
-    // package-private only for unit testing purpose
-    static Map<String, String> getLicenses (URL url, URL providerUrl) {
-        Map<String, String> res = new HashMap<String, String> ();
-        try {
-            List<SimpleItem> items = createSimpleItems (getDocument (url, providerUrl));
-            for (SimpleItem item : items) {
-                if (item instanceof SimpleItem.License) {
-                    SimpleItem.License license = (SimpleItem.License) item;
-                    res.put (license.getLicenseId (), license.getLicenseContent ());
-                }
+    private static boolean isGzip (AutoupdateCatalogProvider p) {
+        boolean res = false;
+        if (p != null) {
+            URL url = p.getUpdateCenterURL ();
+            if (url != null) {
+                res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
+                ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
+            } else {
+                ERR.log (Level.WARNING, "AutoupdateCatalogProvider has not URL.");
             }
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
         }
-        
         return res;
     }
     
-    public static String getNotification (URL url, URL providerUrl) {
-        String notification = null;
-        
+    private static InputSource getInputSource(URL toParse, AutoupdateCatalogProvider p, URI base) {
         try {
-            
-            Document doc = getDocument (url, providerUrl);
-            NodeList moduleUpdatesList = doc.getElementsByTagName (TAG_MODULE_UPDATES);
-            assert moduleUpdatesList != null && moduleUpdatesList.getLength() == 1;
-            NodeList moduleUpdatesChildren = moduleUpdatesList.item (0).getChildNodes ();
-            for (int i = 0; i < moduleUpdatesChildren.getLength (); i++) {
-                Node n = moduleUpdatesChildren.item (i);
-                if (Node.ELEMENT_NODE != n.getNodeType()) {
-                    continue;
-                }
-                assert n instanceof Element : n + " is instanceof Element";
-                String tagName = ((Element) n).getTagName ();
-                if (TAG_NOTIFICATION.equals (tagName)) {
-                    NodeList innerList = n.getChildNodes ();
-                    assert innerList != null && innerList.getLength() == 1 : "Notification " + n + " should contain only once data.";
+            InputStream is;
+            if (isGzip (p)) {
+                is = new BufferedInputStream (new GZIPInputStream (toParse.openStream ()));
+            } else {
+                is = new BufferedInputStream (toParse.openStream ());
+            }
+            InputSource src = new InputSource(is);
+            src.setSystemId(base.toString());
+            return src;
+        } catch (IOException ex) {
+            ERR.log (Level.SEVERE, null, ex);
+            return new InputSource();
+        }
+    }
+    
+    private Stack<String> currentGroup = new Stack<String> ();
+    private String catalogDate;
+    private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
+    private Stack<String> currentLicense = new Stack<String> ();
+    private Stack<String> currentNotificationUrl = new Stack<String> ();
+    private Map<String, UpdateLicenseImpl> name2license = new HashMap<String, UpdateLicenseImpl> ();
+    private List<String> lines = new ArrayList<String> ();
+    private int bufferInitSize = 0;
 
-                    String notificationText = innerList.item (0).getNodeValue ();
-                    notification = "";
-                    if (notificationText != null && notificationText.length () > 0) {
-                        notification = notificationText;
+    @Override
+    public void characters (char[] ch, int start, int length) throws SAXException {
+        lines.add (new String(ch, start, length));
+        bufferInitSize += length;
+    }
+
+    @Override
+    public void endElement (String uri, String localName, String qName) throws SAXException {
+        switch (ELEMENTS.valueOf (qName)) {
+            case module_updates :
+                break;
+            case module_group :
+                assert ! currentGroup.empty () : "Premature end of module_group " + qName;
+                currentGroup.pop ();
+                break;
+            case module :
+                assert ! currentModule.empty () : "Premature end of module " + qName;
+                currentModule.pop ();
+                break;
+            case l10n :
+                break;
+            case manifest :
+                break;
+            case description :
+                ERR.info ("Not supported yet.");
+                break;
+            case notification :
+                // write catalog notification
+                if (this.provider != null && ! lines.isEmpty ()) {
+                    StringBuffer sb = new StringBuffer (bufferInitSize);
+                    for (String line : lines) {
+                        sb.append (line);
                     }
-                    String notificationUrl = SimpleItem.getAttribute (n, ATTR_NOTIFICATION_URL);
+                    String notification = sb.toString ();
+                    String notificationUrl = currentNotificationUrl.peek ();
                     if (notificationUrl != null && notificationUrl.length () > 0) {
-                        notification += (notification.length () > 0 ? "<br>" : "") +
+                        notification += (notification.length () > 0 ? "<br>" : "") + // NOI18N
                                 "<a href=\"" + notificationUrl + "\">" + notificationUrl + "</a>"; // NOI18N
                     }
-                    break;
+                    provider.setNotification (notification);
                 }
-            }
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, ex.getMessage (), ex);
-        }
-        
-        return notification;
-    }
-    
-    static Document getDocument (URL url, URL providerUrl) throws IOException, SAXException {
-        InputStream is = null;
-        Document doc = null;
-        try {
-            is = getInputStream (url, isGZIP (providerUrl));
-            doc = XMLUtil.parse (new InputSource (is), false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
-        } finally {
-            if (is != null) is.close ();
-        }
-        if (providerUrl != null) {
-            try {
-                doc.setDocumentURI (providerUrl.toURI ().toString ());
-            } catch (URISyntaxException ex) {
-                ERR.log (Level.INFO, ex.getMessage (), ex);
-            }
-        }
-        return doc;
-    }
-    
-    private static boolean isGZIP (URL url) {
-        boolean res = false;
-        if (url != null) {
-            res = url.getPath ().toLowerCase ().endsWith (GZIP_EXTENSION);
-        }
-        ERR.log (Level.FINER, "Is GZIP " + url + " ? " + res);
-        return res;
-    }
-    
-    private static InputStream getInputStream (URL url, boolean isGZIP) {
-        InputStream is = null;
-        if (isGZIP) {
-            try {
-                is = new BufferedInputStream (new GZIPInputStream (url.openStream ()));
-            } catch (IOException ioe) {
-                ERR.log (Level.INFO, "IOException " + ioe.getMessage () + " while reading GZIP stream " + url, ioe);
-            }
-        }
-        if (is == null) {
-            try {
-                is = new BufferedInputStream (url.openStream ());
-            } catch (IOException ioe) {
-                ERR.log (Level.INFO, "IOException " + ioe.getMessage () + " while reading stream " + url, ioe);
-            }
-        }
-        return is;
-    }
-    
-    private static Date getAutoupdateCatalogDate (URL url, URL providerUrl) {
-        Date timeStamp = null;
-        InputStream is = null;
-        try {
-            ERR.log (Level.FINER, "Inspect Autoupdate Catalog " + url);
-            is = getInputStream (url, isGZIP (providerUrl));
-            StringBuffer sb = new StringBuffer (1024);
-
-            int c;
-            while ((c = is.read ()) != -1 && sb.length () < 1024) {
-                sb.append ((char) c);
-            }
-            ERR.log (Level.FINER, "Successfully checked " + url); // NOI18N
-
-            String content = sb.toString ();
-            ERR.log (Level.FINEST, "Read string " + sb); // NOI18N
-            String time = null;
-            int pos;
-            if ((pos = content.indexOf (TIME_STAMP_ATTRIBUTE_NAME)) != -1) {
-                content = content.substring (pos + TIME_STAMP_ATTRIBUTE_NAME.length () + 1 + 1);
-                if ((pos = content.indexOf ('>')) != -1) {
-                    time = content.substring (0, pos - 1);
+                currentNotificationUrl.pop ();
+                break;
+            case module_notification :
+                // write module notification
+                if (! lines.isEmpty ()) {
+                    ModuleDescriptor md = currentModule.peek ();
+                    assert md != null : "ModuleDescriptor found for " + provider;
+                    StringBuffer buf = new StringBuffer (bufferInitSize);
+                    for (String line : lines) {
+                        buf.append (line);
+                    }
+                    md.appendNotification (buf.toString ());
                 }
-            }
-            ERR.log (Level.FINEST, "Transposed time " + time); // NOI18N
-            
-            if (time == null) {
-                ERR.log (Level.INFO, "No timestamp is presented in " + url); // NOI18N
-            } else {
-                DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
-                timeStamp = format.parse (time);
-                ERR.log (Level.FINER, "Successfully read time " + timeStamp); // NOI18N
-            }
+                break;
+            case external_package :
+                ERR.info ("Not supported yet.");
+                break;
+            case license :
+                assert ! currentLicense.empty () : "Premature end of license " + qName;
+                
+                if (! lines.isEmpty ()) {
 
-        } catch (IOException ioe) {
-            ERR.log (Level.FINE, null, ioe);
-        } catch (ParseException ex) {
-            ERR.log (Level.FINE, null, ex);
-        } finally {
-            if (is != null) {
+                    // find and fill UpdateLicenseImpl
+                    StringBuffer sb = new StringBuffer (bufferInitSize);
+                    for (String line : lines) {
+                        sb.append (line);
+                    }
+                    UpdateLicenseImpl updateLicenseImpl = this.name2license.get (currentLicense.peek ());
+                    // in invalid catalog might be a un-paired license
+                    // assert updateLicenseImpl != null : "UpdateLicenseImpl found in map for key " + currentLicense.peek ();
+                    if (updateLicenseImpl != null) {
+                        updateLicenseImpl.setAgreement (sb.toString ());
+                    } else {
+                        ERR.info ("Unpaired license " + currentLicense.peek () + " without any module.");
+                    }
+
+                }
+                
+                currentLicense.pop ();
+                break;
+            default:
+                ERR.warning ("Unknown element " + qName);
+        }
+    }
+
+    @Override
+    public void endDocument () throws SAXException {
+        ERR.fine ("End parsing " + (provider == null ? "" : provider.getUpdateCenterURL ()) + " at " + System.currentTimeMillis ());
+    }
+
+    @Override
+    public void startDocument () throws SAXException {
+        ERR.fine ("Start parsing " + (provider == null ? "" : provider.getUpdateCenterURL ()) + " at " + System.currentTimeMillis ());
+    }
+
+    @Override
+    public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        lines.clear();
+        bufferInitSize = 0;
+        switch (ELEMENTS.valueOf (qName)) {
+            case module_updates :
                 try {
-                    is.close ();
-                } catch (IOException ex) {
-                    ERR.log (Level.FINE, null, ex);
+                    catalogDate = "";
+                    DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
+                    String timeStamp = attributes.getValue (MODULE_UPDATES_ATTR_TIMESTAMP);
+                    if (timeStamp == null) {
+                        ERR.info ("No timestamp is presented in " + (this.provider == null ? "" : this.provider.getUpdateCenterURL ()));
+                    } else {
+                        catalogDate = Utilities.formatDate (format.parse (timeStamp));
+                        ERR.finer ("Successfully read time " + timeStamp); // NOI18N
+                    }
+                } catch (ParseException pe) {
+                    ERR.log (Level.INFO, null, pe);
                 }
-            }
-        }
-        return timeStamp;
-    }
-    
-    static List<SimpleItem> createSimpleItems (Document xmlDocument) {
-        NodeList moduleUpdatesList = xmlDocument.getElementsByTagName (TAG_MODULE_UPDATES);
-        if (moduleUpdatesList == null || moduleUpdatesList.getLength () != 1) {
-            ERR.log (Level.INFO, TAG_MODULE_UPDATES + " tag was invalid in " + xmlDocument.getBaseURI ());
-            return Collections.emptyList ();
-        }
-        NodeList moduleUpdatesChildren = moduleUpdatesList.item (0).getChildNodes ();
-        
-        return parseUpdateItems (moduleUpdatesChildren, null);
-    }
-    
-    private static List<SimpleItem> parseUpdateItems (NodeList children, String group) {
-        List<SimpleItem> res = new ArrayList<SimpleItem> ();
-        for (int i = 0; i < children.getLength (); i++) {
-            Node n = children.item (i);
-            if (Node.ELEMENT_NODE != n.getNodeType()) {
-                continue;
-            }
-            assert n instanceof Element : n + " is instanceof Element";
-            String tagName = ((Element) n).getTagName ();
-            if (TAG_MODULE_GROUP.equals (tagName)) {
-                group = SimpleItem.getAttribute (n, ATTR_MODULE_GROUP_NAME);
-                res.addAll (parseUpdateItems (n.getChildNodes (), group));
-            } else if (TAG_MODULE.equals (tagName)) {
-                // split Module and Localization
-                NodeList l10nElements = ((Element) n).getElementsByTagName (TAG_ELEMENT_L10N);
-                NodeList manifestElements = ((Element) n).getElementsByTagName (TAG_MANIFEST);
-                if (l10nElements != null && l10nElements.getLength () > 0) {
-                    res.add (new SimpleItem.Localization (n, group));
-                } else if (manifestElements != null && manifestElements.getLength () > 0) {
-                    res.add (new SimpleItem.Module (n, group));
+                break;
+            case module_group :
+                currentGroup.push (attributes.getValue (MODULE_GROUP_ATTR_NAME));
+                break;
+            case module :
+                ModuleDescriptor md = ModuleDescriptor.getModuleDescriptor (
+                        currentGroup.size () > 0 ? currentGroup.peek () : null, /* group */
+                        baseUri, /* base URI */
+                        this.catalogDate); /* catalog date */
+                md.appendModuleAttributes (attributes);
+                currentModule.push (md);
+                break;
+            case l10n :
+                // construct l10n
+                // XXX
+                break;
+            case manifest :
+                
+                // construct module
+                ModuleDescriptor desc = currentModule.peek ();
+                desc.appendManifest (attributes);
+                UpdateItem m = desc.createUpdateItem ();
+                
+                // put license impl to map for future refilling
+                UpdateItemImpl impl = Trampoline.SPI.impl (m);
+                String licName = impl.getUpdateLicenseImpl ().getName ();
+                if (this.name2license.keySet ().contains (licName)) {
+                    impl.setUpdateLicenseImpl (this.name2license.get (licName));
                 } else {
-                    assert false : "Unknown element " + n;
+                    this.name2license.put (impl.getUpdateLicenseImpl ().getName (), impl.getUpdateLicenseImpl ());
                 }
-            } else if (TAG_FEATURE.equals (tagName)) {
-                res.add (new SimpleItem.Feature (n, group));
-            } else if (TAG_LICENSE.equals (tagName)) {
-                res.add (new SimpleItem.License (n));
-            } else if (TAG_NOTIFICATION.equals (tagName)) {
-                // don't read it now
-            } else {
-                assert false : "Unknown element tag " + tagName;
-            }
+                
+                // put module into UpdateItems
+                items.put (desc.getId (), m);
+                
+                break;
+            case description :
+                ERR.info ("Not supported yet.");
+                break;
+            case module_notification :
+                break;
+            case notification :
+                currentNotificationUrl.push (attributes.getValue (NOTIFICATION_ATTR_URL));
+                break;
+            case external_package :
+                ERR.info ("Not supported yet.");
+                break;
+            case license :
+                currentLicense.push (attributes.getValue (LICENSE_ATTR_NAME));
+                break;
+            default:
+                ERR.warning ("Unknown element " + qName);
         }
-        return res;
-        
+    }
+
+    @Override
+    public void warning(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    @Override
+    public void error(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    @Override
+    public void fatalError(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    private void parseError(SAXParseException e) {
+        ERR.warning(e.getSystemId() + ":" + e.getLineNumber() + ":" + e.getColumnNumber() + ": " + e.getLocalizedMessage());
+    }
+
+    @Override
+    public InputSource resolveEntity (String publicId, String systemId) throws IOException, SAXException {
+        return entityResolver.resolveEntity (publicId, systemId);
     }
     
+    private static class ModuleDescriptor {
+        private String moduleCodeName;
+        private URL distributionURL;
+        private String targetcluster;
+        private String homepage;
+        private String downloadSize;
+        private String author;
+        private String publishDate;
+        private String notification;
+
+        private Boolean needsRestart;
+        private Boolean isGlobal;
+        private Boolean isEager;
+        private Boolean isAutoload;
+
+        private String specVersion;
+        private Manifest mf;
+        
+        private String id;
+
+        private UpdateLicense lic;
+        
+        private String group;
+        private URI base;
+        private String catalogDate;
+        
+        private static ModuleDescriptor md = null;
+        
+        private ModuleDescriptor () {}
+        
+        public static ModuleDescriptor getModuleDescriptor (String group, URI base, String catalogDate) {
+            if (md == null) {
+                md = new ModuleDescriptor ();
+            }
+            
+            md.group = group;
+            md.base = base;
+            md.catalogDate = catalogDate;
+            
+            return md;
+        }
+        
+        public void appendModuleAttributes (Attributes module) {
+            moduleCodeName = module.getValue (MODULE_ATTR_CODE_NAME_BASE);
+            distributionURL = getDistribution (module.getValue (MODULE_ATTR_DISTRIBUTION), base);
+            targetcluster = module.getValue (MODULE_ATTR_TARGET_CLUSTER);
+            homepage = module.getValue (MODULE_ATTR_HOMEPAGE);
+            downloadSize = module.getValue (MODULE_ATTR_DOWNLOAD_SIZE);
+            author = module.getValue (MODULE_ATTR_MODULE_AUTHOR);
+            publishDate = module.getValue (MODULE_ATTR_RELEASE_DATE);
+            if (publishDate == null || publishDate.length () == 0) {
+                publishDate = catalogDate;
+            }
+            String needsrestart = module.getValue (MODULE_ATTR_NEEDS_RESTART);
+            String global = module.getValue (MODULE_ATTR_IS_GLOBAL);
+            String eager = module.getValue (MODULE_ATTR_EAGER);
+            String autoload = module.getValue (MODULE_ATTR_AUTOLOAD);
+                        
+            needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
+            isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
+            isEager = Boolean.parseBoolean (eager);
+            isAutoload = Boolean.parseBoolean (autoload);
+                        
+            String licName = module.getValue (MODULE_ATTR_LICENSE);
+            lic = UpdateLicense.createUpdateLicense (licName, null);
+        }
+        
+        public void appendManifest (Attributes manifest) {
+            specVersion = manifest.getValue (MANIFEST_ATTR_SPECIFICATION_VERSION);
+            mf = getManifest (manifest);
+            id = moduleCodeName + '_' + specVersion; // NOI18N
+        }
+        
+        public void appendNotification (String notification) {
+            this.notification = notification;
+        }
+        
+        public String getId () {
+            return id;
+        }
+        
+        public UpdateItem createUpdateItem () {
+            UpdateItem res = UpdateItem.createModule (
+                    moduleCodeName,
+                    specVersion,
+                    distributionURL,
+                    author,
+                    downloadSize,
+                    homepage,
+                    publishDate,
+                    group,
+                    mf,
+                    isEager,
+                    isAutoload,
+                    needsRestart,
+                    isGlobal,
+                    targetcluster,
+                    lic);
+            
+            // read module notification
+            UpdateItemImpl impl = Trampoline.SPI.impl(res);
+            ((ModuleItem) impl).setModuleNotification (notification);
+            
+            // clean-up ModuleDescriptor
+            cleanUp ();
+            
+            return res;
+        }
+        
+        private void cleanUp (){
+            this.specVersion = null;
+            this.mf = null;
+            this.notification = null;
+        }
+    }
+    
+    private static URL getDistribution (String distribution, URI base) {
+        URL retval = null;
+        if (distribution != null && distribution.length () > 0) {
+            try {
+                URI distributionURI = new URI (distribution);
+                if (! distributionURI.isAbsolute ()) {
+                    if (base != null) {
+                        distributionURI = base.resolve (distributionURI);
+                    }
+                }
+                retval = distributionURI.toURL ();
+            } catch (MalformedURLException ex) {
+                ERR.log (Level.INFO, null, ex);
+            } catch (URISyntaxException ex) {
+                ERR.log (Level.INFO, null, ex);
+            }
+        }
+        return retval;
+    }
+
+    private static Manifest getManifest (Attributes attrList) {
+        Manifest mf = new Manifest ();
+        java.util.jar.Attributes mfAttrs = mf.getMainAttributes ();
+
+        for (int i = 0; i < attrList.getLength (); i++) {
+            mfAttrs.put (new java.util.jar.Attributes.Name (attrList.getQName (i)), attrList.getValue (i));
+        }
+        return mf;
+    }
+
 }

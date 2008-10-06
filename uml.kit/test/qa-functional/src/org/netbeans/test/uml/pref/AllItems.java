@@ -97,7 +97,7 @@ public class AllItems extends UMLMultiTestSuite {
     private Node lastDiagramNode=null;
     private String lastTestCase=null;
     private JTreeOperator prTree=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static long elCount=0;
     //--
     private static String activityDiagramName1 = "acD1";

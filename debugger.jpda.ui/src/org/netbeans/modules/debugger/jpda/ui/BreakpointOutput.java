@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -86,7 +85,7 @@ PropertyChangeListener {
     private IOManager               ioManager;
     private JPDADebugger            debugger;
     private ContextProvider         contextProvider;
-    private Object                  lock = new Object();
+    private final Object            lock = new Object();
 
     
     public BreakpointOutput (ContextProvider contextProvider) {
@@ -125,7 +124,7 @@ PropertyChangeListener {
         synchronized (lock) {
             if (event.getDebugger () != debugger) return;
         }
-        if (event.getConditionResult () == event.CONDITION_FALSE) return;
+        if (event.getConditionResult () == JPDABreakpointEvent.CONDITION_FALSE) return;
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         if (breakpoint.getSuspend() != JPDABreakpoint.SUSPEND_NONE) {
             getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
@@ -223,8 +222,8 @@ PropertyChangeListener {
         }
         synchronized (lock) {
             if (debugger == null ||
-                evt.getPropertyName () != debugger.PROP_STATE ||
-                debugger.getState () == debugger.STATE_STOPPED) {
+                !JPDADebugger.PROP_STATE.equals(evt.getPropertyName()) ||
+                debugger.getState () == JPDADebugger.STATE_STOPPED) {
                 
                 return ;
             }

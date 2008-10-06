@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -184,7 +183,7 @@ public class FileStatusCache {
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();                                   
             FileInformation info = (FileInformation) allFiles.get(file);
-            if ((info.getStatus() & includeStatus) == 0) continue;
+            if ((info != null && (info.getStatus() & includeStatus) == 0)) continue;
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
@@ -283,7 +282,7 @@ public class FileStatusCache {
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
      */ 
-    FileInformation getCachedStatus(File file) {
+    public FileInformation getCachedStatus(File file) {
         File parent = file.getParentFile();
         if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
         Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
@@ -462,6 +461,7 @@ public class FileStatusCache {
                 ISVNStatus entry = status != null ? status.getEntry(file) : null;
                 if(entry != null) {
                     Number rev = entry.getRevision();
+                    if(rev == null) continue;
                     if(rev.getNumber() != revision.getNumber()) {
                         FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
                         File dir = file.getParentFile();
@@ -506,7 +506,7 @@ public class FileStatusCache {
 
         long r2 = -2;
         if (e2 != null) {
-            SVNRevision r = e1.getRevision();
+            SVNRevision r = e2.getRevision();
             r2 = r != null ? e2.getRevision().getNumber() : r2;
         }
         

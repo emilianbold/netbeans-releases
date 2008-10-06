@@ -77,4 +77,8 @@
         </target>
 
     -->
+    <target name="zip" depends="javadoc">
+	    <zip destfile="${dist.dir}/nb_svg_midp_components-api.zip" basedir="${dist.javadoc.dir}"/>
+	    <zip destfile="${dist.dir}/nb_svg_midp_components-src.zip" basedir="${src.dir}"/>
+    </target>
 </project>

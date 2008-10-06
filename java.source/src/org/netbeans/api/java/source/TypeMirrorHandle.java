@@ -385,8 +385,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
 
         @Override
         public Void visitWildcardType(Type.WildcardType t, Void s) {
-            t.type.accept(this, s);
-            t.bound.accept(this, s);
+            if (t.type instanceof PlaceholderType)
+                t.type = ((PlaceholderType)t.type).delegate;
+            else
+                t.type.accept(this, s);
+            if (t.bound != null)
+                t.bound.accept(this, s);
             return null;
         }
     }

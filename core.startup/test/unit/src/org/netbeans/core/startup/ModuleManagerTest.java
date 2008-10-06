@@ -388,6 +388,7 @@ public class ModuleManagerTest extends SetupHid {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, true, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, false);
             Module m3 = mgr.create(new File(jars, "depends-on-simple-module-2.jar"), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
             assertTrue(m1.isEnabled());
             assertFalse(m2.isEnabled());
             assertTrue(m3.isEnabled());
@@ -415,6 +416,7 @@ public class ModuleManagerTest extends SetupHid {
         mgr.mutexPrivileged().enterWriteAccess();
         try {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
             assertTrue(m1.isEnabled());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
@@ -424,6 +426,7 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
             assertFalse(m1.isEnabled());
             assertFalse(m2.isEnabled());
             mgr.enable(m1);
@@ -437,8 +440,38 @@ public class ModuleManagerTest extends SetupHid {
         try {
             Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, true, false);
             Module m2 = mgr.create(new File(jars, "depends-on-simple-module.jar"), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
             assertTrue(m1.isEnabled());
             assertTrue(m2.isEnabled());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
+    public void testEagerEnablementRobust() throws Exception { // #144005
+        FileObject dir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(dir);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module eager1 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager1.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager1\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
+            assertEquals(Collections.emptySet(), mgr.getEnabledModules());
+            Module autoload = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "autoload.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: autoload\n\n")), null, false, true, false);
+            mgr.enable(Collections.<Module>emptySet());
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
+            mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager2.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager2\nOpenIDE-Module-Module-Dependencies: missing\n\n")), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
+            Module eager3 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager3.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager3\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            mgr.enable(Collections.<Module>emptySet());
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1, eager3)), mgr.getEnabledModules());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }

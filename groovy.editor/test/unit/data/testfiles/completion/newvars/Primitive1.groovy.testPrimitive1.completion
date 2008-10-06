@@ -1,0 +1,5 @@
+Code completion result for source line:
+boolean |
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   b                                          null

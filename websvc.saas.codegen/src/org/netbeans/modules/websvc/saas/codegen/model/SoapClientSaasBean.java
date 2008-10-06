@@ -63,8 +63,11 @@ public class SoapClientSaasBean extends SaasBean {
     private WsdlSaasMethod m;
     
     public SoapClientSaasBean(WsdlSaasMethod m, Project project) {
-        this(m.getSaas(), Util.deriveResourceName(m.getName()), 
-                toJaxwsOperationInfos(m, project));
+        this(m, project, toJaxwsOperationInfos(m, project));
+    }
+    
+    public SoapClientSaasBean(WsdlSaasMethod m, Project project, SoapClientOperationInfo[] jaxwsInfos) {
+        this(m.getSaas(), Util.deriveResourceName(m.getName()), jaxwsInfos);
     }
   
     /**
@@ -134,19 +137,19 @@ public class SoapClientSaasBean extends SaasBean {
     }
 
     @Override
-    public String getOutputWrapperName() {
+    public List<String> getOutputWrapperNames() {
         if (needsHtmlRepresentation()) {
             return null;
         }
-        return super.getOutputWrapperName();
+        return super.getOutputWrapperNames();
     }
 
     @Override
-    public String getOutputWrapperPackageName() {
+    public List<String> getOutputWrapperPackageNames() {
         if (needsHtmlRepresentation()) {
             return null;
         }
-        return super.getOutputWrapperPackageName();
+        return super.getOutputWrapperPackageNames();
     }
     
     public boolean needsHtmlRepresentation() {

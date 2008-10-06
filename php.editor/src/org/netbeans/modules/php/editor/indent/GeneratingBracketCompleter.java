@@ -43,10 +43,12 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.nav.SemiAttribute;
@@ -59,6 +61,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -66,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -165,31 +169,38 @@ public class GeneratingBracketCompleter {
         
         i.scan(decl);
         
-        addVariables(toAdd, "@global", indent, i.globals);
-        addVariables(toAdd, "@staticvar", indent, i.staticvars);
+        addVariables(doc, toAdd, "@global", indent, i.globals);
+        addVariables(doc, toAdd, "@staticvar", indent, i.staticvars);
         
         for (FormalParameter p : decl.getFormalParameters()) {
             String name = "";
-            if (p.getParameterName() instanceof Variable) {
-                Variable v = (Variable) p.getParameterName();
-                
-                if (v.getName() instanceof Identifier) {
-                    name = ((Identifier) v.getName()).getName();
+            Expression expr = p.getParameterName();
+            Variable var = null;
+            if (expr instanceof Variable) {
+                var = (Variable) expr;
+            }
+            if (expr instanceof Reference) {
+                Reference ref = (Reference)expr;
+                if (ref.getExpression() instanceof Variable) {
+                    var = (Variable) ref.getExpression();
                 }
             }
-            generateDocEntry(toAdd, "@param", indent, "$" + name, null);
+            if (var != null && var.getName() instanceof Identifier) {
+                name = ((Identifier) var.getName()).getName();
+            }
+            generateDocEntry(doc, toAdd, "@param", indent, "$" + name, null);
         }
         
         if (i.hasReturn) {
-            generateDocEntry(toAdd, "@return", indent, null, null);
+            generateDocEntry(doc, toAdd, "@return", indent, null, null);
         }
         
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
     
-    private static void addVariables(StringBuilder toAdd, String text, int indent, List<Pair<AttributedElement, AttributedType>> vars) {
+    private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<AttributedElement, AttributedType>> vars) {
         for (Pair<AttributedElement, AttributedType> p : vars) {
-            generateDocEntry(toAdd, text, indent, "$" + p.getA().getName(), p.getB());
+            generateDocEntry(doc, toAdd, text,indent, "$" + p.getA().getName(), p.getB());
         }
     }
     
@@ -200,9 +211,9 @@ public class GeneratingBracketCompleter {
         }
     };
     
-    private static void generateDocEntry(StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
+    private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String text, int indent, String name, AttributedType type) {
         toAdd.append("\n");
-        LexUtilities.indent(toAdd, indent);
+        toAdd.append(IndentUtils.createIndentString(doc, indent));
 
         toAdd.append(" * ");
         toAdd.append(text);
@@ -224,8 +235,8 @@ public class GeneratingBracketCompleter {
     private static void generateVariableDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, AttributedElement el) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
 
-        generateDocEntry(toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
-        generateDocEntry(toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
+        generateDocEntry(doc, toAdd, "@global", indent, "$GLOBALS['" + el.getName() + "']", null);
+        generateDocEntry(doc, toAdd, "@name", indent, "$" + el.getName(), PRINT_NO_TYPE);
 
         doc.insertString(offset - 1, toAdd.toString(), null);
     }
@@ -233,7 +244,7 @@ public class GeneratingBracketCompleter {
     private static void generateFieldDoc(BaseDocument doc, int offset, int indent, CompilationInfo info, FieldsDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();
         
-        generateDocEntry(toAdd, "@var", indent, null, null);
+        generateDocEntry(doc, toAdd, "@var", indent, null, null);
         
         doc.insertString(offset - 1, toAdd.toString(), null);
     }

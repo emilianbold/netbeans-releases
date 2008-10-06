@@ -43,10 +43,12 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.util.*;
 import java.beans.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.filesystems.FileObject;
@@ -54,25 +56,30 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.modules.web.core.syntax.completion.JavaJSPCompletionProvider.CompletionQueryDelegatedToJava;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionQuery.JspCompletionResult;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.openide.util.ImageUtilities;
 
 
 /** Support for code completion of default JSP tags.
  *
  * @author  pjiricka
+ * @author  Marek Fukala
  */
-public class AttrSupports extends Object {
+public class AttrSupports {
+    
     private static final Logger logger = Logger.getLogger(AttrSupports.class.getName());
+    
     public static class ScopeSupport extends AttributeValueSupport.Default {
         
         public ScopeSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("application");    // NOI18N
             list.add("page");           // NOI18N
             list.add("request");        // NOI18N
@@ -88,8 +95,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("1.2");    // NOI18N
             list.add("2.0");           // NOI18N
             return list;
@@ -103,8 +111,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("bean");    // NOI18N
             list.add("applet");           // NOI18N
             return list;
@@ -118,8 +127,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("AT_BEGIN");    // NOI18N
             list.add("AT_END");           // NOI18N
             list.add("NESTED");        // NOI18N
@@ -134,8 +144,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("false");    // NOI18N
             list.add("no");           // NOI18N
             list.add("true");        // NOI18N
@@ -163,7 +174,8 @@ public class AttrSupports extends Object {
         }
         
         /** Returns the complete result that contains elements from getCompletionItems.   */
-        public CompletionQuery.Result getResult(JTextComponent component, int offset,
+        @Override
+        public void result(CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             
             String fakedClassBody = getFakedClassBody(valuePart);
@@ -178,20 +190,10 @@ public class AttrSupports extends Object {
             
             delegate.create(component.getDocument(), fakedClassBody);
             List<? extends CompletionItem> items =  delegate.getCompletionItems();
-            
-            JspCompletionResult result = new JspCompletionResult(component, null, items,
-                    offset + (valuePart.lastIndexOf('.') + 1), valuePart.length(), -1);
-            
-            return result;
+            result.addAllItems(items);
+            result.setAnchorOffset(offset - (valuePart.length() - valuePart.lastIndexOf('.')) + 1);
         }
-        
-        /** Returns generated List of items for completion.
-         *  It sets itemLength and itemOffset variables as a side effect
-         */
-        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            return null;
-        }
-        
+   
     }
     
     /**
@@ -220,8 +222,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             PageInfo.BeanData[] beanData = sup.getBeanData();
             if(beanData != null) {
                 for (int i = 0; i < beanData.length; i++) {
@@ -240,8 +243,8 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item, boolean setter) {
-            ArrayList list = new ArrayList();
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item, boolean setter) {
+            ArrayList<String> list = new ArrayList<String>();
             String namePropertyValue = (String)item.getAttributes().get("name");    // NOI18N
             if (namePropertyValue != null) {
                 String className = null;
@@ -257,9 +260,10 @@ public class AttrSupports extends Object {
                 }
                 
                 if (className != null) {
+                    ClassLoader cld = null;
                     try {
                         FileObject fileObject = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
-                        ClassLoader cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
+                        cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
                         Class beanClass = Class.forName(className, false, cld);
                         Introspector.flushFromCaches(beanClass);
                         BeanInfo benInfo = Introspector.getBeanInfo(beanClass);
@@ -274,6 +278,15 @@ public class AttrSupports extends Object {
                         //do nothing
                     } catch (IntrospectionException e) {
                         //do nothing
+                    } finally {
+                        // avoids JAR locking
+                        if (cld != null && (cld instanceof Closeable)) {
+                            try {
+                                ((Closeable) cld).close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(AttrSupports.class.getName()).log(Level.INFO, null, ex);
+                            }
+                        }
                     }
                 }
             }
@@ -287,7 +300,8 @@ public class AttrSupports extends Object {
             super(true, "jsp:getProperty", "property");     // NOI18N
         }
         
-        public List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+        @Override
+        public List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
             return possibleValues(sup, item, false);
         }
         
@@ -299,8 +313,9 @@ public class AttrSupports extends Object {
             super(true, "jsp:setProperty", "property"); // NOI18N
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            List list = possibleValues(sup, item, true);
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            List<String> list = possibleValues(sup, item, true);
             list.add(0, "*");  // NOI18N
             return list;
         }
@@ -313,8 +328,9 @@ public class AttrSupports extends Object {
             super(false, "taglib", "uri");      // NOI18N
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            List list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            List<String> list = new ArrayList<String>();
             Map map = sup.getTagLibraryMappings();
             if (map != null) {
                 Iterator iterator = map.keySet().iterator();
@@ -336,8 +352,9 @@ public class AttrSupports extends Object {
             super(false, "taglib", "tagdir");      // NOI18N
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            List l = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            List<String> l = new ArrayList<String>();
             FileObject orig = sup.getFileObject();
             FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
             if (documentBase != null) {
@@ -373,35 +390,16 @@ public class AttrSupports extends Object {
     /** Support for code completing of package and class. */
     public static class FilenameSupport extends AttributeValueSupport.Default {
         static final ImageIcon PACKAGE_ICON =
-                new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
-        
-        /** Index where to start substitution */
-        private int itemOffset;
-        /** Length of currently substituted text */
-        private int itemLength;
-        
+                new ImageIcon(ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
+      
         public FilenameSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            return new ArrayList();
-        }
-        
         /** Returns the complete result that contains elements from getCompletionItems.   */
-        public CompletionQuery.Result getResult(JTextComponent component, int offset,
+        @Override
+        public void result(CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            List res = completionResults(offset, sup, item, valuePart);
-            return new JspCompletionQuery.JspCompletionResult(component,
-                    completionTitle(), res,
-                    itemOffset, itemLength, -1);
-        }
-        
-        /** Returns generated List of items for completion.
-         *  It sets itemLength and itemOffset variables as a side effect
-         */
-        private List completionResults(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            List res = new ArrayList();
             String path = "";   // NOI18N
             String fileNamePart = valuePart;
             int lastSlash = valuePart.lastIndexOf('/');
@@ -412,6 +410,8 @@ public class AttrSupports extends Object {
                 path = valuePart.substring(0, lastSlash);
                 fileNamePart = (lastSlash == valuePart.length())? "": valuePart.substring(lastSlash+1);    // NOI18N
             }
+            
+            int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
             
             try {
                 FileObject orig = sup.getFileObject();
@@ -429,10 +429,13 @@ public class AttrSupports extends Object {
                 
                 FileObject folder = fs.findResource(ctxPath);
                 if (folder != null) {
-                    res = files(folder, fileNamePart, sup);
+                    //add all accessible files from current context
+                    result.addAllItems(files(anchor, folder, fileNamePart, sup));
+                    
+                    //add go up in the directories structure item
                     if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
                             && (path.length() == 0 || (path.lastIndexOf("../")+3 == path.length()))){ // NOI18N
-                        res.add(0,  new JspCompletionItem.FileAttributeValue("../", java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
+                        result.addItem(JspCompletionItem.createGoUpFileCompletionItem(anchor, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
                     }
                 }
             } catch (FileStateInvalidException ex) {
@@ -440,39 +443,29 @@ public class AttrSupports extends Object {
             } catch (IllegalArgumentException ex) {
                 // resolving failed
             }
-            itemOffset = offset - valuePart.length() + lastSlash + 1;  // works even with -1
-            itemLength = fileNamePart.length();
             
-            
-            //set substitute offset
-            Iterator i = res.iterator();
-            while(i.hasNext()) {
-                JspCompletionItem.JspResultItem resultItem = (JspCompletionItem.JspResultItem)i.next();
-                resultItem.setSubstituteOffset(itemOffset);
-            }
-            
-            return res;
+            result.setAnchorOffset(anchor);
         }
         
-        private List files(FileObject folder, String prefix, JspSyntaxSupport sup) {
-            ArrayList res = new ArrayList();
-            TreeMap resFolders = new TreeMap();
-            TreeMap resFiles = new TreeMap();
+        private List<JspCompletionItem> files(int offset, FileObject folder, String prefix, JspSyntaxSupport sup) {
+            ArrayList<JspCompletionItem> res = new ArrayList<JspCompletionItem>();
+            TreeMap<String, JspCompletionItem> resFolders = new TreeMap<String, JspCompletionItem>();
+            TreeMap<String, JspCompletionItem> resFiles = new TreeMap<String, JspCompletionItem>();
             
-            Enumeration files = folder.getChildren(false);
+            Enumeration<? extends FileObject> files = folder.getChildren(false);
             while (files.hasMoreElements()) {
-                FileObject file = (FileObject)files.nextElement();
+                FileObject file = files.nextElement();
                 String fname = file.getNameExt();
                 if (fname.startsWith(prefix) && !"cvs".equalsIgnoreCase(fname)) {
                     
                     if (file.isFolder())
-                        resFolders.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt() + "/", java.awt.Color.BLUE, PACKAGE_ICON));
+                        resFolders.put(file.getNameExt(), JspCompletionItem.createFileCompletionItem(file.getNameExt() + "/", offset, java.awt.Color.BLUE, PACKAGE_ICON));
                     else{
                         java.awt.Image icon = JspUtils.getIcon(sup.getDocument(), file);
                         if (icon != null)
-                            resFiles.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt(), java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
+                            resFiles.put(file.getNameExt(), JspCompletionItem.createFileCompletionItem(file.getNameExt(), offset, java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
                         else
-                            resFiles.put(file.getNameExt(), new JspCompletionItem.FileAttributeValue(file.getNameExt(), java.awt.Color.BLACK));
+                            resFiles.put(file.getNameExt(), JspCompletionItem.createFileCompletionItem(file.getNameExt(), offset, java.awt.Color.BLACK, null));
                     }
                 }
             }
@@ -490,8 +483,9 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("false");   // NOI18N
             list.add("true");    // NOI18N
             return list;
@@ -505,8 +499,9 @@ public class AttrSupports extends Object {
             super(false, "page", "language");    // NOI18N
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
             list.add("java");    // NOI18N
             return list;
         }
@@ -519,9 +514,10 @@ public class AttrSupports extends Object {
             super(tag, longName, attrName);
         }
         
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            ArrayList list = new ArrayList();
-            Iterator iter = java.nio.charset.Charset.availableCharsets().keySet().iterator();
+        @Override
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            ArrayList<String> list = new ArrayList<String>();
+            Iterator<String> iter = java.nio.charset.Charset.availableCharsets().keySet().iterator();
             
             while (iter.hasNext())
                 list.add(iter.next());

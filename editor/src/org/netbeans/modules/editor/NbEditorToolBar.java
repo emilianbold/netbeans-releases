@@ -70,6 +70,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -99,6 +100,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -152,8 +154,7 @@ import org.openide.util.lookup.ProxyLookup;
                 if (src instanceof AbstractButton)
                 {
                     AbstractButton button = (AbstractButton)evt.getSource();
-                    button.setContentAreaFilled(false);
-                    button.setBorderPainted(false);
+                    removeButtonContentAreaAndBorder(button);
                 }
             }
             
@@ -562,7 +563,7 @@ import org.openide.util.lookup.ProxyLookup;
             if (resourceId == null) { // use default icon
                 resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
             }
-            Image img = org.openide.util.Utilities.loadImage(resourceId);
+            Image img = ImageUtilities.loadImage(resourceId);
             if (img != null) {
                 a.putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -628,14 +629,24 @@ import org.openide.util.lookup.ProxyLookup;
     }
 
     private void processButton(AbstractButton button) {
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
+        removeButtonContentAreaAndBorder(button);
         button.setMargin(BUTTON_INSETS);
         if (button instanceof AbstractButton) {
             button.addMouseListener(sharedMouseListener);
         }
         //fix of issue #69642. Focus shouldn't stay in toolbar
         button.setFocusable(false);
+    }
+
+    private static void removeButtonContentAreaAndBorder(AbstractButton button) {
+        boolean canRemove = true;
+        if (button instanceof JToggleButton) {
+            canRemove = !button.isSelected();
+        }
+        if (canRemove) {
+            button.setContentAreaFilled(false);
+            button.setBorderPainted(false);
+        }
     }
 
     /** Attempt to find the editor keystroke for the given action. */

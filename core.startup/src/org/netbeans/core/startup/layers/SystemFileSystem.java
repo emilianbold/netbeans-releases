@@ -64,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /** The system FileSystem - represents system files under $NETBEANS_HOME/system.
@@ -180,6 +181,28 @@ implements FileSystem.Status {
     public @Override FileSystem.Status getStatus() {
         return this;
     }
+    
+    static final String annotateName(FileObject fo) {
+
+        String bundleName = (String) fo.getAttribute(ATTR_BUNDLE); // NOI18N
+        if (bundleName != null) {
+            try {
+                bundleName = org.openide.util.Utilities.translate(bundleName);
+                ResourceBundle b = NbBundle.getBundle(bundleName);
+                try {
+                    return b.getString(fo.getPath());
+                } catch (MissingResourceException ex) {
+                    // ignore--normal
+                    }
+            } catch (MissingResourceException ex) {
+                ModuleLayeredFileSystem.err.log(
+                        Level.WARNING,
+                        "Computing display name for " + fo, ex); // NOI18N
+            // ignore
+            }
+        }
+        return (String)fo.getAttribute("displayName"); // NOI18N
+    }
 
     /** Annotate name
     */
@@ -192,57 +215,71 @@ implements FileSystem.Status {
         while (it.hasNext ()) {
             // annotate a name
             FileObject fo = (FileObject) it.next ();
-
-            String bundleName = (String)fo.getAttribute (ATTR_BUNDLE); // NOI18N
-            if (bundleName != null) {
-                try {
-                    bundleName = org.openide.util.Utilities.translate(bundleName);
-                    ResourceBundle b = NbBundle.getBundle(bundleName);
-                    try {
-                        return b.getString (fo.getPath());
-                    } catch (MissingResourceException ex) {
-                        // ignore--normal
-                    }
-                } catch (MissingResourceException ex) {
-                    ModuleLayeredFileSystem.err.log(
-                        Level.WARNING,
-                        "Computing display name for " + fo, ex); // NOI18N
-                    // ignore
-                }
+            String displayName = annotateName(fo);
+            if (displayName != null) {
+                return displayName;
             }
-            
             String fixedName = FixedFileSystem.deflt.annotateName(fo.getPath());
             if (fixedName != null) return fixedName;
         }
 
         return s;
     }
-
-    /** Annotate icon
-    */
-    public Image annotateIcon (Image im, int type, Set s) {
-        String attr;
+    
+    static Image annotateIcon(FileObject fo, int type) {
+        String attr = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             attr = ATTR_ICON_16;
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
             attr = ATTR_ICON_32;
-        } else {
-            // mono icons not supported
-            return im;
         }
-        Iterator it = s.iterator ();
-        while (it.hasNext ()) {
-            FileObject fo = (FileObject) it.next ();
-            Object value = fo.getAttribute (attr);
+
+        if (attr != null) {
+            Object value = fo.getAttribute(attr);
             if (value != null) {
                 if (value instanceof URL) {
-                    return Toolkit.getDefaultToolkit ().getImage ((URL) value);
+                    return Toolkit.getDefaultToolkit().getImage((URL) value);
                 } else if (value instanceof Image) {
                     // #18832
-                    return (Image)value;
+                    return (Image) value;
                 } else {
                     ModuleLayeredFileSystem.err.warning("Attribute " + attr + " on " + fo + " expected to be a URL or Image; was: " + value);
                 }
+            }
+        }
+
+        String base = (String) fo.getAttribute("iconBase"); // NOI18N
+        if (base != null) {
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                return ImageUtilities.loadImage(base, true);
+            } else if (type == BeanInfo.ICON_COLOR_32x32) {
+                return ImageUtilities.loadImage(insertBeforeSuffix(base, "_32"), true); // NOI18N
+            }
+        }
+        return null;
+    }
+
+    static String insertBeforeSuffix(String path, String toInsert) {
+        String withoutSuffix = path;
+        String suffix = ""; // NOI18N
+
+        if (path.lastIndexOf('.') >= 0) {
+            withoutSuffix = path.substring(0, path.lastIndexOf('.'));
+            suffix = path.substring(path.lastIndexOf('.'), path.length());
+        }
+
+        return withoutSuffix + toInsert + suffix;
+    }
+
+    /** Annotate icon
+    */
+    public Image annotateIcon (Image im, int type, Set s) {
+        Iterator it = s.iterator ();
+        while (it.hasNext ()) {
+            FileObject fo = (FileObject) it.next ();
+            Image img = annotateIcon(fo, type);
+            if (img != null) {
+                return img;
             }
             Image anntIm = FixedFileSystem.deflt.annotateIcon(fo.getPath());
             if (anntIm != null) {
@@ -293,7 +330,7 @@ implements FileSystem.Status {
             }
         }
 
-        if (homeDir == null) {
+        if (homeDir == null || !homeDir.isDirectory()) {
             home = null;
         } else {
             home = new LocalFileSystemEx ();

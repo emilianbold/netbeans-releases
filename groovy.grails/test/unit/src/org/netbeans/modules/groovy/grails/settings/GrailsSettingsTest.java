@@ -58,7 +58,6 @@ public class GrailsSettingsTest extends NbTestCase {
 
     public void testGrailsBase() {
         final GrailsSettings settings = GrailsSettings.getInstance();
-        assertNull(settings.getGrailsBase());
         settings.setGrailsBase("test_path");
         assertEquals("test_path", settings.getGrailsBase());
         settings.setGrailsBase("other_path");

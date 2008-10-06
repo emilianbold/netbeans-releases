@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.properties;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -53,10 +56,16 @@ import java.nio.charset.CoderResult;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import static java.lang.Math.min;
 import static java.nio.charset.CoderResult.OVERFLOW;
 import static java.nio.charset.CoderResult.UNDERFLOW;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -72,40 +81,96 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
      * - allow decoding of supplementary characters (?)
      */
     
-    private final Charset encoding;
-    
-    /** Creates a new instance of PropertiesEncoding */
-    public PropertiesEncoding() {
-        encoding = new PropCharset();
-    }
-    
     public Charset getEncoding(FileObject file) {
-        return encoding;
-    }
-    
-    Charset getEncoding() {
-        return encoding;
+        assert !file.isValid() || file.isData();
+        try {
+            return new PropCharset(file);
+        } catch (FileStateInvalidException ex) {
+            return null;
+        }
     }
     
     /**
      *
      */
-    static final class PropCharset extends Charset {
+    static final class PropCharset extends Charset implements FileChangeListener {
+
+        private final Reference<FileObject> fileRef;
+        private URL fileURL;
         
+        PropCharset(FileObject file) throws FileStateInvalidException {
+            super("resource_bundle_charset", null);                     //NOI18N
+            fileRef = new WeakReference<FileObject>(file);
+            file.addFileChangeListener(this);
+            updateURL(file);
+        }
+
         PropCharset() {
             super("resource_bundle_charset", null);                     //NOI18N
+            fileRef = null;
         }
 
         public boolean contains(Charset charset) {
             return true;
         }
 
-        public PropCharsetEncoder newEncoder() {
+        public CharsetEncoder newEncoder() {
             return new PropCharsetEncoder(this);
         }
         
-        public PropCharsetDecoder newDecoder() {
-            return new PropCharsetDecoder(this);
+        public CharsetDecoder newDecoder() {
+            long fileSize = (fileRef != null) ? getFileSize() : -1;
+            return (fileSize > 0l) ? new PropCharsetDecoder(this, fileSize)
+                                   : new PropCharsetDecoder(this);
+        }
+
+        private long getFileSize() {
+            FileObject file = getFile();
+            return ((file != null) && file.isValid()) ? file.getSize() : 0l;
+        }
+
+        private FileObject getFile() {
+            FileObject fileObj = fileRef.get();
+
+            URL url;
+            synchronized (this) {
+                url = fileURL;
+            }
+
+            if ((fileObj == null) && (url != null)) {
+                fileObj = URLMapper.findFileObject(url);
+            }
+            return fileObj;
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            updateURL(fe.getFile());
+        }
+
+        public void fileChanged(FileEvent fe) {
+            updateURL(fe.getFile());
+        }
+
+        private synchronized void updateURL(FileObject file) {
+            try {
+                fileURL = file.getURL();
+            } catch (FileStateInvalidException ex) {
+                fileURL = null;
+            }
+        }
+
+        public void fileDeleted(FileEvent fe) { }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) { }
+
+        public void fileDataCreated(FileEvent fe) {
+            /* this should be never called on plain files (non-directories) */
+            assert false;
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            /* this should be never called on plain files (non-directories) */
+            assert false;
         }
 
     }
@@ -133,6 +198,10 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
         
         PropCharsetEncoder(Charset charset) {
             super(charset, avgEncodedTokenLen, maxEncodedTokenLen);
+        }
+
+        PropCharsetEncoder() {
+            super(new PropCharset(), avgEncodedTokenLen, maxEncodedTokenLen);
         }
         
         {

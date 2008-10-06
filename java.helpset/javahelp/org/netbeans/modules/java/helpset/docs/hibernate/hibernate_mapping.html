@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Creating Hibernate Mapping Files</title> 
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Creating Hibernate Mapping Files</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>Hibernate mapping files are XML files that contain object relational mapping (ORM) data that Hibernate 
+        uses to determine how classes are mapped to table columns and primary keys.</p>
+            
+        <p>You can use the following wizards to generate Hibernate mapping files:</p>
+        
+        <ul>
+            <li><strong>Hibernate Mapping Files.</strong>
+            This wizard generates a single mapping file for a specified class.
+            After you create the mapping file you need to edit the mapping file 
+            in the XML editor to map the fields in the class to the corresponding columns in the table.
+            You can use the IDE's code completion feature to help you edit the mapping file. </li>
+            <li><strong>Hibernate Mapping Files and POJOs from Database.</strong> 
+            If you use this wizard you can set the option for the IDE to automatically generate 
+            Hibernate mapping files for the tables you select in the wizard.
+            The wizard automatically modifies the Hibernate configuration file
+            to specify the Hibernate mapping files.</li>
+        </ul>
+         
+
+           
+           <p><b>To create a Hibernate mapping file for a class:</b></p>
+            <ol>
+               <li>Right-click the package node containing the class to be mapped and choose New &gt; Other to open the New File wizard.</li>
+               <li>Select Hibernate from the Categories list and Hibernate Mapping File from the File Types list. Click Next.</li>
+               <li>Type <i>&lt;CLASS_NAME&gt;</i>.hbm for the file name, where <i>&lt;CLASS_NAME&gt;</i>
+               is the name of the class that you want to map. Click Next.</li>
+               <li>Specify the Class that you want to map to a table.
+               <p>You can click the button to locate the class.</p></li>
+               <li>Choose the corresponding database table from the drop down list.
+               Click Finish.</li>
+            </ol>
+        
+            <p>When you click Finish, the mapping file is created in the source package you specified 
+            and the file opens in the Source Editor.
+            The Hibernate configuration file is modified to specify the mapping file.</p>
+        
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+        <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+        <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

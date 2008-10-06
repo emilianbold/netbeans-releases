@@ -61,7 +61,7 @@ public class ConverterImpl extends DescriptionGroupImpl implements Converter{
     }
     
     public String getConverterClass() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI()));
+        return getChildElementText(JSFConfigQNames.CONVERTER_CLASS.getQName(getNamespaceURI())).trim();
     }
     
     public void setConverterClass(String value) {
@@ -69,7 +69,7 @@ public class ConverterImpl extends DescriptionGroupImpl implements Converter{
     }
     
     public String getConverterForClass() {
-        return getChildElementText(JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI()));
+        return getChildElementText(JSFConfigQNames.CONVERTER_FOR_CLASS.getQName(getNamespaceURI())).trim();
     }
     
     public void setConverterForClass(String value) {

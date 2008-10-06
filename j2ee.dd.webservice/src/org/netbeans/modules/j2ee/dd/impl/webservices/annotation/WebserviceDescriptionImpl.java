@@ -67,6 +67,7 @@ public class WebserviceDescriptionImpl extends PersistentObject implements Webse
     // persistent
     private String serviceName;
     private String wsdlLocation;
+    private boolean isProvider;
     
     // transient: set to null in javaContextLeft()
     private PortComponent[] portComponents;
@@ -85,13 +86,18 @@ public class WebserviceDescriptionImpl extends PersistentObject implements Webse
         }
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationMirror webServiceAnn = annByType.get("javax.jws.WebService"); // NOI18N
+        AnnotationMirror webServiceAnn = annByType.get("javax.jws.WebService"); // NOI18N 
+        if (webServiceAnn == null) {
+            webServiceAnn = annByType.get("javax.xml.ws.WebServiceProvider"); // NOI18N
+            isProvider = true;
+        }
         if (webServiceAnn == null) {
             return false;
         }
+        
         AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("serviceName", parser.defaultValue(typeElement.getSimpleName().toString() + "Service")); // NOI18N
-        parser.expectString("wsdlLocation", parser.defaultValue("")); // NOI18N
+        parser.expectString("serviceName", AnnotationParser.defaultValue(typeElement.getSimpleName().toString() + "Service")); // NOI18N
+        parser.expectString("wsdlLocation", AnnotationParser.defaultValue("")); // NOI18N
         ParseResult parseResult = parser.parse(webServiceAnn); //NOI18N
         serviceName = parseResult.get("serviceName", String.class); // NOI18N
         wsdlLocation = parseResult.get("wsdlLocation", String.class); // NOI18N
@@ -111,7 +117,7 @@ public class WebserviceDescriptionImpl extends PersistentObject implements Webse
     }
     
     public String getDisplayName() {
-        return serviceName;
+        return isProvider ? "javax.xml.ws.WebServiceProvider" : serviceName; //NOI18N
     }
 
     public PortComponent[] getPortComponent() {
@@ -146,10 +152,10 @@ public class WebserviceDescriptionImpl extends PersistentObject implements Webse
         // javax.ejb.EJBs is array of javax.ejb.EJB and is applicable to class
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationParser parser = AnnotationParser.create(helper);
-        parser.expectString("portName", parser.defaultValue(typeElement.getSimpleName().toString()+"Port")); // NOI18N
-        parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
-        parser.expectString("endpointInterface", parser.defaultValue(typeElement.getQualifiedName().toString())); // NOI18N
-        parser.expectString("targetNamespace", parser.defaultValue("http://"+getPackageNameFromTypeElement(typeElement)+"/")); // NOI18N
+        parser.expectString("portName", AnnotationParser.defaultValue(typeElement.getSimpleName().toString()+"Port")); // NOI18N
+        parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
+        parser.expectString("endpointInterface", AnnotationParser.defaultValue(typeElement.getQualifiedName().toString())); // NOI18N
+        parser.expectString("targetNamespace", AnnotationParser.defaultValue("http://"+getPackageNameFromTypeElement(typeElement)+"/")); // NOI18N
         ParseResult parseResult = parser.parse(annByType.get("javax.jws.WebService")); //NOI18N
         String portName = parseResult.get("portName", String.class); // NOI18N
         String portTypeName = parseResult.get("name", String.class); // NOI18N

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1</stream_count>
+    <group id="81">
+        <name>Featured Events</name>
+        <description>Events for the Zvents front page.</description>
+        <url>http://www.zvents.com</url>
+        <private>false</private>
+        <restrict_event_addition>1</restrict_event_addition>
+        <creator_id>1</creator_id>
+    </group>
+</rsp>

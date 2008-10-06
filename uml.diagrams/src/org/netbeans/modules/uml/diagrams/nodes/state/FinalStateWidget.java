@@ -38,96 +38,23 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IFinalState;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.diagrams.nodes.activity.FinalNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Sheryl Su
  */
-public class FinalStateWidget extends UMLLabelNodeWidget
+public class FinalStateWidget extends FinalNodeWidget
 {
-
-    public static final String CONTEXTPATH = "UML/context-palette/FinalState";
-    private IFinalState element;
-    private Widget view;
-
-    public FinalStateWidget(Scene scene)
+    public FinalStateWidget(Scene scene, String path)
     {
-        super(scene);
-        addToLookup(initializeContextPalette());
-    }
-
-    private DefaultContextPaletteModel initializeContextPalette()
-    {
-        DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
-        paletteModel.initialize(CONTEXTPATH);
-        return paletteModel;
-    }
-
-    @Override
-    public void initializeNode(IPresentationElement presentation)
-    {
-        if (presentation != null)
-        {
-            if (presentation.getFirstSubject() instanceof IFinalState)
-            {
-                if (presentation.getFirstSubject() instanceof IFinalState)
-                {
-                    element = (IFinalState) presentation.getFirstSubject();
-                    if (element.getExpandedElementType().equals("AbortedFinalState"))
-                    {
-                        view = new AbortedFinalStateWidget(getScene(), 10, getWidgetID(), loc("LBL_BodyColor"));
-                    } else
-                    {
-                        view = new DoubleCircleWidget(getScene(), 5, 10, getWidgetID(), loc("LBL_BodyColor"));
-                    }
-                    setCurrentView(view);
-                }
-            }
-        }
-    }
-
-    
-    @Override
-    protected void notifyStateChanged(ObjectState previousState,
-                                       ObjectState state)
-    {
-        boolean select = state.isSelected();
-        boolean wasSelected = previousState.isSelected();
-
-        if (select && !wasSelected)
-        {
-            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
-        }
-        else
-        {
-            if (!select && wasSelected)
-            {
-                setBorder(BorderFactory.createEmptyBorder());
-            }
-        }
+        super(scene, path);
     }
     
-    private String loc(String key)
-    {
-        return NbBundle.getMessage(FinalStateWidget.class, key);
-    }
-
     public String getWidgetID()
-    {
-        if (element != null && element.getExpandedElementType().equals("AbortedFinalState"))
-        {
-            return UMLWidget.UMLWidgetIDString.ABORTEDFINALSTATEWIDGET.toString();
-        }
+    {       
         return UMLWidget.UMLWidgetIDString.FINALSTATEWIDGET.toString();
     }
 }

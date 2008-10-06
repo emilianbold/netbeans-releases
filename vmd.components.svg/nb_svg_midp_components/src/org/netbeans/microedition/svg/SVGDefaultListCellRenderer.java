@@ -46,25 +46,26 @@ import org.w3c.dom.svg.SVGLocatableElement;
 /**
  * Suggested svg list tag :
  * <pre>
- * &lt;g visibility="hidden" transform="translate(20,200)">
+ * &lt;g id="list" visibility="hidden" transform="translate(20,200)">
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=list&lt;/text>
  *
- *       &lt;!-- Metadata information. Please don't edit. -->
- *       &lt;text display="none">type=hidden_text&lt;/text>
+ *       &lt;g>
+ *       &lt;text id="list_hidden_text" visibility="hidden">
  *           HIDDEN TEXT
  *       &lt;/text>
+ *       &lt;text display="none">type=hidden_text&lt;/text>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=bound&lt;/text>
- *           &lt;rect  x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
+ *           &lt;rect id="list_bound" x="5.0" y="0.0" width="80" height="60" fill="white" stroke="black" stroke-width="2" visibility="inherit"/>
  *       &lt;/g>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=selection&lt;/text>
- *           &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *           &lt;rect id="list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
  *       &lt;/g>
- *       &lt;g  visibility="inherit">
+ *       &lt;g  id="list_content" visibility="inherit">
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=content&lt;/text>
  *           &lt;/g>
@@ -74,16 +75,14 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * Rectangle ( first "rect" tag ) represents selection figure on the screen.
  * Group tag represent content that will be used as area for rendering
  * in this class. It should be present ( NPE will be thrown otherwise ).  
+ * This renderer also needs selection element. 
+ * 
  * @author ads
  *
  */
 public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     
     private static final String HEIGHT      = "height";             // NOI18N
-    static final String HIDDEN_TEXT         = "hidden_text";        // NOI18N
-    static final String BOUNDS              = "bound";              // NOi18N
-    private static final String SELECTION   = "selection";          // NOI18N
-    
     
     private static final float ASCENT_SELECTION   = 2;
     private static final float DESCENT_SELECTION   = 2;
@@ -98,13 +97,9 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
     public SVGComponent getCellRendererComponent( SVGList list, Object value,
             int index, boolean isSelected )
     {
-        SVGLocatableElement xmlElement = list.getElement();
-        final SVGLocatableElement content = (SVGLocatableElement)
-            list.getElementByMeta(xmlElement, 
-                    SVGList.TYPE,  SVGList.CONTENT );
+        final SVGLocatableElement content = list.getContent();
         
-        SVGLocatableElement hiddenText = (SVGLocatableElement) list
-                .getElementByMeta(xmlElement, SVGList.TYPE, HIDDEN_TEXT);
+        SVGLocatableElement hiddenText = list.getHiddenText();
         if (hiddenText == null) {
             throw new IllegalArgumentException("List argument "
                     + "doesn't contain hidden text for access to font"
@@ -112,7 +107,11 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
         }
         myX = hiddenText.getFloatTrait(SVGComponent.TRAIT_X);
         myY = hiddenText.getFloatTrait(SVGComponent.TRAIT_Y);
-            
+        
+        if ( isSelected ) {
+            showSelection( list , index );
+        }
+        
         final SVGLocatableElement textElement = (SVGLocatableElement) list.getForm().
             getDocument().createElementNS( SVGComponent.SVG_NS, SVGTextField.TEXT);
         textElement.setFloatTrait( SVGComponent.TRAIT_X, myX );
@@ -130,30 +129,39 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
             textElement.setTrait(SVGComponent.TRAIT_TEXT,  value.toString());
         }
         
-        list.getForm().invokeAndWaitSafely(new Runnable() {
-            public void run() {
+        /*list.getForm().invokeLaterSafely(new Runnable() {
+            public void run() {*/
                 content.appendChild(textElement);
-            }
-        });
-        
-        if ( isSelected ) {
-            showSelection( list , index );
-        }
+            /*}
+        });*/
         
         return new SVGLabel( list.getForm() ,textElement );
     }
     
-    private void showSelection( SVGList list, int index ) {
+    private void showSelection( final SVGList list, final int index ) {
         // TODO : modify a whole code for enabling multiple selection.
-        SVGLocatableElement xmlElement = list.getElement();
-        SVGLocatableElement selection = 
-            (SVGLocatableElement)list.getNestedElementByMeta(xmlElement,
-                SVGList.TYPE,  SELECTION );
-        list.setTraitSafely( selection , SVGComponent.TRAIT_Y, 
-                myY + (index-1)*myHeight +ASCENT_SELECTION);
-        list.setTraitSafely( selection , HEIGHT, myHeight +DESCENT_SELECTION);
-    }
+        /*list.getForm().invokeLaterSafely(new Runnable() {
 
+            public void run() {*/
+                SVGLocatableElement selection = list.getSelection();
+                
+                if ( selection == null ){
+                    throw new IllegalArgumentException("List argument "
+                            + "doesn't contain nested 'selection' element"
+                            + ". Unable render any value.");        // NOI18N
+                }
+                
+                selection.setFloatTrait(SVGComponent.TRAIT_Y, myY + (index - 1)
+                        * myHeight + ASCENT_SELECTION);
+                selection.setFloatTrait(HEIGHT, myHeight + DESCENT_SELECTION);
+                if ( !list.isSlave() ){
+                    selection.setTrait( SVGComponent.TRAIT_VISIBILITY, 
+                            SVGComponent.TR_VALUE_VISIBLE);
+                }
+            /*}
+        });*/
+    }
+    
     private float myX;
     private float myY;
     private float myHeight;

@@ -64,7 +64,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  */
 public final class TextRegionManager {
     
-    // -J-Dorg.netbeans.lib.editor.codetemplates.textsync.level=FINE
+    // -J-Dorg.netbeans.lib.editor.codetemplates.textsync.TextRegionManager.level=FINE
     static final Logger LOG = Logger.getLogger(TextRegionManager.class.getName());
     
     private TextRegion<?> rootRegion;
@@ -148,6 +148,9 @@ public final class TextRegionManager {
                 }
             }
             lastAdded = null; // All were added
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("ADD textSyncGroup: " + textSyncGroup + '\n');
+            }
         } finally {
             removeAddedSoFar(textSyncGroup, lastAdded);
         }
@@ -174,6 +177,9 @@ public final class TextRegionManager {
             for (TextRegion<?> textRegion : textSync.regions()) {
                 removeRegionFromParent(textRegion);
             }
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("REMOVE textSyncGroup: " + textSyncGroup + '\n');
         }
     }
     
@@ -209,7 +215,12 @@ public final class TextRegionManager {
                         if (offset <= masterRegionEndOffset) { // Within master region
                             TextRegion<?> master = activeTextSync.validMasterRegion();
                             int relOffset = offset - master.startOffset();
-                            assert (relOffset > 0); // Should be > 0
+                            if (relOffset <= 0) {
+                                // See #146105 - the undo will cause the master's start position
+                                // to be above the insertion point => offset < 0
+                                outsideModified(evt);
+                                return;
+                            }
                             beforeDocumentModification();
                             try {
                                 for (TextRegion<?> region : activeTextSync.regions()) {

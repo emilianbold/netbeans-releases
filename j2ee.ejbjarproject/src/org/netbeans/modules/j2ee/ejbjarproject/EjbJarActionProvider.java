@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +58,11 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -173,13 +173,31 @@ class EjbJarActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+
+        String realCommand = command;
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
+                    new DeployOnSaveUtils.CustomizerPresenter() {
+
+                public void showCustomizer(String category) {
+                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
+                    provider.showCustomizer(category);
+                }
+            });
+            if (cleanAndBuild) {
+                realCommand = COMMAND_REBUILD;
+            } else {
+                return;
+            }
+        }
         
+        final String commandToExecute = realCommand;
         Runnable action = new Runnable() {
             public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
                 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(commandToExecute, context, p);
                 if (targetNames == null) {
                     return;
                 }
@@ -382,6 +400,11 @@ class EjbJarActionProvider implements ActionProvider {
         if (buildXml == null || !buildXml.isValid()) {
             return false;
         }
+
+        if (isCosEnabled() && COMMAND_COMPILE_SINGLE.equals(command)) {
+            return false;
+        }
+
         if ( command.equals( COMMAND_VERIFY ) ) {
             return project.getEjbModule().hasVerifierSupport();
         }
@@ -582,4 +605,7 @@ class EjbJarActionProvider implements ActionProvider {
         EjbJarProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
     }
     
+    private boolean isCosEnabled() {
+        return !Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    }
 }

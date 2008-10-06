@@ -123,6 +123,9 @@ public final class AdvancedPropertySupport extends DefaultPropertySupport {
             String title = propertyEditor.getCustomEditorTitle();
             if ( title != null)
                 setValue(PROPERTY_CUSTOM_EDITOR_TITLE, title);
+            if (propertyEditor != null && propertyEditor.canEditAsText() != null) {
+                this.setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
+            }
         }
     }
     

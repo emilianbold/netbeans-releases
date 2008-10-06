@@ -1,23 +1,20 @@
 /*
- *  ManufacturerConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
 package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import o.n.m.ws.qaf.rest.crud.Manufacturer;
-import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
-
+import javax.persistence.EntityManager;
+import o.n.m.ws.qaf.rest.crud.Product;
+import java.util.Collection;
 
 /**
  *
@@ -29,9 +26,10 @@ public class ManufacturerConverter {
     private Manufacturer entity;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of ManufacturerConverter */
     public ManufacturerConverter() {
+        entity = new Manufacturer();
     }
 
     /**
@@ -45,6 +43,7 @@ public class ManufacturerConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getManufacturerId() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getProductCollection();
     }
 
     /**
@@ -65,7 +64,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public Integer getManufacturerId() {
-        return (expandLevel > 0) ? getEntity().getManufacturerId() : null;
+        return (expandLevel > 0) ? entity.getManufacturerId() : null;
     }
 
     /**
@@ -74,7 +73,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setManufacturerId(Integer value) {
-        getEntity().setManufacturerId(value);
+        entity.setManufacturerId(value);
     }
 
     /**
@@ -84,7 +83,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getName() {
-        return (expandLevel > 0) ? getEntity().getName() : null;
+        return (expandLevel > 0) ? entity.getName() : null;
     }
 
     /**
@@ -93,7 +92,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setName(String value) {
-        getEntity().setName(value);
+        entity.setName(value);
     }
 
     /**
@@ -103,7 +102,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getAddressline1() {
-        return (expandLevel > 0) ? getEntity().getAddressline1() : null;
+        return (expandLevel > 0) ? entity.getAddressline1() : null;
     }
 
     /**
@@ -112,7 +111,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setAddressline1(String value) {
-        getEntity().setAddressline1(value);
+        entity.setAddressline1(value);
     }
 
     /**
@@ -122,7 +121,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getAddressline2() {
-        return (expandLevel > 0) ? getEntity().getAddressline2() : null;
+        return (expandLevel > 0) ? entity.getAddressline2() : null;
     }
 
     /**
@@ -131,7 +130,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setAddressline2(String value) {
-        getEntity().setAddressline2(value);
+        entity.setAddressline2(value);
     }
 
     /**
@@ -141,7 +140,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getCity() {
-        return (expandLevel > 0) ? getEntity().getCity() : null;
+        return (expandLevel > 0) ? entity.getCity() : null;
     }
 
     /**
@@ -150,7 +149,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setCity(String value) {
-        getEntity().setCity(value);
+        entity.setCity(value);
     }
 
     /**
@@ -160,7 +159,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getState() {
-        return (expandLevel > 0) ? getEntity().getState() : null;
+        return (expandLevel > 0) ? entity.getState() : null;
     }
 
     /**
@@ -169,7 +168,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setState(String value) {
-        getEntity().setState(value);
+        entity.setState(value);
     }
 
     /**
@@ -179,7 +178,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getZip() {
-        return (expandLevel > 0) ? getEntity().getZip() : null;
+        return (expandLevel > 0) ? entity.getZip() : null;
     }
 
     /**
@@ -188,7 +187,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setZip(String value) {
-        getEntity().setZip(value);
+        entity.setZip(value);
     }
 
     /**
@@ -198,7 +197,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getPhone() {
-        return (expandLevel > 0) ? getEntity().getPhone() : null;
+        return (expandLevel > 0) ? entity.getPhone() : null;
     }
 
     /**
@@ -207,7 +206,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setPhone(String value) {
-        getEntity().setPhone(value);
+        entity.setPhone(value);
     }
 
     /**
@@ -217,7 +216,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getFax() {
-        return (expandLevel > 0) ? getEntity().getFax() : null;
+        return (expandLevel > 0) ? entity.getFax() : null;
     }
 
     /**
@@ -226,7 +225,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setFax(String value) {
-        getEntity().setFax(value);
+        entity.setFax(value);
     }
 
     /**
@@ -236,7 +235,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getEmail() {
-        return (expandLevel > 0) ? getEntity().getEmail() : null;
+        return (expandLevel > 0) ? entity.getEmail() : null;
     }
 
     /**
@@ -245,7 +244,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setEmail(String value) {
-        getEntity().setEmail(value);
+        entity.setEmail(value);
     }
 
     /**
@@ -255,7 +254,7 @@ public class ManufacturerConverter {
      */
     @XmlElement
     public String getRep() {
-        return (expandLevel > 0) ? getEntity().getRep() : null;
+        return (expandLevel > 0) ? entity.getRep() : null;
     }
 
     /**
@@ -264,7 +263,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setRep(String value) {
-        getEntity().setRep(value);
+        entity.setRep(value);
     }
 
     /**
@@ -275,8 +274,8 @@ public class ManufacturerConverter {
     @XmlElement
     public ProductsConverter getProductCollection() {
         if (expandLevel > 0) {
-            if (getEntity().getProductCollection() != null) {
-                return new ProductsConverter(getEntity().getProductCollection(), uri.resolve("productCollection/"), expandLevel - 1);
+            if (entity.getProductCollection() != null) {
+                return new ProductsConverter(entity.getProductCollection(), uri.resolve("productCollection/"), expandLevel - 1);
             }
         }
         return null;
@@ -288,7 +287,7 @@ public class ManufacturerConverter {
      * @param value the value to set
      */
     public void setProductCollection(ProductsConverter value) {
-        getEntity().setProductCollection((value != null) ? value.getEntities() : null);
+        entity.setProductCollection((value != null) ? value.getEntities() : null);
     }
 
     /**
@@ -316,8 +315,11 @@ public class ManufacturerConverter {
      */
     @XmlTransient
     public Manufacturer getEntity() {
-        if (entity == null) {
-            entity = new Manufacturer();
+        if (entity.getManufacturerId() == null) {
+            ManufacturerConverter converter = UriResolver.getInstance().resolve(ManufacturerConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -327,11 +329,13 @@ public class ManufacturerConverter {
      *
      * @return an resolved entity
      */
-    public Manufacturer resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(Manufacturer.class, entity.getManufacturerId());
-        } else {
-            return (Manufacturer) UriResolver.getInstance().resolve(ManufacturerConverter.class, uri);
+    public Manufacturer resolveEntity(EntityManager em) {
+        Collection<Product> productCollection = entity.getProductCollection();
+        Collection<Product> newproductCollection = new java.util.ArrayList<Product>();
+        for (Product item : productCollection) {
+            newproductCollection.add(em.getReference(Product.class, item.getProductId()));
         }
+        entity.setProductCollection(newproductCollection);
+        return entity;
     }
 }

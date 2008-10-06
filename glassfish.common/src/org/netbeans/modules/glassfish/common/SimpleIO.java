@@ -53,12 +53,14 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * @author Peter Williams
@@ -103,7 +105,9 @@ public class SimpleIO {
      * @param s string to be written
      */
     public synchronized void write(String s) {
-        io.getOut().print(s);
+        OutputWriter writer = io.getOut();
+        writer.print(s);
+        writer.flush();
     }
 
     /**
@@ -117,7 +121,8 @@ public class SimpleIO {
      * Closes the output panel
      */
     public synchronized void closeIO() {
-//        io.closeInputOutput();
+        // Don't close the window when finished -- in case of install or launching
+        // failures, it makes problems easiesr for the user to diagnose.
         process.set(null);
         cancelAction.updateEnabled();
     }
@@ -189,7 +194,7 @@ public class SimpleIO {
         
         public CancelAction() {
             super(NbBundle.getMessage(SimpleIO.class, "CTL_Cancel"), 
-                    new ImageIcon(Utilities.loadImage(ICON)));
+                    new ImageIcon(ImageUtilities.loadImage(ICON)));
             putValue(SHORT_DESCRIPTION, 
                     NbBundle.getMessage(SimpleIO.class, "LBL_CancelDesc"));
         }

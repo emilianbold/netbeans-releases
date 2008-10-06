@@ -1,6 +1,7 @@
 <% library.jmaki.insert(
     {
         component : "dojo.rest.__CONTAINER_PATH_NAME__table",
-        service : "http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/"
+        service : "__BASE_URL__/__CONTAINER_PATH_NAME__/",
+        args : "proxy="
     }
     ); %>

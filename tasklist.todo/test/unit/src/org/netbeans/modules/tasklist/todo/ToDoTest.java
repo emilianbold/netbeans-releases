@@ -1,4 +1,3 @@
-package org.netbeans.modules.tasklist.todo;
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,6 +38,8 @@ package org.netbeans.modules.tasklist.todo;
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
+package org.netbeans.modules.tasklist.todo;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -156,6 +157,8 @@ public class ToDoTest extends TestBase {
         logTasks(tasks); 
         assertEquals("Number of tasks",2,tasks.size());
     }
+
+    @RandomlyFails // NB-Core-Build #1049
     public void testMainProject() throws Exception {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");
@@ -176,9 +179,9 @@ public class ToDoTest extends TestBase {
         NbModuleProject prj3 = generateSuiteComponent(suite, getWorkDir(), "prjInSuite1");
         NbModuleProject prj4 = generateSuiteComponent(suite, getWorkDir(), "prjInSuite2");
         
-        FileObject fo4 = createSrcFile(prj3,"Main.java",javaFile);
-        FileObject fo5 = createSrcFile(prj4,"Main.java",javaFile);
-        ProjectXMLManagerTest.addDependecy(prj3, prj4);
+        createSrcFile(prj3,"Main.java",javaFile);
+        createSrcFile(prj4,"Main.java",javaFile);
+        ProjectXMLManagerTest.addDependency(prj3, prj4);
         OpenProjects.getDefault().open(new Project[]{suite,prj3,prj4}, false);
         OpenProjects.getDefault().setMainProject(prj4);
         

@@ -58,12 +58,12 @@ public class ImportProblemsPanel extends javax.swing.JPanel {
         text.setEditable(false);
         StringBuffer sb = new StringBuffer();
         for (String s : problems) {
-            if (s.startsWith(" ")) {
-                sb.append(" \u2022 ");
+            if (s.startsWith(" ")) { //NOI18N
+                sb.append(" \u2022 "); //NOI18N
             }
             sb.append(s);
-            sb.append("\r\n");
-            sb.append("\r\n");
+            sb.append("\r\n"); //NOI18N
+            sb.append("\r\n"); //NOI18N
         }
         text.setText(sb.toString());
     }
@@ -84,7 +84,7 @@ public class ImportProblemsPanel extends javax.swing.JPanel {
         List<String> l = new ArrayList<String>();
         boolean first = true;
         for (String s : importProblems) {
-            l.add((first ? "" : " ") + s);
+            l.add((first ? "" : " ") + s); //NOI18N
             first = false;
         }
         return l;

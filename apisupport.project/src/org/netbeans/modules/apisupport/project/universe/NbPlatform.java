@@ -116,6 +116,8 @@ public final class NbPlatform {
     public static final int HARNESS_VERSION_60 = 4;
     /** Harness version found in 6.1. */
     public static final int HARNESS_VERSION_61 = 5;
+    /** Harness version found in 6.5. */
+    public static final int HARNESS_VERSION_65 = 6;
     
     /**
      * Reset cached info so unit tests can start from scratch.
@@ -833,7 +835,10 @@ public final class NbPlatform {
             if (currVer == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
-            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+            if (implVers == null) {
+                implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            }
             if (implVers == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
@@ -948,7 +953,9 @@ public final class NbPlatform {
                     String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
                     if (spec != null) {
                         SpecificationVersion v = new SpecificationVersion(spec);
-                        if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
+                        if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
+                            return harnessVersion = HARNESS_VERSION_65;
+                        } else if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_61;
                         } else if (v.compareTo(new SpecificationVersion("1.10")) >= 0) { // NOI18N
                             return harnessVersion = HARNESS_VERSION_60;
@@ -1026,6 +1033,8 @@ public final class NbPlatform {
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.0");
             case HARNESS_VERSION_61:
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.1");
+            case HARNESS_VERSION_65:
+                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
             default:
                 assert version == HARNESS_VERSION_UNKNOWN;
                 return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");

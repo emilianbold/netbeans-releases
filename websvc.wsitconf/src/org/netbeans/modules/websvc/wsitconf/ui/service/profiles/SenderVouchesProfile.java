@@ -70,6 +70,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -131,7 +132,8 @@ public class SenderVouchesProfile extends ProfileBase
     
     @Override
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
-        return true;
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(component);
+        return ConfigVersion.CONFIG_1_3.equals(configVersion);
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
@@ -193,6 +195,7 @@ public class SenderVouchesProfile extends ProfileBase
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
@@ -205,24 +208,21 @@ public class SenderVouchesProfile extends ProfileBase
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            String defPassword = Util.getDefaultPassword(p);
-            String defLocation = Util.getStoreLocation(p, false, false);
-            if ((defPassword != null) && (defLocation != null)) {
-                if ((defPassword.equals(keyPasswd)) && 
-                    (defLocation.equals(keyLoc))) {
-                        return true;
-                }
-            }
+        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
+            return true;
         }
         return false;
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String samlVersion = getSamlVersion(serviceBinding);
         String cbName = null;
         
@@ -240,37 +240,40 @@ public class SenderVouchesProfile extends ProfileBase
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         
         String cbHandler = ProprietarySecurityPolicyModelHelper.getCallbackHandler((Binding)component, CallbackHandler.SAML_CBHANDLER);
-        if ((PKGNAME + "." + cbName).equals(cbHandler)) {
-            if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
-                ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-                    String defPassword = Util.getDefaultPassword(p);
-                    String defKeyLocation = Util.getStoreLocation(p, false, false);
-                    String defTrustLocation = Util.getStoreLocation(p, true, true);
-                    if ((defPassword != null) && (defKeyLocation != null) && (defTrustLocation != null)) {
-                        if ((defPassword.equals(keyPasswd)) && defPassword.equals(trustPasswd) &&
-                            (defKeyLocation.equals(keyLoc)) && (defTrustLocation.equals(trustLoc))) {
-                                return true;
-                        }
-                    }
-            }
+        
+        if ((Util.isEqual(PKGNAME + "." + cbName, cbHandler)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_CLIENT, keyAlias)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, trustAlias)) &&
+            (Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getDefaultPassword(p), trustPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, true, true), trustLoc)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc))) {
+            return true;
         }
         return false;
     }
     
     private String getSamlVersion(Binding serviceBinding) {
+        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(serviceBinding);
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(serviceBinding);
         WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
         WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
         
+        int suppTokenType = SecurityTokensModelHelper.SIGNED_ENCRYPTED;
+        if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+            suppTokenType = SecurityTokensModelHelper.SIGNED_SUPPORTING;
+        }
+
         WSDLComponent tokenKind = null;
         boolean secConv = (protToken instanceof SecureConversationToken);
         
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, suppTokenType);
         } else {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(serviceBinding, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(serviceBinding, suppTokenType);
         }
 
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);

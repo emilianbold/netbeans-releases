@@ -156,25 +156,13 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="org-netbeans-modules-web-struts">
-        <file name="struts-config.xml" url="struts-config.xml"/>
-        <file name="welcome.jsp" url="welcome.jsp"/>
-        <file name="MessageResources.properties" url="MessageResources.properties"/>
-        <file name="tiles-defs.xml" url="tiles-defs.xml"/>
-        <file name="validation.xml" url="validation.xml"/>
-        <file name="validator-rules.xml" url="validator-rules.xml"/>
-        <file name="struts-bean.tld" url="struts-bean.tld"/>
-        <file name="struts-html.tld" url="struts-html.tld"/>
-        <file name="struts-logic.tld" url="struts-logic.tld"/>
-        <file name="struts-nested.tld" url="struts-nested.tld"/>
-        <file name="struts-tiles.tld" url="struts-tiles.tld"/>
-    </folder>
-    
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-struts+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-web-struts-StrutsConfigLoader.instance"/>
+                    <file name="org-netbeans-modules-web-struts-StrutsConfigLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">

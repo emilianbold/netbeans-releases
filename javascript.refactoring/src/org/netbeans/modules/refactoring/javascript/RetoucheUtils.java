@@ -45,9 +45,7 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +53,7 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -101,6 +99,9 @@ import org.openide.xml.XMLUtil;
  * @author Tor Norbye
  */
 public class RetoucheUtils {
+    private RetoucheUtils() {
+    }
+
     public static boolean isJsFile(FileObject fo) {
         return LanguageRegistry.getInstance().isRelevantFor(fo, JsTokenId.JAVASCRIPT_MIME_TYPE);
     }
@@ -157,12 +158,12 @@ public class RetoucheUtils {
         String name = null;
         String simpleName = null;
         int type = node.getType();
-        if (type == org.mozilla.javascript.Token.CALL) {
+        if (type == org.mozilla.nb.javascript.Token.CALL || type == org.mozilla.nb.javascript.Token.NEW) {
             name = AstUtilities.getCallName(node, true);
             simpleName = AstUtilities.getCallName(node, false);
         } else if (node instanceof Node.StringNode) {
             name = node.getString();
-        } else if (node.getType() == org.mozilla.javascript.Token.FUNCTION) {
+        } else if (node.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
             name = AstUtilities.getFunctionFqn(node, null);
             if (name != null && name.indexOf('.') != -1) {
                 name = name.substring(name.indexOf('.')+1);
@@ -244,8 +245,9 @@ public class RetoucheUtils {
     }
 
     private static String color(String string, AttributeSet set) {
-        if (set==null)
+        if (set==null) {
             return string;
+        }
         if (string.trim().length() == 0) {
             return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
         } 
@@ -278,23 +280,14 @@ public class RetoucheUtils {
         return html_color;
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        Project p = FileOwnerQuery.getOwner(f);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
-                return true;
-        }
-        return false;
-    }
-
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
+            if (p==opened[i]) {
                 return true;
+            }
         }
         return false;
     }
@@ -345,52 +338,7 @@ public class RetoucheUtils {
                 folder, ClassPath.SOURCE)
                 .getResourceName(folder, '.', false);
     }
-    
-    public static String getPackageName(URL url) {
-        File f = null;
-        try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
-        }
-        String suffix = "";
-        
-        do {
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                if ("".equals(suffix))
-                    return getPackageName(fo);
-                String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix;
-            }
-            if (!"".equals(suffix)) {
-                suffix = "." + suffix;
-            }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
-            f = f.getParentFile();
-        } while (f!=null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
-    }
 
-    /**
-     * creates or finds FileObject according to 
-     * @param url
-     * @return FileObject
-     */
-    public static FileObject getOrCreateFolder(URL url) throws IOException {
-        try {
-            FileObject result = URLMapper.findFileObject(url);
-            if (result != null)
-                return result;
-            File f = new File(url.toURI());
-            
-            result = FileUtil.createFolder(f);
-            return result;
-        } catch (URISyntaxException ex) {
-            throw (IOException) new IOException().initCause(ex);
-        }
-    }
-    
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
         File f = FileUtil.normalizeFile(new File(url.getPath()));
@@ -410,18 +358,24 @@ public class RetoucheUtils {
         Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo: files) {
             Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
+            if (fo!=null) {
+                p = FileOwnerQuery.getOwner(fo);
+            }
             if (p!=null) {
                 ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
                 if (classPath == null) {
                     return null;
                 }
-                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                FileObject ownerRoot = classPath.findOwnerRoot(fo);
+                if (ownerRoot != null) {
+                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                    //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
+                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                    }
+                } else {
+                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
                 }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
@@ -436,6 +390,11 @@ public class RetoucheUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
         ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+
+        if (boot == null || compile == null) { // 146499
+            return null;
+        }
+
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }

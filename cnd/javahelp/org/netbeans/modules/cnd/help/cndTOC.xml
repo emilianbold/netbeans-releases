@@ -3,12 +3,12 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-    <tocitem text="IDE Basics">
-    <tocitem text="Getting Started">
-    <tocitem text="C and C++ Applications" target="WorkingWithCandC++Projects" />
-    </tocitem>
-    </tocitem>
-        <tocitem text="C and C++ Development" expand="false">
+	<tocitem text="IDE Basics">
+		<tocitem text="Getting Started">
+			<tocitem text="C and C++ Applications" target="WorkingWithCandC++Projects" />
+		</tocitem>
+	</tocitem>
+	<tocitem text="C and C++ Development" expand="false">
 		<tocitem text="Getting Started">
 			<tocitem text="C and C++ Development Overview" target="CandC++Overview" />
 			<tocitem text="Key C and C++ Development Concepts" target="KeyCandC++Concepts" />
@@ -22,7 +22,7 @@
 			<tocitem text="Configuring C and C++ Build Tools" target="ConfiguringBuildTools" />
 			<tocitem text="Configuring C and C++ Project Settings" target="Configuring" />
 			<tocitem text="Configuring C and C++ Code Assistance Settings" target="ConfiguringParsingSettings" />
-			<tocitem text="Configuring C and C++ Code Style" target="CofiguringCodeStyle" />
+			<tocitem text="Configuring C and C++ Code Style" target="ConfiguringCodeStyle" />
 			<tocitem text="Configuring C and C++ Semantic Highlighting" target="ConfiguringSemanticHighlighting" />
 			<tocitem text="Configuring C and C++ File Extensions" target="ConfiguringFileExtensions" />
 			<tocitem text="Configuring Code Assistance" target="CodeAssistance" />
@@ -34,6 +34,7 @@
 			<tocitem text="Setting File Properties" target="SettingCandC++FileProperties" />
 			<tocitem text="Adding Files and Folders to a C or C++ Project" target="AddingFilesandFolders" />
 			<tocitem text="Setting the Main C or C++ Project" target="SettingMainCorC++Project." />
+			<tocitem text="Packaging an Application" target="Packaging" />
 		</tocitem>
 		<tocitem text="C and C++ Project Basics">
 			<tocitem text="Building C and  C++ Projects">
@@ -56,6 +57,7 @@
 					<tocitem text="C and C++ Code Template Abbreviations: Quick Reference" target="AbbreviationsQuickRef" />
 					<tocitem text="Creating Code Templates" target="CreatingCodeTemplates" />
 				</tocitem>
+				<tocitem text="Error Highlighting" target="ErrorHighlighting" />
 				<tocitem text="Using Pair Completion" target="UsingPairCompletion" />
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
 				<tocitem text="Switching Between Source and Header Files" target="SourceHeaderSwitch" />
@@ -63,6 +65,7 @@
 				<tocitem text="Going to a Function or Variable" target="GoToDeclaration" />
 				<tocitem text="Going to a Declaration" target="GoToDeclaration1" />
 				<tocitem text="Going to a Type" target="GoToType" />
+				<tocitem text="Using the Call Graph" target="CallGraphView" />
 				<tocitem text="Using the Classes Window" target="UsingClassView" />
 				<tocitem text="Using the Navigator Window" target="UsingNavigator" />
 				<tocitem text="Finding Class, Method, and Field Usages" target="FindingUsages" />
@@ -73,29 +76,29 @@
 				<tocitem text="Commenting Lines in Your Code" target="Commenting" />
 			</tocitem>
 			<tocitem text="Running a C or C++ Project" target="RunningCorC++Project" />
-			<tocitem text="Debugging C and C++ Applications">
-				<tocitem text="About Debugging C and C++ Applications" target="DebuggingCorC++Project" />
-				<tocitem text="Working With Debugging" target="WorkingWithDebugging" />
-				<tocitem text="C and C++ Debugging Tasks: Quick Reference" target="CandC++DebuggingTasks" />
-				<tocitem text="C and C++ Debugger Windows" target="DebuggerWindows" />
-				<tocitem text="Current Context in the Debugger" target="CandC++DebuggerContext" />
-				<tocitem text="Setting C and C++ Breakpoints">
-					<tocitem text="C and C++ Breakpoints in the IDE" target="CandC++Breakpoints" />
-					<tocitem text="Setting a C or C++ Breakpoint" target="SettingCorC++Breakpoint" />
-				</tocitem>
-				<tocitem text="C and C++ Debugging Sessions">
-					<tocitem text="Starting a Local C or C++ Debugging Session" target="StartingLocalDebuggingSession" />
-					<tocitem text="Stepping Through Your C or C++ Program" target="SteppingThroughCorC++" />
-					<tocitem text="Finishing a C or C++ Debugging Session" target="FinishingCorC++DebugSession" />
-					<tocitem text="Attaching the Debugger to a Running Process" target="Attaching" />
-				</tocitem>
-				<tocitem text="Debugging Threads" target="Threads" />
-				<tocitem text="Viewing C and C++ Program Information">
-					<tocitem text="C and C++ Variables and Expressions in the IDE" target="CorC++VariablesandExpressions" />
-					<tocitem text="Using the C or C++ Call Stack" target="UsingCorC++CallStack" />
-					<tocitem text="Using Balloon Evaluation" target="BalloonEvaluation" />
-					<tocitem text="Creating a C or C++ Watch" target="debug.add.watch" />
-				</tocitem>
+		</tocitem>
+		<tocitem text="Debugging C and C++ Applications With gdb">
+			<tocitem text="About Debugging C and C++ Applications" target="DebuggingCorC++Project" />
+			<tocitem text="Working With Debugging" target="WorkingWithDebugging" />
+			<tocitem text="C and C++ Debugging Tasks: Quick Reference" target="CandC++DebuggingTasks" />
+			<tocitem text="C and C++ Debugger Windows" target="DebuggerWindows" />
+			<tocitem text="Current Context in the Debugger" target="CandC++DebuggerContext" />
+			<tocitem text="Setting C and C++ Breakpoints">
+				<tocitem text="C and C++ Breakpoints in the IDE" target="CandC++Breakpoints" />
+				<tocitem text="Setting a C or C++ Breakpoint" target="SettingCorC++Breakpoint" />
+			</tocitem>
+			<tocitem text="C and C++ Debugging Sessions">
+				<tocitem text="Starting a Local C or C++ Debugging Session" target="StartingLocalDebuggingSession" />
+				<tocitem text="Stepping Through Your C or C++ Program" target="SteppingThroughCorC++" />
+				<tocitem text="Finishing a C or C++ Debugging Session" target="FinishingCorC++DebugSession" />
+				<tocitem text="Attaching the Debugger to a Running Process" target="Attaching" />
+			</tocitem>
+			<tocitem text="Debugging Threads" target="Threads" />
+			<tocitem text="Viewing C and C++ Program Information">
+				<tocitem text="C and C++ Variables and Expressions in the IDE" target="CorC++VariablesandExpressions" />
+				<tocitem text="Using the C or C++ Call Stack" target="UsingCorC++CallStack" />
+				<tocitem text="Using Balloon Evaluation" target="BalloonEvaluation" />
+				<tocitem text="Creating a C or C++ Watch" target="debug.add.watch" />
 			</tocitem>
 		</tocitem>
 	</tocitem>

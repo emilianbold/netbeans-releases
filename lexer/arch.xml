@@ -1055,10 +1055,12 @@ No.
         <code>FINER</code> level in addition will also check the whole token hierarchy
          for internal consistency after each modification.
     </api>
-    <api type="export" group="property" name="netbeans.debug.lexer.test" category="private">
-        System property to allow deep-compare of token lists - the framework
-        generates and maintains lookahead and state information even for
-        batch-lexed inputs. There are also some additional checks performed
+    <api type="export" group="logger" name="org.netbeans.lib.lexer.TokenList" category="friend">
+        <code>FINE</code> level forces lexer to perform more thorough and strict checks
+        in certain situations so this is useful mainly for tests.
+        Lookahead and state information is generated even for batch-lexed inputs which allows
+        easier checking of incremental algorithm correctness (fixing of token list after modification).
+        There are also some additional checks performed
         that should verify correctness of the framework and the SPI implementation
         classes being used (for example when flyweight tokens are created the text
         passed to the token factory is compared to the text in the lexer input).

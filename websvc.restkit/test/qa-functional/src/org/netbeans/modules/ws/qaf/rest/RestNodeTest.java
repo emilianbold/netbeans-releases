@@ -56,7 +56,7 @@ public class RestNodeTest extends RestTestBase {
 
     private static final String addMethod =
             "    @javax.ws.rs.POST\n" + //NOI18N
-            "    @ConsumeMime(\"application/xml\")\n" + //NOI18N
+            "    @javax.ws.rs.Consumes(\"application/xml\")\n" + //NOI18N
             "    public void postXml() {\n" + //NOI18N
             "    }\n"; //NOI18N
 
@@ -109,7 +109,7 @@ public class RestNodeTest extends RestTestBase {
         n.performPopupAction(open);
         EditorOperator eo = new EditorOperator(services[0]);
         assertNotNull(services[0] + " not opened?", eo); //NOI18N
-        assertEquals("wrong line", 41, eo.getLineNumber()); //NOI18N
+        assertEquals("wrong line", 40, eo.getLineNumber()); //NOI18N
     }
 
     /**

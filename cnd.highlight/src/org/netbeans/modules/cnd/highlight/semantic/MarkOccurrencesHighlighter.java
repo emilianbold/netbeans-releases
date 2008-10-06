@@ -53,9 +53,9 @@ import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Sergey Grinev
  */
-public class MarkOccurrencesHighlighter extends HighlighterBase {
+public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
     private final static String COLORS = "cc-highlighting-mark-occurrences"; // NOI18N
@@ -117,6 +117,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     public MarkOccurrencesHighlighter(Document doc) {
         super(doc);
+        init(doc);
     }
 
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); 
@@ -124,6 +125,16 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private boolean valid = true;
     // PhaseRunner
     public void run(Phase phase) {
+        MyInterruptor interruptor = new MyInterruptor();
+        try {
+            addCancelListener(interruptor);
+            runImpl(phase, interruptor);
+        } finally {
+            removeCancelListener(interruptor);
+        }
+    }
+    
+    public void runImpl(Phase phase, Interrupter interruptor) {
         if (!SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
             clean();
             valid = false;
@@ -157,7 +168,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
                 }
             }
             
-            Collection<CsmReference> out = getOccurrences(file, lastPosition);
+            Collection<CsmReference> out = getOccurrences(file, lastPosition, interruptor);
             if (out.isEmpty()) {
                 if (!SemanticHighlightingOptions.instance().getKeepMarks()) {
                     clean();
@@ -178,11 +189,15 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             clean();
         } 
     }
-    
+
     public boolean isValid() {
         return valid;
     }
-    
+
+    public boolean isHighPriority() {
+        return true;
+    }
+
 /*    private Collection<CsmReference> getOccurrences() {
         Collection<CsmReference> out = null;
         CsmFile file = getCsmFile();
@@ -193,12 +208,12 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         return out;
     }*/
     
-    /* package-local */ static Collection<CsmReference> getOccurrences(CsmFile file, int position) {
+    /* package-local */ static Collection<CsmReference> getOccurrences(CsmFile file, int position, Interrupter interrupter) {
         Collection<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file != null && file.isParsed() ) {
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, position);
             if (ref!=null && ref.getReferencedObject()!=null) {
-                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL);
+                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, CsmReferenceKind.ALL, interrupter);
             }
         }
         return out;

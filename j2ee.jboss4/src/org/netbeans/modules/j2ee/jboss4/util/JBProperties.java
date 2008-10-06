@@ -61,6 +61,7 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.customizer.CustomizerSupport;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileUtil;
@@ -80,14 +81,11 @@ public class JBProperties {
     // properties
     public  static final String PROP_PROXY_ENABLED = "proxy_enabled";   // NOI18N
     private static final String PROP_JAVA_PLATFORM = "java_platform";   // NOI18N
-    private static final String PROP_JAVA_OPTS     = "java_opts";       // NOI18N
     private static final String PROP_SOURCES       = "sources";         // NOI18N
     private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
-    private static final String PROP_SERVER_DIR    = "server-dir";      // NOI18N
-    private static final String PROP_ROOT_DIR      = "root-dir";        // NOI18N
 
     // default values
-    private static final String  DEF_VALUE_JAVA_OPTS     = ""; // NOI18N
+    private static final String DEF_VALUE_JAVA_OPTS = ""; // NOI18N
     private static final boolean DEF_VALUE_PROXY_ENABLED = true;
 
     private final InstanceProperties ip;
@@ -108,7 +106,7 @@ public class JBProperties {
     public JBProperties(JBDeploymentManager manager) {
         this.manager = manager;
         ip = manager.getInstanceProperties();
-        version = JBPluginUtils.getServerVersion(new File(ip.getProperty(PROP_ROOT_DIR)));
+        version = JBPluginUtils.getServerVersion(new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR)));
     }
 
     public boolean supportsJavaEE5ejb3() {
@@ -123,14 +121,14 @@ public class JBProperties {
 
     public boolean supportsJavaEE5ear() {
         return supportsJavaEE5ejb3() && supportsJavaEE5web()
-                && version != null && version.compareToIgnoreUpdate(new Version("5.0.0")) >= 0; // NOI18N
+                && version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0; // NOI18N
     }
     public File getServerDir() {
-        return new File(ip.getProperty(PROP_SERVER_DIR));
+        return new File(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
     }
 
     public File getRootDir() {
-        return new File(ip.getProperty(PROP_ROOT_DIR));
+        return new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
     }
 
     public File getLibsDir() {
@@ -166,13 +164,12 @@ public class JBProperties {
     }
 
     public String getJavaOpts() {
-        String val = ip.getProperty(PROP_JAVA_OPTS);
-        return val != null ? val
-                           : DEF_VALUE_JAVA_OPTS;
+        String val = ip.getProperty(JBPluginProperties.PROPERTY_JAVA_OPTS);
+        return val != null ? val : DEF_VALUE_JAVA_OPTS;
     }
 
     public void setJavaOpts(String javaOpts) {
-        ip.setProperty(PROP_JAVA_OPTS, javaOpts);
+        ip.setProperty(JBPluginProperties.PROPERTY_JAVA_OPTS, javaOpts);
     }
 
     public List<URL> getClasses() {

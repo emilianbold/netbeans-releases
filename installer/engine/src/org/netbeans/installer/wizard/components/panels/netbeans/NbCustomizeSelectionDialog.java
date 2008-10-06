@@ -93,8 +93,8 @@ import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.ERROR_ICON;
-import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.EMPTY_ICON;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.*;
+
 
 /**
  *
@@ -128,6 +128,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     private NbiPanel buttonsPanel;
     
     private Icon errorIcon;
+    private Icon warningIcon;
     private Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
@@ -140,6 +141,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         
         errorIcon = new ImageIcon(
                 getClass().getClassLoader().getResource(ERROR_ICON));
+        warningIcon = new ImageIcon(
+                getClass().getClassLoader().getResource(WARNING_ICON));
         emptyIcon = new ImageIcon(
                 getClass().getClassLoader().getResource(EMPTY_ICON));
         
@@ -562,9 +565,15 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         final String errorMessage = validateInput();
         
         if (errorMessage == null) {
-            errorLabel.setIcon(emptyIcon);
-            errorLabel.clearText();
-            okButton.setEnabled(true);
+            final String warningMessage = panel.getWarningMessage();
+            if(warningMessage!=null) {
+                errorLabel.setIcon(warningIcon);
+                errorLabel.setText(warningMessage);                
+            } else {
+                errorLabel.setIcon(emptyIcon);
+                errorLabel.clearText();
+            }
+            okButton.setEnabled(true);            
         } else {
             errorLabel.setIcon(errorIcon);
             errorLabel.setText(errorMessage);
@@ -872,7 +881,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "NCSD.dialog.height";
     public static final String LIST_INSTALLED_PRODUCT_TEXT =
             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
-            "NCSD.list.product.installed");//NOI8N
+            "NCSD.list.product.installed");//NOI18N
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
     private static final String NB_IDE_GROUP_UID = 

@@ -199,6 +199,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WhereUsedQueryUI.class);
+        return null;
     }
 }

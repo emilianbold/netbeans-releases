@@ -71,7 +71,7 @@ public class Evaluator implements JavaParserVisitor {
         System.getProperty ("netbeans.debugger.noInvokeMethods") != null;
     
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
-    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private Expression              expression;
     private EvaluationContext       evaluationContext;
@@ -1523,6 +1523,7 @@ public class Evaluator implements JavaParserVisitor {
                     }
                 } catch (NativeMethodException nmex) {
                     // ignore - no arguments available
+                } catch (InvalidStackFrameException ex) {
                 }
             }
         }

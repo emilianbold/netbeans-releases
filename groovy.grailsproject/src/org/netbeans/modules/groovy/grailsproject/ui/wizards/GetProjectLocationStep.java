@@ -29,10 +29,7 @@
 package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -72,9 +69,15 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
     }
 
     public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor)settings;        
+        wizardDescriptor = (WizardDescriptor)settings;
         component.read (wizardDescriptor);
 
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewProjectWizard to modify the title
+        Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) {
@@ -85,14 +88,23 @@ public class GetProjectLocationStep implements  WizardDescriptor.Panel,
 
     public boolean isValid() {
         getComponent();
-        
         if(!serverConfigured) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                 NbBundle.getMessage(NewGrailsProjectWizardIterator.class, 
                 "NewGrailsProjectWizardIterator.NoGrailsServerConfigured"));
-            }
-        
-        return  !serverRunning && serverConfigured && component.valid( wizardDescriptor );
+            return false;
+        }
+        if (serverRunning) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationStep.ServerIsRunning"));
+            return false;
+        }
+        if (!component.valid(wizardDescriptor)) {
+            return false;
+        }
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
+        return true;
     }
 
     public void addChangeListener(ChangeListener l) {

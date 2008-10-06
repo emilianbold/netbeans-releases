@@ -52,7 +52,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator; 
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -82,7 +81,7 @@ public class J2eeProjectSupport {
     
     public static final String DEFAULT_APPSRV_ID;
     static {
-        String location = System.getProperty("com.sun.aas.installRoot");
+        String location = System.getProperty("glassfish.home");
         if (location != null) {
             location = new File(location).getAbsolutePath();
         }
@@ -97,16 +96,6 @@ public class J2eeProjectSupport {
     /** Creates a new instance of J2eeProjectSupport */
     private J2eeProjectSupport() {
         throw new UnsupportedOperationException("It is just a helper class.");
-    }
-    
-    public static boolean waitForAppServerInstall() {
-       long t1 = System.currentTimeMillis();
-       while (ServerRegistry.getInstance().getServerInstance(DEFAULT_APPSRV_ID) == null && System.currentTimeMillis() - t1 < WAIT_APPSRV_INSTALL) {
-           try {
-               Thread.sleep(500);
-           } catch (InterruptedException e) {}
-       }
-       return ServerRegistry.getInstance().getServerInstance(DEFAULT_APPSRV_ID) != null;
     }
     
     /** Opens project in specified directory.

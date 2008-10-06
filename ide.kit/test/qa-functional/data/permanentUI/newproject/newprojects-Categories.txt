@@ -1,0 +1,25 @@
+Java
+Java Web
+Java EE
+Java ME
+PHP
+Ruby
+Groovy
+C/C++
+SOA
+NetBeans Modules
+Samples
+    Java
+    Java Web
+    Java Web (Visual JSF)
+    Web Services
+    Java EE
+    Java ME (MIDP)
+    Java ME (Ricoh SDK/J)
+    Java ME (BD-J)
+    PHP
+    Ruby
+    Groovy
+    C/C++
+    SOA
+    NetBeans Modules

@@ -49,7 +49,6 @@
 
 package org.netbeans.modules.websvc.core;
 
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -61,8 +60,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -96,24 +96,25 @@ public class WSStackUtils {
     
      public boolean isWsitSupported() {
         if (j2eePlatform != null) {
-            WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
-            return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.WSIT);
+            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
         }
         return false;
      }
 
      public boolean isJsr109Supported() {
         if(j2eePlatform != null){
-            WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
-            return wsStack != null && wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
         }
         return false;
     }
     
     public boolean isJsr109OldSupported() {
-        if(j2eePlatform != null) {
-            WSStack wsStack = getWsStack(WSStack.STACK_JAX_RPC);
-            return wsStack != null && wsStack.getSupportedTools().contains(WSStack.TOOL_WSCOMPILE);
+        if(j2eePlatform != null && getServerType(project) == ServerType.GLASSFISH) {
+            return true;       
+//            WSStack wsStack = getWsStack(WSStack.STACK_JAX_RPC);
+//            return wsStack != null && wsStack.getSupportedTools().contains(WSStack.TOOL_WSCOMPILE);
         }
         return false;
     }
@@ -146,12 +147,9 @@ public class WSStackUtils {
         return getServerType(project);
     }
     
-    public WSStack getWsStack(String wsStackName) {
-        Collection<? extends WSStack> wsStacks = j2eePlatform.getLookup().lookupAll(WSStack.class);
-        for (WSStack wsStack:wsStacks) {
-            if (wsStackName.equals(wsStack.getName())) {
-                return wsStack;
-            }
+    public <T> WSStack<T> getWsStack(Class<T> stackDescriptor) {
+        if (j2eePlatform != null) {
+            return WSStack.findWSStack(j2eePlatform.getLookup(), stackDescriptor);
         }
         return null;
     }

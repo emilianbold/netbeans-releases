@@ -42,104 +42,121 @@
 package org.netbeans.modules.websvc.rest.support;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author PeterLiu
  */
 public class PersistenceHelper {
-    
-    private static final String PERSISTENCE_DTD_1_0 = "resources/persistence_1_0.dtd";  //NOI18N
     private static final String PERSISTENCE_UNIT_TAG = "persistence-unit";      //NOI18N
-    private static final String CLASS_TAG = "class";                //NOI18N
-    private static final String PROPERTIES_TAG = "properties";      //NOI18N
-    private static final String NAME_ATTR = "name";                 //NOI18N
-    private static final String EXCLUDE_UNLISTED_CLASSES_TAG = "exclude-unlisted-classes";      //NOI18N
-    private static final String TRANSACTION_TYPE_ATTR = "transaction-type";         //NOI18N
-    private static final String RESOURCE_LOCAL_VALUE = "RESOURCE_LOCAL";        //NOI18N
-    private static final String JTA_DATA_SOURCE_TAG = "jta-data-source";        //NOI18N
-    private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
-
-    private static int TIME_TO_WAIT = 300;
     
-    public static String getPersistenceUnitName(Project project) {
-        FileObject fobj = getPersistenceXML(project);
+    private static final String PROPERTIES_TAG = "properties";      //NOI18N
+    
+    private static final String NAME_ATTR = "name";                 //NOI18N
+    
+    private static final String EXCLUDE_UNLISTED_CLASSES_TAG = "exclude-unlisted-classes";      //NOI18N
+    
+    private static final String TRANSACTION_TYPE_ATTR = "transaction-type";         //NOI18N
+    
+    private static final String RESOURCE_LOCAL_VALUE = "RESOURCE_LOCAL";        //NOI18N
+    
+    private static final String JTA_DATA_SOURCE_TAG = "jta-data-source";        //NOI18N
+    
+    private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
+    
+    private static final String CLASS_TAG = "class";    //NOI18N
+    
+    private static final String PROVIDER_TAG = "provider";  //NOI18N
+    
+    private static final String DEFAULT_PROVIDER = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
+   
+    private Project project;
+    private DOMHelper helper;
+    
+    public PersistenceHelper(Project project) {
+        this.project = project;
+        
+        FileObject fobj = getPersistenceXML();
         
         if (fobj != null) {
-            Document document = getDocument(fobj);
+            helper = new DOMHelper(fobj);
+        }
+    }
+    
+    public PersistenceUnit getPersistenceUnit() {
+        if (helper != null) {
+            Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);  
             
-            Element puElement = getPersistenceUnitElement(document);
             if (puElement != null) {
-                return puElement.getAttribute(NAME_ATTR);
+                String puName = puElement.getAttribute(NAME_ATTR);
+                
+                String provider;
+                NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
+                if (nodes.getLength() > 0) {
+                    provider = helper.getValue((Element) nodes.item(0));
+                } else {
+                    provider = DEFAULT_PROVIDER;
+                }
+                
+                Datasource datasource = null;
+                
+                NodeList nodeList = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
+                if (nodeList.getLength() > 0) {
+                    Element dsElement = (Element) nodeList.item(0);
+                    String jndiName = helper.getValue(dsElement);      
+                    datasource = RestUtils.getDatasource(project, jndiName);
+                }
+                
+                return new PersistenceUnit(puName, provider, datasource);
             }
         }
         
         return null;
     }
     
-    public static void modifyPersistenceXml(Project project, boolean useResourceLocalTx) throws IOException {
-        FileObject fobj = getPersistenceXML(project);
-        Document document = getDocument(fobj);
+    
+    public void configure(Collection<String> classNames, boolean useResourceLocalTx) throws IOException {
+        if (helper == null) return;
+        
+        // Required by Spring
+        setDefaultProvider();
+        
+        // Required for Spring + Hibernate
+        addEntityClasses(classNames);
         
         // Need to do this for Tomcat
-        unsetExcludeEnlistedClasses(document);
+        unsetExcludeEnlistedClasses();
         
         if (useResourceLocalTx)
-            switchToResourceLocalTransaction(document);
-        
-        writeDocument(fobj, document);
+            switchToResourceLocalTransaction();
+       
+        helper.save();
     }
     
-    public static void unsetExcludeEnlistedClasses(Project project) throws IOException{
-        FileObject fobj = getPersistenceXML(project);
-        Document document = getDocument(fobj);
-        unsetExcludeEnlistedClasses(document);
-    }
-    
-    private static void unsetExcludeEnlistedClasses(Document document) throws IOException {
-        Element puElement = getPersistenceUnitElement(document);
+    private void unsetExcludeEnlistedClasses() throws IOException {
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(EXCLUDE_UNLISTED_CLASSES_TAG);
     
         if (nodes.getLength() > 0) {
-            setValue((Element) nodes.item(0), "false");  //NOI18N
+            helper.setValue((Element) nodes.item(0), "false");  //NOI18N
         } else {
-            puElement.insertBefore(createElement(document, EXCLUDE_UNLISTED_CLASSES_TAG, "false"),  //NOI18N
-                    getPropertiesElement(document));
+            puElement.insertBefore(helper.createElement(EXCLUDE_UNLISTED_CLASSES_TAG, "false"),  //NOI18N
+                    helper.findElement(PROPERTIES_TAG));
         }
     }
      
-    private static void switchToResourceLocalTransaction(Document document)  throws IOException {
-        Element puElement = getPersistenceUnitElement(document);
+    private void switchToResourceLocalTransaction()  throws IOException {
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         puElement.setAttribute(TRANSACTION_TYPE_ATTR, RESOURCE_LOCAL_VALUE);
         
         NodeList nodes = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
@@ -147,69 +164,39 @@ public class PersistenceHelper {
         
         if (nodes.getLength() > 0) {
             Element oldElement = (Element) nodes.item(0);
-            dataSource = getValue(oldElement);
-            Element newElement = createElement(document, NON_JTA_DATA_SOURCE_TAG, dataSource);
+            dataSource = helper.getValue(oldElement);
+            Element newElement = helper.createElement(NON_JTA_DATA_SOURCE_TAG, dataSource);
             puElement.replaceChild(newElement, oldElement);
         }
     }
     
-    private static String getValue(Element element) {
-        Node child = element.getFirstChild();
+    private void addEntityClasses(Collection<String> classNames) throws IOException {
+        List<String> toAdd = new ArrayList<String>(classNames);   
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
+        NodeList nodes = puElement.getElementsByTagName(CLASS_TAG);
+        int length = nodes.getLength();
         
-        if (child instanceof Text) {
-            return ((Text) child).getWholeText();
+        for (int i = 0; i < length; i++) {
+            toAdd.remove(helper.getValue((Element) nodes.item(i)));
         }
         
-        return "";      //NOI18N
-    }
-    
-    private static void setValue(Element element, String value) {
-        Node child = element.getFirstChild();
-        
-        if (child instanceof Text) {
-            ((Text) child).setData(value);
+        for (String className : toAdd) {   
+            puElement.insertBefore(helper.createElement(CLASS_TAG, className),
+                    helper.findElement(PROPERTIES_TAG));
         }
     }
     
-    private static Element createElement(Document document,
-            String tag, String value) {
-        Element element = document.createElement(tag);
-        Text text = document.createTextNode(value);
-        element.appendChild(text);
+    private void setDefaultProvider() throws IOException {
+        Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
+        NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
         
-        return element;
+        if (nodes.getLength() == 0) {
+            puElement.insertBefore(helper.createElement(PROVIDER_TAG, DEFAULT_PROVIDER),
+                    puElement.getFirstChild());
+        }
     }
     
-    private boolean containsValue(Element element, String value) {
-        Node child = element.getFirstChild();
-        
-        if (child instanceof Text) {
-            return (((Text) child).getWholeText().equals(value));
-        }
-        
-        return false;
-    }
-    public static Element getPersistenceUnitElement(Document document) {
-        NodeList nodeList = document.getElementsByTagName(PERSISTENCE_UNIT_TAG);
-        
-        if (nodeList.getLength() > 0) {
-            return (Element) nodeList.item(0);
-        }
-        
-        return null;
-    }
-    
-    public static Element getPropertiesElement(Document document) {
-       NodeList nodeList = document.getElementsByTagName(PROPERTIES_TAG);
-        
-        if (nodeList.getLength() > 0) {
-            return (Element) nodeList.item(0);
-        }
-        
-        return null;
-    }      
-    
-    private static FileObject getPersistenceXML(Project project) {
+    private FileObject getPersistenceXML() {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
             return rs.getPersistenceXml();
@@ -217,121 +204,27 @@ public class PersistenceHelper {
         return null;
     }
     
-    private static void writeDocument(final FileObject fobj, final Document document) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                FileLock lock = null;
-                OutputStream os = null;
-                
-                try {
-                    DocumentType docType = document.getDoctype();
-                    TransformerFactory factory = TransformerFactory.newInstance();
-                    Transformer transformer = factory.newTransformer();
-                    DOMSource source = new DOMSource(document);
-                    
-                    lock = fobj.lock();
-                    os = fobj.getOutputStream(lock);
-                    StreamResult result = new StreamResult(os);
-                    
-                    //transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, docType.getPublicId());
-                    //transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, docType.getSystemId());
-                    transformer.setOutputProperty(OutputKeys.INDENT, "yes");        //NOI18N
-                    transformer.setOutputProperty(OutputKeys.METHOD, "xml");        //NOI18N
-                    transformer.transform(source, result);
-                    
-                    //transformer.transform(source, new StreamResult(System.out));
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    if (os != null) {
-                        try {
-                            os.close();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    
-                    if (lock != null) {
-                        lock.releaseLock();
-                    }
-                }
-            }
-        }, TIME_TO_WAIT);
-    }
-    
-    private static Document getDocument(FileObject fobj) {
-        Document document = null;
-        DocumentBuilder builder = getDocumentBuilder();
+    public static class PersistenceUnit {
+        private String name;
+        private String provider;
+        private Datasource datasource;
         
-        if (builder == null)
-            return null;
-        
-        FileLock lock = null;
-        InputStream is = null;
-        
-        try {
-            lock = fobj.lock();
-            is = fobj.getInputStream();
-            document = builder.parse(is);
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            
-            if (lock != null) {
-                lock.releaseLock();
-            }
+        public PersistenceUnit(String name, String provider, Datasource datasource) {
+            this.name = name;
+            this.provider = provider;
+            this.datasource = datasource;
         }
         
-        
-        return document;
-    }
-    
-    
-    private static DocumentBuilder getDocumentBuilder() {
-        DocumentBuilder builder = null;
-        
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(false);
-        factory.setIgnoringComments(false);
-        factory.setIgnoringElementContentWhitespace(false);
-        factory.setCoalescing(false);
-        factory.setExpandEntityReferences(false);
-        factory.setValidating(false);
-        
-        try {
-            builder = factory.newDocumentBuilder();
-            builder.setEntityResolver(new SunWebDTDResolver());
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
+        public String getName() {
+            return name;
         }
         
-        return builder;
-    }
-    
-    /**
-     *
-     *
-     */
-    private static class SunWebDTDResolver implements EntityResolver {
-        public InputSource resolveEntity(String publicId, String systemId) {
-            String dtd = PERSISTENCE_DTD_1_0;
-            
-            if (dtd != null) {
-                InputStream is = this.getClass().getResourceAsStream(dtd);
-                InputStreamReader isr = new InputStreamReader(is);
-                return new InputSource(isr);
-            } else {
-                return null;
-            }
+        public String getProvider() {
+            return provider;
+        }
+        
+        public Datasource getDatasource() {
+            return datasource;
         }
     }
 }

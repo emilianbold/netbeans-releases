@@ -17,7 +17,6 @@
 **/org-netbeans-modules-uml-tomsawyer.jar:org/netbeans/modules/uml/tomsawyer/LabelBundle.properties
 **/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
-**/docs/quickstart_jump.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
 profiler*/**/config/Services/filtersets-default.xml:
 profiler*/**/config/Services/filters-default.xml:
@@ -30,6 +29,7 @@ exclude **/jsf-extensions-*.jar:
 exclude **/jsf-impl.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
+exclude **/webui-jsf-dt*.jar:
 exclude **/webui-jsf-suntheme*.jar:
 exclude **/Info/info.xml:
 exclude **/lucene-core-*.jar:
@@ -63,5 +63,19 @@ exclude **/jaxb-xjc.jar:
 exclude **/script-api.jar:
 exclude **/jh-2.0_05.jar:
 exclude uml*/**/modules/ext/**/*.jar:
-exclude **/org-apache-jmeter*.jar:
-exclude **/org-apache-jmeter*/**.jar:
+exclude **/*jmeter*:
+exclude **/junit-4.5.jar:
+exclude **/svnjavahl-1.5.0.jar:
+exclude **/jtidy-r8-20060801.jar:
+exclude **/hibernate-tools.jar:
+exclude **/FastInfoset.jar:
+exclude **/appframework-1.0.3.jar:
+exclude **/shale-remoting-1.0.4.jar:
+exclude **/jsp-parser-ext.jar:
+exclude **/groovy-all.jar:
+exclude **/dynalang-0.3.jar:
+exclude **/itext-2.0.5.jar:
+exclude **/JGo5.1.jar:
+exclude **/Tidy.jar:
+exclude **/ant.jar:
+

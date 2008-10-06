@@ -366,7 +366,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         }
     }
     
-    public String getNextAddress(String address) {
+    /*public String getNextAddress(String address) {
         //TODO : can use binary search
         synchronized (lines) {
             for (Iterator<Line> iter = lines.iterator(); iter.hasNext();) {
@@ -382,7 +382,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             }
             return "";
         }
-    }
+    }*/
     
     public int getAddressLine(String address) {
         //TODO : can use binary search

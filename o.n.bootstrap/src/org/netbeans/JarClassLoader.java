@@ -61,6 +61,7 @@ import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -115,7 +116,7 @@ public class JarClassLoader extends ProxyClassLoader {
     
     private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
 
-    private Source[] sources = new Source[0];
+    private final Source[] sources;
     private Module module;
     
     /** Creates new JarClassLoader.
@@ -135,22 +136,15 @@ public class JarClassLoader extends ProxyClassLoader {
     public JarClassLoader(List<File> files, ClassLoader[] parents, boolean transitive, Module mod) {
         super(parents, transitive);
         this.module = mod;
-        addSources(files);
-    }
-    
-    /** Boot classloader needs to add entries for netbeans.user later.
-     */
-    final void addSources (List<File> newSources) {
-        ArrayList<Source> l = new ArrayList<Source> (sources.length + newSources.size ());
-        l.addAll (Arrays.asList (sources));
+        List<Source> l = new ArrayList<Source>(files.size());
         try {
-            for (File file : newSources) {
+            for (File file : files) {
                 l.add(Source.create(file, this));
             }
         } catch (IOException exc) {
             throw new IllegalArgumentException(exc.getMessage());
         }
-        sources = l.toArray (sources);
+        sources = l.toArray(new Source[l.size()]);
         // overlaps with old packages doesn't matter,PCL uses sets.
         addCoveredPackages(getCoveredPackages(module, sources));
     }
@@ -341,10 +335,15 @@ public class JarClassLoader extends ProxyClassLoader {
         private boolean dead;
         private int requests;
         private int used;
+        /** #141110: expensive to repeatedly look for them */
+        private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
         
         JarSource(File file) throws IOException {
-            super(file.toURL());
-            resPrefix = "jar:" + file.toURI() + "!/"; // NOI18N;
+            this(file, "jar:" + file.toURI() + "!/"); // NOI18N
+        }
+        private JarSource(File file, String resPrefix) throws IOException {
+            super(new URL(resPrefix)); // NOI18N
+            this.resPrefix = resPrefix; // NOI18N;
             this.file = file;
         }
 
@@ -391,11 +390,17 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         public byte[] resource(String path) throws IOException {
+            if (nonexistentResources.contains(path)) {
+                return null;
+            }
             ZipEntry ze;
             JarFile jf = getJarFile(path);
             try {
                 ze = jf.getEntry(path);
-                if (ze == null) return null;
+                if (ze == null) {
+                    nonexistentResources.add(path);
+                    return null;
+                }
 
                 LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {path, file.getPath()});
             
@@ -573,7 +578,7 @@ public class JarClassLoader extends ProxyClassLoader {
         File dir;
         
         DirSource(File file) throws MalformedURLException {
-            super(file.toURL());
+            super(file.toURI().toURL());
             dir = file;
         }
 
@@ -703,7 +708,7 @@ public class JarClassLoader extends ProxyClassLoader {
      */
     private static class ResURLConnection extends JarURLConnection {
         private JarSource src;
-        private String name;
+        private final String name;
         private byte[] data;
         private InputStream iStream;
 
@@ -718,8 +723,14 @@ public class JarClassLoader extends ProxyClassLoader {
             this.name = name;
         }
 
+        private boolean isFolder() {
+            return name.length() == 0 || name.endsWith("/");
+        }
 
         public void connect() throws IOException {
+            if (isFolder()) {
+                return; // #139087: odd but harmless
+            }
             if (data == null) {
                 data = src.getClassData(name);
                 if (data == null) {
@@ -738,6 +749,9 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         public @Override int getContentLength() {
+            if (isFolder()) {
+                return -1;
+            }
             try {
                 this.connect();
                 return data.length;
@@ -748,6 +762,9 @@ public class JarClassLoader extends ProxyClassLoader {
 
 
         public @Override InputStream getInputStream() throws IOException {
+            if (isFolder()) {
+                throw new IOException("Cannot open a folder"); // NOI18N
+            }
             this.connect();
             if (iStream == null) iStream = new ByteArrayInputStream(data);
             return iStream;

@@ -62,15 +62,16 @@ import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
-import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.ScriptOrFnNode;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.CompilerEnvirons;
+import org.mozilla.nb.javascript.ScriptOrFnNode;
+import org.mozilla.nb.javascript.ErrorReporter;
+import org.mozilla.nb.javascript.EvaluatorException;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 
 
 /**
@@ -190,22 +191,22 @@ public class JsParser implements IncrementalParser {
 
         try {
             // Sometimes the offset shows up on the next line
-            if (JsUtils.isRowEmpty(doc, offset) || JsUtils.isRowWhite(doc, offset)) {
-                offset = JsUtils.getRowStart(doc, offset)-1;
+            if (GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset)) {
+                offset = GsfUtilities.getRowStart(doc, offset)-1;
                 if (offset < 0) {
                     offset = 0;
                 }
             }
 
-            if (!(JsUtils.isRowEmpty(doc, offset) || JsUtils.isRowWhite(doc, offset))) {
+            if (!(GsfUtilities.isRowEmpty(doc, offset) || GsfUtilities.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineEnd = JsUtils.getRowLastNonWhite(doc, offset);
+                    int lineEnd = GsfUtilities.getRowLastNonWhite(doc, offset);
 
                     if (lineEnd != -1) {
                         lineEnd++; // lineEnd is exclusive, not inclusive
                         StringBuilder sb = new StringBuilder(doc.length());
-                        int lineStart = JsUtils.getRowStart(doc, offset);
+                        int lineStart = GsfUtilities.getRowStart(doc, offset);
                         if (lineEnd >= lineStart+2) {
                             sb.append(doc.substring(0, lineStart));
                             sb.append("//");
@@ -236,7 +237,7 @@ public class JsParser implements IncrementalParser {
                     assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
                     // Try nuking dots/colons from this line
                     // See if I should try to remove the current line, since it has text on it.
-                    int lineStart = JsUtils.getRowStart(doc, offset);
+                    int lineStart = GsfUtilities.getRowStart(doc, offset);
                     int lineEnd = offset-1;
                     while (lineEnd >= lineStart && lineEnd < doc.length()) {
                         if (!Character.isWhitespace(doc.charAt(lineEnd))) {
@@ -308,27 +309,35 @@ public class JsParser implements IncrementalParser {
 
         return false;
     }
+
+    private final int lexToAst(TranslatedSource source, int offset) {
+        if (source != null) {
+            return source.getAstOffset(offset);
+        }
+
+        return offset;
+    }
+
+    private final int astToLex(TranslatedSource source, int offset) {
+        if (source != null) {
+            return source.getLexicalOffset(offset);
+        }
+
+        return offset;
+    }
     
     public ParserResult parse(ParserFile file, SourceFileReader reader, TranslatedSource translatedSource, EditHistory history, ParserResult prevResult) {
         if (history == null) {
             return null;
         }
 
-        String fullSource = null;
-        try {
-            CharSequence buffer = reader.read(file);
-            fullSource = asString(buffer);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+        if ("json".equals(file.getExtension())) { // NOI18N
             return null;
         }
+
         int caretOffset = reader.getCaretOffset(file);
         if (caretOffset != -1 && translatedSource != null) {
             caretOffset = translatedSource.getAstOffset(caretOffset);
-        }
-        Context context = new Context(file, null, fullSource, caretOffset, translatedSource, null);
-        if (isJson(context)) {
-            return null;
         }
 
         JsParseResult previousResult = (JsParseResult)prevResult;
@@ -359,7 +368,11 @@ public class JsParser implements IncrementalParser {
             //  and the new offsets. For example, the semantic highlighter should remove
             //  all regions in the old function's range, and set the new ones!
 
-            AstPath path = new AstPath(root, history.getStart());
+            int startAst = lexToAst(translatedSource, history.getStart());
+            if (startAst == -1) {
+                return null;
+            }
+            AstPath path = new AstPath(root, startAst);
             ListIterator<Node> iterator = path.leafToRoot();
             FunctionNode oldFunction = null;
             while (iterator.hasNext()) {
@@ -377,15 +390,38 @@ public class JsParser implements IncrementalParser {
             final int oldFunctionEnd = oldFunction.getSourceEnd();
 
             // Make sure the edits were all inside the old function
-            if (history.getOriginalEnd() > oldFunctionEnd) {
+            int originalEndAst = lexToAst(translatedSource, history.getOriginalEnd());
+            if (startAst == -1) {
                 return null;
             }
 
-            int newFunctionEnd = history.convertOriginalToEdited(oldFunctionEnd);
-            
+            if (originalEndAst > oldFunctionEnd) {
+                return null;
+            }
+
+            int oldFuncEndLex = astToLex(translatedSource, oldFunctionEnd);
+            if (oldFuncEndLex == -1) {
+                return null;
+            }
+            int newFunctionEndLex = history.convertOriginalToEdited(oldFuncEndLex);
+            int newFunctionEnd = lexToAst(translatedSource, newFunctionEndLex);
+            if (newFunctionEnd == -1) {
+                return null;
+            }
+
+            String fullSource = null;
+            try {
+                CharSequence buffer = reader.read(file);
+                fullSource = asString(buffer);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+                return null;
+            }
+            Context context = new Context(file, null, fullSource, caretOffset, translatedSource, null);
+
             // This should not happen unless there is an error in the EditHistory...
             int docLength = context.source.length();
-            if (newFunctionEnd > docLength) {
+            if (newFunctionEnd > docLength || newFunctionEnd <= 0) {
                 return null;
             }
             if (context.source.charAt(newFunctionEnd-1) != '}') {
@@ -395,7 +431,7 @@ public class JsParser implements IncrementalParser {
             String source = context.source.substring(oldFunctionStart, newFunctionEnd);
             Sanitize sanitizing = Sanitize.NEVER;
             boolean sanitizedSource = false;
-            org.mozilla.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
+            org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
             context.parser = parser;
 
             if (sanitizing == Sanitize.NONE) {
@@ -484,7 +520,10 @@ public class JsParser implements IncrementalParser {
                 adjustOffsets(newFunction, 0, oldFunctionStart);
 
                 // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
-                int limit = history.getOriginalEnd();
+                int limit = lexToAst(translatedSource, history.getOriginalEnd());
+                if (limit == -1) {
+                    return null;
+                }
                 int delta = history.getSizeDelta();
                 
                 adjustOffsets(root, limit, delta);
@@ -738,7 +777,7 @@ public class JsParser implements IncrementalParser {
             }
         }
 
-        org.mozilla.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
+        org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = -1;
@@ -762,10 +801,12 @@ public class JsParser implements IncrementalParser {
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
             runtimeException = ise;
+            //throw ise;
         } catch (RuntimeException re) {
             //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
             // XXX TODO - record this somehow
             runtimeException = re;
+            //throw re;
         }
         if (root != null) {
             setParentRefs(root, null);
@@ -782,7 +823,7 @@ public class JsParser implements IncrementalParser {
         }
     }
 
-    protected org.mozilla.javascript.Parser createParser(final Context context, String source, boolean sanitizedSource, final Sanitize sanitizing) {
+    protected org.mozilla.nb.javascript.Parser createParser(final Context context, String source, boolean sanitizedSource, final Sanitize sanitizing) {
         final boolean ignoreErrors = sanitizedSource;
         
         CompilerEnvirons compilerEnv = new CompilerEnvirons();
@@ -814,7 +855,7 @@ public class JsParser implements IncrementalParser {
 
         // XXX What do I set here: compilerEnv.setReservedKeywordAsIdentifier();
 
-        org.mozilla.javascript.Context ctx = new org.mozilla.javascript.Context();
+        org.mozilla.nb.javascript.Context ctx = new org.mozilla.nb.javascript.Context();
         compilerEnv.initFromContext(ctx);
         
         compilerEnv.setErrorReporter(errorReporter);
@@ -822,7 +863,7 @@ public class JsParser implements IncrementalParser {
         final int targetVersion = SupportedBrowsers.getInstance().getLanguageVersion();
         compilerEnv.setLanguageVersion(targetVersion);
 
-        if (targetVersion >= org.mozilla.javascript.Context.VERSION_1_7) {
+        if (targetVersion >= org.mozilla.nb.javascript.Context.VERSION_1_7) {
             // Let's try E4X... why not?
             compilerEnv.setXmlAvailable(true);
         }
@@ -837,8 +878,8 @@ public class JsParser implements IncrementalParser {
         // The parser is NOT used for parsing here, but the Rhino scanner
         // calls into the parser for error messages. So we register our own error
         // handler for the parser and pass it into the tokenizer to handle errors.
-        org.mozilla.javascript.Parser parser;
-        parser = new org.mozilla.javascript.Parser(compilerEnv, errorReporter);
+        org.mozilla.nb.javascript.Parser parser;
+        parser = new org.mozilla.nb.javascript.Parser(compilerEnv, errorReporter);
         context.parser = parser;
 
         return parser;
@@ -975,7 +1016,7 @@ public class JsParser implements IncrementalParser {
 
     /** Parsing context */
     public static class Context {
-        private org.mozilla.javascript.Parser parser;
+        private org.mozilla.nb.javascript.Parser parser;
         private final ParserFile file;
         private ParseListener listener;
         private int errorOffset;

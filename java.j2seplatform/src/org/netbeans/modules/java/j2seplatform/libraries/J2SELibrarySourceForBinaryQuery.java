@@ -160,9 +160,9 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 if (this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
                     List<FileObject> result = new ArrayList<FileObject>();
                     for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
-                        FileObject sourceRootURL = URLMapper.findFileObject(u);
-                        if (sourceRootURL!=null) {
-                            result.add (sourceRootURL);
+                        FileObject sourceRoot = URLMapper.findFileObject(u);
+                        if (sourceRoot!=null) {
+                            result.add (sourceRoot);
                         }
                     }
                     this.cache = result.toArray(new FileObject[result.size()]);

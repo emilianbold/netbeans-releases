@@ -73,6 +73,10 @@ import static org.netbeans.modules.xml.ui.UI.*;
 public final class DurationDialog extends JDialog {
 
   public DurationDialog() {
+      this(null);
+  }
+
+  public DurationDialog(String value) {
     super((Frame) null, i18n(DurationDialog.class, "LBL_Duration"), true); // NOI18N
     a11y(this, i18n(DurationDialog.class, "ACS_Duration")); // NOI18N
     setLayout(new BorderLayout());
@@ -99,6 +103,21 @@ public final class DurationDialog extends JDialog {
     d.width = Math.min(d.width, maxW);
     d.height = Math.min(d.height, maxH);
     setBounds(Utilities.findCenterBounds(d));
+
+    if (value == null) {
+      return;
+    }
+    Duration duration = DurationUtil.parseDuration(value, true, false);
+
+    if (duration == null) {
+      return;
+    }
+    myDay.setText(Integer.toString(duration.getDays()));
+    myHour.setText(Integer.toString(duration.getHours()));
+    myMinute.setText(Integer.toString(duration.getMinutes()));
+    myMonth.setText(Integer.toString(duration.getMonths()));
+    mySecond.setText(Double.toString(duration.getSeconds()));
+    myYear.setText(Integer.toString(duration.getYears()));
   }
 
   private JPanel createButtonPanel() {

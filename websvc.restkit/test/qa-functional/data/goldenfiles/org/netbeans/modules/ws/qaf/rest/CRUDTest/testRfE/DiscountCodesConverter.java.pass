@@ -1,9 +1,5 @@
 /*
- *  DiscountCodesConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -18,7 +14,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import java.util.ArrayList;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
 
-
 /**
  *
  * @author lukas
@@ -30,7 +25,7 @@ public class DiscountCodesConverter {
     private Collection<DiscountCodeConverter> items;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of DiscountCodesConverter */
     public DiscountCodesConverter() {
     }
@@ -46,6 +41,7 @@ public class DiscountCodesConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getDiscountCode();
     }
 
     /**
@@ -95,7 +91,7 @@ public class DiscountCodesConverter {
         entities = new ArrayList<DiscountCode>();
         if (items != null) {
             for (DiscountCodeConverter item : items) {
-                entities.add(item.resolveEntity());
+                entities.add(item.getEntity());
             }
         }
         return entities;

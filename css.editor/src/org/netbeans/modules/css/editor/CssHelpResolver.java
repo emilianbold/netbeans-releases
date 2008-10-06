@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 public class CssHelpResolver {
 
     private static CssHelpResolver instance;
-    private static final String HELP_LOCATION = "docs/css21-spec.zip";
+    private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOTICES
     public static final String HELP_URL = getHelpZIPURL();
     private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
 
@@ -121,7 +121,7 @@ public class CssHelpResolver {
         //strip off the "anchor part"
         String anchor = url.getRef();
 
-        Pattern start_search = Pattern.compile("^.*<a name=\"" + anchor + "\".*$", Pattern.MULTILINE);
+        Pattern start_search = Pattern.compile("^.*<a name=\"" + anchor + "\".*$", Pattern.MULTILINE); //NOI18N
         Matcher matcher = start_search.matcher(file_content);
 //        int anchor_index = file_content.indexOf("<a name=\"" + anchor + "\"");
         //find line beginning
@@ -143,7 +143,7 @@ public class CssHelpResolver {
         //find end of the "anchor part"
         int end_index = file_content.length();
         
-        Pattern end_search = Pattern.compile("^.*<[hH][1-5]>|<a name=\"propdef-", Pattern.MULTILINE);
+        Pattern end_search = Pattern.compile("^.*<[hH][1-5]>|<a name=\"propdef-", Pattern.MULTILINE);  //NOI18N
         matcher = end_search.matcher(file_content.subSequence(begin_end_search_from, file_content.length()));
         if(matcher.find()) {
             end_index = matcher.start() + begin_end_search_from + 1;
@@ -151,6 +151,14 @@ public class CssHelpResolver {
 
         String anchor_part = file_content.substring(start_index, end_index);
 
+        int firstLineEnd = anchor_part.indexOf("\n");  //NOI18N
+        if(firstLineEnd > 0) {
+            String firstLine = anchor_part.substring(0, firstLineEnd);
+            firstLine = firstLine.replaceAll("<strong>'", "<strong style=\"font-size: large\">");  //N
+            firstLine = firstLine.replaceAll("'</strong>", "</strong>"); //NOI18N
+            anchor_part = firstLine + anchor_part.substring(firstLineEnd + 1);
+        }
+        
         return anchor_part;
 
     }
@@ -163,7 +171,7 @@ public class CssHelpResolver {
             try {
                 return new URL(HELP_URL + pd.helpLink);
             } catch (MalformedURLException ex) {
-                Logger.global.log(Level.WARNING, "Error creating URL for property " + propertyName, ex);
+                Logger.global.log(Level.WARNING, "Error creating URL for property " + propertyName, ex); //NOI18N
                 return null;
             }
         }
@@ -188,7 +196,7 @@ public class CssHelpResolver {
     private PropertyDescriptor getPD(String propertyName) {
         PropertyDescriptor pd = properties.get(propertyName.toLowerCase());
         if (pd == null) {
-            Logger.global.warning("No such property: " + propertyName);
+            Logger.global.warning("No such property: " + propertyName); //NOI18N
             return null;
         } else {
             return pd;

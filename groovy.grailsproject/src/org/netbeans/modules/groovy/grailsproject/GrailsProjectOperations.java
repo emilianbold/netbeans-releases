@@ -29,13 +29,11 @@
 package org.netbeans.modules.groovy.grailsproject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Collections;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.Project;
 
 /**
  *
@@ -57,20 +55,9 @@ public class GrailsProjectOperations implements DeleteOperationImplementation {
         project.getProjectState().notifyDeleted();
     }
     
-    private void addFile(FileObject projectDirectory, String fileName, List<FileObject> result) {
-        FileObject file = projectDirectory.getFileObject(fileName);        
-        if (file != null) {
-            result.add(file);
-        }
-    }
-    
     public List<FileObject> getMetadataFiles() {
-        FileObject projectDirectory = project.getProjectDirectory();
-        List<FileObject> files = new ArrayList<FileObject>();
-        addFile(projectDirectory, ".project", files); // NOI18N
-        addFile(projectDirectory, ".classpath", files); // NOI18N
-        addFile(projectDirectory, projectDirectory.getName() + ".tmproj", files); // NOI18N
-        return files;
+        // we don't write any metadata, if some will be added in future, add them here
+        return Collections.emptyList();
     }
 
     public List<FileObject> getDataFiles() {

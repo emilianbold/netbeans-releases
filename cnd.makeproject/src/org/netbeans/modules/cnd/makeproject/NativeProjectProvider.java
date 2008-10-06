@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -70,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -80,24 +82,33 @@ import org.openide.util.RequestProcessor;
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
     private Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
+    private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
     
     
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
     }
-    
+
+    public void runOnCodeModelReadiness(Runnable task) {
+        if (getMakeConfigurationDescriptor() != null) {
+            DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
+            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        }
+    }
+
     private void addMyListeners() {
-        if (getMakeConfigurationDescriptor() != null)
+        if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().addPropertyChangeListener(this);
+        }
     }
-    
+
     private void removeMyListeners() {
-        if (getMakeConfigurationDescriptor() != null)
+        if (getMakeConfigurationDescriptor() != null) {
             getMakeConfigurationDescriptor().getConfs().removePropertyChangeListener(this);
+        }
     }
-    
+
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
         return (MakeConfigurationDescriptor)projectDescriptorProvider.getConfigurationDescriptor();
     }
@@ -347,16 +358,21 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         if (!newConf.isDefault())
             return;
+
+        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_CONFIG_CND, getMakeConfigurationDescriptor());
         
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
+            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
         
         // Check compiler collection. Fire if different (IZ 131825)
-        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())) {
+        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) || 
+                !oldMConf.getDevelopmentHost().getName().equals(newMConf.getDevelopmentHost().getName())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
+            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
         
@@ -443,8 +459,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         BooleanConfiguration ccInheritMacros;
         Item[] items;
         
-        // Check first whether compiler set has changed
-        if (makeConfiguration.getCompilerSet().getDirty()) {
+        // Check first whether the development host has changed
+        if (makeConfiguration.getDevelopmentHost().getDirty()) {
+            makeConfiguration.getDevelopmentHost().setDirty(false);
+            items = getMakeConfigurationDescriptor().getProjectItems();
+            firePropertiesChanged(items, true, true, true);
+            return;
+        } else if (makeConfiguration.getCompilerSet().getDirty()) {
+            // Next, check whether the compiler set has changed
             makeConfiguration.getCompilerSet().setDirty(false);
             items = getMakeConfigurationDescriptor().getProjectItems();
             firePropertiesChanged(items, true, true, true);
@@ -575,6 +597,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return vec;
+            }
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
@@ -621,6 +646,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return vec;
+            }
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());

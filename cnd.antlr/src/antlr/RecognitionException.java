@@ -65,4 +65,9 @@ public class RecognitionException extends ANTLRException {
         return FileLineFormatter.getFormatter().
             getFormatString(fileName, line, column) + getMessage();
     }
+
+    public String getTokenText() {
+        return null;
+    }
+
 }

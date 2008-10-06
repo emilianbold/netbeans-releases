@@ -42,6 +42,7 @@
 package org.netbeans.modules.visualweb.complib.ui;
 
 import java.awt.Dialog;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -67,12 +68,15 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -82,12 +86,13 @@ import org.openide.util.actions.Presenter;
  * @author Edwin Goei
  */
 public class ComplibsRootNode extends AbstractNode {
-    private static final String COMPLIBS_ROOT_ICON_BASE;
-    static {
-        COMPLIBS_ROOT_ICON_BASE = ComplibsRootNode.class.getPackage().getName()
-                .replace('.', '/')
-                + "/images/libraries.png";
-    }
+//    private static final String COMPLIBS_ROOT_ICON_BASE;
+//    static {
+//        COMPLIBS_ROOT_ICON_BASE = ComplibsRootNode.class.getPackage().getName()
+//                .replace('.', '/')
+//                + "/images/libraries.png";
+//    }
+    private static final String IMAGE_PATH_BADGE = "org/netbeans/modules/visualweb/complib/ui/images/libraries_badge.png"; // NOI18N
 
     private Project project;
 
@@ -96,7 +101,7 @@ public class ComplibsRootNode extends AbstractNode {
         this.project = project;
 
         // Nodes API documentation says to set these items like this
-        setIconBaseWithExtension(COMPLIBS_ROOT_ICON_BASE);
+//        setIconBaseWithExtension(COMPLIBS_ROOT_ICON_BASE);
         setName("Complibs");
         setDisplayName(NbBundle.getMessage(ComplibsRootNode.class,
                 "ComplibsRootNode.displayName"));
@@ -121,6 +126,24 @@ public class ComplibsRootNode extends AbstractNode {
         }
         return actions.toArray(new Action[0]);
     }
+
+    @Override
+    public Image getIcon(int type) {
+        return computeIcon(false, type);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return computeIcon(true, type);
+    }
+
+    private static Image computeIcon(boolean opened, int type) {
+        Node iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        Image image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
+        Image badge = ImageUtilities.loadImage(IMAGE_PATH_BADGE, true); // NOI18N
+        return ImageUtilities.mergeImages(image, badge, 7, 7);
+    }
+
 
     private static class ComplibsChildren extends Children.Keys implements
             ComplibListener {

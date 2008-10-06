@@ -4,7 +4,8 @@
 *     Use is subject to license terms.
 -->
 <html>
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Standard Java SE Project Properties Dialog Box: Web Start</title>
         
         <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -30,7 +31,9 @@
             <param name="textColor" value="blue">
         </object>&nbsp;and choosing Properties. 
         
-        <p>The Web Start page has the following properties:</p>
+        <p>The Web Start page has the following properties, which are used in
+        the creation of the JNLP file. The JNLP file is
+        used to launch the application.</p>
         <ul>
             <li><b>Enable Web Start</b>. If selected, the IDE creates 
                 the necessary artifacts to make the application deployable 
@@ -54,10 +57,19 @@
                 certificate is not certified by any Certification Authority. 
                 Self-signing an application enables the application to do things such as 
             write files to disk and access the network.</li>
-            
+            <li><b>Application Descriptor</b>. If selected, the JNLP file is
+              generated with the <tt>application-desc</tt> element. The <tt>application-desc</tt>
+            element will point to the project's main class.</li>
+            <li><b>Applet Descriptor</b>. If selected, the JNLP file is
+              generated with the <tt>applet-desc</tt> element. The <tt>applet-desc</tt>
+            element will point to the applet that you specify in the Applet Class 
+            drop-down list. If you select this option, you can click the Applet 
+            Parameters button to change the height and width of the applet and 
+            add new parameters.</li>
+            <li><b>Component Descriptor</b>. If selected, the project can be called
+            as a resource from the JNLP file of another application.</li>
         </ul>
-        <p>All of these properties are used in the creation of the JNLP file, 
-        which is file used to launch the application.</p>
+
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../../project/proj_stand_about.html">About Standard Projects</a></dd>

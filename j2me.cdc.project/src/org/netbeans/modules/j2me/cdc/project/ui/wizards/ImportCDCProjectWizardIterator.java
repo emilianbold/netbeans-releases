@@ -144,9 +144,12 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(CDCPlatform.PLATFORM_CDC) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(CDCPlatform.PLATFORM_CDC);
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
+        }
         sourcesPanel = new ImportCDCProjectPanel.WizardPanel(prjType);
+        ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
         projectPanel = new ProjectPanel.WizardPanel(false, true);        
         currentIndex = 0;
         updateStepsList();

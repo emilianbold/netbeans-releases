@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
+import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -83,6 +84,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -130,6 +132,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -147,7 +150,7 @@ import org.w3c.dom.Text;
  */
 public final class AppClientProject implements Project, AntProjectListener, FileChangeListener {
     
-    private static final Icon CAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
+    private static final Icon CAR_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/j2ee/clientproject/ui/resources/appclient.gif")); // NOI18N
     
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -211,7 +214,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 assert type != null : "Type cannot be null";  //NOI18N
                 final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
                 if (classPathProperty == null) {
-                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI8N
+                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
                 return classPathProperty;
             }
@@ -336,6 +339,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
+            BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
@@ -726,6 +730,18 @@ public final class AppClientProject implements Project, AntProjectListener, File
                 // UI Logging
                 Utils.logUI(NbBundle.getBundle(AppClientProject.class), "UI_APP_CLIENT_PROJECT_OPENED", // NOI18N
                         new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});                
+                
+                // Usage Logging
+                String serverName = ""; // NOI18N
+                try {
+                    if (servInstID != null) {
+                        serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                    }
+                }
+                catch (InstanceRemovedException ier) {
+                    // ignore
+                }
+                Utils.logUsage(AppClientProject.class, "USG_PROJECT_OPEN_APPCLIENT", new Object[] { serverName }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
@@ -780,13 +796,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
             // #134642 - use Ant task from copylibs library
-            if (helper.isSharableProject() && refHelper.getProjectLibraryManager().getLibrary("CopyLibs") == null) { // NOI18N
-                try {
-                    refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ProjectProperties.removeObsoleteLibraryLocations(ep);

@@ -90,6 +90,7 @@ public class CasualDiff {
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
+    private boolean enumConstantPrint = false;
     
     protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
         diffs = new ListBuffer<Diff>();
@@ -100,7 +101,7 @@ public class CasualDiff {
         this.context = context;
         this.tree2Tag = tree2Tag;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
-        printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span);
+        printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span);
     }
     
     public com.sun.tools.javac.util.List<Diff> getDiffs() {
@@ -148,6 +149,10 @@ public class CasualDiff {
                     }
                 }
                 break;
+            } else if (t.getKind() == Kind.VARIABLE) {
+                JCVariableDecl vt = (JCVariableDecl) t;
+                if ((vt.mods.flags & ENUM) != 0 && vt.init == current)
+                    td.enumConstantPrint = true;
             }
             
             current = t;
@@ -674,9 +679,11 @@ public class CasualDiff {
             if (hasModifiers(newT.mods)) {
                 localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
             } else {
-                int oldPos = getOldPos(oldT.mods);
-                copyTo(localPointer, oldPos);
-                localPointer = getOldPos(oldT.vartype);
+                if (hasModifiers(oldT.mods)) {
+                    int oldPos = getOldPos(oldT.mods);
+                    copyTo(localPointer, oldPos);
+                    localPointer = getOldPos(oldT.vartype);
+                }
             }
         }
         int[] vartypeBounds = getBounds(oldT.vartype);
@@ -1126,9 +1133,11 @@ public class CasualDiff {
             localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
         }
         diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
-        int[] clazzBounds = getBounds(oldT.clazz);
-        copyTo(localPointer, clazzBounds[0]);
-        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        if (!enumConstantPrint) {
+            int[] clazzBounds = getBounds(oldT.clazz);
+            copyTo(localPointer, clazzBounds[0]);
+            localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        }
         if (oldT.args.nonEmpty()) {
             copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
         } else {
@@ -1978,7 +1987,14 @@ public class CasualDiff {
         if (printParens && oldList.isEmpty()) {
             printer.print(makeAround[1].fixedText());
         }
-        return oldList.isEmpty() ? pos : endPos(oldList);
+        if (oldList.isEmpty()) {
+            return pos;
+        } else {
+            int endPos2 = endPos(oldList);
+            tokenSequence.move(endPos2);
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            return tokenSequence.offset();
+        }
     }
     
     /**
@@ -2259,7 +2275,7 @@ public class CasualDiff {
                                 found = true;
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                                this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                                 this.printer.reset(old);
                                 int index = oldList.indexOf(oldT);
                                 int[] poss = estimator.getPositions(index);
@@ -2275,7 +2291,7 @@ public class CasualDiff {
                         if (lastdel != null && treesMatch(item.element, lastdel, false)) {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
-                            this.printer = new VeryPretty(workingCopy, CodeStyle.getDefault(null), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                            this.printer = new VeryPretty(workingCopy, VeryPretty.getCodeStyle(workingCopy), tree2Tag, tag2Span, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
                             this.printer.reset(old);
                             int index = oldList.indexOf(lastdel);
                             int[] poss = estimator.getPositions(index);
@@ -2501,6 +2517,17 @@ public class CasualDiff {
  
         if (oldT == newT)
             return elementBounds[0];
+
+        if (newT == null) {
+            tokenSequence.move(elementBounds[1]);
+            if (!tokenSequence.moveNext()) {
+                return elementBounds[1];
+            }
+            while (tokenSequence.token().id() == JavaTokenId.WHITESPACE && tokenSequence.moveNext())
+                ;
+            return tokenSequence.offset();
+        }
+
         diffPrecedingComments(oldT, newT);
         int retVal = -1;
 
@@ -2913,7 +2940,7 @@ public class CasualDiff {
     }
     
     private boolean matchLiteral(JCLiteral t1, JCLiteral t2) {
-        return t1.typetag == t2.typetag && t1.value.equals(t2.value);
+        return t1.typetag == t2.typetag && (t1.value == t2.value || (t1.value != null && t1.value.equals(t2.value)));
     }
 
     private boolean matchTypeApply(JCTypeApply t1, JCTypeApply t2) {
@@ -2979,7 +3006,7 @@ public class CasualDiff {
     }
     
     private void copyTo(int from, int to, VeryPretty loc) {
-        if (from == to) { 
+        if (from == to) {
             return;
         } else if (from > to || from < 0 || to < 0) {
             // #104107 - log the source when this problem occurs.

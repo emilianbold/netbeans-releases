@@ -368,6 +368,14 @@ public class DetectorTest extends TestBase {
 	performTest("ReadUse132342");
     }
     
+    public void testRecursiveExecutionIsNotUse() throws Exception {
+	performTest("RecursiveExecutionIsNotUse");
+    }
+
+    public void testDeprecatedClassDeprecatesConstructor() throws Exception {
+        performTest("DeprecatedClassDeprecatesConstructor");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

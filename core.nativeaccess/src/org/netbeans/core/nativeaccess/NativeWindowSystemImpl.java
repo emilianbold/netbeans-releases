@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.nativeaccess.transparency.WindowUtils;
+import org.openide.util.Utilities;
 
 
 /**
@@ -55,14 +56,24 @@ import org.netbeans.core.nativeaccess.transparency.WindowUtils;
  */
 public class NativeWindowSystemImpl extends NativeWindowSystem {
 
+    private static final Logger LOG = Logger.getLogger(NativeWindowSystemImpl.class.getName());
+
     public boolean isWindowAlphaSupported() {
         boolean res = false;
         try {
-            res = WindowUtils.isWindowAlphaSupported();
+            String osArch = System.getProperty("os.arch");
+            // jna currently doesn't work on 64 bit java on Win, this check should
+            // be deleted when https://jna.dev.java.net/issues/show_bug.cgi?id=59 is implemented
+            boolean isWin64 = Utilities.isWindows() && osArch != null && osArch.indexOf("amd64") != -1;
+            res = WindowUtils.isWindowAlphaSupported() && !isWin64;
         } catch( ThreadDeath td ) {
             throw td;
+        } catch (UnsatisfiedLinkError e) {
+            // E.g. "Unable to load library 'X11': libX11.so: cannot open shared object file: No such file or directory"
+            // on headless build machine (missing libx11-dev.deb)
+            LOG.log(Level.FINE, null, e);
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
         return res;
     }
@@ -73,7 +84,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -83,7 +94,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -93,7 +104,7 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {
-            Logger.getLogger(NativeWindowSystemImpl.class.getName()).log(Level.INFO, null, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 }

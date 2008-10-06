@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.parser.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -46,10 +47,15 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocPropertyTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -120,10 +126,34 @@ public class Utils {
 
     }
 
+    public static ASTNode[] getNodeHierarchyAtOffset(ASTNode node, int offset) {
+        if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
+            return null;
+        }
+
+        return (new NodeHierarchyFinder()).find(node, offset);
+    }
+
+    /**
+     * Return an ASTNode of given type at the given offset. It doesn't count comments. 
+     * 
+     * @param node
+     * @param astOffset
+     * @param terminus 
+     * @return null if there is not a node on this possition or an ASTNode except comments
+     */
+    public static ASTNode getNodeAtOffset(ASTNode node, int offset, Class<? extends ASTNode> terminus) {
+        if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
+            return null;
+        }
+
+        return (new SpecificClassNodeLocator(terminus)).locate(node, offset);
+    }
+
     private static class NodeLocator extends DefaultVisitor {
 
-        private int offset = 0;
-        private ASTNode node = null;
+        protected int offset = 0;
+        protected ASTNode node = null;
 
         public ASTNode locate(ASTNode beginNode, int astOffset) {
             offset = astOffset;
@@ -137,7 +167,48 @@ public class Utils {
                     this.node = node;
                     node.accept(this);
                 }
+            }
+        }
+    }
 
+    private static class NodeHierarchyFinder extends DefaultTreePathVisitor {
+
+        private ASTNode[] hierarchy;
+        protected int offset = 0;
+
+        public ASTNode[] find(ASTNode beginNode, int astOffset) {
+            offset = astOffset;
+            scan(beginNode);
+            return hierarchy;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (node != null) {
+                if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
+                    hierarchy = getPath().toArray(new ASTNode[getPath().size()]);
+                    node.accept(this);
+                }
+            }
+        }
+    }
+
+    private static class SpecificClassNodeLocator extends NodeLocator {
+
+        private Class<? extends ASTNode> terminus;
+
+        public SpecificClassNodeLocator(Class<? extends ASTNode> terminus) {
+            this.terminus = terminus;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (terminus.isInstance(node)) {
+                if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
+                    this.node = node;
+                }
+            } else {
+                super.scan(node);
             }
         }
     }
@@ -169,12 +240,26 @@ public class Utils {
             }
         }
     }
-    
+
     public static String resolveVariableName(Variable variable) {
         String name = null;
         if (variable.getName() instanceof Identifier) {
             name = ((Identifier) variable.getName()).getName();
         }
         return name;
+    }
+
+    public static List<PHPDocPropertyTag> getPropertyTags(Program root, ClassDeclaration node) {
+        List<PHPDocPropertyTag> tags = new ArrayList<PHPDocPropertyTag>();
+        Comment comment = Utils.getCommentForNode(root, node);
+        if (comment != null && (comment instanceof PHPDocBlock)) {
+            PHPDocBlock phpDoc = (PHPDocBlock) comment;
+            for (PHPDocTag tag : phpDoc.getTags()) {
+                if (tag instanceof PHPDocPropertyTag) {
+                    tags.add((PHPDocPropertyTag) tag);
+                }
+            }
+        }
+        return tags;
     }
 }

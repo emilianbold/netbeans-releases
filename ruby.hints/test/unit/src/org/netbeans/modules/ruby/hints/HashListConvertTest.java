@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.hints;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
 /**
  *
@@ -52,17 +53,25 @@ public class HashListConvertTest extends HintTestBase  {
         super(testName);
     }            
 
+    private RubyAstRule createRule() {
+        return new HashListConvert();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testHints1() throws Exception {
-        checkHints(this, new HashListConvert(), "testfiles/hashlist.rb", null);
+        checkHints(this, createRule(), "testfiles/hashlist.rb", null);
     }
 
     public void testFix1() throws Exception {
-        applyHint(this, new HashListConvert(), "testfiles/hashlist.rb", 
+        applyHint(this, createRule(), "testfiles/hashlist.rb",
                 "x = { \"a\",^ ", "Convert hash");
     }
 
     public void testFix2() throws Exception {
-        applyHint(this, new HashListConvert(), "testfiles/httpstatus.rb", 
+        applyHint(this, createRule(), "testfiles/httpstatus.rb",
                 "100,^ 'Continue',", "Convert hash");
     }
 
@@ -75,7 +84,7 @@ public class HashListConvertTest extends HintTestBase  {
             exceptions.add("format.rb");
             exceptions.add("httpstatus.rb");
         
-            assertNoJRubyMatches(new HashListConvert(), exceptions);
+            assertNoJRubyMatches(createRule(), exceptions);
             
         } finally {
             parseErrorsOk = false;

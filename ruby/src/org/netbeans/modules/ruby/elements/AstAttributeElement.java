@@ -2,10 +2,10 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Collections;
 import java.util.Set;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;

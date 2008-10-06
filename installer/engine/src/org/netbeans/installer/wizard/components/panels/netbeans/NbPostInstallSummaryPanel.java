@@ -211,57 +211,62 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
         
         protected void initialize() {
             final Registry registry = Registry.getInstance();
+            final List <Product>  successfulInstall = registry.getProducts(INSTALLED_SUCCESSFULLY);
+            final List <Product>     warningInstall = registry.getProducts(INSTALLED_WITH_WARNINGS);
+            final List <Product>       errorInstall = registry.getProducts(FAILED_TO_INSTALL);
             
-            if (registry.getProducts(INSTALLED_SUCCESSFULLY).size() +
-                    registry.getProducts(INSTALLED_WITH_WARNINGS).size() +
-                    registry.getProducts(FAILED_TO_INSTALL).size() > 0) {
-                boolean warningsEncountered =
-                        registry.getProducts(INSTALLED_WITH_WARNINGS).size() > 0;
-                
-                boolean errorsEncountered =
-                        registry.getProducts(FAILED_TO_INSTALL).size() > 0;
-                
-                if (errorsEncountered) {
-                    messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_PROPERTY));
-                    messagePaneInstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY), LogManager.getLogFile()));
-                } else if (warningsEncountered) {
-                    messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_PROPERTY));
-                    messagePaneInstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_WARNINGS_PROPERTY), LogManager.getLogFile()));
-                } else {
-                    messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_SUCCESS_PROPERTY));
-                    messagePaneInstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_SUCCESS_PROPERTY), LogManager.getLogFile()));
-                }
+            final List<Product> successfulUninstall = registry.getProducts(UNINSTALLED_SUCCESSFULLY);
+            final List<Product>    warningUninstall = registry.getProducts(UNINSTALLED_WITH_WARNINGS);
+            final List<Product>      errorUninstall = registry.getProducts(FAILED_TO_UNINSTALL);
+            
+            if (errorInstall.size() > 0) {
+                messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_PROPERTY));
+                messagePaneInstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_ERRORS_PROPERTY), 
+                        LogManager.getLogFile(),
+                        StringUtils.asString(errorInstall)));
+            } else if (warningInstall.size() > 0) {
+                messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_PROPERTY));
+                messagePaneInstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_WARNINGS_PROPERTY),
+                        LogManager.getLogFile(),
+                        StringUtils.asString(warningInstall)));
+            } else if (successfulInstall.size() > 0) {
+                messagePaneInstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_SUCCESS_PROPERTY));
+                messagePaneInstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_SUCCESS_PROPERTY), 
+                        LogManager.getLogFile(),
+                        StringUtils.asString(successfulInstall)));
             } else {
                 messagePaneInstall.setVisible(false);
             }
-            
-            if (registry.getProducts(UNINSTALLED_SUCCESSFULLY).size() +
-                    registry.getProducts(UNINSTALLED_WITH_WARNINGS).size() +
-                    registry.getProducts(FAILED_TO_UNINSTALL).size() > 0) {
-                boolean warningsEncountered =
-                        registry.getProducts(UNINSTALLED_WITH_WARNINGS).size() > 0;
-                
-                boolean errorsEncountered =
-                        registry.getProducts(FAILED_TO_UNINSTALL).size() > 0;
-                
-                if (errorsEncountered) {
-                    messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL_PROPERTY));
-                    messagePaneUninstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_ERRORS_UNINSTALL_PROPERTY), LogManager.getLogFile()));
-                } else if (warningsEncountered) {
-                    messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_UNINSTALL_PROPERTY));
-                    messagePaneUninstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_WARNINGS_UNINSTALL_PROPERTY), LogManager.getLogFile()));
-                } else {
-                    messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_SUCCESS_UNINSTALL_PROPERTY));
-                    messagePaneUninstall.setText(StringUtils.format(component.getProperty(MESSAGE_TEXT_SUCCESS_UNINSTALL_PROPERTY), LogManager.getLogFile()));
-                }
+
+            if (errorUninstall.size() > 0) {
+                messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_ERRORS_UNINSTALL_PROPERTY));
+                messagePaneUninstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_ERRORS_UNINSTALL_PROPERTY),
+                        LogManager.getLogFile(), 
+                        StringUtils.asString(errorUninstall)));
+            } else if (warningUninstall.size() > 0) {
+                messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_WARNINGS_UNINSTALL_PROPERTY));
+                messagePaneUninstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_WARNINGS_UNINSTALL_PROPERTY), 
+                        LogManager.getLogFile(),
+                        StringUtils.asString(warningUninstall)));
+            } else if (successfulUninstall.size() > 0) {
+                messagePaneUninstall.setContentType(component.getProperty(MESSAGE_CONTENT_TYPE_SUCCESS_UNINSTALL_PROPERTY));
+                messagePaneUninstall.setText(StringUtils.format(
+                        component.getProperty(MESSAGE_TEXT_SUCCESS_UNINSTALL_PROPERTY),
+                        LogManager.getLogFile(),
+                        StringUtils.asString(successfulUninstall)));
             } else {
                 messagePaneUninstall.setVisible(false);
             }
             
             final List<Product> products = new LinkedList<Product>();
             
-            products.addAll(registry.getProducts(INSTALLED_SUCCESSFULLY));
-            products.addAll(registry.getProducts(INSTALLED_WITH_WARNINGS));
+            products.addAll(successfulInstall);
+            products.addAll(warningInstall);
             
             messagePaneMySQL.setContentType(DEFAULT_MESSAGE_MYSQL_CONTENT_TYPE);
             messagePaneMySQL.setText("");
@@ -368,7 +373,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                 messagePaneNetBeans.setVisible(false);
             }
 
-            if(false /*nbInstalled*/) {                
+            if(nbInstalled) {                
                 metricsList.setContentType(DEFAULT_MESSAGE_METRICS_LIST_CONTENT_TYPE);
                 metricsList.setText(DEFAULT_MESSAGE_METRICS_LIST);
                 metricsInfo.setContentType(DEFAULT_MESSAGE_METRICS_TEXT_CONTENT_TYPE);
@@ -380,8 +385,8 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             }
             products.clear();
             
-            products.addAll(registry.getProducts(UNINSTALLED_SUCCESSFULLY));
-            products.addAll(registry.getProducts(UNINSTALLED_WITH_WARNINGS));
+            products.addAll(successfulUninstall);
+            products.addAll(warningUninstall);
             
             final List<Product> notCompletelyRemoved = new LinkedList<Product>();
             for (Product product: products) {
@@ -505,7 +510,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     1.0, 1.0, // weight-x, weight-y
                     GridBagConstraints.PAGE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(0, 11, 0, 11), // padding
+                    new Insets(4, 11, 0, 11), // padding
                     0, 0));                           // padx, pady - ???
 
             // spacer

@@ -36,100 +36,121 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.openide.util.NbPreferences;
 
 /**
  * An implementation of PathMap which returns remote path information.
  * 
  * @author gordonp
  */
-public class RemotePathMap extends HashMap<String, String> implements PathMap {
-    
-    private static HashMap<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
-    
-    private String hkey;
+public class RemotePathMap implements PathMap {
+
+    private final static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
 
     public static RemotePathMap getMapper(String hkey) {
         RemotePathMap pathmap = pmtable.get(hkey);
-        
+
         if (pathmap == null) {
-            pathmap = new RemotePathMap(hkey);
-            pmtable.put(hkey, pathmap);
+            synchronized (pmtable) {
+                pathmap = new RemotePathMap(hkey);
+                pmtable.put(hkey, pathmap);
+            }
         }
         return pathmap;
     }
-    
+
+    public static boolean isReady(String hkey) {
+            return pmtable.get(hkey) != null;
+    }
+
+    //
+
+    private final HashMap<String, String> map = new HashMap<String, String>();
+    private final String hkey;
+
     private RemotePathMap(String hkey) {
         this.hkey = hkey;
         init();
     }
-    
+
     /** 
+     *
      * Initialization the path map here:
-     * Windows Algorythm:
-     *    1. Get the drive letter
-     *    2. See if there is an NFS mount point in the Windows registry
-     *    3. Run a RemotePathMapSupport(host, user, [mount point host], [mount point path])
-     * 
-     * Unix Algorythm:
-     *    1. TBD 
      */
-    private void init() {
-        if (Boolean.getBoolean("cnd.remote.enable")) { // Debug
-            if (hkey.startsWith("gordonp@")) { // Debug
-                put("z:/", "/net/pucci/export/pucci1/"); // Debug
-                put("x:/", "/net/pucci/export/pucci2/"); // Debug
-                put("/net/pucci/", "/net/pucci/"); // Debug
-            } else if (hkey.startsWith("sg155630@")) { // Debug
-                put("z:/", "/home/sg155630/"); // Debug
-            }
-        }
-        
-        String pmap = System.getProperty("cnd.remote.pmap");
-        if (pmap != null) {
-            String line;
-            File file = new File(pmap);
-            
-            if (file.exists() && file.canRead()) {
-                try {
-                    BufferedReader in = new BufferedReader(new FileReader(file));
-                    while ((line = in.readLine()) != null) {
-                        int pos = line.indexOf(' ');
-                        if (pos > 0) {
-                            put(line.substring(0, pos), line.substring(pos + 1).trim());
+    public void init() {
+        synchronized ( map ) {
+            String list = getPreferences(hkey);
+
+            if (list == null) {
+                // 1. Developers entry point
+                String pmap = System.getProperty("cnd.remote.pmap");
+                if (pmap != null) {
+                    String line;
+                    File file = new File(pmap);
+
+                    if (file.exists() && file.canRead()) {
+                        try {
+                            BufferedReader in = new BufferedReader(new FileReader(file));
+                            while ((line = in.readLine()) != null) {
+                                int pos = line.indexOf(' ');
+                                if (pos > 0) {
+                                    map.put(line.substring(0, pos), line.substring(pos + 1).trim());
+                                }
+                            }
+                        } catch (IOException ioe) {
                         }
                     }
-                } catch (IOException ioe) {
+                } else {
+                    // 2. Automated mappings gathering entry point
+                    HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
+                    map.putAll(ham.getMappings());
+                    // TODO: what about consequent runs. User may share something, we need to check it
+                }
+            } else {
+                // 3. Deserialization
+                String[] paths = list.split(DELIMITER);
+                for (int i = 0; i < paths.length; i+=2) {
+                    if (i+1 < paths.length) { //TODO: only during development
+                        map.put(paths[i], paths[i+1]);
+                    } else {
+                        System.err.println("mapping serialization flaw. Was found: " + list);
+                    }
                 }
             }
         }
     }
-    
+    // PathMap
     public String getRemotePath(String lpath) {
         String ulpath = unifySeparators(lpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
-            String key = entry.getKey();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String key = unifySeparators(entry.getKey());
             if (ulpath.startsWith(key)) {
                 String mpoint = entry.getValue();
-                return mpoint + lpath.substring(key.length());
+                return mpoint + lpath.substring(key.length()).replace('\\', '/');
             }
         }
         return lpath;
     }
-    
+
     public String getLocalPath(String rpath) {
         String urpath = unifySeparators(rpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
-            String value = entry.getValue();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String value = unifySeparators(entry.getValue());
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 return mpoint + rpath.substring(value.length());
@@ -137,7 +158,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         }
         return rpath;
     }
-    
+
     /**
      * See if a path is local or remote. The main use of this call is to verify a project's
      * Development Host setting. If the project's sources are local then you should not be
@@ -146,25 +167,113 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      * @param lpath The local path to check
      * @return true if path is remote, false otherwise
      */
-    public boolean isRemote(String lpath) {
+    public boolean isRemote(String lpath, boolean fixMissingPaths) {
         String ulpath = unifySeparators(lpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
-            String mpoint = entry.getValue();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            String mpoint = unifySeparators(entry.getValue());
             if (ulpath.startsWith(mpoint)) {
                 return true;
             }
         }
-        for (String mpoint : keySet()) {
-            if (ulpath.startsWith(mpoint)) {
+
+        for (String mpoint : map.keySet()) {
+            if (ulpath.startsWith(unifySeparators(mpoint))) {
                 return true;
             }
         }
-        return false;
+
+        // check if local path is mirrored by remote path
+        if (!PlatformInfo.getDefault(hkey).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
+            File path = new File(lpath);
+            if (path.exists() && path.isDirectory()) {
+                File validationFile = null;
+                try {
+                    // create file
+                    validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
+                    BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
+                    String validationLine = Double.toString(Math.random());
+                    out.write(validationLine);
+                    out.close();
+                    // check existance
+                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) { // NOI18N
+                        synchronized(map) {
+                            map.put(lpath, lpath);
+                        }
+                        return true;
+                    }
+
+                } catch (IOException ex) {
+                    // directory is write protected
+                } finally {
+                    if (validationFile != null && validationFile.exists()) {
+                        validationFile.delete();
+                    }
+                }
+            }
+            //TODO: check parent directories in other thread
+        }
+
+        if (fixMissingPaths) {
+            return EditPathMapDialog.showMe(hkey, lpath) && isRemote(lpath, false);
+        } else {
+            return false;
+        }
+
     }
-    
+
+//    public void showUI() {
+//        EditPathMapDialog.showMe(hkey, null);
+//    }
+
+    // Utility
+    public void updatePathMap(Map<String, String> newPathMap) {
+        synchronized( map ) {
+            map.clear();
+            StringBuilder sb = new StringBuilder();
+            for (String path : newPathMap.keySet()) {
+                String remotePath = fixEnding(newPathMap.get(path));
+                path = fixEnding(path);
+                map.put(path, remotePath);
+                sb.append( fixEnding(path) );
+                sb.append(DELIMITER);
+                sb.append( remotePath );
+                sb.append(DELIMITER);
+            }
+            setPreferences(hkey, sb.toString());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getMap() {
+        return (Map<String, String>)map.clone();
+    }
+
+    private static String fixEnding(String path) {
+        //TODO: system dependent separator?
+        if (path.charAt(path.length()-1)!='/' && path.charAt(path.length()-1)!='\\') {
+            return path + "/"; //NOI18N
+        } else {
+            return path;
+        }
+    }
     // inside path mapper we use only / and lowercase 
     // TODO: lowercase should be only windows issue -- possible flaw
     private static String unifySeparators(String path) {
         return path.replace('\\', '/').toLowerCase();
+    }
+
+    public static boolean isSubPath(String path, String pathToValidate) {
+        return unifySeparators(pathToValidate).startsWith(unifySeparators(path));
+    }
+
+    private static final String REMOTE_PATH_MAP = "remote-path-map"; // NOI18N
+    private static final String DELIMITER = "\n"; // NOI18N
+
+    private static String getPreferences(String hkey) {
+        return NbPreferences.forModule(RemotePathMap.class).get(REMOTE_PATH_MAP + hkey, null);
+    }
+
+    private static void setPreferences(String hkey, String newValue) {
+        NbPreferences.forModule(RemotePathMap.class).put(REMOTE_PATH_MAP + hkey, newValue);
     }
 }

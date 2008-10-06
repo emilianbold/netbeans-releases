@@ -40,8 +40,7 @@
 package org.netbeans.modules.websvc.saas.spi.websvcmgr;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 
 /**
  * For compatibilty with websvc.manager and avoid circular dependency
@@ -55,7 +54,8 @@ public interface WsdlData {
     public static final String PROP_STATE = "state";
     
     public static enum Status {
-        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED, WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
+        WSDL_UNRETRIEVED, WSDL_RETRIEVING, WSDL_RETRIEVED,
+        WSDL_SERVICE_COMPILING, WSDL_SERVICE_COMPILED, WSDL_SERVICE_COMPILE_FAILED
     }
     
     /**
@@ -81,7 +81,7 @@ public interface WsdlData {
     /**
      * @return WSDL service
      */
-    WsdlService getWsdlService();
+    WSService getWsdlService();
     
     boolean isReady();
 

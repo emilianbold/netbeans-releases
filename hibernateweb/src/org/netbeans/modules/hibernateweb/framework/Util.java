@@ -60,6 +60,9 @@ public class Util {
      */
     public static Project getEnclosingProjectFromWebModule(WebModule webModule) {
         FileObject documentBase = webModule.getDocumentBase();
+        if(documentBase == null) {
+            return null;
+        }
         return FileOwnerQuery.getOwner(documentBase);
     }
 }

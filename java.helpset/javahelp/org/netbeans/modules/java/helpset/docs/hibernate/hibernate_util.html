@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Creating a Hibernate Utility Helper</title> 
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Creating a Hibernate Utility Helper</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>To use Hibernate you need to create a helper class that handles 
+        startup and that accesses Hibernate's SessionFactory to obtain a 
+        Session object so that you can load and store objects. 
+        The helper class calls <tt>configure()</tt> and loads the 
+        <tt>hibernate.cfg.xml</tt> configuration file. 
+        The helper class then builds the SessionFactory to obtain the 
+        Session object.</p>
+
+        <p><b>To create the <tt>HibernateUtil.java</tt> helper class:</b></p>
+        <ol>
+           <li>In the Projects window, right-click the Source Packages node and choose New &gt; Other to open the New File wizard.</li>
+           <li>Select Hibernate from the Categories list and HibernateUtil.java from the File Types list. Click Next.</li>
+           <li>Type HibernateUtil for the class name. Click Finish.</li>
+        </ol>
+            
+        
+        <p>When you click Finish, the file <tt>HibernateUtil.java</tt> opens in the Source Editor.
+        You do not need to edit the file.</p>
+        
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+        <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

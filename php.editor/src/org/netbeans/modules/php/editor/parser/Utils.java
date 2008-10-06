@@ -501,6 +501,14 @@ public class Utils {
         return sb.toString();
     }
 
+    public static String getRepeatingChars(char c, int length) {
+        StringBuffer sb = new StringBuffer(length);
+        for (int index = 0; index < length; index++) {
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+    
     public static int getRowStart(String text, int offset) {
         // Search backwards
         for (int i = offset - 1; i >= 0; i--) {

@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.ProxyURLStreamHandlerFactory;
@@ -214,7 +216,7 @@ public final class Main extends Object {
     if (jdkHome == null) {
         jdkHome = System.getProperty("java.home");  // NOI18N
 
-        if (Utilities.isMac()) {
+        if (!Utilities.isMac()) {
             jdkHome += File.separator + "..";  // NOI18N
         }
 
@@ -240,10 +242,6 @@ public final class Main extends Object {
 
 
 // 5. initialize GUI 
-    StartLog.logStart ("XML Factories"); //NOI18N
-    
-    org.netbeans.core.startup.SAXFactoryImpl.install();
-    org.netbeans.core.startup.DOMFactoryImpl.install();
     //Bugfix #35919: Log message to console when initialization of local
     //graphics environment fails eg. due to incorrect value of $DISPLAY
     //on X Windows (Linux, Solaris). In such case IDE will not start
@@ -260,7 +258,6 @@ public final class Main extends Object {
             throw exc;
         }
     }
-    StartLog.logEnd ("XML Factories"); //NOI18N
     
     
 
@@ -283,6 +280,7 @@ public final class Main extends Object {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {
+                deleteRec(new File(CLIOptions.getUserDir())); // #145936
                 TopLogging.exit(0);
             }
 	    // -----------------------------------------------------------------------------------------------------
@@ -338,6 +336,20 @@ public final class Main extends Object {
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
   }
+    private static void deleteRec(File f) throws IOException {
+        if (f.isDirectory()) {
+            File[] kids = f.listFiles();
+            if (kids == null) {
+                throw new IOException("Could not list: " + f);
+            }
+            for (File kid : kids) {
+                deleteRec(kid);
+            }
+        }
+        if (!f.delete()) {
+            Logger.getLogger(Main.class.getName()).log(Level.WARNING, "Failed to delete " + f);
+        }
+    }
   
     /** Loads a class from available class loaders. */
     private static final Class getKlass(String cls) {

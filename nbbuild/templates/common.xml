@@ -146,17 +146,6 @@ made subject to such option by the copyright holder.
         </fail>
         <!-- OK, continue: -->
         <copy todir="${build.classes.dir}">
-            <!-- #58298: strip comments to save some space -->
-            <fileset dir="${src.dir}" includes="**/*.properties"/>
-            <filterchain>
-                <tokenfilter>
-                    <!-- #61965: preserve #NOI18N and similar comments -->
-                    <filetokenizer/>
-                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
-                </tokenfilter>
-            </filterchain>
-        </copy>
-        <copy todir="${build.classes.dir}">
             <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
         </copy>
     </target>
@@ -183,7 +172,7 @@ made subject to such option by the copyright holder.
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
     </target>
-    
+
     <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
         <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
         <!-- (presumably due to the variable OIDE-M-I-V) -->
@@ -194,7 +183,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
     </target>
-    
+
     <!-- Can insert extra stuff in here: -->
     <target name="netbeans-extra"/>
 
@@ -238,7 +227,7 @@ made subject to such option by the copyright holder.
             </fileset>
         </copy>
     </target>
-    
+
     <target name="verify-class-linkage" depends="jar,release">
         <verifyclasslinkage jar="${cluster}/${module.jar}" failonerror="false" ignores="${module.jar.verifylinkageignores}" maxwarnings="10">
             <classpath refid="cp"/>
@@ -273,10 +262,10 @@ made subject to such option by the copyright holder.
         </condition>
         <property name="jnlp.sign.jars" value="false"/>
     </target>
-    
+
     <target name="jnlp" depends="init,netbeans,jnlp-master,-jnlp-init" description="Builds JNLP descriptor and signs JAR files" >
-        <makejnlp 
-            dir="${jnlp.dest.dir}" 
+        <makejnlp
+            dir="${jnlp.dest.dir}"
             alias="${jnlp.signjar.alias}"
             storepass="${jnlp.signjar.password}"
             keystore="${jnlp.signjar.keystore}"
@@ -292,20 +281,20 @@ made subject to such option by the copyright holder.
             <indirectjars dir="${cluster}" includes="${jnlp.indirect.jars}"/>
         </makejnlp>
     </target>
-    
+
     <target name="jnlp-master" depends="init,netbeans" if="jnlp.master.dir" >
         <property name="jnlp.master.codebase" value="" />
-        <makemasterjnlp 
+        <makemasterjnlp
             dir="${jnlp.master.dir}"
-            codebase="${jnlp.master.codebase}" 
+            codebase="${jnlp.master.codebase}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />
             </modules>
         </makemasterjnlp>
     </target>
-    
-    
+
+
     <target name="-nbm-prompt-for-storepass" if="keystore" unless="storepass">
         <input addproperty="storepass" message="Enter password for ${keystore}:"/>
     </target>
@@ -325,6 +314,9 @@ made subject to such option by the copyright holder.
                  moduleauthor="${nbm.module.author}">
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+            <updaterjar>
+                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makenbm>
     </target>
 
@@ -343,7 +335,7 @@ made subject to such option by the copyright holder.
                 <property name="build.test.@{test.type}.classes.dir" location="${build.test.@{test.type}.dir}/classes"/>
                 <property name="build.test.@{test.type}.results.dir" location="${build.test.@{test.type}.dir}/results"/>
                 <property name="build.test.@{test.type}.work.dir" location="${build.test.@{test.type}.dir}/work"/>
-                <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+                <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/>
                 <!-- if project.xml doesn't contain test dependencies -->
                 <property name="test.@{test.type}.folder" location="build/test/@{test.type}/dist"/>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
@@ -388,7 +380,7 @@ made subject to such option by the copyright holder.
                         </not>
                     </and>
                 </condition>
-                
+
             </sequential>
         </macrodef>
         <test-init test.type="unit"/>
@@ -400,13 +392,7 @@ made subject to such option by the copyright holder.
     <macrodef name="test-dep-build">
         <attribute name="test.type"/>
         <sequential>
-            <pathconvert property="test.modules.fullpath" >
-                <path>
-                    <dirset dir="${nb_all}" includes="${test.@{test.type}.testdep}" />
-                </path>
-                <mapper type="identity" />
-            </pathconvert>
-            <sortsuitemodules unsortedmodules="${test.modules.fullpath}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
+            <sortsuitemodules unsortedmodules="${test.@{test.type}.testdep}" sortedmodulesproperty="mods.sorted" sorttests="true"/>
             <subant buildpath="${mods.sorted}" target="do-test-build" />
         </sequential>
     </macrodef>
@@ -422,16 +408,16 @@ made subject to such option by the copyright holder.
         <attribute name="test.type"/>
         <sequential>
             <fail >
-             Missing test dependency 
+             Missing test dependency
               Runtime classpath: ${test.@{test.type}.runtime.cp}
-              Compile classpath: ${test.@{test.type}.compile.cp} 
+              Compile classpath: ${test.@{test.type}.compile.cp}
                 <condition>
                     <or>
-                    <contains string="${test.@{test.type}.runtime.cp}" substring="-missing-Module-Entries-:" />
-                    <contains string="${test.@{test.type}.compile.cp}" substring="-missing-Module-Entries-:" />
+                        <contains string="${test.@{test.type}.runtime.cp}" substring="-missing-Module-Entries-:" />
+                        <contains string="${test.@{test.type}.compile.cp}" substring="-missing-Module-Entries-:" />
                     </or>
                 </condition>
-                 </fail>
+            </fail>
             <mkdir dir="${build.test.@{test.type}.classes.dir}"/>
             <mkdir dir="${test.dist.dir}"/>
             <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
@@ -462,9 +448,9 @@ made subject to such option by the copyright holder.
             <mkdir dir="${test.@{test.type}.out.folder}"/>
             <jar destfile="${test.@{test.type}.out.folder}/tests.jar" basedir="${build.test.@{test.type}.classes.dir}" filesetmanifest="merge"/>
             <!-- create properties -->
-            <shorterpaths inref="test.@{test.type}.run.cp" 
-                          out="test.@{test.type}.run.cp.short" 
-                          extralibs="extra.test.libs.short" 
+            <shorterpaths inref="test.@{test.type}.run.cp"
+                          out="test.@{test.type}.run.cp.short"
+                          extralibs="extra.test.libs.short"
                           extralibsdir="${extra.test.libs.dir}"
                           testproperties="${test.@{test.type}.out.folder}/test.properties">
                 <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
@@ -482,15 +468,15 @@ made subject to such option by the copyright holder.
         <do-test-build test.type="qa-functional"/>
     </target>
     <target name="do-test-build" depends="do-unit-test-build,do-qa-functional-test-build"/>
-    
+
     <target name="test-unit-build-datajar" depends="do-test-build" if="exists.test.unit.data">
-           <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/> 
+        <zip destfile="${test.unit.out.folder}/data.zip" basedir="${test.unit.data.dir}"/>
     </target>
     <target name="test-qa-functional-build-datajar" depends="do-test-build" if="exists.test.qa-functional.data">
-           <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
+        <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.data.dir}"/>
     </target>
     <target name="test-build-datajar" depends="test-unit-build-datajar,test-qa-functional-build-datajar"/>
-    
+
     <target name="compile-test-single" depends="init,test-init,jar">
         <macrodef name="compile-test-single">
             <attribute name="test.type"/>
@@ -533,9 +519,11 @@ made subject to such option by the copyright holder.
     </macrodef>
     <macrodef name="test">
         <attribute name="test.type"/>
+        <attribute name="disable.apple.ui" default="false"/>
         <sequential>
             <property name="test.config" value="default"/>
-            <property name="test.config.${test.config}.includes" value="**/*Test.class"/>
+            <property name="test.config.default.includes" value="**/*Test.class"/>
+            <property name="test.config.${test.config}.includes" value="NOTHING"/>
             <metaproperty name="test.includes" value="test.config.${test.config}.includes"/>
             <property name="test.config.${test.config}.excludes" value=""/>
             <metaproperty name="test.excludes" value="test.config.${test.config}.excludes"/>
@@ -547,6 +535,8 @@ made subject to such option by the copyright holder.
                 <classpath refid="test.@{test.type}.run.cp"/>
                 <syspropertyset refid="test.@{test.type}.properties"/>
                 <jvmarg line="${test.run.args}"/>
+                <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
+                <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
                 <formatter type="brief" usefile="false"/>
                 <formatter type="xml"/>
             </junit>
@@ -554,10 +544,34 @@ made subject to such option by the copyright holder.
         </sequential>
     </macrodef>
     <target name="test-unit" depends="init,test-init,test-build" if="exists.test.unit.src.dir">
-        <test test.type="unit"/>
+        <test test.type="unit" disable.apple.ui="true"/>
     </target>
     <target name="test-qa-functional" depends="init,test-init,test-build" if="exists.test.qa-functional.src.dir">
         <test test.type="qa-functional"/>
+    </target>
+
+    <target name="test-generate-html">
+        <subant target="-test-browse-html" genericantfile="${ant.file}" inheritall="false">
+            <dirset dir="build/test" includes="unit/results, qa-functional/results"/>
+        </subant>
+    </target>
+
+    <target name="-do-test-generate-html">
+        <junitreport todir=".">
+            <fileset dir=".">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="html"/>
+        </junitreport>
+        <makeurl file="${basedir}/html/index.html" property="test.report.url"/>
+        <echo>
+
+        Report URL: ${test.report.url}
+        </echo>
+    </target>
+
+    <target name="-test-browse-html" if="netbeans.home" depends="-do-test-generate-html">
+        <nbbrowse file="html/index.html"/>
     </target>
     <target name="test" depends="test-unit,test-qa-functional"/>
 
@@ -688,7 +702,7 @@ made subject to such option by the copyright holder.
         <property name="test.type" value="unit"/>
         <profile-test-single-nb test.type="${test.type}"/>
     </target>
-    
+
     <target name="-javadoc-init" depends="init">
         <!-- #71884: default Javadoc title and header -->
         <property file="${manifest.mf}" prefix="mf."/>
@@ -704,14 +718,14 @@ made subject to such option by the copyright holder.
         <property name="mf.OpenIDE-Module-Implementation-Version" value=""/> <!-- fallback -->
         <property name="javadoc.header" value="${mf.OpenIDE-Module} ${mf.OpenIDE-Module-Specification-Version} ${mf.OpenIDE-Module-Implementation-Version}"/>
     </target>
-    
+
     <target name="arch" depends="init" description="Process an arch.xml, creating it if it does not yet exist.">
         <fail unless="javadoc.arch">You must define e.g. javadoc.arch=$${basedir}/arch.xml in project.properties</fail>
         <mkdir dir="build"/>
         <property name="arch.output.html" location="build/arch.html"/>
         <property name="arch.generate" value="true"/>
         <arch answers="${javadoc.arch}" output="${arch.output.html}"
-            project="nbproject/project.xml" 
+            project="nbproject/project.xml"
         />
     </target>
 
@@ -726,7 +740,7 @@ made subject to such option by the copyright holder.
     <target name="arch-nb" depends="init,arch,-arch-nb-check" if="-arch-nb-run" description="Process an arch.xml, creating it if it does not yet exist, and display the result.">
         <nbbrowse file="${arch.output.html}"/>
     </target>
-    
+
     <target name="-testuserdir-delete-init" depends="files-init">
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="test.user.dir.lock" location="${test.user.dir}/lock"/>
@@ -740,9 +754,10 @@ made subject to such option by the copyright holder.
         <fail>Will not delete ${test.user.dir} because ${test.user.dir.lock} still exists; kill any running process and delete lock file if necessary</fail>
     </target>
     <target name="testuserdir-delete" depends="-testuserdir-delete-ok,-testuserdir-delete-fail" description="Delete testing user directory (if the application is not running); clears any saved settings etc."/>
-    
+
     <target name="clean" depends="files-init,testuserdir-delete,test-clean">
         <delete failonerror="false" includeemptydirs="true">
+            <fileset dir="${build.classes.dir}" />
             <fileset dir="build">
                 <exclude name="testuserdir/"/>
             </fileset>
@@ -762,7 +777,7 @@ made subject to such option by the copyright holder.
             <sequential>
                 <parseprojectxml project=".">
                     <testtype name="@{test.type}" folder="test.@{test.type}.folder"/>
-                </parseprojectxml>      
+                </parseprojectxml>
                 <property name="test.@{test.type}.out.folder" location="${test.@{test.type}.folder}"/>
                 <delete dir="${test.@{test.type}.out.folder}"/>
             </sequential>
@@ -772,33 +787,33 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="fix-dependencies" depends="basic-init" description="Removes unused compilation dependencies on other modules.">
-        <property name="build.compiler.deprecation" value="false" />        
+        <property name="build.compiler.deprecation" value="false" />
         <fixdependencies antfile="../../build.xml" buildtarget="netbeans" cleantarget="clean" failonerror="true" >
-          <replace codenamebase="org.openide" addcompiletime="true" >
-            <module codenamebase="org.openide.filesystems" spec="6.2"/>
-            <module codenamebase="org.openide.util" spec="6.2"/>
-            <module codenamebase="org.openide.util.enumerations" spec="6.2"/>
-            <module codenamebase="org.openide.modules" spec="6.2"/>
-            <module codenamebase="org.openide.nodes" spec="6.2"/>
-            <module codenamebase="org.openide.explorer" spec="6.2"/>
-            <module codenamebase="org.openide.awt" spec="6.2"/>
-            <module codenamebase="org.openide.dialogs" spec="6.2"/>
-            <module codenamebase="org.openide.compat" spec="6.2"/>
-            <module codenamebase="org.openide.options" spec="6.2"/>
-            <module codenamebase="org.openide.windows" spec="6.2"/>
-            <module codenamebase="org.openide.text" spec="6.2"/>
-            <module codenamebase="org.openide.actions" spec="6.2"/>
-            <module codenamebase="org.openide.loaders" spec="5.3"/>
-          </replace>
-          
-          <fileset dir="nbproject" >
-              <include name="project.xml" />
-          </fileset>
+            <replace codenamebase="org.openide" addcompiletime="true" >
+                <module codenamebase="org.openide.filesystems" spec="6.2"/>
+                <module codenamebase="org.openide.util" spec="6.2"/>
+                <module codenamebase="org.openide.util.enumerations" spec="6.2"/>
+                <module codenamebase="org.openide.modules" spec="6.2"/>
+                <module codenamebase="org.openide.nodes" spec="6.2"/>
+                <module codenamebase="org.openide.explorer" spec="6.2"/>
+                <module codenamebase="org.openide.awt" spec="6.2"/>
+                <module codenamebase="org.openide.dialogs" spec="6.2"/>
+                <module codenamebase="org.openide.compat" spec="6.2"/>
+                <module codenamebase="org.openide.options" spec="6.2"/>
+                <module codenamebase="org.openide.windows" spec="6.2"/>
+                <module codenamebase="org.openide.text" spec="6.2"/>
+                <module codenamebase="org.openide.actions" spec="6.2"/>
+                <module codenamebase="org.openide.loaders" spec="5.3"/>
+            </replace>
+
+            <fileset dir="nbproject" >
+                <include name="project.xml" />
+            </fileset>
         </fixdependencies>
     </target>
-    
+
     <target name="fix-test-dependencies" depends="basic-init" description="Moves classpath for tests from project.properties to project.xml.">
-            <fixtestdeps projectXml="nbproject/project.xml" 
-                  propertiesFile="nbproject/project.properties"/>  
+        <fixtestdeps projectXml="nbproject/project.xml"
+                  propertiesFile="nbproject/project.properties"/>
     </target>
 </project>

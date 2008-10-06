@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.action;
 
 import java.io.IOException;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -102,8 +103,29 @@ public final class UseEntityManagerAction extends NodeAction {
     }
     
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        
+        if(activatedNodes[0].getCookie(DataObject.class) == null) {
+            return false;
+        }
+        
+        // Enable it only if the EntityManager is in the project classpath
+        // This check was motivated by issue 139333 - The Use Entity Manager action 
+        // breaks from left to right if the javax.persistence.EntityManager class is missing
+        FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath(target, ClassPath.COMPILE);
+        if(cp == null) {
+            return false;
+        }
+        FileObject entityMgrRes = cp.findResource("javax/persistence/EntityManager.class"); // NOI18N
+       
+        if (entityMgrRes != null) { 
+            return true;
+        } else {
+            return false;
+        }
     }
-    
 }
 

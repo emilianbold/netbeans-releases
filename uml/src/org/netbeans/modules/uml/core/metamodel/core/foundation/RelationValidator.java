@@ -339,7 +339,7 @@ public class RelationValidator {
 				while ( idx < count && retVal == false )
 				{
 					IImplementation imp = imps.get(idx);
-					IInterface pIFace = imp.getContract();
+					IClassifier pIFace = imp.getContract();
 					if (pIFace != null)
 					{
 						boolean isSame = false;

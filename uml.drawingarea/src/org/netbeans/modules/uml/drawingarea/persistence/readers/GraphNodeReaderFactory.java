@@ -43,9 +43,10 @@ import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -79,13 +80,18 @@ public class GraphNodeReaderFactory {
             {
                 retVal = new CombinedFragmentReader(nodeInfo);
             }
-            else if (elt instanceof IPackage)
-            {
-                retVal = new PackageReader(nodeInfo);
-            }
+            // we don't need special handling for packages
+//            else if (elt instanceof IPackage)
+//            {
+//                retVal = new PackageReader(nodeInfo);
+//            }
             else if (elt instanceof IState || elt instanceof IRegion)
             {
                 retVal = new CompositeStateReader(nodeInfo);
+            }
+            else if (elt instanceof IOperation || elt instanceof IAttribute)
+            {
+                retVal = new FeatureStateReader(nodeInfo);
             }
             else
             {

@@ -1,0 +1,23 @@
+<g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+       <!-- Metadata information. Please don't edit. -->
+       <text display="none">type=checkbox</text>
+
+       <rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="rgb(255,165,0)" 
+                    stroke-width="2" visibility="hidden">
+           <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" fill="freeze" to="visible"/>
+           <set attributeName="visibility" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" fill="freeze" to="hidden"/>
+       </rect>
+       <rect x="7.4" y="5" width="20" height="20" fill="white" stroke="black" stroke-width="2"/>
+       <g>
+               <!-- Metadata information. Please don't edit. -->
+	       <text display="none">type=mark</text>
+               <path id="%%COMPONENT_ID%%_mark" transform="translate(12.5,15.5)"  d="M 0,0 5,5 5,-12" fill="none" 
+                     stroke="black" stroke-width="2"/>
+       </g>
+       <g>
+               <text id="%%COMPONENT_ID%%_title" x="33.8" y="21.6" stroke="gray" font-size="15">
+               Online</text>
+               <!-- Metadata information. Please don't edit. -->
+	       <text display="none">type=text</text>
+       </g>
+</g>

@@ -43,7 +43,6 @@
 
 package org.netbeans.debuggercore;
 
-import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -58,9 +57,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Node;
 
 /**
@@ -124,7 +121,7 @@ public class WatchesTest extends JellyTestCase {
             Utilities.setCaret(op, 76);
             new RunToCursorAction().perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
         }
     }
     

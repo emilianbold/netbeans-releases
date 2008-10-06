@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -74,6 +74,13 @@ import static java.util.logging.Level.FINEST;
  * @author  Marian Petras
  */
 final class BasicSearchCriteria {
+
+    /**
+     * maximum size of file of unrecognized file that will be searched.
+     * Files of uknown type that whose size exceed this limit will be considered
+     * binary and will not be searched.
+     */
+    private static final int MAX_UNRECOGNIZED_FILE_SIZE = 5 * (1 << 20); //5 MiB
 
     private static int instanceCounter;
     private final int instanceId = instanceCounter++;
@@ -603,8 +610,11 @@ final class BasicSearchCriteria {
     private static boolean isTextFile(FileObject fileObj) {
         String mimeType = fileObj.getMIMEType();
         
-        if (mimeType.equals("content/unknown")                          //NOI18N
-                || mimeType.startsWith("text/")) {                      //NOI18N
+        if (mimeType.equals("content/unknown")) {                       //NOI18N
+            return fileObj.getSize() <= MAX_UNRECOGNIZED_FILE_SIZE;
+        }
+
+        if (mimeType.startsWith("text/")) {                             //NOI18N
             return true;
         }
 

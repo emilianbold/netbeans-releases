@@ -46,9 +46,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import junit.textui.TestRunner;
 import junit.framework.Test;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.*;
@@ -59,6 +65,7 @@ import org.netbeans.test.j2ee.addmethod.AddFinderMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddSelectMethodTest;
 import org.netbeans.test.j2ee.addmethod.CallEJBTest;
+import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.openide.util.Exceptions;
 
@@ -68,7 +75,7 @@ import org.openide.util.Exceptions;
  * 
  * @author libor.martinek@sun.com
  */
-public class EJBValidation extends J2eeProjectsTest {
+public class EJBValidation extends J2eeTestCase {
 
     public static final String EAR_PROJECT_NAME = "TestingEntApp";
     public static final String WEB_PROJECT_NAME = EAR_PROJECT_NAME + "-WebModule";
@@ -157,16 +164,16 @@ public class EJBValidation extends J2eeProjectsTest {
             Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.EJB_PROJECT_NAME),
                     Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjar.project.ui.Bundle", "LBL_node") + "|" + files[i]);
             new OpenAction().performAPI(openFile);
-            EditorOperator editor = new EditorWindowOperator().getEditor(files[i] + "Bean.java");
+            EditorOperator editor = EditorWindowOperator.getEditor(files[i] + "Bean.java");
         }
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }
 
     public void closeProjects() {
-        new EditorWindowOperator().getEditor().closeDiscardAll();
-        ProjectSupport.closeProject(EAR_PROJECT_NAME);
-        ProjectSupport.closeProject(EJB_PROJECT_NAME);
-        ProjectSupport.closeProject(WEB_PROJECT_NAME);
+        EditorOperator.closeDiscardAll();
+        J2eeProjectSupport.closeProject(EAR_PROJECT_NAME);
+        J2eeProjectSupport.closeProject(EJB_PROJECT_NAME);        
+        J2eeProjectSupport.closeProject(WEB_PROJECT_NAME);
     }
 
     public void prepareDatabase() {

@@ -107,7 +107,6 @@ public class ImportWizardTest extends JellyTestCase {
     protected void setUp() throws Exception {
         
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         try {
             TestKit.extractProtocol(getDataDir());
@@ -131,8 +130,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserverUI() {   
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -156,15 +153,15 @@ public class ImportWizardTest extends JellyTestCase {
         
         //combobox
         try {
-            JComboBoxOperator combo = new JComboBoxOperator(crso);
-            JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
-            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
-            JButtonOperator btnProxy = new JButtonOperator(crso, "Proxy Configuration...");
-            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
-            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
-            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
-            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
-            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+            new JComboBoxOperator(crso);
+            new JPasswordFieldOperator(crso);
+            new JButtonOperator(crso, "Edit...");
+            new JButtonOperator(crso, "Proxy Configuration...");
+            new JButtonOperator(crso, "< Back");
+            new JButtonOperator(crso, "Next >");
+            new JButtonOperator(crso, "Finish");
+            new JButtonOperator(crso, "Cancel");
+            new JButtonOperator(crso, "Help");
         }  catch (TimeoutExpiredException e) {
             throw e;
         }
@@ -173,8 +170,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocalUI() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -197,13 +192,12 @@ public class ImportWizardTest extends JellyTestCase {
         //combobox
         try {
             JComboBoxOperator combo = new JComboBoxOperator(crso);
-            //JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
-            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
-            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
-            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
-            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
-            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
-            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+            new JButtonOperator(crso, "Edit...");
+            new JButtonOperator(crso, "< Back");
+            new JButtonOperator(crso, "Next >");
+            new JButtonOperator(crso, "Finish");
+            new JButtonOperator(crso, "Cancel");
+            new JButtonOperator(crso, "Help");
         } catch (TimeoutExpiredException e) {
             throw e;
         }
@@ -213,8 +207,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardForkUI() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -237,14 +229,13 @@ public class ImportWizardTest extends JellyTestCase {
         //start test UI
         
         try {
-            JComboBoxOperator combo = new JComboBoxOperator(crso);
-            //JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
-            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
-            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
-            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
-            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
-            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
-            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+            new JComboBoxOperator(crso);
+            new JButtonOperator(crso, "Edit...");
+            new JButtonOperator(crso, "< Back");
+            new JButtonOperator(crso, "Next >");
+            new JButtonOperator(crso, "Finish");
+            new JButtonOperator(crso, "Cancel");
+            new JButtonOperator(crso, "Help");
         } catch (TimeoutExpiredException e) {
             throw e;
         }
@@ -254,8 +245,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExtUI() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -268,7 +257,7 @@ public class ImportWizardTest extends JellyTestCase {
         //Invalid CVS Root
         crso.setCVSRoot(":ext:test");
         try {
-            JLabelOperator inv = new JLabelOperator(crso, "Invalid CVS Root");
+            new JLabelOperator(crso, "Invalid CVS Root");
         } catch (TimeoutExpiredException e) {
             throw e;
         }
@@ -276,19 +265,19 @@ public class ImportWizardTest extends JellyTestCase {
         crso.setCVSRoot(":ext:test@localhost:2401/cvs");
         //start test UI
         try {
-            JComboBoxOperator combo = new JComboBoxOperator(crso);
-            JPasswordFieldOperator passwd = new JPasswordFieldOperator(crso);
-            JButtonOperator btnEdit = new JButtonOperator(crso, "Edit...");
-            JButtonOperator btnProxy = new JButtonOperator(crso, "Proxy Configuration...");
-            JRadioButtonOperator internal = new JRadioButtonOperator(crso, "Use Internal SSH");
-            JRadioButtonOperator external = new JRadioButtonOperator(crso, "Use External Shell");
-            JCheckBoxOperator remeber = new JCheckBoxOperator(crso, "Remember Password");
-            JTextFieldOperator sshCommand = new JTextFieldOperator(crso);
-            JButtonOperator btnBack = new JButtonOperator(crso, "< Back");
-            JButtonOperator btnNext = new JButtonOperator(crso, "Next >");
-            JButtonOperator btnFinish = new JButtonOperator(crso, "Finish");
-            JButtonOperator btnCancel = new JButtonOperator(crso, "Cancel");
-            JButtonOperator btnHelp = new JButtonOperator(crso, "Help");
+            new JComboBoxOperator(crso);
+            new JPasswordFieldOperator(crso);
+            new JButtonOperator(crso, "Edit...");
+            new JButtonOperator(crso, "Proxy Configuration...");
+            new JRadioButtonOperator(crso, "Use Internal SSH");
+            new JRadioButtonOperator(crso, "Use External Shell");
+            new JCheckBoxOperator(crso, "Remember Password");
+            new JTextFieldOperator(crso);
+            new JButtonOperator(crso, "< Back");
+            new JButtonOperator(crso, "Next >");
+            new JButtonOperator(crso, "Finish");
+            new JButtonOperator(crso, "Cancel");
+            new JButtonOperator(crso, "Help");
         } catch (TimeoutExpiredException e) {
             throw e;
         }
@@ -298,8 +287,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLoginSuccess() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -309,7 +296,6 @@ public class ImportWizardTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
-        //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
@@ -333,8 +319,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardExt() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -379,8 +363,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardLocal() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -409,8 +391,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFork() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -439,8 +419,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardPserver() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -453,8 +431,6 @@ public class ImportWizardTest extends JellyTestCase {
         crso.setCVSRoot(":pserver:test@localhost:2401/cvs");
         crso.setPassword("test");
         
-        //crso.cbRememberPassword().setSelected(true);
-        //crso.cbRememberPassword().setSelected(false);
         EditCVSRootOperator editOperator = crso.edit();
         assertEquals("Wrong access method in Edit CVSRoot dialog", "pserver", editOperator.getAccessMethod());
         assertEquals("Wrong username Edit CVSRoot dialog", "test", editOperator.getUser());
@@ -485,9 +461,6 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardSecondStepUI() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         new ProjectsTabOperator().tree().clearSelection();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -497,7 +470,6 @@ public class ImportWizardTest extends JellyTestCase {
         Operator.setDefaultStringComparator(oldOperator);
         final CVSRootStepOperator crso = new CVSRootStepOperator();
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
-        //crso.setPassword("test");
         
         //prepare stream for successful authentification and run PseudoCVSServer
         InputStream in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "authorized.in");
@@ -519,7 +491,7 @@ public class ImportWizardTest extends JellyTestCase {
         in.close();
         folderToImportOper.setFolderToImport(getWorkDirPath());
         JFileChooserOperator browseFolder = folderToImportOper.browseFolderToImport();
-        assertEquals("Directory set in wizard not propagated to file chooser:", getWorkDir().getAbsolutePath(), browseFolder.getCurrentDirectory().getAbsolutePath()); // NOI18N
+        assertEquals("Directory set in wizard not propagated to file chooser:", getWorkDir().getAbsolutePath().toLowerCase(), browseFolder.getCurrentDirectory().getAbsolutePath().toLowerCase()); // NOI18N
         browseFolder.cancel();
         folderToImportOper.setImportMessage("Import message"); //NOI18N
         
@@ -540,11 +512,9 @@ public class ImportWizardTest extends JellyTestCase {
     }
     
     public void testImportWizardFinish() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 36000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 36000);
         String CVSroot;
         PseudoCvsServer cvss;
-        OutputOperator oo = OutputOperator.invoke();
+        OutputOperator.invoke();
         TestKit.unversionProject(file, projectName);
         
         new ProjectsTabOperator().tree().clearSelection();
@@ -552,10 +522,9 @@ public class ImportWizardTest extends JellyTestCase {
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Node node = new ProjectsTabOperator().getProjectRootNode(projectName);
         Operator.setDefaultStringComparator(comOperator);
-        ImportWizardOperator iwo = ImportWizardOperator.invoke(node);
+        ImportWizardOperator.invoke(node);
         Operator.setDefaultStringComparator(oldOperator);
         CVSRootStepOperator crso = new CVSRootStepOperator();
-        JComboBoxOperator combo = new JComboBoxOperator(crso, 0);
         crso.setCVSRoot(":pserver:test@localhost:/cvs");
         //crso.setPassword("test");
         
@@ -575,7 +544,6 @@ public class ImportWizardTest extends JellyTestCase {
         crso.next();
               
         //Wizard proceeded to 2nd step.
-        
         FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
         cvss.stop();
         in.close();
@@ -586,20 +554,15 @@ public class ImportWizardTest extends JellyTestCase {
         new Thread(cvss).start();
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
-        //cvss.ignoreProbe();
-        
-        //crso.setCVSRoot(CVSroot);/
         folderToImportOper.finish();
         
         
-        //System.out.println(CVSroot);
         OutputTabOperator oto = new OutputTabOperator(sessionCVSroot); 
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
         oto.waitText("Importing finished");
         cvss.stop();
         in.close();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", "");
-        //TestKit.removeAllData(projectName, file);
     }
     
     public void prepareProject() throws Exception {

@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurati
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,38 +86,23 @@ import org.openide.util.lookup.Lookups;
  *  is not.
  *
  */
-public class ModuleConfigurationImpl implements DatasourceConfiguration, DeploymentPlanConfiguration,
-        EjbResourceConfiguration, ContextRootConfiguration, MappingConfiguration, ModuleConfiguration, MessageDestinationConfiguration {
+public class ModuleConfigurationImpl implements 
+        ModuleConfiguration,
+        ContextRootConfiguration,
+        DeploymentPlanConfiguration,
+        DatasourceConfiguration,
+        EjbResourceConfiguration,
+        MessageDestinationConfiguration,
+        MappingConfiguration
+{
     
     private SunONEDeploymentConfiguration config;
     private J2eeModule module;
     private Lookup lookup;
     
-    /** Creates a new instance of ConfigurationSupport */
-    ModuleConfigurationImpl(J2eeModule mod) throws ConfigurationException {
-        this.module = mod;
-        this.config = new SunONEDeploymentConfiguration(mod);
-        Object type = mod.getModuleType();
-        File dds[] = new File[0];
-        
-        if (J2eeModule.WAR.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("sun-web.xml") };
-        } else if (J2eeModule.EJB.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("sun-ejb-jar.xml"),
-            module.getDeploymentConfigurationFile("sun-cmp-mappings.xml") };
-        } else if (J2eeModule.CLIENT.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("sun-application-client.xml")};
-        } else if (J2eeModule.EAR.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("sun-application.xml") };
-        } else if (J2eeModule.CONN.equals(type)) {
-            dds = new File[] { module.getDeploymentConfigurationFile("sun-ra.xml") };
-        }
-        
-        try {
-            config.init(dds, module.getResourceDirectory(), true);
-        } catch (javax.enterprise.deploy.spi.exceptions.ConfigurationException ex) {
-            throw new ConfigurationException("",ex);
-        }
+    ModuleConfigurationImpl(J2eeModule module) throws ConfigurationException {
+        this.module = module;
+        this.config = new SunONEDeploymentConfiguration(module);
         
         // Support build extension for new resource persistence strategy
         File f = module.getResourceDirectory();
@@ -183,23 +168,23 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     /** Conduit to pass the cmp mapping information directly to the configuration
      *  backend.
      */
-    public void setMappingInfo(OriginalCMPMapping[] mapping) throws ConfigurationException {
-        config.mapCmpBeans(mapping);
+    public void setMappingInfo(OriginalCMPMapping[] mappings) throws ConfigurationException {
+        config.setMappingInfo(mappings);
     }
     
     
     /** Retrieves the context root field from sun-web.xml for this module, if the module is a
      *  web application.  Otherwise, returns null.
      */
-    public String getContextRoot() {
+    public String getContextRoot() throws ConfigurationException {
         return config.getContextRoot();
     }
-    
-    
+
+
     /** Sets the context root field in sun-web.xml for this module, if the module is a
      *  web application.
      */
-    public void setContextRoot(String contextRoot) {
+    public void setContextRoot(String contextRoot) throws ConfigurationException {
         config.setContextRoot(contextRoot);
     }
     
@@ -433,5 +418,6 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             });
         }
     }
+
 }
 

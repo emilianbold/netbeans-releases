@@ -48,7 +48,7 @@ import java.awt.*;
 /**
  * @author David Kaspar
  */
-public class SVGImageComponent extends JComponent {
+public class SVGImageComponent extends JPanel {
 
     private SVGImage image;
 

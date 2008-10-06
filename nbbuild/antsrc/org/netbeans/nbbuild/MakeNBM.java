@@ -42,6 +42,8 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,6 +53,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,15 +71,22 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.SignJar;
+import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** Makes a <code>.nbm</code> (<b>N</b>et<b>B</b>eans <b>M</b>odule) file.
  *
@@ -160,11 +170,7 @@ public class MakeNBM extends Task {
 		    first = false;
 		} else {
 		    int i;
-		    for (i = 0;
-			 i < line.length () &&
-			     Character.isWhitespace (line.charAt (i));
-			 i++)
-			;
+                    for (i = 0; i < line.length() && Character.isWhitespace(line.charAt(i)); i++) {}
 		    if (i < min) min = i;
 		}
 	    }
@@ -304,7 +310,7 @@ public class MakeNBM extends Task {
     private String targetcluster = null;
     private String jarSignerMaxMemory = "96m";
     private Blurb license = null;
-    private Blurb description = null;
+    private Blurb desc = null;
     private Blurb notification = null;
     private Signature signature = null;
     private long mostRecentInput = 0L;
@@ -313,6 +319,7 @@ public class MakeNBM extends Task {
     private ArrayList<String> locales = null;
     private ArrayList<Attributes> moduleAttributes = null;
     private Attributes englishAttr = null;
+    private Path updaterJar;
     
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
@@ -409,7 +416,7 @@ public class MakeNBM extends Task {
     }    
     public Blurb createDescription () {
         log(getLocation() + "The <description> subelement in <makenbm> is deprecated except for emergency patches, please ensure your module has an OpenIDE-Module-Long-Description instead", Project.MSG_WARN);
-	return (description = new Blurb ());
+        return desc = new Blurb();
     }
     public Signature createSignature () {
 	return (signature = new Signature ());
@@ -427,6 +434,11 @@ public class MakeNBM extends Task {
     
     public ZipFileSet createMain () {
         return (main = new ZipFileSet());
+    }
+
+    /** Fileset for platform/modules/ext/updater.jar, to be used in DTD validation. */
+    public Path createUpdaterJar() {
+        return updaterJar = new Path(getProject());
     }
     
     private Attributes getModuleAttributesForLocale(String locale) throws BuildException {
@@ -555,12 +567,12 @@ public class MakeNBM extends Task {
             locales = new ArrayList<String>();
         }
 
-    File file;
+    File nbm;
     String rootDir = getProject ().getProperty ("nbm.target.dir");
     if (rootDir != null && !rootDir.equals ("")) { 
-        file = new File (rootDir, this.file.getName ());
+        nbm = new File(rootDir, this.file.getName());
     } else {
-        file = this.file;
+        nbm = this.file;
     }
 
 	// If desired, override the license and/or URL. //
@@ -583,11 +595,11 @@ public class MakeNBM extends Task {
             if (mostRecentInput < mMod) mostRecentInput = mMod;
         }
 
-        if (mostRecentInput < file.lastModified()) {
-            log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + file.lastModified(), Project.MSG_VERBOSE);
+        if (mostRecentInput < nbm.lastModified()) {
+            log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + nbm.lastModified(), Project.MSG_VERBOSE);
             return;
         } else {
-            log("Most recent input: " + mostRecentInput + " file: " + file.lastModified(), Project.MSG_DEBUG);
+            log("Most recent input: " + mostRecentInput + " file: " + nbm.lastModified(), Project.MSG_DEBUG);
         }
         
         ArrayList<ZipFileSet> infoXMLFileSets = new ArrayList<ZipFileSet>();
@@ -632,11 +644,11 @@ public class MakeNBM extends Task {
  	fs.setPrefix("netbeans/");
 
 	// JAR it all up together.
-	long jarModified = file.lastModified (); // may be 0
+        long jarModified = nbm.lastModified(); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) getProject().createTask("jar");
     
-        jar.setDestFile(file);
+        jar.setDestFile(nbm);
         jar.addZipfileset(fs);
         for (ZipFileSet zfs : infoXMLFileSets) {
             jar.addFileset(zfs);
@@ -653,7 +665,7 @@ public class MakeNBM extends Task {
 	jar.execute ();
 
 	// Print messages if we overrode anything. //
-	if( file.lastModified () != jarModified) {
+        if (nbm.lastModified() != jarModified) {
 	  if( overrideLicense()) {
 	    log( "Overriding license with: " + getLicenseOverride()) ;
 	  }
@@ -663,7 +675,7 @@ public class MakeNBM extends Task {
 	}
 
 	// Maybe sign it.
-	if (signature != null && file.lastModified () != jarModified) {
+        if (signature != null && nbm.lastModified() != jarModified) {
 	    if (signature.keystore == null)
 		throw new BuildException ("must define keystore attribute on <signature/>");
 	    if (signature.storepass == null)
@@ -671,10 +683,10 @@ public class MakeNBM extends Task {
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
             if (signature.storepass.equals ("?") || signature.storepass.indexOf("${") != -1 || !signature.keystore.exists()) {
-                log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
+                log("Not signing NBM file " + nbm + "; no stored-key password provided or keystore ("
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
-                log ("Signing NBM file " + file);
+                log("Signing NBM file " + nbm);
                 SignJar signjar = (SignJar) getProject().createTask("signjar");
                 try { // Signatures changed in various Ant versions.
                     try {
@@ -683,9 +695,9 @@ public class MakeNBM extends Task {
                         SignJar.class.getMethod("setKeystore", String.class).invoke(signjar, signature.keystore.getAbsolutePath());
                     }
                     try {
-                        SignJar.class.getMethod("setJar", File.class).invoke(signjar, file);
+                        SignJar.class.getMethod("setJar", File.class).invoke(signjar, nbm);
                     } catch (NoSuchMethodException x) {
-                        SignJar.class.getMethod("setJar", String.class).invoke(signjar, file.getAbsolutePath());
+                        SignJar.class.getMethod("setJar", String.class).invoke(signjar, nbm.getAbsolutePath());
                     }
                 } catch (BuildException x) {
                     throw x;
@@ -717,7 +729,8 @@ public class MakeNBM extends Task {
         }
         
         String pub, sys;
-        if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null) {
+        if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null ||
+                attr.getValue("OpenIDE-Module-Recommends") != null || attr.getValue("OpenIDE-Module-Needs") != null) {
             pub = "-//NetBeans//DTD Autoupdate Module Info 2.5//EN";
             sys = "http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd";
         } else if (targetcluster != null && !("".equals(targetcluster))) {
@@ -779,8 +792,8 @@ public class MakeNBM extends Task {
             releasedate = DATE_FORMAT.format(new Date(System.currentTimeMillis()));
         }
         module.setAttribute("releasedate", releasedate);
-        if (description != null) {
-            module.appendChild(doc.createElement("description")).appendChild(description.getTextNode(doc));
+        if (desc != null) {
+            module.appendChild(doc.createElement("description")).appendChild(desc.getTextNode(doc));
         }
         if (notification != null) {
             module.appendChild(doc.createElement("module_notification")).appendChild(notification.getTextNode(doc));
@@ -814,18 +827,10 @@ public class MakeNBM extends Task {
         it = attrNames.iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
-            // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-*.dtd
-            //  and www/www/dtds/autoupdate-info-*.dtd):
-            // XXX better would be to enumerate the attrs it *does* recognize!
-            if (!name.startsWith("OpenIDE-Module") && !name.startsWith("AutoUpdate-")) continue;
-            if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
-            if (name.equals("OpenIDE-Module-Install")) continue;
-            if (name.equals("OpenIDE-Module-Layer")) continue;
-            if (name.equals("OpenIDE-Module-Description")) continue;
-            if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
-            if (name.equals("OpenIDE-Module-Public-Packages")) continue;
-            if (name.equals("OpenIDE-Module-Friends")) continue;
-            el.setAttribute(name, attr.getValue(name));
+            if (name.matches("OpenIDE-Module(|-(Name|(Specification|Implementation)-Version|(Module|Package|Java|IDE)-Dependencies|" +
+                    "(Short|Long)-Description|Display-Category|Provides|Requires|Recommends|Needs))|AutoUpdate-(Show-In-Client|Essential-Module)")) {
+                el.setAttribute(name, attr.getValue(name));
+            }
         }
         module.appendChild(el);
         // Maybe write out license text.
@@ -835,9 +840,42 @@ public class MakeNBM extends Task {
             el.appendChild(license.getTextNode(doc));
             module.appendChild(el);
         }
+        if (updaterJar != null && updaterJar.size() > 0) {
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                XMLUtil.write(doc, baos);
+                validateAgainstAUDTDs(new InputSource(new ByteArrayInputStream(baos.toByteArray())), updaterJar, this);
+            } catch (Exception x) {
+                throw new BuildException("Could not validate Info.xml before writing: " + x, x, getLocation());
+            }
+        } else {
+            log("No updater.jar specified, cannot validate Info.xml against DTD", Project.MSG_WARN);
+        }
         return doc;
     }
-   
+
+    static void validateAgainstAUDTDs(InputSource input, final Path updaterJar, final Task task) throws IOException, SAXException {
+        XMLUtil.parse(input, true, false, new ErrorHandler() {
+            public void warning(SAXParseException exception) throws SAXException {throw exception;}
+            public void error(SAXParseException exception) throws SAXException {throw exception;}
+            public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
+        }, new EntityResolver() {
+            ClassLoader loader = new AntClassLoader(task.getProject(), updaterJar);
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                String remote = "http://www.netbeans.org/dtds/";
+                if (systemId.startsWith(remote)) {
+                    String rsrc = "org/netbeans/updater/resources/" + systemId.substring(remote.length());
+                    URL u = loader.getResource(rsrc);
+                    if (u != null) {
+                        return new InputSource(u.toString());
+                    } else {
+                        task.log(rsrc + " not found in " + updaterJar, Project.MSG_WARN);
+                    }
+                }
+                return null;
+            }
+        });
+    }
 
   /** This returns true if the license should be overridden. */
   protected boolean overrideLicense() {

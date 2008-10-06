@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <location place_id="kH8dLOubBZRvX_YZ" woeid="2487956"
+                latitude="37.779" longitude="-122.420"
+                place_url="/United+States/California/San+Francisco"
+                place_type="locality">
+        <locality place_id="kH8dLOubBZRvX_YZ" woeid="2487956"
+                 latitude="37.779" longitude="-122.420"
+                 place_url="/United+States/California/San+Francisco">San Francisco
+        </locality>
+        <county place_id="hCca8XSYA5nn0X1Sfw" woeid="12587707"
+                 latitude="37.759" longitude="-122.435"
+                 place_url="/hCca8XSYA5nn0X1Sfw">San Francisco
+        </county>
+        <region place_id="SVrAMtCbAphCLAtP" woeid="2347563"
+                latitude="37.271" longitude="-119.270"
+                place_url="/United+States/California">California
+        </region>
+        <country place_id="4KO02SibApitvSBieQ" woeid="23424977"
+                  latitude="48.890" longitude="-116.982"
+                  place_url="/United+States">United States
+        </country>
+    </location>
+</rsp>

@@ -41,6 +41,9 @@
 
 package org.openide.nodes;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,11 +51,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
 
@@ -91,16 +96,18 @@ public abstract class Children extends Object {
     * needs for a certain amount of time to forbid modification,
     * he can execute his code in {@link Mutex#readAccess}.
     */
-    public static final Mutex MUTEX = new Mutex(PR);
+    public static final Mutex MUTEX = new Mutex(PR, new ProjectManagerDeadlockDetector());
 
     /** The object representing an empty set of children. Should
     * be used to represent the children of leaf nodes. The same
     * object may be used by all such nodes.
     */
     public static final Children LEAF = new Empty();
+
+    static final Logger LOG = Logger.getLogger(Children.class.getName());
     
     /** access to entries/nodes */
-    private EntrySupport entrySupport;
+    EntrySupport entrySupport;
 
     /** parent node for all nodes in this list (can be null) */
     Node parent;
@@ -123,27 +130,33 @@ public abstract class Children extends Object {
     /** Constructor.
     */
     public Children() {
+        this(false);
+    }
+
+    Children(boolean lazy) {
+        lazySupport = lazy;
     }
 
     /**
      * Initializes entry support.
      */
-    final EntrySupport entrySupport() {
+    EntrySupport entrySupport() {
         synchronized (Children.class) {
             if (entrySupport == null) {
-                entrySupport = createEntrySource();
+                entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
                 postInitializeEntrySupport();
             }
             return entrySupport;
         }
     }
 
-    /**
-     * Creates appropriate entry support for this children.
-     * Overriden in Children.Keys to sometimes make lazy support.
-     */
-    EntrySupport createEntrySource() {
-        return new EntrySupport.Default(this);
+    boolean lazySupport;
+
+    boolean isLazy() {
+        return lazySupport;
+    }
+    
+    void checkSupport() {
     }
 
     /**
@@ -310,6 +323,7 @@ public abstract class Children extends Object {
     *   a parent node
     * *exception CloneNotSupportedException if <code>Cloneable</code> interface is not implemented
     */
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         Children ch = (Children) super.clone();
         ch.parent = null;
@@ -398,8 +412,9 @@ public abstract class Children extends Object {
      * @return the node at given index or null
      * @since org.openide.nodes 7.5
      */
-    public final Node getNodeAt(int i) {
-        return entrySupport().getNodeAt(i);
+    public final Node getNodeAt(int index) {
+        checkSupport();
+        return entrySupport().getNodeAt(index);
     }
 
     /** Get a (sorted) array of nodes in this list.
@@ -414,6 +429,7 @@ public abstract class Children extends Object {
 
     //  private static String off = ""; // NOI18N
     public final Node[] getNodes() {
+        checkSupport();
         return entrySupport().getNodes(false);
     }
 
@@ -445,6 +461,7 @@ public abstract class Children extends Object {
      * @return array of nodes
      */
     public Node[] getNodes(boolean optimalResult) {
+        checkSupport();
         return entrySupport().getNodes(optimalResult);
     }
 
@@ -452,9 +469,46 @@ public abstract class Children extends Object {
     * @return the count
     */
     public final int getNodesCount() {
-        return entrySupport().getNodesCount();
+        checkSupport();
+        return entrySupport().getNodesCount(false);
     }
 
+    /** Get the number of nodes in the list
+     * @param optimalResult whether to try to perform full initialization
+     * or to simply delegate to {@link #getNodesCount()}
+     * @return the count
+     * @since org.openide.nodes 7.6
+     */
+    public int getNodesCount(boolean optimalResult) {
+        checkSupport();
+        return entrySupport().getNodesCount(optimalResult);
+    }
+
+    /** Creates an immutable snapshot representing the current view of the nodes
+     * in this children object. This is No attempt is made to extract incorrect or invalid
+     * nodes from the list, as a result, the value may not be exactly the same
+     * as returned by {@link #getNodes()}.
+     * 
+     * @return immutable and unmodifiable list of nodes in this children object
+     * @since 7.7
+     */
+    public final List<Node> snapshot() {
+        try {
+            PR.enterReadAccess();
+            return entrySupport().createSnapshot();
+        } finally {
+            PR.exitReadAccess();
+        }
+    }
+
+    static final int[] getSnapshotIdxs(List<Node> snapshot) {
+        int[] idxs = new int[snapshot.size()];
+        for (int i = 0; i < idxs.length; i++) {
+            idxs[i] = i;
+        }
+        return idxs;
+    }    
+    
     //
     // StateNotifications
     //
@@ -485,7 +539,25 @@ public abstract class Children extends Object {
     * do additional work and then call addNotify.
     */
     void callAddNotify() {
+        //System.err.println("Thread: " + Thread.currentThread().getName() + ", N: " + getNode());
+        //System.err.println("Children: " + this);
         addNotify();
+        //System.err.println("Finished: " + this);
+    }
+
+    final void callRemoveNotify() {
+        removeNotify();
+    }
+
+    /** Called when the nodes have been removed from the children.
+     * This method should allow subclasses to clean the nodes somehow.
+     * <p>
+     * Current implementation notifies all listeners on the nodes
+     * that nodes have been deleted.
+     *
+     * @param arr array of deleted nodes
+     */
+    void destroyNodes(Node[] arr) {
     }
 
     /** @return either nodes associated with this children or null if
@@ -495,68 +567,6 @@ public abstract class Children extends Object {
         return entrySupport == null ? null : entrySupport().testNodes();
     }
 
-    /** Notifies that a set of nodes has been removed from
-     * children. It is necessary that the system is already
-     * in consistent state, so any callbacks will return
-     * valid values.
-     *
-     * @param nodes list of removed nodes
-     * @param current state of nodes
-     * @return array of nodes that were deleted
-     */
-    Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-        //System.err.println("notifyRemove from: " + getNode ());
-        //System.err.println("notifyRemove: " + nodes);
-        //System.err.println("Current     : " + Arrays.asList (current));
-        //Thread.dumpStack();
-        //Keys.last.printStackTrace();
-        // [TODO] Children do not have always a parent
-        // see Services->FIRST ($SubLevel.class)
-        // during a deserialization it may have parent == null
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        if (parent == null) {
-            return arr;
-        }
-
-        // fire change of nodes
-        parent.fireSubNodesChange(false, // remove
-                arr, current);
-
-        // fire change of parent
-        Iterator it = nodes.iterator();
-
-        while (it.hasNext()) {
-            Node n = (Node) it.next();
-            n.deassignFrom(this);
-            n.fireParentNodeChange(parent, null);
-        }
-
-        return arr;
-    }
-
-    /** Notifies that a set of nodes has been add to
-     * children. It is necessary that the system is already
-     * in consistent state, so any callbacks will return
-     * valid values.
-     *
-     * @param nodes list of removed nodes
-     */
-    void notifyAdd(Collection<Node> nodes) {
-        // notify about parent change
-        for (Node n : nodes) {
-            n.assignTo(this, -1);
-            n.fireParentNodeChange(null, parent);
-        }
-
-        Node[] arr = nodes.toArray(new Node[nodes.size()]);
-
-        Node n = parent;
-
-        if (n != null) {
-            n.fireSubNodesChange(true, arr, null);
-        }
-    }
 
     /** Interface that provides a set of nodes.
     */
@@ -600,7 +610,7 @@ public abstract class Children extends Object {
         * we cannot synchronize on this instance because it is public
         * and somebody else could synchronize too.
         */
-        private Entry nodesEntry;
+        Entry nodesEntry;
 
         /** vector of added children */
         protected Collection<Node> nodes;
@@ -622,8 +632,25 @@ public abstract class Children extends Object {
         * first time, children will be used.
         */
         public Array() {
-            nodesEntry = createNodesEntry();
-            entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            this(false);
+        }
+
+        Array(boolean lazy) {
+            super(lazy);
+            if (!lazy) {
+                nodesEntry = createNodesEntry();
+            }
+        }
+        @Override
+        void postInitializeEntrySupport() {
+            if (!lazySupport) {
+                if (getNodesEntry() == null) {
+                    nodesEntry = createNodesEntry();
+                }
+                entrySupport().setEntries(Collections.singleton(getNodesEntry()));
+            } else if (getNodesEntry() != null) {
+                nodesEntry = null;
+            }
         }
 
         /** Clones all nodes that are contained in the children list.
@@ -699,6 +726,10 @@ public abstract class Children extends Object {
         * state of the nodes appropriatelly.
         */
         protected final void refresh() {
+            checkSupport();
+            if (lazySupport) {
+                return;
+            }
             MUTEX.postWriteRequest(new Runnable() {
                     public void run() {
                         refreshImpl();
@@ -706,7 +737,7 @@ public abstract class Children extends Object {
                 }
             );
         }
-
+        
         /** Getter for the entry.
         */
         final Entry getNodesEntry() {
@@ -741,12 +772,8 @@ public abstract class Children extends Object {
                     // no change to the collection
                     return false;
                 }
-
-                ;
             }
-
             refresh();
-
             return true;
         }
 
@@ -1020,12 +1047,14 @@ public abstract class Children extends Object {
 
             /** Hash code.
             */
+            @Override
             public int hashCode() {
                 return key.hashCode();
             }
 
             /** Equals.
             */
+            @Override
             public boolean equals(Object o) {
                 if (o instanceof ME) {
                     ME me = (ME) o;
@@ -1036,6 +1065,7 @@ public abstract class Children extends Object {
                 return false;
             }
 
+            @Override
             public String toString() {
                 return "Key (" + key + ")"; // NOI18N
             }
@@ -1090,6 +1120,7 @@ public abstract class Children extends Object {
         /** This method allows subclasses (only in this package) to
         * provide own version of entry. Useful for SortedArray.
         */
+        @Override
         Entry createNodesEntry() {
             return new SAE();
         }
@@ -1164,6 +1195,7 @@ public abstract class Children extends Object {
         * @param map the map (Object, Node)
         * @return collection of (Entry)
         */
+        @Override
         Collection<? extends Entry> createEntries(java.util.Map<T,Node> map) {
             // SME objects use natural ordering
             Set<ME> l = new TreeSet<ME>(new SMComparator());
@@ -1237,25 +1269,93 @@ public abstract class Children extends Object {
         private static java.util.Map<Keys<?>,Runnable> lastRuns = new HashMap<Keys<?>,Runnable>(11);
 
         /** add array children before or after keys ones */
-        private boolean before;
-
+        boolean before;
+        
         public Keys() {
-            super();
+            this(false);
         }
-
+        
+        /** Constructor for optional "lazy behavoir" (tries to avoid 
+         * computation of nodes if possible).
+         * <p> There are certain requirements for usage of lazy mode:
+         * It is forbidden to create more than 1 node in {@link #createNodes}
+         * for key. In optimal case there should be 1:1 pairing between key and Node,
+         * but it is also possible to have 1:0 pairing - create no node (return null). 
+         * In such case after detection that there is no Node for key, 
+         * the key is automatically removed and change (removal of 
+         * "dummy" Node) is fired.
+         * @param lazy whether to introduce lazy behavior
+         * @since org.openide.nodes 7.6
+         */
+        protected Keys(boolean lazy) {
+            super(lazy);
+        }
+        
         /** Special handling for clonning.
         */
+        @Override
         public Object clone() {
             Keys<?> k = (Keys<?>) super.clone();
 
             return k;
         }
 
+        @Override
+        void checkSupport() {
+            if (lazySupport && nodes != null && nodes.size() > 0) {
+                fallbackToDefaultSupport();
+            }
+        }
+
+        void fallbackToDefaultSupport() {
+            LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used"); // NOI18N
+            switchSupport(false);
+        }
+
+        void switchSupport(boolean toLazy) {
+            if (toLazy == lazySupport) {
+                return;
+            }
+            try {
+                Children.PR.enterWriteAccess();
+                List<Entry> entries = entrySupport().getEntries();
+
+                boolean init = entrySupport().isInitialized();
+                if (init && parent != null) {
+                    List<Node> snapshot = entrySupport.createSnapshot();
+                    if (snapshot.size() > 0) {
+                        int[] idxs = getSnapshotIdxs(snapshot);
+                        parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
+                    }
+                }
+
+                entrySupport = null;
+                lazySupport = toLazy;
+                if (toLazy) {
+                    nodesEntry = null;
+                } else {
+                    nodesEntry = createNodesEntry();
+                    entries.add(before ? 0 : entries.size(), nodesEntry);
+                }
+
+                if (init) {
+                    entrySupport().notifySetEntries();
+                }
+                entrySupport().setEntries(entries);
+            } finally {
+                Children.PR.exitWriteAccess();
+            }
+        }
+
         /**
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a larger set.
          */
         @Deprecated
+        @Override
         public boolean add(Node[] arr) {
+            if (lazySupport) {
+                fallbackToDefaultSupport();
+            }
             return super.add(arr);
         }
 
@@ -1263,7 +1363,11 @@ public abstract class Children extends Object {
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a smaller set.
          */
         @Deprecated
+        @Override
         public boolean remove(final Node[] arr) {
+            if (lazySupport) {
+                return false;
+            }
             try {
                 PR.enterWriteAccess();
 
@@ -1294,10 +1398,15 @@ public abstract class Children extends Object {
             MUTEX.postWriteRequest(
                 new Runnable() {
                     public void run() {
-                        Keys.this.entrySupport().refreshEntry(new KE(key));
+                        Keys.this.entrySupport().refreshEntry(createEntryForKey(key));
                     }
                 }
             );
+        }
+
+        /** To be overriden in FilterNode.Children */
+        Entry createEntryForKey(T key) {
+            return new KE(key);
         }
 
         /** Set new keys for this children object. Setting of keys
@@ -1322,16 +1431,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keysSet.size() + 1);
-
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
             KE updator = new KE();
-            updator.updateList(keysSet, l);
 
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keysSet, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keysSet, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -1357,17 +1468,18 @@ public abstract class Children extends Object {
             }
 
             final List<Entry> l = new ArrayList<Entry>(keys.length + 1);
-
             KE updator = new KE();
 
-            if (before) {
-                l.add(getNodesEntry());
-            }
-
-            updator.updateList(keys, l);
-
-            if (!before) {
-                l.add(getNodesEntry());
+            if (lazySupport) {
+                updator.updateList(keys, l);
+            } else {
+                if (before) {
+                    l.add(getNodesEntry());
+                }
+                updator.updateList(keys, l);
+                if (!before) {
+                    l.add(getNodesEntry());
+                }
             }
 
             applyKeys(l);
@@ -1400,7 +1512,7 @@ public abstract class Children extends Object {
             try {
                 PR.enterWriteAccess();
 
-                if (before != b) {
+                if (before != b && !lazySupport) {
                     List<Entry> l = entrySupport().getEntries();
                     l.remove(getNodesEntry());
                     before = b;
@@ -1417,7 +1529,7 @@ public abstract class Children extends Object {
                 PR.exitWriteAccess();
             }
         }
-
+        
         /** Create nodes for a given key.
         * @param key the key
         * @return child nodes for this key or null if there should be no
@@ -1433,19 +1545,11 @@ public abstract class Children extends Object {
         *
         * @param arr array of deleted nodes
         */
+        @Override
         protected void destroyNodes(Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 arr[i].fireNodeDestroyed();
             }
-        }
-
-        /** Notifies the children class that nodes has been released.
-        */
-        Node[] notifyRemove(Collection<Node> nodes, Node[] current) {
-            Node[] arr = super.notifyRemove(nodes, current);
-            destroyNodes(arr);
-
-            return arr;
         }
 
         /** Enter of setKeys.
@@ -1478,7 +1582,7 @@ public abstract class Children extends Object {
 
         /** Entry for a key
         */
-        private final class KE extends Dupl<T> {
+        class KE extends Dupl<T> {
             /** Has default constructor that allows to create a factory
             * of KE objects for use with updateList
             */
@@ -1507,7 +1611,7 @@ public abstract class Children extends Object {
             public String toString() {
                 String s = getKey().toString();
                 if (s.length() > 80) {
-                    s = s.substring(0, 80);
+                    s = s.substring(s.length() - 80);
                 }
                 return "Children.Keys.KE[" + s + "," + getCnt() + "]"; // NOI18N
             }
@@ -1590,7 +1694,7 @@ public abstract class Children extends Object {
         * @return the key
         */
         @SuppressWarnings("unchecked") // data structure really weird
-        public final T getKey() {
+        public T getKey() {
             if (key instanceof Dupl) {
                 return (T) ((Dupl) key).getKey();
             } else {
@@ -1601,7 +1705,7 @@ public abstract class Children extends Object {
         /** Counts the index of this key.
         * @return integer
         */
-        public final int getCnt() {
+        public int getCnt() {
             int cnt = 0;
             Dupl d = this;
 
@@ -1680,4 +1784,61 @@ public abstract class Children extends Object {
       });
     }
     */
+
+    private static final class ProjectManagerDeadlockDetector implements Executor {
+
+        private final AtomicReference<WeakReference<Mutex>> pmMutexRef = new AtomicReference<WeakReference<Mutex>>();
+
+        public void execute(Runnable command) {
+            boolean ea = false;
+            assert ea = true;
+            if (ea) {
+                Mutex mutex = getPMMutex();
+                if (mutex != null && (mutex.isReadAccess() || mutex.isWriteAccess())) {
+                    throw new IllegalStateException("Should not acquire Children.MUTEX while holding ProjectManager.mutex()");
+                }
+            }
+            command.run();
+        }
+
+        private Mutex getPMMutex() {
+            for (;;) {
+                Mutex mutex = null;
+                WeakReference<Mutex> weakRef = pmMutexRef.get();
+                if (weakRef != null) {
+                    mutex = weakRef.get();
+                }
+                if (mutex != null) {
+                    return mutex;
+                }
+                mutex = callPMMutexMethod();
+                if (mutex != null) {
+                    WeakReference<Mutex> newWeakRef = new WeakReference<Mutex>(mutex);
+                    if (pmMutexRef.compareAndSet(weakRef, newWeakRef)) {
+                        return mutex;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        private Mutex callPMMutexMethod() {
+            try {
+                Class<?> clazz = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.api.project.ProjectManager"); // NOI18N
+                Method method = clazz.getMethod("mutex"); // NOI18N
+                return (Mutex) method.invoke(null);
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                return null;
+            } catch (IllegalArgumentException e) {
+                return null;
+            } catch (InvocationTargetException e) {
+                return null;
+            } catch (NoSuchMethodException e) {
+                return null;
+            }
+        }
+    }
 }

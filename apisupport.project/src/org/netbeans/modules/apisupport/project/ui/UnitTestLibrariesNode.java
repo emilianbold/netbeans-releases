@@ -89,6 +89,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -124,8 +125,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
     
     private Image getIcon(boolean opened) {
-        Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries-badge.png", true);
-        return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries-badge.png", true);
+        return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
     }
     
     public Action[] getActions(boolean context) {
@@ -243,7 +244,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         public void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
-            if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
+            if (! project.isRunInAtomicAction() && project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
                 refreshKeys(true);
             }
         }
@@ -255,7 +256,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {
-                librariesIcon = new ImageIcon(Utilities.loadImage(LIBRARIES_ICON, true));
+                librariesIcon = new ImageIcon(ImageUtilities.loadImage(LIBRARIES_ICON, true));
             }
             return librariesIcon;
         }

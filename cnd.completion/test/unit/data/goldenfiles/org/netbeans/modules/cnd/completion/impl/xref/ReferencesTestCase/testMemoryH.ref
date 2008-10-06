@@ -18,15 +18,15 @@
 ==============================================================
 'Memory', tokenID=identifier, offset=2166 [46:7/2166-46:13/2172]
 --OWNER:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'Module', tokenID=identifier, offset=2182 [46:23/2182-46:29/2188]
 --OWNER:
      [46:16/2175-46:29/2188] ReferencesTestCase/memory.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'MemoryType', tokenID=identifier, offset=2208 [48:10/2208-48:20/2218]
 --OWNER:

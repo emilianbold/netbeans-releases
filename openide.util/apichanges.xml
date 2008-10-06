@@ -49,6 +49,53 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Utilities.OS_OPENBSD">
+        <api name="util"/>
+        <summary>Added <code>OS_OPENBSD</code> and <code>OS_UNIX_OTHER</code> fields</summary>
+        <version major="7" minor="18"/>
+        <date day="16" month="9" year="2008"/>
+        <author login="jskrivanek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a new <code>Utilities.OS_OPENBSD</code> and <code>OS_UNIX_OTHER</code>
+                fields. Deprecated <code>OS_WINDOWS_MASK</code> and <code>OS_UNIX_MASK</code>.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="145462"/>
+    </change>
+    <change id="Utilities.OS_WINVISTA">
+        <api name="util"/>
+        <summary>Added <code>OS_WINVISTA</code> field</summary>
+        <version major="7" minor="17"/>
+        <date day="8" month="8" year="2008"/>
+        <author login="jskrivanek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a new <code>Utilities.OS_WINVISTA</code> field to be able
+                to recognize Windows Vista operating system.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="142629"/>
+    </change>
+    <change id="XMLUtil.validate">
+        <api name="xml"/>
+        <summary>Added <code>XMLUtil.validate</code></summary>
+        <version major="7" minor="17"/>
+        <date day="11" month="7" year="2008"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a new method to validate XML documents against schemas.
+            </p>
+        </description>
+        <class package="org.openide.xml" name="XMLUtil"/>
+        <issue number="42686"/>
+    </change>
     <change id="Lookup.asynchronous">
         <api name="lookup"/>
         <summary>AbstractLookup and ProxyLookup fire changes asynchronously</summary>

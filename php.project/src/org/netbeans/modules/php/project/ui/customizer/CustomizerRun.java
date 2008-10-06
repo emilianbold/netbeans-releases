@@ -38,28 +38,41 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.CardLayout;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Radek Matous
  */
-public class CustomizerRun extends javax.swing.JPanel {
-    private static final long serialVersionUID = -5493589817914071L;
+public class CustomizerRun extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = -5494488817914071L;
     private final ConfigComboBoxModel comboModel;
     private final ConfigManager manager;
     private final RunAsPanel.InsidePanel[] insidePanels;
@@ -67,8 +80,8 @@ public class CustomizerRun extends javax.swing.JPanel {
     public CustomizerRun(PhpProjectProperties properties, final Category category) {
         manager = new ConfigManager(properties);
         insidePanels = new RunAsPanel.InsidePanel[] {
-            new RunAsLocalWeb(properties.getProject(), manager, category),
-            new RunAsRemoteWeb(properties.getProject(), manager, category),
+            new RunAsLocalWeb(properties, manager, category),
+            new RunAsRemoteWeb(properties, manager, category),
             new RunAsScript(properties.getProject(), manager, category),
         };
         initComponents();
@@ -160,71 +173,89 @@ public class CustomizerRun extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        configLabel = new javax.swing.JLabel();
-        configCombo = new javax.swing.JComboBox();
-        configNew = new javax.swing.JButton();
-        configDel = new javax.swing.JButton();
-        separator = new javax.swing.JSeparator();
+        configLabel = new JLabel();
+        configCombo = new JComboBox();
+        configNew = new JButton();
+        configDel = new JButton();
+        separator = new JSeparator();
         runPanel = new RunAsPanel(insidePanels);
 
-        configLabel.setLabelFor(configCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
+        setFocusTraversalPolicy(null);
 
+        configLabel.setLabelFor(configCombo);
+
+        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration"));
         configCombo.setRenderer(new ConfigListCellRenderer());
-        configCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        configCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 configComboActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_New")); // NOI18N
-        configNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(configNew, NbBundle.getMessage(CustomizerRun.class, "LBL_New"));
+        configNew.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 configNewActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Delete")); // NOI18N
-        configDel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(configDel, NbBundle.getMessage(CustomizerRun.class, "LBL_Delete"));
+        configDel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 configDelActionPerformed(evt);
             }
         });
 
-        runPanel.setLayout(new java.awt.CardLayout());
+        runPanel.setLayout(new CardLayout());
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, runPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                    .add(GroupLayout.LEADING, runPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(configLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configLabel)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(configCombo, 0, 142, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(configNew)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(configDel)))
                 .add(0, 0, 0))
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(configLabel)
-                    .add(configCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(configCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(configNew)
                     .add(configDel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(runPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(runPanel, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addContainerGap())
+        
         );
+
+        configLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel.AccessibleContext.accessibleName")); // NOI18N
+        configLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        configCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configCombo.AccessibleContext.accessibleName")); // NOI18N
+        configCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        configNew.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew.AccessibleContext.accessibleName")); // NOI18N
+        configNew.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew.AccessibleContext.accessibleDescription")); // NOI18N
+        configDel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDel.AccessibleContext.accessibleName")); // NOI18N
+        configDel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDel.AccessibleContext.accessibleDescription")); // NOI18N
+        separator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.separator.AccessibleContext.accessibleName")); // NOI18N
+        separator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.separator.AccessibleContext.accessibleDescription")); // NOI18N
+        runPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.runPanel.AccessibleContext.accessibleName")); // NOI18N
+        runPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.runPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
@@ -240,7 +271,13 @@ public class CustomizerRun extends javax.swing.JPanel {
 
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+            if (name.trim().length() == 0) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(CustomizerRun.class, "MSG_ConfigurationNameBlank"),
+                        NotifyDescriptor.WARNING_MESSAGE));
+                return;
+            }
+            String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
 
             if (manager.exists(config)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -264,11 +301,15 @@ public class CustomizerRun extends javax.swing.JPanel {
     }//GEN-LAST:event_configDelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox configCombo;
-    private javax.swing.JButton configDel;
-    private javax.swing.JLabel configLabel;
-    private javax.swing.JButton configNew;
-    private javax.swing.JPanel runPanel;
-    private javax.swing.JSeparator separator;
+    private JComboBox configCombo;
+    private JButton configDel;
+    private JLabel configLabel;
+    private JButton configNew;
+    private JPanel runPanel;
+    private JSeparator separator;
     // End of variables declaration//GEN-END:variables
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerRun.class);
+    }
 }

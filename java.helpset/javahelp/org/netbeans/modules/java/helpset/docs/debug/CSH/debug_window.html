@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+* Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Debugger Windows</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -15,17 +15,40 @@
 <h2>Debugger Windows</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>Whenever you start a debugging session, the IDE opens debugging windows below the editing area. Each debugger window has a tab and shares space with the Output window. You can  open any  debugger window by choosing Window &gt; Debugging &gt; <i>window-name</i> (for example, Window &gt; Debugging &gt; Breakpoints).</p>
-<p>A set of debugger windows opens automatically when you start a debugging session. The Local Variables, Watches, and Call Stack windows open by default with every debugging session. You can open any other debugger window by choosing View &gt; Debugging &gt; <i>window-name</i>.</p>
-<p>In each debugger window, information is organized into lists. Each list item represents a single object. Each column represents a property of the object. Data displayed in blue underlined text is linked to the source code. </p>
-<p>Each debugger window displays a variety of icons to relay information about the object. For example, the Breakpoints window uses a small red square to indicate a breakpoint set on a line. Some windows also include a node expansion control in the left column. Clicking this control expands and collapses the object. </p>
-<p>Some elements of a window's list have editable properties, such as the value property of a variable in the Variables window. If you select a property and the property has a white background, then you can edit the property. A selected property with a gray background cannot be edited.</p>
-<p>In a debugger window's list, you can size a column to fit its contents by dragging the column border. You can move a column by dragging the column header. Clicking <img src="../images/ChangeColumn.gif" alt="Change Visible Column icon">&nbsp;(to the right of the column titles) opens a dialog box that provides a list of all possible columns that can be shown. Using this dialog box, you can choose to show or hide a column of information. </p>
-<p>Each window also includes a pop-up menu, which you open by right-clicking inside the window. Most items in this menu apply to the selected object. One menu item, List Options, opens a submenu with commands for operating on the list, including which column the list is sorted on and whether the objects in the list are sorted in ascending or descending order. Clicking the column header is another way to switch the sort order between ascending and descending order. </p>
+<p>When you start a debugging session the IDE opens some debugging windows by default. 
+In addition to the main Debugging window in the left pane of the IDE, other debugger windows open as tabs below the editor. 
+You can  open any debugger window by choosing Window &gt; Debugging &gt; <i>window-name</i> (for example, Window &gt; Debugging &gt; Breakpoints).</p>
+
+<p>Each debugger window displays a variety of icons to relay information about the object. 
+For example, the Breakpoints window uses a small red square to indicate a breakpoint set on a line. 
+Some windows also include a node expansion control to the left of the icon. 
+Clicking this control expands and collapses the object. </p>
+
+<p>The Debugging window opens in the left pane of the IDE and uses a tree structure to 
+displays the threads and calls in the current debugging session.
+The current thread and call are displayed in bold.
+You can expand the node for suspended threads to view the call stack.
+For more, see <a href="../debug_debuggingwindow.html">Using the Debugging Window</a>.</p>
+
+<p>In the debugger tabs, information is organized into lists. 
+Each list item represents a single object. 
+Each column represents a property of the object. 
+Data displayed in blue underlined text is linked to the source code. </p>
+
+<p>Some elements of list in the debugger tabs have editable properties, such as the value property of a variable in the Variables window. 
+If you select a property and the property has a white background you can edit the property. 
+A selected property with a gray background cannot be edited.</p>
+
+<p>You can move a column in a debugger tab by dragging the column header. 
+You can click <img src="../images/ChangeColumn.gif" alt="Change Visible Column icon">&nbsp;(to the right of the column titles) 
+to open a dialog box that enables you to choose the columns that are displayed.
+You can right-click an item in the list to open a pop-up menu where you can choose to perform actions on that item
+and modify how the items are displayed in the tab.</p>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="variables_view.html">Local Variables Window</a></dd>
+	<dd><a href="../debug_debuggingwindow.html">Using the Debugging Window</a></dd>
+        <dd><a href="variables_view.html">Local Variables Window</a></dd>
 	<dd><a href="watches_view.html">Watches Window</a></dd>
 	<dd><a href="callstack_view.html">Call Stack Window</a></dd>
         <dd><a href="classes_view.html">Loaded Classes Window</a></dd>

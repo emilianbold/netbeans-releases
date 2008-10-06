@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -74,7 +75,7 @@ import javax.swing.Action;
  */
 public class WSDLEndpointNode extends CasaNode {
     
-    private static final Image ICON = Utilities.loadImage(
+    private static final Image ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/WSDLEndpointNode.png");    // NOI18N
     
     private static final String CHILD_ID_PROVIDES = "Provides"; // NOI18N

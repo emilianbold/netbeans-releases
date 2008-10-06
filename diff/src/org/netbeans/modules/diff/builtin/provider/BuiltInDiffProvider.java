@@ -89,6 +89,10 @@ public class BuiltInDiffProvider extends DiffProvider implements java.io.Seriali
      *        or <code>null</code> when some error occured.
      */
     public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
+        if (options == null) {
+            // blind fix of #144033, probably a deserialization issue?
+            options = DiffModuleConfig.getDefault().getOptions();
+        }
         return HuntDiff.diff(getLines(r1), getLines(r2), options);   
     }
     

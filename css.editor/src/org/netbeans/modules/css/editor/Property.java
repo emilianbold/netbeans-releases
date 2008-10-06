@@ -48,15 +48,17 @@ import java.util.Collection;
 public class Property {
     
     private String name, initialValue, appliedTo, percentages;
-    private Collection<String> values, mediaGroups;
+    private Collection<String> mediaGroups;
+    private PropertyModel.GroupElement values;
+    private String valuesText;
     private boolean inherited;
     
-    Property(String name, Collection<String> values, String initialValue, 
+    Property(String name, String initialValue, String valuesText,
             String appliedTo, boolean inherited, String percentages, 
             Collection<String> mediaGroups) {
         this.name = name;
-        this.values = values;
         this.initialValue = initialValue;
+        this.valuesText = valuesText;
         this.appliedTo = appliedTo;
         this.inherited = inherited;
         this.percentages = percentages;
@@ -67,18 +69,16 @@ public class Property {
         return name;
     }
 
-    //XXX #1 quick trick - do no take the structure definition of the value into account,
-    //just provide a list of all values. This may produce a wrong results since some
-    //of the values combinations are prohibited
-    public Collection<String> values() {
+    public synchronized PropertyModel.GroupElement values() {
+        if(values == null) {
+            values = PropertyModel.instance().parse(valuesText, name);
+        } 
         return values;
     }
     
-    //allows to set resolved property values
-    void setValues(Collection<String> values) {
-        this.values = values;
+    String valuesText() {
+        return valuesText;
     }
-    
     
     public String initialValue() {
         return initialValue;
@@ -102,5 +102,6 @@ public class Property {
     public Collection<String> mediaGroups() {
         return mediaGroups;
     }
+    
     
 }

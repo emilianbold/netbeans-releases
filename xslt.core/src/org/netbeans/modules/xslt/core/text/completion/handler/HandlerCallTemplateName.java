@@ -65,11 +65,10 @@ public class HandlerCallTemplateName extends BaseCompletionHandler {
     }
     
     private List<XSLTCompletionResultItem> getNamedTemplateNameList() {
-        if ((schemaModel == null) || (surroundTag == null) || 
-            (attributeName == null) || (xslModel == null)) 
+        if ((surroundTag == null) || (attributeName == null) || (xslModel == null)) 
             return Collections.emptyList();
         
-        String tagName = surroundTag.getTagName(); //getLocalName();
+        String tagName = surroundTag.getTagName();
         if (! tagName.contains(XSLT_TAG_NAME_CALL_TEMPLATE))
             return Collections.emptyList();
         if (! attributeName.equals(XSLTCompletionUtil.ATTRIB_NAME))

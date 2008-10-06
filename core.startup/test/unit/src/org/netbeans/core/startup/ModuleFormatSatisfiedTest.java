@@ -41,16 +41,14 @@
 
 package org.netbeans.core.startup;
 
-import java.io.*;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Collections;
-import java.util.Locale;
-import java.util.jar.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.Repository;
 
 /** Checks whether a modules are provided with ModuleFormat1 token.
  *
@@ -63,23 +61,20 @@ public class ModuleFormatSatisfiedTest extends SetupHid {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
         
-        File tmp = File.createTempFile ("ModuleFormatTest", ".jar");
-        moduleJarFile = tmp;
-        
         Manifest man = new Manifest ();
         man.getMainAttributes ().putValue ("Manifest-Version", "1.0");
         man.getMainAttributes ().putValue ("OpenIDE-Module", "org.test.FormatDependency/1");
-        
-        
         String req = "org.openide.modules.ModuleFormat1, org.openide.modules.ModuleFormat2";
-        
         man.getMainAttributes ().putValue ("OpenIDE-Module-Requires", req);
         
-        JarOutputStream os = new JarOutputStream (new FileOutputStream (tmp), man);
+        clearWorkDir();
+        moduleJarFile = new File(getWorkDir(), "ModuleFormatTest.jar");
+        JarOutputStream os = new JarOutputStream(new FileOutputStream(moduleJarFile), man);
         os.putNextEntry (new JarEntry ("empty/test.txt"));
         os.close ();
     }

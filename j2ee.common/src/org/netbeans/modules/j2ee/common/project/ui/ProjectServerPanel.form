@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -24,20 +32,20 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="mainClassTextField" pref="261" max="32767" attributes="2"/>
+                      <Component id="mainClassTextField" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jTextFieldContextPath" pref="261" max="32767" attributes="2"/>
+                      <Component id="jTextFieldContextPath" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="serverInstanceComboBox" pref="264" max="32767" attributes="0"/>
+                      <Component id="serverInstanceComboBox" pref="324" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="addServerButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="serverLibraryCheckbox" pref="261" max="32767" attributes="2"/>
+                      <Component id="serverLibraryCheckbox" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -48,7 +56,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mainClassLabel" min="-2" pref="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="365" max="32767" attributes="0"/>
+              <EmptySpace pref="423" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
@@ -61,18 +69,18 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="jTextFieldWebAppName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="jTextFieldCarName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="156" max="32767" attributes="0"/>
+                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="jTextFieldWebAppName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="jTextFieldCarName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="214" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
           </Group>
-          <Component id="warningPlaceHolderPanel" alignment="0" pref="419" max="32767" attributes="0"/>
+          <Component id="warningPlaceHolderPanel" alignment="0" pref="477" max="32767" attributes="0"/>
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabelEnterprise" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jComboBoxEnterprise" pref="272" max="32767" attributes="0"/>
+              <Component id="jComboBoxEnterprise" pref="330" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -137,9 +145,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabelEnterprise">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_AddToEnterprise_LabelMnemonic" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jComboBoxEnterprise"/>
         </Property>
@@ -149,22 +154,19 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBoxEnterprise">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="serverInstanceLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_Server_LabelMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="serverInstanceComboBox"/>
         </Property>
@@ -172,6 +174,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_Server" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="serverInstanceComboBox">
       <Properties>
@@ -184,7 +191,7 @@
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACS_NWP1_Server_ComboBox_A11YDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -202,7 +209,7 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ASCN_AddServer" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ASCD_AddServer" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -214,9 +221,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="j2eeSpecLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="j2eeSpecComboBox"/>
         </Property>
@@ -224,11 +228,16 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_J2EESpecLevel_Label" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="j2eeSpecComboBox">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACS_LBL_NPW1_J2EESpecLevel_A11YDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -237,9 +246,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabelContextPath">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_ContextPath_CheckBoxMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldContextPath"/>
         </Property>
@@ -247,6 +253,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_ContextPath_Label" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JPanel" name="warningPlaceHolderPanel">
       <Properties>
@@ -254,13 +265,21 @@
           <Color blue="66" green="99" red="0" type="rgb"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
     </Container>
     <Component class="javax.swing.JTextField" name="jTextFieldContextPath">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACS_LBL_NWP1_ContextPath_A11YDesc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
       <Events>
@@ -272,11 +291,19 @@
     </Component>
     <Component class="javax.swing.JLabel" name="mainClassLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="mainClassTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_MainClass_Label" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="alignmentX" type="float" value="0.5"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -285,6 +312,11 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="com.myapp.Main"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="createEjbCheckBox">
       <Properties>
@@ -293,6 +325,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreateEjbModule" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createEjbCheckBox_action"/>
       </Events>
@@ -301,6 +338,14 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldEjbModuleName">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreateEjbModule" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="createWARCheckBox">
       <Properties>
@@ -309,6 +354,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreatWebAppModule" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createWARCheckBoxcreateWebAppCheckBox_action"/>
       </Events>
@@ -317,6 +367,14 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldWebAppName">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreatWebAppModule" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="createCarCheckBox">
       <Properties>
@@ -324,6 +382,11 @@
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreateCarModule" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createCarCheckBox_action"/>
       </Events>
@@ -335,13 +398,29 @@
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NEAP_CreateCarModule" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="mainClassLabel1">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="mainClassTextFieldWithinEar"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_MainClass_Label" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
@@ -350,6 +429,11 @@
       <Properties>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="serverLibraryCheckbox">
       <Properties>
@@ -360,6 +444,11 @@
           <Insets value="[2, 0, 2, 2]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="ACSD_ProjectServerPanel_NA" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="serverLibraryCheckboxActionPerformed"/>
       </Events>

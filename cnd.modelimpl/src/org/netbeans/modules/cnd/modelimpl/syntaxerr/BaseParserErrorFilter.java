@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -43,9 +43,9 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ParserErrorFilter;
 import antlr.RecognitionException;
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.CharSeq;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -54,21 +54,37 @@ import org.openide.util.Utilities;
  */
 public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
-    protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, BaseDocument doc) {
+    protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        RecognitionException prev = null;
         for (RecognitionException e : exceptions) {
-            result.add(toErrorInfo(e, doc));
+            // Fix for IZ#143082: some syntax errors are reported twice.
+            // We assume that equal recognition exceptions are next to each other.
+            if (!equal(prev, e)) {
+                result.add(toErrorInfo(e, file));
+            }
+            prev = e;
         }
         return result;
     }
 
-    
-    protected CsmErrorInfo toErrorInfo(RecognitionException e, BaseDocument doc) {
-        return toErrorInfo(e.getMessage(), e.getLine(), e.getColumn(), doc);
+    protected boolean equal(RecognitionException e1, RecognitionException e2) {
+        if ((e1 == null) != (e2 == null)) {
+            return false;
+        }
+        return e1.getLine() == e2.getLine() && e1.getColumn() == e2.getColumn();
     }
-    
-    protected CsmErrorInfo toErrorInfo(String message, int line, int column, BaseDocument doc) {
-        CharSeq text = doc.getText();
+
+    protected CsmErrorInfo toErrorInfo(RecognitionException e, CsmFile file) {
+        return toErrorInfo(getMessage(e), e.getLine(), e.getColumn(), file, e.getTokenText());
+    }
+
+    protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file) {
+        return toErrorInfo(message, line, column, file, null);
+    }
+
+    protected CsmErrorInfo toErrorInfo(String message, int line, int column, CsmFile file, String tokenText) {
+        CharSequence text = file.getText();
         int start = 0;
         int currLine = 1;
         char LF = Utilities.isMac() ? '\r' : '\n'; // NOI18N
@@ -82,15 +98,35 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         //start += column;
         int end = start + 1;
         while (end < text.length()) {
-            if (text.charAt(end++) == LF) { // NOI18N
-
+            if (text.charAt(end++) == LF) {
                 break;
             }
         }
         end--;
+
+        if (tokenText != null) {
+            // if possible, highlight only single token
+            int tokenStart = start + column - 1;
+            int tokenEnd = tokenStart + tokenText.length();
+            if (0 <= tokenStart && tokenEnd <= text.length()
+                    && text.subSequence(tokenStart, tokenEnd).equals(tokenText)) {
+                start = tokenStart;
+                end = tokenEnd;
+            }
+        }
+
         return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
-    
+
+    protected String getMessage(RecognitionException e) {
+        String tokenText = e.getTokenText();
+        if (tokenText == null) {
+            return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_PARSER_ERROR"); // NOI18N
+        } else {
+            return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_TOKEN", tokenText); // NOI18N
+        }
+    }
+
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return CsmErrorInfo.Severity.ERROR;
     }

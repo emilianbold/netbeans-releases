@@ -10,9 +10,17 @@
         <property name="examples" location="${build.classes.dir}/org/netbeans/modules/vmd/componentssupport/templates"/>
         <property name="excludes" value="private build-impl.xml" />
         <mkdir dir="${examples}"/>
-        <zip basedir="template" 
+        <zip basedir="template_standalone" 
             excludes="${excludes}" 
-            destfile="${examples}/CustomComponentProject.zip"
+            destfile="${examples}/CustomComponentProject_standalone.zip"
+            />
+        <zip basedir="template_netbeansorg" 
+            excludes="${excludes}" 
+            destfile="${examples}/CustomComponentProject_netbeansorg.zip"
+            />
+        <zip basedir="template_suitecomponent" 
+            excludes="${excludes}" 
+            destfile="${examples}/CustomComponentProject_suitecomponent.zip"
             />
     </target>
 </project>

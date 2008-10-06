@@ -47,7 +47,9 @@ import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 /**
  *
@@ -56,9 +58,10 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 public class SVGTextFieldCD extends ComponentDescriptor{
 
     public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGTextField"); // NOI18N
-
+    
+    
     public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGFormComponentCD.TYPEID, TYPEID, true, false);
+        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, true);
     }
 
     @Override
@@ -66,16 +69,18 @@ public class SVGTextFieldCD extends ComponentDescriptor{
         return MidpVersionDescriptor.MIDP_2;
     }
 
-    @Override
-    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList (
-                );
+    public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
+        return null;
     }
-
+    
     @Override
-    protected List<? extends Presenter> createPresenters() {
-        return Arrays.asList (
-                );
+    protected List<? extends Presenter> createPresenters () {
+        return Arrays.asList(
+                //code
+                MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
+                MidpCodePresenterSupport.createAddImportPresenter()
+        );
     }
-
+    
+    
 }

@@ -67,7 +67,6 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -96,6 +95,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
@@ -312,8 +312,10 @@ public class J2EEUtils {
             if (fob == null) {
                 List<ClassSource.Entry> cpEntries = new ArrayList<ClassSource.Entry>(urls.length);
                 for (URL url : urls) {
-                    cpEntries.add(new ClassSource.JarEntry(
-                            FileUtil.toFile(URLMapper.findFileObject(url))));
+                    FileObject jar = URLMapper.findFileObject(url);
+                    if (jar != null) {
+                        cpEntries.add(new ClassSource.JarEntry(FileUtil.toFile(jar)));
+                    }
                 }
                 return ClassPathUtils.updateProject(fileInProject, new ClassSource("", cpEntries)); // NOI18N
             }
@@ -539,7 +541,13 @@ public class J2EEUtils {
         SourceGroup[] groups = getJavaSourceGroups(project);
         SourceGroup location = groups[0];
         for (int i=0; i<groups.length; i++) {
-            if (groups[i].contains(dir)) {
+            boolean contains;
+            try {
+                contains = groups[i].contains(dir);
+            } catch (IllegalArgumentException iaex) {
+                contains = false;
+            }
+            if (contains) {
                 location = groups[i];
                 break;
             }
@@ -1032,7 +1040,13 @@ public class J2EEUtils {
                         if (all) {
                             props.add(propName);
                         } else {
-                            String columnName = manyToOne.getJoinColumn(0).getName();
+                            JoinColumn[] joinColumn = manyToOne.getJoinColumn();
+                            String columnName;
+                            if (joinColumn.length == 0) {
+                                columnName = manyToOne.getName().toUpperCase() + "_ID"; // NOI18N
+                            } else {
+                                columnName = manyToOne.getJoinColumn(0).getName();
+                            }
                             columnName = unquote(columnName);
                             columnToProperty.put(columnName, propName);                        
                         }
@@ -1062,12 +1076,6 @@ public class J2EEUtils {
         Parameters.notNull("project", project); //NOI18N
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
-        List<SourceGroup> result = new ArrayList<SourceGroup>();
-        for(SourceGroup sourceGroup : sourceGroups){
-            if (UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder()).length > 0){
-                result.add(sourceGroup);
-            }
-        }
-        return result.toArray(new SourceGroup[result.size()]);
+        return sourceGroups;
     }
 }

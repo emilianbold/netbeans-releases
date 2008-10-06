@@ -1,0 +1,36 @@
+Code completion result for source line:
+* PHPDoc comment |
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+KEYWORD    @abstract                                  
+KEYWORD    @access                                    
+KEYWORD    @author                                    
+KEYWORD    @category                                  
+KEYWORD    @copyright                                 
+KEYWORD    @deprecated                                
+KEYWORD    @example                                   
+KEYWORD    @filesource                                
+KEYWORD    @final                                     
+KEYWORD    @global                                    
+KEYWORD    @ignore                                    
+KEYWORD    @internal                                  
+KEYWORD    @license                                   
+KEYWORD    @link                                      
+KEYWORD    @method                                    
+KEYWORD    @name                                      
+KEYWORD    @package                                   
+KEYWORD    @param                                     
+KEYWORD    @property                                  
+KEYWORD    @property-read                             
+KEYWORD    @property-write                            
+KEYWORD    @return                                    
+KEYWORD    @see                                       
+KEYWORD    @since                                     
+KEYWORD    @static                                    
+KEYWORD    @staticvar                                 
+KEYWORD    @subpackage                                
+KEYWORD    @todo                                      
+KEYWORD    @tutorial                                  
+KEYWORD    @uses                                      
+KEYWORD    @var                                       
+KEYWORD    @version                                   

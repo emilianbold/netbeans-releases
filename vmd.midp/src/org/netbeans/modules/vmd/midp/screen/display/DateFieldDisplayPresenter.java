@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -55,24 +54,26 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
+import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 
 /**
  *
  * @author David Kaspar
  */
 public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
-    
+
     private JLabel label;
-    
+
     public DateFieldDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
+
         PropertyValue inputModeValue = getComponent().readProperty(DateFieldCD.PROP_INPUT_MODE);
         PropertyValue dateValue = getComponent().readProperty(DateFieldCD.PROP_DATE);
         String text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_input_mode"); // NOI18N
@@ -80,33 +81,34 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         if (inputModeValue.getKind() == PropertyValue.Kind.VALUE) {
             int inputMode = MidpTypes.getInteger(inputModeValue);
             switch (inputMode) {
-            case DateFieldCD.VALUE_DATE:
-                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date"); // NOI18N
-                format = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                break;
-            case DateFieldCD.VALUE_DATE_TIME:
-                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date_time"); // NOI18N
-                break;
-            case DateFieldCD.VALUE_TIME:
-                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_time"); // NOI18N
-                format = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-                break;
+                case DateFieldCD.VALUE_DATE:
+                    text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date"); // NOI18N
+                    format = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                    break;
+                case DateFieldCD.VALUE_DATE_TIME:
+                    text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date_time"); // NOI18N
+                    break;
+                case DateFieldCD.VALUE_TIME:
+                    text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_time"); // NOI18N
+                    format = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+                    break;
             }
         }
-        
-        if (dateValue.getKind() == PropertyValue.Kind.VALUE) {
+
+        if (MidpDatabindingSupport.getConnector(getComponent(), DateFieldCD.PROP_DATE) != null) {
+            text = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/screen/display/Bundle").getString("LBL_Databinding"); //NOI18N 
+        } else if (dateValue.getKind() == PropertyValue.Kind.VALUE) {
             text = format.format(new Date(MidpTypes.getLong(dateValue)));
         }
         label.setText(text);
     }
-    
+
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ResourcePropertyEditor dateFieldPropertyEditor = new ResourcePropertyEditor(DateFieldCD.PROP_DATE, getComponent());
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
-        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label,dateFieldPropertyEditor));
+        descriptors.add(new ScreenPropertyDescriptor(getComponent(), label, dateFieldPropertyEditor));
         descriptors.addAll(super.getPropertyDescriptors());
         return descriptors;
     }
-    
 }

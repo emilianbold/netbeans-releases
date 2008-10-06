@@ -18,17 +18,20 @@
  */
 package org.netbeans.modules.beans;
 
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.util.NbBundle;
 
 /**
- * Helper class to simplefy operation over MDR.
+ * Helper class to simplify operation over java model.
  */
 public final class BeanUtils {
 
@@ -128,6 +131,26 @@ public final class BeanUtils {
                 return type.toString();
         }
         
+    }
+
+    /**
+     * Returns all public methods of a type element, whether inherited or
+     * declared directly. It excludes methods of {@link Object} that are useless
+     * for bean patterns.
+     * @param clazz class to search
+     * @param javac javac
+     * @return list of public methods
+     */
+    public static List<? extends ExecutableElement> methodsIn(TypeElement clazz, CompilationInfo javac) {
+        List<ExecutableElement> result = ElementFilter.methodsIn(javac.getElements().getAllMembers(clazz));
+        final TypeElement objectElement = javac.getElements().getTypeElement("java.lang.Object"); // NOI18N
+        for (int i = result.size() - 1; i >= 0; i--) {
+            ExecutableElement method = result.get(i);
+            if (!method.getModifiers().contains(Modifier.PUBLIC) || objectElement == method.getEnclosingElement()) {
+                result.remove(i);
+            }
+        }
+        return result;
     }
     
     // Unused methods

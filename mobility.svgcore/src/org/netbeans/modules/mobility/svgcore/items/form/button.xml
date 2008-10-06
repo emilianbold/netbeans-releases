@@ -3,37 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[  <g transform="translate(130,276)" id="button_ok">
-	<!-- Metadata information. Please don't edit. -->
-	<text display="none">type=button</text>
-
-        <rect x="-2" y="-2" rx="5" ry="5" width="80" height="30" fill="white"/>
-        <rect x="1" y="1" rx="5" ry="5" width="81" height="31" fill="rgb(0,0,128)"/>
-	<g>
-		<text display="none">type=body</text>
-		<rect transform="matrix(1.060988,0.003826782,-0.003826782,1.060988,4.617886,1.9321077)"   
-			x="0" y="0" rx="5" ry="5" width="80" height="30" fill="rgb(176,196,222)" 
-                                stroke="rgb(255,165,0)" stroke-width="0">
-		    <animate attributeName="stroke-width" attributeType="XML" begin="button_ok.focusin" dur="0.25s" 
-                                fill="freeze" to="2"/>
-		    <animate attributeName="stroke-width" attributeType="XML" begin="button_ok.focusout" dur="0.25s" 
-                                fill="freeze" to="0"/>
-	            <!-- The third and fourth animation elements are used for animate button : on press, on release -->
-		    <animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                fill="freeze" to="rgb(156,176,202)"/>
-		    <animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
-                                fill="freeze" to="rgb(176,196,222)"/>
-		</rect>
-	</g>
-	<text x="24" y="23" fill="black" font-size="20">
-		<text display="none">type=shadow_text</text>
-		OK</text>
-        <text x="23" y="21" fill="gray" font-size="20">
-		<text display="none">type=text</text>
-		OK</text>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.Button" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/button_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/button_32.png"/>
      

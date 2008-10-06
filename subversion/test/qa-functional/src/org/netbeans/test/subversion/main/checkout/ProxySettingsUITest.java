@@ -36,8 +36,6 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -62,8 +60,6 @@ public class ProxySettingsUITest extends JellyTestCase {
      }
     
     public void testProxySettings() {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -86,8 +82,7 @@ public class ProxySettingsUITest extends JellyTestCase {
     }
     
     public void testProxyBeforeUrl() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
+        try {
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -101,7 +96,6 @@ public class ProxySettingsUITest extends JellyTestCase {
             co1so.invokeProxy();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
-            //e.printStackTrace();
         }
         assertNotNull(tee);     
         
@@ -111,7 +105,6 @@ public class ProxySettingsUITest extends JellyTestCase {
             co1so.invokeProxy();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
-            //e.printStackTrace();
         }
         assertNotNull(tee);     
         
@@ -121,7 +114,6 @@ public class ProxySettingsUITest extends JellyTestCase {
             co1so.invokeProxy();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
-            //e.printStackTrace();
         }
         assertNotNull(tee);     
         
@@ -131,9 +123,11 @@ public class ProxySettingsUITest extends JellyTestCase {
             co1so.invokeProxy();
         } catch (Exception e) {
             tee = (TimeoutExpiredException) e;
-            //e.printStackTrace();
         }
         assertNotNull(tee);     
         co.btCancel().pushNoBlock();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
+        }
     }
 }

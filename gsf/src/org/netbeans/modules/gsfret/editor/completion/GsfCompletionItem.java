@@ -47,27 +47,29 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.*;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-//import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
+import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
 
 /**
  * Code completion items originating from the language plugin.
@@ -77,6 +79,8 @@ import org.openide.util.Utilities;
  * @author Tor Norbye
  */
 public abstract class GsfCompletionItem implements CompletionItem {
+    private static CompletionFormatter FORMATTER = new CompletionFormatter();
+
     /** Cache for looking up tip proposal - usually null (shortlived) */
     static org.netbeans.modules.gsf.api.CompletionProposal tipProposal;
     
@@ -99,6 +103,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         
         public int getSortPriority() {
+            if (item.getSortPrioOverride() != 0) {
+                return item.getSortPrioOverride();
+            }
+
             switch (item.getKind()) {
             case ERROR: return -5000;
             case DB: return item.isSmart() ? 155 - SMART_TYPE : 155;
@@ -127,9 +135,26 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-//            ElementKind kind = item.getKind();
-//            return !(kind == ElementKind.CLASS || kind == ElementKind.MODULE);
-            return false;
+            ElementKind kind = item.getKind();
+            if (kind == ElementKind.PARAMETER || kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
+                // These types of elements aren't ever instant substituted in Java - use same behavior here
+                return false;
+            }
+
+            if (component != null) {
+                try {
+                    int caretOffset = component.getSelectionEnd();
+                    if (caretOffset > substitutionOffset) {
+                        String text = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                        if (!getInsertPrefix().toString().startsWith(text)) {
+                            return false;
+                        }
+                    }
+                }
+                catch (BadLocationException ble) {}
+            }
+            defaultAction(component);
+            return true;
         }
         
         public CharSequence getSortText() {
@@ -142,7 +167,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return item.getLhsHtml();
+            FORMATTER.reset();
+            return item.getLhsHtml(FORMATTER);
         }
 
         @Override
@@ -152,10 +178,12 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
         @Override
         protected String getRightHtmlText() {
-            String rhs = item.getRhsHtml();
+            FORMATTER.reset();
+            String rhs = item.getRhsHtml(FORMATTER);
 
             // Count text length on LHS
-            String lhs = item.getLhsHtml();
+            FORMATTER.reset();
+            String lhs = item.getLhsHtml(FORMATTER);
             boolean inTag = false;
             int length = 0;
             for (int i = 0, n = lhs.length(); i < n; i++) {
@@ -289,23 +317,29 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
         }
             
-        private void defaultSubstituteText(final JTextComponent c, int offset, int len, String toAdd) {
-            String template = item.getCustomInsertTemplate();
+        private void defaultSubstituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+            final String template = item.getCustomInsertTemplate();
             if (template != null) {
-                BaseDocument doc = (BaseDocument)c.getDocument();
-                CodeTemplateManager ctm = CodeTemplateManager.get(doc);
+                final BaseDocument doc = (BaseDocument)c.getDocument();
+                final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                 if (ctm != null) {
-                    doc.atomicLock();
-                    try {
-                        doc.remove(offset, len);
-                        c.getCaret().setDot(offset);
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            try {
+                                doc.remove(offset, len);
+                                c.getCaret().setDot(offset);
+                            } catch (BadLocationException e) {
+                                // Can't update
+                            }
+
+                            // SHOULD be run here:
+                            //ctm.createTemporary(template).insert(c);
+                            // (see issue 147494) but running code template inserts
+                            // under a document writelock is risky (see issue 147657)
+                        }
+                    });
                     ctm.createTemporary(template).insert(c);
+                
                     // TODO - set the actual method to be used here so I don't have to 
                     // work quite as hard...
                     //tipProposal = item;
@@ -315,50 +349,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 return;
             }
             
-            List<String> params = item.getInsertParams();
-            if (params == null || params.size() == 0) {
-                // TODO - call getParamListDelimiters here as well!
-                super.substituteText(c, offset, len, toAdd);
-                return;
-            }
-
             super.substituteText(c, offset, len, toAdd);
-            
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            CodeTemplateManager ctm = CodeTemplateManager.get(doc);
-            if (ctm != null) {
-                StringBuilder sb = new StringBuilder();
-                String[] delimiters = item.getParamListDelimiters();
-                assert delimiters.length == 2;
-                sb.append(delimiters[0]);
-                int id = 1;
-                for (Iterator<String> it = params.iterator(); it.hasNext();) {
-                    String paramDesc = it.next();
-                    sb.append("${"); //NOI18N
-                    // Ensure that we don't use one of the "known" logical parameters
-                    // such that a parameter like "path" gets replaced with the source file
-                    // path!
-                    sb.append("gsf-cc-"); // NOI18N
-                    sb.append(Integer.toString(id++));
-                    sb.append(" default=\""); // NOI18N
-                    sb.append(paramDesc);
-                    sb.append("\""); // NOI18N
-                    sb.append("}"); //NOI18N
-                    if (it.hasNext())
-                        sb.append(", "); //NOI18N
-                }
-                sb.append(delimiters[1]);
-                sb.append("${cursor}");
-                ctm.createTemporary(sb.toString()).insert(c);
-                // TODO - set the actual method to be used here so I don't have to 
-                // work quite as hard...
-                //tipProposal = item;
-                Completion.get().showToolTip();
-            }
-            
         }        
     }
-    
 
     public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
         return new DelegatedItem(info, result, proposal);
@@ -379,7 +372,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
         @Override
         protected ImageIcon getIcon() {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsfret/editor/completion/warning.png")); // NOI18N
         }
 
         public int getSortPriority() {
@@ -519,9 +512,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
         return null;
     }
 
-    protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getInsertPrefix().toString();
+    protected void substituteText(JTextComponent c, final int offset, final int len, String toAdd) {
+        final BaseDocument doc = (BaseDocument)c.getDocument();
+        final String text = getInsertPrefix().toString();
         if (text != null) {
             //int semiPos = toAdd != null && toAdd.endsWith(";") ? findPositionForSemicolon(c) : -2; //NOI18N
             //if (semiPos > -2)
@@ -558,27 +551,30 @@ public abstract class GsfCompletionItem implements CompletionItem {
             //    }
             //}
         
-            int semiPos = -2;
             //  Update the text
-            doc.atomicLock();
-            try {
-                String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) {
-                    if (semiPos > -1)
-                        doc.insertString(semiPos, ";", null); //NOI18N
-                    return;
-                }                
-                Position position = doc.createPosition(offset);
-                Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                doc.remove(offset, len);
-                doc.insertString(position.getOffset(), text, null);
-                if (semiPosition != null)
-                    doc.insertString(semiPosition.getOffset(), ";", null);
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        int semiPos = -2;
+                        String textToReplace = doc.getText(offset, len);
+                        if (text.equals(textToReplace)) {
+                            if (semiPos > -1) {
+                                doc.insertString(semiPos, ";", null); //NOI18N
+                            }
+                            return;
+                        }
+                        Position position = doc.createPosition(offset);
+                        Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                        doc.remove(offset, len);
+                        doc.insertString(position.getOffset(), text, null);
+                        if (semiPosition != null) {
+                            doc.insertString(semiPosition.getOffset(), ";", null);
+                        }
+                    } catch (BadLocationException e) {
+                        // Can't update
+                    }
+                }
+            });
         }
     }
 
@@ -623,4 +619,93 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //            return PRIVATE_LEVEL;
 //        return PACKAGE_LEVEL;
 //    }    
+
+
+    /** Format parameters in orange etc. */
+    private static class CompletionFormatter extends GsfHtmlFormatter {
+        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
+        private static final String END_COLOR = "</font>"; // NOI18N
+        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
+        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
+        private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
+        private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
+        private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
+        private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
+        private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
+        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
+        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
+
+        @Override
+        public void parameters(boolean start) {
+            assert start != isParameter;
+            isParameter = start;
+
+            if (isParameter) {
+                sb.append(PARAMETER_NAME_COLOR);
+            } else {
+                sb.append(END_COLOR);
+            }
+        }
+        
+        @Override
+        public void active(boolean start) {
+            if (start) {
+                sb.append(ACTIVE_PARAMETER_COLOR);
+                sb.append("<b>");
+            } else {
+                sb.append("</b>");
+                sb.append(END_COLOR);
+            }
+        }
+        
+        @Override
+        public void name(ElementKind kind, boolean start) {
+            assert start != isName;
+            isName = start;
+
+            if (isName) {
+                switch (kind) {
+                case CONSTRUCTOR:
+                    sb.append(CONSTRUCTOR_COLOR);
+                    break;
+                case CALL:
+                    sb.append(PARAMETERS_COLOR);
+                    break;
+                case DB:
+                case METHOD:
+                    sb.append(METHOD_COLOR);
+                     break;
+                case CLASS:
+                    sb.append(CLASS_COLOR);
+                    break;
+                case FIELD:
+                    sb.append(FIELD_COLOR);
+                    break;
+                case MODULE:
+                    sb.append(PKG_COLOR);
+                    break;
+                case KEYWORD:
+                    sb.append(KEYWORD_COLOR);
+                    sb.append("<b>");
+                    break;
+                case VARIABLE:
+                    sb.append(VARIABLE_COLOR);
+                    sb.append("<b>");
+                    break;
+                default:
+                    sb.append("<font>");
+                }
+            } else {
+                switch (kind) {
+                case KEYWORD:
+                case VARIABLE:
+                    sb.append("</b>");
+                    break;
+                }
+                sb.append(END_COLOR);
+            }
+        }
+        
+    }
 }

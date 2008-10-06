@@ -28,12 +28,11 @@ pack_all_components()
     cd $NB_ALL/nbbuild
 
     #Pack the distrubutions
-    find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|uml)" | zip -q $DIST_DIR/zip/$NAME.zip -@ || exit 1
 
     #find netbeans | egrep "netbeans/(platform|harness)" | zip -q $DIST_DIR/zip/$NAME-platform.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | zip -q $DIST_DIR/zip/$NAME-javase.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST_DIR/zip/$NAME-mobility.zip -@ || exit 1
-    find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-javaee.zip -@ || exit 1
+    find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST_DIR/zip/$NAME-java.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy)" | zip -q $DIST_DIR/zip/$NAME-ruby.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy)" | zip -q $DIST_DIR/zip/$NAME-php.zip -@ || exit 1
     find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon)" | zip -q $DIST_DIR/zip/$NAME-cpp.zip -@ || exit 1
@@ -41,6 +40,10 @@ pack_all_components()
     mkdir $DIST_DIR/zip/moduleclusters
 
     rm -rf $NB_ALL/nbbuild/netbeans/extra
+
+    cd $NB_ALL/nbbuild/netbeans
+    pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
+    rm -rf uml*
 
     cd $NB_ALL/nbbuild
 
@@ -58,9 +61,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
     rm -rf php*
-
-    pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
-    rm -rf uml*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
     rm -rf visualweb*

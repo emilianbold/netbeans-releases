@@ -34,7 +34,9 @@ echo Configuring GlassFish in `pwd`
 
 ant_bin=./lib/ant/bin/ant
 
-java_exe=/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home/bin/java
+#set JAVA_HOME to be used by ant
+JAVA_HOME=`"$script_dir"/get_current_jdk.sh`
+java_exe="$JAVA_HOME/bin/java"
 
 getPort() {
    basePort=$1
@@ -58,7 +60,7 @@ then
   imq_port=`getPort 7676`
   https_port=`getPort 8181`
 
-  $ant_bin -f setup.xml -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dorb.port=$orb_port -Dimq.port=$imq_port -Dhttps.port=$https_port
+  $ant_bin --noconfig -v -f setup.xml -Dadmin.port=$admin_port -Dinstance.port=$instance_port -Dorb.port=$orb_port -Dimq.port=$imq_port -Dhttps.port=$https_port
 else
   echo No ant found: $ant_bin
 fi

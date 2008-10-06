@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.util.NbBundle;
 
@@ -59,18 +60,19 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param url URL to validate, must end with "/" (slash).
+     * @param webRoot parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateWebFields(String url, String indexFile, String arguments) {
+    public static String validateWebFields(String url, File webRoot, String indexFile, String arguments) {
         String err = null;
         if (!Utils.isValidUrl(url)) {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
         } else if (!url.endsWith("/")) { // NOI18N
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_UrlNotTrailingSlash");
         } else {
-            err = validateIndexFile(indexFile, arguments);
+            err = validateIndexFile(webRoot, indexFile, arguments);
         }
         return err;
     }
@@ -78,32 +80,54 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param phpInterpreter PHP interpreter path to validate.
+     * @param projectDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateScriptFields(String phpInterpreter, String indexFile, String arguments) {
-        String err = null;
-        if (phpInterpreter.length() == 0) {
-            err = NbBundle.getMessage(RunAsValidator.class, "MSG_NoPhpInterpreter");
-        } else {
-            err = validateIndexFile(indexFile, arguments);
+    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
+        String err = Utils.validatePhpInterpreter(phpInterpreter);
+        if (err != null) {
+            return err;
         }
-        //XXX validation for arguments?
-        return err;
+        return validateIndexFile(projectDirectory, indexFile, arguments);
+    }
+
+    private static final String INVALID_SEPARATOR = "\\";
+    public static String validateUploadDirectory(String uploadDirectory, boolean allowEmpty) {
+        assert uploadDirectory != null;
+        if (allowEmpty && uploadDirectory.length() == 0) {
+            return null;
+        }
+
+        if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.SEPARATOR);
+        } else if (uploadDirectory.length() > 1
+                && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryEnd", TransferFile.SEPARATOR);
+        } else if (uploadDirectory.contains(INVALID_SEPARATOR)) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryContent", INVALID_SEPARATOR);
+        }
+        return null;
     }
 
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
-     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
+     * @param parentDirectory parent directory of the indexFile.
+     * @param indexFile file name or even relative file path (to webRoot) to validate, can be <code>null</code>.
+     *                  <b>If it is <code>null</code> then no error message is returned.</b>
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    private static String validateIndexFile(String indexFile, String arguments) {
+    private static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
+        assert parentDirectory != null;
         if (indexFile != null) {
-            String name = new File(indexFile).getName();
-            if (!Utils.isValidFileName(name)) {
-                return NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+            if (indexFile.trim().length() == 0) {
+                return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
+            }
+            File index = new File(parentDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
+            if (!index.isFile()) {
+                return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
             }
         }
         //XXX validation for arguments?
@@ -137,6 +161,11 @@ public final class RunAsValidator {
             throw new InvalidUrlException(NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl"));
         }
         return (retval != null) ? retval.toExternalForm() : ""; // NOI18N
+    }
+
+    public static String composeUploadDirectoryHint(String host, String initialDirectory, String uploadDirectory) {
+        String path = initialDirectory + uploadDirectory;
+        return "ftp://" + host + path.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
     }
 
     public static final class InvalidUrlException extends Exception {

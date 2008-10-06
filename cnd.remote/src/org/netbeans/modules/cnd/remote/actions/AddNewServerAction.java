@@ -39,16 +39,14 @@
 
 package org.netbeans.modules.cnd.remote.actions;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
@@ -66,19 +64,11 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
 
     public void performAction(Node[] nodes) {
         AddServerDialog dlg = new AddServerDialog();
-        dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
-        ok = new JButton(NbBundle.getMessage(AddNewServerAction.class, "BTN_OK"));
-        ok.setEnabled(dlg.isOkValid());
-        DialogDescriptor dd = new DialogDescriptor((Object) dlg, NbBundle.getMessage(AddNewServerAction.class, "TITLE_AddNewServer"), true, 
-                    new Object[] { ok, DialogDescriptor.CANCEL_OPTION},
-                    DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        if (dd.getValue() == ok) {
+        if (dlg.createNewRecord()) {
             String entry = dlg.getLoginName() + '@' + dlg.getServerName();
-            RemoteServerList registry = RemoteServerList.getInstance();
-            if (!registry.contains(entry)) {
-                registry.add(entry, dlg.isDefault());
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            if (!registry.getRecords().contains(entry)) {
+                registry.addServer(entry, false, true);
             }
         }
     }

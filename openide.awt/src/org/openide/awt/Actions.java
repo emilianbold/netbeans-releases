@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -84,6 +85,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Keymap;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -379,7 +381,55 @@ public class Actions extends Object {
 
         return result;
     }
+    
+    //
+    // Factories 
+    //
 
+    
+    /** Creates new action which is always enabled. 
+     * This method can also be used from 
+     * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">XML Layer</a> 
+     * directly by following XML definition:
+     * <pre>
+     * &lt;file name="your-pkg-action-id.instance"&gt;
+     *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/&gt;
+     *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
+     *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
+     *   &lt;attr name="iconBase" stringvalue="your/pkg/YourComponent.png"/&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     * &lt;/file&gt;
+     * </pre>
+     * In case the "delegate" is not just {@link ActionListener}, but also
+     * {@link Action}, the returned action acts as a lazy proxy - it defers initialization
+     * of the action itself, but as soon as it is created, it delegates all queries
+     * to it. This way one can create an action that looks statically enabled, and as soon
+     * as user really uses it, it becomes active - it can change its name, it can
+     * change its enabled state, etc.
+     *
+     * 
+     * @param delegate the task to perform when action is invoked
+     * @param displayName the name of the action
+     * @param iconBase the location to the actions icon
+     * @param noIconInMenu true if this icon shall not have an item in menu
+     * @since 7.3
+     */
+    public static Action alwaysEnabled(
+        ActionListener delegate, String displayName, String iconBase, boolean noIconInMenu
+    ) {
+        HashMap<String,Object> map = new HashMap<String,Object>();
+        map.put("delegate", delegate); // NOI18N
+        map.put("displayName", displayName); // NOI18N
+        map.put("iconBase", iconBase); // NOI18N
+        map.put("noIconInMenu", noIconInMenu); // NOI18N
+        return alwaysEnabled(map);
+    }
+    // for use from layers
+    static Action alwaysEnabled(Map map) {
+        return new AlwaysEnabledAction(map);
+    }
+
+    
     /** Extracts help from action.
      */
     private static HelpCtx findHelp(Action a) {
@@ -656,13 +706,13 @@ public class Actions extends Object {
                     Image img = null;
 
                     if (!useSmallIcon) {
-                        img = Utilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
 
                         if (img == null) {
-                            img = Utilities.loadImage(b, true);
+                            img = ImageUtilities.loadImage(b, true);
                         }
                     } else {
-                        img = Utilities.loadImage(b, true);
+                        img = ImageUtilities.loadImage(b, true);
                     }
 
                     if (img != null) {
@@ -694,13 +744,13 @@ public class Actions extends Object {
                     Image img = null;
 
                     if (!useSmallIcon) {
-                        img = Utilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
 
                         if (img == null) {
-                            img = Utilities.loadImage(b, true);
+                            img = ImageUtilities.loadImage(b, true);
                         }
                     } else {
-                        img = Utilities.loadImage(b, true);
+                        img = ImageUtilities.loadImage(b, true);
                     }
 
                     if (img != null) {
@@ -746,7 +796,7 @@ public class Actions extends Object {
 
                 if (i == null) {
                     // even for regular icon
-                    img = Utilities.loadImage(b, true);
+                    img = ImageUtilities.loadImage(b, true);
 
                     if (img != null) {
                         button.setIcon(new ImageIcon(img));
@@ -755,22 +805,22 @@ public class Actions extends Object {
                     i = img;
                 }
 
-                Image pImg = Utilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
 
                 if (pImg != null) {
                     button.setPressedIcon(new ImageIcon(pImg));
                 }
 
-                Image rImg = Utilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
 
                 if (rImg != null) {
                     button.setRolloverIcon(new ImageIcon(rImg));
                 }
 
-                Image dImg = Utilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
 
                 if (dImg != null) {
-                    button.setDisabledIcon(new ImageIcon(dImg));
+                    button.setDisabledIcon(ImageUtilities.image2Icon(dImg));
                 } else if (img != null) {
                     button.setDisabledIcon(createDisabledIcon(img));
                 }
@@ -976,7 +1026,7 @@ public class Actions extends Object {
 
                 if (i == null) {
                     // even for regular icon
-                    img = Utilities.loadImage(b, true);
+                    img = ImageUtilities.loadImage(b, true);
 
                     if (img != null) {
                         button.setIcon(new ImageIcon(img));
@@ -984,19 +1034,19 @@ public class Actions extends Object {
                     }
                 }
 
-                Image pImg = Utilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
 
                 if (pImg != null) {
                     button.setPressedIcon(new ImageIcon(pImg));
                 }
 
-                Image rImg = Utilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
 
                 if (rImg != null) {
                     button.setRolloverIcon(new ImageIcon(rImg));
                 }
 
-                Image dImg = Utilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
 
                 if (dImg != null) {
                     button.setDisabledIcon(new ImageIcon(dImg));
@@ -1069,7 +1119,10 @@ public class Actions extends Object {
             }
 
             if (!popup) {
-                button.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/gap.gif", true))); // NOI18N
+                boolean jdk16orNewer = "1.6".compareTo(System.getProperty("java.version")) <= 0;
+                button.setIcon(new ImageIcon(Utilities.loadImage(
+                        jdk16orNewer ? "org/openide/resources/actions/empty.gif" // NOI18N
+                                    : "org/openide/resources/actions/gap.gif", true))); // NOI18N
             }
         }
 

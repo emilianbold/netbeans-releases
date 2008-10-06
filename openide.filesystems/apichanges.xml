@@ -45,7 +45,114 @@ made subject to such option by the copyright holder.
     <apidefs>
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
-    <changes> 	
+    <changes>
+        <change id="FileUtil.getMIMEType.withinMIMETypes">
+            <api name="filesystems"/>
+            <summary>FileUtil.getMIMEType() can be restricted by listed MIME types</summary>
+            <version major="7" minor="13"/>
+            <date day="3" month="9" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes">
+                <p>
+                    If you have a <code>MIMEResolver</code> subclass, be sure to use the new super constructor.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    To speed up MIME type recognition it is added an extra parameter
+                    to method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMEType(org.openide.filesystems.FileObject,%20java.lang.String...)">FileUtil.getMIMEType(FileObject, String...)</a>.
+                    We can supply one or more MIME types which we are only interested in.
+                    Module writers have to override
+                    <a href="@TOP@/org/openide/filesystems/MIMEResolver.html">MIMEResolver</a>
+                    default constructor and call <code>super(String...)</code>, e.g.:
+                </p>
+                <pre>
+                    public MyResolver() {
+                        super("text/plain", "text/sh");
+                    }
+                </pre>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="137734"/>
+        </change>
+        <change id="getAttribute.class">
+            <api name="filesystems"/>
+            <summary>XMLFileSystem attributes can be queried for instance class</summary>
+            <version major="7" minor="12"/>
+            <date day="25" month="8" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    If you are interested just in the Class of an attribute, but
+                    without creating its instance, use <code>fileObject.getAttribute("class:attrName")</code>.
+                    This instructs the <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
+                    to scan its XML files for definition of <code>attrName</code>
+                    attribute and <i>guess</i> its class. The <i>guessing</i> is
+                    usually easy, just for <code>methodvalue</code> types, the system
+                    needs to use some kind of heuristic: it locates the
+                    appropriate factory method and returns its return type. This may
+                    not be the actual type of the returned object at the end, but
+                    it seems as the best guess without instantiating it.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="131951"/>
+        </change>
+        <change id="testable-declarative-resolvers">
+            <api name="filesystems"/>
+            <summary>Declarative MIME resolvers now available in standalone mode</summary>
+            <version major="7" minor="11"/>
+            <date day="10" month="7" year="2008"/>
+            <author login="jglick"/>
+            <compatibility semantic="incompatible">
+                <ul>
+                    <li>
+                        <p>
+                            The old impl would have interpreted a resolver (with the correct doctype) in any location beneath <code>Services</code>. (Actually
+                            a resolver would offer an <code>InstanceCookie&lt;MIMEResolver&gt;</code> in any location, but outside <code>Services</code> they would not have been
+                            used in MIME resolution.) The new impl expects resolvers to be <code>Services/MIMEResolver/*.xml</code>, as in practice they always
+                            are, and does not bother to verify that the public ID is set to the expected value in the doctype.
+                        </p>
+                    </li>
+                    <li>
+                        <p>
+                            The old impl would have inserted the declarative resolvers in default lookup (assuming you were running with the
+                            module system started and thus <code>FolderLookup[Services</code> included). The new impl does not.
+                        </p>
+                    </li>
+                </ul>
+            </compatibility>
+            <description>
+                <p>
+                    Declaratively registered MIME resolvers using the XML file syntax
+                    (rather than Java classes implementing <code>MIMEResolver</code>)
+                    are now used even when you run an application with just the Filesystems API in the classpath.
+                    In particular, this makes declarative resolvers be honored in unit tests.
+                    Formerly, declarative resolvers were only loaded when you used <code>org-netbeans-core.jar</code>
+                    and started the full module system.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="138846"/>
+        </change>
+        <change id="layer.bundlevalue">
+            <api name="filesystems"/>
+            <summary>XMLFileSystem supports 'bundlevalue' attribute</summary>
+            <version major="7" minor="10"/>
+            <date day="8" month="7" year="2008"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    It is possible to declare a value in <code>layer.xml</code>
+                    files with &lt;attr name="..." bundlevalue="org.yourpkg.Bundle#key"/&gt;.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="138076"/>
+        </change>
         <change id="FileUtil.urlForArchiveOrDir.archiveOrDirForURL">
             <api name="filesystems"/>
             <summary>Added methods to interconvert URLs and traditional path entries</summary>

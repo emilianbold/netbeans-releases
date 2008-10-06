@@ -60,6 +60,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -68,17 +69,25 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateVertex;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
+import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
+import org.netbeans.modules.uml.drawingarea.actions.EdgeLabelIteratorAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
+import org.netbeans.modules.uml.drawingarea.support.ValidDropTargets;
 import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import org.openide.util.Lookup;
 
 
@@ -177,7 +186,26 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public boolean isDropPossible(INamedElement node) {
-        return true;
+        boolean okToDrop = true;
+        try
+        {
+            IDiagramTypesManager pManager = DiagramTypesManager.instance();
+            if (node != null && pManager != null)
+            {
+                String sElementType = node.getElementType();
+                String diagramKindName = getScene().getDiagram().getDiagramKindAsString();
+                String sShortDisplayName = pManager.getShortDiagramTypeName(diagramKindName);
+
+                // Make sure our diagram type is in the ok-to-drop list, or ALL is in the list.
+                okToDrop = ValidDropTargets.instance().isValidDropTarget(sElementType, sShortDisplayName);
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            okToDrop = false;
+        }
+
+        return okToDrop;
     }
 
     public INamedElement processDrop(INamedElement elementToDrop) {
@@ -214,35 +242,57 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             if(lookup.lookup(SelectProvider.class) != null)
             {
                 SelectProvider selectProvider = lookup.lookup(SelectProvider.class);
-                selectAction = ActionFactory.createSelectAction(selectProvider);
+                selectAction = ActionFactory.createSelectAction(selectProvider, true);
             }
         }
         
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
                 
-        
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
+        selectTool.addAction(new MoveNodeKeyAction(moveStrategy, moveProvider));
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
-        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));
-        
+        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            selectTool.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            selectTool.addAction(new IterateSelectAction());
+        }
         WidgetAction.Chain navigateLinkTool = widget.createActions(DesignerTools.NAVIGATE_LINK);
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(selectAction);
+        readOnly.addAction(POPUP_ACTION);
+        readOnly.addAction(mouseHoverAction);        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            readOnly.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            readOnly.addAction(new IterateSelectAction());
+        }
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
-        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
+        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT); 
         
+        selectTool.addAction(new MoveNodeKeyAction(DEFAULT_MOVE_STRATEGY, DEFAULT_MOVE_PROVIDER));
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
-        selectTool.addAction (ActionFactory.createFreeMoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
         
         widget.setPaintControlPoints (true);
         widget.setControlPointShape (PointShape.SQUARE_FILLED_BIG);
         
+        selectTool.addAction( DiagramEngine.lockSelectionAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(ActionFactory.createReconnectAction(new SceneReconnectProvider()));
         
@@ -250,7 +300,13 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
+        selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
+        selectTool.addAction(new EdgeLabelIteratorAction());
         
+        WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(POPUP_ACTION);
+        readOnly.addAction(new EdgeLabelIteratorAction());
     }
     
     /**
@@ -269,7 +325,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
                                                    IPresentationElement edge)
     {
         String edgeType = edge.getFirstSubjectsType();
-        
+     
         // First see if there is a widget that is designed specifically for 
         // this diagram.
         String path ="UML/" + getDiagramKindName(scene) +
@@ -285,6 +341,16 @@ public class DefaultDiagramEngine extends  DiagramEngine {
             retVal = getConnectorWidget(scene,path);
         }
         
+        // special case for nested link
+        if (retVal == null)
+        {
+            if (edge.getSubjectCount() > 1)
+            {
+                path = "UML/Connectors/NestedLink";
+                retVal = getConnectorWidget(scene,path);
+            }
+        }
+
         return retVal;
     }
 
@@ -408,6 +474,9 @@ public class DefaultDiagramEngine extends  DiagramEngine {
                 IPresentationElement relPresenation = (IPresentationElement) scene.findObject(connectionWidget);
                 IElement relElement = relPresenation.getFirstSubject();
                 relationshipProxy.setConnectionElementType(relElement.getElementType());
+                
+                // indicates that this relationship is a reconnected one
+                relationshipProxy.setReconnectionFlag(true);
 
                 // Verify the relation
                 validator.validateRelation(relationshipProxy);

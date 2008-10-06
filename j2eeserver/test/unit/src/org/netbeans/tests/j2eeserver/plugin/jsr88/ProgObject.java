@@ -88,8 +88,8 @@ public class ProgObject extends  ServerProgress {
     }
     static ModuleType getType(String name) {
         if (name.endsWith(".ear")) return ModuleType.EAR;
-        else if (name.endsWith(".jar")) return ModuleType.EJB; //PENDING: libraries and client
-        else if (name.endsWith(".war")) return ModuleType.WAR;
+        else if (name.endsWith(".jar") || name.equals("jar")) return ModuleType.EJB; //PENDING: libraries and client
+        else if (name.endsWith(".war") || name.equals("web")) return ModuleType.WAR;
         else if (name.endsWith(".rar")) return ModuleType.RAR;
         else throw new IllegalArgumentException("Invalid archive name: " + name);
     }

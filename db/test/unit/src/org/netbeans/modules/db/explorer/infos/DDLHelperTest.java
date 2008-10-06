@@ -28,15 +28,12 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.Types;
-import org.netbeans.modules.db.util.DBTestBase;
-import org.netbeans.modules.db.util.InfoHelper;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  * @author <href="mailto:david@vancouvering.com">David Van Couvering</href>
  */
-public class DDLHelperTest extends DBTestBase {
-    InfoHelper helper;
-
+public class DDLHelperTest extends DDLTestBase {
     public DDLHelperTest(String name) {
         super(name);
     }
@@ -52,7 +49,7 @@ public class DDLHelperTest extends DBTestBase {
         // Create an index
         createSimpleIndex(tablename, indexname, colname);
         
-        DDLHelper.deleteIndex(spec, SCHEMA, 
+        DDLHelper.deleteIndex(getSpecification(), getSchema(),
                 fixIdentifier(tablename), 
                 fixIdentifier(indexname));
         
@@ -65,7 +62,7 @@ public class DDLHelperTest extends DBTestBase {
         createBasicTable(tablename, "id");
         assertTrue(tableExists(tablename));
         
-        DDLHelper.deleteTable(spec, SCHEMA, fixIdentifier(tablename));
+        DDLHelper.deleteTable(getSpecification(), getSchema(), fixIdentifier(tablename));
         
         assertFalse(tableExists(tablename));
     }
@@ -79,7 +76,7 @@ public class DDLHelperTest extends DBTestBase {
         createView(viewname, "SELECT * FROM " + tablename);
         assertTrue(viewExists(viewname));
         
-        DDLHelper.deleteView(spec, SCHEMA, fixIdentifier(viewname));
+        DDLHelper.deleteView(getSpecification(), getSchema(), fixIdentifier(viewname));
         
         assertFalse(viewExists(viewname));
     }

@@ -46,9 +46,6 @@ import java.io.File;
 import java.util.logging.Level;
 
 import javax.swing.Action;
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
 
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
@@ -71,14 +68,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 public final class NbJSEditorUtil {
 
-	public static final String HTML_MIME_TYPE = "text/html";
-	public static final String JAVASCRIPT_MIME_TYPE = "text/javascript";
-	private static NbJSDebuggerAnnotation currentLineDA;
+    public static final String HTML_MIME_TYPE = "text/html";
+    public static final String JAVASCRIPT_MIME_TYPE = "text/javascript";
+    private static NbJSDebuggerAnnotation currentLineDA;
 	
     
     public static final String BREAKPOINT_ANNOTATION_TYPE = new String("Breakpoint"); //NOI18N
@@ -97,75 +93,76 @@ public final class NbJSEditorUtil {
         return NbBundle.getBundle(NbJSEditorUtil.class).getString(key);
     }
 
-	/**
-	 * Make line in the editor current - shows the line and highlights it
-	 * appropriately (green-striped by default). Note that editor counts lines
-	 * from zero.
-	 *
-	 * @see unmarkCurrent()
-	 */
-	static void markCurrent(final String filePath, final int lineNumber) {
-		markCurrent(getLineAnnotable(filePath, lineNumber));
-	}
+    /**
+     * Make line in the editor current - shows the line and highlights it
+     * appropriately (green-striped by default). Note that editor counts lines
+     * from zero.
+     *
+     * @see unmarkCurrent()
+     */
+    static void markCurrent(final String filePath, final int lineNumber) {
+        markCurrent(getLineAnnotable(filePath, lineNumber));
+    }
 
-	private static void markCurrent(final Line line) {
-		unmarkCurrent();
-		if (line == null) {
-			return;
-		}
-		currentLineDA = new NbJSDebuggerAnnotation(NbJSEditorUtil.CURRENT_LINE_ANNOTATION_TYPE, line);
-		showLine(line, true);
-	}
+    private static void markCurrent(final Line line) {
+        unmarkCurrent();
+        if (line == null) {
+            return;
+        }
+        currentLineDA = new NbJSDebuggerAnnotation(NbJSEditorUtil.CURRENT_LINE_ANNOTATION_TYPE, line);
+        showLine(line, true);
+    }
 
+    /**
+     * Cancel effect of {@link #markCurrent(String, int)} method. I.e. removes
+     * annotation, usually the green stripe.
+     */
+    static void unmarkCurrent() {
+        if (currentLineDA != null) {
+            currentLineDA.detach();
+            currentLineDA = null;
+        }
+    }
 
-	/**
-	 * Cancel effect of {@link #markCurrent(String, int)} method. I.e. removes
-	 * annotation, usually the green stripe.
-	 */
-	static void unmarkCurrent() {
-		if (currentLineDA != null) {
-			currentLineDA.detach();
-			currentLineDA = null;
-		}
-	}
-	
-	public static void openFileObject( FileObject fileObject){
+    public static void openFileObject(FileObject fileObject) {
+        if (fileObject == null) {
+            return;
+        }
+        
         try {
             DataObject dataObject = DataObject.find(fileObject);
-            EditorCookie cookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);  
-            cookie.open();  
+            EditorCookie cookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            cookie.open();
         } catch (DataObjectNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-	}
+    }
 
-	public static Line getLineAnnotable(final String filePath,
-			final int lineNumber) {
-		Line line = getLine(filePath, lineNumber);
-		return line;
-	}
+    public static Line getLineAnnotable(final String filePath,
+            final int lineNumber) {
+        Line line = getLine(filePath, lineNumber);
+        return line;
+    }
 
+    public static Line getLine(final String filePath, final int lineNumber) {
+        if (filePath == null || lineNumber < 0) {
+            return null;
+        }
 
-	public static Line getLine(final String filePath, final int lineNumber) {
-		if (filePath == null || lineNumber < 0) {
-			return null;
-		}
+        File file = new File(filePath);
+        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fileObject == null) {
+            NbJSUtil.info("Cannot resolve \"" + filePath + '"');
+            return null;
+        }
 
-		File file = new File(filePath);
-		FileObject fileObject = FileUtil.toFileObject(FileUtil
-				.normalizeFile(file));
-		if (fileObject == null) {
-			NbJSUtil.info("Cannot resolve \"" + filePath + '"');
-			return null;
-		}
+        LineCookie lineCookie = getLineCookie(fileObject);
+        assert lineCookie != null;
+        return lineCookie.getLineSet().getCurrent(lineNumber);
+    }
 
-		LineCookie lineCookie = getLineCookie(fileObject);
-		assert lineCookie != null;
-		return lineCookie.getLineSet().getCurrent(lineNumber);
-	}
-	
-	public static Line getLine ( final FileObject fileObject, final int lineNumber ){
+    public static Line getLine(final FileObject fileObject, final int lineNumber) {
         if (fileObject != null) {
             LineCookie lineCookie = NbJSEditorUtil.getLineCookie(fileObject);
             if (lineCookie != null) {
@@ -176,91 +173,90 @@ public final class NbJSEditorUtil {
             }
         }
         return null;
-	}
-	
-	public static Line getLine ( final NbJSDebugger debugger, final JSCallStackFrame frame ){
-	    JSLocation location = frame.getLocation();
+    }
+
+    public static Line getLine(final NbJSDebugger debugger, final JSCallStackFrame frame) {
+        JSLocation location = frame.getLocation();
         JSSource source = JSFactory.createJSSource(location.getURI().toString());
         FileObject fileObject = debugger.getFileObjectForSource(source);
         return NbJSEditorUtil.getLine(fileObject, frame.getLineNumber());
-	}
+    }
 
-	public static LineCookie getLineCookie(final FileObject fo) {
-		LineCookie result = null;
-		try {
-			DataObject dataObject = DataObject.find(fo);
-			if (dataObject != null) {
-				result = dataObject.getCookie(LineCookie.class);
-			}
-		} catch (DataObjectNotFoundException e) {
-			NbJSUtil.LOGGER.log(Level.FINE,
-					"Cannot find DataObject for: " + fo, e.getMessage());
-		}
-		return result;
-	}
+    public static LineCookie getLineCookie(final FileObject fo) {
+        LineCookie result = null;
+        try {
+            DataObject dataObject = DataObject.find(fo);
+            if (dataObject != null) {
+                result = dataObject.getCookie(LineCookie.class);
+            }
+        } catch (DataObjectNotFoundException e) {
+            NbJSUtil.LOGGER.log(Level.FINE,
+                    "Cannot find DataObject for: " + fo, e.getMessage());
+        }
+        return result;
+    }
 
-	public static void showLine(final Line line, final boolean toFront) {
-		if (line == null) {
-			return;
-		}
+    public static void showLine(final Line line, final boolean toFront) {
+        if (line == null) {
+            return;
+        }
 
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				line.show(toFront ? Line.SHOW_TOFRONT : Line.SHOW_GOTO);
-			}
-		});
-	}
+        EventQueue.invokeLater(new Runnable() {
 
-	public static void showLine(final Line line) {
-		showLine(line, false);
-	}
+            public void run() {
+                line.show(toFront ? Line.SHOW_TOFRONT : Line.SHOW_GOTO);
+            }
+        });
+    }
 
-	// <editor-fold defaultstate="collapsed" desc=" Editor boilerplate ">
-	/**
-	 * Returns current editor line (the line where the caret currently is).
-	 * Might be <code>null</code>. Works only for
-	 * {@link NbJSUtil#isJavascriptSource supported mime-types}. For unsupported
-	 * ones returns <code>null</code>.
-	 */
-	public static Line getCurrentLine() {
-                FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
-		if (fo == null) {
-			return null;
-		}
-		if (!NbJSEditorUtil.isJavascriptSource(fo)
-				&& !NbJSEditorUtil.isHTMLSource(fo)) {
-			return null;
-		}
-                return EditorContextDispatcher.getDefault().getCurrentLine();
-	}
+    public static void showLine(final Line line) {
+        showLine(line, false);
+    }
 
-	// </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc=" Editor boilerplate ">
+    /**
+     * Returns current editor line (the line where the caret currently is).
+     * Might be <code>null</code>. Works only for
+     * {@link NbJSUtil#isJavascriptSource supported mime-types}. For unsupported
+     * ones returns <code>null</code>.
+     */
+    public static Line getCurrentLine() {
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fo == null) {
+            return null;
+        }
+        if (!NbJSEditorUtil.isJavascriptSource(fo) && !NbJSEditorUtil.isHTMLSource(fo)) {
+            return null;
+        }
+        return EditorContextDispatcher.getDefault().getCurrentLine();
+    }
 
-	public static boolean isHTMLSource(final FileObject fo) {
-		return HTML_MIME_TYPE.equals(fo.getMIMEType());
-	}
+    // </editor-fold>
+    public static boolean isHTMLSource(final FileObject fo) {
+        return HTML_MIME_TYPE.equals(fo.getMIMEType());
+    }
 
-	/**
-	 * Supported mime-types:
-	 *
-	 * <ul>
-	 * <li>text/javascript</li>
-	 * </ul>
-	 */
-	public static boolean isJavascriptSource(final FileObject fo) {
-		return JAVASCRIPT_MIME_TYPE.equals(fo.getMIMEType());
-	}
+    /**
+     * Supported mime-types:
+     *
+     * <ul>
+     * <li>text/javascript</li>
+     * </ul>
+     */
+    public static boolean isJavascriptSource(final FileObject fo) {
+        return JAVASCRIPT_MIME_TYPE.equals(fo.getMIMEType());
+    }
 	
 
-	/**
-	 * Goes to editor location
-	 * @param fileObject
-	 * @param lineNumber - assumes index starts at 1 instead of 0.
-	 */
-	public static final void goToSource(FileObject fileObject, int lineNumber) {
+    /**
+     * Goes to editor location
+     * @param fileObject
+     * @param lineNumber - assumes index starts at 1 instead of 0.
+     */
+    public static final void goToSource(FileObject fileObject, int lineNumber) {
         Line line = NbJSEditorUtil.getLine(fileObject.getPath(), lineNumber - 1);
         NbJSEditorUtil.showLine(line);
-	}
+    }
     
     public static final Action createDebuggerGoToAction ( final NbJSDebugger debugger ) {
         Models.ActionPerformer actionPerform =  new Models.ActionPerformer () {

@@ -326,7 +326,7 @@ public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListen
     * Remove characters back to the word start and insert expanded abbreviation.
     * @return whether the typed character should be added to the abbreviation or not
     */
-    public boolean expandString(String expandStr, ActionEvent evt)
+    public boolean expandString(final String expandStr, final ActionEvent evt)
     throws BadLocationException {
         // Disabled due to code templates
         if (true) {
@@ -334,23 +334,31 @@ public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListen
             return true;
         }
 
-        boolean expanded = false;
-        BaseDocument doc = editorUI.getDocument();
-        doc.atomicLock();
-        try {
-            Caret caret = editorUI.getComponent().getCaret();
-            int pos = caret.getDot() - expandStr.length();
-            doc.remove(pos, expandStr.length());
-            expanded = doExpansion(pos, expandStr, evt);
-        } finally {
-            if (expanded) {
-                reset();
-            } else {
-                doc.breakAtomicLock();
+        final BaseDocument doc = editorUI.getDocument();
+        final Object[] result = new Object [1];
+        doc.runAtomicAsUser (new Runnable () {
+            public void run () {
+                try {
+                    Caret caret = editorUI.getComponent().getCaret();
+                    int pos = caret.getDot() - expandStr.length();
+                    try {
+                        doc.remove(pos, expandStr.length());
+                        result [0] = doExpansion(pos, expandStr, evt);
+                    } catch (BadLocationException ex) {
+                        result [0] = ex;
+                    }
+                } finally {
+                    if (result [0] instanceof Boolean && (Boolean) result [0]) {
+                        reset();
+                    } else {
+                        doc.breakAtomicLock();
+                    }
+                }
             }
-            doc.atomicUnlock();
-        }
-        return expanded;
+        });
+        if (result [0] instanceof BadLocationException)
+            throw (BadLocationException) result [0];
+        return (Boolean) result [0];
     }
 
     public boolean checkReset(char typedChar) {

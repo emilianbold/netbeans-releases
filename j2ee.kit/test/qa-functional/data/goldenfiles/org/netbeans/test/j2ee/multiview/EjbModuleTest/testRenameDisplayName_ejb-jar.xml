@@ -3,15 +3,15 @@
     <display-name>testDisplayName</display-name>
     <enterprise-beans>
     <entity>
-      <description>jdbc:mysql://localhost:3306/users [blaha on Default schema]</description>
-      <display-name>CustomerEB</display-name>
-      <ejb-name>CustomerBean</ejb-name>
+            <description>jdbc:mysql://localhost:3306/users [blaha on Default schema]</description>
+            <display-name>CustomerEB</display-name>
+            <ejb-name>CustomerBean</ejb-name>
       <local-home>cmp.CustomerLocalHome</local-home>
       <local>cmp.CustomerLocal</local>
       <ejb-class>cmp.CustomerBean</ejb-class>
       <persistence-type>Container</persistence-type>
       <prim-key-class>java.lang.Long</prim-key-class>
-      <reentrant>false</reentrant>
+      <reentrant>true</reentrant>
       <abstract-schema-name>Customer</abstract-schema-name>
       <cmp-field>
         <field-name>id</field-name>

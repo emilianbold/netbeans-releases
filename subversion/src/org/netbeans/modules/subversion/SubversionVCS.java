@@ -57,17 +57,12 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
 
 /**
  * @author Maros Sandor
  */
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
-    
-    private static SubversionVCS instance;
-
-    static SubversionVCS getInstance() {
-        return instance;
-    }
     
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
     
@@ -75,7 +70,6 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
         SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        instance = this;
     }
 
     /**
@@ -86,10 +80,16 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
      * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
      */
     public File getTopmostManagedAncestor(File file) {
-        if(unversionedParents.contains(file)) return null;
+        Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
+        if(unversionedParents.contains(file)) {
+            Subversion.LOG.fine(" cached as unversioned");
+            return null;
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            Subversion.LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
                 if (SvnUtils.isAdministrative(file)) {
+                    Subversion.LOG.log(Level.FINE, " will use parent {0}", new Object[] { file });
                     file = file.getParentFile();
                     break;
                 }
@@ -98,18 +98,27 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         File topmost = null;
         Set<File> done = new HashSet<File>();
         for (; file != null; file = file.getParentFile()) {
-            if(unversionedParents.contains(file)) break;
+            if(unversionedParents.contains(file)) {
+                Subversion.LOG.log(Level.FINE, " already known as unversioned {0}", new Object[] { file });
+                break;
+            }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             if (new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()) { // NOI18N
+                Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();
             } else {
-                done.add(file);
+                Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
             }
         }
         if(done.size() > 0) {
+            Subversion.LOG.log(Level.FINE, " storing unversioned");
             unversionedParents.addAll(done);
         }
+        Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
         return topmost;
     }
 
@@ -137,10 +146,18 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
             if (fra == null || !fra.equals(frb)) return false;
             try {
                 SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
+                if(ra == null) {
+                    // this might happen. there is either no svn client available or
+                    // no repository url stored in the metadata (svn < 1.3).
+                    // one way or another, can't do anything reasonable at this point
+                    Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to missing repository url for {0} {1}", new Object[] {a, b});
+                    return false;
+                }
                 SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
                 SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
                 return ra.equals(rb) && ra.equals(rr);
             } catch (SVNClientException e) {
+                Subversion.LOG.log(Level.WARNING, "areCollocated returning false due to catched exception " + a + " " + b, e);
                 // root not found
                 return false;
             }
@@ -169,6 +186,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
             fireAnnotationsChanged((Set<File>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_VERSIONED_FILES_CHANGED)) {
+            Subversion.LOG.fine("cleaning unversioned parents cache");
             unversionedParents.clear();
             fireVersionedFilesChanged();
         }

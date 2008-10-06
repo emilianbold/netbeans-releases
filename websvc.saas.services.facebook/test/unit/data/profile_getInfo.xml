@@ -1,0 +1,45 @@
+
+<profile_getInfo_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd">
+    <title>My Smilies</title>
+    <info_fields list="true">
+        <info_field>
+            <field>Good Smilies</field>
+            <items list="true">
+                <info_item>
+                    <label>Happy</label>
+                    <sublabel/>
+                    <description>The original and still undefeated.</description>
+                    <link>http://www.facebook.com</link>
+                    <image>http://fbplatform.mancrushonmcslee.com/smiley/images/smile0.jpg</image>
+                </info_item>
+                <info_item>
+                    <label>Indifferent</label>
+                    <description>meh...</description>
+                    <link>http://www.facebook.com</link>
+                    <image>http://fbplatform.mancrushonmcslee.com/smiley/images/smile1.jpg</image>
+                </info_item>
+                <info_item>
+                    <label>Sad</label>
+                    <description>Oh my god! you killed my dog!</description>
+                    <link>http://www.facebook.com</link>
+                    <image>http://fbplatform.mancrushonmcslee.com/smiley/images/smile2.jpg</image>
+                </info_item>
+                <info_item>
+                    <label>Cool</label>
+                    <description>Yeah. whatever</description>
+                    <link>http://www.facebook.com</link>
+                    <image>http://fbplatform.mancrushonmcslee.com/smiley/images/smile3.jpg</image>
+                </info_item>
+            </items>
+        </info_field>
+        <info_field>
+            <field>Bad</field>
+            <items list="true">
+                <info_item>
+                    <label>Evil</label>
+                    <link>http://www.evil.com</link>
+                </info_item>
+            </items>
+        </info_field>
+    </info_fields>
+</profile_getInfo_response>

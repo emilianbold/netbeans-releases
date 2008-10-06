@@ -55,6 +55,8 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -120,7 +122,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * Holds registered local history system.
      */
     private VersioningSystem localHistory;
-    
+
+    static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning");
+
     /**
      * What folders are managed by local history. 
      * TODO: use SoftHashMap if there is one available in APIs
@@ -142,24 +146,28 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         VersioningSupport.getPreferences().addPreferenceChangeListener(this);
     }
 
+    private int refreshSerial;
+    
     /**
      * List of versioning systems changed.
      */
     private synchronized void refreshVersioningSystems() {
+        int rs = ++refreshSerial;
+        Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
+        if (rs != refreshSerial) {
+            // TODO: Workaround for Lookup bug #132145, we have to abort here to keep the freshest list of versioning systems
+            return;
+        }
+        
         // inline unloadVersioningSystems();
         for (VersioningSystem system : versioningSystems) {
             system.removePropertyChangeListener(this);
         }
         versioningSystems.clear();
-        assert versioningSystems.size() == 0;
         localHistory = null;
         // inline unloadVersioningSystems();
         
-        Collection<? extends VersioningSystem> systems = systemsLookupResult.allInstances();
-
         // inline loadVersioningSystems(systems);
-        assert versioningSystems.size() == 0;
-        assert localHistory == null;
         versioningSystems.addAll(systems);
         for (VersioningSystem system : versioningSystems) {
             if (localHistory == null && Utils.isLocalHistory(system)) {
@@ -224,21 +232,33 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
     public synchronized VersioningSystem getOwner(File file) {
+        LOG.log(Level.FINE, "looking for owner of " + file);
         File folder = file;
         if (file.isFile()) {
             folder = file.getParentFile();
-            if (folder == null) return null;
+            if (folder == null) {
+                LOG.log(Level.FINE, " null parent");
+                return null;
+            }
         }
         
         VersioningSystem owner = folderOwners.get(folder);
-        if (owner == NULL_OWNER) return null;
-        if (owner != null) return owner;
+        if (owner == NULL_OWNER) {
+            LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
+            return null;
+        }
+        if (owner != null) {
+            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });
+            return owner;
+        }
         
         File closestParent = null;
         for (VersioningSystem system : versioningSystems) {
             if (system != localHistory) {    // currently, local history is never an owner of a file
                 File topmost = system.getTopmostManagedAncestor(folder);
+                LOG.log(Level.FINE, " {0} returns {1} ", new Object[] { system != null ? system.getClass().getName() : null, topmost }) ;
                 if (topmost != null && (closestParent == null || Utils.isAncestorOrEqual(closestParent, topmost))) {
+                    LOG.log(Level.FINE, " owner = {0}", new Object[] { system != null ? system.getClass().getName() : null }) ;
                     owner = system;
                     closestParent = topmost;
                 }
@@ -246,14 +266,17 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
                 
         if (owner != null) {
+            LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, folder }) ;
             folderOwners.put(folder, owner);
         } else {
             // nobody owns the folder => all parents aren't owned
             while(folder != null) {
+                LOG.log(Level.FINE, " caching unversioned folder {0}", new Object[] { folder }) ;
                 folderOwners.put(folder, NULL_OWNER);
                 folder = folder.getParentFile();
             }
         }
+        LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
         return owner;
     }
     

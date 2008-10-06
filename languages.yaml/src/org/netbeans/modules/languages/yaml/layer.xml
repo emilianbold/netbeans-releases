@@ -75,6 +75,12 @@ made subject to such option by the copyright holder.
                         </folder>
                     </folder>
                 </folder>
+                
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-languages-yaml-preferences.xml" url="preferences.xml"/>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -84,6 +90,16 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/EmptyYAMLFileDescription.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/yaml_files_16.png"/>
+            </file>
+        </folder>
+        <folder name="Other">
+            <file name="EmptyYAML.yml" url="EmptyYAML.yml">
+                <attr name="position" intvalue="850"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.yaml.Bundle"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/EmptyYAMLFileDescription.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/languages/yaml/yaml_files_16.png"/>

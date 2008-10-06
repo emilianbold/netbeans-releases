@@ -59,7 +59,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
@@ -173,23 +172,23 @@ public class MethodModelSupportTest extends NbTestCase {
                 Types types = controller.getTypes();
                 
                 String typeName = String.class.getName();
-                String resolvedTypeName = MethodModelSupport.getTypeName(controller, elements.getTypeElement(typeName).asType());
+                String resolvedTypeName = MethodModelSupport.getTypeName(elements.getTypeElement(typeName).asType());
                 assertEquals(typeName, resolvedTypeName);
                 
                 typeName = InputStream.class.getName();
-                resolvedTypeName = MethodModelSupport.getTypeName(controller, elements.getTypeElement(typeName).asType());
+                resolvedTypeName = MethodModelSupport.getTypeName(elements.getTypeElement(typeName).asType());
                 assertEquals(typeName, resolvedTypeName);
                 
-                resolvedTypeName = MethodModelSupport.getTypeName(controller, types.getPrimitiveType(TypeKind.INT));
+                resolvedTypeName = MethodModelSupport.getTypeName(types.getPrimitiveType(TypeKind.INT));
                 assertEquals("int", resolvedTypeName);
 
                 typeName = String.class.getName();
-                resolvedTypeName = MethodModelSupport.getTypeName(controller, types.getArrayType(elements.getTypeElement(typeName).asType()));
+                resolvedTypeName = MethodModelSupport.getTypeName(types.getArrayType(elements.getTypeElement(typeName).asType()));
                 assertEquals("java.lang.String[]", resolvedTypeName);
                 
                 PrimitiveType primitiveType = types.getPrimitiveType(TypeKind.BYTE);
                 ArrayType arrayType = types.getArrayType(primitiveType);
-                resolvedTypeName = MethodModelSupport.getTypeName(controller, arrayType);
+                resolvedTypeName = MethodModelSupport.getTypeName(arrayType);
                 assertEquals("byte[]", resolvedTypeName);
             }
         });

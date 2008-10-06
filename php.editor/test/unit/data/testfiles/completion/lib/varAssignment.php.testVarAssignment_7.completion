@@ -1,0 +1,5 @@
+Code completion result for source line:
+$stVarAA1=$stVarAA->|aCreateA();//test 7
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
+METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment

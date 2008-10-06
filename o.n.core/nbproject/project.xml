@@ -164,7 +164,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.8</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -224,18 +224,28 @@ made subject to such option by the copyright holder.
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.execution</friend>
-                <friend>org.netbeans.core.windows</friend>
                 <friend>org.netbeans.core.ui</friend>
+                <friend>org.netbeans.core.windows</friend>
+                <friend>org.netbeans.modules.jellytools</friend>
+                <friend>org.netbeans.modules.jellytools.platform</friend>
                 <friend>org.netbeans.modules.settings</friend>
                 <friend>org.openide.compat</friend>
-                <friend>org.netbeans.modules.jellytools</friend>
                 <package>org.netbeans.beaninfo</package>
                 <package>org.netbeans.beaninfo.editors</package>
                 <package>org.netbeans.core</package>
+                <package>org.netbeans.core.actions</package>
             </friend-packages>
         </data>
     </configuration>

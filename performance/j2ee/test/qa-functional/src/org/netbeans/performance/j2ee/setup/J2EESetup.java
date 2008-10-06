@@ -85,6 +85,7 @@ public class J2EESetup extends JellyTestCase {
         
         CommonUtilities.addApplicationServer();
     }
+               
 
     public void testOpenTestApplication() {
 
@@ -134,5 +135,8 @@ public class J2EESetup extends JellyTestCase {
         CommonUtilities.waitProjectTasksFinished();
     }
 
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }      
    
 }

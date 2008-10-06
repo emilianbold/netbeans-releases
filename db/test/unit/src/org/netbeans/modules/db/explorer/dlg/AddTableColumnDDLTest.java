@@ -27,13 +27,13 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
  * @author David
  */
-public class AddTableColumnDDLTest extends DBTestBase {
+public class AddTableColumnDDLTest extends DDLTestBase {
 
     public AddTableColumnDDLTest(String name) {
         super(name);
@@ -58,7 +58,7 @@ public class AddTableColumnDDLTest extends DBTestBase {
     
     private void addColumn(String tablename, String colname) throws Exception {
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                getSpecification(), getDriverSpecification(), getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, colname);
@@ -78,16 +78,16 @@ public class AddTableColumnDDLTest extends DBTestBase {
 
         createBasicTable(tablename, pkeyName);     
         addColumn(tablename, firstColname);
-        createSimpleIndex(tablename, indexName, firstColname);        
+        createSimpleIndex(tablename, indexName, firstColname);
 
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                getSpecification(), getDriverSpecification(), getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, secondColname);
         TypeElement type = new TypeElement("java.sql.Types.VARCHAR", "VARCHAR");
         col.setProperty(ColumnItem.TYPE, type);
-        col.setProperty(ColumnItem.SIZE, "255");
+        col.setProperty(ColumnItem.SIZE, "20");
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
         
         ddl.execute(secondColname, col, fixIdentifier(indexName));

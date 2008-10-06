@@ -41,18 +41,24 @@
 package org.netbeans.modules.debugger.ui;
 
 import java.awt.Component;
+import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
+import org.netbeans.api.debugger.Properties;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
@@ -67,12 +73,15 @@ import org.openide.windows.WindowManager;
  * @author Jan Jancura
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
-    
+
+    private static final String PROPERTY_CLOSED_TC = "closedTopComponents"; // NOI18N
+
     private List<DebuggerEngine> openedGroups = new LinkedList<DebuggerEngine>();
     private Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
-    
+    private Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
+
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
-    
+
     @Override
     public synchronized void engineAdded (DebuggerEngine engine) {
         if (openedComponents.containsKey(engine) || openedGroups.contains(engine)) {
@@ -84,6 +93,9 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         if (componentProxies != null && !componentProxies.isEmpty()) {
             final List<Component> componentsToOpen = new ArrayList<Component>(componentProxies.size());
             componentsToOpen.add(new java.awt.Label("EMPTY"));
+            if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
+                fillOpenedDebuggerComponents(componentsInitiallyOpened);
+            }
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     List<Component> cs = new ArrayList<Component>(componentProxies.size());
@@ -92,16 +104,29 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             Component c;
                             try {
                                 c = cp.getComponent();
-                                if (c == null) throw new NullPointerException("No component from "+cp);
+                                if (c == null) {
+                                    //throw new NullPointerException("No component from "+cp);
+                                    continue;
+                                }
                             } catch (Exception ex) {
                                 Exceptions.printStackTrace(ex);
                                 continue;
                             }
                             cs.add(c);
+                            boolean doOpen = (cp instanceof DesignMode) ? ((DesignMode) cp).isDesignTime() : true;
                             if (c instanceof TopComponent) {
-                                ((TopComponent) c).open();
+                                TopComponent tc = (TopComponent) c;
+                                boolean wasClosed = Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), false);
+                                boolean wasOpened = !Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).getBoolean(tc.getName(), true);
+                                if (doOpen && !wasClosed || !doOpen && wasOpened) {
+                                    tc.open();
+                                }
                             } else {
-                                c.setVisible(true);
+                                if (doOpen) {
+                                    c.setVisible(true);
+                                }
                             }
                         }
                         setupToolbar();
@@ -136,6 +161,16 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
     }
 
+    private void fillOpenedDebuggerComponents(Set<Reference<Component>> componentsInitiallyOpened) {
+        // For simplicity, add all opened components. These will not be closed when finishing the debugging session.
+        TopComponent.Registry registry = TopComponent.getRegistry();
+        synchronized (registry) {
+            for (TopComponent tc : registry.getOpened()) {
+                componentsInitiallyOpened.add(new WeakReference<Component>(tc));
+            }
+        }
+    }
+
     private static final void setupToolbar() {
         if (ToolbarPool.getDefault ().getConfiguration ().equals(ToolbarPool.DEFAULT_CONFIGURATION)) {
             ToolbarPool.getDefault ().setConfiguration("Debugging"); // NOI18N
@@ -165,12 +200,21 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
             final List<Component> windowsToClose = new ArrayList<Component>(openedWindows);
             windowsToClose.removeAll(retainOpened);
+            for (Reference<Component> cref : componentsInitiallyOpened) {
+                windowsToClose.remove(cref.get());
+            }
             if (!windowsToClose.isEmpty()) {
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
                         for (Component c : windowsToClose) {
                             if (c instanceof TopComponent) {
-                                ((TopComponent) c).close();
+                                TopComponent tc = (TopComponent) c;
+                                boolean isOpened = tc.isOpened();
+                                Properties.getDefault().getProperties(DebuggerManagerListener.class.getName()).
+                                        getProperties(PROPERTY_CLOSED_TC).setBoolean(tc.getName(), !isOpened);
+                                if (isOpened) {
+                                    tc.close();
+                                }
                             } else {
                                 c.setVisible(false);
                             }
@@ -196,6 +240,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
         }
         if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
+            componentsInitiallyOpened.clear();
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
                     closeToolbar();
@@ -203,7 +248,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             });
         }
     }
-    
+
     static void closeDebuggerUI() {
         /*
         java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("CLOSING TopComponentGroup...");
@@ -223,7 +268,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
         //java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("TopComponentGroup closed.");
     }
-    
+
     private static void doCloseDebuggerUI() {
         TopComponentGroup group = WindowManager.getDefault ().
                 findTopComponentGroup ("debugger"); // NOI18N
@@ -244,5 +289,5 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
         }
     }
-    
+
 }

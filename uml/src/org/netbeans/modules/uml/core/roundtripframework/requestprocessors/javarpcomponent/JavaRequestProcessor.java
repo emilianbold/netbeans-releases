@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
@@ -101,6 +104,9 @@ import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbPreferences;
 
 /**
@@ -391,6 +397,18 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                                 {
                                     deny(cell, RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE"),
                                             RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE_TITLE"));
+                                }
+                            }
+                        }
+                        else if (element instanceof IEnumerationLiteral)
+                        {
+                            for (IEnumerationLiteral literal : ((IEnumerationLiteral)element).getEnumeration().getLiterals())
+                            {
+                                if (literal.getName().equals(name))
+                                {
+                                    deny(cell, RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE"),
+                                            RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE_TITLE"));
+                                    break;
                                 }
                             }
                         }
@@ -1060,12 +1078,14 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                                                 if ( pExistingTo != null )
                                                 {
                                                     boolean isSame = pExistingTo.isSame(pCandidateTo);
-                                                    if (!isSame)
+                                                    
+                                                    // Fix for issue 138300.
+                                                    // if it's a reconnected relationship, relax the validation, because the
+                                                    //pExistingTo element has not been disconnected from the relationship yet.
+                                                    if (!isSame && !proxy.isReconnected()) 
                                                     {
                                                         // This is illegal in Java
                                                         valid = false;
-                                                        
-                                                        
                                                         sendErrorMessage(RPMessages.getString("IDS_JRT_GENERALIZATION_INVALID"),
                                                                 RPMessages.getString("IDS_JRT_INVALID_GENERALIZATION_TITLE"));
                                                     }
@@ -1524,30 +1544,20 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         checkWithUser = true;
                 }
                 
-                if ( checkWithUser )
+                if (checkWithUser) 
                 {
-                    IQuestionDialog pDiag = new SwingQuestionDialogImpl();
-                    if ( pDiag != null )
+                    String message = RPMessages.getString("IDS_JRT_PACKAGE_DELETE");
+                    String title = RPMessages.getString("IDS_JRT_PACKAGE_DELETE_TITLE");
+
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(message, title, true,
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.YES_OPTION, null);
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+                    dialog.getAccessibleContext().setAccessibleDescription(title);
+                    dialog.setVisible(true);
+                    if (dialogDescriptor.getValue() == DialogDescriptor.NO_OPTION) 
                     {
-                        
-                        String message = RPMessages.getString("IDS_JRT_PACKAGE_DELETE");
-                        String title = RPMessages.getString("IDS_JRT_PACKAGE_DELETE_TITLE");
-                        
-                        int defaultresult = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
-                        QuestionResponse result = pDiag.displaySimpleQuestionDialogWithCheckbox(
-                                SimpleQuestionDialogKind.SQDK_YESNO,
-                                ErrorDialogIconKind.EDIK_ICONWARNING,
-                                message,
-                                "",
-                                title,
-                                defaultresult,
-                                false);
-                        
-                        if ( result.getResult() == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO )
-                        {
-                            // DENIED BY USER
-                            cell.setContinue(false);
-                        }
+                        // DENIED BY USER
+                        cell.setContinue(false);
                     }
                 }
             }
@@ -2302,6 +2312,10 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         retval = true;
                     }
                 }
+                else if (pElement instanceof IEnumerationLiteral)
+                {
+                    
+                }
             }
         }
         catch(Exception e)
@@ -2312,7 +2326,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         return retval;
     }
     
-    protected boolean invalidClass(String name)
+    public boolean invalidClass(String name)
     {
         boolean retval = false;
         retval = invalidIdentifier(name);
@@ -2326,7 +2340,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         return retval;
     }
     
-    protected boolean invalidPackage(String name)
+    public boolean invalidPackage(String name)
     {
         boolean retval = false;
         retval = invalidIdentifier(name);
@@ -2547,7 +2561,7 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
         sendErrorMessage(message, title);
     }
     
-    protected boolean checkIfCorrectLanguage(IElement pElement)
+    public boolean checkIfCorrectLanguage(IElement pElement)
     {
         boolean retVal = false;
         
@@ -2611,6 +2625,18 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         sendErrorMessage(RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE"),
                                 RPMessages.getString("IDS_JRT_ATTR_NAME_NOT_UNIQUE_TITLE"));
                         return false;
+                    }
+                }
+                else if (element instanceof IEnumerationLiteral)
+                {
+                    for (IEnumerationLiteral literal : ((IEnumerationLiteral) element).getEnumeration().getLiterals())
+                    {
+                        if (literal.getName().equals(name))
+                        {
+                            sendErrorMessage(RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE"),
+                                    RPMessages.getString("IDS_JRT_LITERAL_NAME_NOT_UNIQUE_TITLE"));
+                            break;
+                        }
                     }
                 }
             }

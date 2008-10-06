@@ -108,7 +108,7 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
         projectfolder = VWPUtilities.WEB_PAGES;
 	doMeasurement();
     }
-    
+
     public void testCreateJSPFragment(){
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN=15000;
@@ -132,7 +132,7 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
         projectfolder = VWPUtilities.WEB_PAGES+"|"+"resources"; // NOI18N
 	doMeasurement();
     }
-    
+
     public ComponentOperator open(){
         log("::open::");
         location.finish();
@@ -149,7 +149,7 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
         try {
             projectRoot = pto.getProjectRootNode(project_name);
             projectRoot.select();
-            
+
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
@@ -165,8 +165,10 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
+
         
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+            
         
         // create exactly (full match) and case sensitively comparing comparator
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
@@ -192,11 +194,6 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
     @Override
     public void close(){
         log("::close");
-        try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }        
         cleanupTest();        
     }
     

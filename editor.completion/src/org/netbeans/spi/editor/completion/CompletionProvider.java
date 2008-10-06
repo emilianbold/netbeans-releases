@@ -44,8 +44,11 @@ package org.netbeans.spi.editor.completion;
 import javax.swing.text.JTextComponent;
 
 /**
- * The basic interface of the code completion querying SPI. Various implementations can
- * be registered per a document mime-type.
+ * The basic interface for providing code completion items. You should implement this interface
+ * if you want to provide items that are available to users when they invoke code completion in
+ * a text document. You should register your implementation on the system FileSystem under the
+ * <code>Editors/&lt;mime-type&gt;</code> folder. The registered implementation will then be used
+ * for documents that are of the specified <code>mime-type</code>.
  *
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.01
@@ -75,35 +78,46 @@ public interface CompletionProvider {
 
     /**
      * Creates a task that performs a query of the given type on the given component.
-     * <br>
-     * This method is invoked in AWT thread only and the returned task
+     * 
+     * <p>This method is invoked in AWT thread only and the returned task
      * may either be synchronous (if it's not complex)
-     * or it may be asynchonous
+     * or it may be asynchronous
      * (see {@link org.netbeans.spi.editor.completion.support.AsyncCompletionTask}).
-     * <br>
-     * The task usually inspects the component's document, the
+     * 
+     * <p class="nonnormative">The task usually inspects the component's document, the
      * text up to the caret position and returns the appropriate result.
      * 
-     * @param queryType a type ot the query. It can be one of the {@link #COMPLETION_QUERY_TYPE},
+     * @param queryType Type of the query. It can be one of the {@link #COMPLETION_QUERY_TYPE},
      *  {@link #COMPLETION_ALL_QUERY_TYPE}, {@link #DOCUMENTATION_QUERY_TYPE},
      *  or {@link #TOOLTIP_QUERY_TYPE} (but not their combination).          
-     * @param component a component on which the query is performed
+     * @param component A text component where the query should be performed.
      *
-     * @return a task performing the query.
+     * @return A task performing the query.
      */
     public CompletionTask createTask(int queryType, JTextComponent component);
 
     /**
-     * Called by the code completion infrastructure to check whether a text just typed
-     * into a text component triggers an automatic query invocation.
-     * <br>
-     * If the particular query type is returned the infrastructure
-     * will then call {@link #createTask(int, JTextComponent)}.
+     * Determines whether text typed in a document should automatically pop up the code completion
+     * window. This method is called by the code completion infrastructure only to check whether
+     * text that has just been typed into a text component triggers an automatic query invocation.
+     * 
+     * <p>An implementation of this method can return any combination of the query type constants
+     * available in this interface to tell the infrastructure that it should call {@link #createTask(int, JTextComponent)}
+     * and show the code completion window. Or it can return zero if the typed text does not trigger
+     * popping up the code completion window.
      *
-     * @param component a component in which typing appeared
-     * @param typedText a typed text 
+     * <p class="nonnormative">Please note that there could be multiple <code>CompletionProvider</code>s registered for
+     * the same mime type and this method is called for all of them. This means that even if a particular
+     * implementation does not want the code completion window to pop up for the typed text (ie. returns zero
+     * from this method) there could be others that recognize the text as a trigger and will return non-zero.
+     * If at least one of the registered <code>CompletionProvider</code>s returns
+     * non-zero from this method the infrastructure will call <code>createTask</code> in all the registered
+     * implementations asking them to provide completion items for the requested query type.
      *
-     * @return a combination of the {@link #COMPLETION_QUERY_TYPE}, {@link #COMPLETION_ALL_QUERY_TYPE},
+     * @param component A component in which the text was typed.
+     * @param typedText Typed text.
+     *
+     * @return Any combination of the {@link #COMPLETION_QUERY_TYPE}, {@link #COMPLETION_ALL_QUERY_TYPE},
      *         {@link #DOCUMENTATION_QUERY_TYPE}, and {@link #TOOLTIP_QUERY_TYPE}
      *         values, or zero if no query should be automatically invoked.
      */

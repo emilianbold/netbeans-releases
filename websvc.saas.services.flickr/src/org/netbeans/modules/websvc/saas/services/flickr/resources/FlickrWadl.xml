@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
 	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
@@ -159,35 +200,37 @@
                 <method id="blogs_postPhoto" name="POST">
                     <doc xml:lang="en"/>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="blog_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the blog to post to
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to blog
-                            </doc>
-                        </param>
-                        <param name="title" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The blog post title
-                            </doc>
-                        </param>
-                        <param name="description" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The blog post body
-                            </doc>
-                        </param>
-                        <param name="blog_password" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">The password for the blog (used when the blog does not have a stored password).
-                            </doc>
-                        </param>
-                        <param fixed="flickr.blogs.postPhoto" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="blog_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the blog to post to
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to blog
+                                </doc>
+                            </param>
+                            <param name="title" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The blog post title
+                                </doc>
+                            </param>
+                            <param name="description" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The blog post body
+                                </doc>
+                            </param>
+                            <param name="blog_password" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">The password for the blog (used when the blog does not have a stored password).
+                                </doc>
+                            </param>
+                            <param fixed="flickr.blogs.postPhoto" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -271,19 +314,21 @@
                     <doc xml:lang="en">Adds a photo to a user's favorites list.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add to the user's favorites.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.favorites.add" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add to the user's favorites.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.favorites.add" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -361,19 +406,21 @@
                     <doc xml:lang="en">Removes a photo from a user's favorites list.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to remove from the user's favorites.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.favorites.remove" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to remove from the user's favorites.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.favorites.remove" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -463,23 +510,25 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
                     <doc xml:lang="en">Add a photo to a group's pool.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add to the group pool. The photo must belong to the calling user.
-                            </doc>
-                        </param>
-                        <param name="group_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The NSID of the group who's pool the photo is to be added to.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.groups.pools.add" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add to the group pool. The photo must belong to the calling user.
+                                </doc>
+                            </param>
+                            <param name="group_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The NSID of the group who's pool the photo is to be added to.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.groups.pools.add" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -583,23 +632,25 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
                     <doc xml:lang="en">Remove a photo from a group pool.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to remove from the group pool. The photo must either be owned by the calling user of the calling user must be an administrator of the group.
-                            </doc>
-                        </param>
-                        <param name="group_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The NSID of the group who's pool the photo is to removed from.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.groups.pools.remove" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to remove from the group pool. The photo must either be owned by the calling user of the calling user must be an administrator of the group.
+                                </doc>
+                            </param>
+                            <param name="group_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The NSID of the group who's pool the photo is to removed from.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.groups.pools.remove" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -795,23 +846,25 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
                     <doc xml:lang="en">Add tags to a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add tags to.
-                            </doc>
-                        </param>
-                        <param name="tags" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The tags to add to the photo.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.addTags" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add tags to.
+                                </doc>
+                            </param>
+                            <param name="tags" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The tags to add to the photo.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.addTags" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -821,19 +874,21 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
                     <doc xml:lang="en">Delete a photo from flickr.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to delete.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.delete" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to delete.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.delete" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1421,19 +1476,21 @@ Valid values are the same as &lt;a href="/services/feeds/"&gt;in feeds&lt;/a&gt;
                     <doc xml:lang="en">Remove a tag from a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="tag_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The tag to remove from the photo. This parameter should contain a tag id, as returned by &lt;a href="/services/api/flickr.photos.getInfo.html"&gt;flickr.photos.getInfo&lt;/a&gt;.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.removeTag" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="tag_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The tag to remove from the photo. This parameter should contain a tag id, as returned by &lt;a href="/services/api/flickr.photos.getInfo.html"&gt;flickr.photos.getInfo&lt;/a&gt;.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.removeTag" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1617,23 +1674,25 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set the content type of a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set the adultness of.
-                            </doc>
-                        </param>
-                        <param name="content_type" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The content type of the photo. Must be one of: 1 for Photo, 2 for Screenshot, and 3 for Other.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setContentType" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set the adultness of.
+                                </doc>
+                            </param>
+                            <param name="content_type" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The content type of the photo. Must be one of: 1 for Photo, 2 for Screenshot, and 3 for Other.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setContentType" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1643,31 +1702,33 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set one or both of the dates for a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to edit dates for.
-                            </doc>
-                        </param>
-                        <param name="date_posted" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">The date the photo was uploaded to flickr (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
-                            </doc>
-                        </param>
-                        <param name="date_taken" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">The date the photo was taken (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
-                            </doc>
-                        </param>
-                        <param name="date_taken_granularity" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">The granularity of the date the photo was taken (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setDates" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to edit dates for.
+                                </doc>
+                            </param>
+                            <param name="date_posted" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">The date the photo was uploaded to flickr (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
+                                </doc>
+                            </param>
+                            <param name="date_taken" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">The date the photo was taken (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
+                                </doc>
+                            </param>
+                            <param name="date_taken_granularity" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">The granularity of the date the photo was taken (see the &lt;a href="/services/api/misc.dates.html"&gt;dates documentation&lt;/a&gt;)
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setDates" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1677,27 +1738,29 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set the meta information for a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set information for.
-                            </doc>
-                        </param>
-                        <param name="title" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The title for the photo.
-                            </doc>
-                        </param>
-                        <param name="description" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The description for the photo.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setMeta" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set information for.
+                                </doc>
+                            </param>
+                            <param name="title" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The title for the photo.
+                                </doc>
+                            </param>
+                            <param name="description" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The description for the photo.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setMeta" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1707,43 +1770,45 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set permissions for a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set permissions for.
-                            </doc>
-                        </param>
-                        <param name="is_public" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to set the photo to public, 0 to set it to private.
-                            </doc>
-                        </param>
-                        <param name="is_friend" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to make the photo visible to friends when private, 0 to not.
-                            </doc>
-                        </param>
-                        <param name="is_family" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to make the photo visible to family when private, 0 to not.
-                            </doc>
-                        </param>
-                        <param name="perm_comment" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">who can add comments to the photo and it's notes. one of:&lt;br /&gt;
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set permissions for.
+                                </doc>
+                            </param>
+                            <param name="is_public" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to set the photo to public, 0 to set it to private.
+                                </doc>
+                            </param>
+                            <param name="is_friend" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to make the photo visible to friends when private, 0 to not.
+                                </doc>
+                            </param>
+                            <param name="is_family" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to make the photo visible to family when private, 0 to not.
+                                </doc>
+                            </param>
+                            <param name="perm_comment" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">who can add comments to the photo and it's notes. one of:&lt;br /&gt;
 &lt;code&gt;0&lt;/code&gt;: nobody&lt;br /&gt;
 &lt;code&gt;1&lt;/code&gt;: friends &amp;amp; family&lt;br /&gt;
 &lt;code&gt;2&lt;/code&gt;: contacts&lt;br /&gt;
 &lt;code&gt;3&lt;/code&gt;: everybody
-                            </doc>
-                        </param>
-                        <param name="perm_addmeta" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">who can add notes and tags to the photo. one of:&lt;br /&gt;
+                                </doc>
+                            </param>
+                            <param name="perm_addmeta" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">who can add notes and tags to the photo. one of:&lt;br /&gt;
 &lt;code&gt;0&lt;/code&gt;: nobody / just the owner&lt;br /&gt;
 &lt;code&gt;1&lt;/code&gt;: friends &amp; family&lt;br /&gt;
 &lt;code&gt;2&lt;/code&gt;: contacts&lt;br /&gt;
 &lt;code&gt;3&lt;/code&gt;: everybody
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setPerms" name="method" required="true" style="query" type="xsd:string"/>
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setPerms" name="method" required="true" style="query" type="xsd:string"/>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1753,29 +1818,31 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set the safety level of a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set the adultness of.
-                            </doc>
-                        </param>
-                        <param name="safety_level" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">The safety level of the photo.  Must be one of:
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set the adultness of.
+                                </doc>
+                            </param>
+                            <param name="safety_level" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">The safety level of the photo.  Must be one of:
 
 1 for Safe, 2 for Moderate, and 3 for Restricted.
-                            </doc>
-                        </param>
-                        <param name="hidden" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">Whether or not to additionally hide the photo from public searches.  Must be either 1 for Yes or 0 for No.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setSafetyLevel" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                                </doc>
+                            </param>
+                            <param name="hidden" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">Whether or not to additionally hide the photo from public searches.  Must be either 1 for Yes or 0 for No.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setSafetyLevel" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1785,23 +1852,25 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Set the tags for a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set tags for.
-                            </doc>
-                        </param>
-                        <param name="tags" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">All tags for the photo (as a single space-delimited string).
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.setTags" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set tags for.
+                                </doc>
+                            </param>
+                            <param name="tags" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">All tags for the photo (as a single space-delimited string).
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.setTags" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1811,23 +1880,25 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Add comment to a photo as the currently authenticated user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add a comment to.
-                            </doc>
-                        </param>
-                        <param name="comment_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Text of the comment
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add a comment to.
+                                </doc>
+                            </param>
+                            <param name="comment_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Text of the comment
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1837,19 +1908,21 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Delete a comment as the currently authenticated user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="comment_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the comment to edit.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="comment_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the comment to edit.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1859,23 +1932,25 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="comment_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the comment to edit.
-                            </doc>
-                        </param>
-                        <param name="comment_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Update the comment to this text.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="comment_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the comment to edit.
+                                </doc>
+                            </param>
+                            <param name="comment_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Update the comment to this text.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1951,19 +2026,21 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                     <doc xml:lang="en">Removes the geo data associated with a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo you want to remove location data from.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.geo.removeLocation" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo you want to remove location data from.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.geo.removeLocation" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -1975,31 +2052,33 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
 Before users may assign location data to a photo they must define who, by default, may view that information. Users can edit this preference at &lt;a href="http://www.flickr.com/account/geo/privacy/"&gt;http://www.flickr.com/account/geo/privacy/&lt;/a&gt;. If a user has not set this preference, the API method will return an error.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to set location data for.
-                            </doc>
-                        </param>
-                        <param name="lat" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The latitude whose valid range is -90 to 90. Anything more than 6 decimal places will be truncated.
-                            </doc>
-                        </param>
-                        <param name="lon" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The longitude whose valid range is -180 to 180. Anything more than 6 decimal places will be truncated.
-                            </doc>
-                        </param>
-                        <param name="accuracy" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">Recorded accuracy level of the location information. World level is 1, Country is ~3, Region ~6, City ~11, Street ~16. Current range is 1-16. Defaults to 16 if not specified.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.geo.setLocation" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to set location data for.
+                                </doc>
+                            </param>
+                            <param name="lat" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The latitude whose valid range is -90 to 90. Anything more than 6 decimal places will be truncated.
+                                </doc>
+                            </param>
+                            <param name="lon" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The longitude whose valid range is -180 to 180. Anything more than 6 decimal places will be truncated.
+                                </doc>
+                            </param>
+                            <param name="accuracy" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">Recorded accuracy level of the location information. World level is 1, Country is ~3, Region ~6, City ~11, Street ~16. Current range is 1-16. Defaults to 16 if not specified.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.geo.setLocation" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2009,35 +2088,37 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Set the permission for who may view the geo data associated with a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="is_public" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to set viewing permissions for the photo's location data to public, 0 to set it to private.
-                            </doc>
-                        </param>
-                        <param name="is_contact" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to set viewing permissions for the photo's location data to contacts, 0 to set it to private.
-                            </doc>
-                        </param>
-                        <param name="is_friend" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to set viewing permissions for the photo's location data to friends, 0 to set it to private.
-                            </doc>
-                        </param>
-                        <param name="is_family" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">1 to set viewing permissions for the photo's location data to family, 0 to set it to private.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to get permissions for.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.geo.setPerms" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="is_public" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to set viewing permissions for the photo's location data to public, 0 to set it to private.
+                                </doc>
+                            </param>
+                            <param name="is_contact" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to set viewing permissions for the photo's location data to contacts, 0 to set it to private.
+                                </doc>
+                            </param>
+                            <param name="is_friend" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to set viewing permissions for the photo's location data to friends, 0 to set it to private.
+                                </doc>
+                            </param>
+                            <param name="is_family" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">1 to set viewing permissions for the photo's location data to family, 0 to set it to private.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to get permissions for.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.geo.setPerms" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2065,23 +2146,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Sets the license for a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The photo to update the license for.
-                            </doc>
-                        </param>
-                        <param name="license_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The license to apply, or 0 (zero) to remove the current license.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.licenses.setLicense" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The photo to update the license for.
+                                </doc>
+                            </param>
+                            <param name="license_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The license to apply, or 0 (zero) to remove the current license.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.licenses.setLicense" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2091,39 +2174,41 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Add a note to a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add a note to
-                            </doc>
-                        </param>
-                        <param name="note_x" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The left coordinate of the note
-                            </doc>
-                        </param>
-                        <param name="note_y" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The top coordinate of the note
-                            </doc>
-                        </param>
-                        <param name="note_w" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The width of the note
-                            </doc>
-                        </param>
-                        <param name="note_h" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The height of the note
-                            </doc>
-                        </param>
-                        <param name="note_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The description of the note
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.notes.add" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add a note to
+                                </doc>
+                            </param>
+                            <param name="note_x" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The left coordinate of the note
+                                </doc>
+                            </param>
+                            <param name="note_y" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The top coordinate of the note
+                                </doc>
+                            </param>
+                            <param name="note_w" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The width of the note
+                                </doc>
+                            </param>
+                            <param name="note_h" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The height of the note
+                                </doc>
+                            </param>
+                            <param name="note_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The description of the note
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.notes.add" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2133,19 +2218,21 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Delete a note from a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="note_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the note to delete
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.notes.delete" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="note_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the note to delete
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.notes.delete" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2155,39 +2242,41 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Edit a note on a photo. Coordinates and sizes are in pixels, based on the 500px image size shown on individual photo pages.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="note_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the note to edit
-                            </doc>
-                        </param>
-                        <param name="note_x" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The left coordinate of the note
-                            </doc>
-                        </param>
-                        <param name="note_y" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The top coordinate of the note
-                            </doc>
-                        </param>
-                        <param name="note_w" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The width of the note
-                            </doc>
-                        </param>
-                        <param name="note_h" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The height of the note
-                            </doc>
-                        </param>
-                        <param name="note_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The description of the note
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.notes.edit" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="note_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the note to edit
+                                </doc>
+                            </param>
+                            <param name="note_x" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The left coordinate of the note
+                                </doc>
+                            </param>
+                            <param name="note_y" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The top coordinate of the note
+                                </doc>
+                            </param>
+                            <param name="note_w" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The width of the note
+                                </doc>
+                            </param>
+                            <param name="note_h" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The height of the note
+                                </doc>
+                            </param>
+                            <param name="note_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The description of the note
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.notes.edit" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2197,23 +2286,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Rotate a photo.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to rotate.
-                            </doc>
-                        </param>
-                        <param name="degrees" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The amount of degrees by which to rotate the photo (clockwise) from it's current orientation. Valid values are 90, 180 and 270.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photos.transform.rotate" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to rotate.
+                                </doc>
+                            </param>
+                            <param name="degrees" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The amount of degrees by which to rotate the photo (clockwise) from it's current orientation. Valid values are 90, 180 and 270.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photos.transform.rotate" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2245,23 +2336,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Add a photo to the end of an existing photoset.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to add a photo to.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to add to the set.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.addPhoto" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to add a photo to.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to add to the set.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.addPhoto" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2271,27 +2364,29 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Create a new photoset for the calling user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="title" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">A title for the photoset.
-                            </doc>
-                        </param>
-                        <param name="description" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">A description of the photoset. May contain limited html.
-                            </doc>
-                        </param>
-                        <param name="primary_photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to represent this set. The photo must belong to the calling user.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.create" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="title" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">A title for the photoset.
+                                </doc>
+                            </param>
+                            <param name="description" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">A description of the photoset. May contain limited html.
+                                </doc>
+                            </param>
+                            <param name="primary_photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to represent this set. The photo must belong to the calling user.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.create" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2301,19 +2396,21 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Delete a photoset.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to delete. It must be owned by the calling user.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.delete" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to delete. It must be owned by the calling user.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.delete" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2323,27 +2420,29 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Modify the meta-data for a photoset.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to modify.
-                            </doc>
-                        </param>
-                        <param name="title" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The new title for the photoset.
-                            </doc>
-                        </param>
-                        <param name="description" required="false" style="query" type="xsd:string">
-                            <doc xml:lang="en">A description of the photoset. May contain limited html.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.editMeta" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to modify.
+                                </doc>
+                            </param>
+                            <param name="title" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The new title for the photoset.
+                                </doc>
+                            </param>
+                            <param name="description" required="false" style="query" type="xsd:string">
+                                <doc xml:lang="en">A description of the photoset. May contain limited html.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.editMeta" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2353,27 +2452,29 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Modify the photos in a photoset. Use this method to add, remove and re-order photos.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to modify. The photoset must belong to the calling user.
-                            </doc>
-                        </param>
-                        <param name="primary_photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to use as the 'primary' photo for the set. This id must also be passed along in photo_ids list argument.
-                            </doc>
-                        </param>
-                        <param name="photo_ids" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">A comma-delimited list of photo ids to include in the set. They will appear in the set in the order sent. This list &lt;b&gt;must&lt;/b&gt; contain the primary photo id. All photos must belong to the owner of the set. This list of photos replaces the existing list. Call flickr.photosets.addPhoto to append a photo to a set.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.editPhotos" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to modify. The photoset must belong to the calling user.
+                                </doc>
+                            </param>
+                            <param name="primary_photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to use as the 'primary' photo for the set. This id must also be passed along in photo_ids list argument.
+                                </doc>
+                            </param>
+                            <param name="photo_ids" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">A comma-delimited list of photo ids to include in the set. They will appear in the set in the order sent. This list &lt;b&gt;must&lt;/b&gt; contain the primary photo id. All photos must belong to the owner of the set. This list of photos replaces the existing list. Call flickr.photosets.addPhoto to append a photo to a set.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.editPhotos" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2498,19 +2599,21 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Set the order of photosets for the calling user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_ids" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">A comma delimited list of photoset IDs, ordered with the set to show first, first in the list. Any set IDs not given in the list will be set to appear at the end of the list, ordered by their IDs.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.orderSets" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_ids" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">A comma delimited list of photoset IDs, ordered with the set to show first, first in the list. Any set IDs not given in the list will be set to appear at the end of the list, ordered by their IDs.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.orderSets" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2520,23 +2623,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Remove a photo from a photoset.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to remove a photo from.
-                            </doc>
-                        </param>
-                        <param name="photo_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photo to remove from the set.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.removePhoto" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to remove a photo from.
+                                </doc>
+                            </param>
+                            <param name="photo_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photo to remove from the set.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.removePhoto" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2546,23 +2651,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Add a comment to a photoset.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="photoset_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the photoset to add a comment to.
-                            </doc>
-                        </param>
-                        <param name="comment_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Text of the comment
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="photoset_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the photoset to add a comment to.
+                                </doc>
+                            </param>
+                            <param name="comment_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Text of the comment
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.comments.addComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2572,19 +2679,21 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Delete a photoset comment as the currently authenticated user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="comment_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the comment to delete from a photoset.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="comment_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the comment to delete from a photoset.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.comments.deleteComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>
@@ -2594,23 +2703,25 @@ Before users may assign location data to a photo they must define who, by defaul
                     <doc xml:lang="en">Edit the text of a comment as the currently authenticated user.
                     </doc>
                     <request>
-                        <param name="api_key" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
-                            </doc>
-                        </param>
-                        <param name="comment_id" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The id of the comment to edit.
-                            </doc>
-                        </param>
-                        <param name="comment_text" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">Update the comment to this text.
-                            </doc>
-                        </param>
-                        <param fixed="flickr.photosets.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
-                        <param name="auth_token" required="true" style="query" type="xsd:string">
-                            <doc xml:lang="en">The authentication token to check.
-                            </doc>
-                        </param>
+                        <representation mediaType="application/x-www-form-urlencoded">
+                            <param name="api_key" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Your API application key. &lt;a href="/services/api/misc.api_keys.html"&gt;See here&lt;/a&gt; for more details.
+                                </doc>
+                            </param>
+                            <param name="comment_id" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The id of the comment to edit.
+                                </doc>
+                            </param>
+                            <param name="comment_text" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">Update the comment to this text.
+                                </doc>
+                            </param>
+                            <param fixed="flickr.photosets.comments.editComment" name="method" required="true" style="query" type="xsd:string"/>
+                            <param name="auth_token" required="true" style="query" type="xsd:string">
+                                <doc xml:lang="en">The authentication token to check.
+                                </doc>
+                            </param>
+                        </representation>
                     </request>
                     <response>
                         <representation mediaType="text/xml" element="f:rsp"/>

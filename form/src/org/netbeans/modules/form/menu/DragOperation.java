@@ -41,6 +41,7 @@
 package org.netbeans.modules.form.menu;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -156,7 +157,8 @@ class DragOperation {
                     }
                     if(comp instanceof JSeparator) {
                         //jcomp.setBorder(BorderFactory.createLineBorder(new Color(0xFFA400), 1));//, thickness)MenuEditLayer.DRAG_SEPARATOR_BORDER);
-                        //jcomp.setPreferredSize(new Dimension(80,5));
+                        jcomp.setPreferredSize(new Dimension(50,10));
+                        jcomp.setVisible(false);  // will be visible only above menu components
                     }
                     return jcomp;
                 }

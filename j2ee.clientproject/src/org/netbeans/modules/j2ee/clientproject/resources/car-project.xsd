@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:NMTOKEN">
+                             <!-- #70913 - replace with value "1.6.5" in next schema version -->
                             <xsd:pattern value="1\.[0-9]+(\.[0-9]+)?"/>
                         </xsd:restriction>
                     </xsd:simpleType>
@@ -92,7 +93,7 @@ made subject to such option by the copyright holder.
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="included-library" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/> 
+                <xsd:element name="included-library" type="libraryType" minOccurs="0" maxOccurs="unbounded"/> 
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
@@ -103,6 +104,17 @@ made subject to such option by the copyright holder.
         </xsd:sequence>
     </xsd:complexType>
      
+    <xsd:complexType name="libraryType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+        <!-- #134642 below two attributes are obsolete since NB 6.5
+             and can be removed in after 6.5 release; see issue for more details -->
+                <xsd:attribute name="files" use="optional" type="xsd:integer"/>
+                <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
     <xsd:complexType name="webServiceClientType">
         <xsd:sequence>
             <xsd:element name="web-service-client-name" type="xsd:token"/>

@@ -65,6 +65,15 @@ public final class Facets {
         return false;
     }
 
+    public Facet getFacet(String name) {
+        for (Facet f : installed) {
+            if (name.equals(f.getName())) {
+                return f;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return "Facets[installed="+installed+"]"; // NOI18N

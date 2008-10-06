@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.ruby.rubyproject.rake;
 
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTaskChooser.TaskDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -61,7 +63,15 @@ public final class RakeRunnerAction extends CallableSystemAction {
             return;
         }
 
-        if (!RubyPlatform.platformFor(project).showWarningIfInvalid()) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            org.netbeans.modules.ruby.platform.Util.notifyLocalized(
+                    RakeRunnerAction.class, "RakeRunnerAction.no.platform.for.project", // NOI18N
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                    NotifyDescriptor.WARNING_MESSAGE);
+            return;
+        }
+        if (!platform.showWarningIfInvalid()) {
             return;
         }
 

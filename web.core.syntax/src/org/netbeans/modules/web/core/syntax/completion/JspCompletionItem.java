@@ -38,650 +38,762 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.core.syntax.completion;
 
-
+import java.awt.Font;
 import java.awt.Graphics;
-import java.io.IOException;
-import java.util.Collection;
-import javax.swing.text.*;
-import java.awt.Color;
-import java.awt.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.servlet.jsp.tagext.*;
+import java.util.Collection;
+import javax.servlet.jsp.tagext.TagAttributeInfo;
+import javax.servlet.jsp.tagext.TagInfo;
+import javax.servlet.jsp.tagext.TagVariableInfo;
+import javax.servlet.jsp.tagext.VariableInfo;
+import javax.swing.ImageIcon;
+import javax.swing.text.Caret;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-
-import org.netbeans.editor.*;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.web.core.syntax.SyntaxElement;
 import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.web.core.syntax.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
+import org.netbeans.spi.editor.completion.*;
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-
-
+import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
+ * Code completion result item base class
  *
- * @author  Petr Jiricka, Petr Nejedly, Marek Fukala
+ * @author  Dusan Balek, Marek Fukala
  */
+public class JspCompletionItem implements CompletionItem {
 
-/* ------------------------------------------------------------------------ */
-/** An interface used as a generic value returned in CompletionQuery.Result
- * as an data item
- */
-public class JspCompletionItem {
-    
-    private static final int DIRECTIVE_SORT_PRIORITY = 5;
     private static final int DEFAULT_SORT_PRIORITY = 10;
+
+    //----------- Factory methods --------------
+    public static JspCompletionItem createJspAttributeValueCompletionItem(String value, int substitutionOffset) {
+        return new AttributeValue(value, substitutionOffset);
+    }
+
+    public static JspCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
+        return new FileAttributeValue(value, substitutionOffset, color, icon);
+    }
     
-    public static abstract class JspResultItem extends org.netbeans.modules.web.core.syntax.completion.ResultItem {
-        /** Contains a help for the item. It can be a url for a file.
-         */
-        protected  String help;
-        protected String text;
-        private static ResultItemPaintComponent component = null;
-        
-        public JspResultItem( String text ) {
-            this.text = text;
-            help = null;
-        }
-        
-        public JspResultItem( String text, String help ) {
-            this( text );
-            this.help = help;
-        }
-        
-        public String getItemText() {
-            return text;
-        }
-        
-        protected Object getAssociatedObject() {
-            return text;
-        }
-        
-        public int getSortPriority() {
-            return DEFAULT_SORT_PRIORITY;
-        }
-        
-        public CharSequence getInsertPrefix() {
-            return getItemText();
-        }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (component == null) {
-                component = new ResultItemPaintComponent.StringPaintComponent();
+    public static JspCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
+        return new GoUpFileAttributeValue(substitutionOffset, color, icon);
+    }
+
+    public static JspCompletionItem createPrefixTag(String prefix, int substitutionOffset) {
+        return new PrefixTag(prefix, substitutionOffset);
+    }
+
+    public static JspCompletionItem createPrefixTag(String prefix, int substitutionOffset, TagInfo ti) {
+        return new PrefixTag(prefix, substitutionOffset, ti);
+    }
+
+    public static JspCompletionItem createPrefixTag(String prefix, int substitutionOffset, TagInfo ti, SyntaxElement.Tag tagSyntaxElement) {
+        return new PrefixTag(prefix, substitutionOffset, ti, tagSyntaxElement);
+    }
+
+    public static JspCompletionItem createAttribute(String name, int substitutionOffset) {
+        return new Attribute(name, substitutionOffset);
+    }
+
+    public static JspCompletionItem createAttribute(int substitutionOffset, TagAttributeInfo tai) {
+        return new Attribute(substitutionOffset, tai);
+    }
+
+    public static JspCompletionItem createTag(String name, int substitutionOffset) {
+        return new Tag(name, substitutionOffset);
+    }
+
+    public static JspCompletionItem createTag(String name, int substitutionOffset, TagInfo tagInfo) {
+        return new Tag(name, substitutionOffset, tagInfo);
+    }
+
+    public static JspCompletionItem createDelimiter(String name, int substitutionOffset) {
+        return new Delimiter(name, substitutionOffset);
+    }
+
+    public static JspCompletionItem createDirective(String name, int substitutionOffset) {
+        return new Directive(name, substitutionOffset);
+    }
+
+    public static JspCompletionItem createDirective(String name, int substitutionOffset, TagInfo tagInfo) {
+        return new Directive(name, substitutionOffset, tagInfo);
+    }
+
+    public static JspCompletionItem createELImplicitObject(String name, int substitutionOffset, int type) {
+        return new ELImplicitObject(name, substitutionOffset, type);
+    }
+
+    public static JspCompletionItem createELBean(String name, int substitutionOffset, String type) {
+        return new ELBean(name, substitutionOffset, type);
+    }
+
+    public static JspCompletionItem createELProperty(String name, int substitutionOffset, String type) {
+        return new ELProperty(name, substitutionOffset, type);
+    }
+
+    public static JspCompletionItem createELFunction(String name, int substitutionOffset, String type, String prefix, String parameters) {
+        return new ELFunction(name, substitutionOffset, type, prefix, parameters);
+    }    
+    
+    //------------------------------------------
+    
+    protected int substitutionOffset;
+    protected String text,  help;
+    protected boolean shift;
+
+    protected JspCompletionItem(String text, int substituteOffset) {
+        this.substitutionOffset = substituteOffset;
+        this.text = text;
+    }
+
+    protected JspCompletionItem(String text, int substituteOffset, String help) {
+        this(text, substituteOffset);
+        this.help = help;
+    }
+
+    public String getItemText() {
+        return text;
+    }
+
+    public int getSortPriority() {
+        return DEFAULT_SORT_PRIORITY;
+    }
+
+    public CharSequence getSortText() {
+        return getItemText();
+    }
+
+    public CharSequence getInsertPrefix() {
+        return getItemText();
+    }
+
+    public void processKeyEvent(KeyEvent e) {
+        shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
+    }
+
+    public void defaultAction(JTextComponent component) {
+        if (component != null) {
+            if (!shift) {
+                Completion.get().hideDocumentation();
+                Completion.get().hideCompletion();
             }
-            component.setSelected(isSelected);
-            component.setString(text);
-            return component;
+            int caretOffset = component.getSelectionEnd();
+            substituteText(component, caretOffset - substitutionOffset);
         }
-        
-        /** Returns a url or null, if the help is not URL or the help is not defined.
-         */
-        public URL getHelpURL(){
-            if (help == null || help.equals(""))
-                return null;
-            try{
-                return new URL(help);
-            } catch (java.io.IOException e){
-            }
-            return null;
-        }
-        
-        /** Returns help for the item. It can be only url. If the item doesn't have a help
-         *  than returns null. The class can overwrite this method and compounds the help realtime.
-         */
-        public String getHelp(){
-            return help;
-        }
-        
-        /** Returns whether the item has a help.
-         */
-        public boolean hasHelp(){
-            return (help != null && help.length() > 0);
-        }
-        
-        public void setHelp(String help){
-            this.help = help;
-        }
-        
-        protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            try {
-                doc.atomicLock();
+
+    }
+
+    protected int getMoveBackLength() {
+        return 0; //default
+    }
+
+    /** 
+     * Subclasses may override to customize the completed text 
+     * if they do not want to override the substituteText method. 
+     */
+    protected String getSubstituteText() {
+        return getItemText();
+    }
+
+    protected boolean substituteText(JTextComponent c, int len) {
+        return substituteText(c, len, getMoveBackLength());
+    }
+
+    protected boolean substituteText(final JTextComponent c, final int len, int moveBack) {
+        return substituteText(c, getSubstituteText(), len, moveBack);
+    }
+
+    protected boolean substituteText(final JTextComponent c, final String substituteText, final int len, int moveBack) {
+        final BaseDocument doc = (BaseDocument) c.getDocument();
+        final boolean[] result = new boolean[1];
+        result[0] = true;
+
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
-                    String currentText = doc.getText(offset, (doc.getLength() - offset) < fill.length() ? (doc.getLength() - offset) : fill.length()) ;
-                    if(!fill.substring(0, fill.length() - 1).equals(currentText)) {
+                    String currentText = doc.getText(substitutionOffset, (doc.getLength() - substitutionOffset) < substituteText.length() ? (doc.getLength() - substitutionOffset) : substituteText.length());
+                    if (!substituteText.equals(currentText)) {
                         //remove common part
-                        doc.remove( offset, len );
-                        doc.insertString( offset, fill, null);
+                        doc.remove(substitutionOffset, len);
+                        doc.insertString(substitutionOffset, substituteText, null);
                     } else {
-                        c.setCaretPosition(c.getCaret().getDot() + fill.length() - len);
+                        c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
                     }
-                } finally {
-                    doc.atomicUnlock();
+                } catch (BadLocationException ex) {
+                    result[0] = false;
                 }
-                //format the inserted text
-                reformat(c);
-                
-                if (moveBack != 0) {
-                    Caret caret = c.getCaret();
-                    int dot = caret.getDot();
-                    caret.setDot(dot - moveBack);
-                }
-            } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } 
-            return true;
-        }
-        
-        private void reformat(JTextComponent component) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
 
-                try {
-                    doc.atomicLock();
+            }
+        });
+
+        //format the inserted text
+        reindent(c);
+
+        if (moveBack != 0) {
+            Caret caret = c.getCaret();
+            int dot = caret.getDot();
+            caret.setDot(dot - moveBack);
+        }
+
+        return result[0];
+    }
+
+    private void reindent(JTextComponent component) {
+
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        final int dotPos = component.getCaretPosition();
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
                     try {
                         int startOffset = Utilities.getRowStart(doc, dotPos);
                         int endOffset = Utilities.getRowEnd(doc, dotPos);
-                        reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                } finally {
-                    reformat.unlock();
+                        indent.reindent(startOffset, endOffset);
+                    } catch (BadLocationException ex) {
+                        //ignore
+                        }
                 }
-            }catch(BadLocationException e) {
-                //ignore
+            });
+        } finally {
+            indent.unlock();
+        }
+
+    }
+
+    public boolean instantSubstitution(JTextComponent component) {
+        if (component != null) {
+            try {
+                int caretOffset = component.getSelectionEnd();
+                if (caretOffset > substitutionOffset) {
+                    String currentText = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                    if (!getSubstituteText().toString().startsWith(currentText)) {
+                        return false;
+                    }
+                }
+            } catch (BadLocationException ble) {
             }
         }
-        
-        public String getPaintText() {
-            return getItemText();
-        }
-        
+        defaultAction(component);
+        return true;
     }
-    
-    /** Item representing a JSP tag including its prefix. */
-    public static class PrefixTag extends JspResultItem {
-        
+
+    public int getPreferredWidth(Graphics g, Font defaultFont) {
+        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
+    }
+
+    public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
+    }
+
+    protected ImageIcon getIcon() {
+        return null;
+    }
+
+    protected String getLeftHtmlText() {
+        return getItemText();
+    }
+
+    protected String getRightHtmlText() {
+        return null;
+    }
+
+    /** Returns a url or null, if the help is not URL or the help is not defined.
+     */
+    public URL getHelpURL() {
+        if (help == null || help.equals("")) {
+            return null;
+        }
+        try {
+            return new URL(help);
+        } catch (java.io.IOException e) {
+        }
+        return null;
+    }
+
+    /** Returns help for the item. It can be only url. If the item doesn't have a help
+     *  than returns null. The class can overwrite this method and compounds the help realtime.
+     */
+    public String getHelp() {
+        return help;
+    }
+
+    /** Returns whether the item has a help.
+     */
+    public boolean hasHelp() {
+        return (help != null && help.length() > 0);
+    }
+
+    public CompletionTask createDocumentationTask() {
+        return new AsyncCompletionTask(new JspCompletionProvider.DocQuery(this));
+    }
+
+    public CompletionTask createToolTipTask() {
+        return null;
+    }
+
+    //------------------------------------------------------------------------------
+    /** 
+     * Completion item representing a JSP tag including its prefix eg. <jsp:useBean />
+     */
+    public static class PrefixTag extends JspCompletionItem {
+
         private TagInfo tagInfo;
         private boolean isEmpty = false;
-        
         private boolean hasAttributes = false;
-        
-        private static ResultItemPaintComponent.JspTagPaintComponent component = null;
-        private static ResultItemPaintComponent.JspTagPaintComponent componentEmpty = null;
-        
-        PrefixTag( String text ) {
-            super(text);
+
+        PrefixTag(String text, int substitutionOffset) {
+            super(text, substitutionOffset);
         }
-        
-        PrefixTag(String prefix, TagInfo ti, SyntaxElement.Tag set) {
-            this(prefix + ":" + ti.getTagName()); // NOI18N
+
+        PrefixTag(String prefix, int substitutionOffset, TagInfo ti, SyntaxElement.Tag set) {
+            super(prefix + ":" + ti.getTagName(), substitutionOffset, ti != null ? ti.getInfoString() : null); // NOI18N
             tagInfo = ti;
             if ((tagInfo != null) &&
-                    (tagInfo.getBodyContent().equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY)))
+                    (tagInfo.getBodyContent().equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY))) {
                 isEmpty = true;
-            if (tagInfo != null)
-                setHelp(tagInfo.getInfoString());
-            
+            }
             //test whether this tag has some attributes
-            if (set != null) hasAttributes = !(set.getAttributes().size() == 0);
+            if (set != null) {
+                hasAttributes = !(set.getAttributes().size() == 0);
+            }
         }
-        
-        PrefixTag(String prefix, TagInfo ti) {
-            this(prefix, ti, (SyntaxElement.Tag)null);
+
+        PrefixTag(String prefix, int substitutionOffset, TagInfo ti) {
+            this(prefix, substitutionOffset, ti, (SyntaxElement.Tag) null);
         }
-        
-        public boolean hasHelp(){
-            return true;
-        }
-        
+
         public TagInfo getTagInfo() {
             return tagInfo;
         }
-        
-        public String getHelp(){
+
+        @Override
+        public String getHelp() {
             URL url = super.getHelpURL();
-            if (url != null){
+            if (url != null) {
                 String surl = url.toString();
                 int first = surl.indexOf('#') + 1;
-                String help = constructHelp(url);
-                if (first > 0){
+                String helpText = constructHelp(url);
+                if (first > 0) {
                     int last = surl.lastIndexOf('#') + 1;
-                    String from = surl.substring( first , last - 1 );
+                    String from = surl.substring(first, last - 1);
                     String to = surl.substring(last);
-                    first = help.indexOf(from);
-                    if (first > 0){
+                    first = helpText.indexOf(from);
+                    if (first > 0) {
                         first = first + from.length() + 2;
-                        if (first < help.length())
-                            help = help.substring(first);
+                        if (first < helpText.length()) {
+                            helpText = helpText.substring(first);
+                        }
                     }
-                    last = help.indexOf(to);
-                    if (last > 0)
-                        help = help.substring(0, last);
-                    return help;
+                    last = helpText.indexOf(to);
+                    if (last > 0) {
+                        helpText = helpText.substring(0, last);
+                    }
+                    return helpText;
                 }
-                
-                help = help.substring(help.indexOf("<h2>")); //NOI18N
-                help = help.substring(0, help.lastIndexOf("<h4>"));//NOI18N
-                return help;
+
+                helpText = helpText.substring(helpText.indexOf("<h2>")); //NOI18N
+                helpText = helpText.substring(0, helpText.lastIndexOf("<h4>"));//NOI18N
+                return helpText;
             }
             return constructHelp(tagInfo);
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            ResultItemPaintComponent comp = (isEmpty ? componentEmpty : component);
-            
-            if (comp == null) {
-                comp = new ResultItemPaintComponent.JspTagPaintComponent(isEmpty);
+
+        @Override //method called from default action 
+        public boolean substituteText(JTextComponent c, int len) {
+            String suffix = isEmpty ? "/>" : ">"; // NOI18N
+
+            if (hasAttributes) {
+                suffix = "";
             }
-            comp.setSelected(isSelected);
-            comp.setString(text);
-            return comp;
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            String suffix = isEmpty? "/>": ">"; // NOI18N
-            
-            if(hasAttributes) suffix = "";
-            
+
             if (!getItemText().startsWith("/")) {  // NOI18N
-                if (!shift)
-                    return substituteText(c, offset, len, getItemText(), 0);  // NOI18N
-                
+                if (!shift) {
+                    return super.substituteText(c, len, 0);
+                }  // NOI18N
+
                 boolean hasAttrs = true;
                 if (tagInfo != null) {
                     TagAttributeInfo[] tAttrs = tagInfo.getAttributes();
-                    hasAttrs = (tAttrs != null)? (tAttrs.length > 0): true;
+                    hasAttrs = (tAttrs != null) ? (tAttrs.length > 0) : true;
                 }
-                if (hasAttrs)
-                    return substituteText(c, offset, len, getItemText() + ( hasAttributes ? "" : " ") + suffix , suffix.length());  // NOI18N
-                else
-                    return substituteText(c, offset, len, getItemText() + suffix, 0);
-            } else
-                // closing tag
-                return substituteText(c, offset, len, getItemText().substring(1) + ">", 0);  // NOI18N
+                if (hasAttrs) {
+                    return substituteText(c,
+                            getItemText() + (hasAttributes ? "" : " ") + suffix,
+                            len,
+                            suffix.length());
+                } // NOI18N
+                else {
+                    return substituteText(c, getItemText() + suffix, len, 0);
+                }
+            } else // closing tag
+            {
+                return substituteText(c, getItemText().substring(1) + ">", len, 0);
+            }  // NOI18N
 
         }
-        
-        protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            boolean value = super.substituteText(c, offset, len, fill, moveBack);
-            try {
-                doc.atomicLock();
-                
-                String mimeType = NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType();
-                Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
-                Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();
-                if (providers != null) {
-                    for (AutoTagImporterProvider provider : providers) {
-                        provider.importLibrary(c.getDocument(), tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            super.defaultAction(component);
+
+            if (component == null) {
+                return;
+            }
+
+            //handle auto tag imports
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    String mimeType = NbEditorUtilities.getFileObject(doc).getMIMEType();
+                    Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
+                    Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();
+                    if (providers != null) {
+                        for (AutoTagImporterProvider provider : providers) {
+                            provider.importLibrary(doc, tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
+                        }
                     }
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
-            return value;
+            });
+
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>&lt;<font color=#0000ff><b>" + getItemText() + "</font>" +
+                    (isEmpty ? "/&gt;" : "&gt;</b>");
         }
     }
-    
-    /** Item representing a JSP tag (without prefix) or JSP directive. */
-    public abstract static class TagDirective extends  JspResultItem {
-        
-        protected static ResultItemPaintComponent component = null;
-        
-        TagDirective( String text ) {
-            super(text);
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, getItemText() + " ", 0);  // NOI18N
-        }
-        
-        public boolean instantSubstitutionEnabled(JTextComponent c) {
-            return true;
-        }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (component == null) {
-                component = new ResultItemPaintComponent.JspTagPaintComponent(false);
-            }
-            component.setSelected(isSelected);
-            component.setString(text);
-            return component;
-        }
-        
-        
-    }
-    
+
     /** Item representing a JSP tag (without prefix). */
-    public static class Tag extends JspResultItem {
-        
-        protected static ResultItemPaintComponent.JspTagPaintComponent component = null;
-        
+    public static class Tag extends JspCompletionItem {
+
         private TagInfo ti = null;
-        
-        public Tag( String text ) {
-            super(text);
+
+        public Tag(String text, int substitutionOffset) {
+            super(text, substitutionOffset);
         }
-        
-        public Tag( String text, TagInfo ti) {
-            this(text);
+
+        public Tag(String text, int substitutionOffset, TagInfo ti) {
+            super(text, substitutionOffset, ti != null ? ti.getInfoString() : null);
             this.ti = ti;
-            if (ti != null)
-                setHelp(ti.getInfoString());
         }
-        
-        public boolean hasHelp(){
-            return true;
-        }
-        
+
         public TagInfo getTagInfo() {
             return ti;
         }
-        
-        public String getHelp(){
+
+        @Override
+        public String getHelp() {
             URL url = super.getHelpURL();
-            if (url != null){
+            if (url != null) {
                 String surl = url.toString();
                 int first = surl.indexOf('#') + 1;
-                String help = constructHelp(url);
-                if (first > 0){
+                String helpText = constructHelp(url);
+                if (first > 0) {
                     int last = surl.lastIndexOf('#') + 1;
-                    String from = surl.substring( first , last - 1 );
+                    String from = surl.substring(first, last - 1);
                     String to = surl.substring(last);
-                    first = help.indexOf(from);
-                    if (first > 0){
+                    first = helpText.indexOf(from);
+                    if (first > 0) {
                         first = first + from.length() + 2;
-                        if (first < help.length())
-                            help = help.substring(first);
+                        if (first < helpText.length()) {
+                            helpText = helpText.substring(first);
+                        }
                     }
-                    last = help.indexOf(to);
-                    if (last > 0)
-                        help = help.substring(0, last);
-                    return help;
+                    last = helpText.indexOf(to);
+                    if (last > 0) {
+                        helpText = helpText.substring(0, last);
+                    }
+                    return helpText;
                 }
-                
-                help = help.substring(help.indexOf("<h2>")); //NOI18N
-                help = help.substring(0, help.lastIndexOf("<h4>"));//NOI18N
-                return help;
+
+                helpText = helpText.substring(helpText.indexOf("<h2>")); //NOI18N
+                helpText = helpText.substring(0, helpText.lastIndexOf("<h4>"));//NOI18N
+                return helpText;
             }
             return constructHelp(ti);
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (component == null) {
-                component = new ResultItemPaintComponent.JspTagPaintComponent(false);
-            }
-            component.setSelected(isSelected);
-            component.setString(text);
-            return component;
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>&lt;<font color=#0000ff>" + getItemText() + "</font>&gt;</b>";
         }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            if (!getItemText().startsWith("/"))   // NOI18N
-                return substituteText(c, offset, len, getItemText() + " ", 0);  // NOI18N
-            else
-                return substituteText(c, offset, len, getItemText().substring(1) + ">", 0);    // NOI18N
-        }
-        
-        public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
-            if (!getItemText().startsWith("/")) {  // NOI18N
-                return substituteText(c, offset, len, getItemText().substring(subLen), 0);  // NOI18N
-            } else {
-                return substituteText(c, offset, len, getItemText().substring(1, subLen), 0);  // NOI18N
-            }
+
+        @Override
+        protected String getSubstituteText() {
+            return getItemText().startsWith("/") ? getItemText().substring(1) + ">" : getItemText() + " ";
         }
     }
-    
+
+    public static class Delimiter extends JspCompletionItem {
+
+        private static final int DELIMITER_SORT_PRIORITY = 4; //before directives!
+
+        Delimiter(String name, int substitutionOffset) {
+            super(name, substitutionOffset);
+        }
+
+        @Override
+        public int getSortPriority() {
+            return DELIMITER_SORT_PRIORITY;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>" + escape(getItemText()) + "</b>";
+        }
+    }
+
     /** Item representing a JSP tag (without prefix). */
-    static class Directive extends TagDirective {
+    static class Directive extends JspCompletionItem {
+
+        private static final int DIRECTIVE_SORT_PRIORITY = 5;
         TagInfo tagInfo;
-        
-        Directive(String text){
-            super(text);
+
+        Directive(String text, int substitutionOffset) {
+            super(text, substitutionOffset);
             tagInfo = null;
         }
-        
-        Directive(String text, TagInfo tagInfo ) {
-            super(text);
+
+        Directive(String text, int substitutionOffset, TagInfo tagInfo) {
+            super(text, substitutionOffset, tagInfo != null ? tagInfo.getInfoString() : null);
             this.tagInfo = tagInfo;
-            if (tagInfo != null)
-                setHelp(tagInfo.getInfoString());
         }
-        
+
+        @Override
         public int getSortPriority() {
             return DIRECTIVE_SORT_PRIORITY;
         }
-        
-        public String getHelp(){
-            if (getHelpURL() != null){
-                String text = constructHelp(getHelpURL());
-                if (text != null){
-                    text = text.substring(text.indexOf("<h2>")); //NOI18N
-                    text = text.substring(0, text.lastIndexOf("<h4>"));//NOI18N
-                    return text;
+
+        @Override
+        public String getHelp() {
+            if (getHelpURL() != null) {
+                String helpText = constructHelp(getHelpURL());
+                if (helpText != null) {
+                    helpText = helpText.substring(helpText.indexOf("<h2>")); //NOI18N
+                    helpText = helpText.substring(0, helpText.lastIndexOf("<h4>"));//NOI18N
+                    return helpText;
                 }
             }
             return constructHelp(tagInfo);
         }
-        
-        public TagInfo getTagInfo(){
+
+        public TagInfo getTagInfo() {
             return tagInfo;
         }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, "%@ " + getItemText() + "  %>", 3);    // NOI18N
+
+        @Override
+        protected String getSubstituteText() {
+            return "<%@" + getItemText() + "  %>";    // NOI18N
         }
-        
-        public boolean substituteCommonText( JTextComponent c, int offset, int len, int subLen ) {
-            len = len - 2;
-            offset = offset + 2;
-            return super.substituteCommonText(c, offset, len, subLen);
+
+        @Override
+        protected int getMoveBackLength() {
+            return 3; //jump before closing symbol %>
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (component == null) {
-                component = new ResultItemPaintComponent.JspDirectivePaintComponent();
-            }
-            component.setSelected(isSelected);
-            component.setString(getItemText());
-            return component;
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<b>&lt;%@<font color=#0000ff>" +
+                    getItemText() + "</font>%&gt;</b>";
         }
         
     }
-    
+
     /** Item representing an attribute of a  JSP tag or directive. */
-    public static class Attribute extends JspResultItem {
+    public static class Attribute extends JspCompletionItem {
+
         private TagAttributeInfo tagAttributeInfo;
         private boolean required;
-        
-        private static ResultItemPaintComponent.JspTagPaintComponent component = null;
-        private static ResultItemPaintComponent.JspTagPaintComponent componentRequired = null;
-        
-        Attribute( String text ) {
-            super(text);
+
+        Attribute(String text, int substitutionOffset) {
+            super(text, substitutionOffset);
             tagAttributeInfo = null;
-            required =  false;
+            required = false;
         }
-        
-        Attribute(TagAttributeInfo tai) {
-            super(tai.getName());
+
+        Attribute(int substitutionOffset, TagAttributeInfo tai) {
+            super(tai.getName(), substitutionOffset, tai.getTypeName() == null && tai.isFragment() ? "fragment" : tai.getTypeName());
             required = tai.isRequired();
             tagAttributeInfo = tai;
-            if (tai.getTypeName() == null && tai.isFragment())
-                setHelp("fragment"); // NOI!18N
-            else
-                setHelp(tai.getTypeName());
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            ResultItemPaintComponent comp = (required ? componentRequired : component);
-            
-            if (comp == null) {
-                comp = new ResultItemPaintComponent.AttributePaintComponent(required);
-            }
-            
-            comp.setSelected(isSelected);
-            comp.setString(getItemText());
-            return comp;
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
+
+        @Override
+        protected int getMoveBackLength() {
             //always do the shift => jump into the attribute value between the quotation marks
-            return substituteText(c, offset, len, getItemText() + "=\"\"", 1); // NOI18N
+            return 1;
         }
-        
+
+        @Override
+        protected String getSubstituteText() {
+            return getItemText() + "=\"\"";
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#" + (required ? "ff0000" : "00aa00") + ">" + getItemText() + "</font>";
+        }
+
+        @Override
         public String getHelp() {
             URL url = super.getHelpURL();
-            if (url != null){
+            if (url != null) {
                 String surl = url.toString();
                 int first = surl.indexOf('#') + 1;
                 int last = surl.lastIndexOf('#') + 1;
                 String from;
-                
-                if (first < last){
-                    from = surl.substring( first , last - 1 );
+
+                if (first < last) {
+                    from = surl.substring(first, last - 1);
                 } else {
-                    from = surl.substring( first );
+                    from = surl.substring(first);
                 }
-                String text = constructHelp(getHelpURL());
-                first = text.indexOf(from);
-                if (first > 0){
+                String helpText = constructHelp(getHelpURL());
+                first = helpText.indexOf(from);
+                if (first > 0) {
                     first = first + from.length() + 2;
-                    if (first < text.length())
-                        text = text.substring(first);
+                    if (first < helpText.length()) {
+                        helpText = helpText.substring(first);
+                    }
                 }
-                
+
                 String to = surl.substring(last);
-                last = text.indexOf(to);
-                if (last > 0)
-                    text = text.substring(0, last);
-                return text;
+                last = helpText.indexOf(to);
+                if (last > 0) {
+                    helpText = helpText.substring(0, last);
+                }
+                return helpText;
             }
-            if (tagAttributeInfo != null){
-                StringBuffer text = new StringBuffer();
-                text.append("<table border=\"0\"><tr><td><b>Name:</b></td><td>");  //NOI18N
-                text.append(tagAttributeInfo.getName());                            //NOI18N
-                text.append("</td></tr><tr><td><b>Required:</b></td><td>");         //NOI18N
-                text.append(tagAttributeInfo.isRequired());                         //NOI18N
-                text.append("</td></tr><tr><td><b>Request-time:</b></td><td>");     //NOI18N
-                text.append(tagAttributeInfo.canBeRequestTime());                   //NOI18N
-                text.append("</td></tr><tr><td><b>Fragment:</b></td><td>");         //NOI18N
-                text.append(tagAttributeInfo.isFragment());                         //NOI18N
-                text.append("</td></tr></table>");                                  //NOI18N
-                return text.toString();
+            if (tagAttributeInfo != null) {
+                StringBuffer helpText = new StringBuffer();
+                helpText.append("<table border=\"0\"><tr><td><b>Name:</b></td><td>");  //NOI18N
+                helpText.append(tagAttributeInfo.getName());                            //NOI18N
+                helpText.append("</td></tr><tr><td><b>Required:</b></td><td>");         //NOI18N
+                helpText.append(tagAttributeInfo.isRequired());                         //NOI18N
+                helpText.append("</td></tr><tr><td><b>Request-time:</b></td><td>");     //NOI18N
+                helpText.append(tagAttributeInfo.canBeRequestTime());                   //NOI18N
+                helpText.append("</td></tr><tr><td><b>Fragment:</b></td><td>");         //NOI18N
+                helpText.append(tagAttributeInfo.isFragment());                         //NOI18N
+                helpText.append("</td></tr></table>");                                  //NOI18N
+                return helpText.toString();
             }
             return super.getHelp();
         }
-        
-        public URL getHelpURL(){
+
+        public URL getHelpURL() {
             URL url = super.getHelpURL();
-            if (url != null){
+            if (url != null) {
                 String surl = url.toString();
                 int index = surl.lastIndexOf('#'); // NOI18N
-                if (index > 0)
+                if (index > 0) {
                     surl = surl.substring(0, index);
+                }
                 try {
-                    url =  new URL(surl);
-                } catch (MalformedURLException e){
+                    url = new URL(surl);
+                } catch (MalformedURLException e) {
                 }
             }
             return url;
         }
-        
     }
-    
+
     /** Item representing a JSP attribute value. */
-    static class AttributeValue extends JspResultItem {
-        
-        AttributeValue( String text ) {
-            //super(text, Color.red);
-            super(text);
-        }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, getItemText(), 0);
+    static class AttributeValue extends JspCompletionItem {
+
+        public AttributeValue(String value, int anchor) {
+            super(value, anchor);
         }
     }
-    
+
     /** Item representing a File attribute */
-    public static class FileAttributeValue extends JspResultItem {
+    public static class FileAttributeValue extends JspCompletionItem {
+
         private javax.swing.ImageIcon icon;
         private Color color;
-        
-        FileAttributeValue(String text, Color color){
-            this(text, color, null);
-        }
-        
-        FileAttributeValue(String text, Color color, javax.swing.ImageIcon icon){
-            super(text);
+
+        FileAttributeValue(String text, int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+            super(text, substitutionOffset);
             this.color = color;
             this.icon = icon;
         }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, getItemText(), 0);
+
+        @Override
+        protected ImageIcon getIcon() {
+            return icon;
         }
-        
-        public Component getPaintComponent(final boolean isSelected) {
-            return new ResultItemPaintComponent() {
-                public void draw(Graphics g) {
-                    drawIcon(g, FileAttributeValue.this.icon);
-                    drawString(g, text, FileAttributeValue.this.color);
-                }
-                
-                public boolean isSelected() {
-                    return isSelected;
-                }
-            };
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color='" + hexColorCode(color) + "'>" + getItemText() + "</font>"; //NOI18N
         }
     }
     
-    private static String constructHelp(URL url){
-        if (url == null )
+    public static class GoUpFileAttributeValue extends FileAttributeValue {
+        
+        GoUpFileAttributeValue(int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+            super("../", substitutionOffset, color, icon); //NOI18N
+        }
+
+        @Override
+        public int getSortPriority() {
+            return super.getSortPriority() - 1; //be first of the file compl. items
+        }
+        
+    }
+
+    private static String constructHelp(URL url) {
+        if (url == null) {
             return null;
-        try{
+        }
+        try {
             InputStream is = url.openStream();
             byte buffer[] = new byte[1000];
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int count = 0;
             do {
                 count = is.read(buffer);
-                if (count > 0) baos.write(buffer, 0, count);
+                if (count > 0) {
+                    baos.write(buffer, 0, count);
+                }
             } while (count > 0);
-            
+
             is.close();
             String text = baos.toString();
             baos.close();
             return text;
-        } catch (java.io.IOException e){
+        } catch (java.io.IOException e) {
             return null;
         }
     }
-    
-    private static String constructHelp(TagInfo tagInfo){
-        if (tagInfo == null) return null;
-        
+
+    private static String constructHelp(TagInfo tagInfo) {
+        if (tagInfo == null) {
+            return null;
+        }
+
         StringBuffer sb = new StringBuffer();
         sb.append("<h2>").append(getString("LBL_TagName")).append(" "); //NOI18N
         sb.append(tagInfo.getTagName()).append("</h2>"); // NOI18N
@@ -691,33 +803,36 @@ public class JspCompletionItem {
             sb.append("<i>").append(val).append("</i>"); // NOI18N
         }
         val = tagInfo.getInfoString();
-        if (val != null)
-            sb.append("<hr>").append(val).append("<hr>");                 // NOI18N
-        
+        if (val != null) {
+            sb.append("<hr>").append(val).append("<hr>");
+        }                 // NOI18N
+
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
         sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"2\"><font size=\"+2\"><b>");// NOI18N
         sb.append("Tag Information</b></font></td></tr>");// NOI18N
         sb.append("<tr><td>Tag Class</td><td>");// NOI18N
-        if (tagInfo.getTagClassName() != null && !tagInfo.getClass().equals("") )
+        if (tagInfo.getTagClassName() != null && !tagInfo.getClass().equals("")) {
             sb.append(tagInfo.getTagClassName());
-        else
-            sb.append("<i>None</i>");// NOI18N
+        } else {
+            sb.append("<i>None</i>");
+        }// NOI18N
         sb.append("</td></tr><tr><td>Body Content</td><td>");// NOI18N
         sb.append(tagInfo.getBodyContent());
         sb.append("</td></tr><tr><td>Display Name</td><td>");// NOI18N
-        if (tagInfo.getDisplayName() != null && !tagInfo.getDisplayName().equals("")){
+        if (tagInfo.getDisplayName() != null && !tagInfo.getDisplayName().equals("")) {
             sb.append(tagInfo.getDisplayName());
-        } else
-            sb.append("<i>None</i>");// NOI18N
+        } else {
+            sb.append("<i>None</i>");
+        }// NOI18N
         sb.append("</td></tr></table><br>");// NOI18N
-        
+
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
         sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"3\"><font size=\"+2\"><b>Attributes</b></font></td></tr>");// NOI18N
-        
-        TagAttributeInfo [] attrs = tagInfo.getAttributes();
-        if (attrs != null && attrs.length > 0){
+
+        TagAttributeInfo[] attrs = tagInfo.getAttributes();
+        if (attrs != null && attrs.length > 0) {
             sb.append("<tr><td><b>Name</b></td><td><b>Required</b></td><td><b>Request-time</b></td></tr>");// NOI18N
-            for (int i = 0; i < attrs.length; i++){
+            for (int i = 0; i < attrs.length; i++) {
                 sb.append("<tr><td>");         // NOI18N
                 sb.append(attrs[i].getName());
                 sb.append("</td><td>");                     // NOI18N
@@ -732,37 +847,44 @@ public class JspCompletionItem {
         sb.append("</table><br>");// NOI18N
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
         sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"4\"><font size=\"+2\"><b>Variables</b></font></td></tr>");// NOI18N
-        TagVariableInfo [] variables = tagInfo.getTagVariableInfos();
-        if (variables != null && variables.length > 0){
+        TagVariableInfo[] variables = tagInfo.getTagVariableInfos();
+        if (variables != null && variables.length > 0) {
             sb.append("<tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Declare</b></td><td><b>Scope</b></td></tr>");// NOI18N
-            for (int i = 0; i < variables.length; i++){
+            for (int i = 0; i < variables.length; i++) {
                 sb.append("<tr><td>");         // NOI18N
-                if (variables[i].getNameGiven() != null && !variables[i].getNameGiven().equals("")){// NOI18N
+                if (variables[i].getNameGiven() != null && !variables[i].getNameGiven().equals("")) {// NOI18N
                     sb.append(variables[i].getNameGiven());
                 } else {
-                    if(variables[i].getNameFromAttribute() != null && !variables[i].getNameFromAttribute().equals("")) // NOI18N
-                        sb.append("<i>From attribute '").append(variables[i].getNameFromAttribute()).append("'</i>");// NOI18N
-                    else
-                        sb.append("<i>Unknown</i>");  // NOI18N
+                    if (variables[i].getNameFromAttribute() != null && !variables[i].getNameFromAttribute().equals("")) // NOI18N
+                    {
+                        sb.append("<i>From attribute '").append(variables[i].getNameFromAttribute()).append("'</i>");
+                    }// NOI18N
+                    else {
+                        sb.append("<i>Unknown</i>");
+                    }  // NOI18N
                 }
                 sb.append("</td><td><code>");                     // NOI18N
-                if (variables[i].getClassName() == null || variables[i].getClassName().equals("") )
-                    sb.append("java.lang.String");// NOI18N
-                else
+                if (variables[i].getClassName() == null || variables[i].getClassName().equals("")) {
+                    sb.append("java.lang.String");
+                }// NOI18N
+                else {
                     sb.append(variables[i].getClassName());
+                }
                 sb.append("</code></td></tr>");                    // NOI18N
                 sb.append("</td><td>");                     // NOI18N
                 sb.append(variables[i].getDeclare());
                 sb.append("</td></tr>");                    // NOI18N
                 sb.append("</td><td>");                     // NOI18N
-                switch (variables[i].getScope()){
+                switch (variables[i].getScope()) {
                     case VariableInfo.AT_BEGIN:
-                        sb.append("AT_BEGIN"); break;// NOI18N
+                        sb.append("AT_BEGIN");
+                        break;// NOI18N
                     case VariableInfo.AT_END:
-                        sb.append("AT_END"); break;// NOI18N
+                        sb.append("AT_END");
+                        break;// NOI18N
                     default:
                         sb.append("NESTED");// NOI18N
-                }
+                    }
                 sb.append("</td></tr>");                    // NOI18N
             }
         } else {
@@ -771,134 +893,179 @@ public class JspCompletionItem {
         sb.append("</table><br>");// NOI18N
         return sb.toString();
     }
-    
-    private static String getString(String key){
+
+    private static String getString(String key) {
         return NbBundle.getMessage(JspCompletionItem.class, key);
     }
-    
-
     // ------------------------ EL Items ------------------------------------------
-    
-    public interface ELItem{};
-    
-    public static class ELImplicitObject extends JspResultItem implements ELItem {
-        
-        private static ResultItemPaintComponent.ELImplicitObjectPaintComponent paintComponent = null;
-        
+
+    public static class ELImplicitObject extends JspCompletionItem  {
+
+        private static final String OBJECT_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/class_16.png"; //NOI18N
+        private static final String MAP_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/map_16.png";      //NOI18N
         int type;
-        
-        ELImplicitObject(String text, int type){
-            super(text);
+
+        ELImplicitObject(String text, int substitutionOffset, int type) {
+            super(text, substitutionOffset);
             this.type = type;
         }
-        
+
+        @Override
         public int getSortPriority() {
             return 15;
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new ResultItemPaintComponent.ELImplicitObjectPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setType(type);
-            return paintComponent;
+
+        @Override
+        protected ImageIcon getIcon() {
+            ImageIcon icon = null;
+            switch (type) {
+                case ELImplicitObjects.OBJECT_TYPE:
+                    icon = new ImageIcon(ImageUtilities.loadImage(OBJECT_PATH));
+                    break;
+                case ELImplicitObjects.MAP_TYPE:
+                    icon = new ImageIcon(ImageUtilities.loadImage(MAP_PATH));
+                    break;
+            }
+            return icon;
         }
-        
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#0000ff>" + getItemText() + "</font>";
+        }
+
+        @Override
         public String getItemText() {
             String result = text;
-            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE)
+            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE) {
                 result = result + "[]";
+            }
             return result;    //NOI18N
         }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            if (type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE)
-                return substituteText(c, offset, len, getItemText(), 1);
-            else
-                return substituteText(c, offset, len, getItemText(), 0);
+
+        @Override
+        protected int getMoveBackLength() {
+            return type == org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects.MAP_TYPE ? 1 : 0;
         }
     }
-    
-    
-    public static class ELBean extends JspResultItem implements ELItem {
-        
-        private static ResultItemPaintComponent.ELBeanPaintComponent paintComponent = null;
-        
-        protected String type;
-        
-        public ELBean( String text, String type ) {
-            super(text);
-            if (type.lastIndexOf('.')> -1 )
-                this.type = type.substring(type.lastIndexOf('.')+1);
-            else
+
+    public static class ELBean extends JspCompletionItem {
+
+        private static final String BEAN_NAME_COLOR = hexColorCode(Color.blue.darker().darker());
+        private static final String BEAN_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/bean_16.png";    //NOI18N
+        private String type;
+
+        public ELBean(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset);
+            if (type.lastIndexOf('.') > -1) {
+                this.type = type.substring(type.lastIndexOf('.') + 1);
+            } else {
                 this.type = type;
+            }
         }
-        
+
+        @Override
         public int getSortPriority() {
             return 10;
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new ResultItemPaintComponent.ELBeanPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            return paintComponent;
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#" + BEAN_NAME_COLOR + ">" + getItemText() + "</font>";
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return this.type;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
         }
     }
-    
-    public static class ELProperty extends ELBean implements ELItem {
-        
-        private static ResultItemPaintComponent.ELPropertyPaintComponent paintComponent = null;
-        
-        public ELProperty( String text, String type ) {
-            super(text, type);
+
+    public static class ELProperty extends ELBean {
+
+        private static final String PROPERTY_NAME_COLOR = hexColorCode(Color.blue.darker().darker());
+        private static final String PROPERTY_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/property_16.png"; //NOI18N
+
+        public ELProperty(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset, type);
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new ResultItemPaintComponent.ELPropertyPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            return paintComponent;
+
+        @Override
+        protected String getLeftHtmlText() {
+            return "<font color=#" + PROPERTY_NAME_COLOR + ">" + getItemText() + "</font>";
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(PROPERTY_PATH));
         }
     }
-    
-    public static class ELFunction extends ELBean implements ELItem {
-        
-        private static ResultItemPaintComponent.ELFunctionPaintComponent paintComponent = null;
-        
+
+    public static class ELFunction extends ELBean {
+
+        private static final String PREFIX_COLOR = hexColorCode(Color.blue.darker().darker());
+        private static final String FUNCTION_NAME_COLOR = hexColorCode(Color.black);
+        private static final String PARAMETER_COLOR = hexColorCode(Color.black);
+        private static final String ICON_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/function_16.png";
         private String prefix;
         private String parameters;
-        
-        
-        public ELFunction( String prefix, String name, String type, String parameters) {
-            super(name, type);
+
+        public ELFunction(String name, int substitutionOffset, String type, String prefix, String parameters) {
+            super(name, substitutionOffset, type);
             this.prefix = prefix;
             this.parameters = parameters;
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new ResultItemPaintComponent.ELFunctionPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            paintComponent.setPrefix(prefix);
-            paintComponent.setParameters(parameters);
-            return paintComponent;
+
+        @Override
+        protected String getLeftHtmlText() {
+            StringBuilder lText = new StringBuilder();
+            lText.append("<font color=#" + PREFIX_COLOR + "><b>" + prefix + "</b></font>");
+            lText.append("<font color=#" + FUNCTION_NAME_COLOR + "><b>" + ":" + getItemText() + "</b></font>");
+            lText.append("<font color=#" + PARAMETER_COLOR + ">" + "(" + "</b></font>");
+            if (parameters != null) {
+                lText.append("<font color=#" + PARAMETER_COLOR + ">" + parameters + "</b></font>");
+            }
+            lText.append("<font color=#" + PARAMETER_COLOR + ">" + ")" + "</b></font>");
+            return lText.toString();
+
         }
-        
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
+        }
+
+        @Override
         public int getSortPriority() {
             return 12;
         }
-        
-        public String getItemText() {
-            return prefix+":"+text+"()";    //NOI18N
+
+        @Override
+        protected String getSubstituteText() {
+            return prefix + ":" + super.getItemText() + "()";    //NOI18N
         }
-        
-        public boolean substituteText( JTextComponent c, int offset, int len, boolean shift ) {
-            return substituteText(c, offset, len, getItemText(), 1);
+
+        @Override
+        protected int getMoveBackLength() {
+            return 1;
         }
     }
-    
+
+    public static final String hexColorCode(Color c) {
+        return Integer.toHexString(c.getRGB()).substring(2);
+    }
+
+    private static String escape(String s) {
+        if (s != null) {
+            try {
+                return XMLUtil.toAttributeValue(s);
+            } catch (Exception ex) {
+            }
+        }
+        return s;
+    }
 }

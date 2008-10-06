@@ -98,9 +98,4 @@ public class UninstallUnitWizardModel extends OperationWizardModel {
         return Containers.forCustomUninstall ();
     }
     
-    @Override
-    public boolean hasBrokenDependencies () {
-        // doesn't matter broken dependencies when uninstall
-        return false;
-    }
 }

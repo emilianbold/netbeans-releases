@@ -73,10 +73,10 @@ public interface CompletionProposal {
     String getSortText();
 
     @NonNull
-    String getLhsHtml();
+    String getLhsHtml(@NonNull HtmlFormatter formatter);
 
     @CheckForNull
-    String getRhsHtml();
+    String getRhsHtml(@NonNull HtmlFormatter formatter);
 
     @NonNull
     ElementKind getKind();
@@ -95,6 +95,17 @@ public interface CompletionProposal {
     boolean isSmart();
 
     /**
+     * Most modules should return 0 here. If you return non-0, this is a sorting priority
+     * for use by GSF when ordering the completion proposals. You can use this to override
+     * the default behavior (which generally moves smart items to the top, and within each
+     * smart/nonsmart section, orders for example variables higher than methods.
+     * 
+     * @return 0 to use normal sorting, or some other number to override the sorting priority
+     *  of this item. Smaller items (including negative numbers) go nearer the top of the list.
+     */
+    int getSortPrioOverride();
+
+    /**
      * Provide a custom live code template that will be inserted when
      * this item is chosen for insertion. 
      *
@@ -105,22 +116,4 @@ public interface CompletionProposal {
      */
     @CheckForNull
     String getCustomInsertTemplate();
-
-    /**
-     * Parameters to be inserted for this item, if any. Has no effect
-     * if getCustomInsertTemplate() returns non null.
-     * @deprecated Use {@link #getCustomInsertTemplate} instead!
-     * @return A list of insert parameters
-     */
-    @Deprecated
-    @CheckForNull
-    List<String> getInsertParams();
-
-    /** The strings to be inserted to start and end a parameter list. Should be a String of length 2.
-     * In Java we would expect {(,)}, and in Ruby it's either {(,)} or { ,}.
-     * @deprecated Use {@link #getCustomInsertTemplate} instead!
-     */
-    @Deprecated
-    @NonNull
-    String[] getParamListDelimiters();
 }

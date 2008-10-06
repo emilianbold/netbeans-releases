@@ -57,13 +57,14 @@ import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -79,6 +80,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String VALID = "valid"; // NOI18N // used in the previous step while validating sources - copy-folder
     static final String RUN_AS = PhpProjectProperties.RUN_AS; // this property is used in RunAsPanel... yeah, ugly
     static final String URL = "url"; // NOI18N
+    static final String INDEX_FILE = "indexFile"; // NOI18N
+    static final String DEFAULT_INDEX_FILE = "index.php"; // NOI18N
     static final String COPY_SRC_FILES = "copySrcFiles"; // NOI18N
     static final String COPY_SRC_TARGET = "copySrcTarget"; // NOI18N
     static final String COPY_SRC_TARGETS = "copySrcTargets"; // NOI18N
@@ -89,6 +92,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String[] CFG_PROPS = new String[] {
         RUN_AS,
         URL,
+        INDEX_FILE,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
         REMOTE_UPLOAD,
@@ -97,7 +101,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private final String[] steps;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final SourcesFolderNameProvider sourcesFolderNameProvider;
+    private final SourcesFolderProvider sourcesFolderProvider;
+    private final NewPhpProjectWizardIterator.WizardType wizardType;
     private WizardDescriptor descriptor = null;
     private PropertyChangeListener phpInterpreterListener;
 
@@ -109,11 +114,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
     private String defaultLocalUrl = null;
-    private boolean copyToFolderValid = false;
+    private String originalProjectName = null;
 
-    public RunConfigurationPanel(String[] steps, SourcesFolderNameProvider sourcesFolderNameProvider) {
-        this.sourcesFolderNameProvider = sourcesFolderNameProvider;
+    public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
+        this.sourcesFolderProvider = sourcesFolderProvider;
         this.steps = steps;
+        this.wizardType = wizardType;
     }
 
     String[] getSteps() {
@@ -125,15 +131,25 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             configProvider = new WizardConfigProvider();
             configManager = new ConfigManager(configProvider);
 
-            runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderNameProvider);
-            runAsRemoteWeb = new RunAsRemoteWeb(configManager);
-            runAsScript = new RunAsScript(configManager);
+            runAsLocalWeb = new RunAsLocalWeb(configManager, sourcesFolderProvider);
+            runAsRemoteWeb = new RunAsRemoteWeb(configManager, sourcesFolderProvider);
+            runAsScript = new RunAsScript(configManager, sourcesFolderProvider);
+            switch (wizardType) {
+                case NEW:
+                    runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsScript.setIndexFile(DEFAULT_INDEX_FILE);
+                    runAsLocalWeb.hideIndexFile();
+                    runAsRemoteWeb.hideIndexFile();
+                    runAsScript.hideIndexFile();
+                    break;
+            }
             RunAsPanel.InsidePanel[] insidePanels = new RunAsPanel.InsidePanel[] {
                 runAsLocalWeb,
                 runAsRemoteWeb,
                 runAsScript,
             };
-            runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderNameProvider, configManager, insidePanels);
+            runConfigurationPanelVisual = new RunConfigurationPanelVisual(this, sourcesFolderProvider, configManager, insidePanels);
 
             // listen to the changes in php interpreter
             phpInterpreterListener = new PropertyChangeListener() {
@@ -145,28 +161,31 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             };
             PhpOptions phpOptions = PhpOptions.getInstance();
             phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
+
+            addListeners();
         }
         return runConfigurationPanelVisual;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(RunConfigurationPanel.class.getName());
+        return new HelpCtx(RunConfigurationPanel.class);
     }
 
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
 
-        // we don't want to get events now
-        removeListeners();
+        //  must be done every time because user can go back, select another sources and return back
+        switch (wizardType) {
+            case EXISTING:
+                findIndexFile();
+                break;
+        }
 
-        adjustUrl();
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
-        // register back to receive events
-        addListeners();
-        fireChangeEvent();
+        runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -190,7 +209,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 storeRunAsRemoteWeb(settings);
                 break;
             case SCRIPT:
-                // nothing to store
+                storeRunAsScript(settings);
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -208,7 +227,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         int size = copyToFolderRoots.size();
         List<LocalServer> localServers = new ArrayList<LocalServer>(size);
         for (DocumentRoot root : copyToFolderRoots) {
-            String srcRoot = new File(root.getDocumentRoot(), sourcesFolderNameProvider.getSourcesFolderName()).getAbsolutePath();
+            String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);
             localServers.add(ls);
         }
@@ -224,15 +243,42 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return false;
     }
 
+    private String getUploadDirectory() {
+        String uploadDirectory = (String) descriptor.getProperty(REMOTE_DIRECTORY);
+        if (uploadDirectory != null) {
+            return uploadDirectory;
+        }
+        return "/" + getProjectName(); // NOI18N
+    }
+
+    private void findIndexFile() {
+        // index file for existing sources - if index file is empty, try to find existing index.php
+        String indexFile = (String) descriptor.getProperty(INDEX_FILE);
+        if (indexFile == null || indexFile.length() == 0) {
+            FileObject fo = FileUtil.toFileObject(sourcesFolderProvider.getSourcesFolder()).getFileObject(DEFAULT_INDEX_FILE);
+            if (fo != null && fo.isValid()) {
+                runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
+                runAsScript.setIndexFile(DEFAULT_INDEX_FILE);
+            }
+        }
+    }
+
     private void storeRunAsLocalWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsLocalWeb.getUrl());
+        settings.putProperty(INDEX_FILE, runAsLocalWeb.getIndexFile());
     }
 
     private void storeRunAsRemoteWeb(WizardDescriptor settings) {
         settings.putProperty(URL, runAsRemoteWeb.getUrl());
+        settings.putProperty(INDEX_FILE, runAsRemoteWeb.getIndexFile());
         settings.putProperty(REMOTE_CONNECTION, runAsRemoteWeb.getRemoteConfiguration());
         settings.putProperty(REMOTE_DIRECTORY, runAsRemoteWeb.getUploadDirectory());
         settings.putProperty(REMOTE_UPLOAD, runAsRemoteWeb.getUploadFiles());
+    }
+
+    private void storeRunAsScript(WizardDescriptor settings) {
+        settings.putProperty(INDEX_FILE, runAsScript.getIndexFile());
     }
 
     public boolean isValid() {
@@ -254,10 +300,12 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 break;
         }
         if (error != null) {
-            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+            descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
             descriptor.putProperty(VALID, false);
             return false;
         }
+        validateAsciiTexts();
+
         descriptor.putProperty(VALID, true);
         return true;
     }
@@ -274,93 +322,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return false;
     }
 
-    private void adjustUrl() {
-        if (getRunAsType() != RunAsType.LOCAL) {
-            // only local url is adjusted
-            return;
-        }
-        String currentUrl = runAsLocalWeb.getUrl();
-        if (defaultLocalUrl == null) {
-            defaultLocalUrl = currentUrl;
-        }
-        if (!defaultLocalUrl.equals(currentUrl)) {
-            return;
-        }
-        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        assert sources != null;
-        String url = null;
-        if (runAsLocalWeb.isCopyFiles()) {
-            if (!copyToFolderValid) {
-                // error exactly in the copy-to-folder field => do nothing
-                return;
-            }
-            LocalServer ls = runAsLocalWeb.getLocalServer();
-            String documentRoot = ls.getDocumentRoot();
-            assert documentRoot != null;
-            String srcRoot = ls.getSrcRoot();
-            String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
-            if (urlSuffix == null) {
-                // user changed path to a different place => use the name of the directory
-                urlSuffix = new File(srcRoot).getName();
-            }
-            String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
-            url = urlPrefix + urlSuffix;
-        } else if (ConfigureProjectPanel.isProjectFolder(sources)) {
-            // project/web => check project name and url
-            String correctUrl = getDefaultUrl();
-            if (!defaultLocalUrl.equals(correctUrl)) {
-                url = correctUrl;
-            }
-        } else {
-            // /var/www or similar => check source folder name and url
-            String srcRoot = sources.getSrcRoot();
-            @SuppressWarnings("unchecked")
-            List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
-            assert srcRoots != null;
-            for (DocumentRoot root : srcRoots) {
-                String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
-                if (urlSuffix != null) {
-                    url = root.getUrl() + urlSuffix;
-                    break;
-                }
-            }
-            if (url == null) {
-                // not found => get the name of the sources
-                url = "http://localhost/" + new File(sources.getSrcRoot()).getName(); // NOI18N
-            }
-        }
-        // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
-        if (url != null && !url.endsWith("/")) { // NOI18N
-            url += "/"; // NOI18N
-        }
-        if (url != null && !defaultLocalUrl.equals(url)) {
-            defaultLocalUrl = url;
-            runAsLocalWeb.setUrl(url);
-        }
-    }
-
-    private String getUrlSuffix(String documentRoot, String srcRoot) {
-        if (!documentRoot.endsWith(File.separator)) {
-            documentRoot += File.separator;
-        }
-        if (!srcRoot.startsWith(documentRoot)) {
-            return null;
-        }
-        // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
-        srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
-        return srcRoot.substring(documentRoot.length());
-    }
-
-    private String getDefaultUrl() {
-        return "http://localhost/" + sourcesFolderNameProvider.getSourcesFolderName() // NOI18N
-                + "/" + ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER + "/"; // NOI18N
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
-        adjustUrl();
-    }
-
     final void fireChangeEvent() {
         changeSupport.fireChange();
     }
@@ -369,12 +330,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.addRunAsLocalWebListener(this);
         runAsRemoteWeb.addRunAsRemoteWebListener(this);
         runAsScript.addRunAsScriptListener(this);
-    }
-
-    private void removeListeners() {
-        runAsLocalWeb.removeRunAsLocalWebListener(this);
-        runAsRemoteWeb.removeRunAsRemoteWebListener(this);
-        runAsScript.removeRunAsScriptListener(this);
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {
@@ -387,7 +342,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsLocalWeb() {
-        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsLocalWeb.getIndexFile();
+        }
+        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
         if (error != null) {
             return error;
         }
@@ -399,7 +358,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsRemoteWeb() {
-        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsRemoteWeb.getIndexFile();
+        }
+        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
         if (error != null) {
             return error;
         }
@@ -409,15 +372,24 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         if (selected == RunAsRemoteWeb.NO_REMOTE_CONFIGURATION) {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         }
+
+        error = RunAsValidator.validateUploadDirectory(runAsRemoteWeb.getUploadDirectory(), true);
+        if (error != null) {
+            return error;
+        }
+
         return null;
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsScript.getIndexFile();
+        }
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
     }
 
     private String validateServerLocation() {
-        copyToFolderValid = false;
         if (!runAsLocalWeb.isCopyFiles()) {
             return null;
         }
@@ -442,7 +414,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String url = runAsLocalWeb.getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
-        copyToFolderValid = true;
         return null;
     }
 
@@ -451,18 +422,179 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
         assert sources != null;
         String sourcesSrcRoot = sources.getSrcRoot();
-        if (ConfigureProjectPanel.isProjectFolder(sources)) {
-            File projectFolder = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
-            String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
-            assert projectFolder != null;
-            assert projectName != null;
-            File project = new File(projectFolder, projectName);
-            File src = FileUtil.normalizeFile(new File(project, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER));
-            sourcesSrcRoot = src.getAbsolutePath();
-        }
         File normalized = FileUtil.normalizeFile(new File(runAsLocalWeb.getLocalServer().getSrcRoot()));
         String copyTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, copyTarget);
+    }
+
+    // #127088
+    private void validateAsciiTexts() {
+        String url = null;
+        String indexFile = null;
+        switch (getRunAsType()) {
+            case LOCAL:
+                url = runAsLocalWeb.getUrl();
+                indexFile = runAsLocalWeb.getIndexFile();
+                break;
+            case REMOTE:
+                url = runAsRemoteWeb.getUrl();
+                indexFile = runAsRemoteWeb.getIndexFile();
+                break;
+            case SCRIPT:
+                // do not validate anything
+                return;
+                //break;
+        }
+        assert url != null;
+        assert indexFile != null;
+
+        String warning = Utils.validateAsciiText(url, NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_ProjectUrlPure"));
+        if (warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
+            return;
+        }
+        warning = Utils.validateAsciiText(indexFile, NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_IndexFilePure"));
+        if (warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
+            return;
+        }
+    }
+
+    private void adjustUrl() {
+        String currentUrl = runAsLocalWeb.getUrl();
+        if (defaultLocalUrl == null) {
+            defaultLocalUrl = currentUrl;
+        }
+        if (!defaultLocalUrl.equals(currentUrl)) {
+            return;
+        }
+        String url = null;
+        if (runAsLocalWeb.isCopyFiles()) {
+            LocalServer ls = runAsLocalWeb.getLocalServer();
+            String documentRoot = ls.getDocumentRoot();
+            assert documentRoot != null;
+            String srcRoot = ls.getSrcRoot();
+            String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
+            if (urlSuffix == null) {
+                // user changed path to a different place => use the name of the directory
+                urlSuffix = new File(srcRoot).getName();
+            }
+            String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
+            url = urlPrefix + urlSuffix;
+        } else {
+            url = getUrlForSources(wizardType, descriptor);
+        }
+        // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
+        if (url != null && !url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        if (url != null && !defaultLocalUrl.equals(url)) {
+            defaultLocalUrl = url;
+            runAsLocalWeb.setUrl(url);
+        }
+    }
+
+    static String getUrlForSources(NewPhpProjectWizardIterator.WizardType wizardType, WizardDescriptor descriptor) {
+        // /var/www or similar => check source folder name and url
+        String url = null;
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
+        assert sources != null;
+        String srcRoot = sources.getSrcRoot();
+        switch (wizardType) {
+            case NEW:
+                // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
+                @SuppressWarnings("unchecked")
+                List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
+                assert srcRoots != null;
+                for (DocumentRoot root : srcRoots) {
+                    String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
+                    if (urlSuffix != null) {
+                        url = root.getUrl() + urlSuffix;
+                        break;
+                    }
+                }
+                break;
+        }
+        if (url == null) {
+            // not found => get the name of the sources
+            url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
+        }
+        if (!url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        return url;
+    }
+
+    private static String getUrlSuffix(String documentRoot, String srcRoot) {
+        if (!documentRoot.endsWith(File.separator)) {
+            documentRoot += File.separator;
+        }
+        if (!srcRoot.startsWith(documentRoot)) {
+            return null;
+        }
+        // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
+        srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
+        return srcRoot.substring(documentRoot.length());
+    }
+
+    private void adjustUploadDirectoryAndCopyFiles() {
+        if (originalProjectName == null) {
+            originalProjectName = getProjectName();
+            return;
+        }
+        String newProjectName = getProjectName();
+        if (newProjectName.equals(originalProjectName)) {
+            // no change in project name
+            return;
+        }
+
+        adjustUploadDirectory(originalProjectName, newProjectName);
+        adjustCopyFiles(originalProjectName, newProjectName);
+
+        originalProjectName = newProjectName;
+    }
+
+    private String getProjectName() {
+        return (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
+    }
+
+    private void adjustUploadDirectory(String originalProjectName, String newProjectName) {
+        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
+        if (!uploadDirectory.equals("/" + originalProjectName)) { // NOI18N
+            // already disconnected
+            return;
+        }
+        runAsRemoteWeb.setUploadDirectory("/" + newProjectName); // NOI18N
+    }
+
+    private void adjustCopyFiles(String originalProjectName, String projectName) {
+        LocalServer.ComboBoxModel model = (LocalServer.ComboBoxModel) runAsLocalWeb.getLocalServerModel();
+        boolean fire = false;
+        for (int i = 0; i < model.getSize(); ++i) {
+            LocalServer ls = model.getElementAt(i);
+            File src = new File(ls.getSrcRoot());
+            if (originalProjectName.equals(src.getName())) {
+                File newSrc = new File(src.getParentFile(), projectName);
+                ls.setSrcRoot(newSrc.getAbsolutePath());
+                fire = true;
+            }
+        }
+        if (fire) {
+            model.fireContentsChanged();
+        }
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        switch (getRunAsType()) {
+            case LOCAL:
+                adjustUrl();
+                adjustUploadDirectoryAndCopyFiles();
+                break;
+            case REMOTE:
+                adjustUploadDirectoryAndCopyFiles();
+                break;
+        }
+        fireChangeEvent();
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {

@@ -10,5 +10,12 @@
 
 #define EXIT_SUCCESS 0
 
+namespace std
+{
+  extern "C" void abort(void);
+  extern "C" int atexit(void (*)());
+  extern "C" void exit(int);
+} // namespace std
+
 #endif	/* _STDLIB_H */
 

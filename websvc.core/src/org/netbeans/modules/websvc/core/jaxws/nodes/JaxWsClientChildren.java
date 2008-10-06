@@ -168,7 +168,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
                 }
                 // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
                 if (client.getWsdlUrl().startsWith("file:")) {
-                    FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
+                    FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
                     Project project = FileOwnerQuery.getOwner(srcRoot);
                     if (project.getLookup().lookup(J2eeModuleProvider.class) != null) {
                         FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
@@ -246,7 +246,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             });
         }
         // re-generate java artifacts
-        FileObject srcRoot = getNode().getLookup().lookup(FileObject.class);
+        FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project != null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);

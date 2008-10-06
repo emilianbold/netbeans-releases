@@ -73,7 +73,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.*;
+import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 
 /**
@@ -321,10 +323,62 @@ class TreeTable extends JTable implements Runnable {
         }
     }
 
+    private class GuardedActions implements Mutex.Action<Object> {
+
+        private int type;
+        private Object p1;
+        final Object ret;
+
+        public GuardedActions(int type, Object p1) {
+            this.type = type;
+            this.p1 = p1;
+            ret = Children.MUTEX.readAccess(this);
+        }
+
+        public Object run() {
+            switch (type) {
+                case 0:
+                    paintImpl((Graphics) p1);
+                    break;
+                case 1:
+                    TreeTable.super.validateTree();
+                    break;
+                case 2:
+                    TreeTable.super.doLayout();
+                    break;
+                case 3:
+                    repaintSelection((Boolean) p1);
+                    break;
+                case 4:
+                    TreeTable.super.processEvent((AWTEvent) p1);
+                    break;
+                case 5:
+                    return TreeTable.super.getPreferredSize();
+                case 6:
+                    //return getToolTipTextImpl((MouseEvent) p1);
+                case 10:
+                    Object[] arr = (Object[]) p1;
+                    return TreeTable.super.processKeyBinding(
+                            (KeyStroke) arr[0],
+                            (KeyEvent) arr[1],
+                            (Integer) arr[2],
+                            (Boolean) arr[3]);                
+                default:
+                    throw new IllegalStateException("type: " + type);
+            }
+
+            return null;
+        }
+    } 
+
+    @Override
     public void paint(Graphics g) {
+         new GuardedActions(0, g);
+    }
+    
+    public void paintImpl(Graphics g) {
         if (needCalcRowHeight) {
             calcRowHeight(g);
-
             return;
         }
 
@@ -341,6 +395,27 @@ class TreeTable extends JTable implements Runnable {
          */
     }
 
+    @Override
+    protected void validateTree() {
+        new GuardedActions(1, null);
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return (Dimension) new GuardedActions(5, null).ret;
+    }
+
+    @Override
+    public void doLayout() {
+        new GuardedActions(2, null);
+    }
+
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        return (Boolean) new GuardedActions(10, new Object[]{ks, e, condition, pressed}).ret;
+    }
+
+    
     //   private static final sun.misc.Perf perf = sun.misc.Perf.getPerf();
     //   private static double total = 0; 
 
@@ -599,6 +674,7 @@ class TreeTable extends JTable implements Runnable {
 
     /*
      */
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         if (getSelectedRowCount() == 1) {
             lastRow = getSelectedRow();
@@ -611,6 +687,7 @@ class TreeTable extends JTable implements Runnable {
 
     /* Updates tree column index
      */
+    @Override
     public void columnAdded(TableColumnModelEvent e) {
         super.columnAdded(e);
         updateTreeColumnIndex();
@@ -618,6 +695,7 @@ class TreeTable extends JTable implements Runnable {
 
     /* Updates tree column index
      */
+    @Override
     public void columnRemoved(TableColumnModelEvent e) {
         super.columnRemoved(e);
         updateTreeColumnIndex();
@@ -625,6 +703,7 @@ class TreeTable extends JTable implements Runnable {
 
     /* Updates tree column index
      */
+    @Override
     public void columnMoved(TableColumnModelEvent e) {
         super.columnMoved(e);
         updateTreeColumnIndex();
@@ -683,6 +762,7 @@ class TreeTable extends JTable implements Runnable {
     }
 
     /** Overridden to manually draw the focused rectangle for the tree column */
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -735,6 +815,7 @@ class TreeTable extends JTable implements Runnable {
         return true;
     }
 
+    @Override
     public void paintImmediately(int x, int y, int w, int h) {
         //Eliminate duplicate repaints in an editor change request
         if (inEditorChangeRequest) {
@@ -744,6 +825,7 @@ class TreeTable extends JTable implements Runnable {
         super.paintImmediately(x, y, w, h);
     }
 
+    @Override
     protected void processFocusEvent(FocusEvent fe) {
         super.processFocusEvent(fe);
 
@@ -766,6 +848,7 @@ class TreeTable extends JTable implements Runnable {
         }
     }
 
+    @Override
     public void removeEditor() {
         inRemoveRequest = true;
 
@@ -780,30 +863,34 @@ class TreeTable extends JTable implements Runnable {
 
     /** Repaint the selected row */
     private void repaintSelection(boolean focused) {
-        int start = getSelectionModel().getMinSelectionIndex();
-        int end = getSelectionModel().getMaxSelectionIndex();
+        if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
+            int start = getSelectionModel().getMinSelectionIndex();
+            int end = getSelectionModel().getMaxSelectionIndex();
 
-        if (end != -1) {
-            if (end != start) {
-                Rectangle begin = getCellRect(start, 0, false);
-                Rectangle r = getCellRect(end, 0, false);
+            if (end != -1) {
+                if (end != start) {
+                    Rectangle begin = getCellRect(start, 0, false);
+                    Rectangle r = getCellRect(end, 0, false);
 
-                r.y = begin.y;
-                r.x = 0;
-                r.width = getWidth();
-                r.height = (r.y + r.height) - begin.y;
-                repaint(r.x, r.y, r.width, r.height);
-            } else {
-                Rectangle r = getCellRect(start, 0, false);
-                r.width = getWidth();
-                r.x = 0;
-                repaint(r.x, r.y, r.width, r.height);
+                    r.y = begin.y;
+                    r.x = 0;
+                    r.width = getWidth();
+                    r.height = (r.y + r.height) - begin.y;
+                    repaint(r.x, r.y, r.width, r.height);
+                } else {
+                    Rectangle r = getCellRect(start, 0, false);
+                    r.width = getWidth();
+                    r.x = 0;
+                    repaint(r.x, r.y, r.width, r.height);
+                }
             }
-        }
 
-        if (isEditing() && (editorComp != null)) {
-            editorComp.setBackground(focused ? getSelectionBackground() : getUnfocusedSelectedBackground());
-            editorComp.setForeground(focused ? getSelectionForeground() : getUnfocusedSelectedForeground());
+            if (isEditing() && (editorComp != null)) {
+                editorComp.setBackground(focused ? getSelectionBackground() : getUnfocusedSelectedBackground());
+                editorComp.setForeground(focused ? getSelectionForeground() : getUnfocusedSelectedForeground());
+            }
+        } else {
+            new GuardedActions(3, focused);
         }
     }
 
@@ -851,6 +938,7 @@ class TreeTable extends JTable implements Runnable {
         return unfocusedSelFg;
     }
 
+    @Override
     protected JTableHeader createDefaultTableHeader() {
         return new TreeTableHeader( getColumnModel() );
     }
@@ -864,6 +952,7 @@ class TreeTable extends JTable implements Runnable {
             super( columnModel );
         }
 
+        @Override
         public Dimension getPreferredSize() {
 
             Dimension retValue = super.getPreferredSize();
@@ -894,18 +983,22 @@ class TreeTable extends JTable implements Runnable {
             putClientProperty("JTree.lineStyle", "None"); // NOI18N
         }
 
+        @Override
         public void validate() {
             //do nothing
         }
 
+        @Override
         public void repaint(long tm, int x, int y, int width, int height) {
             //do nothing
         }
 
+        @Override
         public void addHierarchyListener(java.awt.event.HierarchyListener hl) {
             //do nothing
         }
 
+        @Override
         public void addComponentListener(java.awt.event.ComponentListener cl) {
             //do nothing
         }
@@ -936,6 +1029,7 @@ class TreeTable extends JTable implements Runnable {
          * Overridden to always set the size to the height of the TreeTable
          * and the width of column 0.  The paint() method will translate the
          * coordinates to the correct position. */
+        @Override
         public void setBounds(int x, int y, int w, int h) {
             transY = -y;
             super.setBounds(0, 0, TreeTable.this.getColumnModel().getColumn(0).getWidth(), TreeTable.this.getHeight());
@@ -944,6 +1038,7 @@ class TreeTable extends JTable implements Runnable {
         /* Fire width property change so that we can revalidate horizontal scrollbar in TreeTableView.
          */
         @SuppressWarnings("deprecation")
+        @Override
         public void reshape(int x, int y, int w, int h) {
             int oldWidth = getWidth();
             super.reshape(x, y, w, h);
@@ -953,11 +1048,13 @@ class TreeTable extends JTable implements Runnable {
             }
         }
 
+        @Override
         public void paint(Graphics g) {
             g.translate(-getPositionX(), transY);
             super.paint(g);
         }
 
+        @Override
         public Rectangle getVisibleRect() {
             Rectangle visibleRect = TreeTable.this.getVisibleRect();
             visibleRect.x = positionX;
@@ -968,6 +1065,7 @@ class TreeTable extends JTable implements Runnable {
 
         /* Overriden to use this call for moving tree renderer.
          */
+        @Override
         public void scrollRectToVisible(Rectangle aRect) {
             Rectangle rect = getVisibleRect();
             rect.y = aRect.y;
@@ -988,6 +1086,7 @@ class TreeTable extends JTable implements Runnable {
             TreeTable.this.setPositionX(x);
         }
 
+        @Override
         public String getToolTipText(MouseEvent event) {
             if (event != null) {
                 Point p = event.getPoint();
@@ -1056,6 +1155,13 @@ class TreeTable extends JTable implements Runnable {
         public void fireTreeExpanded(TreePath path) {
             super.fireTreeExpanded(path);
             firePropertyChange("width", -1, getWidth());
+        }
+
+        boolean treeTableHasFocus() {
+            Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+            boolean tableHasFocus = (focusOwner == this) || (focusOwner == TreeTable.this) ||
+                TreeTable.this.isAncestorOf(focusOwner) || focusOwner instanceof JRootPane; //RootPane == popup menu
+            return tableHasFocus;
         }
     }
 

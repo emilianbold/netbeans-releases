@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
+import org.openide.util.Cancellable;
 
 /**
  * Source model
@@ -69,7 +70,7 @@ public interface CsmModel {
      *
      * @param task task to run
      */
-    void enqueue(Runnable task);
+    Cancellable enqueue(Runnable task);
 
     /**
      * Code model calls can be very expensive. 
@@ -87,7 +88,7 @@ public interface CsmModel {
      * @param task task to run
      * @param name name that would be added to the thread name
      */
-    void enqueue(Runnable task, CharSequence name);
+    Cancellable enqueue(Runnable task, CharSequence name);
     
     /**
      * Find project that contains file.

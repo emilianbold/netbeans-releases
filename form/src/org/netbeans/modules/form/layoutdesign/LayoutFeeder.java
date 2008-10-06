@@ -252,10 +252,14 @@ class LayoutFeeder implements LayoutConstants {
             if (preserveOriginal) { // resized in this dimension only
                 inclusion1 = originalPos1;
                 if (found != originalPos1) {
-                    if (newPos != null)
+                    if (newPos != null) {
                         inclusion2 = found;
-                    if (found.parent == originalPos1.parent && found.newSubGroup)
-                        originalPos1.newSubGroup = true;
+                    }
+                    LayoutInterval origParent = originalPos1.parent;
+                    if ((found.parent == origParent && found.newSubGroup)
+                          || (origParent.isSequential() && origParent.getParent() == found.parent)) {
+                        inclusion1.newSubGroup = true;
+                    }
                 }
             }
             else {
@@ -476,12 +480,7 @@ class LayoutFeeder implements LayoutConstants {
                         LayoutInterval li = LayoutUtils.getOutermostComponent(sub, dimension, alignment);
                         if (LayoutInterval.isAlignedAtBorder(li, parent, alignment)
                             || LayoutInterval.isPlacedAtBorder(li, parent, dimension, alignment))
-                        {   // here we have an aligned component (let's see if it is not nested)
-                            LayoutInterval p = LayoutInterval.getFirstParent(li, PARALLEL);
-                            while (p != parent) {
-                                li = p;
-                                p = LayoutInterval.getFirstParent(li, PARALLEL);
-                            }
+                        {   // here we have an aligned component
                             alignedInterval = li;
                         }
                         else continue; // not aligned subinterval
@@ -723,6 +722,11 @@ class LayoutFeeder implements LayoutConstants {
         int alignment = aEdge;
         assert alignment == CENTER || alignment == BASELINE;
         layoutModel.setIntervalAlignment(addingInterval, alignment);
+
+        if (addingInterval.getParent() != null) {
+            // hack: resized interval in center/baseline has not been removed
+            return;
+        }
 
         if (aSnappedParallel.isParallel() && aSnappedParallel.getGroupAlignment() == alignment) {
             layoutModel.addInterval(addingInterval, aSnappedParallel, -1);
@@ -1568,8 +1572,7 @@ class LayoutFeeder implements LayoutConstants {
         // add indent if needed
         int indent = LayoutRegion.distance(toAlignWith.getCurrentSpace(), interval.getCurrentSpace(),
                                            dimension, alignment, alignment);
-        assert indent == 0 || alignment == LEADING; // currently support indent only at the LEADING side
-        if (indent != 0 && alignment == LEADING) {
+        if (indent != 0) {
             LayoutInterval indentGap = new LayoutInterval(SINGLE);
             indentGap.setSize(Math.abs(indent));
             // [need to use default padding for indent gap]
@@ -2549,25 +2552,36 @@ class LayoutFeeder implements LayoutConstants {
                                 iDesc1.parent.getParent() : iDesc1.parent;
         LayoutInterval group2 = iDesc2.parent.isSequential() ?
                                 iDesc2.parent.getParent() : iDesc2.parent;
-        if (group1 == group2)
+        if (group1 == group2) {
             return true;
+        }
 
         if (group1.isParentOf(group2)) {
+            // swap so group2 is parent of group1 (iDesc1 the deeper inclusion)
             LayoutInterval temp = group1;
             group1 = group2;
-            //group2 = temp;
+            group2 = temp;
             IncludeDesc itemp = iDesc1;
-            //iDesc1 = iDesc2;
+            iDesc1 = iDesc2;
             iDesc2 = itemp;
         }
         else if (!group2.isParentOf(group1)) {
             return false;
         }
 
-        // group2 is parent of group1
-        LayoutInterval neighbor = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
-        if (neighbor == null)
+        LayoutInterval neighbor; // to be moved into the deeper group (in parallel)
+        if (iDesc2.parent.isSequential()) {
+            if (iDesc2.parent.isParentOf(iDesc1.parent)) {
+                // in the same sequence, can't combine in parallel
+                return false;
+            }
+            neighbor = iDesc2.parent;
+        } else {
+            neighbor = iDesc2.neighbor;
+        }
+        if (neighbor == null) {
             return false;
+        }
         LayoutRegion spaceToHold = neighbor.getCurrentSpace();
         LayoutRegion spaceAvailable = group1.getCurrentSpace();
         return LayoutRegion.pointInside(spaceToHold, LEADING, spaceAvailable, dimension)
@@ -2616,11 +2630,11 @@ class LayoutFeeder implements LayoutConstants {
         boolean nextTo;
         if (iDesc1.parent.isParentOf(iDesc2.parent)) {
             commonGroup = iDesc1.parent;
-            nextTo = iDesc1.neighbor != null || iDesc2.snappedNextTo != null;
+            nextTo = iDesc1.neighbor != null || iDesc2.snappedNextTo != null || iDesc2.parent.isSequential();
         }
         else if (iDesc2.parent.isParentOf(iDesc1.parent)) {
             commonGroup = iDesc2.parent;
-            nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null;
+            nextTo = iDesc2.neighbor != null || iDesc1.snappedNextTo != null || iDesc1.parent.isSequential();
         }
         else {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
@@ -2872,32 +2886,21 @@ class LayoutFeeder implements LayoutConstants {
     private boolean shouldEnterGroup(LayoutInterval group) {
         assert group.isParallel();
 
-        int alignment = aEdge;
-        int groupAlign = group.getGroupAlignment();
-        if (groupAlign != alignment
-            && ((groupAlign != LEADING && groupAlign != TRAILING)
-                 || (alignment != LEADING && alignment != TRAILING && alignment != DEFAULT)))
-            return false; // incompatible group alignment
-
-        if (aSnappedParallel != null && !allowsSubAlignWith(aSnappedParallel, group, alignment))
-            return false; // could not align with position.interval
-
-        return true;
-    }
-
-    /**
-     * @return whether within or under 'group' one might align in parallel
-     *         with 'interval'; so it return false if content of 'group' is
-     *         in an incompatible branch
-     */
-    private boolean allowsSubAlignWith(LayoutInterval interval, LayoutInterval group, int alignment) {
-        if (group == interval || group.isParentOf(interval))
+        if (aSnappedParallel == null) {
             return true;
+        }
+        if (group == aSnappedParallel || group.isParentOf(aSnappedParallel)) {
+            return true; // same tree
+        }
 
+        // Determine if within or under 'group' one might align in parallel
+        // with required 'aSnappedParallel' interval. So return false if content
+        // of 'group' is in an incompatible branch
+        LayoutInterval interval = aSnappedParallel;
         LayoutInterval parent = LayoutInterval.getFirstParent(interval, PARALLEL);
         while (parent != null) {
-            if (LayoutInterval.isAlignedAtBorder(interval, parent, alignment)) {
-                if (parent.isParentOf(group) && LayoutInterval.isAlignedAtBorder(group, parent, alignment)) {
+            if (LayoutInterval.isAlignedAtBorder(interval, parent, aEdge)) {
+                if (parent.isParentOf(group) && LayoutInterval.isAlignedAtBorder(group, parent, aEdge)) {
                     return true;
                 }
                 interval = parent;
@@ -2975,7 +2978,6 @@ class LayoutFeeder implements LayoutConstants {
         if (iDesc1.parent == iDesc2.parent)
             return true;
 
-        LayoutInterval commonGroup;
         if (iDesc1.parent.isParentOf(iDesc2.parent))
             return isBorderInclusion(iDesc2);
         else if (iDesc2.parent.isParentOf(iDesc1.parent))
@@ -2996,7 +2998,16 @@ class LayoutFeeder implements LayoutConstants {
 
         if (iDesc.parent.isSequential()) {
             int startIndex = iDesc.alignment == LEADING ? iDesc.index : 0;
-            int endIndex = iDesc.alignment == LEADING ? iDesc.parent.getSubIntervalCount() - 1 : iDesc.index - 1;
+            int endIndex;
+            if (iDesc.alignment == LEADING) {
+                endIndex = iDesc.parent.getSubIntervalCount() - 1;
+            } else {
+                endIndex = iDesc.index - 1;
+                if (endIndex >= iDesc.parent.getSubIntervalCount()) {
+                    // if comming from original position the original index might be too high
+                    endIndex = iDesc.parent.getSubIntervalCount() - 1;
+                }
+            }
             return startIndex > endIndex
                    || !LayoutUtils.contentOverlap(addingSpace, iDesc.parent, startIndex, endIndex, dimension^1);
         }

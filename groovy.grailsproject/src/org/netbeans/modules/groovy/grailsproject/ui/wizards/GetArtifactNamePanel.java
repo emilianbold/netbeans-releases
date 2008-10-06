@@ -15,7 +15,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /**
@@ -33,11 +35,20 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         
     boolean valid(WizardDescriptor settings) {
         
-            if(classNameTextField.getText().length() > 0)
-                return true;
-            
+        if (!Utilities.isJavaIdentifier(classNameTextField.getText().trim())) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetArtifactNamePanel.NotValidIdentifier"));
             return false;
         }
+        if (new File(createdFileTextField.getText().trim()).exists()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetArtifactNamePanel.FileAlreadyExists"));
+            return false;
+        }
+        return true;
+    }
     
     void read (WizardDescriptor d) {
 
@@ -48,12 +59,8 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     }
 
     void store( WizardDescriptor d ) {
-        
-        d.putProperty( "projectFolder", projectTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
-        }
-    
-    
+        d.putProperty("projectFolder", projectTextField.getText().trim()); // NOI18N
+    }
     
     /** Creates new form NewGrailsProjectPanel */
     public GetArtifactNamePanel(GetArtifactNameStep parentStep, SourceCategory cat) {
@@ -64,38 +71,69 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
 
         String subDirName = "<unknown>";
         String dirPrefix  = "";
+        String className = "";
+        FileObject preselectedFolder = parentStep.project.getProjectDirectory().getFileObject(cat.getRelativePath());
         
         switch(cat){
-            case DOMAIN:
+            case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewDomain"));
                 subDirName = "domain";
                 dirPrefix = "grails-app" + File.separatorChar;
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
-            case CONTROLLERS:
+            case GRAILSAPP_CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewController"));
                 subDirName = "controllers";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Controller";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;
-            case SERVICES:
+            case GRAILSAPP_SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewService"));
                 subDirName = "services";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break; 
-            case VIEWS:
+            case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewView"));
                 subDirName = "views";
                 dirPrefix = "grails-app" + File.separatorChar;
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
-            case TAGLIB:
+            case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewTaglib"));
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
+                suffix = "TagLib";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
+            case TEST_INTEGRATION:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_INTEGRATION")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewIntegrationTest"));
+                subDirName = "integration";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "Tests";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
+                break;
+            case TEST_UNIT:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_UNIT")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewUnitTest"));
+                subDirName = "unit";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "Tests";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
+                break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewScript"));
                 subDirName = "scripts";
+                className = uniqueName("NewElement", suffix, preselectedFolder);
                 break;    
             }
         
@@ -113,6 +151,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         // register event listeners to auto-update some fields.
 
         classNameTextField.getDocument().addDocumentListener( this );
+        classNameTextField.setText(className);
         
     }
     
@@ -131,16 +170,22 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         createdFileLabel = new javax.swing.JLabel();
         createdFileTextField = new javax.swing.JTextField();
 
-        classNameLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameLabel.text")); // NOI18N
+        classNameLabel.setDisplayedMnemonic('N');
+        classNameLabel.setLabelFor(classNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(classNameLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameLabel.text")); // NOI18N
 
-        projectLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectFolderLabel.text")); // NOI18N
+        projectLabel.setDisplayedMnemonic('P');
+        projectLabel.setLabelFor(projectTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectFolderLabel.text")); // NOI18N
 
         classNameTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetDomainClassNamePanel.projectNameTextField.text")); // NOI18N
 
         projectTextField.setEditable(false);
         projectTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.text")); // NOI18N
 
-        createdFileLabel.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.text")); // NOI18N
+        createdFileLabel.setDisplayedMnemonic('F');
+        createdFileLabel.setLabelFor(createdFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(createdFileLabel, org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.text")); // NOI18N
 
         createdFileTextField.setEditable(false);
         createdFileTextField.setText(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.text")); // NOI18N
@@ -176,6 +221,19 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                     .add(createdFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
+
+        classNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.classNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.projectTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        createdFileTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.AccessibleContext.accessibleName")); // NOI18N
+        createdFileTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.createdFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetArtifactNamePanel.class, "GetArtifactNamePanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -188,6 +246,11 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     private javax.swing.JTextField projectTextField;
     // End of variables declaration//GEN-END:variables
 
+
+    private void setTitle(String title) {
+        putClientProperty("NewFileWizard_Title", title); // NOI18N
+        getAccessibleContext().setAccessibleName(title);
+    }
     
     public void insertUpdate(DocumentEvent e) {
         updateTexts( e ) ;
@@ -209,7 +272,14 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 
         if ( doc == classNameTextField.getDocument() ) {
             
-            fileName = baseDir + File.separatorChar + classNameTextField.getText() + suffix + ".groovy";
+            String artifactName = classNameTextField.getText().trim();
+            // there can be package name as part of the artifact name,
+            // we don't have package chooser in this wizard
+            if (artifactName.indexOf('.') != -1) {
+                artifactName = artifactName.replace('.', File.separatorChar);
+            }
+            
+            fileName = baseDir + File.separatorChar + artifactName + suffix + ".groovy";
             createdFileTextField.setText(fileName);
             projectTextField.setText(project.getProjectDirectory().getName());
             
@@ -219,17 +289,27 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
   
     }
 
-    public String getDomainClassName(){
-        return classNameTextField.getText();
-        }
-
-    public void setArtifactName(String text){
-        classNameTextField.setText(text);
-        parentStep.fireChangeEvent();
+    public String getArtifactName(){
+        return classNameTextField.getText().trim();
     }
 
     public String getFileName() {
         return fileName;
     }
-    
+
+    private static String uniqueName(final String baseName, String suffix, FileObject preselectedFolder) {
+        String activeName = baseName;
+        if (preselectedFolder != null) {
+            int index = 0;
+            while (true) {
+                FileObject _tmp = preselectedFolder.getFileObject(activeName + suffix, "groovy");    //NOI18N
+                if (_tmp == null) {
+                    break;
+                }
+                activeName = baseName + ++index;
+            }
+        }
+        return activeName;
+    }
+
 }

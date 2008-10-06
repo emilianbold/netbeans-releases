@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml;
 
 
+import org.netbeans.modules.xml.util.Util;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -91,7 +92,7 @@ public final class EntityDataLoader extends UniFileLoader {
      */
     @Override
     protected String defaultDisplayName () {
-        return Util.THIS.getString ("PROP_EntityLoader_Name");
+        return Util.THIS.getString (EntityDataObject.class, "PROP_EntityLoader_Name");
     }
     
     /** Creates the right primary entry for given primary file.

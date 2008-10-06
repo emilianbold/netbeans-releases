@@ -40,8 +40,8 @@ package org.netbeans.modules.php.editor.verification;
 
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -78,26 +78,29 @@ public class ClassNotFoundRule extends PHPRule {
     private void check(Expression expression) {
         if (expression instanceof Identifier) {
             String className = ((Identifier) expression).getName();
-            
-            for (IndexedClass indexedClass : context.index.getClassInheritanceLine(null, className)) {
-                return;
+
+            if (context.index.getClasses(null, className, NameKind.EXACT_NAME).isEmpty()){
+                addHint(expression);
             }
-            
-            addHint(expression);
         }
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");//NOI18N
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDesc");
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundHintDispName");
     }
 
     private void addHint(ASTNode node) {
         OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-        Hint hint = new Hint(ClassNotFoundRule.this, getDescription(), context.compilationInfo.getFileObject(), range, null, 500);
+        Hint hint = new Hint(ClassNotFoundRule.this, getDisplayName(), context.compilationInfo.getFileObject(), range, null, 500);
         addResult(hint);
+    }
+    
+    @Override
+    public boolean getDefaultEnabled() {
+        return false;
     }
 }

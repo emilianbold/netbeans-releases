@@ -121,7 +121,7 @@ public final class AntNavigatorPanel implements NavigatorPanel {
                                     try {
                                         manager.setSelectedNodes(new Node[] {children[0]});
                                     } catch (PropertyVetoException e) {
-                                        assert false : e;
+                                        // #146284 - happens sometimes; why? Ignore...
                                     }
                                 }
                             }
@@ -157,8 +157,10 @@ public final class AntNavigatorPanel implements NavigatorPanel {
         // Show list of targets for selected file:
         if (selectedFiles.size() == 1) {
             DataObject d = selectedFiles.iterator().next();
-            manager.setRootContext(d.getNodeDelegate());
-            return;
+            if (d.isValid()) { // #145571
+                manager.setRootContext(d.getNodeDelegate());
+                return;
+            }
         }
         // Fallback:
         manager.setRootContext(Node.EMPTY);

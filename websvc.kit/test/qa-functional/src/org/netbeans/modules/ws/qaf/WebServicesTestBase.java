@@ -38,12 +38,14 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.awt.Container;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
@@ -59,6 +61,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -121,12 +124,14 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     //Java
                     return Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
                 case WEB:
-                    //Web
+                    //Java Web
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web");
                 case EJB:
+                    //Java EE
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle", "Templates/Project/J2EE");
                 case APPCLIENT:
-                    //Enterprise
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle", "Templates/Project/J2EE");
+                    //Java EE
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle", "Templates/Project/J2EE");
                 case SAMPLE:
                     //Samples
                     return Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");
@@ -255,11 +260,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             switch (this) {
                 case SJSAS:
                 case GLASSFISH:
-                    return System.getProperty("com.sun.aas.installRoot") != null; //NOI18N
+                    return System.getProperty("glassfish.home") != null; //NOI18N
                 case TOMCAT:
-                    return System.getProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome") != null; //NOI18N
+                    return System.getProperty("tomcat.home") != null; //NOI18N
                 case JBOSS:
-                    return System.getProperty("org.netbeans.modules.j2ee.jboss4.installRoot") != null; //NOI18N
+                    return System.getProperty("jboss.home") != null; //NOI18N
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -372,6 +377,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 if (!projectRoot.exists()) {
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
                 } else {
+                    openProjects(projectRoot.getAbsolutePath());
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
                     assertNotNull("FO cannot be null", fo); //NOI18N
                     project = ProjectManager.getDefault().findProject(fo);
@@ -581,19 +587,28 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     protected void dumpOutput() throws IOException {
         OutputOperator oo = OutputOperator.invoke();
         oo.requestFocus();
-        JTabbedPaneOperator jtpo = new JTabbedPaneOperator(oo);
-        for (int i = 0; i < jtpo.getTabCount(); i++) {
-            String tabTitle = jtpo.getTitleAt(i);
-            jtpo.selectPage(i);
-            OutputTabOperator oto = null;
-            if (tabTitle.indexOf("<html>") < 0) { //NOI18N
-                oto = new OutputTabOperator(tabTitle.trim());
-            } else {
-                oto = new OutputTabOperator(tabTitle.substring(9, 19).trim());
+        JTabbedPaneOperator jtpo = null;
+        if (null != JTabbedPaneOperator.findJTabbedPane((Container) oo.getSource(), ComponentSearcher.getTrueChooser(""))) {
+            jtpo = new JTabbedPaneOperator(oo);
+        }
+        if (jtpo != null) {
+            for (int i = 0; i < jtpo.getTabCount(); i++) {
+                String tabTitle = jtpo.getTitleAt(i);
+                jtpo.selectPage(i);
+                OutputTabOperator oto = null;
+                if (tabTitle.indexOf("<html>") < 0) { //NOI18N
+                    oto = new OutputTabOperator(tabTitle.trim());
+                } else {
+                    oto = new OutputTabOperator(tabTitle.substring(9, 19).trim());
+                }
+                oto.requestFocus();
+                writeToFile(oto.getText(),
+                        new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt")); //NOI18N
             }
-            oto.requestFocus();
+        } else {
+            OutputTabOperator oto = oo.getOutputTab(""); //NOI18N
             writeToFile(oto.getText(),
-                    new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt")); //NOI18N
+                    new File(getWorkDir(), "default_out.txt")); //NOI18N
         }
     }
 
@@ -616,7 +631,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
         OutputTabOperator oto = new OutputTabOperator(projectName);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 300000); //NOI18N
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
@@ -689,7 +704,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
     }
 
-    private File getProjectsRootDir() throws IOException {
+    protected File getProjectsRootDir() throws IOException {
         File f = getWorkDir();
         LOGGER.fine("Working directory is set to: " + f.getAbsolutePath());
         if (f != null) {

@@ -42,14 +42,10 @@ package org.netbeans.test.subversion.operators;
 
 import java.awt.Component;
 import javax.swing.JComponent;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.Operator;
 

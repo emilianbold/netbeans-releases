@@ -264,20 +264,19 @@ public class InstantRenameAction extends BaseAction {
             task = requestProcessor.post (new Runnable () {
                 public void run () {
                     document.removeDocumentListener (RenameImplementation.this);
-                    document.atomicLock ();
-                    try {
-                        Iterator<Element> it = elements.iterator ();
-                        try {
-                            String text = it.next ().getText ();
-                            while (it.hasNext ())
-                                it.next ().setText (text);
-                        } catch (BadLocationException ex) {
-                            ex.printStackTrace ();
+                    document.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            Iterator<Element> it = elements.iterator ();
+                            try {
+                                String text = it.next ().getText ();
+                                while (it.hasNext ())
+                                    it.next ().setText (text);
+                            } catch (BadLocationException ex) {
+                                ex.printStackTrace ();
+                            }
                         }
-                    } finally {
-                        document.atomicUnlock ();
-                        document.addDocumentListener (RenameImplementation.this);
-                    }
+                    });
+                    document.addDocumentListener (RenameImplementation.this);
                 }
             });
         }

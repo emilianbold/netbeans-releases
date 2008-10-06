@@ -39,51 +39,125 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.nodes.ServerNode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.api.explorer.NodeProvider;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.DatabaseServerManager;
+import org.netbeans.modules.db.mysql.nodes.ServerNode;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  * Provides a node for working with a local MySQL Server instance
  * 
  * @author David Van Couvering
  */
-public class ServerNodeProvider implements NodeProvider {
+public final class ServerNodeProvider implements NodeProvider {
+    private static final Logger LOGGER = Logger.getLogger(NodeProvider.class.getName());
 
-    private static volatile ServerNodeProvider DEFAULT;
+    private static final ServerNodeProvider DEFAULT = new ServerNodeProvider();
     private static final MySQLOptions options = MySQLOptions.getDefault();
-    private final ArrayList<Node> nodes = new ArrayList<Node>();
+    private final List<Node> nodes = new ArrayList<Node>();
+    private final List<Node> unmodifiableNodes = Collections.unmodifiableList(nodes);
     private static final ArrayList<Node> emptyNodeList = new ArrayList<Node>();
     private final CopyOnWriteArrayList<ChangeListener> listeners = 
             new CopyOnWriteArrayList<ChangeListener>();
-    
-    public static synchronized ServerNodeProvider getDefault() {
+
+    private ServerNodeProvider() {
         // Issue 134577 - getDefault() is called by Lookup. If we try to
-        // get the DatabaseServer implementation here, we cause
+        // get the DatabaseServer or Installation implementations here, we cause
         // deadlocks, as this lookup will wait until the lookup calling
         // getDefault() completes, which will never happen.
         //
         // So we lazily look up the DatabaseServer as part of the call
         // to getNodes(), which happens from application code and *not*
         // as part of lookup.
-        if ( DEFAULT == null ) {
-                DEFAULT = new ServerNodeProvider();
-        }
+    }
+    
+    public static ServerNodeProvider getDefault() {
         return DEFAULT;
     }
     
+    /**
+     * Try to find MySQL on the local machine, and if it can be found,
+     * register a connection and the MySQL server node in the Database
+     * Explorer.
+     */
+    private void findAndRegisterMySQL() {
+        if ( (DatabaseUtils.getJDBCDriver()) == null ) {
+            // Driver not registered, that's OK, the user may
+            // have deleted it, but nothing to do here.
+            return;
+        }
+
+        if (options.isProviderRegistered() || options.isProviderRemoved()) {
+            // If someone explicitly removes the MySQL node, we shouldn't
+            // put it back - that's annoying...
+            return;
+        }
+
+        registerConnectionListener();
+        findAndRegisterInstallation();
+    }
+
+    private void registerConnectionListener() {
+        // Register a listener that will auto-register the MySQL
+        // server provider when a user adds a MySQL connection
+        ConnectionManager.getDefault().addConnectionListener(
+                new DbExplorerConnectionListener());
+    }
+
+    private void findAndRegisterInstallation() {
+        Installation installation = InstallationManager.detectInstallation();
+        if ( installation == null ) {
+            return;
+        }
+
+        String[] command = installation.getAdminCommand();
+        if ( Utils.isValidExecutable(command[0], true /*emptyOK*/) ||
+             Utils.isValidURL(command[0], true /*emptyOK*/ )) {
+            options.setAdminPath(command[0]);
+            options.setAdminArgs(command[1]);
+        }
+
+        command = installation.getStartCommand();
+        if ( Utils.isValidExecutable(command[0], true)) {
+            options.setStartPath(command[0]);
+            options.setStartArgs(command[1]);
+        }
+
+        command = installation.getStopCommand();
+        if ( Utils.isValidExecutable(command[0], true)) {
+            options.setStopPath(command[0]);
+            options.setStopArgs(command[1]);
+        }
+
+        options.setPort(installation.getDefaultPort());
+
+        setRegistered(true);
+    }
+    
     public List<Node> getNodes() {
+        if (! options.isProviderRegistered() && ! options.isProviderRemoved()) {
+            findAndRegisterMySQL();
+        }
+        
         checkNodeArray();
         
         if ( options.isProviderRegistered() ) {
-            return nodes;
+            return unmodifiableNodes;
         } else {
             DatabaseServerManager.getDatabaseServer().disconnect();
             return emptyNodeList;
@@ -108,13 +182,21 @@ public class ServerNodeProvider implements NodeProvider {
     public void setRegistered(boolean registered) {
         boolean old = isRegistered();
         if ( registered != old ) {
-            DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
+            final DatabaseServer instance = DatabaseServerManager.getDatabaseServer();
             options.setProviderRegistered(registered);
             
             if ( ! registered ) {
                 instance.disconnect();
             } else {
-                instance.reconnect(true, true ); // quiet, async
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            instance.checkConfiguration();
+                        } catch (DatabaseException dbe) {
+                            LOGGER.log(Level.INFO, null, dbe);
+                        }
+                    }
+                });
             }
             notifyChange();
         }

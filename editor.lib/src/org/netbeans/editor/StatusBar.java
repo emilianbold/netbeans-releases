@@ -509,7 +509,7 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
             Iterator it = cellList.iterator();
             while (it.hasNext()) {
                 JLabel c = (JLabel)it.next();
-                if (c instanceof Cell) {
+                if (c instanceof Cell && editorUI.getComponent()!=null/*#141362 Check editorUI.getComponent() not null*/) {
                     Coloring col = getColoring(
                         org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent()), 
                         FontColorNames.STATUS_BAR_COLORING

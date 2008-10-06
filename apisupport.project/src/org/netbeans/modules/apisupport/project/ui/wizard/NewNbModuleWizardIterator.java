@@ -152,7 +152,19 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     public static NewNbModuleWizardIterator createLibraryModuleIterator() {
         return new NewNbModuleWizardIterator(Type.LIBRARY_MODULE);
     }
-    
+
+    static boolean isSuiteWizard(Type type) {
+        return type == Type.SUITE || type == Type.APPLICATION;
+    }
+
+    static boolean isSuiteComponentWizard(Type type) {
+        return type == Type.SUITE_COMPONENT;
+    }
+
+    static boolean isLibraryWizard(Type type) {
+        return type == Type.LIBRARY_MODULE;
+    }
+
     public FileObject getCreateProjectFolder() {
         return createdProjectFolder;
     }

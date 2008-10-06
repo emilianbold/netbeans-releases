@@ -52,7 +52,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbModuleSuite;
@@ -103,7 +103,10 @@ public class AddNewBpelProcess extends PerformanceTestCase {
 
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
         
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("SOA"); //NOI18N
         wizard.selectFileType("BPEL Process"); //NOI18N
         wizard.next();
@@ -120,7 +123,6 @@ public class AddNewBpelProcess extends PerformanceTestCase {
     
     @Override
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /**
@@ -137,6 +139,7 @@ public class AddNewBpelProcess extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

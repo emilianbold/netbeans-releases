@@ -100,6 +100,13 @@ public class SearchHistoryAction extends ContextAction {
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
+                Set<File> s = context.getFiles();
+                if(s != null) {
+                    File[] files = s.toArray(new File[s.size()]);
+                    if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
+                        tc.search();
+                    }                                
+                }
             }
         });
     }

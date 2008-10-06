@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  
@@ -40,7 +39,6 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -178,8 +176,9 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <package>org.netbeans.modules.websvc.rest.model.api</package>
                 <package>org.netbeans.modules.websvc.rest.model.spi</package>
                 <package>org.netbeans.modules.websvc.rest.spi</package>

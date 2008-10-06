@@ -38,28 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.saas.codegen.java.support.SoapClientUtils;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
-import org.netbeans.modules.websvc.saas.util.LibrariesHelper;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
@@ -72,6 +67,7 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 public class SoapClientOperationInfo {
+
     private WsdlSaasMethod method;
     private String categoryName;
     private String serviceName;
@@ -80,9 +76,10 @@ public class SoapClientOperationInfo {
     private String wsdlUrl;
     private Project project;
     private WsdlData webServiceData;
-    private WsdlService service;
-    private WsdlOperation operation;
-    private WsdlPort port;
+    private WSService service;
+    private WSOperation operation;
+    private WSPort port;
+    private List<ParameterInfo> headerParams = Collections.emptyList();
 
     public SoapClientOperationInfo(WsdlSaasMethod m, Project project) {
         this.method = m;
@@ -101,10 +98,18 @@ public class SoapClientOperationInfo {
         this.operation = method.getWsdlOperation();
     }
 
+    public Project getProject() {
+        return project;
+    }
+
+    public WsdlSaasMethod getMethod() {
+        return method;
+    }
+
     public String getCategoryName() {
         return categoryName;
     }
-    
+
     public String getServiceName() {
         return serviceName;
     }
@@ -127,45 +132,44 @@ public class SoapClientOperationInfo {
     }
 
     public void initWsdlModelInfo() {
-        LibrariesHelper.addDefaultJaxWsClientJars(project, null, method.getSaas());
     }
 
-    public static WsdlOperation findOperationByName(WsdlPort port, String name) {
-        for (WsdlOperation o : port.getOperations()) {
-            if (name.equals(o.getName())) {
-                return o;
+    public static WSOperation findOperationByName(WSPort port, String name) {
+        for (Object o : port.getOperations()) {
+            if (name.equals(((WSOperation) o).getName())) {
+                return ((WSOperation) o);
             }
         }
         return null;
     }
 
-    public WsdlPort getPort() {
+    public WSPort getPort() {
         initWsdlModelInfo();
         return port;
     }
 
-    public WsdlOperation getOperation() {
+    public WSOperation getOperation() {
         initWsdlModelInfo();
         return operation;
     }
 
-    public WsdlService getService() {
+    public WSService getService() {
         initWsdlModelInfo();
         return service;
     }
 
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
-    public List<WsdlParameter> getOutputParameters() {
-        ArrayList<WsdlParameter> params = new ArrayList<WsdlParameter>();
-        for (WsdlParameter p : getOperation().getParameters()) {
-            if (p.isHolder()) {
-                params.add(p);
+    public List<WSParameter> getOutputParameters() {
+        ArrayList<WSParameter> params = new ArrayList<WSParameter>();
+        for (Object p : getOperation().getParameters()) {
+            if (((WSParameter) p).isHolder()) {
+                params.add((WSParameter) p);
             }
         }
         return params;
     }
 
-    public static String getParamType(WsdlParameter param) {
+    public static String getParamType(WSParameter param) {
         if (param.isHolder()) {
             String outputType = param.getTypeName();
             int iLT = outputType.indexOf('<');
@@ -183,9 +187,9 @@ public class SoapClientOperationInfo {
     public String getOutputType() {
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
-            for (WsdlParameter p : getOperation().getParameters()) {
-                if (p.isHolder()) {
-                    outputType = getParamType(p);
+            for (Object p : getOperation().getParameters()) {
+                if (((WSParameter) p).isHolder()) {
+                    outputType = getParamType((WSParameter) p);
                     break;
                 }
             }
@@ -196,9 +200,9 @@ public class SoapClientOperationInfo {
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String[] getInputParameterNames() {
         ArrayList<String> names = new ArrayList<String>();
-        for (WsdlParameter p : getOperation().getParameters()) {
-            if (!p.isHolder()) {
-                names.add(p.getName());
+        for (Object p : getOperation().getParameters()) {
+            if (!((WSParameter) p).isHolder()) {
+                names.add(((WSParameter) p).getName());
             }
         }
 
@@ -209,8 +213,8 @@ public class SoapClientOperationInfo {
     public Class[] getInputParameterTypes() {
         ArrayList<Class> types = new ArrayList<Class>();
 
-        for (WsdlParameter p : getOperation().getParameters()) {
-            if (!p.isHolder()) {
+        for (Object p : getOperation().getParameters()) {
+            if (!((WSParameter) p).isHolder()) {
                 int repeatCount = 0;
                 Class type = null;
 
@@ -219,7 +223,7 @@ public class SoapClientOperationInfo {
                 synchronized (this) {
                     try {
                         while (repeatCount < 60) {
-                            type = Util.getType(project, p.getTypeName());
+                            type = getType(project, ((WSParameter) p).getTypeName());
 
                             if (type != null) {
                                 break;
@@ -245,37 +249,32 @@ public class SoapClientOperationInfo {
 
         return types.toArray(new Class[types.size()]);
     }
-    
+
+    public Class getType(Project project, String typeName) {
+        return Util.getType(project, typeName);
+    }
+
     public boolean needsSoapHandler() {
         return getSoapHeaderParameters().size() > 0;
     }
-    
-    private List<ParameterInfo> headerParams;
-    public List<ParameterInfo> getSoapHeaderParameters() {
-        if (headerParams == null) {
-            headerParams = new java.util.ArrayList<ParameterInfo>();
 
-            Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
-                    getXamWsdlModel(), getPort(), getOperation());
-            for (Map.Entry<QName,String> entry : params.entrySet()) {
-                Class type = Util.getType(project, entry.getValue());
-                ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
-                info.setStyle(ParamStyle.UNKNOWN);
-                headerParams.add(info);
-            }
-        }
+    public List<ParameterInfo> getSoapHeaderParameters() {
         return headerParams;
     }
 
     public WSDLModel getXamWsdlModel() {
         try {
-            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getWsdlFile()));;
+            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getWsdlFile()));
+            ;
             return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
-        } catch(CatalogModelException ex) {
+        } catch (CatalogModelException ex) {
             Logger.global.log(Level.INFO, "", ex);
         }
         return null;
     }
-    
-    
+
+    public boolean isRPCEncoded() {
+        WSDLModel wsdlModel = getXamWsdlModel();
+        return Util.isRPCEncoded(wsdlModel);
+    }
 }

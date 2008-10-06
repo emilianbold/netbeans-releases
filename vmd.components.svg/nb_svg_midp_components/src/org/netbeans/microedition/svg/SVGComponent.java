@@ -54,11 +54,15 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     protected static final String TR_VALUE_HIDDEN  = "hidden";            // NOI18N
     protected static final String TR_VALUE_INHERIT = "inherit";           // NOI18N
     
+    protected static final String DASH             = "_";                 // NOI18N
+    
     private Hashtable myProperties;
     
     protected final SVGForm             form;
     protected final SVGLocatableElement wrapperElement;
     protected       Vector              actionListeners;
+
+    private boolean isFocusable      = true;
 
     public SVGComponent( SVGForm form, SVGLocatableElement element ) {
         this.form = form;
@@ -91,6 +95,14 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     
     public InputHandler getInputHandler() {
         return null;
+    }
+
+    public synchronized boolean isFocusable(){
+        return isFocusable;
+    }
+    
+    public synchronized void setFocusable( boolean focusable ){
+        isFocusable = focusable;
     }
     
     public synchronized void addActionListener(SVGActionListener listener) {
@@ -156,38 +168,54 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         });
     }
     
-    protected static final SVGElement getElementById( SVGElement parent, String childId) {
-        Element elem = parent.getFirstElementChild();
-        while( elem != null && elem instanceof SVGElement) {
-            SVGElement svgElem = (SVGElement) elem;
-            if ( childId.equals( svgElem.getId())) {
-                return svgElem;
-            } else {
-                SVGElement result = getElementById(svgElem, childId);
-                if ( result != null) {
-                    return result;
+    protected final SVGElement getElementById( final SVGElement parent,
+            final String childId )
+    {
+        final Vector ret = new Vector(1);
+        final Document doc = getForm().getDocument();
+        Runnable runnable = new Runnable() {
+
+            public void run() {
+                IdFinder finder = new IdFinder( childId );
+                ChildrenAcceptor acceptor = new ChildrenAcceptor(finder);
+                acceptor.accept(parent);
+                SVGElement result = finder.getFound();
+                if ( result == null ){
+                    result = (SVGElement)doc.getElementById( childId );
                 }
+                ret.addElement( result );
             }
-            elem = svgElem.getNextElementSibling();
-        }
-        
-        return null;
+        };
+        getForm().invokeAndWaitSafely(runnable);
+        return (SVGElement) ret.elementAt(0);
     }   
     
     protected final SVGElement getElementByMeta( final SVGElement parent , 
-            final String key, final String value )
+            final String key, final String value , 
+            boolean runInsideDocumentUpdateThread )
     {
         final Vector ret = new Vector(1);
         Runnable runnable = new Runnable() {
             public void run() {
-                    MetaFinder finder = new MetaFinder( key , value );
-                    ChildrenAcceptor acceptor = new ChildrenAcceptor( finder );
-                    acceptor.accept(parent);
-                    ret.addElement( finder.getFound() );
+                MetaFinder finder = new MetaFinder(key, value);
+                ChildrenAcceptor acceptor = new ChildrenAcceptor(finder);
+                acceptor.accept(parent);
+                ret.addElement(finder.getFound());
             }
         };
-        getForm().invokeAndWaitSafely(runnable);
+        if ( runInsideDocumentUpdateThread ){
+            runnable.run();
+        }
+        else {
+            getForm().invokeAndWaitSafely(runnable);
+        }
         return (SVGElement)ret.elementAt( 0 );
+    }
+    
+    protected final SVGElement getElementByMeta( final SVGElement parent , 
+            final String key, final String value )
+    {
+        return getElementByMeta(parent, key, value , false );
     }
     
     protected final SVGElement getNestedElementByMeta( final SVGElement parent , 
@@ -249,5 +277,31 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
         
         private SVGElement myFound;
         private SVGElement myNested;
+    }
+    
+    private static class IdFinder implements Visitor {
+        
+        IdFinder( String id  ){
+            myId = id;
+        }
+
+        public boolean visit( Element element ) {
+            if ( !( element instanceof SVGElement )){
+                return true;
+            }
+            String id = ((SVGElement)element).getId();
+            if ( myId.equals( id ) ){
+                myFound = (SVGElement)element;
+                return false;
+            }
+            return true;
+        }
+        
+        SVGElement getFound(){
+            return myFound;
+        }
+        
+        private String myId;
+        private SVGElement myFound;
     }
 }

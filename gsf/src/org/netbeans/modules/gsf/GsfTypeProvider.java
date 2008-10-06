@@ -42,8 +42,6 @@
 package org.netbeans.modules.gsf;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,13 +51,14 @@ import javax.swing.Icon;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
@@ -74,13 +73,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Tor Norbye
  */
-public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
+public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
     private static final Logger LOGGER = Logger.getLogger(GsfTypeProvider.class.getName());
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
     private Set<CacheItem> cache;
@@ -98,7 +96,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
         public final ClasspathInfo classpathInfo;
         public String projectName;
         public Icon projectIcon;
-        private ClassPath.Entry defEntry;
+//        private ClassPath.Entry defEntry;
         
         public CacheItem ( FileObject fileObject, ClasspathInfo classpathInfo, boolean isBinary ) {
             this.isBinary = isBinary;
@@ -205,6 +203,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 
     //@Override
        public void computeTypeNames(Context context, Result res) {
+            isCancelled = false;
             String text = context.getText();
             SearchType nameKind = context.getSearchType();
         
@@ -358,49 +357,26 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
             }
         }
 
-       private Collection<? extends TypeSearcher> searchers;
-
-  //      private Set<? extends /*ElementHandle<*/Element/*>*/> getTypes(Index index, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
         private Set<? extends TypeDescriptor> getTypes(ClasspathInfo classpathInfo, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
-            if (searchers == null) {
-                // XXX Will this do a newInstance every time? That will break my caching...
-                searchers = Lookup.getDefault().lookupAll(TypeSearcher.class);
-            }
-
-            if (searchers != null) {
-//                if (searchers.size() == 1) {
-//                    return searchers.iterator().next().getDeclaredTypes(index, textForQuery, kind, scope);
-//                } else {
-//                    Set<? extends Element/*Handle<Element>*/> items = new HashSet<Element/*Handle<Element>*/>();
-//                    for (TypeSearcher searcher : searchers) {
-//                        Set<? extends /*ElementHandle<*/Element/*>*/> set = searcher.getDeclaredTypes(index, textForQuery, kind, scope);
-//                        Set s = items;
-//                        s.addAll(set);
-//                    }
-//
-//                    return items;
-//                }
-                if (searchers.size() == 1) {
-                    TypeSearcher searcher = searchers.iterator().next();
-                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(searcher.getMimetype());
+            Set<GsfTypeDescriptor> items = new HashSet<GsfTypeDescriptor>();
+            for (Language language : LanguageRegistry.getInstance()) {
+                IndexSearcher searcher = language.getIndexSearcher();
+                if (searcher != null) {
                     Index index = classpathInfo.getClassIndex(language.getMimeType());
-                    
-                    return searcher.getDeclaredTypes(index, textForQuery, kind, scope, this);
-                } else {
-                    Set<? extends TypeDescriptor> items = new HashSet<TypeDescriptor>();
-                    for (TypeSearcher searcher : searchers) {
-                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(searcher.getMimetype());
-                        Index index = classpathInfo.getClassIndex(language.getMimeType());
-                        Set<? extends TypeDescriptor> set = searcher.getDeclaredTypes(index, textForQuery, kind, scope, this);
-                        Set s = items;
-                        s.addAll(set);
+                    try {
+                        Set<? extends Descriptor> set = searcher.getTypes(index, textForQuery, kind, scope, this);
+                        if (set != null) {
+                            for (Descriptor desc : set) {
+                                GsfTypeDescriptor d = new GsfTypeDescriptor(desc);
+                                items.add(d);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-
-                    return items;
                 }
-            } else {
-                return Collections.emptySet();
             }
+            return items;
         }
 
     public Icon getIcon(ElementHandle element) {
@@ -409,20 +385,84 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 
     public void open(FileObject fileObject, ElementHandle element) {
         Source js = Source.forFileObject(fileObject);
-        UiUtils.open(js, element);
+        if (js != null) {
+            UiUtils.open(js, element);
+        }
     }
 
     public String name() {
-        return "ruby"; // NOI18N
+        return "GSF"; // NOI18N
     }
 
     public String getDisplayName() {
-        // TODO - i18n
-        return "Ruby Classes";
+        return LanguageRegistry.getInstance().getLanguagesDisplayName();
     }
 
     public void cancel() {
         isCancelled = true;
     }
 
+    private class GsfTypeDescriptor extends TypeDescriptor {
+        private Descriptor delegated;
+
+        private GsfTypeDescriptor(Descriptor delegated) {
+            this.delegated = delegated;
+        }
+
+        @Override
+        public String getSimpleName() {
+            return delegated.getSimpleName();
+        }
+
+        @Override
+        public String getOuterName() {
+            return delegated.getOuterName();
+        }
+
+        @Override
+        public String getTypeName() {
+            return delegated.getTypeName();
+        }
+
+        @Override
+        public String getContextName() {
+            String s = delegated.getContextName();
+            if (s != null) {
+                return " (" + s + ")";
+            }
+
+            return s;
+        }
+
+        @Override
+        public Icon getIcon() {
+            return delegated.getIcon();
+        }
+
+        @Override
+        public String getProjectName() {
+            return delegated.getProjectName();
+        }
+
+        @Override
+        public Icon getProjectIcon() {
+            return delegated.getProjectIcon();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return delegated.getFileObject();
+        }
+
+        @Override
+        public int getOffset() {
+            return delegated.getOffset();
+        }
+
+        @Override
+        public void open() {
+            delegated.open();
+        }
+    }
 }
+

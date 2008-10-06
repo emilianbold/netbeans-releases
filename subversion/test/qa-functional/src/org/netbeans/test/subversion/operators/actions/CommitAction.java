@@ -25,7 +25,7 @@ public class CommitAction extends ActionNoBlock {
     
     /** Creates a new instance of CommitAction */
     public CommitAction() {
-        super(SVN_ITEM + "|" + COMMIT_ITEM, SVN_ITEM + "|" + COMMIT_ITEM);
+        super("Versioning" + "|" + COMMIT_ITEM, SVN_ITEM + "|" + COMMIT_ITEM);
     }
     
 }

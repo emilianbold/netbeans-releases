@@ -41,8 +41,10 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -51,6 +53,7 @@ import org.openide.util.Lookup;
  */
 public class RunSingleCommand extends RunCommand {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
+    public static final String DISPLAY_NAME = RunCommand.DISPLAY_NAME;
     private final RunLocalCommand localCommand;
     
     /**
@@ -63,11 +66,19 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (useInterpreter()) {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
+        if (isScriptSelected()) {
             localCommand.invokeAction(context);
         } else {
             try {
-                showURLForContext(context);
+                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
+                final URL url = urlForContext(context, true);
+
+                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+                showURL(url);
             } catch (MalformedURLException ex) {
                 //TODO: improve error handling
                 Exceptions.printStackTrace(ex);
@@ -77,11 +88,20 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        FileObject file = fileForContext(context);
+        if (isScriptSelected()) {
+            return isPhpFileSelected(file);
+        }
+        return file != null;
     }
 
     @Override
     public String getCommandId() {
         return ID;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return RunSingleCommand.DISPLAY_NAME;
     }
 }

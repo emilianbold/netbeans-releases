@@ -69,6 +69,14 @@
           <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanelForm.showAlias.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection component="showAlias" name="text" type="property"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JCheckBox" name="openProjectDiagramsCB">
       <Properties>
@@ -77,6 +85,14 @@
           <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.openProjectDiagramsCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection component="openProjectDiagramsCB" name="text" type="property"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Container class="javax.swing.JPanel" name="jPanel4">
 
@@ -129,6 +145,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.displayEmpty.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="displayEmpty" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JCheckBox" name="reconnect">
           <Properties>
@@ -137,6 +161,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.reconnect.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="reconnect" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JCheckBox" name="resizeCB">
           <Properties>
@@ -144,6 +176,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.resizeCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="resizeCB" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JCheckBox" name="showStereotype">
           <Properties>
@@ -152,6 +192,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.showStereotype.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="showStereotype" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JCheckBox" name="gradient">
           <Properties>
@@ -160,6 +208,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.gradient.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="gradient" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JCheckBox" name="askLayoutCB">
           <Properties>
@@ -168,6 +224,14 @@
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanelForm.askLayoutCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="askLayoutCB" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel5">
           <Properties>
@@ -224,10 +288,16 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="displayCompartmentTitlesComboBox"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JComboBox" name="autoResizeElementsComboBox">
           <Properties>
@@ -238,23 +308,45 @@
           </AuxValues>
         </Component>
         <Component class="javax.swing.JComboBox" name="displayCompartmentTitlesComboBox">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="jLabel2" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox (displayChoices);"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="autoResizeElementsComboBox"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="jLabel1" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel6">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="seqDiagMsgCB"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/uml/propertysupport/options/panels/Bundle.properties" key="GeneralOptionsPanelForm.jLabel6.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JComboBox" name="seqDiagMsgCB">
           <Properties>
@@ -262,6 +354,11 @@
               <StringArray count="0"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection component="jLabel6" name="text" type="property"/>
+            </Property>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox (SQD_MSG)"/>
             <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="GeneralOptionsPanelForm_seqDiagMsgCB"/>

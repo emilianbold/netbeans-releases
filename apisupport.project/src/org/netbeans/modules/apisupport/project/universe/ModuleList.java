@@ -95,9 +95,7 @@ public final class ModuleList {
     static int xmlFilesParsed;
     static int directoriesChecked;
     static int jarsOpened;
-    
-    public static final String DEST_DIR_IN_NETBEANS_ORG = "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
-    
+
     /** Synch with org.netbeans.nbbuild.ModuleListParser.FOREST: */
     private static final String[] FOREST = {
         /*root*/null,
@@ -237,15 +235,71 @@ public final class ModuleList {
     static ModuleList findOrCreateModuleListFromNetBeansOrgSources(File root) throws IOException {
         ModuleList list = sourceLists.get(root);
         if (list == null) {
-            list = createModuleListFromNetBeansOrgSources(root);
+            File nbdestdir = findNetBeansOrgDestDir(root);
+            if (nbdestdir.equals(new File(new File(root, "nbbuild"), "netbeans"))) { // NOI18N
+                list = createModuleListFromNetBeansOrgSources(root, nbdestdir);
+            } else {
+                // #143236: have a customized dest dir, perhaps referenced from orphan modules.
+                Map<String, ModuleEntry> entries = new HashMap<String, ModuleEntry>();
+                doScanNetBeansOrgSources(entries, root, 1, root, nbdestdir, null, false);
+                ModuleList sources = new ModuleList(entries, root, false);
+                ModuleList binaries = createModuleListFromBinaries(nbdestdir);
+                list = merge(new ModuleList[] {sources, binaries}, root);
+            }
             sourceLists.put(root, list);
         }
         return list;
     }
-    
-    private static ModuleList createModuleListFromNetBeansOrgSources(File root) throws IOException {
+
+    /**
+     * Gets the platform build directory associated with a netbeans.org source root.
+     * Normally nbbuild/netbeans/ but can be overridden.
+     * @param nb_all the (possibly partial) netbeans.org source root
+     */
+    public static File findNetBeansOrgDestDir(File nb_all) {
+        synchronized (netbeansOrgDestDirs) {
+            File d = netbeansOrgDestDirs.get(nb_all);
+            if (d == null) {
+                File nbbuild = new File(nb_all, "nbbuild"); // NOI18N
+                d = checkForNetBeansOrgDestDir(new File(nbbuild, "user.build.properties")); // NOI18N
+                if (d == null) {
+                    d = checkForNetBeansOrgDestDir(new File(nbbuild, "site.build.properties")); // NOI18N
+                    if (d == null) {
+                        d = checkForNetBeansOrgDestDir(new File(System.getProperty("user.home"), ".nbbuild.properties")); // NOI18N
+                        if (d == null) {
+                            d = new File(nbbuild, "netbeans"); // NOI18N
+                        }
+                    }
+                }
+                netbeansOrgDestDirs.put(nb_all, d);
+            }
+            return d;
+        }
+    }
+    private static final Map<File,File> netbeansOrgDestDirs = new HashMap<File,File>();
+    private static File checkForNetBeansOrgDestDir(File properties) {
+        if (properties.isFile()) {
+            try {
+                InputStream is = new FileInputStream(properties);
+                try {
+                    Properties p = new Properties();
+                    p.load(is);
+                    String d = p.getProperty("netbeans.dest.dir"); // NOI18N
+                    if (d != null) {
+                        return new File(d);
+                    }
+                } finally {
+                    is.close();
+                }
+            } catch (IOException x) {
+                LOG.log(Level.INFO, "Could not read " + properties, x);
+            }
+        }
+        return null;
+    }
+
+    private static ModuleList createModuleListFromNetBeansOrgSources(File root, File nbdestdir) throws IOException {
         Util.err.log("ModuleList.createModuleListFromSources: " + root);
-        File nbdestdir = new File(root, DEST_DIR_IN_NETBEANS_ORG);
         try {
             return loadNetBeansOrgCachedModuleList(root, nbdestdir);
         } catch (IOException x) {
@@ -425,7 +479,7 @@ public final class ModuleList {
                 continue;
             }
             File binary = PropertyUtils.resolveFile(basedir, evaluated);
-            cpextra.append(':');
+            cpextra.append(File.pathSeparatorChar);
             cpextra.append(binary.getAbsolutePath());
         }
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
@@ -870,7 +924,7 @@ public final class ModuleList {
         boolean isNetBeansOrg = !suiteComponent && !standalone;
         if (isNetBeansOrg) {
             defaults.put("nb_all", root.getAbsolutePath()); // NOI18N
-            defaults.put("netbeans.dest.dir", new File(root, DEST_DIR_IN_NETBEANS_ORG).getAbsolutePath()); // NOI18N
+            defaults.put("netbeans.dest.dir", findNetBeansOrgDestDir(root).getAbsolutePath()); // NOI18N
         }
         defaults.put("code.name.base.dashes", cnb.replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "modules"); // NOI18N
@@ -929,9 +983,7 @@ public final class ModuleList {
      * Whether whether a given dir is root of netbeans.org sources.
      */
     public static boolean isNetBeansOrg(File dir) {
-        return new File(dir, "nbbuild").isDirectory() && // NOI18N
-                // Check for both pre- and post-Hg layouts.
-                (new File(dir, "core").isDirectory() || new File(dir, "openide.util").isDirectory()); // NOI18N
+        return new File(dir, "nbbuild").isDirectory(); // NOI18N
     }
     
     /**
@@ -951,7 +1003,7 @@ public final class ModuleList {
                 } else {
                     continue;
                 }
-                if (new File(mainrepo, "nbbuild").isDirectory() && new File(mainrepo, "openide.util").isDirectory()) { // NOI18N
+                if (new File(mainrepo, "nbbuild").isDirectory()) { // NOI18N
                     return mainrepo;
                 }
             }
@@ -1059,7 +1111,7 @@ public final class ModuleList {
     private void maybeRescanNetBeansOrgSources() {
         if (lazyNetBeansOrgList) {
             lazyNetBeansOrgList = false;
-            File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
+            File nbdestdir = findNetBeansOrgDestDir(home);
             Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries); // #68513: possible race condition
             if (new File(home, "openide.util").isDirectory()) { // NOI18N
                 // Post-Hg layout.
@@ -1085,7 +1137,7 @@ public final class ModuleList {
             return e;
         }
         if (isNetBeansOrg(home)) {
-            File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
+            File nbdestdir = findNetBeansOrgDestDir(home);
             for (String tree : FOREST) {
                 String name = abbreviate(codeNameBase);
                 File basedir = new File(tree == null ? home : new File(home, tree), name);

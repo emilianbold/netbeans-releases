@@ -88,6 +88,9 @@ final class ChangeTypeFix implements Fix {
 
                 ChangeType.computeType(working, position, tm, expression, expressionType, leaf);
 
+                //anonymous class?
+                expressionType[0] = Utilities.convertIfAnonymous(expressionType[0]);
+
                 if (leaf[0] instanceof VariableTree) {
                     VariableTree oldVariableTree = ((VariableTree)leaf[0]);
                     TreeMaker make = working.getTreeMaker();

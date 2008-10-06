@@ -38,6 +38,7 @@ package org.netbeans.installer.products.nb.base;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
@@ -463,7 +464,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             filesList.add(new File(nbCluster,"servicetag/registration.xml"));
             filesList.add(new File(nbCluster,"servicetag"));
-            filesList.add(new File(nbCluster,NetBeansUtils.METRICS_ENABLED));
+            File coreProp = new File(nbCluster,NetBeansUtils.CORE_PROPERTIES);
+            filesList.add(coreProp);
+            filesList.add(coreProp.getParentFile());
+            filesList.add(coreProp.getParentFile().getParentFile());
+            filesList.add(coreProp.getParentFile().getParentFile().getParentFile());
         } catch (IOException e) {
             LogManager.log(e);
         }
@@ -639,6 +644,22 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public RemovalMode getRemovalMode() {
         return RemovalMode.LIST;
+    }
+
+    @Override
+    public Map<String, Object> getAdditionalSystemIntegrationInfo() {
+        Map<String, Object> map = super.getAdditionalSystemIntegrationInfo();
+        if (SystemUtils.isWindows()) {
+            //TODO: get localized readme if it is available and matches current locale
+            String readme = new File(getProduct().getInstallationLocation(), "readme.html").getAbsolutePath();
+            map.put("DisplayVersion", getString("CL.system.display.version"));
+            map.put("Publisher",      getString("CL.system.publisher"));
+            map.put("URLInfoAbout",   getString("CL.system.url.about"));
+            map.put("URLUpdateInfo",  getString("CL.system.url.update"));
+            map.put("HelpLink",       getString("CL.system.url.support"));
+            map.put("Readme",         readme);
+        }
+        return map;
     }
     
     /////////////////////////////////////////////////////////////////////////////////

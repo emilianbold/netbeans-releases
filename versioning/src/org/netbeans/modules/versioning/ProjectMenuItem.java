@@ -91,7 +91,8 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             } else {                
                 JMenu vmenu = new JMenu(NbBundle.getMessage(ProjectMenuItem.class, "CTL_MenuItem_VersioningMenu"));                
                 Lookup.Result<VersioningSystem> result = Lookup.getDefault().lookup(new Lookup.Template<VersioningSystem>(VersioningSystem.class));
-                Collection<? extends VersioningSystem> vcs = result.allInstances();
+                List<? extends VersioningSystem> vcs = new ArrayList(result.allInstances());
+                Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());                
                 for (VersioningSystem vs : vcs) {
                     if (vs.getProperty(VersioningSystem.PROP_LOCALHISTORY_VCS) != null) continue;
                     JComponent [] items = createVersioningSystemItems(vs, nodes);

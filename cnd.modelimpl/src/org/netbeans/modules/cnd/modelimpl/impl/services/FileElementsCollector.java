@@ -76,9 +76,9 @@ public class FileElementsCollector {
     private int startOffset;
     private int destOffset;
     private final CsmProject onlyInProject;
-    
+
     private final ProjectBase project;
-    
+
     public FileElementsCollector(CsmFile file, int offset, CsmProject onlyInProject) {
         this.destFile = file;
         this.project = (ProjectBase) file.getProject();
@@ -86,8 +86,8 @@ public class FileElementsCollector {
         this.startOffset = 0;
         this.onlyInProject = onlyInProject;
     }
-    
-    public void incrementOffset(int newOffset){
+
+    public synchronized void incrementOffset(int newOffset){
         if (mapsGathered) {
             startOffset = destOffset;
         }
@@ -97,55 +97,69 @@ public class FileElementsCollector {
             visibleUsedDeclarations = null;
             visibleNamespaces = null;
         } else if (startOffset > destOffset) {
-            throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset);
+            throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset); // NOI18N
         }
     }
-    
-    
+
+
     private LinkedHashSet<CsmNamespace> directVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-    private LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
+    private final LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
     private LinkedHashSet<CsmNamespaceAlias> namespaceAliases = new LinkedHashSet<CsmNamespaceAlias>()/*<String, CsmNamespace>*/;
-    private LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
-    
+    private final LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
+//    private LinkedHashSet<CsmNamespaceDefinition> directVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
         return Collections.unmodifiableCollection(usingDeclarations);
     }
-    
+
     public Collection<CsmUsingDirective> getUsingDirectives() {
         initMaps();
         return Collections.unmodifiableCollection(usingNamespaces);
     }
-    
+
     public Collection<CsmNamespaceAlias> getNamespaceAliases() {
         initMaps();
         return Collections.unmodifiableCollection(namespaceAliases);
     }
-    
+
     private Collection<CsmDeclaration> visibleUsedDeclarations = null;
     public Collection<CsmDeclaration> getUsedDeclarations() {
         initMaps();
-        synchronized (usingDeclarations) {
-            if (visibleUsedDeclarations == null) {
-                visibleUsedDeclarations = CsmUsingResolver.extractDeclarations(usingDeclarations);
-            }
-        }
-        return Collections.unmodifiableCollection(visibleUsedDeclarations);
+        return _getUsedDeclarations();
     }
-    
+
+    private synchronized Collection<CsmDeclaration> _getUsedDeclarations() {
+        Collection<CsmDeclaration> res = visibleUsedDeclarations;
+        if (res == null) {
+            res = CsmUsingResolver.extractDeclarations(usingDeclarations);
+            visibleUsedDeclarations = res;
+        }
+        return Collections.unmodifiableCollection(res);
+    }
+
     private Collection<CsmNamespace> visibleNamespaces = null;
     public Collection<CsmNamespace> getVisibleNamespaces() {
         initMaps();
-        synchronized (usingNamespaces) {
-            if (visibleNamespaces == null) {
-                visibleNamespaces = CsmUsingResolver.extractNamespaces(usingNamespaces);
-                // add scope's and unnamed visible namespaces
-                visibleNamespaces.addAll(directVisibleNamespaces);
-            }
-        }
-        return Collections.unmodifiableCollection(visibleNamespaces);
+        return _getVisibleNamespaces();
     }
-    
+
+    public synchronized Collection<CsmNamespace> _getVisibleNamespaces() {
+        Collection<CsmNamespace> res = visibleNamespaces;
+        if (res == null) {
+            res = CsmUsingResolver.extractNamespaces(usingNamespaces);
+            // add scope's and unnamed visible namespaces
+            res.addAll(directVisibleNamespaces);
+            visibleNamespaces = res;
+        }
+        return Collections.unmodifiableCollection(res);
+    }
+
+//    public Collection<CsmNamespaceDefinition> getDirectVisibleNamespaceDefinitions() {
+//        initMaps();
+//        return Collections.unmodifiableCollection(directVisibleNamespaceDefinitions);
+//    }
+
     private boolean mapsGathered = false;
     private synchronized void initMaps() {
         if( mapsGathered ) {
@@ -154,11 +168,11 @@ public class FileElementsCollector {
         mapsGathered = true;
         gatherFileMaps(this.destFile);
     }
-    
+
     protected void gatherFileMaps(CsmFile file) {
         gatherFileMaps(new HashSet<CsmFile>(), file, this.startOffset, this.destOffset);
     }
-    
+
     protected void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {
         if( visitedFiles.contains(file) ) {
             return;
@@ -180,10 +194,10 @@ public class FileElementsCollector {
                 }
             }
         }
-        // gather this file maps 
+        // gather this file maps
         gatherDeclarationsMaps(CsmSelect.getDefault().getDeclarations(file, filter), startOffset, endOffset);
     }
-    
+
     protected void gatherDeclarationsMaps(Iterable declarations, int startOffset, int endOffset) {
         gatherDeclarationsMaps(declarations.iterator(), startOffset, endOffset);
     }
@@ -217,12 +231,12 @@ public class FileElementsCollector {
             }
         }
     }
-    
+
     /**
      * It is quaranteed that element.getStartOffset < this.destOffset
      */
     protected void gatherScopeElementMaps(CsmScopeElement element, int end, int endOffset) {
-        
+
         CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
         if( kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
             CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
@@ -238,6 +252,8 @@ public class FileElementsCollector {
                 //currentNamespace = nsd.getNamespace();
                 gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
             }
+//            directVisibleNamespaceDefinitions.add(nsd);
+//            gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
         } else if( kind == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
             CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
             namespaceAliases.add(alias);
@@ -259,5 +275,5 @@ public class FileElementsCollector {
                 gatherDeclarationsMaps( ((CsmScope) element).getScopeElements(), 0, endOffset);
             }
         }
-    }    
+    }
 }

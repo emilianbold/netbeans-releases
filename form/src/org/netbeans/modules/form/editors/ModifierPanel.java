@@ -79,9 +79,19 @@ final class ModifierPanel {
 
     /** Names of modifiers */
     static final String MODIFIER_NAMES[] = {
-        "a&bstract", "&final", "&static", "synch&ronized", "&transient", "&volatile", "nat&ive" // NOI18N
+        "abstract", "final", "static", "synchronized", "transient", "volatile", "native" // NOI18N
     };
 
+    private static final String[] MODIFIER_LABEL_KEYS = {
+        "LBL_ModifierPanel_Modifier_Abstract",         // NOI18N
+        "LBL_ModifierPanel_Modifier_Final",            // NOI18N
+        "LBL_ModifierPanel_Modifier_Static",           // NOI18N
+        "LBL_ModifierPanel_Modifier_Synchronized",     // NOI18N
+        "LBL_ModifierPanel_Modifier_Transient",        // NOI18N
+        "LBL_ModifierPanel_Modifier_Volatile",         // NOI18N
+        "LBL_ModifierPanel_Modifier_Native"            // NOI18N
+    };
+ 
     private static final String[] MODIFIER_DESCRIPTION_KEYS = {
         "ACSD_ModifierPanel_Modifier_Abstract",         // NOI18N
         "ACSD_ModifierPanel_Modifier_Final",            // NOI18N
@@ -103,7 +113,8 @@ final class ModifierPanel {
 
     /** Names of accessibility */
     static final String ACCESS_NAMES[] = {
-        "<default>", "private", "protected", "public" // NOI18N
+        NbBundle.getMessage(ModifierPanel.class, "LBL_ModifierPanel_Modifier_Default"), // NOI18N
+        "private", "protected", "public" // NOI18N
     };
 
     /** Values of accessibility */
@@ -232,7 +243,7 @@ final class ModifierPanel {
         checks = new JCheckBox[MODIFIER_COUNT];
         for (int i = 0; i < MODIFIER_COUNT; i++) {
             checks[i] = new JCheckBox();
-            Mnemonics.setLocalizedText(checks[i], MODIFIER_NAMES[i]);
+            Mnemonics.setLocalizedText(checks[i], getString(MODIFIER_LABEL_KEYS[i]));
             checks[i].getAccessibleContext().setAccessibleDescription(getModifierDescription(i));
             modifPanel.add(checks[i]);
             checks[i].setEnabled((myEditor.getMask() & MODIFIER_VALUES[i]) != 0);

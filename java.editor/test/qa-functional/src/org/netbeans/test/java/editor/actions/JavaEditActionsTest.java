@@ -187,6 +187,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
 
     public void testEditActionsTestCase_7() {
         // 07 -- test CTRL+backspace -- delete previous word
+        editor.setCaretPosition(9,21);
         txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
         txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);
         txtOper.pushKey(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK);

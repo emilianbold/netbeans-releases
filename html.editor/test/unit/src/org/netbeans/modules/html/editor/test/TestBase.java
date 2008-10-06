@@ -41,38 +41,50 @@
 
 package org.netbeans.modules.html.editor.test;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.junit.MockServices;
+import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
- * Common ancestor for all test classes.
- *
- * @author Andrei Badea
+ * @author Marek Fukala
  */
 public class TestBase extends NbTestCase {
 
     static {
-        MockServices.setServices(new Class[] {RepositoryImpl.class});
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+    
     }
 
-    private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
+    public static class Lkp extends ProxyLookup {
+        
+        private static Lkp DEFAULT;
+        
+        public Lkp() {
+            Assert.assertNull(DEFAULT);
+            DEFAULT = this;
+        }
+        
+        public static void initLookups(Object[] objs) {
+            ClassLoader loader = Lkp.class.getClassLoader();
+            DEFAULT.setLookups(new Lookup [] {
+                Lookups.fixed(new RepositoryImpl()),
+                Lookups.metaInfServices(loader),
+                Lookups.singleton(loader)
+            });
+        }
+    }
     
     public TestBase(String name) {
         super(name);
     }
 
-    protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
-        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HTMLKit.class).getContentType());
-        doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
-        
-        return doc;
+    @Override
+    public void setUp() {
+        Lkp.initLookups(new Object[]{});
     }
+    
     
 }

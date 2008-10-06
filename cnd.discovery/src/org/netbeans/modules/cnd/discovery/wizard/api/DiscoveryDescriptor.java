@@ -67,6 +67,9 @@ public interface DiscoveryDescriptor {
     String getAditionalLibraries();
     void setAditionalLibraries(String binaryPath);
 
+    String getBuildLog();
+    void setBuildLog(String logFile);
+
     String getLevel();
     void setLevel(String level);
 

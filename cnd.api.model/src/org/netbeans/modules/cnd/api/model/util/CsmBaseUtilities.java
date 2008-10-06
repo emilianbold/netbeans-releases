@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -59,10 +56,10 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 
 /**
  *
@@ -74,6 +71,14 @@ public class CsmBaseUtilities {
     private CsmBaseUtilities() {
     }
 
+    public static boolean isValid(CsmObject obj) {
+        if (CsmKindUtilities.isValidable(obj)) {
+            return ((CsmValidable)obj).isValid();
+        } else {
+            return obj != null;
+        }
+    }
+    
     public static boolean isGlobalNamespace(CsmScope scope) {
         if (CsmKindUtilities.isNamespace(scope)) {
             return ((CsmNamespace)scope).isGlobal();
@@ -328,56 +333,7 @@ public class CsmBaseUtilities {
     }      
     
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        // FIXUP: after fixing IZ# the code shold be changed to simple loop
-        if (orig == null) {
-            throw new NullPointerException("orig parameter must be not null"); // NOI18N
-        }
-        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
-            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            if (fd.getCsmClass()!= null){
-                return fd.getCsmClass();
-            }
-        }
-        CsmClassifier out = orig;
-        try {
-            Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-            set.add(orig);
-            while (CsmKindUtilities.isTypedef(out)) {
-                orig = ((CsmTypedef)out).getType().getClassifier();
-                if (orig == null) {
-                    break;
-                }
-                if (set.contains(orig)) {
-                    // try to recover from this error
-                    CsmClassifier cls = findOtherClassifier(out);
-                    out = cls == null ? out : cls;
-                    break;
-                }
-                set.add(orig);
-                out = orig;
-            }
-        } catch (StackOverflowError ex) {
-            ex.printStackTrace(System.err);
-        }
-        return out;
-    }     
+        return CsmClassifierResolver.getDefault().getOriginalClassifier(orig);
+    }
 
-
-    public static CsmClassifier findOtherClassifier(CsmClassifier out) {
-        CsmNamespace ns = getClassNamespace(out);
-        CsmClassifier cls = null;
-        if (ns != null) {
-            CsmUID uid = out.getUID();
-            CharSequence fqn = out.getQualifiedName();
-            for (CsmDeclaration decl : ns.getDeclarations()) {
-                if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
-                    if (!decl.getUID().equals(uid)) {
-                        cls = (CsmClassifier)decl;
-                        break;
-                    }
-                }
-            }
-        }        
-        return cls;
-    }         
 }

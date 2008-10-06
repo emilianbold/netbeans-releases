@@ -63,7 +63,7 @@ public interface IProxyDiagramManager
          * 
          * @param presentation The presentation element that needs to be refreshed.
          */
-        public void refresh(IPresentationElement presentation);
+        public void refresh(IPresentationElement presentation,boolean resizetocontent);
         
 	/**
 	 * This verifies that the diagram name is correct (ie no bad filename 

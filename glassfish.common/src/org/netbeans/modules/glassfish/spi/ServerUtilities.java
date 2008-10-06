@@ -41,10 +41,17 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
@@ -66,7 +73,9 @@ public final class ServerUtilities {
     public static final int ACTION_TIMEOUT = 10000;
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
-    public static final String GFV3_PREFIX_JAR_NAME = "glassfish-10.0"; // NOI18N"
+    public static final String GFV3_VERSION_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
+    public static final String GFV3_JAR_MATCHER = "glassfish" + GFV3_VERSION_MATCHER; // NOI18N
+    static public final String PROP_FIRST_RUN = "first_run";
     
     
     private ServerUtilities() {
@@ -160,15 +169,19 @@ public final class ServerUtilities {
     
      /**
      * Returns the fqn jar name with the correct version 
-     * If jarNamePrefix is ""glassfish-10.0" the the return value
-     * will be INSTALL/modules/glassfish-10.0-SNAPSHOT.jar"
      * 
      * @return the File with full path of the jar or null
      */
-   public static File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+    public static File getJarName(String glassfishInstallRoot, String jarNamePattern) {
         File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
-        
+        int subindex = jarNamePattern.lastIndexOf("/");
+        if(subindex != -1) {
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex+1);
+            modulesDir = new File(modulesDir, subdir);
+        }
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+
         if(candidates != null && candidates.length > 0) {
             return candidates[0]; // the first one
         } else {
@@ -178,14 +191,14 @@ public final class ServerUtilities {
    
     private static class VersionFilter implements FileFilter {
        
-        private String nameprefix;
+        private final Pattern pattern;
         
-        public VersionFilter(String nameprefix) {
-            this.nameprefix = nameprefix;
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
         }
         
         public boolean accept(File file) {
-            return file.getName().startsWith(nameprefix);
+            return pattern.matcher(file.getName()).matches();
         }
         
     }
@@ -206,5 +219,106 @@ public final class ServerUtilities {
         }
         return url;
     }    
-   
+
+    /**
+     * Surround the submitted string with quotes if it contains any embedded
+     * whitespace characters.
+     *
+     * Implementation note: Do not trim the submitted string.  Assume all
+     * whitespace character are part of a file name or path that requires
+     * quotes.
+     *
+     * !PW FIXME handles only spaces right now.  Should handle all whitespace.
+     * !PW FIMME 4NT completion on Windows quotes paths if a folder has a comma
+     *   in the name.  Might need that too, though I haven't proved it yet.      *
+     * @param path
+     * @return
+     */
+    public static final String quote(String path) {
+        return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
+    }
+
+
+    /**
+     *  Determine if the named directory is a TP2 install.
+     * 
+     * @param gfRoot the name of the directory to check against.
+     * @return true if the directory appears to be the root of a TP2 installation.
+     */    
+    static public boolean isTP2(String gfRoot) {
+        return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_JAR_MATCHER).getName().indexOf("-tp-2-") > -1; // NOI18N
+    }
+  
+    /**
+     * create a list of jars that appear to be Java EE api jars that live in the 
+     * modules directory.
+     * 
+     * @param jarList the list "so far"
+     * @param parent the directory to look into
+     * @param depth depth of the server
+     * @param escape pass true if backslashes in jar names should be escaped
+     * @return the complete list of jars that match the selection criteria
+     */
+    public static List<String> filterByManifest(List<String> jarList, File parent, int depth, boolean escape) {
+        if(parent.exists()) {
+            int parentLength = parent.getPath().length();
+            /* modules/web/jsf-impl.jar was not seen (or added with wrong relative name).
+             * need to calculate size relative to the modules/ dir and not the subdirs
+             * notice: this works only for depth=0 or 1
+             * not need to make it work deeper anyway
+             * with this test, we now also return "web/jsf-impl.jar" which is correct
+             */
+            if (depth==1){
+                parentLength = parent.getParentFile().getPath().length();
+            }
+            for(File candidate: parent.listFiles()) {
+                if(candidate.isDirectory()) {
+                    if(depth < 1) {
+                        filterByManifest(jarList, candidate, depth+1, escape);
+                    }
+                    continue;
+                } else if(!candidate.getName().endsWith(".jar")) {
+                    continue;
+                }
+                JarFile jarFile = null;
+                try {
+                    jarFile = new JarFile(candidate, false);
+                    Manifest manifest = jarFile.getManifest();
+                    if(manifest != null) {
+                        Attributes attrs = manifest.getMainAttributes();
+                        if(attrs != null) {
+                            String bundleName = attrs.getValue("Bundle-SymbolicName");
+                            //String bundleName = attrs.getValue("Extension-Name");
+                            if(bundleName != null  && bundleName.contains("javax")) {
+                                String val = candidate.getPath().substring(parentLength+1);
+                                if(escape) {
+                                    val = val.replace("\\", "\\\\");
+                                }
+                                jarList.add(val);
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO, 
+                            candidate.getAbsolutePath(), ex);
+                } finally {
+                    if (null != jarFile) {
+                        try {
+                            jarFile.close();
+                        } catch (IOException ex) {
+                            Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO,
+                                    candidate.getAbsolutePath(), ex);
+                        }
+                        jarFile = null;
+                    }
+                }
+
+            }
+        } else {
+           Logger.getLogger(ServerUtilities.class.getName()).log(Level.FINER, 
+                            parent.getAbsolutePath() + " does not exist");
+        }
+        return jarList;
+    }
+
 }

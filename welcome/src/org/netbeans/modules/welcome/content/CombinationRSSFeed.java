@@ -42,6 +42,7 @@
 package org.netbeans.modules.welcome.content;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -56,6 +57,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.welcome.content.RSSFeed.ErrorCatcher;
 import org.netbeans.modules.welcome.content.RSSFeed.FeedHandler;
 import org.netbeans.modules.welcome.content.RSSFeed.FeedItem;
+import org.openide.util.NbPreferences;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -107,6 +109,16 @@ public class CombinationRSSFeed extends RSSFeed {
     private ArrayList<FeedItem> sortNodes( ArrayList<FeedItem> res ) {
         Collections.sort( res, new DateFeedItemComparator() );
         return res;
+    }
+
+    @Override
+    protected void clearCache() {
+        try {
+            NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url1))) ;
+            NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url2))) ;
+        } catch( MalformedURLException mE ) {
+            //ignore
+        }
     }
 
     @Override

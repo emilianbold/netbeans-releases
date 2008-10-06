@@ -44,11 +44,11 @@ import java.io.*;
 import java.util.*;
 import java.text.DateFormat;
 
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.*;
-import org.openide.actions.*;
 import org.openide.ErrorManager;
 
 
@@ -93,7 +93,7 @@ public class XMLDataLoader extends UniFileLoader {
      */
     @Override
     protected String defaultDisplayName () {
-        return Util.THIS.getString ("PROP_XmlLoader_Name");        
+        return Util.THIS.getString (XMLDataLoader.class, "PROP_XmlLoader_Name");        
     }
     
     /** For a given file finds a primary file.

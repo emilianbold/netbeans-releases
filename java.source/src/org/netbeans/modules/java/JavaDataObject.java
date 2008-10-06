@@ -45,12 +45,18 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.io.IOException;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.java.source.ActivatedDocumentListener;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -121,11 +127,12 @@ public final class JavaDataObject extends MultiDataObject {
             private static final long serialVersionUID = -1;
             
             private transient SaveSupport saveCookie = null;
-            
+
             private final class SaveSupport implements SaveCookie {
                 public void save() throws java.io.IOException {
                     ((JavaEditorSupport)findCloneableOpenSupport()).saveDocument();
                     getDataObject().setModified(false);
+                    ActivatedDocumentListener.removeFromModified(getDataObject().getPrimaryFile());
                 }
             }
             
@@ -154,6 +161,7 @@ public final class JavaDataObject extends MultiDataObject {
                     javaData.getCookieSet().add(this.saveCookie);
                     javaData.setModified(true);
                 }
+                ActivatedDocumentListener.addToModified(getDataObject().getPrimaryFile());
             }
             
             public void removeSaveCookie() {
@@ -162,6 +170,8 @@ public final class JavaDataObject extends MultiDataObject {
                     javaData.getCookieSet().remove(this.saveCookie);
                     javaData.setModified(false);
                 }
+
+                ActivatedDocumentListener.addToModified(getDataObject().getPrimaryFile());
             }
         }
         
@@ -192,6 +202,38 @@ public final class JavaDataObject extends MultiDataObject {
             return super.close(ask);
         }
 
+        @Override
+        protected StyledDocument createStyledDocument(EditorKit kit) {
+            final StyledDocument document = super.createStyledDocument(kit);
+            document.addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    updated();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    updated();
+                }
+                private void updated() {
+                    Object sourceProperty = document.getProperty(Document.StreamDescriptionProperty);
+
+                    if (!(sourceProperty instanceof DataObject))
+                        return ;
+
+                    DataObject source = (DataObject) sourceProperty;
+
+                    if (source == null)
+                        return ;
+
+                    FileObject file = source.getPrimaryFile();
+
+                    if (file != null && DataObject.getRegistry().getModifiedSet().contains(source)) {
+                        ActivatedDocumentListener.addToModified(file);
+                    }
+                }
+                public void changedUpdate(DocumentEvent e) {}
+            });
+            return document;
+        }
+        
     }
     
     private static final class JavaEditor extends CloneableEditor {

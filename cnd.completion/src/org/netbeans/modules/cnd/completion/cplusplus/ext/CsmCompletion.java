@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -175,7 +176,7 @@ abstract public class CsmCompletion {
 //    private static HashMap classCache = new HashMap(5003);
 
     /** Map holding the cached types */
-    private static HashMap typeCache = new HashMap(5003);
+    //private static HashMap typeCache = new HashMap(5003);
 
     /** Debug expression creation */
     public static final int DEBUG_EXP = 1;
@@ -303,119 +304,8 @@ abstract public class CsmCompletion {
         if (cls == null) {
             return null;
         }
-
-        CsmType[] types = (CsmType[])typeCache.get(cls);
-        if (types != null) {
-            if (arrayDepth < types.length) {
-                if (types[arrayDepth] == null) {
-//                    types[arrayDepth] = new BaseType(types[0].getClassifier(), arrayDepth);
-                    types[arrayDepth] = new BaseType(cls, arrayDepth);
-                }
-            } else { // array length depth too small for given array depth
-                cls = types[0].getClassifier();
-                CsmType[] tmp = new CsmType[arrayDepth + 1];
-                System.arraycopy(types, 0, tmp, 0, types.length);
-                types = tmp;
-                types[arrayDepth] = new BaseType(cls, arrayDepth);
-                typeCache.put(cls, types);
-            }
-        } else { // types array not yet created
-//            cls = getSimpleClass(cls.getQualifiedName(), cls.getPackageName().length());
-            cls = getSimpleClass(cls);
-            if (arrayDepth > 0) {
-                types = new CsmType[arrayDepth + 1];
-                types[arrayDepth] = new BaseType(cls, arrayDepth);
-            } else {
-                types = new CsmType[2];
-            }
-            types[0] = new BaseType(cls, 0);
-            typeCache.put(cls, types);
-        }
-
-        return types[arrayDepth];
+        return new BaseType(getSimpleClass(cls), arrayDepth);
     }
-
-//    public static class BasePackage implements CsmNamespace {
-//
-//        private String name;
-//
-//        private CsmClassifier[] classes;
-//
-//        private int dotCnt = -1;
-//
-//        private String lastName;
-//
-//        public BasePackage(String name) {
-//            this(name, EMPTY_CLASSES);
-//        }
-//
-//        public BasePackage(String name, CsmClassifier[] classes) {
-//            this.name = name;
-//            this.classes = classes;
-//        }
-//
-//        /** Get full name of this package */
-//        public final String getName() {
-//            return name;
-//        }
-//
-//        public String getLastName() {
-//            if (lastName == null) {
-//                lastName = name.substring(name.lastIndexOf('.') + 1);
-//            }
-//            return lastName;
-//        }
-//
-//        /** Get classes contained in this package */
-//        public CsmClassifier[] getClasses() {
-//            return classes;
-//        }
-//
-//        public void setClasses(CsmClassifier[] classes) {
-//            this.classes = classes;
-//        }
-//
-//        public int getDotCount() {
-//            if (dotCnt < 0) {
-//                int i = 0;
-//                do {
-//                    dotCnt++;
-//                    i = name.indexOf('.', i) + 1;
-//                } while (i > 0);
-//            }
-//            return dotCnt;
-//        }
-//
-//        public int compareTo(Object o) {
-//            if (this == o) {
-//                return 0;
-//            }
-//            CsmNamespace p = (CsmNamespace)o;
-//            return name.compareTo(p.getName());
-//        }
-//
-//        public int hashCode() {
-//            return name.hashCode();
-//        }
-//
-//        public boolean equals(Object o) {
-//            if (this == o) {
-//                return true;
-//            }
-//            if (o instanceof CsmNamespace) {
-//                return name.equals(((CsmNamespace)o).getName());
-//            }
-//            if (o instanceof String) {
-//                return name.equals((String)o);
-//            }
-//            return false;
-//        }
-//
-//        public String toString() {
-//            return name;
-//        }
-//
-//    }
 
     public static class SimpleClass implements CsmClassifier {
 
@@ -596,6 +486,10 @@ abstract public class CsmCompletion {
             return null;
         }
 
+        public boolean isValid() {
+            return CsmBaseUtilities.isValid(clazz);
+        }
+
     }
 
     /** Description of the type */
@@ -702,6 +596,10 @@ abstract public class CsmCompletion {
             return false;
         }
 
+        public boolean isTemplateBased() {
+            return false;
+        }
+
         public CharSequence getClassifierText() {
             return clazz.getName();
         }
@@ -722,11 +620,11 @@ abstract public class CsmCompletion {
             return false;
         }
 
-        public String getText() {
+        public CharSequence getText() {
             return format(true);
         }
 	
-	public String getCanonicalText() {
+	public CharSequence getCanonicalText() {
 	    return getText();
 	}
 

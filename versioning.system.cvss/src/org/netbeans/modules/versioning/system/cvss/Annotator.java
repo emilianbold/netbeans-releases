@@ -119,13 +119,9 @@ public class Annotator {
     private static String badgeModified = "org/netbeans/modules/versioning/system/cvss/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/versioning/system/cvss/resources/icons/conflicts-badge.png";
     
-    private static String toolTipPackageNewOrModifiedLocally = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Package_Modified_Locally");
-    private static String toolTipPackageContainsConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Package_Contains_Conflicts");
-    private static String toolTipContainsNewOrModifiedLocally = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+    private static String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
-    private static String toolTipContainsConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+    private static String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
   
     private static final int STATUS_TEXT_ANNOTABLE = FileInformation.STATUS_NOTVERSIONED_EXCLUDED | 
@@ -518,6 +514,7 @@ public class Annotator {
                 mostImportantInfo = info;
             }
         }
+        if(mostImportantInfo == null) return null; 
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         switch (status) {
@@ -565,11 +562,10 @@ public class Annotator {
             default:
                 throw new IllegalArgumentException("Unknown status: " + status); // NOI18N
         }
-        return statusText != null ? ImageUtilities.assignToolTipToImage(icon, statusText) : null;
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
-        boolean containsFiles = context.getRootFiles().size() > 1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         boolean isVersioned = false;
         for (Iterator<File> i = context.getRootFiles().iterator(); i.hasNext();) {
@@ -606,8 +602,7 @@ public class Annotator {
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict); // NOI18N
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -622,8 +617,7 @@ public class Annotator {
                         int status = info.getStatus();
                         if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                             Image badge = ImageUtilities.assignToolTipToImage(
-                                    ImageUtilities.loadImage(badgeConflicts, true),
-                                    containsFiles ? toolTipContainsConflict : toolTipPackageContainsConflict); // NOI18N
+                                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict); // NOI18N
                             return ImageUtilities.mergeImages(icon, badge, 16, 9);
                         }
                         modified = true;
@@ -634,8 +628,7 @@ public class Annotator {
         }
         if (modified && !allExcluded) {
             Image badge = ImageUtilities.assignToolTipToImage(
-                    ImageUtilities.loadImage(badgeModified, true),
-                    containsFiles ? toolTipContainsNewOrModifiedLocally : toolTipPackageNewOrModifiedLocally); // NOI18N
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified); // NOI18N
             return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
             return null;

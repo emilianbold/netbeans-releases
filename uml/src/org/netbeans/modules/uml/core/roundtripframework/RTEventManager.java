@@ -5453,7 +5453,7 @@ public class RTEventManager implements IRTEventManager
                     if (pImp != null)
                     {
                         pClassFrom = pImp.getImplementingClassifier();
-                        IInterface pContract = pImp.getContract();
+                        IClassifier pContract = pImp.getContract();
 
                         if (pContract != null)
                         {

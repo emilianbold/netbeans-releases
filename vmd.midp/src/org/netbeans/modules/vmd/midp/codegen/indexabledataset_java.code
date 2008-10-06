@@ -86,7 +86,7 @@
         __stop_guardedblock__
         
         __start_guardedblock__
-        public Class getType(String type) throws IllegalStateException {
+        public Class getType(String name) throws IllegalStateException {
         __stop_guardedblock__
 
             throw new IllegalStateException("Not implemented yet.");
@@ -106,7 +106,7 @@
         __start_guardedblock__
         public void setValue(String name, Object value) throws IllegalStateException {
         __stop_guardedblock__
-            //TODO Implement this methode
+            //TODO 
             DataBinder.fireDataSetChanged(this , name);
         __start_guardedblock__
         }
@@ -115,7 +115,7 @@
         __start_guardedblock__
         public void setAsString(String name, String stringValue) throws IllegalStateException {
         __stop_guardedblock__
-             //TODO Implement this methode
+             //TODO 
             DataBinder.fireDataSetChanged(this , name);
         __start_guardedblock__
         }

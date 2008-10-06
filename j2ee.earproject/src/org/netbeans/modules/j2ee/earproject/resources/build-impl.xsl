@@ -213,8 +213,13 @@ is divided into following sections:
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <condition>
+                    <!--
+                    Default value is stored to differentiate the case
+                    when this hasn't been called at all.
+                    -->
                     <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
-                    <istrue value="${{deploy.on.save}}"/>
+                    <xsl:attribute name="else">false</xsl:attribute>
+                    <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>
             
@@ -546,13 +551,20 @@ exists or setup the property manually. For example like this:
                 <delete dir="${{build.dir}}"/>
             </target>
 
+            <target name="undeploy-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                
+                <nbundeploy failOnError="false" startServer="false"/>
+            </target>
+            
             <target name="post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,do-clean,post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,undeploy-clean,deps-clean,do-clean,post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
         </project>
@@ -604,7 +616,16 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+                <!--
+                If build.deploy.on.save is not set init-cos hasn't
+                been called so we are running the old style build.
+                -->
+                <condition>
+                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">false</xsl:attribute>
+                    <not><isset property="build.deploy.on.save"/></not>
+                </condition>
+                <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">                   
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
                     <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
                 </ant>

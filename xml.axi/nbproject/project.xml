@@ -112,6 +112,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.soa.ui</friend>
+                <friend>org.netbeans.modules.soa.ui01</friend>
                 <friend>org.netbeans.modules.xml</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
@@ -122,6 +123,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xslt.mapper</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>
+                <friend>org.netbeans.modules.xml.wsdlui.api</friend>
                 <package>org.netbeans.modules.xml.axi</package>
                 <package>org.netbeans.modules.xml.axi.datatype</package>
                 <package>org.netbeans.modules.xml.axi.visitor</package>

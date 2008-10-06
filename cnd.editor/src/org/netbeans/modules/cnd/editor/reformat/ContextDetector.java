@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.editor.reformat;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import sun.security.timestamp.TSRequest;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
@@ -50,14 +51,17 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
  */
 public class ContextDetector extends ExtendedTokenSequence {
     private BracesStack braces;
-    /*package local*/ ContextDetector(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, BracesStack braces){
-        super(ts, diffs);
+    /*package local*/ ContextDetector(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, BracesStack braces, int tabSize){
+        super(ts, diffs, tabSize);
         this.braces = braces;
     }
     
     /*package local*/ boolean isStatementContinuation(){
         Token<CppTokenId> prev = lookPreviousImportant();
         Token<CppTokenId> next = lookNextImportant();
+        if (token().id() == WHITESPACE && next != null && next.id() == IDENTIFIER) {
+            next = lookNextImportant(2);
+        }
         if (prev == null || next == null){
             return false;
         }
@@ -171,10 +175,12 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case TRUE:
                     case INT_LITERAL:
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case FLOAT_LITERAL:
                     case DOUBLE_LITERAL:
                     case UNSIGNED_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                     case CHAR_LITERAL:
                     case STRING_LITERAL:
                         //it's a template specialization

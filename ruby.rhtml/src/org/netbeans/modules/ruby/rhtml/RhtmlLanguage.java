@@ -41,6 +41,10 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.lexer.Language;
@@ -55,6 +59,7 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer;
+import org.openide.filesystems.FileObject;
 
 public class RhtmlLanguage extends RubyLanguage {
     public RhtmlLanguage() {
@@ -106,6 +111,11 @@ public class RhtmlLanguage extends RubyLanguage {
     }
 
     @Override
+    public IndexSearcher getIndexSearcher() {
+        return null;
+    }
+
+    @Override
     public InstantRenamer getInstantRenamer() {
         return null;
     }
@@ -142,6 +152,18 @@ public class RhtmlLanguage extends RubyLanguage {
 
     @Override
     public StructureScanner getStructureScanner() {
-        return new RubyStructureAnalyzer();
+        return new RhtmlScanner();
+    }
+
+    private class RhtmlScanner extends RubyStructureAnalyzer {
+        @Override
+        public Configuration getConfiguration() {
+            return new Configuration(false, false, 0);
+        }
+    }
+
+    @Override
+    public Collection<FileObject> getCoreLibraries() {
+        return Collections.emptyList();
     }
 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -111,7 +112,9 @@ public class ContextUtils {
                     return (CsmClass)decl;
                 } else if (CsmKindUtilities.isVariable(decl)){
                     CsmVariable v = (CsmVariable)decl;
-                    CsmClassifier cls = v.getType().getClassifier();
+                    CsmType type = v.getType();
+                    // could be null type for parameter with vararg "..." type
+                    CsmClassifier cls = type == null ? null : type.getClassifier();
                     if (CsmKindUtilities.isClass(cls)){
                         return (CsmClass)cls;
                     }

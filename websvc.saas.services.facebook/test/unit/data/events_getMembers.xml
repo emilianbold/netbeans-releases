@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events_getMembers_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <attending list="true">
+        <uid>222332</uid>
+        <uid>222333</uid>
+    </attending>
+    <unsure list="true">
+        <uid>1240077</uid>
+    </unsure>
+    <declined list="true"/>
+    <not_replied list="true">
+        <uid>222335</uid>
+        <uid>222336</uid>
+    </not_replied>
+</events_getMembers_response>

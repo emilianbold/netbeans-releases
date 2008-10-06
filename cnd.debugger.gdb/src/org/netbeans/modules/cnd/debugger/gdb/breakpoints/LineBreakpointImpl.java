@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -50,66 +49,16 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 * @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
 */
 public class LineBreakpointImpl extends BreakpointImpl {
-
-    private LineBreakpoint      breakpoint;
-    private int                 lineNumber;
-    private BreakpointsReader   reader;
-
     
-    public LineBreakpointImpl(LineBreakpoint breakpoint, BreakpointsReader reader,
-                GdbDebugger debugger, Session session) {
-        super(breakpoint, reader, debugger, session);
-        this.reader = reader;
-        this.breakpoint = breakpoint;
-        lineNumber = breakpoint.getLineNumber();
+    public LineBreakpointImpl(LineBreakpoint breakpoint, GdbDebugger debugger) {
+        super(breakpoint, debugger);
         set();
     }
-    
+
     @Override
-    void fixed() {
-        lineNumber = breakpoint.getLineNumber();
-        super.fixed();
-    }
-    
-    protected void setRequests() {
-        String st = getState();
-        if (getDebugger().getState().equals(GdbDebugger.STATE_RUNNING) && !st.equals(BPSTATE_REVALIDATE)) {
-            getDebugger().setSilentStop();
-            setRunWhenValidated(true);
-        }
-        if (st.equals(BPSTATE_UNVALIDATED) || st.equals(BPSTATE_REVALIDATE)) {
-            if (st.equals(BPSTATE_REVALIDATE) && getBreakpointNumber() > 0) {
-                getDebugger().getGdbProxy().break_delete(getBreakpointNumber());
-            }
-            setState(BPSTATE_VALIDATION_PENDING);
-            lineNumber = breakpoint.getLineNumber();
-            String path = getDebugger().getBestPath(breakpoint.getPath());
-            int token;
-            if (getBreakpoint().getSuspend() == GdbBreakpoint.SUSPEND_THREAD) {
-                token = getDebugger().getGdbProxy().break_insert(GdbBreakpoint.SUSPEND_THREAD,
-                        path + ':' + lineNumber, getBreakpoint().getThreadID());
-            } else {
-                token = getDebugger().getGdbProxy().break_insert(path + ':' + lineNumber);
-            }
-            getDebugger().addPendingBreakpoint(token, this);
-	} else {
-            int bnum = getBreakpointNumber();
-            if (bnum > 0) { // bnum < 0 for breakpoints from other projects...
-                if (st.equals(BPSTATE_DELETION_PENDING)) {
-                    getDebugger().getGdbProxy().break_delete(bnum);
-                } else if (st.equals(BPSTATE_VALIDATED)) {
-                    if (breakpoint.isEnabled()) {
-                        getDebugger().getGdbProxy().break_enable(bnum);
-                    } else {
-                        getDebugger().getGdbProxy().break_disable(bnum);
-                    }
-                }
-                if (isRunWhenValidated()) {
-                    getDebugger().setRunning();
-                    setRunWhenValidated(false);
-                }
-            }
-	}
+    protected String getBreakpointCommand() {
+        int lineNumber = getBreakpoint().getLineNumber();
+        String path = debugger.getBestPath(getBreakpoint().getPath());
+        return path + ':' + lineNumber;
     }
 }
-

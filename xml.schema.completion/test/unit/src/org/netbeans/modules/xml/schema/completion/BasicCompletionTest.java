@@ -52,7 +52,6 @@ public class BasicCompletionTest extends AbstractTestCase {
     
     static final String PO_INSTANCE_DOCUMENT = "resources/PO.xml";
     static final String TEST_INSTANCE_DOCUMENT = "resources/Test.xml";
-    static final String PROJECT_INSTANCE_DOCUMENT = "resources/project.xml";
     
     public BasicCompletionTest(String testName) {
         super(testName);
@@ -83,15 +82,15 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testWildcard2"));
         suite.addTest(new BasicCompletionTest("testWildcard3"));
         suite.addTest(new BasicCompletionTest("testWildcard4"));
+        //suite.addTest(new BasicCompletionTest("testWildcard5"));
         suite.addTest(new BasicCompletionTest("testChildren1"));
         suite.addTest(new BasicCompletionTest("testChildren2"));
-        suite.addTest(new BasicCompletionTest("testReadNamespace"));
         suite.addTest(new BasicCompletionTest("testImport1"));
         suite.addTest(new BasicCompletionTest("testInclude1"));
         suite.addTest(new BasicCompletionTest("testElementValueCompletion1"));
         suite.addTest(new BasicCompletionTest("testElementValueCompletion2"));
         suite.addTest(new BasicCompletionTest("testAttributeValueCompletion1"));
-        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion2"));
+        suite.addTest(new BasicCompletionTest("testAttributeValueCompletion2"));        
         return suite;
     }
     
@@ -247,7 +246,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     public void testEmptyTag2() throws Exception {
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(223);
-        String[] expectedResult = {"A:A31"};
+        String[] expectedResult = {"A:A31", "A:A32"};
         assertResult(items, expectedResult);
     }
     
@@ -346,6 +345,20 @@ public class BasicCompletionTest extends AbstractTestCase {
         assertResult(items, expectedResult);
     }
     
+//    public void testWildcard5() throws Exception {
+//        setupCompletion("resources/Camera1.xml", null);
+//        //query at 376
+//        List<CompletionResultItem> items = query(376);
+//        String[] expectedResult1 = {"n:body", "n:lens", "n:manulaAdapter"};
+//        assertResult(items, expectedResult1);        
+//        
+//        //query at 404
+//        items = query(404);
+//        String[] expectedResult2 = {"c:body", "c:lens", "c:manulaAdapter"};
+//        assertResult(items, expectedResult2);
+//    }
+    
+    
     public void testChildren1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
@@ -377,18 +390,6 @@ public class BasicCompletionTest extends AbstractTestCase {
         assertResult(items, expectedResult);
     }
     
-    /**
-     * Reads the namespaces specified in an instance document like project.xml.
-     */
-    public void testReadNamespace() throws Exception {
-        setupCompletion(PROJECT_INSTANCE_DOCUMENT, null);
-        java.util.HashMap<String, String> nsMap = CompletionUtil.getNamespacesFromStartTags(getDocument());
-        String[] results = new String[nsMap.size()];
-        results = nsMap.keySet().toArray(results);
-        String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
-        assertResult(results, expectedResult);
-    }
-
     public void testImport1() throws Exception {
         setupCompletion("resources/Import.xml", null);
         List<CompletionResultItem> items = query(246);
@@ -443,5 +444,5 @@ public class BasicCompletionTest extends AbstractTestCase {
         List<CompletionResultItem> items = query(597);
         assert(items.size() == 6);
         assertResult(items, expectedResult);
-    }    
+    }
 }

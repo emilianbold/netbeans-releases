@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,11 +49,13 @@ import java.util.Set;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -132,21 +135,30 @@ public class PersistenceUtil {
     //helper methods
     public static NodeWriter populateNodeWriter(NodeWriter nodeWriter, Widget widget) {
         nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
-        nodeWriter.setLocation(widget.getLocation());
+        nodeWriter.setLocation(widget.getPreferredLocation());
 
 //        nodeWriter.setSize(widget.getBounds().getSize());
         Rectangle bnd = widget.getBounds();//border need correction for selection border sizes
-        bnd.x += widget.getBorder().getInsets().left;//may not be necessary because only size is used
-        bnd.y += widget.getBorder().getInsets().top;
-        bnd.width -= (widget.getBorder()).getInsets().left + (widget.getBorder()).getInsets().right;
-        bnd.height -= (widget.getBorder()).getInsets().top + (widget.getBorder()).getInsets().bottom;
-        nodeWriter.setSize(bnd.getSize());
-
+        if (bnd != null)
+        {
+            bnd.x += widget.getBorder().getInsets().left;//may not be necessary because only size is used
+            bnd.y += widget.getBorder().getInsets().top;
+            bnd.width -= (widget.getBorder()).getInsets().left + (widget.getBorder()).getInsets().right;
+            bnd.height -= (widget.getBorder()).getInsets().top + (widget.getBorder()).getInsets().bottom;
+            nodeWriter.setSize(bnd.getSize());
+        }
+        else
+        {
+            nodeWriter.setSize(new Dimension());
+        }
         nodeWriter.setViewport(null);
         nodeWriter.setPEID(PersistenceUtil.getPEID(widget));
         nodeWriter.setMEID(PersistenceUtil.getMEID(widget));
-        nodeWriter.setElementType(PersistenceUtil.getModelElement(widget).getElementType());
-
+        IElement elt = PersistenceUtil.getModelElement(widget);
+        if (elt != null)
+        {
+            nodeWriter.setElementType(elt.getElementType());
+        }
         return nodeWriter;
     }
 
@@ -176,9 +188,9 @@ public class PersistenceUtil {
         for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
         {
             String key = it.next();
-            System.out.println(" Scene property = " + key);
+//            System.out.println(" Scene property = " + key);
             Object propVal = table.getProperty(key);
-            System.out.println(" property value = " + propVal.toString());
+//            System.out.println(" property value = " + propVal.toString());
             props.put(key, propVal.toString());
         }
     }
@@ -204,7 +216,7 @@ public class PersistenceUtil {
                     //don't do anything yet.. we'll deal with this in anchorage section..
                 }
                 else { //assuming only movablelabelwidgets here...
-                    System.out.println(" obj is " + obj);
+//                    System.out.println(" obj is " + obj);
                     if (obj instanceof DiagramNodeWriter) {
                         ((DiagramNodeWriter)obj).save(nodeWriter);
                     }
@@ -223,6 +235,31 @@ public class PersistenceUtil {
     {
         PersistenceUtil.diagramLoading = diagramLoading;
     }
-    
+
+    // get the UMLNodeWidget in the parent hierarchy
+    public static UMLNodeWidget getParentUMLNodeWidget(Widget widget) {
+        Widget parent;
+        Widget child = widget;        
+        if ((child != null) && !(child instanceof Scene))
+        {
+            while (true)
+            {
+                parent = child.getParentWidget();
+                if (parent instanceof Scene)
+                {
+                    return null;
+                }
+                else if (parent instanceof UMLNodeWidget)
+                {
+                    return (UMLNodeWidget)parent;
+                }
+                else
+                {
+                    child = parent;
+                }
+            }
+        }
+        return null;
+    }
     
 }

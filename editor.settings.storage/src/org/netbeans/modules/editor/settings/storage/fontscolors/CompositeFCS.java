@@ -44,7 +44,9 @@ package org.netbeans.modules.editor.settings.storage.fontscolors;
 import java.awt.Color;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -93,9 +95,9 @@ public final class CompositeFCS extends FontColorSettings {
         StyleConstants.Foreground, Color.black,
         StyleConstants.Background, Color.white,
         StyleConstants.FontFamily, "Monospaced", //NOI18N
-        StyleConstants.FontSize, DEFAULT_FONT_SIZE < 12 ? 12 : DEFAULT_FONT_SIZE
+        StyleConstants.FontSize, DEFAULT_FONT_SIZE < 13 ? 13 : DEFAULT_FONT_SIZE
     );
-  
+
     // Special instance to mark 'no attributes' for a token. This should never
     // be passed outside of this class, use SimpleAttributeSet.EMPTY instead. There
     // might be other code doing 'attribs == SAS.EMPTY'.
@@ -303,17 +305,33 @@ public final class CompositeFCS extends FontColorSettings {
             return new MimePath [] { mimePath, MimePath.EMPTY };
         }
     }
-    
+
     private Map<?, ?> getRenderingHints() {
+        // This property was introduced in JDK1.6, see http://java.sun.com/javase/6/docs/api/java/awt/doc-files/DesktopProperties.html
+        // We should probably also listen on the default toolkit for changes in this
+        // property and refresh FontColorSettings in MimeLookup. As per JDK docs java apps
+        // should pick up changes in OS AA Font Settings automatically without restart.
         Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
         Boolean aaOn = null;
         String reason = null;
 
-        String aaOnString = preferences.get(TEXT_ANTIALIASING_PROP, null);
-        if (aaOnString != null) {
-            aaOn = Boolean.valueOf(aaOnString);
-            reason = "editor preferences property '" + TEXT_ANTIALIASING_PROP + "'"; //NOI18N
-        } else {
+// Since there is no way how to control TEXT_ANTIALIASING_PROP from Tools-Options
+// we will ignore the property. Also see #144516.
+//
+//        String aaOnString = preferences.get(TEXT_ANTIALIASING_PROP, null);
+//        if (aaOnString != null) {
+//            aaOn = Boolean.valueOf(aaOnString);
+//            reason = "editor preferences property '" + TEXT_ANTIALIASING_PROP + "'"; //NOI18N
+//        } else {
+
+            // These two properties are questionable. I haven't found any oficial docs
+            // saying that JVM recognizes them. However, we have been using them in Netbeans
+            // for a long time and so keep supporting them. But they most likely have absolutely
+            // no effect on JVM.
+            //
+            // There is another 'officially unsupported' property called awt.useSystemAAFontSetings
+            // introduced in JDK1.6, please http://java.sun.com/javase/6/docs/technotes/guides/2d/flags.html#aaFonts
+            //
             String systemProperty = System.getProperty("javax.aatext"); //NOI18N
             if (systemProperty == null) {
                 systemProperty = System.getProperty("swing.aatext"); //NOI18N
@@ -323,22 +341,13 @@ public final class CompositeFCS extends FontColorSettings {
                 aaOn = Boolean.valueOf(systemProperty);
                 reason = "system property 'javax.aatext' or 'swing.aatext'"; //NOI18N
             } else {
-                if (desktopHints != null) {
-                    Object value = desktopHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
-                    aaOn = Boolean.valueOf(
-                        value != null && 
-                        value != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
-                        value != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT
-                    );
-                    reason = "desktop hints"; //NOI18N
-                } else {
-                    if (Utilities.isMac()) {
-                        aaOn = Boolean.TRUE;
-                        reason = "running on Mac OSX";//NOI18N
-                    }
+                // Traditionally we turn text AA on when on Mac OS X
+                if (Utilities.isMac()) {
+                    aaOn = Boolean.TRUE;
+                    reason = "running on Mac OSX";//NOI18N
                 }
             }
-        }
+//        }
 
         Map<Object, Object> hints;
         if (aaOn == null) {
@@ -355,13 +364,57 @@ public final class CompositeFCS extends FontColorSettings {
             } else {
                 hints = new  HashMap<Object, Object>();
             }
-            hints.put(
-                RenderingHints.KEY_TEXT_ANTIALIASING, 
-                aaOn.booleanValue() ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
-            );
+            if (aaOn.booleanValue()) {
+                // aaOn == true normally means that we should use system defaults,
+                // but if there are none we will turn text antialiasing on manually. This
+                // may not provide the best results, but should be better than nothing.
+                if (!hints.containsKey(RenderingHints.KEY_TEXT_ANTIALIASING)) {
+                    hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                }
+            } else {
+                hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            }
         }
-        
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Editor Rendering hints:"); //NOI18N
+            for(Object key : hints.keySet()) {
+                Object value = hints.get(key);
+                String humanReadableKey = translateRenderingHintsConstant(key);
+                String humanReadableValue = translateRenderingHintsConstant(value);
+                LOG.fine("  " + humanReadableKey + " = " + humanReadableValue); //NOI18N
+            }
+            LOG.fine("----------------"); //NOI18N
+        }
+
         return hints;
     }
     
+    private static final Map<Object, String> renderingHintsConstants = new HashMap<Object, String>();
+    private static synchronized String translateRenderingHintsConstant(Object c) {
+        String s = null;
+
+        if (c != null) {
+            s = renderingHintsConstants.get(c);
+            if (s == null) {
+                for(Field f : RenderingHints.class.getFields()) {
+                    try {
+                        f.setAccessible(true);
+                        if ((f.getModifiers() & Modifier.STATIC) != 0 && f.get(null) == c) {
+                            s = f.getName();
+                            break;
+                        }
+                    } catch (IllegalAccessException iae) {
+                        // ignore
+                    }
+                }
+
+                if (s != null) {
+                    renderingHintsConstants.put(c, s);
+                }
+            }
+        }
+
+        return s != null ? s : c != null ? c.toString() : null;
+    }
 }

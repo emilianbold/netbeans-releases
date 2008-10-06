@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
@@ -55,6 +54,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,12 +64,12 @@ public class SaasServicesModel {
 
     public static final String PROP_GROUPS = "groups";
     public static final String PROP_SERVICES = "services";
-    public static final String ROOT_GROUP = "root";
-    public static final String WEBSVC_HOME = System.getProperty("netbeans.user") + 
+    public static final String ROOT_GROUP = "Root";
+    public static final String WEBSVC_HOME = System.getProperty("netbeans.user") +
             File.separator + "config" + File.separator + "WebServices"; // NOI18N
+
     public static final String SERVICE_GROUP_XML = "service-groups.xml";
     public static final String PROFILE_PROPERTIES_FILE = "profile.properties";
-    
     private SaasGroup rootGroup;
     private State state = State.UNINITIALIZED;
     private PropertyChangeSupport pps = new PropertyChangeSupport(this);
@@ -78,10 +78,9 @@ public class SaasServicesModel {
 
         UNINITIALIZED, INITIALIZING, READY
     }
-    
     private static SaasServicesModel instance;
 
-    public static SaasServicesModel getInstance() {
+    public synchronized static SaasServicesModel getInstance() {
         if (instance == null) {
             instance = new SaasServicesModel();
         }
@@ -100,7 +99,7 @@ public class SaasServicesModel {
         }
         return rootGroup;
     }
-    
+
     public synchronized void initRootGroup() {
         if (state == State.READY) {
             return;
@@ -132,6 +131,7 @@ public class SaasServicesModel {
     private void loadFromDefaultFileSystem() {
         FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject f = sfs.findResource("SaaSServices"); // NOI18N
+
         if (f != null && f.isFolder()) {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
@@ -147,8 +147,8 @@ public class SaasServicesModel {
                 }
                 SaasGroup g = rootGroup.getChildGroup(groupFolder.getName());
                 if (g != null) {
-                    g.setIcon16Path((String)groupFolder.getAttribute("icon16"));
-                    g.setIcon32Path((String)groupFolder.getAttribute("icon32"));
+                    g.setIcon16Path((String) groupFolder.getAttribute("icon16"));
+                    g.setIcon32Path((String) groupFolder.getAttribute("icon32"));
                 }
             }
         }
@@ -177,6 +177,7 @@ public class SaasServicesModel {
             }
             for (FileObject file : fo.getChildren()) {
                 if (!file.getNameExt().endsWith("-saas.xml")) { //NOI18N
+
                     continue;
                 }
                 try {
@@ -192,23 +193,27 @@ public class SaasServicesModel {
         if (Saas.NS_WADL.equals(jaxbServiceObject.getType())) {
             return new WadlSaas(parent, jaxbServiceObject);
         } else if (Saas.NS_WSDL.equals(jaxbServiceObject.getType())) {
-            return new WsdlSaas(parent, jaxbServiceObject);
+            if (WsdlUtil.hasWsdlSupport())
+                return new WsdlSaas(parent, jaxbServiceObject);
         } else {
             return new CustomSaas(parent, jaxbServiceObject); //custom
         }
+        return null;
     }
-    
+
     private void loadSaasServiceFile(FileObject saasFile, boolean userDefined) {
         try {
             SaasServices ss = SaasUtil.loadSaasServices(saasFile);
             Group g = ss.getSaasMetadata().getGroup();
             SaasGroup parent = rootGroup;
-            
+
             Saas service = null;
             if (g == null || g.getName() == null || g.getName().trim().length() == 0) {
                 service = createService(parent, ss);
-                service.setUserDefined(userDefined);
-                parent.addService(service);
+                if(service != null) {
+                    service.setUserDefined(userDefined);
+                    parent.addService(service);
+                }
             } else {
                 while (g != null) {
                     SaasGroup child = parent.getChildGroup(g.getName());
@@ -216,21 +221,26 @@ public class SaasServicesModel {
                         child = new SaasGroup(parent, g);
                         parent.addChildGroup(child);
                     }
-                    
+
                     child.setUserDefined(userDefined);
 
                     if (g.getGroup().size() == 0) {
                         service = createService(child, ss);
-                        service.setUserDefined(userDefined);
-                        child.addService(service);
+                        if(service != null) {
+                            service.setUserDefined(userDefined);
+                            child.addService(service);
+                        }
                         break;
                     } else {
                         // 'group' element part of straight path, has only single child
                         g = g.getGroup().get(0);
                         parent = child; // march on towards tip
+
                     }
                 }
             }
+            if(service != null)
+                service.upgrade();
         } catch (Exception ex) {
             Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Error loading saas file: " + saasFile.getPath()));
         }
@@ -245,13 +255,11 @@ public class SaasServicesModel {
         return state;
     }
 
-    private void setState(State state) {
-        synchronized (state) {
-            this.state = state;
-            if (state == State.READY) {
-                fireChange(PROP_GROUPS, rootGroup, null, rootGroup.getChildrenGroups());
-                fireChange(PROP_SERVICES, rootGroup, null, rootGroup.getServices());
-            }
+    private synchronized void setState(State state) {
+        this.state = state;
+        if (state == State.READY) {
+            fireChange(PROP_GROUPS, rootGroup, null, rootGroup.getChildrenGroups());
+            fireChange(PROP_SERVICES, rootGroup, null, rootGroup.getServices());
         }
     }
 
@@ -279,7 +287,7 @@ public class SaasServicesModel {
     public Saas getTopService(String name) {
         return getRootGroup().getChildService(name);
     }
-    
+
     /**
      * Model mutation: add group from UI
      * 
@@ -289,7 +297,7 @@ public class SaasServicesModel {
     public synchronized SaasGroup createTopGroup(String groupName) {
         return createGroup(getInitialRootGroup(), groupName);
     }
-    
+
     public synchronized SaasGroup createGroup(SaasGroup parent, String groupName) {
         initRootGroup();
         SaasGroup group = parent.createGroup(groupName);
@@ -307,8 +315,9 @@ public class SaasServicesModel {
     public synchronized void removeGroup(SaasGroup group) {
         initRootGroup();
         SaasGroup parent = group.getParent();
-        if (parent == null || ! parent.removeChildGroup(group)) {
-            throw new IllegalArgumentException("Can't remove group "+group.getName()); //NOI18N
+        if (parent == null || !parent.removeChildGroup(group)) {
+            throw new IllegalArgumentException("Can't remove group " + group.getName()); //NOI18N
+
         }
         saveRootGroup();
         fireChange(PROP_GROUPS, parent, group, null);
@@ -326,22 +335,33 @@ public class SaasServicesModel {
         initRootGroup();
         WsdlSaas service = new WsdlSaas(parent, url, displayName, packageName);
         service.setUserDefined(true);
-        WsdlData data = WsdlUtil.addWsdlData(url, packageName);
-        if (data != null) {
-            service.setWsdlData(data);
-            data.addPropertyChangeListener(service);
-        }
         parent.addService(service);
         service.save();
         fireChange(PROP_SERVICES, parent, null, service);
         return service;
     }
 
-    public WsdlSaas createWsdlService(SaasGroup parent, String url, String packageName) {
+    public Saas createSaasService(SaasGroup parent, String url, String packageName) {
+        String saasType = SaasUtil.getSaasType(url);
+        
+        if (Saas.NS_WSDL.equals(saasType)) {
+            if (WsdlUtil.hasWsdlSupport()) {
+                return createWsdlService(parent, url, packageName);
+            } else {
+                throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_WsdlServiceNotSupported"));
+            }
+        } else if (Saas.NS_WADL.equals(saasType)) {
+            return createWadlService(parent, url, packageName);
+        } else {
+            throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_UnknownSaasType"));
+        }
+    }
+    
+    private WsdlSaas createWsdlService(SaasGroup parent, String url, String packageName) {
         return createWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
     }
 
-    public WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
+    private WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
         initRootGroup();
         String displayName = SaasUtil.getWadlServiceDirName(url);
         WadlSaas service = new WadlSaas(parent, url, displayName, packageName);
@@ -364,24 +384,23 @@ public class SaasServicesModel {
         _removeService(service);
         fireChange(PROP_SERVICES, parent, service, null);
     }
-    
+
     void _removeService(Saas service) {
         try {
             if (service instanceof WsdlSaas) {
                 WsdlSaas saas = (WsdlSaas) service;
-                if (saas.getState() == Saas.State.READY) {
-                    WsdlUtil.removeWsdlData(saas.getWsdlData());
-                }
+                WsdlUtil.removeWsdlData(saas.getDelegate().getUrl());
             }
             FileObject saasFolder = service.getSaasFolder();
             if (saasFolder != null) {
                 saasFolder.delete();
             }
+            service.setState(Saas.State.REMOVED);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-    } 
-    
+    }
+
     public synchronized void renameGroup(SaasGroup group, String newName) {
         String oldName = group.getName();
         group.setName(newName);
@@ -389,7 +408,7 @@ public class SaasServicesModel {
         saveAllSaas(group);
         fireChange(SaasGroup.PROP_GROUP_NAME, group, oldName, newName);
     }
-    
+
     private void saveAllSaas(SaasGroup group) {
         for (Saas s : group.getServices()) {
             s.save();
@@ -398,11 +417,11 @@ public class SaasServicesModel {
             saveAllSaas(sg);
         }
     }
-    
+
     public synchronized void refreshService(Saas saas) {
         saas.refresh();
     }
-    
+
     void reset() {
         rootGroup = null;
         state = State.UNINITIALIZED;

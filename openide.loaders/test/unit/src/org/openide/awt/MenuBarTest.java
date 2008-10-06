@@ -41,11 +41,16 @@
 
 package org.openide.awt;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
@@ -56,8 +61,10 @@ import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 import org.openide.util.actions.CallbackSystemAction;
 
 /**
@@ -75,11 +82,17 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         super(testName);
     }
     
+    @Override
     protected Level logLevel() {
         return Level.FINE;
     }
 
+    @Override
     protected void setUp() throws Exception {
+        CreateOnlyOnceAction.instancesCount = 0;
+        CreateOnlyOnceAction.w = new StringWriter();
+        CreateOnlyOnceAction.pw = new PrintWriter(CreateOnlyOnceAction.w);
+
         FileObject fo = FileUtil.createFolder(
             Repository.getDefault().getDefaultFileSystem().getRoot(),
             "Folder" + getName()
@@ -89,6 +102,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         mb.waitFinished();
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
     
@@ -239,7 +253,38 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
             fail("There were warnings about the use of invalid nodes: " + seq);
         }
     }
-    
+
+    public void testActionIsCreatedOnlyOnce_13195() throws Exception {
+        doActionIsCreatedOnlyOnce_13195("Menu");
+    }
+
+    public void testActionIsCreatedOnlyOnceWithNewValue() throws Exception {
+        doActionIsCreatedOnlyOnce_13195("MenuWithNew");
+    }
+
+    private void doActionIsCreatedOnlyOnce_13195(String name) throws Exception {
+        // crate XML FS from data
+        String[] stringLayers = new String [] { "/org/openide/awt/data/testActionOnlyOnce.xml" };
+        URL[] layers = new URL[stringLayers.length];
+
+        for (int cntr = 0; cntr < layers.length; cntr++) {
+            layers[cntr] = Utilities.class.getResource(stringLayers[cntr]);
+        }
+
+        XMLFileSystem system = new XMLFileSystem();
+        system.setXmlUrls(layers);
+
+        // build menu
+        DataFolder dataFolder = DataFolder.findFolder(system.findResource(name));
+        MenuBar menuBar = new MenuBar(dataFolder);
+        menuBar.waitFinished();
+
+        if (CreateOnlyOnceAction.instancesCount != 1) {
+            // ensure that only one instance of action was created
+            fail("Action created only once, but was: " + CreateOnlyOnceAction.instancesCount + "\n" + CreateOnlyOnceAction.w);
+        }
+    }
+
     public void componentAdded(ContainerEvent e) {
         add++;
     }
@@ -265,4 +310,27 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         
         
     }
+
+    public static class CreateOnlyOnceAction extends AbstractAction {
+
+        static int instancesCount = 0;
+        static StringWriter w;
+        static PrintWriter pw;
+
+        public static synchronized CreateOnlyOnceAction create() {
+            return new CreateOnlyOnceAction();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // no op
+        }
+
+        public CreateOnlyOnceAction() {
+            new Exception("created for " + (++instancesCount) + " time").printStackTrace(pw);
+            putValue(NAME, "TestAction");
+        }
+
+    }
+
+
 }

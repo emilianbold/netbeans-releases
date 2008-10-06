@@ -49,8 +49,12 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.ThreadReference;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -84,8 +88,10 @@ import org.openide.ErrorManager;
 * @author Jan Jancura
 */
 public class Operator {
-    
+
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
+
+    public static final String SILENT_EVENT_PROPERTY = "silent"; // NOI18N
 
     private Thread            thread;
     private boolean           breakpointsDisabled;
@@ -93,7 +99,8 @@ public class Operator {
     private List<EventRequest> staledRequests = new ArrayList<EventRequest>();
     private boolean           stop;
     private boolean           canInterrupt;
-    
+    private JPDADebuggerImpl  debugger;
+
     /**
      * Creates an operator for a given virtual machine. The operator will listen
      * to the VM's event queue.
@@ -113,8 +120,9 @@ public class Operator {
         final Object resumeLock
     ) {
         EventQueue eventQueue = virtualMachine.eventQueue ();
-        if (eventQueue == null) 
+        if (eventQueue == null)
             throw new NullPointerException ();
+        this.debugger = debugger;
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
         public void run () {
@@ -125,7 +133,7 @@ public class Operator {
             params [1] = null;
             params [2] = null;
             boolean processStaledEvents = false;
-            
+
        loop: for (;;) {
                  try {
                      EventSet eventSet = null;
@@ -170,28 +178,53 @@ public class Operator {
                             canInterrupt = false;
                         }
                      }
-                     synchronized (Operator.this) {
-                         if (breakpointsDisabled) {
-                             if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
-                                staledEvents.add(eventSet);
-                                eventSet.resume();
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("RESUMING "+eventSet);
-                                }
-                             }
-                             continue;
+                     boolean silent = eventSet.size() > 0;
+                     for (Event e: eventSet) {
+                         EventRequest r = e.request();
+                         if (r == null || !Boolean.TRUE.equals(r.getProperty (SILENT_EVENT_PROPERTY))) {
+                             silent = false;
+                             break;
                          }
                      }
+                     if (!silent) {
+                         synchronized (Operator.this) {
+                             if (breakpointsDisabled) {
+                                 if (eventSet.suspendPolicy() == EventRequest.SUSPEND_ALL) {
+                                    staledEvents.add(eventSet);
+                                    eventSet.resume();
+                                    if (logger.isLoggable(Level.FINE)) {
+                                        logger.fine("RESUMING "+eventSet);
+                                    }
+                                 }
+                                 continue;
+                             }
+                         }
+                     }
+                     Map<Event, Executor> eventsToProcess = new HashMap<Event, Executor>();
+                     for (Event e: eventSet) {
+                         EventRequest r = e.request();
+                         Executor exec = (r != null) ? (Executor) r.getProperty ("executor") : null;
+                         if (exec instanceof ConditionedExecutor) {
+                             boolean success = ((ConditionedExecutor) exec).processCondition(e);
+                             if (success) {
+                                eventsToProcess.put(e, exec);
+                             }
+                         } else {
+                             eventsToProcess.put(e, exec);
+                         }
+                     }
+                     if (eventsToProcess.size() == 0) {
+                         eventSet.resume();
+                         continue;
+                     }
                      boolean resume = true, startEventOnly = true;
-                     boolean silent = false;
                      int suspendPolicy = eventSet.suspendPolicy();
                      boolean suspendedAll = suspendPolicy == EventRequest.SUSPEND_ALL;
                      JPDAThreadImpl suspendedThread = null;
-                     if (suspendedAll) debugger.notifySuspendAll();
+                     if (!silent && suspendedAll) debugger.notifySuspendAll();
                      if (suspendPolicy == EventRequest.SUSPEND_EVENT_THREAD) {
                          ThreadReference tref = null;
                          for (Event e: eventSet) {
-                            silent = Boolean.TRUE.equals(e.request ().getProperty ("silent"));
                             tref = getEventThread(e);
                             if (tref != null) {
                                 break;
@@ -217,8 +250,13 @@ public class Operator {
                                  logger.fine("JDI new events (?????)=============================================");
                                  break;
                          }
+                         logger.fine("  event is silent = "+silent);
                      }
                      for (Event e: eventSet) {
+                         if (!eventsToProcess.containsKey(e)) {
+                             // Ignore events whose executor conditions did not evaluate successfully.
+                             continue;
+                         }
                          if ((e instanceof VMDeathEvent) ||
                                  (e instanceof VMDisconnectEvent)
                             ) {
@@ -231,7 +269,7 @@ public class Operator {
                              }
                              break loop;
                          }
-                         
+
                          if ((e instanceof VMStartEvent) && (starter != null)) {
                              resume = resume & starter.exec (e);
                              //S ystem.out.println ("Operator.start VM"); // NOI18N
@@ -246,7 +284,7 @@ public class Operator {
                                  logger.fine("EVENT: " + e + " REQUEST: null"); // NOI18N
                              }
                          } else
-                             exec = (Executor) e.request ().getProperty ("executor");
+                             exec = eventsToProcess.get(e);
 
                          if (logger.isLoggable(Level.FINE)) {
                              printEvent (e, exec);
@@ -257,7 +295,7 @@ public class Operator {
                              try {
                                  startEventOnly = false;
                                  resume = resume & exec.exec (e);
-                             } catch (VMDisconnectedException exc) {   
+                             } catch (VMDisconnectedException exc) {
 //                                 disconnected = true;
                                  synchronized (Operator.this) {
                                      stop = true;
@@ -333,7 +371,7 @@ public class Operator {
          }
      }, "Debugger operator thread"); // NOI18N
     }
-    
+
     private static final ThreadReference getEventThread(Event e) {
         ThreadReference tref = null;
         if (e instanceof LocatableEvent) {
@@ -412,8 +450,12 @@ public class Operator {
             e.removed(req);
         }
         staledRequests.remove(req);
+        if (req instanceof StepRequest) {
+            ThreadReference tr = ((StepRequest) req).thread();
+            ((JPDAThreadImpl) debugger.getThread(tr)).setInStep(false, null);
+        }
     }
-    
+
     /**
      * Stop the operator thread.
      */
@@ -428,7 +470,7 @@ public class Operator {
             }
         }
     }
-    
+
     /**
      * Notifies that breakpoints were disabled and therefore no breakpoint events should occur
      * until {@link #breakpointsEnabled} is called.
@@ -436,14 +478,14 @@ public class Operator {
     public synchronized void breakpointsDisabled() {
         breakpointsDisabled = true;
     }
-    
+
     /**
      * Notifies that breakpoints were enabled again and therefore breakpoint events can occur.
      */
     public synchronized void breakpointsEnabled() {
         breakpointsDisabled = false;
     }
-    
+
     public boolean flushStaledEvents() {
         boolean areStaledEvents;
         synchronized (this) {

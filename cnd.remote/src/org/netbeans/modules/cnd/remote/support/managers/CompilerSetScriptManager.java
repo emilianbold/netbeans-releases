@@ -68,34 +68,56 @@ public class CompilerSetScriptManager implements ScriptManager {
         this.support = support;
     }
 
+    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
+
     public void runScript() {
-        ChannelExec channel = (ChannelExec) support.getChannel();
-        channel.setInputStream(null);
-        channel.setErrStream(System.err);
-        try {
-            channel.connect();
-            InputStream is = channel.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-            out = new StringWriter();
+        if (!support.isFailedOrCancelled()) {
+            ChannelExec channel = (ChannelExec) support.getChannel();
+            channel.setInputStream(null);
+            channel.setErrStream(System.err);
             
-            String line;
-            platform = in.readLine();
-            while ((line = in.readLine()) != null) {
-                out.write(line + '\n');
-                out.flush();
+            try {
+                channel.connect();
+                InputStream is = channel.getInputStream();
+                in = new BufferedReader(new InputStreamReader(is));
+                out = new StringWriter();
+
+                if (emulateFailure>0) {
+                    log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
+                    support.setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
+                    emulateFailure--;
+                    return;
+                }
+
+
+                String line;
+                platform = in.readLine();
+                log.fine("CSSM.runScript: Reading input from getCompilerSets.bash");
+                log.fine("    platform [" + platform + "]");
+                while ((line = in.readLine()) != null) {
+                    log.fine("    line [" + line + "]");
+                    out.write(line + '\n');
+                    out.flush();
+                }
+                in.close();
+                is.close();
+                st = new StringTokenizer(out.toString());
+            } catch (IOException ex) {
+                log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]") ; // NOI18N
+                support.setFailed(ex.getMessage());
+            } catch (JSchException ex) {
+                log.warning("CSSM.runScript: JSchException"); // NOI18N
+                support.setFailed(ex.getMessage());
+            } finally {
+                support.disconnect();
             }
-            in.close();
-            is.close();
-            st = new StringTokenizer(out.toString());
-        } catch (IOException ex) {
-            log.warning("CompilerScriptManager.runScript: IOException"); // NOI18N
-        } catch (JSchException ex) {
-            log.warning("CompilerScriptManager.runScript: JSchException"); // NOI18N
         }
     }
 
+    public static final String SCRIPT = ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+
     public String getScript() {
-        return ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+        return SCRIPT;
     }
     
     public String getPlatform() {
@@ -107,9 +129,10 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public String getNextCompilerSetData() {
-        return st.nextToken();
+        String compilerSetInfo = st.nextToken();
+        return compilerSetInfo;
     }
-
+    
     @Override
     public String toString() {
         if (out != null) {

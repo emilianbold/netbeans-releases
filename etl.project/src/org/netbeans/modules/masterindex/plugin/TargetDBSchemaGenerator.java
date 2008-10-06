@@ -123,6 +123,14 @@ public class TargetDBSchemaGenerator {
             for (int i = 0; i < tablelist.size(); i++) {
                 createTable(normalizeTableName(tablelist.get(i).toString()), tablelist.get(i).toString());
             }
+            // Close open Connection
+            try {
+                mLogger.infoNoloc("Closing connection to database : " + conn.getMetaData().getURL());
+                conn.createStatement().execute("shutdown");
+                conn.close();
+            } catch (SQLException sqlexception) {
+                mLogger.errorNoloc(mLoc.t("PRJS804: Execption while closing connection"), sqlexception);
+            }
         }
     }
 

@@ -223,6 +223,9 @@ public class PHP5ErrorHandler implements ParserErrorHandler {
             while (text.charAt(lastNewLine) == '\n' || text.charAt(lastNewLine) == '\r'
                     || text.charAt(lastNewLine) == '\t' || text.charAt(lastNewLine) == ' ') {
                 lastNewLine--;
+                if (lastNewLine < 0) {
+                    break;
+                }
             }
             lastNewLine = text.lastIndexOf('\n', lastNewLine);   //NOI18N
             if (lastNewLine > 0) {

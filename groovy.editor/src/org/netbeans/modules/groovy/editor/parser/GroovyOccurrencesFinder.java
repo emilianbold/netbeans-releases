@@ -54,7 +54,9 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.VariableScopeVisitor;
+import org.openide.filesystems.FileObject;
 
 /**
  * The (call-)proctocol for OccurrencesFinder is always:
@@ -71,6 +73,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
     private final Logger LOG = Logger.getLogger(GroovyOccurrencesFinder.class.getName());
 
     public GroovyOccurrencesFinder() {
@@ -103,6 +106,13 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
+        }
+
         ModuleNode rootNode = AstUtilities.getRoot(info);
         if (rootNode == null) {
             return;
@@ -128,7 +138,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         }
 
         Map<OffsetRange, ColoringAttributes> highlights = new HashMap<OffsetRange, ColoringAttributes>(100);
-        highlight(path, highlights, document);
+        highlight(path, highlights, document, caretPosition);
 
         if (isCancelled()) {
             return;
@@ -159,15 +169,31 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         LOG.log(Level.FINEST, "\n\nsetCaretPosition() = {0}\n", position); //NOI18N
     }
 
-    private static void highlight(AstPath path, Map<OffsetRange, ColoringAttributes> highlights, BaseDocument document) {
+    private static void highlight(AstPath path, Map<OffsetRange, ColoringAttributes> highlights, BaseDocument document, int cursorOffset) {
         ASTNode root = path.root();
         assert root instanceof ModuleNode;
         ModuleNode moduleNode = (ModuleNode) root;
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
-            OffsetRange range = AstUtilities.getRange(astNode, document);
-            highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            OffsetRange range;
+            if (astNode instanceof FakeASTNode) {
+                String text = astNode.getText();
+                ASTNode orig = ((FakeASTNode) astNode).getOriginalNode();
+                int line = orig.getLineNumber();
+                int column = orig.getColumnNumber();
+                if (line > 0 && column > 0) {
+                    int start = AstUtilities.getOffset(document, line, column);
+                    range = AstUtilities.getNextIdentifierByName(document, text, start);
+                } else {
+                    range = OffsetRange.NONE;
+                }
+            } else {
+                range = AstUtilities.getRange(astNode, document);
+            }
+            if (range != OffsetRange.NONE) {
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
         }
     }
 

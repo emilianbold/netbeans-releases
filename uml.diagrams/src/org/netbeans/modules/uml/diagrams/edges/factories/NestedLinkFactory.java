@@ -123,7 +123,7 @@ public class NestedLinkFactory implements RelationshipFactory
     public void delete(boolean fromModel, IPresentationElement element, 
                        IElement source, IElement target)
     {
-        if((source instanceof INamespace) && (target instanceof INamedElement))
+        if(fromModel && (source instanceof INamespace) && (target instanceof INamedElement))
         {
             // If the namespace is the model, we can not move it up any levels.
             // Therefore, do nothing if the namespace is the model.

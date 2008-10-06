@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <property name="cluster.config" value="cnd"/>
 
     <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="lexer, core, makeproject, modelapi, modelimpl, classview, completion, gdb, modelutil, qnavigator, antlr, modelui, highlight, gotodeclaration, update, apt, folding, dwarfdump, repository, discovery, dwarfdiscovery, modeldiscovery, term, navigation"/>
+    <property name="submodules" value="../cnd.lexer, ../asm, ../cnd, ../cnd.makeproject, ../cnd.api.model, ../cnd.api.project, ../cnd.modelimpl, ../cnd.classview, ../cnd.completion, ../cnd.debugger.gdb, ../cnd.modelutil, ../cnd.antlr, ../cnd.modelui, ../cnd.highlight, ../cnd.gotodeclaration, ../cnd.apt, ../cnd.folding, ../cnd.dwarfdump, ../cnd.repository, ../cnd.discovery, ../cnd.dwarfdiscovery, ../cnd.modeldiscovery, ../cnd.navigation, ../cnd.qnavigator, ../cnd.remote, ../cnd.repository.api, ../cnd.utils"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -139,6 +139,13 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.dwarfdiscovery" inheritrefs="false" inheritall="false" failonerror="false"/>
-    </target> 
+    </target>
+
+    <target name="xref-test" description="Run XRef tests">
+        <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.refactoring" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
+    </target>
 
 </project>

@@ -47,9 +47,24 @@ import org.openide.util.NbPreferences;
 
 class GeneralOptionsModel {
     
-    
     private static Preferences getProxyPreferences () {
         return NbPreferences.root ().node ("org/netbeans/core");
+    }
+    
+    boolean getUsageStatistics () {
+        String key = System.getProperty("nb.show.statistics.ui");
+        if (key != null) {
+            return getProxyPreferences ().getBoolean(key, Boolean.FALSE);
+        } else {
+            return false;
+        }
+    }
+
+    void setUsageStatistics (boolean use) {
+        String key = System.getProperty("nb.show.statistics.ui");
+        if ((key != null) && (use != getUsageStatistics())) {
+            getProxyPreferences  ().putBoolean(key, use);
+        }
     }
     
     int getProxyType () {

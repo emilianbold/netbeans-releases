@@ -235,8 +235,12 @@ public class LocalizationSupportPanelGUI extends JPanel implements ActionListene
             return null;
         final ModelItem ch[] = groupItem.getChildren();
         final FileObject root = groupItem.group.getRootFolder();
-        final String relPath = FileUtil.getRelativePath(root, preselectedFolder).replace('/', '.'); //NOI18N
-        
+        String relPath = FileUtil.getRelativePath(root, preselectedFolder);
+        if (relPath == null) {
+            return null;
+        } else {
+            relPath = relPath.replace ('/', '.'); //NOI18N
+        }
         for (int i = 0; i < ch.length; i++)
             if (ch[i].toString().equals(relPath))
                 return ch[i];

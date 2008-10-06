@@ -157,8 +157,16 @@ public class QueryBuilder extends TopComponent
         Log.getLogger().entering("QueryBuilder", "open"); // NOI18N
         QueryEditorUILogger.logEditorOpened();
 
-	showBusyCursor( true );
+        Connection conn = dbconn.getJDBCConnection();
+        if (conn == null) {
+            ConnectionManager.getDefault().showConnectionDialog(dbconn);
+        }
+        // A database connection is required.  If not connected then don't create a QueryBuilder
+        if (dbconn.getJDBCConnection() == null) {
+            return null;
+        }
 
+        showBusyCursor( true );
         QueryBuilder qb ;
         try {
             qb = new QueryBuilder(dbconn, statement, metadata, vse);
@@ -204,7 +212,7 @@ public class QueryBuilder extends TopComponent
 	    new QueryBuilderMetaData(metadata, this) ;
         
         // Create a quoter to be used for delimiting identifiers
-        this.quoter =  SQLIdentifiers.createQuoter(getConnection().getMetaData());
+        this.quoter = SQLIdentifiers.createQuoter(getConnection().getMetaData());
 
 	// It would be nice to have a short title, but there isn't a convenient one
         String title = dbconn.getName();
@@ -251,11 +259,11 @@ public class QueryBuilder extends TopComponent
     private final transient DeleteActionPerformer deleteActionPerformer = new DeleteActionPerformer();
 
     /** copy action performer */
-    protected final transient CopyCutActionPerformer copyActionPerformer =
+    final transient CopyCutActionPerformer copyActionPerformer =
         new CopyCutActionPerformer(true);
 
     /** cut action performer */
-    protected final transient CopyCutActionPerformer cutActionPerformer =
+    final transient CopyCutActionPerformer cutActionPerformer =
         new CopyCutActionPerformer(false);
 
     

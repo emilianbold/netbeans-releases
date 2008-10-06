@@ -1,26 +1,24 @@
-/*
- * PersistenceService.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.Query;
 import javax.persistence.EntityTransaction;
 
 /**
  * Utility class for dealing with persistence.
  *
- * @author __USER__
+ * @author ${user}
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "RESTDBApp5PU";
@@ -65,73 +63,14 @@ public class PersistenceService {
     }
     
     /**
-     * Refreshes the state of the given entity from the database.
-     * 
-     * @param entity the entity to refresh
-     */
-    public void refreshEntity(Object entity) {
-        em.refresh(entity);
-    }
-    
-    /**
-     * Merges the state of the given entity into the current persistence context.
-     * 
-     * @param entity the entity to merge
-     * @return the merged entity
-     */
-    public <T> T mergeEntity(T entity) {
-        return (T) em.merge(entity);
-    }
-    
-    /**
-     * Makes the given entity managed and persistent.
-     * 
-     * @param entity the entity to persist
-     */
-    public void persistEntity(Object entity) {
-        em.persist(entity);
-    }
-    
-    /**
-     * Removes the entity instance.
-     * 
-     * @param entity the entity to remove
-     */
-    public void removeEntity(Object entity) {
-        em.remove(entity);
-    }
-      
-    /**
-     * Returns an entity reference given the entity class and primary key
+     * Returns an instance of EntityManager.
      *
-     * @param entityClass the entity class
-     * @param primary the primary key 
-     * @return the resolved entity
+     * @return an instance of EntityManager
      */
-    public <T> T resolveEntity(Class<T> entityClass, Object primaryKey) {
-        return em.getReference(entityClass, primaryKey);
+    public EntityManager getEntityManager() {
+        return em;
     }
-    
-    /**
-     * Returns an instance of Query for executing a named query.
-     * 
-     * @param query the named query
-     * @return an instance of Query
-     */
-    public Query createNamedQuery(String query) {
-        return em.createNamedQuery(query);
-    }
-    
-    /**
-     * Returns an instance of Query for executing a query.
-     * 
-     * @param query the query string
-     * @return an instance of Query
-     */
-    public Query createQuery(String query) {
-        return em.createQuery(query);
-    }
-    
+
     /**
      * Begins a resource transaction.
      */

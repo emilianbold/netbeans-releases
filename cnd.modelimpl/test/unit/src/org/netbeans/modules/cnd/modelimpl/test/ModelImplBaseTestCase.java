@@ -45,14 +45,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
  * IMPORTANT NOTE:
@@ -68,13 +63,11 @@ import org.netbeans.modules.cnd.test.BaseTestCase;
  * base class for modelimpl module tests
  * @author Vladimir Voskresensky
  */
-public abstract class ModelImplBaseTestCase extends BaseTestCase {
+public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
     
     public static final String PROPERTY_DATA_PATH = "cnd.modelimpl.unit.data";
     public static final String PROPERTY_GOLDEN_PATH = "cnd.modelimpl.unit.golden";
     public static final String PROPERTY_WORK_PATH = "cnd.modelimpl.unit.workdir";
-    
-    private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
     
     /**
      * Creates a new instance of ModelImplBaseTestCase
@@ -113,51 +106,6 @@ public abstract class ModelImplBaseTestCase extends BaseTestCase {
         }
     }   
     
-    @Override
-    protected void setUp() throws Exception {
-	super.setUp();
-	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
-	    public void exception(Throwable thr) {
-		thr.printStackTrace();
-		exceptions.add(thr);
-	    }
-	};
-	DiagnosticExceptoins.setHook(hook);	
-    }
-
-    /** 
-     * Registers an exception.
-     * The idea is to process an exception that occurs in main thread
-     * in the same way as exceptions that occur in code model threads
-     */
-    protected void registerException(Throwable thr) {
-	exceptions.add(thr);
-    }
-    
-    /** Asserts that no exceptions occur in code model threads */
-    protected void assertNoExceptions() throws Exception {
-	assertEmpty(exceptions);
-    }
-    
-    private void assertEmpty(Collection<Throwable> errors) throws Exception {
-	// the idea here was to somehow make JUnit infrastructure
-	// display all caught exceptions;
-	// but I don't yet know how to;
-	// so for the time being we just throw 1-st one
-	if (!errors.isEmpty()) {
-	    for (Throwable thr : errors) {
-		if (thr instanceof Exception) {
-		    throw (Exception) thr;
-		} 
-		else if( thr instanceof Error ) {
-		    throw (Error) thr;
-		} else {
-		    throw new Exception(thr);
-		}
-	    }
-	}
-    }
-   
     protected void sleep(long timeout) {
         try {
             Thread.sleep(timeout);

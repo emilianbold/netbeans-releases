@@ -335,7 +335,7 @@ public class AntLoggerTest extends NbTestCase {
             antEventDetailsOK |=
                     "echo".equals(event.getTaskName()) &&
                     "meaningless".equals(event.getTaskStructure().getText()) &&
-                    "info".equals(event.getTaskStructure().getAttribute("level")) &&
+                    "info".equals(event.getTaskStructure().getAttribute("Level")) &&
                     event.getPropertyNames().contains("propname") &&
                     "propval".equals(event.getProperty("propname"));
             if (halt && event.getTaskName().equals("touch")) {

@@ -42,13 +42,11 @@
 package org.netbeans.modules.form.j2ee.wizard;
 
 import com.sun.source.tree.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -59,25 +57,29 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -109,6 +111,9 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     private String[] joinInfo;
     private String joinColumn;
     private String referencedColumn;
+
+    /** True if running for a not yet opened project - with CP not yet registered */
+    private boolean needClassPathInit;
 
     /**
      * Creates new <code>MasterDetailWizard</code>.
@@ -283,47 +288,14 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             delegateIterator.previousPanel();
     }
 
-    public Set instantiate() throws IOException {
-        if (delegateIterator == null) {
-            // postpone the instantiation until the project is opened
-            final FileObject file = (FileObject) wizard.getProperty("mainForm"); // NOI18N
-            final File projDir = (File)wizard.getProperty("projdir");
-            OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    try {
-                        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                            File dir = FileUtil.toFile(p.getProjectDirectory());
-                            if (projDir.equals(dir)) {
-                                try {
-                                    instantiate0();
-                                    // Open the generated frame
-                                    DataObject dob = DataObject.find(file);
-                                    OpenCookie cookie = dob.getCookie(OpenCookie.class);
-                                    cookie.open();
-                                } catch (IOException ioex) {
-                                    Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
-                                }
-                                break;
-                            } // else something went wrong - don't attempt to instantiate
-                        }
-                    } finally {
-                        OpenProjects.getDefault().removePropertyChangeListener(this);
-                    }
-                }
-            });
-            return Collections.EMPTY_SET;
-        } else {
-            return instantiate0();
-        }
-    }
-    
     /**
      * Returns set of instantiated objects.
      *
      * @return set of instantiated objects.
      * @throws IOException when the objects cannot be instantiated.
      */
-    public Set instantiate0() throws IOException {
+    public Set instantiate() throws IOException {
+        needClassPathInit = (delegateIterator == null);
         Set resultSet = null;
         try {
             DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
@@ -331,6 +303,20 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
             joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
             referencedColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
+
+            if (delegateIterator == null) {
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_JDA"); // NOI18N
+                rec.setLoggerName(logger.getName());
+                rec.setParameters(new Object[] {"JDA_APP_TYPE_CRUD"}); // NOI18N
+                logger.log(rec);
+            } else {
+                Logger logger = Logger.getLogger("org.netbeans.ui.metrics.form.j2ee"); // NOI18N
+                LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_CREATED"); // NOI18N
+                rec.setLoggerName(logger.getName());
+                rec.setParameters(new Object[] {Templates.getTemplate(wizard).getName()});
+                logger.log(rec);
+            }
 
             FileObject javaFile;
             if (delegateIterator != null) {
@@ -394,6 +380,8 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             generator.generate();
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+        } finally {
+            postJavaInfrastructureCleanup();
         }
         
         return resultSet;
@@ -402,7 +390,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     private MetadataModel<EntityMappingsMetadata> mappings;
     /** Name of persistence unit that contains entity classes for master and detail tables. */
     private String unitName;
-    
+
     /**
      * Creates or updates persistence descriptor and entity classes for master and detail table.
      * 
@@ -430,7 +418,10 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             // Obtain description of entity mappings
             PersistenceScope scope = PersistenceScope.getPersistenceScope(folder);
             mappings = scope.getEntityMappingsModel(unit.getName());
- 
+
+            // make sure java infrastructure knows about the necessary classpath
+            preinitJavaInfrastructure();
+
             String[] tables;
             String[] relatedTables = null;
             if (J2EEUtils.TABLE_CLOSURE) {
@@ -503,6 +494,62 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
         return null;
     }
 
+    private void preinitJavaInfrastructure() throws IOException {
+        if (needClassPathInit) {
+            try {
+                ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
+                    public ClasspathInfo run(EntityMappingsMetadata metadata) {
+                        return metadata.createJavaSource().getClasspathInfo();
+                    }
+                }).get();
+
+                GlobalPathRegistry.getDefault().register(ClassPath.BOOT, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.BOOT)
+                });
+                GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.COMPILE)
+                });
+                GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.SOURCE)
+                });
+            } catch (InterruptedException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            } catch (MetadataModelException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            }
+        }
+    }
+
+    private void postJavaInfrastructureCleanup() throws IOException {
+        if (needClassPathInit && mappings != null) {
+            try {
+                ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
+                    public ClasspathInfo run(EntityMappingsMetadata metadata) {
+                        return metadata.createJavaSource().getClasspathInfo();
+                    }
+                }).get();
+
+                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.SOURCE)
+                });
+                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.COMPILE)
+                });
+                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {
+                    cpInfo.getClassPath(PathKind.BOOT)
+                });
+            } catch (InterruptedException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            } catch (MetadataModelException ex) {
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+            }
+        }
+    }
+
     /**
      * Uninitializes the wizard.
      *
@@ -551,28 +598,34 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     }
                     String relationField = null;
                     for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
-                        // PENDING when there can be more JoinColumns?
-                        String columnName = manyToOne.getJoinColumn(0).getName();
+                        JoinColumn[] joinColumn = manyToOne.getJoinColumn();
+                        String columnName;
+                        if (joinColumn.length == 0) {
+                            columnName = manyToOne.getName().toUpperCase() + "_ID"; // NOI18N
+                        } else {
+                            // PENDING when there can be more JoinColumns?
+                            columnName = manyToOne.getJoinColumn(0).getName();
+                        }
                         if (relationColumn.equals(columnName)) {
                             relationField = manyToOne.getName();
                             break;
                         }
                     }
-                    for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
-                        String targetEntity = oneToMany.getTargetEntity();
-                        int index = targetEntity.lastIndexOf('.');
-                        if (index != -1) {
-                            targetEntity = targetEntity.substring(index+1);
-                        }
-                        if (detailEntityName.equals(targetEntity)
-                                && relationField.equals(oneToMany.getMappedBy())) {
-                            return new String[] {
-                                J2EEUtils.fieldToProperty(relationField),
-                                J2EEUtils.fieldToProperty(oneToMany.getName())
-                            };
-                        }
-                    }
                     if (relationField != null) {
+                        for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
+                            String targetEntity = oneToMany.getTargetEntity();
+                            int index = targetEntity.lastIndexOf('.');
+                            if (index != -1) {
+                                targetEntity = targetEntity.substring(index+1);
+                            }
+                            if (detailEntityName.equals(targetEntity)
+                                    && relationField.equals(oneToMany.getMappedBy())) {
+                                return new String[] {
+                                    J2EEUtils.fieldToProperty(relationField),
+                                    J2EEUtils.fieldToProperty(oneToMany.getName())
+                                };
+                            }
+                        }
                         return new String[] { J2EEUtils.fieldToProperty(relationField), null };
                     } else {
                         return null;

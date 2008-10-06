@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -59,6 +60,7 @@ import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
+import org.openide.util.RequestProcessor;
 
 /**
  * Fold maintainer that creates and updates custom folds.
@@ -67,7 +69,7 @@ import org.netbeans.spi.editor.fold.FoldOperation;
  * @version 1.00
  */
 
-final class CustomFoldManager implements FoldManager {
+final class CustomFoldManager implements FoldManager, Runnable {
     
     private static final Logger LOG = Logger.getLogger(CustomFoldManager.class.getName());
     
@@ -80,7 +82,9 @@ final class CustomFoldManager implements FoldManager {
     private int maxUpdateMarkOffset = -1;
     private List removedFoldList;
     private HashMap customFoldId = new HashMap();
-    
+
+    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+
     public void init(FoldOperation operation) {
         this.operation = operation;
     }
@@ -91,27 +95,18 @@ final class CustomFoldManager implements FoldManager {
 
     public void initFolds(FoldHierarchyTransaction transaction) {
         doc = getOperation().getHierarchy().getComponent().getDocument();
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        if (th != null) {
-            updateFolds(th.tokenSequence(), transaction);
-        }
+        task.schedule(300);
     }
 
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         processRemovedFolds(transaction);
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        if (th != null) {
-            updateFolds(th.tokenSequence(), transaction);
-        }
+        task.schedule(300);
     }
 
     public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         processRemovedFolds(transaction);
         removeAffectedMarks(evt, transaction);
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        if (th != null) {
-            updateFolds(th.tokenSequence(), transaction);
-        }
+        task.schedule(300);
     }
     
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
@@ -131,6 +126,29 @@ final class CustomFoldManager implements FoldManager {
 
     public void release() {
 
+    }
+
+    public void run() {
+        ((BaseDocument) doc).readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            if (th != null && th.isActive()) {
+                FoldHierarchy hierarchy = getOperation().getHierarchy();
+                hierarchy.lock();
+                try {
+                    FoldHierarchyTransaction transaction = getOperation().openTransaction();
+                    try {
+                        updateFolds(th.tokenSequence(), transaction);
+                    } finally {
+                        transaction.commit();
+                    }
+                } finally {
+                    hierarchy.unlock();
+                }
+            }
+        } finally {
+            ((BaseDocument) doc).readUnlock();
+        }
     }
     
     private void removeFoldNotify(Fold removedFold) {
@@ -432,10 +450,9 @@ final class CustomFoldManager implements FoldManager {
     private static Pattern pattern = Pattern.compile("(<\\s*editor-fold(?:(?:\\s+id=\"(\\S*)\")?(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:(?:\\s+defaultstate=\"(\\S*)\")?(?:\\s+desc=\"([\\S \\t]*)\")?)(?:\\s+defaultstate=\"(\\S*)\")?\\s*>)|(?:</\\s*editor-fold\\s*>)"); // NOI18N
 
     private FoldMarkInfo scanToken(Token token) throws BadLocationException {
-        // ignores flyweight tokens
-        CharSequence tokenText = token.isFlyweight() ? null : token.text();
-        if (tokenText != null) {
-            Matcher matcher = pattern.matcher(tokenText);
+        // ignore any token that is not comment
+        if (token.id().primaryCategory() != null && "comment".equals(token.id().primaryCategory())) { //NOI18N
+            Matcher matcher = pattern.matcher(token.text());
             if (matcher.find()) {
                 if (matcher.group(1) != null) { // fold's start mark found
                     boolean state = "collapsed".equals(matcher.group(3)); // remember the defaultstate // NOI18N

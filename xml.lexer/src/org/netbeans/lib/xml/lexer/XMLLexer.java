@@ -345,7 +345,10 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     if (actChar != '?') break;  // eat content
                     state = ISP_PI_CONTENT_QMARK;
                     input.backup(1);
-                    return token(XMLTokenId.PI_CONTENT);  // may do extra break
+                    if(input.readLength() > 0) {
+                        return token(XMLTokenId.PI_CONTENT);  // may do extra break
+                    }
+                    break;
                     
                 case ISP_PI_CONTENT_QMARK:
                     if (actChar != '?') throw new IllegalStateException("'?' expected in ISP_PI_CONTENT_QMARK");

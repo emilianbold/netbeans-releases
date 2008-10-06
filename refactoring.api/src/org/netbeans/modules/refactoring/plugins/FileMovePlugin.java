@@ -113,7 +113,7 @@ public class FileMovePlugin implements RefactoringPlugin {
                 FileObject target = FileHandlingFactory.getOrCreateFolder(refactoring.getTarget().lookup(URL.class));
                 DataFolder targetFolder = DataFolder.findFolder(target);
                 if (!fo.isValid()) {
-                    String path = fo.getPath();
+                    String path = FileUtil.getFileDisplayName(fo);
                     Logger.getLogger(FileMovePlugin.class.getName()).fine("Invalid FileObject " + path + "trying to recreate...");
                     fo = FileUtil.toFileObject(FileUtil.toFile(fo));
                     if (fo==null)

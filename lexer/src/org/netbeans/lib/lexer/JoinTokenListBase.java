@@ -91,13 +91,19 @@ public final class JoinTokenListBase {
      * its size (even decreased by added items).
      */
     int tokenListIndexGapLength = INDEX_GAP_LENGTH_INITIAL_SIZE; // 32 bytes
+
+    /**
+     * Extra mod count to indicate a change in join token list caused by a custom embedding
+     * creation/removal.
+     */
+    int extraModCount; // 36 bytes
     
     public JoinTokenListBase(int tokenListCount) {
         this.tokenListCount = tokenListCount;
         // Move index gap to be at the end of all contained token lists
         this.indexGapsIndex = tokenListCount;
     }
-    
+
     int joinTokenIndex(int rawJoinTokenIndex) {
         return (rawJoinTokenIndex < joinTokenIndexGapLength)
                 ? rawJoinTokenIndex
@@ -157,6 +163,10 @@ public final class JoinTokenListBase {
         joinTokenIndexGapLength -= joinTokenCountDiff;
     }
 
+    public void incrementExtraModCount() {
+        extraModCount++;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(70);

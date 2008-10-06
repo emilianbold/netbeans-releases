@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,8 +53,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -71,6 +76,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Misc helper methods for implementors of ProjectTypeFactory.
@@ -81,15 +87,19 @@ public class ProjectFactorySupport {
     /** Logger for this class. */
     private static final Logger LOG =
             Logger.getLogger(ProjectFactorySupport.class.getName());
-    
+
     /**
      * Default translation of eclipse classpath to netbeans classpath. Should
      * be useful for most of the project types.
      */
     public static void updateProjectClassPath(AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             List<String> importProblems) throws IOException {
+        {
+            // #147126: force recalc of source groups; otherwise project may not have claimed ownership of external roots.
+            ProjectUtils.getSources(ProjectManager.getDefault().findProject(helper.getProjectDirectory())).getSourceGroups("irrelevant"); // NOI18N
+        }
         if (model.getEclipseSourceRoots().size() == 0) {
-            importProblems.add("No source roots found and therefore no classpath will be configured.");
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_NoSourceRootsFound"));
             return;
         }
         FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
@@ -106,7 +116,7 @@ public class ProjectFactorySupport {
     public static String synchronizeProjectClassPath(Project project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             String oldKey, String newKey, List<String> importProblems) throws IOException {
         if (model.getEclipseSourceRoots().size() == 0) {
-            importProblems.add("No source roots found and therefore no classpath will be synchronized.");
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_NoSourceRootsFound"));
             return oldKey;
         }
         // compare old and new key and add and remove items from classpath;
@@ -115,10 +125,10 @@ public class ProjectFactorySupport {
         String resultingKey = newKey;
         
         // add new CP items:
-        StringTokenizer st = new StringTokenizer(newKey, ";");
+        StringTokenizer st = new StringTokenizer(newKey, ";"); //NOI18N
         while (st.hasMoreTokens()) {
             String t = st.nextToken();
-            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) {
+            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
                 continue;
             }
             if (!oldKey.contains(t)) {
@@ -127,22 +137,22 @@ public class ProjectFactorySupport {
                 addItemToClassPath(helper, refHelper, entry, model, importProblems, sourceRoot);
                 if (Boolean.FALSE.equals(entry.getImportSuccessful())) {
                     // adding of item failed: remove it from key so that it can be retried
-                    resultingKey = resultingKey.replace(t+";", "");
+                    resultingKey = resultingKey.replace(t+";", ""); //NOI18N
                 }
             }
         }
         
         // remove removed CP items:
-        st = new StringTokenizer(oldKey, ";");
+        st = new StringTokenizer(oldKey, ";"); //NOI18N
         while (st.hasMoreTokens()) {
             String t = st.nextToken();
-            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) {
+            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
                 continue;
             }
             if (!newKey.contains(t)) {
-                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) {
+                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) { //NOI18N
                     // removing of item failed: keep it in new key so that it can be retried
-                    resultingKey += t+";";
+                    resultingKey += t+";"; //NOI18N
                 }
             }
         }
@@ -157,8 +167,14 @@ public class ProjectFactorySupport {
         String[] labels = new String[rootURLs.length];
         for (int i = 0; i < rootURLs.length; i++) {
             for (DotClassPathEntry e : sources) {
-                String path = rootURLs[i].getFile();
-                if (path.endsWith("/") || path.endsWith("\\")) {
+                String path;
+                try {
+                    path = new File(rootURLs[i].toURI()).getPath();
+                } catch (URISyntaxException ex) {
+                    LOG.info("cannot convert '"+rootURLs[i].toExternalForm()+"' to file: "+ex.toString()); //NOI18N
+                    continue;
+                }
+                if (path.endsWith("/") || path.endsWith("\\")) { //NOI18N
                     path = path.substring(0, path.length()-1);
                 }
                 if (path.equals(e.getAbsolutePath())) {
@@ -186,16 +202,16 @@ public class ProjectFactorySupport {
             String oneItem = encodeDotClassPathEntryToKey(entry);
             if (oneItem != null) {
                 sb.append(oneItem);
-                sb.append(";");
+                sb.append(";"); //NOI18N
             }
         }
         if (model.getJavaPlatform() != null) {
-            sb.append("jre="+model.getJavaPlatform().getDisplayName()+";");
+            sb.append("jre="+model.getJavaPlatform().getDisplayName()+";"); //NOI18N
         }
         if (model.getOutput() != null) {
-            sb.append("output="+model.getOutput().getRawPath()+";");
+            sb.append("output="+model.getOutput().getRawPath()+";"); //NOI18N
         }
-        return sb.toString().replace("con=;", ""); // remove empty container entries
+        return sb.toString().replace("con=;", ""); // remove empty container entries //NOI18N
     }
     
     private static String encodeDotClassPathEntryToKey(DotClassPathEntry entry) {
@@ -207,24 +223,24 @@ public class ProjectFactorySupport {
         if (value == null || value.length() == 0) {
             return null;
         }
-        return getKindTag(entry.getKind()) + "=" + value;
+        return getKindTag(entry.getKind()) + "=" + value; //NOI18N
     }
 
     private static String getKindTag(DotClassPathEntry.Kind kind) {
         switch (kind) {
             case PROJECT:
-                return "prj";
+                return "prj"; //NOI18N
             case LIBRARY:
-                return "file";
+                return "file"; //NOI18N
             case VARIABLE:
-                return "var";
+                return "var"; //NOI18N
             case CONTAINER:
-                return "ant";
+                return "ant"; //NOI18N
             case OUTPUT:
-                return "out";
+                return "out"; //NOI18N
             case SOURCE:
             default:
-                return "src";
+                return "src"; //NOI18N
         }
     }
 
@@ -281,7 +297,7 @@ public class ProjectFactorySupport {
                 }
             }
             if (requiredProject == null) {
-                importProblems.add("Required project '" + entry.getRawPath().substring(1) + "' cannot be found.");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_RequiredProjectNotFound", entry.getRawPath().substring(1)));
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             }
@@ -291,7 +307,7 @@ public class ProjectFactorySupport {
                 elements.addAll(Arrays.asList(art.getArtifactLocations()));
             }
             if (artifact.length == 0) {
-                importProblems.add("Required project '" + requiredProject.getProjectDirectory() + "' does not provide any JAR artifacts.");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_RequiredProjectHasNoArtifacts", requiredProject.getProjectDirectory()));
                 entry.setImportSuccessful(Boolean.FALSE);
                 return false;
             } else {
@@ -305,7 +321,7 @@ public class ProjectFactorySupport {
                         if (transentry.isExported()) {
                             boolean result = addItemToClassPath(helper, refHelper, transentry, model, importProblems, sourceRoot);
                             if (!result) {
-                                importProblems.add("Transitive export " + transentry.getRawPath() + " cannot be resolved.");
+                                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_TransitiveExportCannotBeResolved", transentry.getRawPath()));
                                 entry.setImportSuccessful(Boolean.FALSE);
                                 return false;
                             }
@@ -317,27 +333,21 @@ public class ProjectFactorySupport {
         } else if (entry.getKind() == DotClassPathEntry.Kind.LIBRARY) {
             File f = new File(entry.getAbsolutePath());
             if (!f.exists()) {
-                importProblems.add("Classpath entry '"+f.getPath()+"' does not seems to exist.");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_MissingClasspathEntry", f.getPath()));
             }
             try {
                 ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
                 entry.setImportSuccessful(Boolean.TRUE);
             } catch (UnsupportedOperationException x) {
-                // java.lang.UnsupportedOperationException: Project in .../JSPWiki of class org.netbeans.modules.autoproject.core.AutomaticProject has neither a ProjectClassPathModifierImplementation nor a ProjectClassPathExtender in its lookup
-                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.findExtensible(ProjectClassPathModifier.java:360)
-                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots(ProjectClassPathModifier.java:138)
-                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.addItemToClassPath(ProjectFactorySupport.java:323)
-                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.updateProjectClassPath(ProjectFactorySupport.java:98)
-                //         at org.netbeans.modules.projectimport.eclipse.j2se.J2SEProjectFactory.createProject(J2SEProjectFactory.java:105)
-                //         at org.netbeans.modules.projectimport.eclipse.core.Importer.importProject(Importer.java:197)
-                importProblems.add(x.getMessage()); // XXX could do better
+                // Probably should not happen any more (#147126), but handle gracefully just in case.
+                importProblems.add(x.getMessage());
                 entry.setImportSuccessful(false);
             }
             updateSourceAndJavadoc(helper, f, null, entry, false);
         } else if (entry.getKind() == DotClassPathEntry.Kind.VARIABLE) {
             // add property directly to Ant property
             String antProp = createFileReference(helper, refHelper, entry);
-            addToBuildProperties(helper, "javac.classpath", antProp);
+            addToBuildProperties(helper, "javac.classpath", antProp); //NOI18N
             testProperty(antProp, helper, importProblems);
             updateSourceAndJavadoc(helper, null, antProp, entry, false);
             entry.setImportSuccessful(Boolean.TRUE);
@@ -345,8 +355,8 @@ public class ProjectFactorySupport {
             String antProperty = entry.getContainerMapping();
             if (antProperty != null && antProperty.length() > 0) {
                 // add property directly to Ant property
-                String antProp = "${"+antProperty+"}";
-                addToBuildProperties(helper, "javac.classpath", antProp);
+                String antProp = "${"+antProperty+"}"; //NOI18N
+                addToBuildProperties(helper, "javac.classpath", antProp); //NOI18N
                 testProperty(antProp, helper, importProblems);
                 entry.setImportSuccessful(Boolean.TRUE);
             }
@@ -356,15 +366,15 @@ public class ProjectFactorySupport {
 
     private static void testProperty(String property, AntProjectHelper helper, List<String> importProblems) {
         String value = helper.getStandardPropertyEvaluator().evaluate(property);
-        if (value.contains("${")) {
-            importProblems.add("Classpath entry '"+property+"' cannot be resolved.");
+        if (value.contains("${")) { //NOI18N
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_CannotResolveClasspathEntry", property));
             return;
         }
         String paths[] = PropertyUtils.tokenizePath(value);
         for (String path : paths) {
             File f = new File(path);
             if (!f.exists()) {
-                importProblems.add("Classpath entry '"+path+"' does not seem to exist.");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ClasspathEntryDoesNotExist", path));
             }
         }
     }
@@ -388,7 +398,7 @@ public class ProjectFactorySupport {
                         }
                         boolean b = ProjectClassPathModifier.removeAntArtifacts(artifact, elements.toArray(new URI[elements.size()]), sourceRoot, ClassPath.COMPILE);
                         if (!b) {
-                            importProblems.add("reference to project '"+encodedValue+"' was not succesfully removed");
+                            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_CannotRemoveReference", encodedValue));
                             return false;
                         }
                         found = true;
@@ -396,7 +406,7 @@ public class ProjectFactorySupport {
                     }
                 }
                 if (!found) {
-                    importProblems.add("reference to project '"+encodedValue+"' was not found and therefore could not be removed");
+                    importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ReferenceToProjectNotFound", encodedValue));
                     return false;
                 }
             } else {
@@ -410,22 +420,22 @@ public class ProjectFactorySupport {
             updateSourceAndJavadoc(helper, f, null, null, true);
             boolean b = ProjectClassPathModifier.removeRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
             if (!b) {
-                importProblems.add("reference to JAR/Folder '"+encodedValue+"' was not succesfully removed");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ReferenceNotRemoved", encodedValue));
                 return false;
             }
         } else if ("var".equals(encodedKind)) { // NOI18N
             String v[] = EclipseUtils.splitVariable(encodedValue);
-            String antProp = findFileReference(helper, "${var."+v[0]+"}"+v[1]);
+            String antProp = findFileReference(helper, "${var."+v[0]+"}"+v[1]);// NOI18N
             updateSourceAndJavadoc(helper, null, antProp, null, true);
             boolean b = removeFromBuildProperties(helper, "javac.classpath", antProp); // NOI18N
             if (!b) {
-                importProblems.add("reference to variable based JAR/Folder '"+encodedValue+"' was not succesfully removed");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_VariableReferenceNotRemoved", encodedValue));
                 return false;
             }
         } else if ("ant".equals(encodedKind)) { // NOI18N
             boolean b = removeFromBuildProperties(helper, "javac.classpath", "${"+encodedValue+"}"); // NOI18N
             if (!b) {
-                importProblems.add("reference to container value '"+encodedValue+"' was not succesfully removed");
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ContainerReferenceNotRemoved", encodedValue));
                 return false;
             }
         }
@@ -450,7 +460,7 @@ public class ProjectFactorySupport {
     private static String findFileReference(AntProjectHelper helper, String value) {
         for (Map.Entry<String, String> e : helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).entrySet()) {
             if (value.equals(e.getValue())) {
-                return "${"+e.getKey()+"}";
+                return "${"+e.getKey()+"}"; // NOI18N
             }
         }
         /* XXX can get here if user just deleted an unimported lib, e.g. ${var.APPLICATION_HOME_DIR}/lib/javaee.jar from JSPWiki:
@@ -466,14 +476,14 @@ public class ProjectFactorySupport {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String cp = ep.getProperty(property);
         if (cp == null) {
-            cp = "";
+            cp = ""; //NOI18N
         } else {
-            cp += ":";
+            cp += ":"; //NOI18N
         }
         cp += valueToAppend;
         String[] arr = PropertyUtils.tokenizePath(cp);
         for (int i = 0; i < arr.length - 1; i++) {
-            arr[i] += ":";
+            arr[i] += ":"; //NOI18N
         }
         ep.setProperty(property, arr);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -488,7 +498,7 @@ public class ProjectFactorySupport {
         String cp = ep.getProperty(property);
         String oldCp = cp;
         if (cp != null && referenceToRemove != null) {
-            cp = cp.replace(referenceToRemove, "");
+            cp = cp.replace(referenceToRemove, ""); //NOI18N
         }
         if (cp.equals(oldCp)) {
             result = false;
@@ -498,7 +508,7 @@ public class ProjectFactorySupport {
             arr[i] += ":"; // NOI18N
         }
         ep.setProperty(property, arr);
-        if (referenceToRemove.startsWith("${file.reference.") && isLastReference(ep, CommonProjectUtils.getAntPropertyName(referenceToRemove))) {
+        if (referenceToRemove.startsWith("${file.reference.") && isLastReference(ep, CommonProjectUtils.getAntPropertyName(referenceToRemove))) { //NOI18N
             ep.remove(CommonProjectUtils.getAntPropertyName(referenceToRemove));
         }
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
@@ -600,9 +610,11 @@ public class ProjectFactorySupport {
         return path;
     }
 
-    public static void setupSourceExcludes(AntProjectHelper helper, ProjectImportModel model) {
+    public static void setupSourceExcludes(AntProjectHelper helper, ProjectImportModel model, List<String> importProblems) {
         StringBuffer excludes = new StringBuffer();
         StringBuffer includes = new StringBuffer();
+        int numberOfSourceRootsWithExcludes = 0;
+        int numberOfSourceRootsWithIncludes = 0;
         for (DotClassPathEntry entry : model.getEclipseSourceRoots()) {
             String s = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCE_EXCLUDES);
             if (s != null) {
@@ -611,12 +623,14 @@ public class ProjectFactorySupport {
                     // which is not desirable; this exclude seems to be frequently used 
                     // in .classpath files generated from Maven pom.xml - it is used on folders
                     // keeping resources (e.g. src/main/resources)
+                    importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ExcludesWarning1"));
                     continue;
                 }
                 if (excludes.length() > 0) {
                     excludes.append(","); // NOI18N
                 }
                 excludes.append(s.replace('|', ',')); // NOI18N
+                numberOfSourceRootsWithExcludes++;
             }
             s = entry.getProperty(DotClassPathEntry.ATTRIBUTE_SOURCE_INCLUDES);
             if (s != null) {
@@ -624,7 +638,11 @@ public class ProjectFactorySupport {
                     includes.append(","); // NOI18N
                 }
                 includes.append(s.replace('|', ',')); // NOI18N
+                numberOfSourceRootsWithIncludes++;
             }
+        }
+        if (numberOfSourceRootsWithExcludes > 1 || numberOfSourceRootsWithIncludes > 1) {
+            importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_ExcludesWarning2"));
         }
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         boolean changed = false;
@@ -640,5 +658,36 @@ public class ProjectFactorySupport {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
     }
-    
+
+    /**
+     * Checks whether any of Eclipse source roots is already owned by a project.
+     * If it is then abort import and tell user to open that project instead.
+     * Internal source roots beneath the project directory do not pose this problem, as
+     * {@link FileOwnerQuery} should consider the new project to be the default owner of anything
+     * underneath it.
+     * @param model a model of the project being considered for import
+     * @param nbProjectDir the proposed directory to use as the NetBeans {@linkplain Project#getProjectDirectory project directory}
+     * @param importProblems problems to append to in case this returns true
+     * @return true if the import would be blocked by ownership issues; false normally
+     */
+    public static boolean areSourceRootsOwned(ProjectImportModel model, File nbProjectDir, List<String> importProblems) {
+        for (File sourceRootFile : model.getEclipseSourceRootsAsFileArray()) {
+            if (sourceRootFile.getAbsolutePath().startsWith(nbProjectDir.getAbsolutePath())) {
+                continue;
+            }
+            FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    if (fo.equals(sg.getRootFolder())) {
+                        importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
+                                model.getProjectName(), sourceRootFile.getPath(),
+                                FileUtil.getFileDisplayName(p.getProjectDirectory())));
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

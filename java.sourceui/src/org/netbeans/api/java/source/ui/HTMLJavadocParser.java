@@ -78,7 +78,7 @@ class HTMLJavadocParser {
                 is = url.openStream();
                 parser = new ParserDelegator();
                 String urlStr = URLDecoder.decode(url.toString(), "UTF-8"); //NOI18N
-                int offsets[] = new int[2];
+                int offsets[] = null;
                 Reader reader = charset == null?new InputStreamReader(is): new InputStreamReader(is, charset);
                 
                 if (pkg){
@@ -93,8 +93,8 @@ class HTMLJavadocParser {
                     offsets = parseClass(reader, parser, charset != null);
                 }
                 
-                if (offsets !=null && offsets[0]!=-1 && offsets[1]>offsets[0]){
-                    return getTextFromURLStream(url, offsets[0], offsets[1], charset);
+                if (offsets != null){
+                    return getTextFromURLStream(url, offsets, charset);
                 }
                 break;
             } catch (ChangedCharSetException e) {
@@ -164,32 +164,52 @@ class HTMLJavadocParser {
         return null;
     }
     
-    private static String getTextFromURLStream(URL url, int startOffset, int endOffset, String charset) throws IOException{
-        
-        if (url == null) return null;
-        
-        if (startOffset>endOffset) throw new IOException();
-        InputStream fis = url.openStream();
-        InputStreamReader fisreader = charset == null ? new InputStreamReader(fis) : new InputStreamReader(fis, charset);
-        int len = endOffset - startOffset;
-        int bytesAlreadyRead = 0;
-        char buffer[] = new char[len];
-        int bytesToSkip = startOffset;
-        long bytesSkipped = 0;
-        do {
-            bytesSkipped = fisreader.skip(bytesToSkip);
-            bytesToSkip -= bytesSkipped;
-        } while ((bytesToSkip > 0) && (bytesSkipped > 0));
+    private static String getTextFromURLStream(URL url, int[] offsets, String charset) throws IOException {
+        if (url == null)
+            return null;
 
-        do {
-            int count = fisreader.read(buffer, bytesAlreadyRead, len - bytesAlreadyRead);
-            if (count < 0){
-                break;
+        InputStream fis = null;
+        InputStreamReader fisreader = null;
+        try {
+            fis = url.openStream();
+            fisreader = charset == null ? new InputStreamReader(fis) : new InputStreamReader(fis, charset);
+            
+            StringBuilder sb = new StringBuilder();
+            int offset = 0;
+
+            for (int i = 0; i < offsets.length - 1; i+=2) {
+                int startOffset = offsets[i];
+                int endOffset = offsets[i + 1];
+                if (startOffset < 0 || endOffset < 0)
+                    continue;
+                if (startOffset > endOffset)
+                    throw new IOException();
+
+                int len = endOffset - startOffset;
+                char buffer[] = new char[len];
+                int bytesToSkip = startOffset - offset;
+                long bytesSkipped = 0;
+                do {
+                    bytesSkipped = fisreader.skip(bytesToSkip);
+                    bytesToSkip -= bytesSkipped;
+                } while ((bytesToSkip > 0) && (bytesSkipped > 0));
+
+                int bytesAlreadyRead = 0;
+                do {
+                    int count = fisreader.read(buffer, bytesAlreadyRead, len - bytesAlreadyRead);
+                    if (count < 0){
+                        break;
+                    }
+                    bytesAlreadyRead += count;
+                } while (bytesAlreadyRead < len);
+                sb.append(buffer);
+                offset = endOffset;
             }
-            bytesAlreadyRead += count;
-        } while (bytesAlreadyRead < len);
-        fisreader.close();
-        return new String(buffer);
+            return sb.toString();
+        } finally {
+            if (fisreader != null)
+                fisreader.close();
+        }
     }
 
     
@@ -202,12 +222,8 @@ class HTMLJavadocParser {
         // start of the text we need. Located just after first P.
         final int TEXT_START = 2;
 
-        final int state[] = new int[1];
-        final int offset[] = new int[2];
-
-        offset[0] = -1; //start offset
-        offset[1] = -1; //end offset
-        state[0] = INIT;
+        final int state[] = new int[] {INIT};
+        final int offset[] = new int[] {-1, -1, -1, -1};
 
         HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback() {
 
@@ -225,15 +241,18 @@ class HTMLJavadocParser {
 
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.P && state[0] == CLASS_DATA_START){
-                    state[0] = TEXT_START;
+                    if (offset[0] != -1 && offset[1] == -1)
+                        offset[1] = pos + 3;
+                    else
+                        state[0] = TEXT_START;
                 }
                 if (t == HTML.Tag.A && state[0] == TEXT_START) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
                     if (attrName!=null && attrName.length()>0){
                         if (nextHRPos!=-1){
-                            offset[1] = nextHRPos;
+                            offset[3] = nextHRPos;
                         }else{
-                            offset[1] = pos;
+                            offset[3] = pos;
                         }
                         state[0] = INIT;
                     }
@@ -247,17 +266,19 @@ class HTMLJavadocParser {
                         state[0] = CLASS_DATA_START;
                     } else if (comment.indexOf("NESTED CLASS SUMMARY")>0){ //NOI18N
                         if (lastHRPos!=-1){
-                            offset[1] = lastHRPos;
+                            offset[3] = lastHRPos;
                         }else{
-                            offset[1] = pos;
+                            offset[3] = pos;
                         }
                     }
                 }
             }
             
             public void handleText(char[] data, int pos) {
-                if (state[0] == TEXT_START && offset[0] < 0)
-                    offset[0] = pos;
+                if (state[0] == CLASS_DATA_START && "Deprecated.".equals(new String(data))) //NOI18N
+                    offset[0] = lastHRPos + 4;
+                else if (state[0] == TEXT_START && offset[2] < 0)
+                    offset[2] = pos;
             }
         };        
 

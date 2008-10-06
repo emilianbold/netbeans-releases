@@ -40,8 +40,13 @@
 package org.netbeans.modules.glassfish.jruby;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -54,19 +59,31 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
+import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
+import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputListener;
 
 
 /**
  *
  * @author Peter Williams
  */
-public class JRubyServerModule implements RubyInstance, CustomizerCookie {
+public class JRubyServerModule implements RubyInstance, CustomizerCookie, RecognizerCookie {
 
     public static final String USE_ROOT_CONTEXT_ATTR = "jruby.useRootContext"; // NOI18N
     
@@ -156,13 +173,13 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             }
 
             GlassfishModule.ServerState state = commonModule.getServerState();
-            if(state == GlassfishModule.ServerState.STOPPED) {
+            if(state == GlassfishModule.ServerState.STOPPED || 
+                    state == GlassfishModule.ServerState.RUNNING) {
                 FutureTask<OperationState> task = new FutureTask<OperationState>(
-                        new RunAppTask(commonModule, applicationName, applicationDir));
+                        new RunAppTask(commonModule, applicationName, applicationDir, 
+                                state == GlassfishModule.ServerState.STOPPED));
                 RequestProcessor.getDefault().post(task);
                 return task;
-            } else if(state == GlassfishModule.ServerState.RUNNING) {
-                return deploy(applicationName, applicationDir);
             } else {
                 // !PW XXX server state indeterminate - starting or stopping, 
                 // fail action until wait capability installed.
@@ -172,36 +189,43 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
     }
-    
+
     private static class RunAppTask implements 
             Callable<OperationState>,
             OperationStateListener 
     {
-        
         private final GlassfishModule commonModule;
         private final String applicationName;
         private final File applicationDir;
+        private final boolean doStart;
+        private String contextRoot;
         private String step;
                 
-        public RunAppTask(final GlassfishModule module, final String appname, final File appdir) {
+        public RunAppTask(final GlassfishModule module, final String appname, final File appdir, boolean startRequired) {
             commonModule = module;
-            applicationName = appname;
+            applicationName = appname.replaceAll("[ \t]", "_");
             applicationDir = appdir;
+            contextRoot = calculateContextRoot(module, appname);
+            doStart = startRequired;
             step = "start";
         }
         
         public OperationState call() throws Exception {
-            final Future<GlassfishModule.OperationState> startFuture = 
-                    commonModule.startServer(this);
-            GlassfishModule.OperationState result = startFuture.get();
+            GlassfishModule.OperationState result = GlassfishModule.OperationState.COMPLETED;
+            if(doStart) {
+                final Future<GlassfishModule.OperationState> startFuture = 
+                        commonModule.startServer(this);
+                result = startFuture.get();
+            }
             if(result == GlassfishModule.OperationState.COMPLETED) {
-                step = "deploy";
-                boolean useRootContext = Boolean.valueOf(
-                        commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-                final Future<GlassfishModule.OperationState> deployFuture = 
-                        commonModule.deploy(this, applicationDir, applicationName, 
-                        useRootContext ? "/" : "/" + applicationName);
-                result = deployFuture.get();
+                if(isDeployed()) {
+                    result = GlassfishModule.OperationState.COMPLETED;
+                } else {
+                    step = "deploy";
+                    final Future<GlassfishModule.OperationState> deployFuture = 
+                            commonModule.deploy(this, applicationDir, applicationName, contextRoot);
+                    result = deployFuture.get();
+                }
             }
             return translateOperationState(result);
         }
@@ -209,6 +233,61 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
             Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                     "runApplication/" + step + " V3/JRuby: " + newState + " - " + message);
+        }
+
+        private boolean isDeployed() {
+            step = "checkdeployed";
+            String propertyBase = "applications.application." + applicationName;
+            ServerCommand.GetPropertyCommand getCmd = new ServerCommand.GetPropertyCommand(propertyBase);
+            Future<GlassfishModule.OperationState> cmdOp = commonModule.execute(getCmd);
+            try {
+                GlassfishModule.OperationState result = cmdOp.get(15000, TimeUnit.MILLISECONDS);
+                if(result != GlassfishModule.OperationState.COMPLETED) {
+                    return false;
+                }
+                
+                Map<String, String> properties = getCmd.getData();
+                
+                String name = properties.get(propertyBase + ".name");
+                if(name == null || !name.equals(applicationName)) {
+                    return false;
+                }
+                
+                String location = properties.get(propertyBase + ".location");
+                if(location == null || !location.startsWith("file:") || 
+                        !match(applicationDir, location.substring(5))) {
+                    return false;
+                }
+                
+                String contextRootProperty = propertyBase + ".context-root";
+                String deployedContextRoot = properties.get(contextRootProperty);
+                if(deployedContextRoot == null) {
+                    return false;
+                } else if(!deployedContextRoot.equals(contextRoot)) {
+                    ServerCommand.SetPropertyCommand setCmd = new ServerCommand.SetPropertyCommand(
+                            contextRootProperty, contextRoot);
+                    result = commonModule.execute(setCmd).get(15000, TimeUnit.MILLISECONDS);
+                    if(result != GlassfishModule.OperationState.COMPLETED) {
+                        return false;
+                    }
+                }
+            } catch(Exception ex) {
+                // Assume application is not deployed correctly.  Not expected.
+                Logger.getLogger("glassfish.javaee").log(Level.FINE, ex.getLocalizedMessage(), ex);
+                return false;
+            }
+            return true;
+        }
+
+        private boolean match(File dir, String path) {
+            String dirpath = dir.getAbsolutePath().replaceAll("[ \t]", "%20");
+            if(!dirpath.endsWith("/")) {
+                dirpath = dirpath + "/";
+            }
+            if(!path.endsWith("/")) {
+                path = path + "/";
+            }
+            return dirpath.equals(path);
         }
         
     }
@@ -230,14 +309,10 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     public Future<OperationState> deploy(final String applicationName, final File applicationDir) {
         GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
         if(commonModule != null) {
-            boolean useRootContext = Boolean.valueOf(
-                    commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
-            return wrapTask(commonModule.deploy(new OperationStateListener() {
-                public void operationStateChanged(final GlassfishModule.OperationState newState, final String message) {
-                    Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
-                            "deploy V3/JRuby: " + newState + " - " + message);
-                }
-            }, applicationDir, applicationName, useRootContext ? "/" : "/" + applicationName));
+            FutureTask<OperationState> task = new FutureTask<OperationState>(
+                    new RunAppTask(commonModule, applicationName, applicationDir, false));
+            RequestProcessor.getDefault().post(task);
+            return task;
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -252,7 +327,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                     Logger.getLogger("glassfish-jruby").log(Level.FINEST, 
                             "undeploy V3/JRuby: " + newState + " - " + message);
                 }
-            }, applicationName));
+            }, applicationName.replaceAll("[ \t]", "_")));
         } else {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
@@ -285,8 +360,12 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
     }
 
     public String getContextRoot(String applicationName) {
-//        return applicationName;
-        return "";
+        String result = applicationName;
+        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+        if(commonModule != null) {
+            result = calculateContextRoot(commonModule, applicationName);
+        }
+        return result;
     }
 
     public int getRailsPort() {
@@ -305,6 +384,139 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
                     "No V3 Common Server support found for V3/Ruby server instance");
         }
         return httpPort;
+    }
+
+    public String getServerCommand(final RubyPlatform platform, final String classpath, 
+            final File applicationDir, final int httpPort, final boolean debug) {
+        
+        /**
+         *  -cp
+         *    ${server}/modules/grizzly-jruby-1.7.8-SNAPSHOT.jar:
+         *    ${server}/modules/grizzly-module-1.8.2.jar:
+         *    ${jruby.home}/lib/jruby.jar
+         *  -Djruby.home=${jruby.home}
+         *  -client
+         *  ${grizzly.jruby.vm.params}
+         *  -Xdebug
+         *  -Xrunjdwp:transport=dt_socket,address=${grizzly.jruby.vm.debugport},server=y,suspend=n
+         *  -Dglassfish.rdebug=${rdebug.path}
+         *  -Dglassfish.rdebug.port=${rdebug.port}
+         *  -Dglassfish.rdebug.version=${rdebug.version}
+         *  -Dglassfish.rdebug.iosynch=${rdebug.iosynch}
+         *  com.sun.grizzly.standalone.JRuby
+         *    -p <Rails HTTP Port> -n 1 <Rails Application Folder>
+         */
+        StringBuilder builder = new StringBuilder(1000);
+
+        // JVM classpath
+        builder.append("-cp ");
+        List<String> serverJars = getServerJars();
+        for(String jarPath: serverJars) {
+            builder.append(jarPath);
+            builder.append(File.pathSeparatorChar);
+        }
+
+        String jrubyJar = platform.getHome().getAbsolutePath() +
+                File.separatorChar + "lib" + File.separatorChar + "jruby.jar";
+        builder.append(ServerUtilities.quote(jrubyJar));
+
+        if(classpath != null && classpath.length() > 0) {
+            String[] subpaths = classpath.split(File.pathSeparator);
+            for(String subpath: subpaths) {
+                builder.append(File.pathSeparatorChar);
+                builder.append(ServerUtilities.quote(subpath));
+            }
+        }
+
+        // JVM flags
+        builder.append(" -client");
+
+        // JVM properties
+        builder.append(" -Djruby.home=");
+        builder.append(ServerUtilities.quote(platform.getHome().getAbsolutePath()));
+
+        String grizzlyVMParams = System.getProperty("grizzly.jruby.vm.params");
+        if(grizzlyVMParams != null) {
+            builder.append(' ');
+            builder.append(grizzlyVMParams);
+        }
+
+        // Enables debugging of the Grizzly JVM, if this system property is set.
+        Integer grizzlyVMDebugPort = Integer.getInteger("grizzly.jruby.vm.debugport");
+        if(grizzlyVMDebugPort != null) {
+            builder.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=" +
+                     grizzlyVMDebugPort + ",server=y,suspend=y");
+        }
+
+        // Define properties to enable rdebug inside Grizzly/JRuby adapter if
+        // debugging is enabled.
+        if(debug) {
+            builder.append(" -Djruby.reflection=true -Djruby.compile.mode=OFF");
+            builder.append(
+                    " -Dglassfish.rdebug=${rdebug.path}" +
+                    " -Dglassfish.rdebug.port=${rdebug.port}" +
+                    " -Dglassfish.rdebug.version=${rdebug.version}" +
+                    " -Dglassfish.rdebug.iosynch=${rdebug.iosynch}");
+            if("true".equals(System.getProperty("glassfish.rdebug.verbose"))) {
+                builder.append(" -Dglassfish.rdebug.verbose=true");
+            }
+        }
+
+        // Arguments to Grizzly/JRuby standalone server
+        builder.append(" com.sun.grizzly.standalone.JRuby");
+        builder.append(" -p ");
+        builder.append(httpPort);
+        builder.append(" -n 1 ");
+        builder.append(ServerUtilities.quote(applicationDir.getAbsolutePath()));
+        
+        return builder.toString();
+    }
+    
+    private List<String> getServerJars() {
+        List<String> serverJars = new ArrayList<String>();
+        GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
+        if(commonModule != null) {
+            String glassfishRoot = commonModule.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            File modulesDir = new File(glassfishRoot, "modules");
+
+            // !PW FIXME cache results so we don't keep looking this up.
+            //
+            // !PW FIXME could have more robust jar searching.  We need to
+            // locate the following jars:
+            //   grizzly-jruby-<version>.jar        // grizzly jruby adapter
+            //   grizzly-module-<version>.jar       // grizzly http connector
+            //   grizzly-optionals-<version>.jar    // comet, etc.
+            //
+            File [] grizzlyJars = modulesDir.listFiles(new FileFilter() {
+                public boolean accept(File pathname) {
+                    String name = pathname.getName();
+                    return name.startsWith("grizzly") && name.endsWith(".jar") && !name.contains("jruby-module");
+                }
+            });
+
+            if(grizzlyJars != null) {
+                for(File jar: grizzlyJars) {
+                    Logger.getLogger("glassfish-jruby").log(Level.FINER,
+                            "Found jar for grizzly path: " + jar.getAbsolutePath());
+                    serverJars.add(ServerUtilities.quote(jar.getAbsolutePath()));
+                }
+            } else {
+                Logger.getLogger("glassfish-jruby").log(Level.WARNING,
+                        "Problem accessing " + modulesDir.getAbsolutePath() +
+                        " when searching for Grizzly Jars.");
+            }
+        } else {
+            Logger.getLogger("glassfish-jruby").log(Level.WARNING, 
+                    "No V3 Common Server support found for V3/Ruby server instance");
+        }
+        
+        return serverJars;
+    }
+
+    private static String calculateContextRoot(GlassfishModule commonModule, String applicationName) {
+        boolean useRootContext = Boolean.valueOf(
+                commonModule.getInstanceProperties().get(USE_ROOT_CONTEXT_ATTR));
+        return useRootContext ? "/" : "/" + applicationName.replaceAll("[ \t]", "_");
     }
 
     /**
@@ -413,4 +625,39 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         return result;
     }
 
+    // ------------------------------------------------------------------------
+    // RecognizerCookie support
+    // ------------------------------------------------------------------------
+    
+//    private static final String WINDOWS_DRIVE = "(?:\\S{1}:[\\\\/])"; // NOI18N
+    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
+    private static final String FILE = "((?:" + FILE_CHAR + "*))"; // NOI18N
+//    private static final String FILE_WIN = "(" + WINDOWS_DRIVE + "(?:" + FILE_CHAR + ".*))"; // NOI18N
+    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
+    private static final String ROL = ".*\\s?"; // NOI18N
+    private static final String SEP = "\\:"; // NOI18N
+    private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
+
+    private static final RegexpOutputRecognizer RAILS_RECOGNIZER =
+        new RegexpOutputRecognizer(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
+    
+    public Collection<? extends Recognizer> getRecognizers() {
+        return Collections.singleton(wrapRubyRecognizer(new DirectoryFileLocator(
+                FileUtil.toFileObject(FileUtil.normalizeFile(new File("/")))), RAILS_RECOGNIZER));
+    }
+
+    private Recognizer wrapRubyRecognizer(final FileLocator locator, final OutputRecognizer recognizer) {
+        return new Recognizer() {
+            public OutputListener processLine(String text) {
+                OutputListener result = null;
+                OutputRecognizer.RecognizedOutput match = recognizer.processLine(text);
+                if(match instanceof OutputRecognizer.FileLocation) {
+                    OutputRecognizer.FileLocation fileLocation = (OutputRecognizer.FileLocation) match;
+                    result = new OutputProcessor(fileLocation.file, fileLocation.line, locator);
+                }
+                return result;
+            }
+        };
+    }
+    
 }

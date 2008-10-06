@@ -73,8 +73,7 @@ public class HelpActionTest extends JellyTestCase {
         suite.addTest(new HelpActionTest("testPerformPopupOnPropertySheet"));
         return suite;
          */
-        return createModuleTest(HelpActionTest.class, "testPerformMenu", 
-                "testPerformShortcut", "testPerformPopupOnPropertySheet");
+        return createModuleTest(HelpActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

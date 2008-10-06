@@ -45,13 +45,16 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <folder name="Identity">
+                <folder name="Metro">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
+                    <!-- Not used and commented out so it doesn't get overridden by other modules and break the validation test.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/category.html"/>
-                    <!-- StockQuoteClient Sample -->
-                    <attr name="position" intvalue="600"/>
+                    -->
+                    <attr name="position" intvalue="250"/>
+                     <!-- StockQuoteClient Sample -->
                     <file name="StockQuoteClientSampleProject" url="StockQuoteClient.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
+                        <attr name="position" intvalue="410"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.StockClientSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/StockSampleDescription.html"/>
@@ -60,7 +63,8 @@ made subject to such option by the copyright holder.
                     
                     <!-- StockQuoteService Sample -->
                     <file name="StockQuoteServiceSampleProject" url="StockQuoteService.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
+                        <attr name="position" intvalue="400"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.identity.samples.ui.StockServerSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/StockSampleDescription.html"/>

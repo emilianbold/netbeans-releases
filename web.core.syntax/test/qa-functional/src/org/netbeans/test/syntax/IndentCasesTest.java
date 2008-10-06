@@ -37,10 +37,10 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.test.web.RecurrentSuiteFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -57,8 +57,12 @@ public class IndentCasesTest extends J2eeTestCase {
     private BaseDocument doc;
     private static boolean projectsOpened = false;
 
-    public IndentCasesTest() {
+     public IndentCasesTest() {
         super("IndentationTesting");
+     }
+     
+     public IndentCasesTest(String name) {
+        super(name);
     }
    
     public static Test suite() {
@@ -69,13 +73,14 @@ public class IndentCasesTest extends J2eeTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         if (!projectsOpened){
+            JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
             File dataDir = getDataDir();
             projectDir = new File(dataDir, "IndentationTestProjects/IndentationTest");
             projectDir = projectDir.getAbsoluteFile();
             openProjects(projectDir.getAbsolutePath());
-            RecurrentSuiteFactory.resolveServer(projectDir.getName());
-            setIndent(5);
-            setIndent(4);
+            resolveServer(projectDir.getName());
+            Thread.sleep(10000);
+            setIndent(2);
             projectsOpened = true;
             openFile("indentationTest.jsp");
             openFile("indentationTest.html");
@@ -83,10 +88,10 @@ public class IndentCasesTest extends J2eeTestCase {
         }
     }
 
-    private void setIndent(int number){
+    public static void setIndent(int number){
         OptionsOperator options = OptionsOperator.invoke();
         options.selectEditor();
-        new JTabbedPaneOperator(options).selectPage("Indentation");
+        new JTabbedPaneOperator(options).selectPage("Formatting");
         JLabelOperator label = new JLabelOperator(options, "Number");
         JSpinner spinner = (JSpinner) label.getLabelFor();
         JSpinnerOperator spinnerOp = new JSpinnerOperator(spinner);
@@ -99,7 +104,7 @@ public class IndentCasesTest extends J2eeTestCase {
     }
     
     public void testJSPTagEndLine() throws Exception {
-        testJSP(5, 7, 6, 5);
+        testJSP(5, 7, 6, 3);
     }
 
 //issue 120136
@@ -112,15 +117,15 @@ public class IndentCasesTest extends J2eeTestCase {
 //    }
 
     public void testJSPSmartEnter() throws Exception {
-        testJSP(22, 21, 23, 21);
+        testJSP(22, 21, 23, 19);
     }
 
     public void testJSPOpenTagIndent() throws Exception {
-        testJSP(23, 21, 24, 21);
+        testJSP(23, 21, 24, 19);
     }
 
     public void testJSPEmbeddedCSS1() throws Exception {
-        testJSP(10, 16, 11, 17);
+        testJSP(10, 16, 11, 15);
     }
 
     public void testJSPEmbeddedCSS2() throws Exception {
@@ -132,11 +137,11 @@ public class IndentCasesTest extends J2eeTestCase {
     }
 
     public void testJSPScriptletIfBlock() throws Exception {
-        testJSP(30, 19, 31, 13);
+        testJSP(30, 19, 31, 11);
     }
 
     public void testJSPScriptletForBlock() throws Exception {
-        testJSP(31, 44, 32, 17);
+        testJSP(31, 44, 32, 15);
     }
     
     public void testJSPScriptletClosingBracket() throws Exception {
@@ -148,7 +153,7 @@ public class IndentCasesTest extends J2eeTestCase {
     }
     
     public void testHTMLTagEndLine() throws Exception {
-        testHTML(1, 7, 2, 5);
+        testHTML(1, 7, 2, 3);
     }
     
 //issue 120136
@@ -161,15 +166,15 @@ public class IndentCasesTest extends J2eeTestCase {
 //    }
 
     public void testHTMLSmartEnter() throws Exception {
-        testHTML(14, 21, 15, 21);
+        testHTML(14, 21, 15, 19);
     }
     
     public void testHTMLOpenTagIndent() throws Exception {
-        testHTML(19, 21, 20, 21);
+        testHTML(19, 21, 20, 19);
     }
     
     public void testHTMLEmbeddedCSS1() throws Exception {
-        testHTML(6, 16, 7, 17);
+        testHTML(6, 16, 7, 15);
     }
 
     public void testHTMLEmbeddedCSS2() throws Exception {

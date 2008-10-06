@@ -40,6 +40,7 @@ import org.netbeans.modules.xslt.tmap.model.api.ExNamespaceContext;
 import org.netbeans.modules.xslt.tmap.model.api.MappedReference;
 import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
+import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.PortTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -67,7 +68,9 @@ public class WSDLReferenceBuilder {
         myRetrievers = result.allInstances();
         
         myCollection = new LinkedList<WSDLReferenceFactory>();
-        myCollection.add( new PortTypeResolver() );
+        myCollection.add( new PartnerLinkTypeResolver() );
+        myCollection.add( new RoleResolver() );
+//        myCollection.add( new PortTypeResolver() );
         myCollection.add( new OperationResolver() );
         myCollection.add( new PartResolver() );
     }
@@ -316,80 +319,123 @@ class PortTypeResolver extends AbstractGlobalReferenceFactory {
 
 }
 
-//class RoleResolver extends AbstractNamedReferenceFactory {
-//
-//    /* (non-Javadoc)
-//     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
-//     */
-//    public <T extends ReferenceableWSDLComponent> boolean isApplicable( 
-//            Class<T> clazz ) 
-//    {
-//        return Role.class.isAssignableFrom(clazz);
-//    }
-//
-//    public <T extends ReferenceableWSDLComponent> T 
-//            resolve(AbstractNamedComponentReference<T> reference) 
-//    {
-//        String refString = reference.getRefString();
-//        Class<T> clazz = reference.getType();
-//        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-//                .getParent();
-//        assert entity instanceof PartnerLinkTypeReference;
-//        WSDLReference<PartnerLinkType> pltRef = 
-//            ((PartnerLinkTypeReference) entity).getPartnerLinkType();
-//        if (pltRef == null) {
-//            return null;
-//        }
-//        PartnerLinkType partnerLinkType = pltRef.get();
-//        if (partnerLinkType == null) {
-//            return null;
-//        }
-//        Role role = partnerLinkType.getRole1();
-//        if ( role!=null && refString.equals( role.getName()) ){
-//            return clazz.cast(role);
-//        }
-//        role = partnerLinkType.getRole2();
-//        if ( role!= null && refString.equals( role.getName()) ){
-//            return clazz.cast(role);
-//        }
-//        return null;
-//    }
-//
-//    
-//// TODO m | r    
-////////    /* (non-Javadoc)
-////////     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
-////////     */
-////////    public <T extends ReferenceableWSDLComponent> T resolve( 
-////////            AbstractNamedComponentReference<T> reference )
-////////    {
-////////        String refString = reference.getRefString();
-////////        Class<T> clazz = reference.getType();
-////////        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
-////////                .getParent();
-////////        assert entity instanceof PartnerLink;
-////////        WSDLReference<PartnerLinkType> ref = 
-////////            ((PartnerLink) entity).getPartnerLinkType();
-////////        if (ref == null) {
-////////            return null;
-////////        }
-////////        PartnerLinkType partnerLinkType = ref.get();
-////////        if (partnerLinkType == null) {
-////////            return null;
-////////        }
-////////        Role role = partnerLinkType.getRole1();
-////////        if ( role!=null && refString.equals( role.getName()) ){
-////////            return clazz.cast(role);
-////////        }
-////////        role = partnerLinkType.getRole2();
-////////        if ( role!= null && refString.equals( role.getName()) ){
-////////            return clazz.cast(role);
-////////        }
-////////        return null;
-////////    }
-//    
-//}
-//
+// While there is old XSLT SE runtime add partnerLink oriented transformmap support. see 142908
+class PartnerLinkTypeResolver extends AbstractGlobalReferenceFactory {
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
+         */
+    public <T extends ReferenceableWSDLComponent> boolean isApplicable(
+            Class<T> clazz ) {
+        return PartnerLinkType.class.isAssignableFrom(clazz);
+    }
+    
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+         */
+    public <T extends ReferenceableWSDLComponent> T resolve(
+            AbstractNamedComponentReference<T> reference ) 
+    {
+        String refString = reference.getRefString();
+        Class<T> clazz = reference.getType();
+        AbstractDocumentComponent entity = 
+            (AbstractDocumentComponent) reference.getParent(); 
+        
+        String[] splited = new String[2];
+        
+        splitQName( refString , splited );
+        
+        Collection<WSDLModel> models = WSDLReferenceBuilder.getWSDLModels(entity, 
+                splited[0] );
+        for (WSDLModel model : models) {
+            List<PartnerLinkType> list = model.getDefinitions()
+                .getExtensibilityElements(PartnerLinkType.class);
+            for (PartnerLinkType  partnerLink : list) {
+                if ( splited[1].equals( partnerLink.getName()) ){
+                    return clazz.cast(partnerLink);
+                }
+            }
+        }
+        return null;
+    }
+
+}
+
+// While there is old XSLT SE runtime add partnerLink oriented transformmap support. see 142908
+class RoleResolver extends AbstractNamedReferenceFactory {
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#isApplicable(java.lang.Class)
+     */
+    public <T extends ReferenceableWSDLComponent> boolean isApplicable( 
+            Class<T> clazz ) 
+    {
+        return Role.class.isAssignableFrom(clazz);
+    }
+
+    public <T extends ReferenceableWSDLComponent> T 
+            resolve(AbstractNamedComponentReference<T> reference) 
+    {
+        String refString = reference.getRefString();
+        Class<T> clazz = reference.getType();
+        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
+                .getParent();
+        assert entity instanceof PartnerLinkTypeReference;
+        WSDLReference<PartnerLinkType> pltRef = 
+            ((PartnerLinkTypeReference) entity).getPartnerLinkType();
+        if (pltRef == null) {
+            return null;
+        }
+        PartnerLinkType partnerLinkType = pltRef.get();
+        if (partnerLinkType == null) {
+            return null;
+        }
+        Role role = partnerLinkType.getRole1();
+        if ( role!=null && refString.equals( role.getName()) ){
+            return clazz.cast(role);
+        }
+        role = partnerLinkType.getRole2();
+        if ( role!= null && refString.equals( role.getName()) ){
+            return clazz.cast(role);
+        }
+        return null;
+    }
+
+    
+// TODO m | r    
+//////    /* (non-Javadoc)
+//////     * @see org.netbeans.modules.xslt.tmap.model.impl.WSDLReferenceResolver#resolve(java.lang.Class, org.netbeans.modules.bpel.model.impl.AbstractDocumentComponent, java.lang.String)
+//////     */
+//////    public <T extends ReferenceableWSDLComponent> T resolve( 
+//////            AbstractNamedComponentReference<T> reference )
+//////    {
+//////        String refString = reference.getRefString();
+//////        Class<T> clazz = reference.getType();
+//////        AbstractDocumentComponent entity = (AbstractDocumentComponent) reference
+//////                .getParent();
+//////        assert entity instanceof PartnerLink;
+//////        WSDLReference<PartnerLinkType> ref = 
+//////            ((PartnerLink) entity).getPartnerLinkType();
+//////        if (ref == null) {
+//////            return null;
+//////        }
+//////        PartnerLinkType partnerLinkType = ref.get();
+//////        if (partnerLinkType == null) {
+//////            return null;
+//////        }
+//////        Role role = partnerLinkType.getRole1();
+//////        if ( role!=null && refString.equals( role.getName()) ){
+//////            return clazz.cast(role);
+//////        }
+//////        role = partnerLinkType.getRole2();
+//////        if ( role!= null && refString.equals( role.getName()) ){
+//////            return clazz.cast(role);
+//////        }
+//////        return null;
+//////    }
+    
+}
+
 class OperationResolver extends AbstractNamedReferenceFactory {
 
     /* (non-Javadoc)
@@ -418,11 +464,12 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         if (entity instanceof org.netbeans.modules.xslt.tmap.model.api.Operation) {
             collection = resolveByTransformOperation(entity);
         }
-        
-//        if (entity instanceof PartnerLinkTypeReference) {
-//            collection = resolveByPartnerLink(entity);
-////            ((PartnerLinkTypeReference)entity)
-//        }
+
+        // 142908
+        if (entity instanceof PartnerLinkTypeReference) {
+            collection = resolveByPartnerLink(entity);
+//            ((PartnerLinkTypeReference)entity)
+        }
         
         if (entity instanceof PortTypeReference) {
             collection = resolveByPortType(entity);
@@ -452,7 +499,42 @@ class OperationResolver extends AbstractNamedReferenceFactory {
         }
         
         assert parent instanceof AbstractDocumentComponent;
-        return resolveByPortType((AbstractDocumentComponent)parent);
+        // 142908
+        return resolveByPartnerLink((AbstractDocumentComponent)parent);
+//        return resolveByPortType((AbstractDocumentComponent)parent);
+    }
+    
+    // 142908
+    private Collection<Operation> resolveByPartnerLink( 
+            AbstractDocumentComponent entity ) 
+    {
+        if ( ! (entity instanceof PartnerLinkTypeReference) ){
+            return null;
+        }
+        Collection<Operation> collection;
+//        WSDLReference<PartnerLinkType> ref = (( PartnerLinkTypeReference)entity ).
+//            getPartnerLinkType();
+        
+        WSDLReference<Role> refRole = (( PartnerLinkTypeReference)entity ).getRole();
+        
+        Role role = null;
+        if (refRole != null) {
+            role = refRole.get();
+        }
+        
+        PortType wsdlPortType = null;
+        if (role != null) {
+            NamedComponentReference<PortType> portTypeRef = role.getPortType();
+            if (portTypeRef != null) {
+                wsdlPortType = portTypeRef.get();
+            }
+        }
+
+        if ( wsdlPortType == null ){
+            return null;
+        }
+        collection = wsdlPortType.getOperations();
+        return collection;
     }
     
     private Collection<Operation> resolveByPortType( 

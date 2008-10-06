@@ -70,13 +70,17 @@ public class IsDirCntSecurityManager extends SecurityManager {
     public void checkRead(String file) {
         super.checkRead(file);
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        
-        // File.isDirectory() has been called? If so, count it in.
-        if (stack.length > 3 &&
-                "isDirectory".equals(stack[3].getMethodName()) &&
-                "File.java".equals(stack[3].getFileName())) 
-        {
-            cnt++;
+        for (int i = 0; i < stack.length - 1; i++) {
+            if (stack[i].getClassName().equals(IsDirCntSecurityManager.class.getName())) {
+                if (
+                    "isDirectory".equals(stack[i + 1].getMethodName()) &&
+                    "File.java".equals(stack[i + 1].getFileName())
+                ) {
+                    // File.isDirectory() has been called? If so, count it in.
+                    cnt++;
+                    break;
+                }
+            }
         }
     }
 

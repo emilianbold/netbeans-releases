@@ -25,26 +25,46 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.groovy.grailsproject;
 
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
-public enum SourceCategory {    NONE,
-                                CONFIGURATION,
-                                CONTROLLERS,
-                                DOMAIN,
-                                MESSAGES,
-                                SERVICES,
-                                TAGLIB,
-                                UTIL,
-                                VIEWS,
-                                TESTS,
-                                SCRIPTS,
-                                SRC,
-                                WEBAPP,
-                                LIB;
+public enum SourceCategory {
+
+    GRAILSAPP_CONF("grails-app/conf", null),
+    GRAILSAPP_CONTROLLERS("grails-app/controllers", "create-controller"),
+    GRAILSAPP_DOMAIN("grails-app/domain", "create-domain-class"),
+    GRAILSAPP_I18N("grails-app/i18n", null),
+    GRAILSAPP_SERVICES("grails-app/services", "create-service"),
+    GRAILSAPP_TAGLIB("grails-app/taglib", "create-tag-lib"),
+    GRAILSAPP_UTILS("grails-app/utils", null),
+    GRAILSAPP_VIEWS("grails-app/views", "generate-views"),
+    PLUGINS("plugins", null),
+    TEST_INTEGRATION("test/integration", "create-integration-test"),
+    TEST_UNIT("test/unit", "create-unit-test"),
+    SCRIPTS("scripts", "create-script"),
+    SRC_JAVA("src/java", null),
+    SRC_GROOVY("src/groovy", null),
+    WEBAPP("web-app", null),
+    LIB("lib", null);
+
+    private final String relativePath;
+    private final String command;
+
+    SourceCategory(String relativePath, String command) {
+        this.relativePath = relativePath;
+        this.command = command;
+    }
+
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public String getCommand() {
+        return command;
+    }
 
 }

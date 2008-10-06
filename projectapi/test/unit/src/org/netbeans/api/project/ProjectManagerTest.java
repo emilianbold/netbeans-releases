@@ -51,12 +51,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.projectapi.TimedWeakReference;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
 
@@ -73,7 +70,7 @@ import org.openide.util.test.MockLookup;
  * Test ProjectManager find and save functionality.
  * @author Jesse Glick
  */
-public class ProjectManagerTest extends NbTestCase implements FileChangeListener {
+public class ProjectManagerTest extends NbTestCase {
     
     static {
         // For easier testing.
@@ -95,10 +92,10 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         return Level.FINE;
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
-        scratch.getFileSystem().addFileChangeListener(this);
         goodproject = scratch.createFolder("good");
         goodproject.createFolder("testproject");
         goodproject2 = scratch.createFolder("good2");
@@ -112,8 +109,8 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = null;
     }
     
+    @Override
     protected void tearDown() throws Exception {
-        scratch.getFileSystem().removeFileChangeListener(this);
         scratch = null;
         goodproject = null;
         badproject = null;
@@ -355,13 +352,15 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         assertNotNull("now p3 is recognized as a non-broken project", pm.findProject(p3));
         assertEquals("p1 still recognized as a project", proj1, pm.findProject(p1));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1082, 1089
     public void testLoadExceptionWithConcurrentLoad() throws Exception {
         TestUtil.BROKEN_PROJECT_LOAD_LOCK = new Object();
         final Object GOING = new Object();
         // Enter from one thread and start to load a broken project, but then pause.
         synchronized (GOING) {
             new Thread("initial load") {
+                @Override
                 public void run() {
                     try {
                         synchronized (GOING) {
@@ -384,6 +383,7 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
         synchronized (GOING) {
             final boolean[] FINISHED_2 = new boolean[1];
             new Thread("parallel load") {
+                @Override
                 public void run() {
                     synchronized (GOING) {
                         GOING.notify();
@@ -506,30 +506,6 @@ public class ProjectManagerTest extends NbTestCase implements FileChangeListener
     private void assertNoAccess() {
         assertFalse("No read access", ProjectManager.mutex().isReadAccess());
         assertFalse("No write access", ProjectManager.mutex().isWriteAccess());
-    }
-    
-    public void fileFolderCreated(FileEvent fe) {
-        assertNoAccess();
-    }
-
-    public void fileDataCreated(FileEvent fe) {
-        assertNoAccess();
-    }
-
-    public void fileChanged(FileEvent fe) {
-        assertNoAccess();
-    }
-
-    public void fileDeleted(FileEvent fe) {
-        assertNoAccess();
-    }
-
-    public void fileRenamed(FileRenameEvent fe) {
-        assertNoAccess();
-    }
-
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-        assertNoAccess();
     }
     
 }

@@ -46,18 +46,26 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.modules.debugger.jpda.ui.debugging.FiltersDescriptor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -65,6 +73,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.Presenter;
 
 
 /**
@@ -81,7 +90,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 }
                 if (node instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) node;
-                    return //f.getThread() == debugger.getCurrentThread() &&
+                    return !DebuggingTreeModel.isMethodInvoking(f.getThread()) &&//f.getThread() == debugger.getCurrentThread() &&
                            !f.equals(debugger.getCurrentCallStackFrame());
                 }
                 return false;
@@ -109,6 +118,11 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                if (node instanceof JPDAThread) {
+                    return !DebuggingTreeModel.isMethodInvoking((JPDAThread) node);
+                } else if (node instanceof CallStackFrame) {
+                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                }
                 return true;
             }
             public void perform (Object[] nodes) {
@@ -133,11 +147,13 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
 
-    private static Action GO_TO_SOURCE_ACTION = Models.createAction (
+    static Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 if (!(node instanceof CallStackFrame)) {
+                    return false;
+                } else if (DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread())) {
                     return false;
                 }
                 return isGoToSourceSupported ((CallStackFrame) node);
@@ -156,6 +172,9 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 // TODO: Check whether this frame is deeper then the top-most
+                if (node instanceof CallStackFrame) {
+                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                }
                 return true;
             }
             public void perform (final Object[] nodes) {
@@ -189,7 +208,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).suspend ();
                     else
@@ -219,7 +238,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread)
                         ((JPDAThread) node).resume ();
                     else
@@ -235,7 +254,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
+                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
                 if (node instanceof JPDAThread)
                     return !((JPDAThread) node).isSuspended ();
                 else
@@ -246,7 +265,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ? 
-                            ((MonitorModel.ThreadWithBordel) nodes[i]).originalThread : nodes[i];
+                            ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread) {
                         ((JPDAThread) node).interrupt();
                     }
@@ -257,16 +276,60 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     
     );
         
+    private static class LanguageSelection extends AbstractAction implements Presenter.Popup {
+
+        private Session session;
+
+        public LanguageSelection(Session session) {
+            this.session = session;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenu displayAsPopup = new JMenu(NbBundle.getMessage(DebuggingActionsProvider.class, "CTL_Session_Popup_Language"));
+
+            String [] languages = session.getSupportedLanguages();
+            String currentLanguage = session.getCurrentLanguage();
+            for (int i = 0; i < languages.length; i++) {
+                final String language = languages[i];
+                JRadioButtonMenuItem langItem = new JRadioButtonMenuItem(new AbstractAction(language) {
+                    public void actionPerformed(ActionEvent e) {
+                        session.setCurrentLanguage(language);
+                    }
+                });
+                if (currentLanguage.equals(language)) langItem.setSelected(true);
+                displayAsPopup.add(langItem);
+            }
+            return displayAsPopup;
+        }
+    }
+
+
+        
     private JPDADebugger debugger;
+    private Session session;
     
+    private Action LANGUAGE_SELECTION;
+
     
     public DebuggingActionsProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        LANGUAGE_SELECTION = new LanguageSelection(session);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT) 
-            return new Action [0];
+        if (node == TreeModel.ROOT) {
+            Action[] sa = getSessionActions();
+            Action[] fa = FiltersDescriptor.getInstance().getFilterActions();
+            Action[] a = new Action[sa.length + 1 + fa.length];
+            System.arraycopy(sa, 0, a, 0, sa.length);
+            a[sa.length] = null;
+            System.arraycopy(fa, 0, a, sa.length + 1, fa.length);
+            return a;
+        }
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
                 RESUME_ACTION,
@@ -306,6 +369,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             }
         } else
         throw new UnknownTypeException (node);
+    }
+
+    private Action[] getSessionActions() {
+        return new Action[] { LANGUAGE_SELECTION };
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {
@@ -423,9 +490,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     private static void goToSource(final CallStackFrame frame) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+                if (session == null) return ;
+                String language = session.getCurrentLanguage ();
+                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                if (engine == null) return ;
+                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
                 sp.showSource (frame, language);
             }
         });
@@ -434,9 +504,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     private static void goToSource(final JPDAThread thread) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+                if (session == null) return ;
+                String language = session.getCurrentLanguage ();
+                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                if (engine == null) return ;
+                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
                 sp.showSource (thread, language);
             }
         });

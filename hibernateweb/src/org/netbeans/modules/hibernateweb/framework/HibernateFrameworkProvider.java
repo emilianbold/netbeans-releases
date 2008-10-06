@@ -66,7 +66,7 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public boolean isInWebModule(WebModule wm) {
-        if (getConfigurationFiles(wm).length == 0) {
+        if (getDefaultHibernateConfigFiles(wm).size() == 0) {
             // There are no Hibernate configuration files found in this project.
             return false;
         } else {
@@ -86,13 +86,24 @@ public class HibernateFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(WebModule wm) {
-        List<File> configFiles = new ArrayList<File>();
+        return new File[]{};
+    }
+    
+    private List<FileObject> getDefaultHibernateConfigFiles(WebModule wm) {
+        List<FileObject> configFiles = new ArrayList<FileObject>();
         Project enclosingProject = Util.getEnclosingProjectFromWebModule(wm);
-        HibernateEnvironment he = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-        List<FileObject> configFileObjects = he.getAllHibernateConfigFileObjects();
-        for(FileObject fo : configFileObjects) {
-            configFiles.add(FileUtil.toFile(fo));
+        // Check for non supported project or non Hibernate aware web projects.
+        if(enclosingProject == null) {
+            return configFiles;
         }
-        return configFiles.toArray(new File[]{});
+        HibernateEnvironment he = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+        // Check for non supported project or non Hibernate aware web projects.
+        if(he == null) {
+            return configFiles;
+        }
+        
+        configFiles.addAll(he.getDefaultHibernateConfigFileObjects());
+
+        return configFiles;
     }
 }

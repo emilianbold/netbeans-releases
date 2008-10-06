@@ -99,7 +99,7 @@ public class FSCompletion implements CompletionProvider {
                 try {
                 FileObject file = NavUtils.getFile(doc);
                 
-                if (file == null) {
+                if (file == null || caretOffset == -1) {
                     return ;
                 }
 
@@ -141,7 +141,8 @@ public class FSCompletion implements CompletionProvider {
                             
                             relativeTo.add(parameter.getFileObject().getParent());
                             
-                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, new PHPIncludesFilter()));
+                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix,
+                                    startOffset, new PHPIncludesFilter(parameter.getFileObject())));
                         }
                 }, true);
                 } catch (IOException e) {
@@ -204,8 +205,17 @@ public class FSCompletion implements CompletionProvider {
     }
     
     private static class PHPIncludesFilter implements FileObjectFilter {
+        private FileObject currentFile;
+
+        public PHPIncludesFilter(FileObject currentFile) {
+            this.currentFile = currentFile;
+        }
 
         public boolean accept(FileObject file) {
+            if (file.equals(currentFile) || isNbProjectMetadata(file)){
+                return false; //do not include self in the cc result
+            }
+
             if (file.isFolder()) {
                 return true;
             }
@@ -215,6 +225,20 @@ public class FSCompletion implements CompletionProvider {
             return mimeType != null && mimeType.startsWith("text/");
         }
 
+        private static boolean isNbProjectMetadata(FileObject fo) {
+            final String metadataName = "nbproject";//NOI18N
+            if (fo.getPath().indexOf(metadataName) != -1) {
+                while(fo != null) {
+                    if (fo.isFolder()) {
+                        if (metadataName.equals(fo.getNameExt())) {
+                            return true;
+                        }
+                    }
+                    fo = fo.getParent();
+                }
+            }
+            return false;
+        }
     }
 
     static final class FSCompletionItem implements CompletionItem {
@@ -303,7 +327,7 @@ public class FSCompletion implements CompletionProvider {
         }
 
         public int getSortPriority() {
-            return 100;
+            return -1000;
         }
 
         public CharSequence getSortText() {

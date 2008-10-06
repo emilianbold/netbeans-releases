@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <Properties>
+    <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.a11ychecker.traverse.FocusTraversalPolicyEditor">
+      <SerializedValue value="-84,-19,0,5,115,114,0,59,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,84,114,97,118,101,114,115,97,108,80,111,108,105,99,121,-117,45,-95,-30,56,-106,56,86,2,0,3,76,0,3,101,110,100,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,76,0,12,115,97,118,101,100,66,117,116,116,111,110,115,116,0,18,76,106,97,118,97,47,117,116,105,108,47,86,101,99,116,111,114,59,76,0,5,115,116,97,114,116,113,0,126,0,1,120,112,112,115,114,0,16,106,97,118,97,46,117,116,105,108,46,86,101,99,116,111,114,-39,-105,125,91,-128,59,-81,1,3,0,3,73,0,17,99,97,112,97,99,105,116,121,73,110,99,114,101,109,101,110,116,73,0,12,101,108,101,109,101,110,116,67,111,117,110,116,91,0,11,101,108,101,109,101,110,116,68,97,116,97,116,0,19,91,76,106,97,118,97,47,108,97,110,103,47,79,98,106,101,99,116,59,120,112,0,0,0,0,0,0,0,13,117,114,0,19,91,76,106,97,118,97,46,108,97,110,103,46,79,98,106,101,99,116,59,-112,-50,88,-97,16,115,41,108,2,0,0,120,112,0,0,0,20,115,114,0,56,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,83,97,118,105,110,103,66,117,116,116,111,110,-19,-86,-80,71,10,30,-18,-64,2,0,2,76,0,4,110,97,109,101,113,0,126,0,1,76,0,8,110,101,120,116,78,97,109,101,113,0,126,0,1,120,112,116,0,23,112,104,112,73,110,116,101,114,112,114,101,116,101,114,84,101,120,116,70,105,101,108,100,116,0,12,98,114,111,119,115,101,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,12,116,0,12,115,101,97,114,99,104,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,14,116,0,20,111,117,116,112,117,116,87,105,110,100,111,119,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,16,116,0,18,119,101,98,66,114,111,119,115,101,114,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,18,116,0,14,101,100,105,116,111,114,67,104,101,99,107,66,111,120,115,113,0,126,0,9,113,0,126,0,20,116,0,21,100,101,98,117,103,103,101,114,80,111,114,116,84,101,120,116,70,105,101,108,100,115,113,0,126,0,9,116,0,26,115,116,111,112,65,116,84,104,101,70,105,114,115,116,76,105,110,101,67,104,101,99,107,66,111,120,116,0,15,105,110,99,108,117,100,101,80,97,116,104,76,105,115,116,115,113,0,126,0,9,113,0,126,0,22,113,0,126,0,24,115,113,0,126,0,9,113,0,126,0,25,116,0,15,97,100,100,70,111,108,100,101,114,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,28,116,0,12,114,101,109,111,118,101,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,30,116,0,12,109,111,118,101,85,112,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,32,116,0,14,109,111,118,101,68,111,119,110,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,34,112,112,112,112,112,112,112,112,120,112"/>
+    </Property>
+  </Properties>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -15,113 +29,107 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="phpInterpreterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="openResultInLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="phpInterpreterTextField" pref="145" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="browseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="searchButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="outputWindowCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="webBrowserCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="editorCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="commandLineSeparator" pref="361" max="32767" attributes="0"/>
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="useTheFollowingPathByDefaultLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="239" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="includePathScrollPane" pref="332" max="32767" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="addFolderButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="removeButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="moveUpButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="moveDownButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-              </Group>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="debuggingLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                          <Component id="debuggingSeparator" pref="386" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="phpInterpreterLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="openResultInLabel" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="stopAtTheFirstLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="debuggerPortLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="debuggerPortTextField" min="-2" pref="101" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="phpInterpreterTextField" pref="121" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="browseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="searchButton" linkSize="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="outputWindowCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="webBrowserCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="editorCheckBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="commandLineSeparator" pref="337" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="debuggingLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="debuggingSeparator" pref="362" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="stopAtTheFirstLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="debuggerPortLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="debuggerPortTextField" min="-2" pref="101" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="globalIncludePathSeparator" pref="311" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="12" pref="12" max="12" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="includePathScrollPane" pref="314" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="addFolderButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="removeButton" linkSize="2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="moveUpButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="moveDownButton" linkSize="2" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="globalIncludePathSeparator" pref="335" max="32767" attributes="0"/>
+                          <Component id="useTheFollowingPathByDefaultLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="commandLineSeparator" min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="phpInterpreterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="searchButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="phpInterpreterTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="searchButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="phpInterpreterLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="openResultInLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="outputWindowCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="webBrowserCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="editorCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="openResultInLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="debuggingSeparator" min="-2" pref="10" max="-2" attributes="0"/>
                   <Component id="debuggingLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="debuggingSeparator" min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -137,24 +145,22 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="useTheFollowingPathByDefaultLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="includePathScrollPane" pref="142" max="32767" attributes="2"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="includePathScrollPane" alignment="0" pref="142" max="32767" attributes="2"/>
                   <Group type="102" attributes="0">
                       <Component id="addFolderButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveUpButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveDownButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -166,6 +172,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_CommandLine" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.commandLineLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.commandLineLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="commandLineSeparator">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.commandLineSeparator.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.commandLineSeparator.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="phpInterpreterLabel">
       <Properties>
@@ -176,8 +200,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_PhpInterpreter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.phpInterpreterLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.phpInterpreterLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="phpInterpreterTextField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.phpInterpreterTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.phpInterpreterTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
@@ -185,6 +225,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_Browse" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.browseButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.browseButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
       </Events>
@@ -195,6 +243,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_Search" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.searchButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.searchButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchButtonActionPerformed"/>
       </Events>
@@ -208,6 +264,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_OpenResultIn" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.openResultInLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.openResultInLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="outputWindowCheckBox">
       <Properties>
@@ -215,6 +279,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_OutputWindow" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.outputWindowCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.outputWindowCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="webBrowserCheckBox">
       <Properties>
@@ -222,6 +294,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_WebBrowser" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.webBrowserCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.webBrowserCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="editorCheckBox">
       <Properties>
@@ -229,6 +309,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_Editor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.editorCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.editorCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="debuggingLabel">
       <Properties>
@@ -236,6 +324,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_Debugging" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggingLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggingLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="debuggingSeparator">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggingSeparator.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggingSeparator.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="debuggerPortLabel">
       <Properties>
@@ -246,8 +352,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_DebuggerPort" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggerPortLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggerPortLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="debuggerPortTextField">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggerPortTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.debuggerPortTextField.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="stopAtTheFirstLineCheckBox">
       <Properties>
@@ -255,6 +377,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_StopAtTheFirstLine" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.stopAtTheFirstLineCheckBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="globalIncludePathLabel">
       <Properties>
@@ -262,8 +392,34 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_GlobalIncludePath" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.globalIncludePathLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="globalIncludePathSeparator">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.globalIncludePathSeparator.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="includePathScrollPane">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.includePathScrollPane.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.includePathScrollPane.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
@@ -273,6 +429,11 @@
               <StringArray count="0"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.includePathList.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
@@ -282,6 +443,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_AddFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.addFolderButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.addFolderButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="removeButton">
       <Properties>
@@ -289,6 +458,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.removeButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.removeButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="moveUpButton">
       <Properties>
@@ -296,6 +473,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_MoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.moveUpButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.moveUpButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="moveDownButton">
       <Properties>
@@ -303,6 +488,14 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_MoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.moveDownButton.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.moveDownButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="useTheFollowingPathByDefaultLabel">
       <Properties>
@@ -313,17 +506,27 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="LBL_UseTheFollowingPathByDefault" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JSeparator" name="commandLineSeparator">
-    </Component>
-    <Component class="javax.swing.JSeparator" name="debuggingSeparator">
-    </Component>
-    <Component class="javax.swing.JSeparator" name="globalIncludePathSeparator">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.useTheFollowingPathByDefaultLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.useTheFollowingPathByDefaultLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="ERROR"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.errorLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.errorLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

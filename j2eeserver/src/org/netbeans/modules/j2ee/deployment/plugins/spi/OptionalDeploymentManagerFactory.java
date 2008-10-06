@@ -167,4 +167,13 @@ public abstract class OptionalDeploymentManagerFactory {
         return null;
     }
 
+    /**
+     * Allows a plugin to perform post initialization action. When this method
+     * invoked infrastructure is initialized so it can register/query instances.
+     *
+     * @since 1.51
+     */
+    public void finishServerInitialization() throws ServerInitializationException {
+    }
+
 }

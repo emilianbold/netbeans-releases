@@ -125,7 +125,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         
         String text = importPanel.repositoryPathTextField.getText().trim();
         if (text.length() == 0) {
-            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "BK2014"), true)); // NOI18N
             return false;
         }        
         
@@ -134,7 +134,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         if(valid) {
             valid();
         } else {
-            invalid(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_MessageRequired")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "CTL_Import_MessageRequired"), true)); // NOI18N
         }
 
         return valid;
@@ -214,7 +214,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             super(panel);
         }
         public void perform() {
-            String invalidMsg = null;
+            AbstractStep.WizardMessage invalidMsg = null;
             try {
                 if(!validateUserInput()) {
                     return;
@@ -227,7 +227,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl(), this);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true);
-                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
                     return;
                 }
 
@@ -265,13 +265,13 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     }
                 } catch (SVNClientException ex) {
                     annotate(ex);
-                    invalidMsg = SvnClientExceptionHandler.parseExceptionMessage(ex);
+                    invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
                 }
 
             } finally {
                 Subversion.getInstance().versionedFilesChanged();
                 if(isCanceled()) {
-                    valid(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled")); // NOI18N
+                    valid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportStep.class, "MSG_Import_ActionCanceled"), false)); // NOI18N
                 } else if(invalidMsg != null) {
                     valid(invalidMsg);
                 } else {

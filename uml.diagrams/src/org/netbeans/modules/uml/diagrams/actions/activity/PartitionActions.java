@@ -38,35 +38,88 @@
  */
 package org.netbeans.modules.uml.diagrams.actions.activity;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.event.ChangeListener;
+import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
+import org.netbeans.modules.uml.diagrams.actions.DeleteCompartmentWidgetAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.activity.ActivityPartitionWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.openide.awt.Actions;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
-public final class PartitionActions extends NodeAction
+public final class PartitionActions extends SceneNodeAction implements ContextAwareAction
 {
     private static final long serialVersionUID = 1L;
+    private DesignerScene scene;
+    private IPresentationElement pe;
+    private ActivityPartitionWidget activityPartitionWidget;
+
+    public Action createContextAwareInstance(Lookup actionContext)
+    {
+        scene = actionContext.lookup(DesignerScene.class);
+        pe = actionContext.lookup(IPresentationElement.class);
+        IElement e = pe.getFirstSubject();
+        if (scene != null && pe != null)
+        {
+            Widget widget = scene.findWidget(pe);
+            if (widget instanceof ActivityPartitionWidget)
+        {
+            activityPartitionWidget = (ActivityPartitionWidget) widget;
+            return this;
+        }
+        }
+        return null;
+    }
+
+    private String loc(String key)
+    {
+        return NbBundle.getMessage(PartitionActions.class, key);
+    }
 
     @Override
     public JMenuItem getPopupPresenter()
     {
-        JMenuItem item = new Actions.SubMenu(this,
-                new PartitionSubMenuModel(), true);
-        return item;
+        JMenu popupMenu = new JMenu(getName());
+        if ((activityPartitionWidget.getCompartmentWidgets().size() < 2))
+        {
+            popupMenu.add(new AddColumnAction(loc("CTL_AddPartitionColumn")));
+            popupMenu.add(new AddRowAction(loc("CTL_AddPartitionRow")));
+        } else
+        {
+            popupMenu.add(activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL ? 
+                new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
+        }
+        for (CompartmentWidget w : activityPartitionWidget.getCompartmentWidgets())
+        {
+            if (w.isSelected())
+            {
+                String name = activityPartitionWidget.getOrientation() == Orientation.HORIZONTAL? 
+                    loc("CTL_DeletePartitionColumn") : loc("CTL_DeletePartitionRow");
+                popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
+                break;
+            }
+        }
+        
+        popupMenu.setEnabled(scene.isReadOnly() == false);
+        return popupMenu;
     }
 
     public String getName()
     {
-        return NbBundle.getMessage(PartitionActions.class,
-                                   "CTL_AddPartitionAction");
+        return loc("CTL_AddPartitionAction");
     }
 
     public HelpCtx getHelpCtx()
@@ -80,144 +133,50 @@ public final class PartitionActions extends NodeAction
         return false;
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes)
-    {
-        boolean retval = false;
-        if (activatedNodes.length == 1)
-        {
-            ActivityPartitionWidget widget = getPartitionWidget(activatedNodes[0]);
-            if (widget != null)
-            {
-                retval = true;
-            }
-        }
-        return retval;
-    }
-
     protected void performAction(Node[] activatedNodes)
     {
     }
 
-    protected ActivityPartitionWidget getPartitionWidget(Node node)
+  
+    private class AddColumnAction extends AbstractAction
     {
-        IPresentationElement pe = node.getLookup().lookup(IPresentationElement.class);
-        DesignerScene scene = node.getLookup().lookup(DesignerScene.class);
 
-        if (scene != null && pe != null)
+        public AddColumnAction(String name)
         {
-            Widget widget = scene.findWidget(pe);
-            if (widget instanceof ActivityPartitionWidget)
-            {
-                return (ActivityPartitionWidget) widget;
-            }
+            super(name);
         }
-        return null;
+
+        protected void updateOrientation()
+        {
+            activityPartitionWidget.setOrientation(Orientation.HORIZONTAL);
+        }
+
+        public void actionPerformed(ActionEvent e)
+        {
+            // create child Parttion and add it to parent Partition
+            TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
+            IActivityPartition subPartition = ret.createType("ActivityPartition");
+
+            activityPartitionWidget.getElement().addSubPartition(subPartition);
+            updateOrientation();
+            // add sub parttion widget to main widget.
+            activityPartitionWidget.addCompartment(subPartition);
+        }
     }
 
-    public Action[] getPartitionActions()
-    {
-        Action[] actionArray = new Action[2];
-        //Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes(); 
-        Node[] activatedNodes = this.getActivatedNodes();
-        ActivityPartitionWidget widget = getPartitionWidget(activatedNodes[0]);
-
-        if (widget != null)
-        {
-            if (widget.getSubPartitionCount() == 0)
-            {
-                actionArray[0] = new AddPartitionColumnAction(widget);
-                actionArray[1] = new AddPartitionRowAction(widget);
-            } else if (widget.hasRowPartition())
-            {
-                actionArray[0] = new AddPartitionRowAction(widget);
-                actionArray[1] = new DeletePartitionAction(widget);
-            } else // column partition
-            {
-                actionArray[0] = new AddPartitionColumnAction(widget);
-                actionArray[1] = new DeletePartitionAction(widget);
-            }
-        }
-
-        return actionArray;
-    }
-
-    private class PartitionSubMenuModel implements Actions.SubMenuModel
+    private class AddRowAction extends AddColumnAction
     {
 
-        private Action[] actions = null;
-
-        public int getCount()
+        public AddRowAction(String name)
         {
-            int retVal = 0;
-            Action[] actionList = getActions();
-            if (actionList != null)
-            {
-                retVal = actionList.length;
-            }
-            return retVal;
+            super(name);
         }
 
-        public String getLabel(int index)
+        @Override
+        protected void updateOrientation()
         {
-            String retVal = null;
-
-            Action[] actionList = getActions();
-            if (actionList != null && actionList.length > index)
-            {
-                if (actionList[index] instanceof IPartitionAction)
-                {
-                    retVal = ((IPartitionAction) actionList[index]).getName();
-                }
-            }
-            return retVal;
+            activityPartitionWidget.setOrientation(Orientation.VERTICAL);
         }
-
-        public HelpCtx getHelpCtx(int index)
-        {
-            HelpCtx helpCtx = null;
-            Action[] actionList = getActions();
-            if (actionList != null && actionList.length > index)
-            {
-                if (actionList[index] instanceof IPartitionAction)
-                {
-                    helpCtx = ((IPartitionAction) actionList[index]).getHelpCtx();
-                }
-            }
-            return helpCtx;
-        }
-
-        public void performActionAt(int index)
-        {
-            Action[] actionList = getActions();
-            if (actionList != null && actionList.length > index)
-            {
-                Action targetAction = actionList[index];
-                if (targetAction instanceof IPartitionAction)
-                {
-                    ((IPartitionAction) targetAction).handlePartitionAction();
-                }
-            }
-        }
-
-        public void addChangeListener(ChangeListener l)
-        {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public void removeChangeListener(ChangeListener l)
-        {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        protected Action[] getActions()
-        {
-            if (actions == null)
-            {
-                actions = getPartitionActions();
-            }
-            return actions;
-        }
-    }  // End PartitionSubMenuModel
+    }  
 }
 

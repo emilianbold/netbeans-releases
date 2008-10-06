@@ -85,7 +85,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (!handle.getFileObject().isValid()) {
+        if (!handle.getFileObject().isValid() || RetoucheUtils.getElementHandle(handle) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         }
         if (handle.getKind() == Tree.Kind.ARRAY_TYPE) {
@@ -128,6 +128,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             public void run(CompilationController info) throws Exception {
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
+                if (el == null) {
+                    throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
+                }
                 if (el.getKind().isField()) {
                     //get field references from index
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement)el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));

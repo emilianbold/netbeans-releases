@@ -81,7 +81,11 @@ public class ImportClassTest extends HintsTestBase {
         performTestDoNotPerform("ImportHintDoNotPropose", 10, 24);
         performTestDoNotPerform("ImportHintDoNotPropose", 11, 24);
     }
-    
+
+    public void testImportHint118714() throws Exception {
+        performTestDoNotPerform("ImportTest118714", 8, 11);
+    }
+
     public void testImportHint86932() throws Exception {
         performTestDoNotPerform("ImportTest86932", 6, 25);
     }

@@ -88,10 +88,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.ui.service.profiles.UsernameAuthenticationProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -106,6 +109,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -340,16 +344,20 @@ public class Util {
     }
     
     public static final boolean isWsitSupported(Project p) {
-
-        // check if the wsimport class is already present - this means we don't need to add the library
+        // check if the Policy class is already present - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
         FileObject wsimportFO = classPath.findResource("com/sun/xml/ws/policy/Policy.class"); // NOI18N
-        
         if (wsimportFO == null) {
             J2eePlatform j2eePlatform = getJ2eePlatform(p);
             if (j2eePlatform != null) {
-                return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT); //NOI18N
+                Collection<WSStack> wsStacks = (Collection<WSStack>)
+                        j2eePlatform.getLookup().lookupAll(WSStack.class);
+                for (WSStack stack : wsStacks) {
+                    if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                        return true;
+                    }
+                }
             }
         }
         return true;
@@ -358,7 +366,11 @@ public class Util {
     public static J2eePlatform getJ2eePlatform(Project project) {
         String serverInstanceID = getServerInstanceID(project);
         if ((serverInstanceID != null) && (serverInstanceID.length() > 0)) {
-            return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            try {
+                return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }
@@ -396,12 +408,23 @@ public class Util {
     public static String getServerName(Project p) {
         String sID = getServerInstanceID(p);
         if (sID != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            return j2eePlatform.getDisplayName();
+            J2eePlatform j2eePlatform;
+            try {
+                j2eePlatform = Deployment.getDefault().getServerInstance(sID).getJ2eePlatform();
+                return j2eePlatform.getDisplayName();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }
 
+    public static boolean isEqual(Object a, Object b) {
+        if ((a == null) && (b == null)) return true;
+        if ((a != null) && (b != null)) return a.equals(b);
+        return false;
+    }
+    
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String storeLocation = null;
         if (project == null) {
@@ -421,9 +444,14 @@ public class Util {
 
     private static String getStoreLocation(String serverInstanceID, boolean trust, boolean client) {
         String storeLocation = null;
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        J2eePlatform j2eePlatform = null;
         File[] keyLocs = null;
         String store = null;
+        try {
+            j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         if (client) {
             store = trust ? J2eePlatform.TOOL_TRUSTSTORE_CLIENT : J2eePlatform.TOOL_KEYSTORE_CLIENT;
         } else {
@@ -436,20 +464,94 @@ public class Util {
         return storeLocation;
     }
     
+    public static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
+
     public static FileObject getTomcatLocation(Project project) {
+        
+        String catalinaHome = null;
+        String catalinaBase = null;
+
+        File homeDir = null;
+        File baseDir = null;
+        
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
-        FileObject folder = null;
-        String id = null;
+        InstanceProperties ip = null;
         if (mp != null) { 
-            try {
-                id = mp.getServerInstanceID();
-                folder = getTomcatLocation(id);
-            } catch (Exception ex) {
-                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, id, ex);
-            }    
+            ip = mp.getInstanceProperties();
         }
-        return folder;
+
+        /* copied from TomcatProperties */
+        /* START */
+        String uri = ip.getProperty(InstanceProperties.URL_ATTR);
+        final String home = "home=";    // NOI18N
+        final String base = ":base=";   // NOI18N
+        final String uriString = "http://";  // NOI18N
+        int uriOffset = uri.indexOf (uriString);
+        int homeOffset = uri.indexOf (home) + home.length ();
+        int baseOffset = uri.indexOf (base, homeOffset);
+        if (homeOffset >= home.length ()) {
+            int homeEnd = baseOffset > 0 ? baseOffset : (uriOffset > 0 ? uriOffset - 1 : uri.length ());
+            int baseEnd = uriOffset > 0 ? uriOffset - 1 : uri.length ();
+            catalinaHome= uri.substring (homeOffset, homeEnd);
+            if (baseOffset > 0) {
+                catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
+            }
+            // Bundled Tomcat home and base dirs can be specified as attributes
+            // specified in BUNDLED_TOMCAT_SETTING file. Tomcat manager URL can 
+            // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
+            // therefore remains valid even if Tomcat version changes. (issue# 40659)
+            if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
+                if (fo != null) {
+                    catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
+                    if (catalinaBase != null && catalinaBase.length() > 0 
+                        && catalinaBase.charAt(0) == '$') {
+                        catalinaBase = fo.getAttribute(catalinaBase.substring(1)).toString();
+                    }
+                }
+            }
+        }
+        if (catalinaHome == null) {
+            throw new IllegalArgumentException("CATALINA_HOME must not be null."); // NOI18N
+        }
+        homeDir = new File(catalinaHome);
+        if (!homeDir.isAbsolute ()) {
+            InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+            homeDir = ifl.locate(catalinaHome, null, false);
+        }
+        if (!homeDir.exists()) {
+            throw new IllegalArgumentException("CATALINA_HOME directory does not exist."); // NOI18N
+        }
+        if (catalinaBase != null) {
+            baseDir = new File(catalinaBase);
+            if (!baseDir.isAbsolute ()) {
+                InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+                baseDir = ifl.locate(catalinaBase, null, false);
+                if (baseDir == null) {
+                    baseDir = new File(System.getProperty("netbeans.user"), catalinaBase);   // NOI18N
+                }
+            }
+        }     
+        /* END */
+        
+        return ((baseDir == null) ?
+            ((homeDir == null) ? null : FileUtil.toFileObject(homeDir)) : FileUtil.toFileObject(baseDir));
     }
+    
+    /**
+     * Return server.xml file from the catalina base folder if the base folder is used 
+     * or from the catalina home folder otherwise.
+     * <p>
+     * <b>BEWARE</b>: If the catalina base folder is used but has not bee generated yet,
+     * the server.xml file from the catalina home folder will be returned.
+     * </p>
+     */
+    public static FileObject getServerXml(Project p) {
+        String confServerXml = "conf/server.xml"; // NIO18N
+        FileObject fO = getTomcatLocation(p);
+        return (fO == null) ? null : fO.getFileObject(confServerXml);
+    }    
 
     public static FileObject getTomcatLocation(String serverID) {
         if (serverID == null) return null;

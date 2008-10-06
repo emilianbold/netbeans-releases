@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml;
 
 
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.DTDKit;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
@@ -90,7 +91,7 @@ public final class DTDDataLoader extends UniFileLoader {
      */
     @Override
     protected String defaultDisplayName () {
-        return Util.THIS.getString ("PROP_DtdLoader_Name");        
+        return Util.THIS.getString (DTDDataLoader.class, "PROP_DtdLoader_Name");        
     }
     
 

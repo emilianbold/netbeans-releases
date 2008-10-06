@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.quicksearch;
@@ -61,7 +61,7 @@ import org.openide.util.Utilities;
  * @author Jan Becicka
  */
 class SearchResultRender extends JLabel implements ListCellRenderer {
-    
+
     private static final boolean IS_GTK = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private QuickSearchPopup popup;
@@ -86,20 +86,17 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         if (!(value instanceof ItemResult)) {
             return null;
         }
-        
+
         ItemResult ir = (ItemResult) value;
         List<? extends KeyStroke> shortcut = ir.getShortcut();
         resultLabel.setText(ir.getDisplayName());
+        truncateLabel(resultLabel);
         if (shortcut != null && shortcut.size() > 0 && shortcut.get(0) != null) {
             // TBD - display multi shortcuts
             shortcutLabel.setText(getKeyStrokeAsText(shortcut.get(0)));
-            if (!shortcutLabel.isDisplayable()) {
-                itemPanel.add(shortcutLabel, BorderLayout.EAST);
-            }
+            itemPanel.add(shortcutLabel, BorderLayout.EAST);
         } else {
-            if (shortcutLabel.isDisplayable()) {
-                itemPanel.remove(shortcutLabel);
-            }
+            itemPanel.remove(shortcutLabel);
         }
 
         CategoryResult cr = ir.getCategory();
@@ -154,7 +151,7 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         itemPanel.add(resultLabel, BorderLayout.CENTER);
 
         dividerLine = new JPanel();
-        dividerLine.setBackground(QuickSearchComboBar.getShadowColor());
+        dividerLine.setBackground(QuickSearchComboBar.getPopupBorderColor());
         dividerLine.setPreferredSize(new Dimension(dividerLine.getPreferredSize().width, 1));
 
         rendererComponent = new JPanel();
@@ -164,6 +161,8 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
     }
 
     static String getKeyStrokeAsText (KeyStroke keyStroke) {
+        if (keyStroke == null)
+            return "";
         int modifiers = keyStroke.getModifiers ();
         StringBuffer sb = new StringBuffer ();
         if ((modifiers & InputEvent.CTRL_DOWN_MASK) > 0)
@@ -173,7 +172,15 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
         if ((modifiers & InputEvent.SHIFT_DOWN_MASK) > 0)
             sb.append ("Shift+");
         if ((modifiers & InputEvent.META_DOWN_MASK) > 0)
-            sb.append ("Meta+");
+            if (Utilities.isMac()) {
+                // Mac cloverleaf symbol
+                sb.append ("\u2318+");
+            } else if (isSolaris()) {
+                // Sun meta symbol
+                sb.append ("\u25C6+");
+            } else {
+                sb.append ("Meta+");
+            }
         if (keyStroke.getKeyCode () != KeyEvent.VK_SHIFT &&
             keyStroke.getKeyCode () != KeyEvent.VK_CONTROL &&
             keyStroke.getKeyCode () != KeyEvent.VK_META &&
@@ -185,5 +192,32 @@ class SearchResultRender extends JLabel implements ListCellRenderer {
             ));
         return sb.toString ();
     }
+
+    private static boolean isSolaris () {
+        String osName = System.getProperty ("os.name");
+        return osName != null && osName.startsWith ("SunOS");
+    }
+
+
+    /** Truncate text and put "..." at the end if text exceeds given JLabel
+     * coordinates - workaround fo JLabel inability to truncate html
+     */
+    private static void truncateLabel (JLabel label) {
+        String text = label.getText();
+
+        // no need to truncate non html text, JLabel will do it itself
+        if (!text.startsWith("<html>")) {
+            return;
+        }
+
+        int prefWidth = label.getPreferredSize().width;
+        int curWidth = label.getWidth();
+        if (curWidth > 0 && prefWidth > curWidth) {
+            // get rid of html, JLabel will then correctly put "..." at the end
+            label.setText(text.replaceAll("<.*?>", ""));
+        }
+
+    }
+
 
 }

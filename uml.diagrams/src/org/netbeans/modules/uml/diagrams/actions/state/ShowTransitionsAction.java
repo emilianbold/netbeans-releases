@@ -45,18 +45,18 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.state.StateWidget;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class ShowTransitionsAction extends NodeAction
+public class ShowTransitionsAction extends SceneNodeAction
 {
 
     private IState state;
@@ -125,8 +125,13 @@ public class ShowTransitionsAction extends NodeAction
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes)
-    {
-        return activatedNodes.length == 1;
+    protected boolean asynchronous() {
+        return false;
     }
+
+//    @Override
+//    protected boolean enable(Node[] activatedNodes)
+//    {
+//        return activatedNodes.length == 1;
+//    }
 }

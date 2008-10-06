@@ -302,21 +302,27 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
      * @return
      */
     private boolean isOldJdk16(String java_version) {
-        if (java_version.startsWith("1.6")) { //NOI18N
+        if (java_version.startsWith("1.6.0")) { //NOI18N
             int index = java_version.indexOf("_");
             if (index > 0) {
                 String releaseVersion = java_version.substring(index+1);
-                try {
-                    Integer rv = Integer.valueOf(releaseVersion);
-                    if (rv >=4) return false;
-                    else return true;
-                } catch (NumberFormatException ex) {
-                    // return true for some strange jdk versions
-                    return true;
+                StringTokenizer tokens = new StringTokenizer(releaseVersion,"-_. "); //NOI18N
+                String updateVersion = tokens.nextToken();
+                if (updateVersion != null) {
+                    try {
+                        Integer rv = Integer.valueOf(updateVersion);
+                        if (rv >=4) return false;
+                        else return true;
+                    } catch (NumberFormatException ex) {
+                        // return true for some strange jdk versions
+                        return false;
+                    }
+                } else {
+                    return false;
                 }
             } else {
                 // return true for some strange jdk versions
-                return true;
+                return false;
             }
         } else {
             return false;

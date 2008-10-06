@@ -275,4 +275,16 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
     public JdbcInfo getJdbcInfo() {
         return null;
     }
+
+    public String getDatabaseName(String projectName) {
+        return projectName + RailsAdapters.DEVELOPMENT_DB_SUFFIX;
+    }
+
+    public String getTestDatabaseName(String developmentDbName) {
+        return RailsAdapters.getTestDatabaseName(developmentDbName);
+    }
+
+    public String getProductionDatabaseName(String developmentDbName) {
+        return RailsAdapters.getProductionDatabaseName(developmentDbName);
+    }
 }

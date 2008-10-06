@@ -179,6 +179,8 @@ public class Package extends Task {
                 writer.write(">" + entry. // NOI18N
                         getName().
                         replace("&", "&amp;"). // NOI18N
+                        replace("\'","&apos;"). //NOI18N
+                        replace("\"","&quot;"). //NOI18N
                         replace("<", "&lt;"). // NOI18N
                         replace(">", "&gt;") + "</entry>\n"); // NOI18N
             }

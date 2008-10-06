@@ -302,13 +302,14 @@ public class Util {
             tMapFo = FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-xsltpro/transformmap.xml"), //NOI18N
                     projectSource, "transformmap"); //NOI18N
 
-            String projectNamespace = "http://enterprise.netbeans.org/transformmap/" + ProjectUtils.getInformation(project).getName(); // NOI18N
-
-            initialiseNamespace(tMapFo, projectNamespace);
-
-            if (tMapFo != null) {
-                SoaUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
-            }
+// 142908
+//            String projectNamespace = "http://enterprise.netbeans.org/transformmap/" + ProjectUtils.getInformation(project).getName(); // NOI18N
+//
+//            initialiseNamespace(tMapFo, projectNamespace);
+//
+//            if (tMapFo != null) {
+//                SoaUtil.fixEncoding(DataObject.find(tMapFo), projectSource);
+//            }
 
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);

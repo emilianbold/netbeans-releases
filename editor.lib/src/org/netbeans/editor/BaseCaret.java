@@ -1244,25 +1244,24 @@ AtomicLockListener, FoldHierarchyListener {
                     Transferable trans = buffer.getContents(null);
                     if (trans == null) return;
 
-                    BaseDocument doc = (BaseDocument)c.getDocument();
+                    final BaseDocument doc = (BaseDocument)c.getDocument();
                     if (doc == null) return;
                     
-                    int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
+                    final int offset = ((BaseTextUI)c.getUI()).viewToModel(c,
                                     evt.getX(), evt.getY());
 
                     try{
-                        String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
+                        final String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
                         if (pastingString == null) return;
-                         try {
-                             doc.atomicLock();
-                             try {
-                                 doc.insertString(offset, pastingString, null);
-                                 setDot(offset+pastingString.length());
-                             } finally {
-                                 doc.atomicUnlock();
-                             }
-                         } catch( BadLocationException exc ) {
-                         }
+                        doc.runAtomicAsUser (new Runnable () {
+                            public void run () {
+                                 try {
+                                     doc.insertString(offset, pastingString, null);
+                                     setDot(offset+pastingString.length());
+                                 } catch( BadLocationException exc ) {
+                                 }
+                            }
+                        });
                     }catch(UnsupportedFlavorException ufe){
                     }catch(IOException ioe){
                     }

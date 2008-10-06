@@ -77,15 +77,31 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("referenceParameter_001");
     }
 
+    public void testClass() throws Exception {
+        performTest("class005");
+    }
+    
+    public void testIssue142644() throws Exception {
+        performTest("issue142644");
+    }
+
+    public void testIssue148558() throws Exception {
+        performTest("issue148558");
+    }
+
+    public void testPHPDocTagProperty() throws Exception {
+        performTest("propertyTag");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         StringBuffer sb = new StringBuffer();
         CompilationInfo info = getInfo("testfiles/" + filename +".php");
-        HtmlFormatter formatter = new TestHtmlFormatter() ;
         PhpStructureScanner instance = new PhpStructureScanner();
-        List<? extends StructureItem> result = instance.scan(info, formatter);
+        List<? extends StructureItem> result = instance.scan(info);
         for (StructureItem structureItem : result) {
             sb.append(printStructureItem(structureItem, 0));
+            sb.append("\n");
         }
         return sb.toString();
     }
@@ -99,7 +115,8 @@ public class PhpStructureScannerTest extends ParserTestBase{
         sb.append(", ");
         sb.append(structureItem.getEndPosition());
         sb.append("] : ");
-        sb.append(structureItem.getHtml());
+        HtmlFormatter formatter = new TestHtmlFormatter() ;
+        sb.append(structureItem.getHtml(formatter));
         for (StructureItem item : structureItem.getNestedItems()) {
             sb.append("\n");
             sb.append(printStructureItem(item, indent+1));

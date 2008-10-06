@@ -6,15 +6,6 @@
             <code-name-base>org.netbeans.modules.groovy.gsp</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -112,6 +103,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.gsf.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.html.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -188,14 +188,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.options</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>6.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.text</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -208,7 +200,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.5.0.1</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -217,15 +209,6 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.12</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -368,11 +351,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
-                <package>org.netbeans.modules.groovy.gsp.editor.completion</package>
-                <package>org.netbeans.modules.groovy.gsp.lexer.api</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

@@ -43,21 +43,17 @@ package org.netbeans.modules.uml.drawingarea.actions;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.visual.widget.Widget;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationProxy;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
-import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,6 +70,9 @@ public class DiscoverRelationshipAction extends AbstractAction
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("relationship-discovery.png"));
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(DiscoverRelationshipAction.class, "LBL_DiscoverRelationshipAction"));
+        
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift H"));
+        putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift H"));
     }
 
     public void actionPerformed(ActionEvent event)
@@ -99,80 +98,13 @@ public class DiscoverRelationshipAction extends AbstractAction
         RelationshipDiscovery relDiscovery = engine.getRelationshipDiscovery();
         relDiscovery.discoverCommonRelations(elements);
         scene.validate();
-        
-//        ETArrayList<IElement> elements = new ETArrayList<IElement>();
-//        HashSet<IPresentationElement> edges = new HashSet<IPresentationElement>();
-//
-//        for (IPresentationElement pe : nodes)
-//        {
-//            elements.add(pe.getFirstSubject());
-//            if(scene.isNode(pe) == true)
-//            {
-//                edges.addAll(scene.findNodeEdges(pe, true, true));
-//            }
-//        }
-//
-//        ArrayList<IRelationProxy> proxies = RelationshipDiscovery.discoverRelations(elements);
-//
-//        for (IRelationProxy proxy : proxies)
-//        {
-//            boolean edgeExist = false;
-//            IElement connection = proxy.getConnection();
-//            for (IPresentationElement pe : edges)
-//            {
-//                if (pe.getFirstSubject().equals(connection))
-//                {
-//                    edgeExist = true;
-//                    break;
-//                }
-//            }
-//
-//            // avoid creating duplicates
-//            if (edgeExist)
-//            {
-//                continue;
-//            }
-//
-//            IElement from = proxy.getFrom();
-//            IElement to = proxy.getTo();
-//
-//            IPresentationElement edge = RelationshipDiscovery.createEdgePresentationElement(connection);
-//            Widget w = scene.addEdge(edge);
-//
-//            IPresentationElement sourceElement = null;
-//            IPresentationElement targetElement = null;
-//
-//            for (IPresentationElement pe : nodes)
-//            {
-//                if (pe.getFirstSubject().equals(from))
-//                {
-//                    sourceElement = pe;
-//                    break;
-//                }
-//            }
-//            for (IPresentationElement pe : nodes)
-//            {
-//                if (pe.getFirstSubject().equals(to))
-//                {
-//                    targetElement = pe;
-//                    break;
-//                }
-//            }
-//
-//            scene.setEdgeSource(edge, sourceElement);
-//            scene.setEdgeTarget(edge, targetElement);
-//
-//            Lookup lookup = w.getLookup();
-//            if (lookup != null)
-//            {
-//                LabelManager manager = lookup.lookup(LabelManager.class);
-//                if (manager != null)
-//                {
-//                    manager.createInitialLabels();
-//                }
-//            }
-//
-//            scene.validate();
-//        }
     }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return scene.isReadOnly() == false;
+    }
+    
+    
 }

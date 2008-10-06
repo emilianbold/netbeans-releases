@@ -57,6 +57,7 @@ public class CsmHyperlinkTestFailed extends BaseTestSuite {
         this.addTestSuite(NamespacesHyperlinkTestCase.Failed.class);
         this.addTestSuite(ClassMembersHyperlinkTestCase.Failed.class);
         this.addTestSuite(BasicHyperlinkTestCase.Failed.class);
+        this.addTestSuite(TemplateSpecializationsTestCase.Failed.class);
     }
     
     public static Test suite() {

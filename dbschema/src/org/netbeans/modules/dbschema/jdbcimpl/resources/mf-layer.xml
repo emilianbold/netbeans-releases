@@ -45,10 +45,8 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-dbschema-mime-resolver.xml" url="mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" 
-                    stringvalue="org.netbeans.modules.dbschema.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" 
-                    urlvalue="nbresloc:/org/nb/modules/dbschema/resources/database.gif"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dbschema.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/nb/modules/dbschema/resources/database.gif"/>
                 <attr name="position" intvalue="1010"/>
             </file>
         </folder>
@@ -57,7 +55,9 @@ made subject to such option by the copyright holder.
     <folder name="text">
       <folder name="x-dbschema+xml">
         <folder name="Factories">
-            <file name="org-netbeans-modules-dbschema-jdbcimpl-DBschemaDataLoader.instance"/>
+            <file name="org-netbeans-modules-dbschema-jdbcimpl-DBschemaDataLoader.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.dbschema.resources.Bundle"/>
+            </file>
         </folder>
         <folder name="Actions">
           <file name="org-openide-actions-FileSystemAction.instance">

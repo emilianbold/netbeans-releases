@@ -42,9 +42,7 @@
 package org.netbeans.modules.editor.fold;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
@@ -400,7 +398,8 @@ public final class FoldUtilitiesImpl {
                 ApiPackageAccessor.get().foldGetOperation(fold).getPriority()))
             + " <" + fold.getStartOffset() // NOI18N
             + "," + fold.getEndOffset() + ">" // NOI18N
-            + (FoldUtilities.isRootFold(fold) ? "" : (", desc='" + fold.getDescription() + "'")); // NOI18N
+            + (FoldUtilities.isRootFold(fold) ? "" : (", desc='" + fold.getDescription() + "'"))
+            + ", hash=0x" + Integer.toHexString(System.identityHashCode(fold)); // NOI18N
     }
     
     public static void appendSpaces(StringBuffer sb, int spaces) {

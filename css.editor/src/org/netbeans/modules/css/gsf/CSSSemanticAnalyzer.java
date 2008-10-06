@@ -39,6 +39,7 @@
 package org.netbeans.modules.css.gsf;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
@@ -80,7 +81,13 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
 
         //XXX fixthis - the css parser always parses the whole css content!
-        ParserResult presult = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        
+        Iterator<? extends ParserResult> presultIterator = ci.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if(!presultIterator.hasNext()) {
+            return;
+        }
+        
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
         
@@ -97,9 +104,12 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
             
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
-                    OffsetRange range = getOffsetRange(node.startOffset(), node.endOffset(), source);
-                    //filter virtual nodes
-                    if (!range.isEmpty()) {
+                    int dso = AstUtils.documentPosition(node.startOffset(), source);
+                    int deo = AstUtils.documentPosition(node.endOffset(), source);
+                    OffsetRange range = new OffsetRange(dso, deo);
+                    //filter out generated and inlined style definitions - they have just virtual selector which
+                    //is mapped to empty string
+                    if (!range.isEmpty() && deo > dso) {
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
                 } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {

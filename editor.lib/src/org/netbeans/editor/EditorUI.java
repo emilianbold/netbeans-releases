@@ -264,6 +264,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private boolean popupMenuEnabled;
 
     public static final String LINE_HEIGHT_CHANGED_PROP = "line-height-changed-prop"; //NOI18N
+    public static final String TAB_SIZE_CHANGED_PROP = "tab-size-changed-prop"; //NOI18N
 
     /** init paste action #39678 */
     private static boolean isPasteActionInited = false;
@@ -560,6 +561,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
 
         if (newDoc != null) {
+            coloringMap = ColoringMap.get(Utilities.getMimeType(newDoc));
             listener.preferenceChange(null);
 
             // add all document layers
@@ -1571,6 +1573,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             
             String settingName = evt == null ? null : evt.getKey();
             settingsChangeImpl(settingName);
+
+            if (SimpleValueNames.TAB_SIZE.equals(settingName)) { // Only on explicit tab-size change to minimize perf impact
+                firePropertyChange(TAB_SIZE_CHANGED_PROP, null, null);
+            }
             
             if (settingName == null || SimpleValueNames.LINE_NUMBER_VISIBLE.equals(settingName)) {
                 lineNumberVisibleSetting = prefs.getBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, EditorPreferencesDefaults.defaultLineNumberVisible);
@@ -1654,9 +1660,15 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
     }
 
-    private void showPopupMenuForPopupTrigger(MouseEvent evt) {
+    private void showPopupMenuForPopupTrigger(final MouseEvent evt) {
         if (component != null && evt.isPopupTrigger() && popupMenuEnabled) {
-            showPopupMenu(evt.getX(), evt.getY());
+            // Postponing menu creation in order to give other listeners chance
+            // to do their job. See IZ #140127 for details.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showPopupMenu(evt.getX(), evt.getY());
+                }
+            });
         }
     }
     

@@ -86,7 +86,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     private boolean asp_tags = false;
     private StateStack stack = new StateStack();
 
-    private boolean short_tags_allowed = true;
+    private boolean short_tags_allowed;
 
     private LexerInput input;
     
@@ -119,16 +119,22 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     	initialize(parameters[6]);
     }
     */
-        public PHP5ColoringLexer(LexerRestartInfo info, boolean asp_tags) {
+        public PHP5ColoringLexer(LexerRestartInfo info, boolean short_tags_allowed, boolean asp_tags_allowed, boolean inPHP) {
             this.input = info.input();
-            this.asp_tags = asp_tags;
+            this.asp_tags = asp_tags_allowed;
+            this.short_tags_allowed = short_tags_allowed;
             
             if(info.state() != null) {
                 //reset state
                 setState((LexerState)info.state());
             } else {
                 //initial state
-                zzState = zzLexicalState = YYINITIAL;
+                if (inPHP) {
+                    zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
+                }
+                else {
+                    zzState = zzLexicalState = YYINITIAL;
+                }
                 stack.clear();
             }
             
@@ -144,15 +150,20 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             final String heredoc;
             /** and the lenght of */
             final int heredoc_len;
-            
-            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len) {
+
+            final boolean shortTag;
+            final boolean aspTag;
+
+            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len, boolean shortTag, boolean aspTag) {
                 this.stack = stack;
                 this.zzState = zzState;
                 this.zzLexicalState = zzLexicalState;
                 this.heredoc = heredoc;
                 this.heredoc_len = heredoc_len;
+                this.shortTag = shortTag;
+                this.aspTag = aspTag;
             }
-            
+
             @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
@@ -162,31 +173,37 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 		if (obj == null || obj.getClass() != this.getClass()) {
 			return false;
 		}
-                
+
                 LexerState state = (LexerState) obj;
-                return (this.stack.equals(state.stack) 
-                    && (this.zzState == state.zzState) 
+                return (this.stack.equals(state.stack)
+                    && (this.zzState == state.zzState)
                     && (this.zzLexicalState == state.zzLexicalState)
                     && (this.heredoc_len == state.heredoc_len)
+                    && (this.shortTag == state.shortTag)
+                    && (this.aspTag == state.aspTag)
                     && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
             }
-         
+
             @Override
             public int hashCode() {
                 int hash = 11;
                 hash = 31 * hash + this.zzState;
                 hash = 31 * hash + this.zzLexicalState;
-                hash = 31 * hash + this.stack.hashCode();
+                if (stack != null) {
+                    hash = 31 * hash + this.stack.hashCode();
+                }
                 hash = 31 * hash + this.heredoc_len;
-                hash = 31 * hash + this.heredoc.hashCode();
+                if (heredoc != null) {
+                    hash = 31 * hash + this.heredoc.hashCode();
+                }
                 return hash;
             }
         }
-        
+
         public LexerState getState() {
-            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len);
+            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len, short_tags_allowed, asp_tags);
         }
-        
+
         public void setState(LexerState state) {
             this.stack.copyFrom(state.stack);
             this.zzState = state.zzState;
@@ -779,16 +796,15 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_LINE_COMMENT;
 }
 
-<ST_PHP_LINE_COMMENT>"?"|"%"|">" {
+<ST_PHP_LINE_COMMENT>"?"|"%" {
     return PHPTokenId.PHP_LINE_COMMENT;
 }
 
-<ST_PHP_LINE_COMMENT>[^\n\r?%>]*{ANY_CHAR} {
+<ST_PHP_LINE_COMMENT>[^\n\r?%]*{ANY_CHAR} {
 	String yytext = yytext();
 	switch (yytext.charAt(yytext.length() - 1)) {
 		case '?':
 		case '%':
-		case '>':
 			yypushback(1);
 			break;
 		default:
@@ -857,6 +873,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();
         yybegin(YYINITIAL);
+        if (yylength() > 2) {
+            yypushback(yylength()-2);
+        }
         stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
 }
@@ -942,21 +961,33 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
                
 <ST_PHP_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
+    int back = 1;
 
     if (yytext().charAt(label_len-1)==';') {
 	   label_len--;
+           back++;
     }
     if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
+        back = back + heredoc_len;
+        yypushback(back);
         yybegin(ST_PHP_END_NOWDOC);
     }
-    yypushback(1);
+    else {
+        yypushback(1);
+    }
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
-<ST_PHP_END_NOWDOC>{ANY_CHAR} {
+<ST_PHP_END_NOWDOC>{LABEL}";"?[\n\r] {
     heredoc=null; heredoc_len=0;
     yybegin(ST_PHP_IN_SCRIPTING);
-    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    int back = 1;
+    // mark just the label
+    if (yytext().charAt(yylength() - 2)==';') {
+	    back++;
+    }
+    yypushback(back);
+    return PHPTokenId.PHP_NOWDOC_TAG;
 }
                      
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
@@ -1006,22 +1037,31 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_HEREDOC>{HEREDOC_CHARS}*{HEREDOC_NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
+    int back = 1;
 
     if (yytext().charAt(label_len-1)==';') {
 	   label_len--;
+           back++;
     }
     if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-    	   yypushback(1);
+           back = back + heredoc_len;
+    	   yypushback(back);
         yybegin(ST_PHP_END_HEREDOC);
     }
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
-<ST_PHP_END_HEREDOC>{ANY_CHAR} {
+<ST_PHP_END_HEREDOC>{LABEL}";"?[\n\r] {
     heredoc=null;
     heredoc_len=0;
     yybegin(ST_PHP_IN_SCRIPTING);
-    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    int back = 1;
+    // mark just the label
+    if (yytext().charAt(yylength() - 2)==';') {
+	    back++;
+    }
+    yypushback(back);
+    return PHPTokenId.PHP_HEREDOC_TAG;
 }
 
 <ST_PHP_DOUBLE_QUOTES,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_QUOTES_AFTER_VARIABLE>"{$" {

@@ -94,40 +94,14 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Services">
-        <folder name="IndentEngine">
-            <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-            </file>
-            <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-            </file>
-        </folder>
-        
-    </folder>
-    
-    <folder name="Templates">
-        <folder name="Services">
-            <folder name="IndentEngine">
-                <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     
     <folder name="Editors">
         <folder name="text">
             <folder name="html">
+               
+                <folder name="Preferences">
+                    <file name="org-netbeans-modules-html-editor-preferences.xml" url="Preferences.xml" />
+                </folder>
                 
                 <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
                 <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
@@ -146,11 +120,7 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="1200"/>
                     </file>
                 </folder>
-                
-                <!--
-                disable Schlieman:
-                <attr name="createDataObject" boolvalue="false"/>-->
-                
+
                 <file name="org-netbeans-modules-html-editor-indent-HtmlIndentTaskFactory.instance"/>
                 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
@@ -173,7 +143,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
                 </folder>
                 
@@ -184,9 +154,8 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 
-                <file name="Settings.settings" url="HTMLOptions.settings"/>
                 <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HTMLKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.editor.html.HTMLKit"/>
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>

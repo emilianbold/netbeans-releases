@@ -72,32 +72,36 @@ public class PolicyTest extends TestCase {
         TestCatalogModel.getDefault().setDocumentPooling(false);
     }
 
-    public void testWrite10() throws Exception {
+    public void testWithAddressing() throws Exception {
+        File f = new File("PolicyTest-WithAddressing.wsdl");
+        if (f.exists()) {
+            f.delete();
+        }
+
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
         
-        model.startTransaction();
-
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
         
-        PolicyModelHelper pmh = PolicyModelHelper.getInstance(ConfigVersion.CONFIG_1_0);
-        
-        pmh.createPolicy(b, true);
-        
-        Collection<BindingOperation> bindingops = b.getBindingOperations();
-        for (BindingOperation bo : bindingops) {
-            pmh.createPolicy(bo.getBindingInput(), false);
-            pmh.createPolicy(bo.getBindingOutput(), false);
+        for (ConfigVersion cfgV : ConfigVersion.values()) {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgV);
+            pmh.createPolicy(b, true);
+            ConfigVersion readCfgV = PolicyModelHelper.getConfigVersion(b);
+            assertEquals("Set config version does not correspond to read config version", cfgV, readCfgV);
+            
+            Collection<BindingOperation> bindingops = b.getBindingOperations();
+            for (BindingOperation bo : bindingops) {
+                pmh.createPolicy(bo.getBindingInput(), false);
+                pmh.createPolicy(bo.getBindingOutput(), false);
+            }
+            TestUtil.dumpToFile(model.getBaseDocument(), f);
+            readAndCheck(model, true);
+            PolicyModelHelper.cleanPolicies(b);
         }
-
-        model.endTransaction();
-
-        TestUtil.dumpToFile(model.getBaseDocument(), new File("C:\\HelloService.wsdl"));
-        readAndCheck10(model);
     }
 
-    private void readAndCheck10(WSDLModel model) {
+    private void readAndCheck(WSDLModel model, boolean addressing) {
         
         // the model operation is not enclosed in transaction inorder to catch 
         // whether the operations do not try to create non-existing elements
@@ -106,13 +110,11 @@ public class PolicyTest extends TestCase {
         Binding b = (Binding) d.getBindings().toArray()[0];
         
         ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(b);
-        assertEquals(cfgVersion, ConfigVersion.CONFIG_1_0);
-        
         PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgVersion);
 
-        All all = pmh.createPolicy(b, true);
+        All all = pmh.createPolicy(b, false);
         assertNotNull("Top Level Policy", all);
-        
+        assertEquals("Addressing does not correspond", addressing, AddressingModelHelper.isAddressingEnabled(b));
         Collection<PolicyReference> polRefs = b.getExtensibilityElements(PolicyReference.class);
         assertEquals("Top Level Policy Ref Size", 1, polRefs.size());
         assertEquals("Top Level Policy Ref URI", "#NewWebServicePortBindingPolicy", polRefs.iterator().next().getPolicyURI());
@@ -126,6 +128,33 @@ public class PolicyTest extends TestCase {
             assertNotNull("Binding Output Policy", all);
         }
         
+    }
+    
+    public void testWithoutAddressing() throws Exception {
+        File f = new File("PolicyTest-WithoutAddressing.wsdl");
+        if (f.exists()) {
+            f.delete();
+        }
+        TestCatalogModel.getDefault().setDocumentPooling(true);
+        WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
+        
+        Definitions d = model.getDefinitions();
+        Binding b = (Binding) d.getBindings().toArray()[0];
+        
+        for (ConfigVersion cfgV : ConfigVersion.values()) {
+            PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgV);
+        
+            pmh.createPolicy(b, false);
+
+            Collection<BindingOperation> bindingops = b.getBindingOperations();
+            for (BindingOperation bo : bindingops) {
+                pmh.createPolicy(bo.getBindingInput(), false);
+                pmh.createPolicy(bo.getBindingOutput(), false);
+            }
+            TestUtil.dumpToFile(model.getBaseDocument(), f);
+            readAndCheck(model, false);
+            PolicyModelHelper.cleanPolicies(b);
+        }
     }
 
     public String getTestResourcePath() {

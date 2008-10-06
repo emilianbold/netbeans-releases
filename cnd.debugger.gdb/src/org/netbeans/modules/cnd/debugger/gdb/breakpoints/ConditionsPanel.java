@@ -176,7 +176,6 @@ public class ConditionsPanel extends JPanel {
         setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_Conditions_Breakpoint_BorderTitle"))); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        cbCondition.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MNEM_cbCondition").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(cbCondition, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_cbCondition")); // NOI18N
         cbCondition.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TT_cbCondition")); // NOI18N
         cbCondition.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -204,7 +203,6 @@ public class ConditionsPanel extends JPanel {
 
         panelHitCountFilter.setLayout(new java.awt.GridBagLayout());
 
-        cbSkipCount.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/gdb/breakpoints/Bundle").getString("MNEM_cbWhenHitCount").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(cbSkipCount, org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "L_SkipCount")); // NOI18N
         cbSkipCount.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TT_SkiptCount")); // NOI18N
         cbSkipCount.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));

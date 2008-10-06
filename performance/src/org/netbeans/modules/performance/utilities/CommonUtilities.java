@@ -55,6 +55,8 @@ import java.util.Locale;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -85,6 +87,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbTestCase;
 
@@ -105,7 +108,7 @@ public class CommonUtilities {
     private static String prev="";
     
     private static String projectsDir; // <nbextra>/data/
-    private static String tempDir; // <nbjunit.workdir>/tmpdir
+    private static String tempDir; // <nbjunit.workdir>/tmpdir/
     
     static {
         String workDir = System.getProperty("nbjunit.workdir");
@@ -133,10 +136,18 @@ public class CommonUtilities {
         }
     }
     
+    /**
+     * Returns data directory path ending with file.separator
+     * @return &lt;nbextra&gt;/data/
+     */
     public static String getProjectsDir() {
         return projectsDir;
     }
-    
+
+    /**
+     * Returns temprorary directory path ending with file.separator
+     * @return &lt;nbjunit.workdir&gt;/tmpdir/
+     */
     public static String getTempDir() {
         return tempDir;
     }
@@ -221,6 +232,11 @@ public class CommonUtilities {
         closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
                 "Memory");
+    }
+    
+    public static void closeTaskWindow() {
+        TopComponentOperator tco = new TopComponentOperator("Tasks");
+        tco.close();
     }
     
     private static void closeToolbar(String menu){
@@ -557,7 +573,7 @@ public class CommonUtilities {
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String glassFishV2ListItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.Bundle", "LBL_GlassFishV2");
+        String glassFishV3ListItem = Bundle.getStringTrimmed("org.netbeans.modules.glassfish.common.nodes.Bundle", "TXT_GlassfishInstanceNode");
         String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
         String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
@@ -581,7 +597,7 @@ public class CommonUtilities {
 
             NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
 
-            new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV2ListItem);
+            new JListOperator(addServerInstanceDialog, 1).selectItem(glassFishV3ListItem);
 
             new JButtonOperator(addServerInstanceDialog,nextButtonCaption).push();
 
@@ -824,14 +840,14 @@ public class CommonUtilities {
         node.performPopupAction("Terminate Process");
     }
     
-    public static void xmlTestResults(String path, String suite, String name, String unit, String pass, long threshold, long[] results, int repeat) {
+    public static void xmlTestResults(String path, String suite, String name, String classname, String sname, String unit, String pass, long threshold, long[] results, int repeat) {
     
         File resLocal=new File(path+File.separator+"performance.xml");
         PrintStream ps=null;
         try {
             ps=new PrintStream(resLocal); 
             ps.println("<TestResults>");
-            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">");
+            ps.println("   <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">");
             ps.println("      <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>");
             for (int i=2;i<=repeat;i++) 
                 ps.println("      <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>");
@@ -874,12 +890,12 @@ public class CommonUtilities {
             fos.write(array);
 
       
-            if (!new String(array).contains("<Suite name=\""+suite+"\">")) {
-                if (new String(array).contains("<Suite name=")) fos.write("   </Suite>\n".getBytes());
-                fos.write(("   <Suite name=\""+suite+"\">\n").getBytes());
+            if (!new String(array).contains("<Suite suitename=\""+suite+"\" name=\""+sname+"\">")) {
+                if (new String(array).contains("<Suite suitename=")) fos.write("   </Suite>\n".getBytes());
+                fos.write(("   <Suite suitename=\""+suite+"\" name=\""+sname+"\">\n").getBytes());
             }
             
-            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\">\n").getBytes());
+            fos.write(("      <Test name=\""+name+"\" unit=\""+unit+"\""+" results=\""+pass+"\""+" threshold=\""+threshold+"\""+" classname=\""+classname+"\">\n").getBytes());
             fos.write(("         <PerformanceData runOrder=\"1\" value=\""+results[1]+"\"/>\n").getBytes());
             for (int i=2;i<=repeat;i++) 
                 fos.write(("         <PerformanceData runOrder=\"2\" value=\""+results[i]+"\"/>\n").getBytes());

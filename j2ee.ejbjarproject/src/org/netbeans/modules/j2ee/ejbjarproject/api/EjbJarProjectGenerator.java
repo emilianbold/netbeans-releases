@@ -62,6 +62,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -69,6 +70,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
@@ -103,7 +105,7 @@ public class EjbJarProjectGenerator {
     private static final String DEFAULT_JAVA_FOLDER = "java"; //NOI18N
     private static final String DEFAULT_BUILD_DIR = "build"; //NOI18N
     
-    public static final String MINIMUM_ANT_VERSION = "1.6";
+    public static final String MINIMUM_ANT_VERSION = "1.6.5";
     
     private EjbJarProjectGenerator() {}
     
@@ -378,9 +380,7 @@ public class EjbJarProjectGenerator {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-        }
+        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
     
     private static String configureServerLibrary(final String librariesDefinition,
@@ -514,7 +514,14 @@ public class EjbJarProjectGenerator {
         }
 
         // deploy on save since nb 6.5
-        ep.setProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N        
+        boolean deployOnSaveEnabled = false;
+        try {
+            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
+                    .isDeployOnSaveSupported();
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        ep.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
         
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");
@@ -555,6 +562,12 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVADOC_ENCODING, "${" + EjbJarProjectProperties.SOURCE_ENCODING + "}"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
+        
+        ep.setProperty(EjbJarProjectProperties.RUNMAIN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(EjbJarProjectProperties.RUNMAIN_JVM_ARGS, new String[] { // NOI18N
+            "# " + NbBundle.getMessage(EjbJarProjectGenerator.class, "COMMENT_runmain.jvmargs"), // NOI18N
+            "# " + NbBundle.getMessage(EjbJarProjectGenerator.class, "COMMENT_runmain.jvmargs_2"), // NOI18N
+        }, false);
         
         // use the default encoding
         Charset enc = FileEncodingQuery.getDefaultEncoding();

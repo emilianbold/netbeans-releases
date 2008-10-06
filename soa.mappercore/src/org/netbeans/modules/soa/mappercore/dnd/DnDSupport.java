@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.soa.mappercore.dnd;
 
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -33,6 +35,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
 
 /**
@@ -119,7 +122,8 @@ public class DnDSupport implements DnDConstants {
         public void dragGestureRecognized(DragGestureEvent dge) {
             if (cachedTransferable != null) {
                 try {
-                    dge.startDrag(null, cachedTransferable, this);
+                    dge.startDrag(null, FAKE_DND_ICON, new Point(0, 0),
+                            cachedTransferable, this);
                 } finally {
                     cachedTransferable = null;
                 }
@@ -161,4 +165,7 @@ public class DnDSupport implements DnDConstants {
         protected void unregisterListeners() {
         }
     }
+
+    private static final Image FAKE_DND_ICON
+            = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 }

@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.cnd.makeproject.ui;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -57,8 +60,16 @@ public class RemoveFolderAction extends NodeAction {
     public void performAction(Node[] activatedNodes) {
 	for (int i = 0; i < activatedNodes.length; i++) {
 	    Node n = activatedNodes[i];
+	    Project project = (Project)n.getValue("Project"); // NOI18N
 	    Folder folder = (Folder)n.getValue("Folder"); // NOI18N
 	    assert folder != null;
+            
+            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
+            if (!makeConfigurationDescriptor.okToChange()) {
+                return;
+            }
+            
 	    String txt = NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTxt", folder.getDisplayName()); // NOI18N
 	    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, NbBundle.getMessage(getClass(), "LBL_RemoveFolderActionDialogTitle"), NotifyDescriptor.OK_CANCEL_OPTION); // NOI18N
 	    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {

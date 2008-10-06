@@ -98,12 +98,26 @@
     const PROP_ERROR        = NetBeans.Constants.jsdIPropertyIF.FLAG_ERROR;
     const PROP_HINTED       = NetBeans.Constants.jsdIPropertyIF.FLAG_HINTED;
     const PROP_CONST        = 0x8000;
-
+    
     // patterns
     const CONSTANTS_FILTER    = new RegExp("^[A-Z][A-Z_]*$");
     const JAVA_OBJECT_PATTERN = new RegExp("^Java(Array|Member|Object|Package)$");
     const WATCH_SRCIPT = '[Watch-script]';
-
+    const FUNCTION_ASSIGNMENT_PATTERN = new RegExp("([\\w\\.]+)\\s*[:=]\\s*$");
+    
+    var RESPONSE_CMDS = {
+        feature_set : true,
+        breakpoint_set : true,
+        breakpoint_remove : true,
+        breakpoint_update : true,
+        stack_depth : true,
+        stack_get : true,
+        property_get : true,
+        property_set : true,
+        eval : true,
+        source : true
+    };
+    
     var topWindow;
     var browser;
 
@@ -116,7 +130,7 @@
     var DebuggerListener;
 
     var features = {
-        showFunctions: true,
+        showFunctions: false,
         showConstants: true,
         bypassConstructors: false,
         stepFiltersEnabled: false,
@@ -125,6 +139,7 @@
         suspendOnErrors: false,
         suspendOnDebuggerKeyword: true,
         suspendOnAssert: false,
+        ignoreQueryStrings: true,
         http_monitor:false
     };
 
@@ -135,19 +150,22 @@
 
     var enabled = false;
 
-    var transactionId;
-
     var hookReturn;
 
     var debugState = {};
     var stepping = false;
     var debugging = false;
+    var suspendNextLine = false;
+    var currentFrameFileName;
 
     var port;
     var sessionId;
 
+    var anonymousFunctionMap = [];
+    
     // FirebugDebugger
     const firebugDebugger = {
+
         QueryInterface : function(iid)
         {
             if (iid.equals(NetBeans.Constants.FirebugDebuggerIF)||
@@ -161,6 +179,11 @@
 
         // nsIFireBugDebugger
         supportsWindow: function(win)
+        {
+            return false;
+        },
+
+        supportsGlobal: function(global)
         {
             return false;
         },
@@ -220,42 +243,70 @@
                 return;
             }
             loadedSources[sourceKey] = true;
+            if (features.ignoreQueryStrings == true) {
+                var sourceWithoutQuery = getURLWithoutQuery(sourceKey);
+                if (sourceWithoutQuery != sourceKey && breakpoints[sourceWithoutQuery]) {
+                    copyBreakpoints(sourceKey, sourceWithoutQuery);
+                }
+            }
+
             sendSourcesMessage(loadedSources);
         },
 
         onScriptDestroyed: function(script){}
 
     };
+    firebugDebugger.wrappedJSObject = firebugDebugger;
 
     this.initDebugger = function(_port, _sessionId) {
+        if (!this.nbDebuggerInitialized) {
+            this.nbDebuggerInitialized = true;
+        } else {
+            return;
+        }
         port = _port;
         sessionId = _sessionId;
 
         jsDebuggerService = NetBeans.Utils.CCSV(
         NetBeans.Constants.jsdIDebuggerServiceCID,
-        NetBeans.Constants.jsdIDebuggerServiceIF);
+        NetBeans.Utils.CI("jsdIDebuggerService"));
 
-        firebugDebuggerService = NetBeans.Utils.CCSV(
-        NetBeans.Constants.FirebugCID,
-        NetBeans.Constants.FirebugIF);
-
+        firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
+        
         const socketListener = {
             onDBGPCommand: function(command) {
-                try {
-                    processCommand(command);
-                } catch (e) {
-                    window.NetBeans.Logger.log(""+e);
-                }
+                handleCommand(command);
             },
             onDBGPClose: function() {
-                window.NetBeans.Debugger.shutdown();
+                if (window && window.NetBeans) {
+                  window.NetBeans.Debugger.shutdown();
+                } else {
+                    if (firebugDebuggerService) {
+                        fbsUnregisterDebugger(firebugDebugger);
+                    }
+
+                    if (socket) {
+                        socket.close();
+                        socket = null;
+                    }
+                }
             }
         };
 
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
-        firebugDebuggerService.registerDebugger(firebugDebugger);
+        try {
+            var prefs =
+                NetBeans.Utils.CCSV("@mozilla.org/preferences-service;1",
+                Components.interfaces.nsIPrefBranch2);
+            
+            prefs.setBoolPref("extensions.firebug-service.trackThrowCatch", true);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Could not set trackThrowCatch")
+            NetBeans.Logger.logException(exc);
+        }
+        firebugDebuggerService.trackThrowCatch = true;
 
         initialize(this);
         sendInitMessage();
@@ -265,142 +316,217 @@
     function initialize (netBeansDebugger)
     {
         const NetBeansDebuggerExtension = FBL.extend(Firebug.Extension,
+        {
+            // #1 Accept Context / Decline Context
+            acceptContext: function(win,uri)
             {
-                // #1 Accept Context / Decline Context
-                acceptContext: function(win,uri)
-                {
-                    if ( !topWindow ) {
-                        topWindow = win;
-                        browser = NetBeans.Utils.getBrowserByWindow(win);
-                        wrapBrowserDestroy();
+                if (this.terminated) {
+                    return;
+                }
+
+                if ( !topWindow ) {
+                    topWindow = win;
+                    browser = NetBeans.Utils.getBrowserByWindow(win);
+                    wrapBrowserDestroy(browser);
+                    currentUrl = uri.prePath+uri.path;
+                    return true;
+                } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
+                    if ( currentFirebugContext != null && releaseFirebugContext ) {
                         currentUrl = uri.prePath+uri.path;
                         return true;
-                    } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
-                        if ( currentFirebugContext != null && releaseFirebugContext ) {
-                            currentUrl = uri.prePath+uri.path;
-                            return true;
+                    }
+                }
+                return false;
+            },
+
+            declineContext: function(win,uri)
+            {
+                if (this.terminated) {
+                    return false;
+                }
+                if ( topWindow ) {
+                    return true;
+                }
+                return false;
+            },
+
+            // #2 Unwatch Window ( For Reset )
+            unwatchWindow: function(context, win)
+            {
+                if (this.terminated) {
+                    return;
+                }
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.detachFromWindow(win);
+                    if (features["http_monitor"]  ) {
+                        NetBeans.NetMonitor.destroyMonitor(context, browser);
+                    }
+
+                }
+
+            },
+
+            // #3 Destroy Context ( For Reset )
+            destroyContext: function(context)
+            {
+                if (this.terminated) {
+                    return;
+                }
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    releaseFirebugContext = true;
+                    netBeansDebugger.onDestroy(netBeansDebugger);
+
+
+                }
+            },
+
+            // #4 Init Context
+            initContext: function(context)
+            {
+                if (this.terminated) {
+                    return;
+                }
+
+                if ( topWindow && context.window == topWindow ) {
+                    currentFirebugContext = context;
+                    releaseFirebugContext = false;
+                    netBeansDebugger.onInit(netBeansDebugger);
+                    
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;
+                        suspend("firstline");
+                    } else if (suspendNextLine == true) {
+                        suspendNextLine = false;
+                        suspend("suspend");
+                    }
+                    
+                    if (currentUrl) {
+                        var url = currentUrl;
+                        if (features.ignoreQueryStrings == true) {
+                            var urlWithoutQuery = getURLWithoutQuery(url);
+                            if (urlWithoutQuery != url && breakpoints[urlWithoutQuery]) {
+                                copyBreakpoints(url, urlWithoutQuery);
+                            }
                         }
                     }
-                    return false;
-                },
+                }
+            },
 
-                declineContext: function(win,uri)
-                {
-                    if ( topWindow ) {
-                        return true;
-                    }
-                    return false;
-                },
+            // #5 Show Current Context - we didn't need this.'
+            showContext: function(currentBrowser, context) {
+                if (this.terminated) {
+                    return;
+                }
 
-                // #2 Unwatch Window ( For Reset )
-                unwatchWindow: function(context, win)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.detachFromWindow(win);
-                    }
-                },
+                wrapBrowserDestroy(currentBrowser);
+            },
 
-                // #3 Destroy Context ( For Reset )
-                destroyContext: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        releaseFirebugContext = true;
-                        netBeansDebugger.onDestroy(netBeansDebugger);
-                        
-                        if (features["http_monitor"] == true ) {
-                          NetBeans.NetMonitor.destroyMonitor(context, browser);
-                        }
-                    }
-                },
+            // #6 Watch Window ( attachToWindow )
+            watchWindow: function(context, win)
+            {
+                if (this.terminated) {
+                    return;
+                }
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.attachToWindow(win);
+                    // We would be better off using the Firefox preferences so we can observe and turn on and off
+                    // http monitor as needed rather than only at the beginning.
 
-                // #4 Init Context
-                initContext: function(context)
-                {
-                    if ( topWindow && context.window == topWindow ) {
-                        currentFirebugContext = context;
-                        releaseFirebugContext = false;
-                        netBeansDebugger.onInit(netBeansDebugger);
-                        
-                        // We would be better off using the Firefox preferences so we can observe and turn on and off
-                        // http monitor as needed rather than only at the beginning.
-                        if (features["http_monitor"] == true) {
-                          NetBeans.NetMonitor.initMonitor(context, browser,socket);
-
-                        } 
-                    }
-                },
-
-                // #5 Show Current Context - we didn't need this.'
-                showContext: function(browser, context){},
-
-                // #6 Watch Window ( attachToWindow )
-                watchWindow: function(context, win)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.attachToWindow(win);
-                    }
-                },
-
-                // #7 Loaded Context
-                loadedContext: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.onLoaded(currentUrl);
-                        delete currentUrl;
+                    //Joelle: Did you do this == true for a reason?  Double check later when you get time.
+                    if (features["http_monitor"] ) {
+                        NetBeans.NetMonitor.initMonitor(context, browser, socket);
                     }
                 }
 
+            },
+
+            // #7 Loaded Context
+            loadedContext: function(context)
+            {
+                if (this.terminated) {
+                    return;
+                }
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onLoaded(currentUrl);
+                    delete currentUrl;
+                }
             }
+
+        }
         );
 
 
         DebuggerListener = FBL.extend(Firebug.DebuggerListener,
+        {
+            onJSDActivate: function(jsd)
             {
-                onStop: function(context, type, rv)
-                {
-                    if ( context == currentFirebugContext ) {
-                        context.hideDebuggerUI = true;
-                        return netBeansDebugger.onStop(context.debugFrame, type, rv);
-                    }
-                },
+            },
 
-                onResume: function(context)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        if ( releaseFirebugContext ) {
-                            currentFirebugContext = null;
-                        }
-                        netBeansDebugger.onResume();
-                        context.hideDebuggerUI = false;
-                    }
-                },
-
-                onThrow: function(context, frame, rv)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        return netBeansDebugger.onThrow(frame,rv);
-                    }
-                },
-
-                onError: function(context, frame, error)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        return netBeansDebugger.onError(frame,error);
-                    }
-                },
-
-                onTopLevel: function(context, frame)
-                {
-                    if ( context == currentFirebugContext && currentFirebugContext ) {
-                        netBeansDebugger.onTopLevel();
-                    }
+            onStop: function(context, frame, type, rv)
+            {
+                if ( context == currentFirebugContext ) {
+                    context.hideDebuggerUI = true;
+                    return netBeansDebugger.onStop(frame, type, rv);
                 }
+            },
+
+            onResume: function(context)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    if ( releaseFirebugContext ) {
+                        currentFirebugContext = null;
+                    }
+                    netBeansDebugger.onResume();
+                    context.hideDebuggerUI = false;
+                }
+            },
+
+            onThrow: function(context, frame, rv)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    return netBeansDebugger.onThrow(frame,rv);
+                }
+            },
+
+            onError: function(context, frame, error)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    return netBeansDebugger.onError(frame,error);
+                }
+            },
+
+            onTopLevel: function(context, frame)
+            {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onTopLevel();
+                }
+            },
+
+            // XXX replacement for onTopLevel in firebug 1.2
+            onTopLevelScriptCreated: function(context, frame, url) {
+                if ( context == currentFirebugContext && currentFirebugContext ) {
+                    netBeansDebugger.onTopLevel();
+                }
+            },
+
+            onEventScriptCreated: function(context, frame, url)
+            {
+            },
+
+            onFunctionConstructor: function(context, frame, ctor_script, url)
+            {
+                // XXX Not active as of firebug 1.2b06
             }
+        }
         );
 
         // Make sure we our shutdown when the browser is destroyed.
-        function wrapBrowserDestroy()
+        function wrapBrowserDestroy(browser)
         {
+            if (browser._destroy) {
+                return;
+            }
+
             browser._destroy = browser.destroy;
             browser.destroy = function() {
                 netBeansDebugger.shutdown();
@@ -411,27 +537,33 @@
             }
         }
 
-        function unwrapBrowserDestroy()
-        {
-            if (browser && browser._destroy)
-            {
-                browser.destroy = browser._destroy;
-                delete browser._destroy;
-            }
-        }
+        fbsRegisterDebugger(firebugDebugger);
 
         Firebug.registerExtension(NetBeansDebuggerExtension);
+
+        netBeansDebugger.netbeansDebuggerExtension = NetBeansDebuggerExtension;
+        netBeansDebugger.old_isHostEnabled = Firebug.Debugger.isHostEnabled;
+
+        Firebug.Debugger.isHostEnabled = function(context) {
+            return topWindow && context.window == topWindow;
+        }
+    }
+
+
+    function unwrapBrowserDestroy()
+    {
+        if (browser && browser._destroy)
+        {
+            browser.destroy = browser._destroy;
+            delete browser._destroy;
+        }
     }
 
     function disableFirebugDebugger()
     {
-        Firebug.Debugger.removeListener(DebuggerListener);
-        if ( topWindow && currentFirebugContext && !releaseFirebugContext ) {
+        if ( TabWatcher && topWindow && currentFirebugContext && !releaseFirebugContext ) {
             TabWatcher.unwatchTopWindow(topWindow);
         }
-        topWindow = null;
-        unwrapBrowserDestroy();
-        browser = null;
     }
 
     function abortFirebugDebugger()
@@ -476,20 +608,25 @@
 
     this.shutdown = function()
     {
-
         this.shutdownInProgress = true;
-        if ( !jsDebuggerService )
+
+        if ( !jsDebuggerService ) {
             return;
-        if ( !((currentFirebugContext == null) || releaseFirebugContext) )
-            return;
-        disable();
+        }
+        if ( !((currentFirebugContext == null) || releaseFirebugContext) ) {
+            disable(true);
+        } else {
+            disable(false);
+        }
+
+        NetBeans.NetMonitor.destroyAllMonitors(browser);
 
         if ( socket ) {
             socket.close();
             socket = null;
         }
         if ( firebugDebuggerService ) {
-            firebugDebuggerService.unregisterDebugger(firebugDebugger);
+            fbsUnregisterDebugger(firebugDebugger);
         }
         firebugDebuggerService = null;
         jsDebuggerService = null;
@@ -507,20 +644,62 @@
     // command handling
     const commandRegularExpression = /^\s*(\w+)\s*-i\s*(\d+)\s*(.*)$/;
 
-    function processCommand(command) {
-        command = command.replace(/\r\n|\r|\n/g, '');
-
-        var matches = commandRegularExpression.exec(command);
-        if (!matches) {
-            throw new Error("Can't get a command out of [" + command + "]");
+    // process command w/ error handling
+    function handleCommand(command) {
+        socket.sentFlag = false;
+        var cmd;
+        var transactionId;
+        var excMsg = "Unknown error";
+        try {
+            var matches = preprocessCommand(command);
+            if (!matches) {
+                throw new Error("Can't get a command out of [" + command + "]");
+            }
+            cmd = matches[1];
+            transactionId = matches[2];
+            
+            processCommand(matches);
+        } catch (e) {
+            window.NetBeans.Logger.logException(e);
+            excMsg = e.message;
+        } finally {
+            if (transactionId && socket && !socket.sentFlag && wantsAcknowledgment(cmd)) {
+                var errorResponse =
+                    <response command="runtime_error"
+                    transaction_id={
+                        transactionId
+                    }
+                    message={
+                        excMsg
+                    }
+                    />;
+                socket.send(errorResponse);
+                socket.sentFlag = false;
+            }
         }
-        var cmd = matches[1];
-        transactionId = matches[2];
+    }
+    
+    function wantsAcknowledgment(cmd) {
+        if (!cmd) {
+            return false;
+        }
         
+        return RESPONSE_CMDS[cmd];
+    }
+    
+    function preprocessCommand(command) {
+        command = command.replace(/\r\n|\r|\n/g, '');
+        return commandRegularExpression.exec(command);
+    }
+    
+    function processCommand(matches) {
+        var cmd = matches[1];
+        var transactionId = matches[2];
+
         //NetBeans.Logger.log("debugger.commandRegularExpress cmd:" +cmd);
 
         if (cmd == "feature_set") {
-            feature_set(matches[3]);
+            feature_set(transactionId, matches[3]);
         } else if (cmd == "breakpoint_set") {
             breakpoint_set(transactionId, matches[3]);
         } else if (cmd == "breakpoint_remove") {
@@ -531,44 +710,42 @@
             open_uri(matches[3]);
         } else if (cmd == "run") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already running");
             }
             resume("resume");
         } else if (cmd == "pause") {
             if ( debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already suspended");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already suspended");
             }
             suspend("suspend");
         } else if (cmd == "step_into" || cmd == "step_over" || cmd == "step_out") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already running");
             }
             step(cmd);
         } else if (cmd == "stack_depth") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             sendStackDepthResponse(transactionId);
         } else if (cmd == "stack_get") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             sendStackGetResponse(transactionId);
         } else if (cmd == "property_get") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             property_get(transactionId, matches[3]);
+        } else if (cmd == "property_set") {
+            if ( !debugging ) {
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
+            }
+            property_set(transactionId, matches[3]);
         } else if (cmd == "eval") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             onEval(transactionId, matches[3]);
         } else if (cmd == "source") {
@@ -576,16 +753,16 @@
         }   else if (cmd == "stop") {
             terminate();
         }
-        transactionId = -1;
     }
 
     // TODO: Call Shutdown
     function onClose()  {
     }
 
+
     // 1. feature_set
     const feature_setCommandRegularExpression = /^\s*-n\s*(\w+)\s*-v\s*(.+)\s*$/;
-    function feature_set(command) {
+    function feature_set(transactionId, command) {
         var matches = feature_setCommandRegularExpression.exec(command);
         if (!matches) {
             throw new Error("Can't get a feature_set command arguments out of [" + command + "]");
@@ -607,6 +784,10 @@
         if (matches[1] in features) {
             //NetBeans.Logger.log("debugger.feature_set - Feature: " + matches[1]);
             if ( typeof(features[matches[1]]) == 'boolean' ) {
+                //NetBeans.Logger.log("debugger.feature_set - Boolean:" + matches[2] );
+                if ( matches[1] == 'http_monitor' && features['http_monitor'] != matches[2] ){
+                    setHttpMonitor(matches[2]);
+                }
                 features[matches[1]] = (matches[2] == 'true');
             } else {
                 features[matches[1]] = matches[2];
@@ -617,9 +798,32 @@
         }
     }
 
+    function setHttpMonitor(isEnabled) {
+        if ( currentFirebugContext ){
+            if ( isEnabled == 'true' ){  //looking for the string "true"
+                NetBeans.NetMonitor.initMonitor(currentFirebugContext, browser, socket);
+            } else {
+                NetBeans.NetMonitor.destroyMonitor(currentFirebugContext, browser);
+            }
+        } else {
+            var context = {};
+            var cBrowser;
+            if (browser) {
+                cBrowser = browser;
+            } else {
+                cBrowser = getBrowser();
+            }
+            if ( isEnabled == 'true' ){  //looking for the string "true"
+                NetBeans.NetMonitor.initMonitor(context, cBrowser, socket);
+            } else {
+                NetBeans.NetMonitor.destroyMonitor(context, cBrowser);
+            }
+        }
+    }
+
 
     // 2. Breakpoints
-    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_setCommandRegularExpression = /^\s*-t\s*(line)\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-f\s*(\S+)\s*-n\s*(\d+)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
 
     function breakpoint_set(transaction_id, command) {
         var matches = breakpoint_setCommandRegularExpression.exec(command);
@@ -628,39 +832,63 @@
         }
 
         var disabled = matches[2] == "disabled";
-        var href = matches[3];
-        var line = matches[4];
-        var hitValue = matches[5];
-        var hitCondition = matches[6];
-        var condition = matches[7];
+        var isTemporary = matches[3] == "1";
+        var href = matches[4];
+        var line = matches[5];
+        var hitValue = matches[6];
+        var hitCondition = matches[7];
+        var condition = matches[8];
 
-        setBreakpoint(href, line,
+        if (!isTemporary && !(features.ignoreQueryStrings && getQueryStringPart(href))) {
+            if (setBreakpoint(href, line,
             {
                 disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
+                hitCount: 0,
                 condition: condition,
                 onTrue: true
-            });
+            })) {
+                var breakpointHitCondition =  {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                setBreakpointHitCondition(href, line, breakpointHitCondition);
+            }
+        }      
 
         var breakpointSetResponse =
-            <response command="breakpoint_set"
-        state={ disabled ? "disabled" : "enabled"}
-        id={href + ":" + line}
-        transaction_id={transaction_id} />;
-
+        <response command="breakpoint_set"
+        state={
+        disabled ? "disabled" : "enabled"
+        }
+        id={
+        href + ":" + line
+        }
+        transaction_id={
+        transaction_id
+        } />;
         socket.send(breakpointSetResponse);
+
+        if (isTemporary) {
+            if (!debugging) {
+                NetBeans.Logger.logMessage("Run to Cursor command processed when debugger is not suspended");
+                return;
+            }
+            runUntil(currentFrameFileName, line);
+        }
     }
 
     const breakpoint_updateCommandRegularExpression = /^\s*-d\s*(\S+)\s*(.*)$/;
     // Line number change is treated as remove and an add
-    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
+    const breakpoint_updateSubCommandRegularExpression = /^\s*-s\s*(enabled|disabled)\s*-r\s*(0|1)\s*-h\s*(\d+)\s*-o\s*(==|>=|%)\s*--\s+(.*)$/;
     const breakpointIdRegularExpression = /^\s*(\S+):(\d+)\s*$/;
     function breakpoint_update(transaction_id, command)
     {
         var breakpointUpdateResponse =
-            <response command="breakpoint_update"
-        transaction_id={transaction_id} />;
+        <response command="breakpoint_update"
+        transaction_id={
+        transaction_id
+        } />;
 
         var matches = breakpoint_updateCommandRegularExpression.exec(command);
         if (!matches) {
@@ -678,27 +906,48 @@
         var href = matches[1];
         var line = matches[2];
 
+        if (features.ignoreQueryStrings && getQueryStringPart(href)) {
+            socket.send(breakpointUpdateResponse);
+            return;
+        }
+
         matches = breakpoint_updateSubCommandRegularExpression.exec(subcommand);
         if (!matches) {
             throw new Error("Can't get a breakpoint_update sub command arguments out of [" + subcommand + "]");
         }
 
         var disabled = ("disabled" ==  matches[1]);
-        var hitValue = matches[2];
-        var hitCondition = matches[3];
-        var condition = matches[4];
+        var hitValue = matches[3];
+        var hitCondition = matches[4];
+        var condition = matches[5];
 
+        var breakpointHitCondition = getBreakpointHitCondition(href, line);
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
-        setBreakpoint(href, line,
-            {
-                disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
-                condition: condition,
-                onTrue: true
-            });
-
+        if (setBreakpoint(href, line,
+        {
+            disabled: disabled,
+            hitCount: 0,
+            condition: condition,
+            onTrue: true
+        })) {
+            breakpointHitCondition = getBreakpointHitCondition(href, line);
+            if (breakpointHitCondition) {
+                if (breakpointHitCondition.hitCount != hitValue
+                    || breakpointHitCondition.hitCondition != hitCondition) {
+                    breakpointHitCondition.hitCount = hitValue;
+                    breakpointHitCondition.hitCondition=hitCondition;
+                    breakpointHitCondition.hits = 0;
+                }
+            } else {
+                breakpointHitCondition = {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                setBreakpointHitCondition(href, line, breakpointHitCondition);
+            }
+        };
         socket.send(breakpointUpdateResponse);
     }
 
@@ -706,8 +955,10 @@
     function breakpoint_remove(transaction_id, command)
     {
         var breakpointRemoveResponse =
-            <response command="breakpoint_remove"
-        transaction_id={transaction_id} />;
+        <response command="breakpoint_remove"
+        transaction_id={
+        transaction_id
+        } />;
 
         var matches = breakpoint_removeCommandRegularExpression.exec(command);
         if (!matches) {
@@ -729,70 +980,142 @@
 
         var href = matches[1];
         var line = matches[2];
+
+        if (features.ignoreQueryStrings && getQueryStringPart(href)) {
+            return true;
+        }
         clearBreakpoint(href, line);
+        setBreakpointHitCondition(href, line);
 
         return true;
     }
 
-    function enableDisableBreakpointId(breakpointId, enable)
-    {
-        var matches = breakpointIdRegularExpression.exec(breakpointId);
-        if (!matches) {
-            throw new Error("Can't split breakpointId " + breakpointId);
-        }
-
-        var href = matches[1];
-        var line = matches[2];
-
-        if (hasBreakpoint(href, line)) {
-            if (enable) {
-                firebugDebuggerService.enableBreakpoint(href, line);
-            } else {
-                firebugDebuggerService.disableBreakpoint(href, line);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    function setConditionOfBreakpointId(breakpointId, condition)
-    {
-        var matches = breakpointIdRegularExpression.exec(breakpointId);
-        if (!matches) {
-            throw new Error("Can't split breakpointId " + breakpointId);
-        }
-
-        var href = matches[1];
-        var line = matches[2];
-
-        if (hasBreakpoint(href, line)) {
-            firebugDebuggerService.setBreakpointCondition(href, line, condition);
-            return true;
-        }
-        return false;
-    }
-
     var breakpoints = {};
+    var breakpointHitConditions = {};
 
-    function hasBreakpoint(href,line)
-    {
-        if ( href in breakpoints ) {
-            var list = breakpoints[href];
-            for( var i = 0; i < list.length; ++i ) {
-                if ( list[i] == line )
-                    return true;
+    function getBreakpointHitCondition(href, line) {
+        href = "" + href;
+        line = "" + line;
+
+        var conditionsForHref = breakpointHitConditions[href];
+        if (conditionsForHref) {
+            return conditionsForHref[line];
+        }
+
+        return undefined;
+    }
+
+    function setBreakpointHitCondition(href, line, condition) {
+        href = "" + href;
+        line = "" + line;
+        
+        var conditionsForHref = breakpointHitConditions[href];
+        if (!conditionsForHref && condition) {
+            conditionsForHref = {};
+            conditionsForHref.numElements = 0;
+            breakpointHitConditions[href] = conditionsForHref;
+        } else if (!condition && conditionsForHref) {
+            delete conditionsForHref[line];
+            conditionsForHref.numElements--;
+            if (conditionsForHref.numElements <= 0) {
+                delete breakpointHitConditions[href];
             }
         }
-        return false;
+
+        if (condition && conditionsForHref) {
+            conditionsForHref[line] = condition;
+            conditionsForHref.numElements++;
+        }
+    }
+    
+    function removeBreakpointHitCondition(href) {
+        href = "" + href;
+        if (breakpointHitConditions[href]) {
+            delete breakpointHitConditions[href];
+        }
+    }
+    
+    function getQueryStringPart(href) {
+        var index = href.lastIndexOf('?');
+        if (index != -1) {
+            return href.substring(index);
+        } else {
+            return undefined;
+        }
+    }
+    
+    function getURLWithoutQuery(href) {
+        var index = href.lastIndexOf('?');
+        if (index > 0) {
+            return href.substring(0, index);
+        } else {
+            return href;
+        }
     }
 
     function clearBreakpoint(href,line)
     {
-        if ( removeBreakpoint(href,line) ) {
-            firebugDebuggerService.clearBreakpoint(href,line);
+        if (features.ignoreQueryStrings) {
+            // href should not have a query string here
+            if (breakpoints[href]) {
+                var parentLinks = breakpoints[href].associatedHrefs;
+                if (parentLinks) {
+                    for (var linkedHref in breakpoints[href].associatedHrefs) {
+                        clearSingleBreakpoint(linkedHref, line);
+                    }
+                }
+            }
+        }
+
+        return clearSingleBreakpoint(href,line);
+    }
+
+    function setBreakpoint(href,line,props)
+    {
+        if (features.ignoreQueryStrings) {
+            var result = setSingleBreakpoint(href,line,props);
+            if (result == false) {
+                return false;
+            }
+
+            for (var loadedHref in loadedSources) {
+                if (getURLWithoutQuery(loadedHref) == href && loadedHref != href) {
+                    setSingleBreakpoint(loadedHref,line,props,href);
+                }
+            }
+
+            return true;
+        } else {
+            return setSingleBreakpoint(href,line,props);
+        }
+    }
+
+    function clearSingleBreakpoint(href, line) {
+        if ( removeBreakpointRecord(href,line) ) {
+            fbsClearBreakpoint(href,line);
             return true;
         }
         return false;
+    }
+
+    function setSingleBreakpoint(href,line,props,parentHref) {
+        if ( fbsSetBreakpoint(href,line,props) ) {
+            recordBreakpoint(href,line,props,parentHref);
+            return true;
+        }
+        return false;
+    }
+
+    function copyBreakpoints(href, parentHref) {
+        var parentList = breakpoints[parentHref];
+        if (!parentList) {
+            return;
+        }
+
+        for (var i = 0; i < parentList.length; i++) {
+            var lineRecord = parentList[i];
+            setSingleBreakpoint(href, lineRecord.lineNo, lineRecord.properties, parentHref);
+        }
     }
 
     function clearAllBreakpoints()
@@ -802,42 +1125,59 @@
             if ( breakpoints[href].length > 0 )
                 hrefs.push(href);
         }
-        firebugDebuggerService.clearAllBreakpoints(hrefs.length,hrefs);
+        fbsClearAllBreakpoints(hrefs);
     }
-
-    function setBreakpoint(href,line,props)
+    
+    function hasBreakpointRecord(href,line)
     {
-        if ( firebugDebuggerService.setBreakpoint(href,line,props) ) {
-            addBreakpoint(href,line);
-            return true;
+        if ( href in breakpoints ) {
+            var list = breakpoints[href];
+            for( var i = 0; i < list.length; ++i ) {
+                if ( list[i].lineNo == line )
+                    return true;
+            }
         }
         return false;
     }
 
-    function addBreakpoint(href,line)
+    function recordBreakpoint(href,line,props,parentHref)
     {
-        if ( hasBreakpoint(href,line)){
+        if ( hasBreakpointRecord(href,line) ||
+             (parentHref && hasBreakpointRecord(parentHref,line) == false)){
             return false;
         }
+
+        var lineRecord = { lineNo : line, properties : props };
         if ( href in breakpoints ) {
-            breakpoints[href].push(line);
+            breakpoints[href].push(lineRecord);
+        } else if (parentHref) {
+            breakpoints[href] = [lineRecord];
+            var parentLinks = breakpoints[parentHref].associatedHrefs;
+            if (!parentLinks) {
+                breakpoints[parentHref].associatedHrefs = {};
+                parentLinks = breakpoints[parentHref].associatedHrefs;
+            }
+
+            if (!parentLinks[href]) {
+                parentLinks[href] = true;
+            }
         } else {
-            breakpoints[href] = [line];
+            breakpoints[href] = [lineRecord];
         }
         return true;
     }
-
-    function removeBreakpoint(href,line)
+    
+    function removeBreakpointRecord(href,line)
     {
-        if ( !hasBreakpoint(href,line)){
+        if ( !hasBreakpointRecord(href,line)){
             return false;
         }
         if ( href in breakpoints ) {
             var list = breakpoints[href];
             for( var i = 0; i < list.length; ++i ) {
-                if ( list[i] == line ) {
+                if ( list[i].lineNo == line ) {
                     if ( list.length > 1 ) {
-                        list.slice(i,1);
+                        list.splice(i,1);
                     } else {
                         delete breakpoints[href];
                     }
@@ -847,7 +1187,6 @@
         }
         return false;
     }
-
 
     // 3. enable/disable
     function enable()
@@ -859,16 +1198,42 @@
         Firebug.Debugger.addListener(DebuggerListener);
     }
 
-    function disable()
+    function disable(keepFirebugDebugger)
     {
         if (!enabled)
             return;
+        
         enabled = false;
 
+        cleanupHooks();
+        unregisterExtension();
         clearAllBreakpoints();
-        disableFirebugDebugger();
+        if (!keepFirebugDebugger) {
+          disableFirebugDebugger();
+        }
     }
 
+    function cleanupHooks() {
+        Firebug.Debugger.removeListener(DebuggerListener);
+        if (NetBeans.Debugger.old_isHostEnabled) {
+          Firebug.Debugger.isHostEnabled = NetBeans.Debugger.old_isHostEnabled;
+          delete NetBeans.Debugger.old_isHostEnabled;
+        }
+        topWindow = null;
+        unwrapBrowserDestroy();
+        browser = null;
+    }
+    
+    function unregisterExtension() {
+        if (NetBeans.Debugger.netbeansDebuggerExtension) {
+            NetBeans.Debugger.netbeansDebuggerExtension.terminated = true;
+            if (TabWatcher && TabWatcher.removeListener) {
+                TabWatcher.removeListener(NetBeans.Debugger.netbeansDebuggerExtension);
+            }
+            delete NetBeans.Debugger.netbeansDebuggerExtension;
+        }
+    }
+    
     // 4. open_uri
     const open_uriCommandRegularExpression = /^-f\s*(\S+)\s*$/;
     function open_uri(command) {
@@ -880,15 +1245,15 @@
         var debugURI = matches[1];
         var headers = "Cache-Control: no-cache, must-revalidate\r\nPragma: no-cache\r\n";
         var headersStream = NetBeans.Utils.CCIN(
-        NetBeans.Constants.StringInputStreamCID,
-        NetBeans.Constants.StringInputStreamIF);
+            NetBeans.Constants.StringInputStreamCID,
+            NetBeans.Constants.StringInputStreamIF);
 
         headersStream.setData(headers, headers.length);
         window.getWebNavigation().loadURI(debugURI,
-        NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_PROXY|NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_CACHE,
-        null,
-        null,
-        headersStream);
+            NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_PROXY|NetBeans.Constants.WebNavigationIF.LOAD_FLAGS_BYPASS_CACHE,
+            null,
+            null,
+            headersStream);
     }
 
     // 5. resume/suspend
@@ -897,12 +1262,31 @@
         Firebug.Debugger.resume(currentFirebugContext);
     }
 
+    // 7. run until
+    function runUntil(url, lineno) {
+        lineno = parseInt(lineno);
+        var src;
+
+        if (currentFirebugContext) {
+            src = currentFirebugContext.sourceFileMap[url];
+        }
+        if (!src) {
+            src = new FBL.NoScriptSourceFile(currentFirebugContext, url);
+        }
+
+        Firebug.Debugger.runUntil(currentFirebugContext, src, lineno);
+    }
+
     function suspend(reason)
     {
+        if (!currentFirebugContext || currentFirebugContext == null) {
+            suspendNextLine = true;
+            return;
+        }
+        
         if ( reason )
             debugState.suspendReason = reason;
         stepping = true;
-
         Firebug.Debugger.suspend(currentFirebugContext);
     }
 
@@ -934,9 +1318,11 @@
     function property_get(transaction_id, command) {
 
         var propertyGetResponse =
-            <response
+        <response
         command="property_get"
-        transaction_id={transaction_id} ></response>;
+        transaction_id={
+        transaction_id
+        } ></response>;
 
         if (! debugging ) {
             socket.send(propertyGetResponse);
@@ -956,16 +1342,94 @@
         socket.send(propertyGetResponse);
     }
 
-     // Eval
+    // property_get
+    const property_setCommandRegularExpression = /^\s*-n\s*(\S+)\s*-d\s*(\d+)\s*--\s*(.+)$/;
+
+    function property_set(transaction_id, command) {
+        var propertySetResponse =
+        <response
+        command="property_set"
+        transaction_id={
+        transaction_id
+        } ></response>;
+
+        if (! debugging ) {
+            socket.send(propertySetResponse);
+            return;
+        }
+
+        var matches = property_setCommandRegularExpression.exec(command);
+        if (!matches) {
+            throw new Error("Can't get a property_set command arguments out of [" + command + "]");
+        }
+
+        var propertyFullName = matches[1];
+        var frameIndex = parseInt(matches[2]);
+        var value = matches[3];
+        var frame = debugState.frames[frameIndex];
+        var parent = null;
+        if(propertyFullName.indexOf(".") == 0) {
+            while (propertyFullName.indexOf(".") == 0) {
+                parent = ((parent == null) ? frame.scope : parent.jsParent);
+                propertyFullName = propertyFullName.substring(1);
+            }
+        }
+        var nameParts = propertyFullName.split(".");
+        var propertyName = nameParts[nameParts.length-1];
+        if(nameParts.length > 1) {
+            nameParts.splice(nameParts.length-1,1);
+            if(nameParts == "this") {
+                parent = frame.thisValue;
+                nameParts.splice(0,1);
+            }else if(nameParts == "[exception]") {
+                parent = debugState.currentException;
+                nameParts.splice(0,1);
+            }
+        }
+        var relativeParent = parent;
+        if(nameParts.length > 1) {
+            var relativeParentName = nameParts.join('.');
+            relativeParent = resolveVariable(parent, relativeParentName);
+        }
+        var success = "0";
+        if(relativeParent != null) {
+            var obj = relativeParent.getWrappedValue();
+            var rval = new Object();
+            if(frame.eval(value, WATCH_SRCIPT,1,rval)) {
+                rval = ("value" in rval) ? rval.value : null;
+                if(rval != null) {
+                    try {
+                        obj[propertyName] = rval.getWrappedValue();
+                        success = "1";
+                    }catch(e) {
+                        NetBeans.Logger.log("NetbeansDebugger: Unable to set value: " + e, "err");
+                    }
+                }
+            }
+        }
+
+        propertySetResponse =
+        <response
+        command="property_set"
+        transaction_id={transaction_id}
+        success={success}>
+        </response>;
+
+        socket.send(propertySetResponse);
+    }
+
+    // Eval
     const evalCommandRegularExpression = /^\s*-d\s*(\d+)\s*-e\s*(.+)$/;
 
     function onEval(transaction_id, command)
     {
         var evalResponse =
-            <response
+        <response
         command="eval"
         success="0"
-        transaction_id={transaction_id} ></response>;
+        transaction_id={
+        transaction_id
+        } ></response>;
 
         if (! debugging ) {
             socket.send(evalResponse);
@@ -988,12 +1452,20 @@
             if (rval != null ) {
                 var val = getPropertyValue(rval);
                 evalResponse.property =
-                    <property
-                name={expression}
-                fullname={expression}
-                type={val.type}
+                <property
+                name={
+                expression
+                }
+                fullname={
+                expression
+                }
+                type={
+                val.type
+                }
                 numchildren="0"
-                encoding="none">{val.displayValue}</property>;
+                encoding="none">{
+                val.displayValue
+                }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     evalResponse.property.@classname = val.displayType;
                     evalResponse.property.property = buildPropertiesList(expression, rval);
@@ -1016,24 +1488,40 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = NetBeans.Utils.getSource(sourceURI);
+        var data;
+        if (currentFirebugContext && currentFirebugContext.sourceCache && currentFirebugContext.sourceCache.load) {
+          data = currentFirebugContext.sourceCache.load(sourceURI);
+        }
+        if (data) {
+            // Firebug converts sources to Unicode, but we
+            // transmit them in UTF-8 - the default XML encoding.
+            // We may need to convert the source text to UTF-8
+            // here using nsIScriptableUnicodeConverter service.
+            data = "N" + data.join("\n");
 
-        var sourceResponse =
-            <response command="source"
-        success={(data ? "1" : "0")}
-        transaction_id={transaction_id}>{data}</response>;
-
-        socket.send(sourceResponse);
+            var sourceResponse =
+              <response command="source" encoding="none"
+                  success="1"
+                  transaction_id={transaction_id}>{data}</response>;
+            socket.send(sourceResponse);
+        } else {
+            var sourceResponse =
+                <response command="source" encoding="base64"
+                    success="0"
+                    transaction_id={transaction_id}></response>;
+            socket.send(sourceResponse);
+        }
     }
-
 
     // responses to ide
     function sendInitMessage()
     {
         var initMessage =
-            <init appid="netBeans-firefox-extension"
+        <init appid="netBeans-firefox-extension"
         idekey="6.1TP"
-        session={sessionId}
+        session={
+        sessionId
+        }
         thread="1"
         parent="Firefox"
         language="JavaScript"
@@ -1042,19 +1530,23 @@
 
         socket.send(initMessage);
     }
-
+    
     // TODO: Do we need this?
     function sendOnloadMessage(uri)
     {
         var onloadMessage =
-            <onload appid="netBeans-firefox-extension"
+        <onload appid="netBeans-firefox-extension"
         idekey="6.1TP"
-        session={sessionId}
+        session={
+        sessionId
+        }
         thread="1"
         parent="Firefox"
         language="JavaScript"
         protocol_version="1.0"
-        fileuri={uri}/>;
+        fileuri={
+        uri
+        }/>;
 
         socket.send(onloadMessage);
     }
@@ -1062,10 +1554,16 @@
     function sendFeatureSetResponse(optionName, success, transaction_id)
     {
         var featureSetResponse =
-            <response command="feature_set"
-        feature={optionName}
-        success={success}
-        transaction_id={transaction_id} />;
+        <response command="feature_set"
+        feature={
+        optionName
+        }
+        success={
+        success
+        }
+        transaction_id={
+        transaction_id
+        } />;
 
         socket.send(featureSetResponse);
     }
@@ -1073,7 +1571,7 @@
     function sendOnResumeMessage()
     {
         var onResumeMessage =
-            <response
+        <response
         command="status"
         status="running"
         reason="ok" />;
@@ -1083,32 +1581,58 @@
     function sendOnDebuggerMessage()
     {
         var onDebuggerMessage =
-            <response
+        <response
         command="status"
         status="debugger"
         reason="ok" />;
         socket.send(onDebuggerMessage);
     }
 
+    function sendOnFirstLineMessage()
+    {
+        var onFirstLineMessage =
+        <response
+        command="status"
+        status="first_line"
+        reason="ok" />;
+        socket.send(onFirstLineMessage);
+    }
+
+    function sendOnExceptionMessage()
+    {
+        var onExceptionMessage =
+        <response
+        command="status"
+        status="exception"
+        reason="ok" />;
+        socket.send(onExceptionMessage);
+    }
+
     function sendOnBreakpointMessage(breakpoint_id, uri, line)
     {
         var onBreakpointMessage =
-            <response
+        <response
         command="status"
         status="breakpoint"
         reason="ok">
-            <message
-        filename={uri}
-        lineno={line}
-        id={breakpoint_id} />
-            </response>;
+        <message
+        filename={
+        uri
+        }
+        lineno={
+        line
+        }
+        id={
+        breakpoint_id
+        } />
+        </response>;
         socket.send(onBreakpointMessage);
     }
 
     function sendOnStepMessage()
     {
         var onStepMessage =
-            <response
+        <response
         command="status"
         status="step"
         reason="ok" />;
@@ -1118,27 +1642,45 @@
     function sendStackDepthResponse(transaction_id)
     {
         var stackDepthRespose =
-            <response command="stack_depth"
-        depth={(debugState.frames ? debugState.frames.length : -1)}
-        transaction_id={transaction_id} />;
+        <response command="stack_depth"
+        depth={
+        (debugState.frames ? debugState.frames.length : -1)
+        }
+        transaction_id={
+        transaction_id
+        } />;
         socket.send(stackDepthRespose);
     }
 
     function sendStackGetResponse(transaction_id)
     {
         var stackGetRespose =
-            <response command="stack_get" transaction_id={transaction_id} />;
+        <response command="stack_get" transaction_id={
+        transaction_id
+        } />;
         if (debugging && debugState.frames && debugState.frames.length > 0) {
             for (var level = 0; level < debugState.frames.length; level++ ) {
                 var stackElement =
-                    <stack
-                level={level}
-                type={(debugState.frames[level].isNative ? "native" : "file")}
-                filename={debugState.frames[level].script.fileName}
-                lineno={debugState.frames[level].line}
-                where={getFunctionName(debugState.frames[level].script)}
-                pc={debugState.frames[level].pc}
-                    />;
+                <stack
+                level={
+                level
+                }
+                type={
+                (debugState.frames[level].isNative ? "native" : "file")
+                }
+                filename={
+                debugState.frames[level].script.fileName
+                }
+                lineno={
+                debugState.frames[level].line
+                }
+                where={
+                getFunctionName(debugState.frames[level].script)
+                }
+                pc={
+                debugState.frames[level].pc
+                }
+                />;
                 stackGetRespose.stack += stackElement;
             }
         }
@@ -1150,10 +1692,82 @@
         var functionName = script.functionName;
         if ( !functionName )
             functionName = '';
+        else if (functionName == 'anonymous') {
+            functionName = getAnonymousFunctionName(script);
+            
+        }
         return functionName;
+    }    
+
+    function getAnonymousFunctionName(script) {
+        var fileName = script.fileName;
+        if ((fileName == '[Eval-script]') || fileName == WATCH_SRCIPT || (fileName.substr(0,11) == 'javascript:')) {
+            return 'anonymous';
+        }
+        
+        var key = "key:" + script.tag;
+        if (key in anonymousFunctionMap) {
+            return anonymousFunctionMap[key];
+        }
+        
+        // XXX performance?
+        var lines = currentFirebugContext.sourceCache.load(fileName);
+        var accumulatedText = "";
+        var matched = false;
+        var seeFunction;
+        
+        for (var i = 0; i < 2 && script.baseLineNumber-1-i >= 0; i++) {
+            accumulatedText = lines[script.baseLineNumber - 1 - i] + accumulatedText;
+            var functionPos = accumulatedText.lastIndexOf('function');
+            if (functionPos >= 0) {
+                if (seeFunction) {
+                    return 'anonymous';
+                }
+                seeFunction = true;
+                accumulatedText = accumulatedText.substring(0, functionPos);
+            }
+            
+            if (FUNCTION_ASSIGNMENT_PATTERN.test(accumulatedText)) {
+                matched = true;
+                break;
+            }
+        }
+        
+        if (matched) {
+            var regExpMatch = FUNCTION_ASSIGNMENT_PATTERN.exec(accumulatedText);
+            anonymousFunctionMap[key] = regExpMatch[1];
+            return regExpMatch[1];
+        }
+        
+        
+        return 'anonymous';
     }
 
-
+    // Format of the message is:
+    //  <reloadsources>
+    //   <window fileuri="http://..." />
+    //   <window fileuri="http://..." />
+    //   :
+    // </reloadsources>
+    function sendReloadSourcesMessage(windows) {
+        if (!socket) {
+            return;
+        }
+        try {
+            var sourcesMessage =
+            <reloadsources encoding="base64"></reloadsources>;
+            for each (var aWindow in windows) {
+                if (aWindow.top == aWindow) {
+                    buildSourcesFromWindowsMessage([aWindow], sourcesMessage);
+                }
+            }
+            socket.send(sourcesMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }        
+    }
+    
     // Format of the message is:
     // <windows>
     //   <window fileuri="http://..." />
@@ -1162,14 +1776,23 @@
     // </windows>
     function sendWindowsMessage(windows)
     {
+        if (!socket) {
+            return;
+        }
+        try {
         var windowsMessage =
-            <windows></windows>;
+        <windows encoding="base64"></windows>;
+
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
             }
         }
         socket.send(windowsMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }
     }
 
     function buildWindowsMessage(windows, windowsMessage)
@@ -1178,7 +1801,9 @@
             return;
         }
         for each (var aWindow in windows) {
-            var windowMessage = <window fileuri={aWindow.document.location.href} />;
+            var windowMessage = <window fileuri={
+            window.btoa(aWindow.document.location.href)
+            } />;
 
             var frameWindows = aWindow.frames;
             if (frameWindows) {
@@ -1190,6 +1815,23 @@
         }
     }
 
+    function buildSourcesFromWindowsMessage(windows, sourcesMessage) {
+        if (windows.length == 0) {
+            return;
+        }
+        for each (var aWindow in windows) {
+            var sourceMessage = <source fileuri={
+            window.btoa(aWindow.document.location.href)
+            } />;
+
+            sourcesMessage.source += sourceMessage;
+            var frameWindows = aWindow.frames;
+            if (frameWindows) {
+                buildSourcesFromWindowsMessage(frameWindows, sourcesMessage);
+            }
+        }
+    }
+    
     // Format of the message is:
     // <sources>
     //   <source fileuri="http://..." />
@@ -1199,11 +1841,13 @@
     function sendSourcesMessage(sources)
     {
         var sourcesMessage =
-            <sources></sources>;
+        <sources encoding="base64"></sources>;
 
         for (var source in sources) {
             sourcesMessage.source +=
-                <source fileuri={source} />;
+            <source fileuri={
+            window.btoa(source)
+            } />;
         }
 
         socket.send(sourcesMessage);
@@ -1212,13 +1856,15 @@
     function terminate()
     {
         const delayShutdownIfDebugging = function() {
-            disable();
             NetBeans.Debugger.shutdown();
-            window.close();
+            // XXX not closing the browser window causes strange problems so subsequent
+            // debug sessions do not work correctly - should be fixed some other way if possible
+            //window.close();
         };
 
         if (debugging) {
             debugState.shutdownHook = delayShutdownIfDebugging;
+            clearAllBreakpoints();
             abortFirebugDebugger();
         } else {
             delayShutdownIfDebugging();
@@ -1228,6 +1874,8 @@
     // Stepping
     this.onStop = function(frame, type, rv)
     {
+        currentFrameFileName = "" + frame.script.fileName;
+
         if (debugging)
             return RETURN_CONTINUE;
 
@@ -1240,6 +1888,36 @@
                 }
                 break;
             case TYPE_BREAKPOINT:
+                var currentHref;
+                if (features.ignoreQueryStrings) {
+                    currentHref = getURLWithoutQuery(frame.script.fileName);
+                } else {
+                    currentHref = frame.script.fileName;
+                }
+
+                var breakpointHitCondition = getBreakpointHitCondition(currentHref, frame.line);
+                if (breakpointHitCondition) {
+                    breakpointHitCondition.hits++;
+                    if (breakpointHitCondition.hitCount > 0) {
+                        switch (breakpointHitCondition.hitCondition) {
+                            case ">=":
+                                if (!(breakpointHitCondition.hits >= breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "==":
+                                if (!(breakpointHitCondition.hits == breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "%":
+                                if ((breakpointHitCondition.hits % breakpointHitCondition.hitCount) != 0) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                        }
+                    }
+                }
                 debugState.suspendReason = "breakpoint";
                 break;
             case TYPE_DEBUG_REQUESTED:
@@ -1260,13 +1938,18 @@
                 debugState.currentException = rv.value;
                 break;
             default:
-                message = "Unknown type: " + type;
-                NetBeans.Logger.log(message);
+                message = "onStop() - Unknown type: " + type;
+                NetBeans.Logger.logException(message);
         }
         debugState.hookReturnValue = rv;
         debugging = true;
         stepping = false;
 
+        // Cache the sources
+        FBL.updateScriptFiles(currentFirebugContext);
+        for (var url in currentFirebugContext.sourceFileMap) {
+            currentFirebugContext.sourceCache.load(url);
+        }
         // TODO update status bar
 
         debugState.frames = new Array();
@@ -1282,6 +1965,10 @@
 
         if (debugState.suspendReason == "debugger") {
             sendOnDebuggerMessage();
+        } else if (debugState.suspendReason == "firstline") {
+            sendOnFirstLineMessage();
+        } else if (debugState.suspendReason == "exception") {
+            sendOnExceptionMessage();
         } else if (debugState.suspendReason == "step_into"  ||
             debugState.suspendReason == "step_over" ||
             debugState.suspendReason == "step_out") {
@@ -1326,6 +2013,7 @@
         return hookReturn;
     }
 
+    // Exceptions
     this.onError = function(frame, error)
     {
         var logType = "out";
@@ -1356,13 +2044,9 @@
         } else {
             NetBeans.Logger.log(message + " fileName: " + error.fileName + " lineNumber: + " + error.line, logType);
         }
-        if ( features.suspendOnErrors )
+        if ( features.suspendOnErrors ) {
+            this.ignoreNextThrow = true;
             return -1;
-        if ( error.exc ) {
-            if ( hasExceptionFilter(error.exc) ) {
-                debugState.currentException = error.exc;
-                return -1;
-            }
         }
         return RETURN_CONTINUE;
     }
@@ -1370,13 +2054,13 @@
     this.onThrow = function(frame, rv)
     {
         var needSuspend = features.suspendOnExceptions;
-        if ( hasExceptionFilter(rv.value) )
-            needSuspend = true;
+        if (this.ignoreNextThrow) {
+            delete this.ignoreNextThrow;
+            return false;
+        }
         return needSuspend;
     }
 
-    // Exceptions
-    var exceptionFilters = {};
     function getExceptionTypeName(exc)
     {
         if ( exc.jsType == TYPE_STRING ) {
@@ -1391,36 +2075,12 @@
         return "";
     }
 
-    function hasExceptionFilter(exc)
-    {
-        var exceptionType = ':' + getExceptionTypeName(exc);
-        if ( exceptionType in exceptionFilters ) {
-            return true;
-        }
-
-        if ( exc.jsType == TYPE_OBJECT ) {
-            exceptionType = ':' + exc.jsClassName;
-            if ( exceptionType in exceptionFilters ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-
-    this.onTopLevel = function()
-    {
-        if (features.suspendOnFirstLine) {
-            features.suspendOnFirstLine = false;
-            suspend("firstLine");
-        }
-    }
+    this.onTopLevel = function() {}
 
     this.onInit = function(debuggr)
     {
-        if ( this == debuggr ) {
-            // TODO socket.send(...);
+        if ( this == debuggr) {
+            this.reloadSources = true;
         }
     }
 
@@ -1446,6 +2106,11 @@
             self.detachFromWindow(win);
         }
         win.addEventListener("unload", onUnload, true);
+        
+        if (this.reloadSources) {
+            delete this.reloadSources;
+            sendReloadSourcesMessage(attachedWindows);
+        }
         sendWindowsMessage(attachedWindows);
     }
 
@@ -1496,51 +2161,93 @@
                         var val = getPropertyValue(rval);
                         var scopeFullName = "."
                         propertyGetResponse.property =
-                            <property
+                        <property
                         name="scope"
-                        fullname={scopeFullName}
-                        type={val.type}
-                        classname={val.displayType}
+                        fullname={
+                        scopeFullName
+                        }
+                        type={
+                        val.type
+                        }
+                        classname={
+                        val.displayType
+                        }
                         numchildren="0"
                         encoding="none">scope</property>;
-                        propertyGetResponse.property.property = buildPropertiesList(".", rval);
+                        // Add exception
+                        if (frameIndex == 0 && debugState.currentException) {
+                            var exceptionVal = getPropertyValue(debugState.currentException);
+                            propertyGetResponse.property.property =
+                            <property
+                            name="[exception]"
+                            fullname="[exception]"
+                            type={
+                            exceptionVal.type
+                            }
+                            classname={
+                            exceptionVal.displayType
+                            }
+                            numchildren="-1"
+                            encoding="none">{
+                            exceptionVal.displayValue
+                            }</property>;
+                        }
+                        propertyGetResponse.property.property += buildPropertiesList(".", rval);
                         if (!frame.isNative) {
                             // Add arguments properties
                             var argumentsVariable = resolveVariable(rval, "arguments");
                             if (argumentsVariable) {
                                 var argumentsVal = getPropertyValue(argumentsVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments"
                                 fullname="arguments"
-                                type={argumentsVal.type}
-                                classname={argumentsVal.displayType}
+                                type={
+                                argumentsVal.type
+                                }
+                                classname={
+                                argumentsVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{argumentsVal.displayValue}</property>;
+                                encoding="none">{
+                                argumentsVal.displayValue
+                                }</property>;
                             }
                             var argumentsLengthVariable = resolveVariable(rval, "arguments.length");
                             if (argumentsLengthVariable) {
                                 var argumentsLengthVal = getPropertyValue(argumentsLengthVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments.length"
                                 fullname="arguments.length"
-                                type={argumentsLengthVal.type}
-                                classname={argumentsLengthVal.displayType}
+                                type={
+                                argumentsLengthVal.type
+                                }
+                                classname={
+                                argumentsLengthVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{argumentsLengthVal.displayValue}</property>;
+                                encoding="none">{
+                                argumentsLengthVal.displayValue
+                                }</property>;
                             }
                             var functionLengthVariable = resolveVariable(rval, "arguments.callee.length");
                             if (functionLengthVariable) {
                                 var functionLengthVal = getPropertyValue(functionLengthVariable);
                                 propertyGetResponse.property.property +=
-                                    <property
+                                <property
                                 name="arguments.callee.length"
                                 fullname="arguments.callee.length"
-                                type={functionLengthVal.type}
-                                classname={functionLengthVal.displayType}
+                                type={
+                                functionLengthVal.type
+                                }
+                                classname={
+                                functionLengthVal.displayType
+                                }
                                 numchildren="-1"
-                                encoding="none">{functionLengthVal.displayValue}</property>;
+                                encoding="none">{
+                                functionLengthVal.displayValue
+                                }</property>;
                             }
 
                             var parentScope = propertyGetResponse.property;
@@ -1550,17 +2257,27 @@
                                 var name = "parent scope";
                                 val = getPropertyValue(rval);
                                 var parentScopeProperty =
-                                    <property
-                                name={name}
-                                fullname={scopeFullName}
-                                type={val.type}
-                                classname={val.displayType}
+                                <property
+                                name={
+                                name
+                                }
+                                fullname={
+                                scopeFullName
+                                }
+                                type={
+                                val.type
+                                }
+                                classname={
+                                val.displayType
+                                }
                                 numchildren="0"
-                                encoding="none">{name}</property>;
+                                encoding="none">{
+                                name
+                                }</property>;
                                 parentScopeProperty.property = buildPropertiesList(scopeFullName, rval );
                                 rval = rval.jsParent;
                                 parentScopeProperty.@numchildren =
-                                    parentScopeProperty.property.length() + (rval ? 1 : 0);
+                                parentScopeProperty.property.length() + (rval ? 1 : 0);
                                 parentScope.property += parentScopeProperty;
                                 parentScope = parentScope.property[parentScope.property.length() - 1];
                             }
@@ -1572,16 +2289,46 @@
                     var rval = frame.thisValue;
                     var val = getPropertyValue(rval);
                     propertyGetResponse.property =
-                        <property
+                    <property
                     name="this"
                     fullname="this"
-                    type={val.type}
-                    classname ={val.displayType}
+                    type={
+                    val.type
+                    }
+                    classname ={
+                    val.displayType
+                    }
                     numchildren="0"
-                    encoding="none">{val.displayValue}</property>;
+                    encoding="none">{
+                    val.displayValue
+                    }</property>;
                     if( rval ) {
                         propertyGetResponse.property.property = buildPropertiesList("this", rval);
                         propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
+                    }
+                    break;
+                case "[exception]":
+                    if (frameIndex == 0 && debugState.currentException) {
+                        var rval = debugState.currentException;
+                        var val = getPropertyValue(rval);
+                        propertyGetResponse.property =
+                        <property
+                        name="[exception]"
+                        fullname="[exception]"
+                        type={
+                        val.type
+                        }
+                        classname ={
+                        val.displayType
+                        }
+                        numchildren="0"
+                        encoding="none">{
+                        val.displayValue
+                        }</property>;
+                        if( rval ) {
+                            propertyGetResponse.property.property = buildPropertiesList("[exception]", rval);
+                            propertyGetResponse.property.@numchildren = propertyGetResponse.property.property.length();
+                        }
                     }
                     break;
 
@@ -1602,6 +2349,14 @@
                             processedVariableFullName = processedVariableFullName.substring(1);
                         }
                         value = resolveVariable(scope, processedVariableFullName);
+                    } if (variableFullName.indexOf("[exception].") == 0) {
+                        if (frameIndex == 0 && debugState.currentException) {
+                            if ( !frame.thisValue ) {
+                                break;
+                            }
+                            processedVariableFullName = variableFullName.substring(12);
+                            value = resolveVariable(debugState.currentException, processedVariableFullName);
+                        }
                     } else {
                         // first try parameters and local variables case
                         value = resolveVariable(frame.scope, processedVariableFullName);
@@ -1624,12 +2379,20 @@
                         }
                         var val = getPropertyValue(value);
                         propertyGetResponse.property =
-                            <property
-                        name={name}
-                        fullname={variableFullName}
-                        type={val.type}
+                        <property
+                        name={
+                        name
+                        }
+                        fullname={
+                        variableFullName
+                        }
+                        type={
+                        val.type
+                        }
                         numchildren="0"
-                        encoding="none">{val.displayValue}</property>;
+                        encoding="none">{
+                        val.displayValue
+                        }</property>;
                         if (val.type == "object" || val.type == "function" || val.type == "array") {
                             propertyGetResponse.property.@classname = val.displayType;
                             propertyGetResponse.property.property = buildPropertiesList(variableFullName, value);
@@ -1652,19 +2415,27 @@
             try {
                 var val = getPropertyValue(props[i].value);
                 var property =
-                    <property
-                name={name}
-                fullname={(prefix.match(/^\.+$/) ? prefix : prefix + ".") + name}
-                type={val.type}
+                <property
+                name={
+                name
+                }
+                fullname={
+                (prefix.match(/^\.+$/) ? prefix : prefix + ".") + name
+                }
+                type={
+                val.type
+                }
                 numchildren="0"
-                encoding="none">{val.displayValue}</property>;
+                encoding="none">{
+                val.displayValue
+                }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     property.@classname = val.displayType;
                     property.@numchildren = "-1";
                 }
                 names += property;
             } catch (e) {
-                NetBeans.Logger.log(e,'err');
+                NetBeans.Logger.logException(e);
             }
         }
         return names;
@@ -1693,7 +2464,7 @@
     }
 
     /**
-     * @param  jsdIValue variable
+     * @param variable
      **/
     function getPropertiesArray(variable)
     {
@@ -1726,15 +2497,19 @@
                         value: value
                     };
                 } catch( e ) {
-                    NetBeans.Logger.log(e,'err');
+                    NetBeans.Logger.logException(e);
                 }
             }
         } catch( e ) {
-            NetBeans.Logger.log(e,'err');
+            NetBeans.Logger.logException(e);
         }
 
         // get the local properties, may or may not be enumerable
-        var propertiesArrayHolder = {value: null}, numPropertiesHolder = {value: 0};
+        var propertiesArrayHolder = {
+            value: null
+        }, numPropertiesHolder = {
+            value: 0
+        };
         variable.getProperties(propertiesArrayHolder, numPropertiesHolder);
         for (var i = 0; i < numPropertiesHolder.value; ++i)
         {
@@ -1777,7 +2552,7 @@
     {
         var className = value.jsClassName;
         return className == 'Constructor' || className == 'nsXPCComponents'
-            || className == 'XULControllers' || className.substr(0,9) == 'chrome://';
+        || className == 'XULControllers' || className.substr(0,9) == 'chrome://';
     }
 
     function getPropertyValue(value)
@@ -1800,7 +2575,7 @@
             case TYPE_BOOLEAN:
                 val.type = "boolean";
                 val.displayType  = CONST_TYPE_BOOLEAN;
-                val.displayValue = value.stringValue;
+                val.displayValue = value.getWrappedValue();
                 break;
             case TYPE_INT:
                 val.type = "int";
@@ -1815,8 +2590,7 @@
             case TYPE_STRING:
                 val.type = "string";
                 val.displayType  = CONST_TYPE_STRING;
-                strval = value.stringValue;
-                val.displayValue = strval.quote();
+                val.displayValue = "\"" + value.getWrappedValue() + "\""
                 break;
             case TYPE_FUNCTION:
             case TYPE_OBJECT:
@@ -1831,6 +2605,8 @@
                 {
                     case "Function":
                         val.displayType  = (value.isNative ? CONST_NATIVE_FUNCTION : CONST_SCRIPT_FUNCTION );
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
                         val.displayValue = value.getWrappedValue().toString();
                         break;
 
@@ -1839,14 +2615,18 @@
                         if (value.jsConstructor) {
                             val.displayType = value.jsConstructor.jsFunctionName;
                         }
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         if ( val.displayValue == 'null' ) {
                             NetBeans.Logger.log('!null value was found','err');
                         }
                         break;
 
                     case "String":
-                        strval = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        strval = value.getWrappedValue();
                         val.displayValue = strval.quote();
                         break;
 
@@ -1859,7 +2639,9 @@
 
                     case "Number":
                     case "Boolean":
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         break;
 
                     default:
@@ -1875,7 +2657,7 @@
         return val;
     }
 
-    function encodeData(data)
+     function encodeData(data)
     {
         if( typeof data != "string")
             data = ""+data;
@@ -1885,6 +2667,58 @@
     function decodeData(data)
     {
         return data.replace(/#2/g, "*").replace(/#1/g, "|").replace(/#0/g, "#");
+    }
+
+    function fbsRegisterDebugger(debuggr) {
+        firebugDebuggerService.registerDebugger(debuggr);
+    }
+
+    function fbsUnregisterDebugger(debuggr) {
+        firebugDebuggerService.unregisterDebugger(debuggr);
+    }
+
+    function fbsClearBreakpoint(href, line) {
+        line = parseInt(line);
+        firebugDebuggerService.clearBreakpoint(href, line);
+    }
+
+    function fbsClearAllBreakpoints(hrefs) {
+        var sourceFiles = [];
+        var sourceFile;
+        
+        for (var i = 0; i < hrefs.length; i++) {
+            if (currentFirebugContext && currentFirebugContext.sourceFileMap) {
+                sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            }
+            if (sourceFile) {
+                sourceFiles.push(sourceFile);
+            } else {
+                sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, hrefs[i]);
+                sourceFiles.push(sourceFile);
+            }
+            sourceFile = undefined;
+        }
+
+        firebugDebuggerService.clearAllBreakpoints(sourceFiles);
+    }
+
+    function fbsSetBreakpoint(href, line, props) {
+        line = parseInt(line);
+
+        var sourceFile;
+        if (currentFirebugContext) {
+            sourceFile = currentFirebugContext.sourceFileMap[href];
+        }
+        if (!sourceFile) {
+            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        }
+
+        if (sourceFile) {
+            return firebugDebuggerService.setBreakpoint(sourceFile, line, props, Firebug.Debugger);
+        } else {
+            NetBeans.Logger.logMessage("setBreakpoint() - No source file found for: " + href);
+            return false;
+        }
     }
 
 }).apply(NetBeans.Debugger);

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.gsfret.hints;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,9 +54,6 @@ import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
 import java.util.EnumMap;
 import java.util.Set;
 import java.util.logging.Level;
@@ -69,6 +65,7 @@ import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
@@ -77,8 +74,6 @@ import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.text.NbDocument;
 
 
@@ -121,8 +116,6 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
     }
     
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, ParserResult result, List<Error> errors, List<ErrorDescription> descs) {
-        Source js = Source.forFileObject(file);
-        
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors);
         }
@@ -197,34 +190,21 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
     }
     
     public Document getDocument() {
-        try {
-            DataObject d = DataObject.find(file);
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            
-            if (ec == null) {
-                return null;
-            }
-            
-            return ec.getDocument();
-        } catch (IOException e) {
-            Logger.getLogger(GsfHintsProvider.class.getName()).log(Level.INFO, "GsfHintsProvider: Cannot find DataObject for file: " + FileUtil.getFileDisplayName(file), e);
-            return null;
-        }
+        return DataLoadersBridge.getDefault().getDocument(file);
     }
     
     private Position[] getLine(CompilationInfo info, Error d, final Document doc, int startOffset, int endOffset) {
         StyledDocument sdoc = (StyledDocument) doc;
-        DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
-        LineCookie lc = dObj.getCookie(LineCookie.class);
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
-        Line line = lc.getLineSet().getCurrent(lineNumber);
+        String text = DataLoadersBridge.getDefault().getLine(doc, lineNumber);
+        if (text == null) {
+            return new Position[2];
+        }
         
         boolean rangePrepared = false;
         
         if (!rangePrepared) {
-            String text = line.getText();
-            
             int column = 0;
             int length = text.length();
             
@@ -324,6 +304,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
             RuleContext ruleContext = null;
             if (provider != null) {
                 manager = language.getHintsManager();
+                if (manager == null) {
+                    continue;
+                }
                 ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
                 if (ruleContext == null) {
                     continue;

@@ -57,7 +57,10 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,8 +76,10 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -100,7 +105,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
     /** Which data object we are associated with */
     private final DataObject obj;
-    /** listener to asociated node's events */
+    /** listener to associated node's events */
     private NodeListener nodeL;
     
     /** Editor support for a given data object. The file is taken from the
@@ -264,7 +269,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     
     /** Annotates the editor with icon from the data object and also sets 
      * appropriate selected node. But only in the case the data object is valid.
-     * This implementation also listen to display name and icon chamges of the
+     * This implementation also listen to display name and icon changes of the
      * node and keeps editor top component up-to-date. If you override this
      * method and not call super, please note that you will have to keep things
      * synchronized yourself. 
@@ -296,7 +301,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     }
     
     /** Let's the super method create the document and also annotates it
-    * with Title and StreamDescription properities.
+    * with Title and StreamDescription properties.
     *
     * @param kit kit to user to create the document
     * @return the document annotated by the properties
@@ -346,7 +351,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
+        Charset c = charsets.get(this.getDataObject());
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
@@ -357,8 +362,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** can hold the right charset to be used during save, needed for communication
      * between saveFromKitToStream and saveDocument
      */
-    private static Charset charsetForSaveAndLoad;
-    private static DataObject charsetForObject;
+    private static Map<DataObject,Charset> charsets = Collections.synchronizedMap(new HashMap<DataObject,Charset>());
     /**
      * @inheritDoc
      */
@@ -371,7 +375,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             throw new NullPointerException("Kit is null"); // NOI18N
         }
         
-        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
+        Charset c = charsets.get(this.getDataObject());
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
@@ -392,13 +396,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
     @Override
     public StyledDocument openDocument() throws IOException {
         Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        DataObject tmpObj = getDataObject();
         try {
-            charsetForSaveAndLoad = c;
-            charsetForObject = getDataObject();
+            charsets.put(tmpObj, c);
             return super.openDocument();
         } finally {
-            charsetForSaveAndLoad = null;
-            charsetForObject = null;
+            charsets.remove(tmpObj);
         }
     }
 
@@ -406,25 +409,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * for read-only property of saving file and warns user in that case. */
     @Override
     public void saveDocument() throws IOException {
-        if(desEnv().isModified() && isEnvReadOnly()) {
-            IOException e = new IOException("File is read-only: " + ((Env)env).getFileImpl()); // NOI18N
-            UIException.annotateUser(e, null,
-                                     org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
-                                                                          "MSG_FileReadOnlySaving",
-                                                                          new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) env).getFileImpl().getNameExt()}),
-                                     null, null);
-            throw e;
-        }
-        
-        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
-        try {
-            charsetForSaveAndLoad = c;
-            charsetForObject = getDataObject();
-            super.saveDocument();
-        } finally {
-            charsetForSaveAndLoad = null;
-            charsetForObject = null;
-        }
+        FileSystem.AtomicAction aa = new SaveImpl(this);
+        FileUtil.runAtomicAction(aa);
+    }
+
+    final void superSaveDoc() throws IOException {
+        super.saveDocument();
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
@@ -682,38 +672,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
         
         
         /** Obtains the input stream.
-        * @exception IOException if an I/O error occures
+        * @exception IOException if an I/O error occurs
         */
         public InputStream inputStream() throws IOException {
             final FileObject fo = getFileImpl ();
             if (!warned && fo.getSize () > 1024 * 1024) {
-                class ME extends org.openide.util.UserQuestionException {
-                    static final long serialVersionUID = 1L;
-                    
-                    private long size;
-                    
-                    public ME (long size) {
-                        super ("The file is too big. " + size + " bytes.");
-                        this.size = size;
-                    }
-                    
-                    @Override
-                    public String getLocalizedMessage () {
-                        Object[] arr = {
-                            fo.getPath (),
-                            fo.getNameExt (),
-                            new Long (size), // bytes
-                            new Long (size / 1024 + 1), // kilobytes
-                            new Long (size / (1024 * 1024)), // megabytes
-                            new Long (size / (1024 * 1024 * 1024)), // gigabytes
-                        };
-                        return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
-                    }
-                    
-                    public void confirmed () {
-                        warned = true;
-                    }
-                }
                 throw new ME (fo.getSize ());
             }
             InputStream is = getFileImpl ().getInputStream ();
@@ -721,7 +684,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         }
         
         /** Obtains the output stream.
-        * @exception IOException if an I/O error occures
+        * @exception IOException if an I/O error occurs
         */
         public OutputStream outputStream() throws IOException {
             ERR.fine("outputStream: " + fileLock + " for " + fileObject); // NOI18N
@@ -864,6 +827,34 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 }
             }
         }
+
+        class ME extends org.openide.util.UserQuestionException {
+            static final long serialVersionUID = 1L;
+
+            private long size;
+
+            public ME (long size) {
+                super ("The file is too big. " + size + " bytes.");
+                this.size = size;
+            }
+
+            @Override
+            public String getLocalizedMessage () {
+                Object[] arr = {
+                    getFileImpl().getPath (),
+                    getFileImpl().getNameExt (),
+                    new Long (size), // bytes
+                    new Long (size / 1024 + 1), // kilobytes
+                    new Long (size / (1024 * 1024)), // megabytes
+                    new Long (size / (1024 * 1024 * 1024)), // gigabytes
+                };
+                return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
+            }
+
+            public void confirmed () {
+                warned = true;
+            }
+        } // end of ME
     } // end of Env
     
     /** Listener on file object that notifies the Env object
@@ -873,7 +864,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Reference (Env) */
         private Reference<Env> env;
         
-        /** @param env environement to use
+        /** @param env environment to use
         */
         public EnvListener (Env env) {
             this.env = new java.lang.ref.WeakReference<Env> (env);
@@ -903,6 +894,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         @Override
         public void fileChanged(FileEvent fe) {
+            if (fe.firedFrom(SaveImpl.DEFAULT)) {
+                return;
+            }
+
             Env myEnv = this.env.get ();
             if (myEnv == null || myEnv.getFileImpl () != fe.getFile ()) {
                 // the Env change its file and we are not used
@@ -926,11 +921,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 
     }
     
-    /** Listener on node representing asociated data object, listens to the
+    /** Listener on node representing associated data object, listens to the
      * property changes of the node and updates state properly
      */
     private final class DataNodeListener extends NodeAdapter {
-        /** Asociated editor */
+        /** Associated editor */
         CloneableEditor editor;
         
         DataNodeListener (CloneableEditor editor) {
@@ -987,6 +982,41 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (propName == null || propName.equals(DataObject.PROP_PRIMARY_FILE)) {
                 updateLookup();
             }
+        }
+    }
+
+    private static class SaveImpl implements AtomicAction {
+        private static final SaveImpl DEFAULT = new SaveImpl(null);
+        private final DataEditorSupport des;
+
+        public SaveImpl(DataEditorSupport des) {
+            this.des = des;
+        }
+
+        public void run() throws IOException {
+            if (des.desEnv().isModified() && des.isEnvReadOnly()) {
+                IOException e = new IOException("File is read-only: " + ((Env) des.env).getFileImpl()); // NOI18N
+                UIException.annotateUser(e, null, org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class, "MSG_FileReadOnlySaving", new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) des.env).getFileImpl().getNameExt()}), null, null);
+                throw e;
+            }
+            DataObject tmpObj = des.getDataObject();
+            Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+            try {
+                charsets.put(tmpObj, c);
+                des.superSaveDoc();
+            } finally {
+                charsets.remove(tmpObj);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return getClass() == obj.getClass();
         }
     }
     

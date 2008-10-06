@@ -45,12 +45,11 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -58,33 +57,16 @@ import org.openide.util.Utilities;
  * 
  * @author S. Aubrecht
  */
-abstract class AbstractTab extends JPanel implements Scrollable, Constants {
+abstract class AbstractTab extends BackgroundPanel implements Scrollable, Constants {
 
     private boolean initialized = false;
-
-    private Image imgBottomStripWest;
-    private Image imgBottomStripCenter;
-    private Image imgBottomStripEast;
-
-    private Image imgTopStripWest;
-    private Image imgTopStripCenter;
-
-    private Image imgMiddleStripEast;
-    private Image imgMiddleStripCenter;
+    
+    private Image bottomGradient;
 
     public AbstractTab() {
         super( new BorderLayout() );
-        setOpaque( false );
         
-        this.imgBottomStripCenter = Utilities.loadImage( IMAGE_STRIP_BOTTOM_CENTER );
-        this.imgBottomStripWest = Utilities.loadImage( IMAGE_STRIP_BOTTOM_WEST );
-        this.imgBottomStripEast = Utilities.loadImage( IMAGE_STRIP_BOTTOM_EAST );
-        
-        this.imgTopStripCenter = Utilities.loadImage( IMAGE_STRIP_TOP_CENTER );
-        this.imgTopStripWest = Utilities.loadImage( IMAGE_STRIP_TOP_WEST );
-        
-        this.imgMiddleStripCenter = Utilities.loadImage( IMAGE_STRIP_MIDDLE_CENTER );
-        this.imgMiddleStripEast = Utilities.loadImage( IMAGE_STRIP_MIDDLE_EAST );
+        this.bottomGradient = ImageUtilities.loadImage( IMAGE_BOTTOM_GRADIENT );
     }
 
     @Override
@@ -98,12 +80,6 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
 
     protected abstract void buildContent();
     
-    protected abstract Point getTopStripOrigin();
-    
-    protected abstract Point getMiddleStripOrigin();
-    
-    protected abstract Point getBottomStripOrigin();
-    
     @Override
     public Dimension getPreferredSize() {
         Dimension d = super.getPreferredSize();
@@ -112,10 +88,6 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
         if( null != getParent() && getParent().getWidth() > 0 ) {
             if( d.width > getParent().getWidth() ) {
                 d.width = Math.max(getParent().getWidth(), START_PAGE_MIN_WIDTH+(int)(((FONT_SIZE-11)/11.0)*START_PAGE_MIN_WIDTH));
-                if( getParent().getParent() instanceof JScrollPane ) {
-                    if( ((JScrollPane)getParent().getParent()).getVerticalScrollBar().isVisible() )
-                        d.width -= ((JScrollPane)getParent().getParent()).getVerticalScrollBar().getWidth() + 5;
-                }
             } else if( d.width < getParent().getWidth() ) {
                 d.width = getParent().getWidth();
             }
@@ -146,34 +118,15 @@ abstract class AbstractTab extends JPanel implements Scrollable, Constants {
     @Override
     protected void paintComponent(Graphics g) {
         int width = getWidth();
+        int height = getBottomStripeOrigin();
         
-        //top strip
-        Point origin = getTopStripOrigin();
-        g.drawImage( imgTopStripWest, origin.x, origin.y, null );
-        for( int i=origin.x+imgTopStripWest.getWidth(null); i<width; i++ ) {
-            g.drawImage( imgTopStripCenter, i, origin.y, null );
+        //bottom gradient
+        int gradHeigt = bottomGradient.getHeight(null);
+        int gradWidth = bottomGradient.getWidth(null);
+        for( int i=0; i<=width/gradWidth; i++ ) {
+            g.drawImage(bottomGradient, i*gradWidth, height-gradHeigt, null);
         }
-        
-        //middle strip
-        origin = getMiddleStripOrigin();
-        g.drawImage( imgMiddleStripEast, origin.x-imgMiddleStripEast.getWidth(null), origin.y, null );
-        for( int i=origin.x-imgMiddleStripEast.getWidth(null); i>=0; i-- ) {
-            g.drawImage( imgMiddleStripCenter, i, origin.y, null );
-        }
-        
-        //bottom strip
-        origin = getBottomStripOrigin();
-        int eastWidth = imgBottomStripEast.getWidth( null );
-        int eastHeight = imgBottomStripEast.getHeight( null );
-        int westWidth = imgBottomStripWest.getWidth( null );
-        int westHeight = imgBottomStripWest.getHeight( null );
-        g.drawImage( imgBottomStripEast, width-eastWidth-1, origin.y-eastHeight-1, null    );
-        int centerWidth = Math.max( 100, width-eastWidth-westWidth-150 );
-        
-        g.drawImage( imgBottomStripWest, width-eastWidth-1-centerWidth-westWidth, origin.y-westHeight-1, null );
-        for( int i=0; i<centerWidth; i++ ) {
-            g.drawImage( imgBottomStripCenter, width-eastWidth-centerWidth-1+i, origin.y-westHeight-1, null );
-        }
-        
     }
+    
+    protected abstract int getBottomStripeOrigin();
 }

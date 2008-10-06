@@ -75,7 +75,8 @@ public class CategoryResultTest extends NbTestCase {
         System.out.println("Testing thread safe behaviour of CategoryResult...");
         
         final CategoryResult cr = new CategoryResult(
-                new ProviderModel.Category("testThreadSafe", "Testing Threading", null, null));
+                new ProviderModel.Category(null, "Testing Threading", null),
+                false);
 
         // reader thread
         RequestProcessor.Task reader = RequestProcessor.getDefault().post(new Runnable() {

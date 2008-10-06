@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.Method;
@@ -72,6 +73,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -88,7 +90,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     // Customized for add/removePropertyChangeListener
     // Cloneable for fixed watches
     
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     private String          genericType;
     private Field[]         fields;
@@ -223,7 +225,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(staticFields.length, to);
             from = Math.min(staticFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (staticFields, from, fv, 0, to - from);
             return fv;
         }
@@ -246,7 +248,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(inheritedFields.length, to);
             from = Math.min(inheritedFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (inheritedFields, from, fv, 0, to - from);
             return fv;
         }
@@ -306,12 +308,21 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             boolean addQuotation = false;
             boolean addDots = false;
             StringReference sr;
-            if (v instanceof StringReference) {
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+                Method toStringMethod = ((ClassType) v.type ()).
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
+                sr = (StringReference) debugger.invokeMethod (
+                    (ObjectReference) v,
+                    toStringMethod,
+                    new Value [0],
+                    maxLength + 1
+                );
+            } else if (v instanceof StringReference) {
                 sr = (StringReference) v;
                 addQuotation = true;
             } else {
                 Method toStringMethod = ((ClassType) v.type ()).
-                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
                     toStringMethod,
@@ -320,37 +331,13 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             }
             if (sr == null) {
                 return null;
-            } else {
-                if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
-                    Method stringLengthMethod = ((ClassType) sr.type ()).
-                        concreteMethodByName ("length", "()I");  // NOI8N
-                    IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
-                        sr,
-                        stringLengthMethod,
-                        new Value [0]
-                    );
-                    if (lengthValue.value() > maxLength) {
-                        Method subStringMethod = ((ClassType) sr.type ()).
-                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI8N
-                        if (subStringMethod != null) {
-                            sr = (StringReference) debugger.invokeMethod (
-                                sr,
-                                subStringMethod,
-                                new Value [] { v.virtualMachine().mirrorOf(0),
-                                               v.virtualMachine().mirrorOf(maxLength) }
-                            );
-                            addDots = true;
-                        }
-                    }
-                    
-                }
             }
             String str = sr.value();
-            if (addDots) {
-                str = str + "..."; // NOI8N
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE && str.length() > maxLength) {
+                str = str.substring(0, maxLength) + "..."; // NOI18N
             }
             if (addQuotation) {
-                str = "\"" + str + "\""; // NOI8N
+                str = "\"" + str + "\""; // NOI18N
             }
             return str;
         } catch (VMDisconnectedException ex) {
@@ -371,6 +358,26 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
      * @return value of given method call on this instance
      */
     public Variable invokeMethod (
+        String methodName,
+        String signature,
+        Variable[] arguments
+    ) throws NoSuchMethodException, InvalidExpressionException {
+        return invokeMethod(null, methodName, signature, arguments);
+    }
+
+    /**
+     * Calls given method in debugged JVM on this instance and returns
+     * its value.
+     *
+     * @param thread the thread on which the method invocation is performed.
+     * @param methodName a name of method to be called
+     * @param signature a signature of method to be called
+     * @param arguments a arguments to be used
+     *
+     * @return value of given method call on this instance
+     */
+    public Variable invokeMethod (
+        JPDAThread thread,
         String methodName,
         String signature,
         Variable[] arguments
@@ -415,6 +422,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             for (i = 0; i < k; i++)
                 vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
             Value v = getDebugger().invokeMethod (
+                (JPDAThreadImpl) thread,
                 (ObjectReference) this.getInnerValue(),
                 method,
                 vs
@@ -561,14 +569,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         Type type;
         if (value != null) {
             try {
-                type = getInnerValue ().type ();
+                type = value.type ();
             } catch (ObjectCollectedException ocex) {
                 type = null;
             }
         } else {
             type = null;
         }
-        if ( !(getInnerValue() instanceof ObjectReference) || 
+        if ( !(value instanceof ObjectReference) ||
              !(type instanceof ReferenceType)
         ) {
             this.fields = new Field [0];
@@ -576,7 +584,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             this.inheritedFields = new Field [0];
         } else {
             try {
-                ObjectReference or = (ObjectReference) this.getInnerValue();
+                ObjectReference or = (ObjectReference) value;
                 ReferenceType rt = (ReferenceType) type;
                 if (or instanceof ArrayReference) {
                     this.fields = getFieldsOfArray (
@@ -641,32 +649,40 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         ReferenceType rt,
         String parentID)
     {
-        List<Field> fields = new ArrayList<Field>();
-        List<Field> staticFields = new ArrayList<Field>();
+        List<Field> classFields = new ArrayList<Field>();
+        List<Field> classStaticFields = new ArrayList<Field>();
         List<Field> allInheretedFields = new ArrayList<Field>();
         
-        List<com.sun.jdi.Field> l = rt.allFields ();
-        Set<com.sun.jdi.Field> s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        List<com.sun.jdi.Field> l;
+        Set<com.sun.jdi.Field> s;
+        try {
+            l = rt.allFields ();
+            s = new HashSet<com.sun.jdi.Field>(rt.fields ());
 
-        int i, k = l.size();
-        for (i = 0; i < k; i++) {
-            com.sun.jdi.Field f = l.get (i);
-            Field field = this.getField (f, or, this.getID());
-            if (f.isStatic ())
-                staticFields.add(field);
-            else {
-                if (s.contains (f))
-                    fields.add(field);
-                else
-                    allInheretedFields.add(field);
+            int i, k = l.size();
+            for (i = 0; i < k; i++) {
+                com.sun.jdi.Field f = l.get (i);
+                Field field = this.getField (f, or, this.getID());
+                if (f.isStatic ())
+                    classStaticFields.add(field);
+                else {
+                    if (s.contains (f))
+                        classFields.add(field);
+                    else
+                        allInheretedFields.add(field);
+                }
             }
+        } catch (VMDisconnectedException e) {
+            classFields.clear();
+            classStaticFields.clear();
+            allInheretedFields.clear();
         }
-        this.fields = fields.toArray (new Field [fields.size ()]);
+        this.fields = classFields.toArray (new Field [classFields.size ()]);
         this.inheritedFields = allInheretedFields.toArray (
             new Field [allInheretedFields.size ()]
         );
-        this.staticFields = staticFields.toArray
-                (new Field [staticFields.size ()]);
+        this.staticFields = classStaticFields.toArray
+                (new Field [classStaticFields.size ()]);
     }
     
     org.netbeans.api.debugger.jpda.Field getField (
@@ -707,7 +723,12 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 return new AbstractList<ObjectVariable>() {
                     public ObjectVariable get(int i) {
                         ObjectReference obj = referrers.get(i);
-                        return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        if (obj instanceof ClassObjectReference) {
+                            ClassObjectReference clobj = (ClassObjectReference) obj;
+                            return new ClassVariableImpl(getDebugger(), clobj, name+" referrer "+i);
+                        } else {
+                            return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        }
                     }
 
                     public int size() {

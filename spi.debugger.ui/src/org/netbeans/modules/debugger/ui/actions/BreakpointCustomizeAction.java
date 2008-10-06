@@ -240,6 +240,19 @@ public class BreakpointCustomizeAction extends SystemAction implements ContextAw
                 descriptor.setClosingOptions(new Object[] {});
             }
             Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
+            String accessibleDescription = d.getAccessibleContext().getAccessibleDescription();
+            if (accessibleDescription == null) {
+                if (c instanceof javax.swing.JComponent) {
+                    accessibleDescription = ((javax.swing.JComponent)c).getAccessibleContext().getAccessibleDescription();
+                }
+                if (accessibleDescription == null) {
+                    accessibleDescription = NbBundle.getMessage (
+                        BreakpointCustomizeAction.class,
+                        "ACSD_Breakpoint_Customizer",
+                        b);
+                }
+                d.getAccessibleContext().setAccessibleDescription(accessibleDescription);
+            }
             d.pack ();
             descriptorPtr[0] = descriptor;
             dialogPtr[0] = d;

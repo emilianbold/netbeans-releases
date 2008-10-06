@@ -961,6 +961,32 @@ installBundledJVMs() {
 	fi
 }
 
+searchJavaSystemDefault() {
+        if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
+            debug "... check default java in the path"
+            java_bin=`which java 2>&1`
+            if [ $? -eq 0 ] && [ -n "$java_bin" ] ; then
+                remove_no_java_in=`echo "$java_bin" | sed "s/no java in//g"`
+                if [ 1 -eq `ifEquals "$remove_no_java_in" "$java_bin"` ] && [ -f "$java_bin" ] ; then
+                    debug "... java in path found: $java_bin"
+                    # java is in path
+                    java_bin=`resolveSymlink "$java_bin"`
+                    debug "... java real path: $java_bin"
+                    parentDir=`dirname "$java_bin"`
+                    if [ -n "$parentDir" ] ; then
+                        parentDir=`dirname "$parentDir"`
+                        if [ -n "$parentDir" ] ; then
+                            debug "... java home path: $parentDir"
+                            parentDir=`resolveSymlink "$parentDir"`
+                            debug "... java home real path: $parentDir"
+                            verifyJVM "$parentDir"
+                        fi
+                    fi
+                fi
+            fi
+	fi
+}
+
 searchJavaSystemPaths() {
 	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
 	    # search java in the common system paths
@@ -1019,6 +1045,7 @@ searchJava() {
 		searchJavaUserDefined
 		installBundledJVMs
 		searchJavaEnvironment
+		searchJavaSystemDefault
 		searchJavaSystemPaths		
         fi
 
@@ -1030,6 +1057,30 @@ searchJava() {
 
 normalizePath() {	
 	argument="$1"
+
+	# replace XXX/../YYY to 'dirname XXX'/YYY
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.\/.*//g" 2> /dev/null`
+                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+	            esc=`echo "$beforeDotDot" | sed "s/\\\//\\\\\\\\\//g"`
+                    afterDotDot=`echo "$argument" | sed "s/^$esc\/\.\.//g" 2> /dev/null` 
+		    parent=`dirname "$beforeDotDot"`
+		    argument=`echo "$parent""$afterDotDot"`
+		else 
+                    break
+		fi	
+	done
+
+	# replace XXX/.. to 'dirname XXX'
+	while [ 0 -eq 0 ] ; do	
+		beforeDotDot=`echo "$argument" | sed "s/\/\.\.$//g" 2> /dev/null`
+                if [ 0 -eq `ifEquals "$beforeDotDot" "$argument"` ] && [ 0 -eq `ifEquals "$beforeDotDot" "."` ] && [ 0 -eq `ifEquals "$beforeDotDot" ".."` ] ; then
+		    argument=`dirname "$beforeDotDot"`
+		else 
+                    break
+		fi	
+	done
+
 	# replace all /./ to /
 	while [ 0 -eq 0 ] ; do	
 		testArgument=`echo "$argument" | sed 's/\/\.\//\//g' 2> /dev/null`
@@ -1193,7 +1244,7 @@ verifyJavaHome() {
 		        javaVersion=`echo "$javaVmVersion" | sed "s/.*${javaVersion}/${javaVersion}/"`
 		    fi
 		    #remove build number
-		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//'`
+		    javaVersion=`echo "$javaVersion" | sed 's/-.*$//;s/\ .*//'`
 		    verifyResult=$VERIFY_UNCOMPATIBLE
 
 	            if [ -n "$javaVersion" ] ; then

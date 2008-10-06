@@ -51,8 +51,10 @@ made subject to such option by the copyright holder.
                 <xsd:element name="minimum-ant-version" minOccurs="0">
                     <xsd:simpleType>
                         <xsd:restriction base="xsd:NMTOKEN">
+                             <!-- #70913 - remove "1.5" and "1.6" in next schema version -->
                             <xsd:enumeration value="1.5"/>
                             <xsd:enumeration value="1.6"/>
+                            <xsd:enumeration value="1.6.5"/>
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
@@ -87,7 +89,7 @@ made subject to such option by the copyright holder.
     <xsd:complexType name="ejbModuleLibraryType">
         <xsd:sequence>
             <xsd:element name="file" type="xsd:string"/>
-            <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
+            <xsd:element name="path-in-war" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
         <!-- #134642 below two attributes are obsolete since NB 6.5
              and can be removed in after 6.5 release; see issue for more details -->
@@ -98,7 +100,7 @@ made subject to such option by the copyright holder.
     <xsd:complexType name="ejbModuleAdditionalLibraryType">
         <xsd:sequence>
             <xsd:element name="file" type="xsd:string"/>
-            <xsd:element name="path-in-war" type="pathType" minOccurs="0"/>
+            <xsd:element name="path-in-war" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
         <!-- #134642 below two attributes are obsolete since NB 6.5
              and can be removed in after 6.5 release; see issue for more details -->
@@ -106,9 +108,4 @@ made subject to such option by the copyright holder.
         <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>
 
-    <xsd:simpleType name="pathType">
-        <xsd:restriction base="xsd:token">
-            <xsd:pattern value="/|(/[a-zA-Z0-9_.-]+)*"/>
-        </xsd:restriction>
-    </xsd:simpleType>
 </xsd:schema>

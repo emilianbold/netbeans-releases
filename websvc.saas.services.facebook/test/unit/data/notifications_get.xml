@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<notifications_get_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <messages>
+        <unread>1</unread>
+        <most_recent>1170644932</most_recent>
+    </messages>
+    <pokes>
+        <unread>0</unread>
+        <most_recent>0</most_recent>
+    </pokes>
+    <shares>
+        <unread>1</unread>
+        <most_recent>1170657686</most_recent>
+    </shares>
+    <friend_requests list="true">
+        <uid>2231342839</uid>
+        <uid>2231511925</uid>
+        <uid>2239284527</uid>
+    </friend_requests>
+    <group_invites list="true"/>
+    <event_invites list="true"/>
+</notifications_get_response>

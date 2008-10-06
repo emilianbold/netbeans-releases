@@ -79,10 +79,7 @@ public class TomcatIntegrationPanel extends AttachWizardPanel {
                         return false;
                     }
                 }
-
-                ;
-
-                return getContext().getIntegrationProvider().supportsJVM(javaPlatform.getAsEnum());
+                return getContext().getIntegrationProvider().supportsJVM(javaPlatform.getAsEnum(), settings);
             }
         };
 
@@ -152,9 +149,7 @@ public class TomcatIntegrationPanel extends AttachWizardPanel {
 
             String targetOS = getContext().getAttachSettings().getHostOS();
 
-            ValidationResult result = ((AbstractTomcatIntegrationProvider) getContext().getIntegrationProvider())
-                                                                                                                                                                 .validateInstallation(targetOS,
-                                                                                                                                                                                       path);
+            ValidationResult result = ((AbstractTomcatIntegrationProvider) getContext().getIntegrationProvider()).validateInstallation(targetOS,                                                                                                                                                                                       path);
 
             if (result.isValid()) {
                 this.tomcatValid = true;

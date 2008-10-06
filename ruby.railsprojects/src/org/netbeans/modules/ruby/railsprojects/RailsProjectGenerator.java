@@ -46,26 +46,28 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
+import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
+import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.Util;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.w3c.dom.Document;
@@ -78,7 +80,9 @@ import org.w3c.dom.Element;
  *   display in internal HTML viewer?
  */
 public class RailsProjectGenerator {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(RailsProjectGenerator.class.getName());
+
     public static final RegexpOutputRecognizer RAILS_GENERATOR =
         new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$", // NOI18N
             2, -1, -1);
@@ -164,52 +168,72 @@ public class RailsProjectGenerator {
         ProjectManager.getDefault().saveProject(p);
         
         
-        // Install goldspike if the user wants Rails deployment
+        // Install Warbler as a plugin if the user wants rake tasks for
+        // creating .war files
         if (data.isDeploy()) {
-            InstalledFileLocator locator = InstalledFileLocator.getDefault();
-            File goldspikeFile = locator.locate("goldspike-1.6.zip", "org.netbeans.modules.ruby.railsprojects", false);
-            if (goldspikeFile != null) {
-                FileObject fo = FileUtil.toFileObject(goldspikeFile);
-                if (fo != null) {
-                    NbUtilities.extractZip(fo, p.getProjectDirectory());
-                }
-            }
+            runWarblePluginize(platform, p);
         }
 
         RakeSupport.refreshTasks(p);
+        String railsVersion = data.getRailsVersion() != null
+                ? data.getRailsVersion()
+                : platform.getGemManager().getLatestVersion("rails"); // NOI18N
+        Util.logUsage(RailsProjectGenerator.class, "USG_PROJECT_CREATE_RAILS", // NOI18N
+                platform.getInfo().getKind(),
+                platform.getInfo().getPlatformVersion(),
+                platform.getInfo().getGemVersion(),
+                data.getServerInstanceId(),
+                data.getDatabase().getDisplayName(),
+                railsVersion);
+
         return h;
     }
-    
+
+
+    private static void runWarblePluginize(RubyPlatform platform, Project project) {
+        String warble = platform.findExecutable("warble"); //NOI18N
+        if (warble == null) {
+            // at this point the rails wizard should have already checked 
+            // that warble exists, so just logging
+            LOGGER.warning("Could not find warble executable, platform: " + platform);
+            return;
+        }
+        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+                NbBundle.getMessage(RailsProjectGenerator.class, "WarblePluginize"),
+                FileUtil.toFile(project.getProjectDirectory()),
+                new File(warble).getAbsolutePath());
+        desc.additionalArgs("pluginize"); //NOI18N
+        new RubyExecution(desc).run();
+    }
 
     private static RakeProjectHelper createProject(FileObject dirFO, final RubyPlatform platform, RailsProjectCreateData createData) throws IOException {
-
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RailsProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(createData.getName()));
         data.appendChild(nameEl);
-        
+
         // set the target server
         EditableProperties privateProperties = h.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
         privateProperties.put(RailsProjectProperties.RAILS_SERVERTYPE, createData.getServerInstanceId());
-        
+
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-        
-        
-        ep.setProperty(RailsProjectProperties.RAILS_PORT, "3000"); // NOI18N
+
+        RubyInstance instance = ServerRegistry.getDefault().getServer(createData.getServerInstanceId(), platform);
+        int port = instance != null ? instance.getRailsPort() : 3000;
+        ep.setProperty(RailsProjectProperties.RAILS_PORT, String.valueOf(port));
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(RailsProjectProperties.SOURCE_ENCODING, enc.name());
-        
+
         h.putPrimaryConfigurationData(data, true);
         RailsProjectProperties.storePlatform(ep, platform);
-        
+
         h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-        h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         return h;
     }
-
 }
 
 

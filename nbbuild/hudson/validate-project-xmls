@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+for r in contrib misc
+do
+    if [ -d $r ]
+    then
+        hg -R $r pull -u
+    else
+        hg clone http://hg.netbeans.org/main/$r/ $r
+    fi
+done
+for r in . contrib misc
+do
+    hg -R $r up -C .
+    hg -R $r --config extensions.purge= clean --all
+done
+ant -f nbbuild/validate-project-xmls.xml

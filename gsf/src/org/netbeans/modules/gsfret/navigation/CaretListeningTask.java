@@ -74,7 +74,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
         int offset = CaretListeningFactory.getLastPosition(fileObject);
         if (offset != -1) {
-            ClassMemberPanel.getInstance().selectElement(offset);
+            ClassMemberPanel.getInstance().selectElement(compilationInfo, offset);
         }
     }
 

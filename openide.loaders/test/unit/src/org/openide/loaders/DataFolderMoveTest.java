@@ -48,6 +48,7 @@ import org.openide.nodes.Node;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 import org.netbeans.junit.*;
 
@@ -64,6 +65,16 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
         super (name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 60000;
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
     
     @Override
     protected void setUp() throws Exception {
@@ -76,7 +87,8 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
     private static final int FS_DEPTH = 4;
     private static final int TXT_SIZE = 20000;
     private static final int CYCLE = 4;
-    
+
+    @RandomlyFails
     public void testMoveFolders() throws Exception {
         
         // create directory structur description
@@ -170,6 +182,7 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
                     failed = testNodes(fsNodes[dest], false);
                 }
                 if (failed) {
+                    err.log("Failed, sleeping...");
                     try {
                         Thread.sleep(3000);
                     } 

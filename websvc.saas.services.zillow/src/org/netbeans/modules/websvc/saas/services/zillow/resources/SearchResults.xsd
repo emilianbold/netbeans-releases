@@ -1,18 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
 <xsd:schema attributeFormDefault="unqualified"
     elementFormDefault="unqualified"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     targetNamespace="http://www.zillow.com/static/xsd/SearchResults.xsd"     
-    xmlns:ZillowTypes="http://www.zillow.com/static/xsd/ZillowTypes.xsd">
-
+    xmlns:ZillowTypes="http://www.zillow.com/static/xsd/ZillowTypes.xsd" xmlns:ns="http://www.zillow.com/static/xsd/SearchResults.xsd">
     <xsd:import namespace="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
     schemaLocation="ZillowTypes.xsd"  />
-	
+    <xsd:complexType name="LocalRealEstate" >
+        <xsd:sequence>
+            <xsd:element name="region" minOccurs="1" maxOccurs="unbounded" >
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="zindexOneYearChange" type="xsd:decimal" />
+                        <xsd:element name="links">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="overview" type="xsd:string" />
+                                    <xsd:element name="forSaleByOwner" type="xsd:string" />
+                                    <xsd:element name="forSale" type="xsd:string" />
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                    <xsd:attribute name="name" type="xsd:string" use="required" />
+                    <xsd:attribute name="type" type="xsd:string" use="required" />
+                    <xsd:attribute name="id" type="xsd:unsignedInt" use="required" />
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="SearchResultsProperty">
+        <xsd:complexContent>
+            <xsd:extension base="ZillowTypes:SimpleProperty">
+                <xsd:sequence>
+                    <xsd:element name="localRealEstate" type="ns:LocalRealEstate" />
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
     <xsd:element name="searchresults">
         <xsd:complexType>
             <xsd:sequence>
-
                 <xsd:element name="request">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -21,9 +90,7 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-
                 <xsd:element name="message" type="ZillowTypes:Message"/>
-
                 <xsd:element minOccurs="0" name="response">
                     <xsd:complexType>
                         <xsd:sequence>
@@ -31,16 +98,14 @@
                                 <xsd:complexType>
                                     <xsd:sequence>
                                         <xsd:element minOccurs="1" maxOccurs="unbounded" name="result"
-                                                     type="ZillowTypes:SimpleProperty"/>
+                                                     type="ns:SearchResultsProperty"/>
                                     </xsd:sequence>
                                 </xsd:complexType>
                             </xsd:element>
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>
-
 </xsd:schema>

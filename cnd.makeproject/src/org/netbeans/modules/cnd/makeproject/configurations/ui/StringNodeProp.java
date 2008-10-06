@@ -97,4 +97,9 @@ public class StringNodeProp extends PropertySupport {
     public boolean isDefaultValue() {
         return !stringConfiguration.getModified();
     }
+    
+    public void setDefaultValue(String def) {
+        this.def = def;
+        stringConfiguration.setDefaultValue(def);
+    }
 }

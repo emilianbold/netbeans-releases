@@ -56,6 +56,7 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import org.openide.util.HelpCtx;
 
 /**
  * @author David Kaspar
@@ -96,7 +97,12 @@ public class EditorViewElement implements MultiViewElement, Serializable {
         if (topComponent == null) {
             JComponent visualRepresentation = view.getVisualRepresentation();
             if (visualRepresentation != null) {
-                topComponent = kind == DataEditorView.Kind.CODE ? new CodeEditorTopComponent(context, lookup, visualRepresentation) : new EditorTopComponent(context, lookup, visualRepresentation);
+                if (view.getHelpCtx() != null){
+                    HelpCtx.setHelpIDString(visualRepresentation, view.getHelpCtx().getHelpID());
+                }
+                topComponent = kind == DataEditorView.Kind.CODE 
+                        ? new CodeEditorTopComponent(context, lookup, visualRepresentation) 
+                        : new EditorTopComponent(context, lookup, visualRepresentation);
             }
         }
         return topComponent;

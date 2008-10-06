@@ -72,20 +72,18 @@ public class RefreshServiceAction extends NodeAction {
         }
         
         final Saas saas = nodes[0].getLookup().lookup(Saas.class);
-        if (saas == null || saas.getUrl() == null) {
-            throw new IllegalArgumentException("Node has no aasociated good Saas");
-        }
-        if (saas.getState() == Saas.State.INITIALIZING) {
-            throw new IllegalStateException("Saas is initializing");
-        }
-
         String msg = NbBundle.getMessage(RefreshServiceAction.class, "WS_REFRESH");
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object response = DialogDisplayer.getDefault().notify(d);
         if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    SaasServicesModel.getInstance().refreshService(saas);
+                    try {
+                        SaasServicesModel.getInstance().refreshService(saas);
+                    } catch (Exception ex) {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
                 }
             });
         }

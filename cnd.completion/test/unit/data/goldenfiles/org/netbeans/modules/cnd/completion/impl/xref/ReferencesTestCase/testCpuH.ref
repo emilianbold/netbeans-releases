@@ -18,15 +18,15 @@
 ==============================================================
 'Cpu', tokenID=identifier, offset=2166 [47:7/2166-47:10/2169]
 --OWNER:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'Module', tokenID=identifier, offset=2179 [47:20/2179-47:26/2185]
 --OWNER:
      [47:13/2172-47:26/2185] ReferencesTestCase/cpu.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'CpuType', tokenID=identifier, offset=2213 [49:14/2213-49:21/2220]
 --OWNER:

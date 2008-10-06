@@ -42,8 +42,9 @@ package org.netbeans.modules.cnd.remote.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +61,8 @@ public class DeleteServerAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        RemoteServerList.getInstance().deleteServer(record);
+        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        registry.removeServer(record);
     }
 
     @Override

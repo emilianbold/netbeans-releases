@@ -41,10 +41,15 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.DevelopmentHostCustomizer;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 public class DevelopmentHostNodeProp extends Node.Property {
     private DevelopmentHostConfiguration configuration;
@@ -55,14 +60,15 @@ public class DevelopmentHostNodeProp extends Node.Property {
     public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String description) {
         super(Integer.class);
         this.configuration = configuration;
-	this.canWrite = canWrite;
-	this.name = name;
-	this.description = description;
+        this.canWrite = canWrite;
+        this.name = name;
+        this.description = description;
+        setValue("title", NbBundle.getMessage(DevelopmentHostNodeProp.class, "DLG_TITLE_Connect")); // NOI18N
     }
 
     @Override
     public String getName() {
-	return name;
+        return name;
     }
 
     @Override
@@ -112,10 +118,13 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+        return new IntEditor();
     }
 
-    private class IntEditor extends PropertyEditorSupport {
+    private class IntEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+        private PropertyEnv env;
+
         @Override
         public String getJavaInitializationString() {
             return getAsText();
@@ -123,7 +132,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            return configuration.getDisplayName();
+            return configuration.getDisplayName(true);
         }
         
         @Override
@@ -134,6 +143,20 @@ public class DevelopmentHostNodeProp extends Node.Property {
         @Override
         public String[] getTags() {
             return configuration.getServerNames();
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return true;
+        }
+
+        @Override
+        public Component getCustomEditor() {
+            return new DevelopmentHostCustomizer(configuration, env);
+        }
+
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
         }
     }
 }

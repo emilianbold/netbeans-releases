@@ -51,13 +51,13 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,8 +92,8 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(null);
-        preferences.putInt("rightMargin", 30);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putInt("text-limit-width", 30);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -338,7 +338,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "}\n";
         preferences.put("wrapExtendsImplementsKeyword", CodeStyle.WrapStyle.WRAP_NEVER.name());
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
-        preferences.putInt("rightMargin", 50);
+        preferences.putInt("text-limit-width", 50);
         reformat(doc, content, golden);
 
         golden =
@@ -352,7 +352,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("alignMultilineImplements", false);
         reformat(doc, content, golden);
         preferences.put("wrapExtendsImplementsList", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
+        preferences.putInt("text-limit-width", 80);
     }
     
     public void testEnum() throws Exception {
@@ -365,8 +365,8 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         doc.putProperty(Language.class, JavaTokenId.language());
         JavaSource testSource = JavaSource.forDocument(doc);
         final int[] counter = new int[] {0};
-        Preferences preferences = FmtOptions.getPreferences(null);
-        preferences.putInt("rightMargin", 20);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putInt("text-limit-width", 20);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -531,7 +531,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
         reformat(doc, content, golden);
         preferences.put("wrapEnumConstants", CodeStyle.WrapStyle.WRAP_NEVER.name());
-        preferences.putInt("rightMargin", 120);
+        preferences.putInt("text-limit-width", 80);
      }
     
     public void testMethod() throws Exception {
@@ -560,7 +560,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeMethodDeclParen", true);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceBeforeMethodDeclLeftBrace", false);
@@ -699,7 +699,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", false);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceBeforeStaticInitLeftBrace", true);
@@ -823,7 +823,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -849,6 +849,14 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
         preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineFor", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineFor", false);
 
         ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
@@ -879,6 +887,16 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        for (int i = 0; i < 10; i++)\n" +
             "            System.out.println(\"TRUE\");\n" +
             "        for (int i = 0; i < 10; i++) System.out.println(\"TRUE\");\n" +
+            "        for (int i = 0;\n" +
+            "                i < 10;\n" +
+            "                i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "        for (int i = 0;\n" +
+            "             i < 10;\n" +
+            "             i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
             "    }\n" +
             "}\n";
         assertEquals(golden, res);
@@ -982,6 +1000,36 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden);
         preferences.put("redundantForBraces", CodeStyle.BracesGenerationStyle.GENERATE.name());
         preferences.put("wrapForStatement", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0;\n" +
+            "                i < 10;\n" +
+            "                i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui() {\n" +
+            "        for (int i = 0;\n" +
+            "             i < 10;\n" +
+            "             i++) {\n" +
+            "            System.out.println(\"TRUE\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineFor", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapFor", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineFor", false);
     }
     
     public void testForEach() throws Exception {
@@ -1013,7 +1061,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeForParen", false);
         preferences.putBoolean("spaceWithinForParens", true);
         preferences.putBoolean("spaceBeforeForLeftBrace", false);
@@ -1187,7 +1235,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeIfParen", false);
         preferences.putBoolean("spaceWithinIfParens", true);
         preferences.putBoolean("spaceBeforeIfLeftBrace", false);
@@ -1497,7 +1545,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeWhileLeftBrace", false);
@@ -1671,7 +1719,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeSwitchParen", false);
         preferences.putBoolean("spaceWithinSwitchParens", true);
         preferences.putBoolean("spaceBeforeSwitchLeftBrace", false);
@@ -1900,7 +1948,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeWhileParen", false);
         preferences.putBoolean("spaceWithinWhileParens", true);
         preferences.putBoolean("spaceBeforeDoLeftBrace", false);
@@ -2103,7 +2151,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeSynchronizedParen", false);
         preferences.putBoolean("spaceWithinSynchronizedParens", true);
         preferences.putBoolean("spaceBeforeSynchronizedLeftBrace", false);
@@ -2260,7 +2308,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceBeforeCatchParen", false);
         preferences.putBoolean("spaceWithinCatchParens", true);
         preferences.putBoolean("spaceBeforeTryLeftBrace", false);
@@ -2525,7 +2573,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceWithinParens", true);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceWithinParens", false);
@@ -2541,6 +2589,23 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         preferences.putBoolean("spaceAroundAssignOps", false);
         testSource.runModificationTask(task).commit();
         preferences.putBoolean("spaceAroundAssignOps", true);
+
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineAssignment", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineAssignment", false);
+
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        testSource.runModificationTask(task).commit();
+
+        preferences.putBoolean("alignMultilineBinaryOp", true);
+        testSource.runModificationTask(task).commit();
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineBinaryOp", false);
 
         ec.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
@@ -2564,6 +2629,28 @@ public class FormatingTest extends GeneratorTestMDRCompat {
             "        }\n" +
             "        for (int i=0; i < x; i++) {\n" +
             "            y+=(y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i =\n" +
+            "                0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "                    (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i =\n" +
+            "                 0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "            (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "        for (int i = 0; i <\n" +
+            "                x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                    123) <<\n" +
+            "                    2;\n" +
+            "        }\n" +
+            "        for (int i = 0; i <\n" +
+            "                        x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                  123) <<\n" +
+            "                 2;\n" +
             "        }\n" +
             "    }\n" +
             "}\n";
@@ -2641,6 +2728,67 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden);
         preferences.putBoolean("spaceAroundAssignOps", true);
 
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i =\n" +
+            "                0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "                    (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i =\n" +
+            "                 0; i < x; i++) {\n" +
+            "            y +=\n" +
+            "            (y ^ 123) << 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineAssignment", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapAssignOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineAssignment", false);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i <\n" +
+            "                x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                    123) <<\n" +
+            "                    2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_ALWAYS.name());
+        reformat(doc, content, golden);
+
+        golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    public void taragui(int x, int y) {\n" +
+            "        for (int i = 0; i <\n" +
+            "                        x; i++) {\n" +
+            "            y += (y ^\n" +
+            "                  123) <<\n" +
+            "                 2;\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        preferences.putBoolean("alignMultilineBinaryOp", true);
+        reformat(doc, content, golden);
+        preferences.put("wrapBinaryOps", CodeStyle.WrapStyle.WRAP_NEVER.name());
+        preferences.putBoolean("alignMultilineBinaryOp", false);
     }
     
     public void testTypeCast() throws Exception {
@@ -2672,7 +2820,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceWithinTypeCastParens", true);
         preferences.putBoolean("spaceAfterTypeCast", false);
         testSource.runModificationTask(task).commit();
@@ -2763,7 +2911,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
 
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putInt("labelIndent", 4);
         testSource.runModificationTask(task).commit();
         preferences.putInt("labelIndent", 0);
@@ -2873,7 +3021,7 @@ public class FormatingTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(clazz, maker.addClassMember(clazz, method));
             }            
         };
-        Preferences preferences = FmtOptions.getPreferences(null);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
         preferences.putBoolean("spaceWithinMethodDeclParens", true);
         preferences.putBoolean("spaceWithinMethodCallParens", true);
         testSource.runModificationTask(task).commit();
@@ -3040,6 +3188,45 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden);
     }
     
+    /**
+     * SIOOBE when reformatting code with unclosed javadoc comment.
+     * Regression test.
+     *
+     * http://www.netbeans.org/issues/show_bug.cgi?id=135210
+     */
+    public void test135210() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n" +
+            "public class Test{\n" +
+            "/**\n" +
+            "*\n" +
+            "*\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
+            "    /**\n" +
+            "     *\n" +
+            "     *\n" +
+            "    }\n";
+        reformat(doc, content, golden);
+    }
+
     /**
      * Unexpected new line after comment.
      * Regression test.

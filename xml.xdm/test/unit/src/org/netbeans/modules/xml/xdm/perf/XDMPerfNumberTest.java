@@ -131,7 +131,7 @@ public class XDMPerfNumberTest extends TestCase {
         System.out.println("testReadUsingSyntaxParser");
         java.net.URL url = getClass().getResource(SCHEMA_FILE);            
         // prepare document
-        BaseDocument basedoc = new BaseDocument(BaseKit.class, false);
+        BaseDocument basedoc = new BaseDocument(true, "text/xml"); //NOI18N
         insertStringInDocument(new InputStreamReader(url.openStream(),"UTF-8"), basedoc);
         long start = System.currentTimeMillis();
         SyntaxSupport sup = basedoc.getSyntaxSupport();
@@ -146,7 +146,7 @@ public class XDMPerfNumberTest extends TestCase {
     
     public void testReadUsingXDM() throws Exception {
         long start = System.currentTimeMillis();
-        javax.swing.text.Document sd = new BaseDocument(BaseKit.class, false);
+        javax.swing.text.Document sd = new BaseDocument(true, "text/xml"); //NOI18N
         XDMModel model = null;
 
         InputStreamReader reader = new InputStreamReader(getClass().getResourceAsStream(SCHEMA_FILE),"UTF-8");

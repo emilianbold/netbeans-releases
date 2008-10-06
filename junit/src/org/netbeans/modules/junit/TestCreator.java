@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,15 +47,20 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.junit.plugin.JUnitPlugin.CreateTestParam;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -108,9 +113,7 @@ public final class TestCreator implements TestabilityJudge {
             default:
                 throw new IllegalStateException("junit version not set");//NOI18N
         }
-        ModificationResult result = JavaSource.forFileObject(testFileObj)
-                                    .runModificationTask(testGenerator);
-        result.commit();
+        doModifications(testFileObj, testGenerator);
     }
     
     /**
@@ -140,9 +143,7 @@ public final class TestCreator implements TestabilityJudge {
             default:
                 throw new IllegalStateException("junit version not set");//NOI18N
         }
-        ModificationResult result = JavaSource.forFileObject(testFileObj)
-                                    .runModificationTask(testGenerator);
-        result.commit();
+        doModifications(testFileObj, testGenerator);
     }
     
     /**
@@ -170,11 +171,41 @@ public final class TestCreator implements TestabilityJudge {
             default:
                 throw new IllegalStateException("junit version not set");//NOI18N
         }
-        ModificationResult result = JavaSource.forFileObject(testFileObj)
-                                    .runModificationTask(testGenerator);
-        result.commit();
+        doModifications(testFileObj, testGenerator);
         
         return testGenerator.getProcessedClassNames();
+    }
+
+    private void doModifications(final FileObject testFileObj,
+                                 final AbstractTestGenerator testGenerator)
+                                                            throws IOException {
+        final JavaSource javaSource = JavaSource.forFileObject(testFileObj);
+        Future<Void> future = javaSource.runWhenScanFinished(
+                new Task<CompilationController>() {
+                    public void run(CompilationController parameter) throws Exception {
+                        ModificationResult result
+                                = javaSource.runModificationTask(testGenerator);
+                        result.commit();
+                    }
+                },
+                true);
+        try {
+            future.get();
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+            if (cause != null) {
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                }
+            }
+            Exceptions.printStackTrace(ex);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
     
     public TestabilityResult isClassTestable(CompilationInfo compInfo,

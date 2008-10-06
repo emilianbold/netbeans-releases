@@ -248,6 +248,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                         ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
+        
+        if(dataUris.size()>0) {
         LogManager.log("... extracting files from the data archives");
         // extract each of the defined installation data files
         unjarProgress.setPercentage(Progress.COMPLETE % dataUris.size());
@@ -310,6 +312,11 @@ public final class Product extends RegistryNode implements StatusInterface {
                         e);
             }
         }
+        } else {
+            LogManager.log("... no data archives assigned to this product");
+            unjarProgress.setPercentage(Progress.COMPLETE);
+        }
+
         LogManager.log("... saving legal artifacts if required");
         // create legal/docs artifacts
         progress.setDetail(StringUtils.format(MESSAGE_LEGAL_ARTIFACTS_STRING));
@@ -468,6 +475,7 @@ public final class Product extends RegistryNode implements StatusInterface {
             default:
                 // default, nothing should be done here
         }
+        setStatus(Status.NOT_INSTALLED);
         LogManager.logUnindent("... finished rollbacking of " + getDisplayName() + "(" + getUid() + "/" + getVersion()+")");
     }
     
@@ -671,7 +679,7 @@ public final class Product extends RegistryNode implements StatusInterface {
     
     public void downloadData(final Progress progress) throws DownloadException {
         final CompositeProgress overallProgress = new CompositeProgress();
-        
+        if(dataUris.size()>0) {
         final int percentageChunk = Progress.COMPLETE / dataUris.size();
         final int percentageLeak  = Progress.COMPLETE % dataUris.size();
         
@@ -687,6 +695,10 @@ public final class Product extends RegistryNode implements StatusInterface {
                     uri.getRemote(),
                     currentProgress);
             uri.setLocal(cache.toURI());
+        }
+        } else {
+            overallProgress.setPercentage(Progress.COMPLETE);
+            overallProgress.synchronizeTo(progress);
         }
     }
     
@@ -1045,7 +1057,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                     icon,
                     installLocation,
                     uninstallCommand,
-                    modifyCommand);
+                    modifyCommand,
+                    configurationLogic.getAdditionalSystemIntegrationInfo());
         } else {
             return new ApplicationDescriptor(
                     key,
@@ -1053,7 +1066,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                     icon,
                     installLocation,
                     uninstallCommand,
-                    null);
+                    null,
+                    configurationLogic.getAdditionalSystemIntegrationInfo());
         }
     }
     
@@ -1069,6 +1083,10 @@ public final class Product extends RegistryNode implements StatusInterface {
     }
     
     private void saveLegalArtifacts() throws IOException {
+        if (!configurationLogic.requireLegalArtifactSaving()) {
+            return;
+        }
+
         final Text license = configurationLogic.getLicense();
         if (license != null) {
             final File file = new File(

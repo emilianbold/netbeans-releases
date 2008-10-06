@@ -31,23 +31,23 @@ package org.netbeans.modules.refactoring.ruby;
 import java.util.Iterator;
 import javax.swing.text.Document;
 
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.IScopingNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.SymbolNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.ClassVarAsgnNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.IScopingNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.SymbolNode;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -111,6 +111,9 @@ public class RubyElementCtx {
         path = new AstPath(root, astOffset);
 
         Node leaf = path.leaf();
+        if (leaf == null) {
+            return;
+        }
 
         Iterator<Node> it = path.leafToRoot();
     FindNode:
@@ -155,10 +158,10 @@ public class RubyElementCtx {
         initialize(ctx.getRoot(), node, element, ctx.getFileObject(), ctx.getInfo());
     }
 
-    public RubyElementCtx(IndexedElement element, CompilationInfo info) {
-        Node[] rootRet = new Node[1];
-        Node node = AstUtilities.getForeignNode(element, rootRet);
-        Node root = rootRet[0];
+    public RubyElementCtx(IndexedElement element) {
+        CompilationInfo[] infoHolder = new CompilationInfo[1];
+        Node node = AstUtilities.getForeignNode(element, infoHolder);
+        CompilationInfo info = infoHolder[0];
 
         Element e = AstElement.create(info, node);
 
@@ -333,6 +336,11 @@ public class RubyElementCtx {
         }
 
         return simpleName;
+    }
+
+    public void setNames(String name, String simpleName) {
+        this.name = name;
+        this.simpleName = simpleName;
     }
 
     public Arity getArity() {

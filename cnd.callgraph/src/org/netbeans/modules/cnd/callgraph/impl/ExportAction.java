@@ -49,26 +49,37 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.visual.widget.Scene;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ExportAction extends AbstractAction {
+public class ExportAction extends AbstractAction  implements Presenter.Popup {
 
     private static final String EXTENSION = "png"; // NOI18N
     private Scene scene;
     private JComponent parent;
-
+    private JMenuItem menuItem;
+    
     public ExportAction(Scene scene, JComponent parent) {
         this.scene = scene;
         this.parent = parent;
         putValue(Action.NAME, getString("Export")); // NOI18N
+        menuItem = new JMenuItem(this); 
+        Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+
+    }
+
+    public JMenuItem getPopupPresenter() {
+        return menuItem;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -130,4 +141,5 @@ public class ExportAction extends AbstractAction {
             return NbBundle.getMessage(ExportAction.class, "PNG"); // NOI18N
         }
     }
+
 }

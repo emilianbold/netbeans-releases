@@ -54,10 +54,26 @@
         <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
         <group name="Amazon"/>
         <code-gen>
-            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/signedurl.properties"/>
-            <artifacts targets="php" profile="Templates/SaaSServices/signedurl.php"/>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/signedurl.properties">
+                <artifact id="AmazonS3Authenticator" type="template"
+                    url="Templates/SaaSServices/AmazonS3Authenticator.java"/>
+            </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/signedurl.php">
+                <artifact id="AmazonS3Authenticator" type="template"
+                    url="Templates/SaaSServices/AmazonS3Authenticator.php"/>
+            </artifacts>
         </code-gen>
         <authentication>
+            <authenticator name="amazons3_templates">
+                <use-templates>
+                    <desktop>
+                        <template type="auth" href="AmazonS3Authenticator"/>
+                    </desktop>
+                    <web>
+                        <template type="auth" href="AmazonS3Authenticator"/>
+                    </web>
+                </use-templates>
+            </authenticator>
             <signed-url sig-id="Authorization" id="amazons3.bucket">
                 <sign id="authorization">
                     <params>
@@ -68,6 +84,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="amazons3.object">
                 <sign id="authorization">
@@ -79,6 +96,23 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
+            </signed-url>
+            <signed-url sig-id="Authorization" id="copyObject">
+                <sign id="authorization">
+                    <params>
+                        <param name="Date" type="date" required="true"/>
+                        <param name="Bucket" type="string" required="true" default=""/>
+                        <param name="Content-Type" type="string" required="true"/>
+                        <param name="x-amz-copy-source" type="string" required="true"/>
+                        <param name="x-amz-metadata-directive" type="string"/>
+                        <param name="x-amz-copy-source-if-match" type="string"/>
+                        <param name="x-amz-copy-source-if-none-match" type="string"/>
+                        <param name="x-amz-copy-source-if-unmodified-since" type="string"/>
+                        <param name="x-amz-copy-source-if-modified-since" type="string"/>
+                    </params>
+                </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="getLocation">
                 <sign id="authorization">
@@ -90,6 +124,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="getBucketAcl">
                 <sign id="authorization">
@@ -101,6 +136,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="setBucketAcl">
                 <sign id="authorization">
@@ -112,6 +148,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="getObjectAcl">
                 <sign id="authorization">
@@ -123,6 +160,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
             <signed-url sig-id="Authorization" id="setObjectAcl">
                 <sign id="authorization">
@@ -134,6 +172,7 @@
                         <param name="Content-Type" type="string" required="true"/>
                     </params>
                 </sign>
+                <authenticator xref="amazons3_templates"/>
             </signed-url>
         </authentication>
     </saas-metadata>

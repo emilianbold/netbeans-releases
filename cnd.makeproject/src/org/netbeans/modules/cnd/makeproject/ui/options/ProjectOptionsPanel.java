@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -71,9 +72,12 @@ public class ProjectOptionsPanel extends JPanel {
         // Accessible Description
         reuseCheckBox.getAccessibleContext().setAccessibleDescription(getString("REUSE_CHECKBOX_AD"));
         saveCheckBox.getAccessibleContext().setAccessibleDescription(getString("SAVE_CHECKBOX_AD"));
+        dependencyCheckingCheckBox.getAccessibleContext().setAccessibleDescription(getString("DEPENDENCY_CHECKBOX_AD"));
         platformComboBox.getAccessibleContext().setAccessibleDescription(getString("DEFAULT_PLATFORM_AD"));
         filePathcomboBox.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_AD"));
         makeOptionsTextField.getAccessibleContext().setAccessibleDescription(getString("MAKE_OPTIONS_AD"));
+        filePathTxt.getAccessibleContext().setAccessibleDescription(getString("FILE_PATH_TXT_AD"));
+        filePathTxt.getAccessibleContext().setAccessibleName(getString("FILE_PATH_TXT_AN"));
         
         
         documentListener = new DocumentListener() {
@@ -97,7 +101,9 @@ public class ProjectOptionsPanel extends JPanel {
             setOpaque( false );
         }
         else {
-            filePathTxt.setBackground(getBackground());
+            Color c = getBackground();
+            Color cc = new Color(c.getRed(), c.getGreen(), c.getBlue());
+           filePathTxt.setBackground(cc);
         }
     }
     
@@ -321,9 +327,7 @@ public class ProjectOptionsPanel extends JPanel {
 
         saveCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SAVE_CHECKBOX_MN").charAt(0));
         saveCheckBox.setText(bundle.getString("SAVE_CHECKBOX_TXT")); // NOI18N
-        saveCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         saveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        saveCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -333,9 +337,7 @@ public class ProjectOptionsPanel extends JPanel {
 
         reuseCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REUSE_CHECKBOX_MN").charAt(0));
         reuseCheckBox.setText(bundle.getString("REUSE_CHECKBOX_TXT")); // NOI18N
-        reuseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         reuseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        reuseCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -345,9 +347,7 @@ public class ProjectOptionsPanel extends JPanel {
 
         dependencyCheckingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DEPENDENCY_CHECKING_MN").charAt(0));
         dependencyCheckingCheckBox.setText(bundle.getString("DEPENDENCY_CHECKING_TXT")); // NOI18N
-        dependencyCheckingCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dependencyCheckingCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        dependencyCheckingCheckBox.setOpaque(false);
         dependencyCheckingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dependencyCheckingCheckBoxActionPerformed(evt);

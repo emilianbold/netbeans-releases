@@ -78,7 +78,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private Folder folder;
     private File file = null;
     private String id = null;
-    
+    private DataObject lastDataObject = null;
+
     public Item(String path) {
         this.path = path;
         this.sortName = IpeUtils.getBaseName(path).toLowerCase();
@@ -129,11 +130,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public void moveTo(String newPath) {
         Folder f = getFolder();
-        // FIXUP: update all configurations with settings from old item....
         String oldPath = getAbsPath();
-        f.removeItem(this);
         Item item = new Item(newPath);
         f.addItem(item);
+        copyItemConfigurations(this, item);
+        f.removeItem(this);
         f.renameItemAction(oldPath,  item);
     }
     
@@ -166,28 +167,18 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     
     public void setFolder(Folder folder) {
         this.folder = folder;
-        if (folder != null)
-            addPropertyChangeListener();
-    }
-    
-    private DataObject myDataObject = null;
-    public void addPropertyChangeListener() {
-        myDataObject = getDataObject();
-        if (myDataObject != null) {
-            myDataObject.addPropertyChangeListener(this);
-        }
-    }
-    
-    public void removePropertyChangeListener() {
-        //DataObject dataObject = getDataObject();
-        if (myDataObject != null) {
-            myDataObject.removePropertyChangeListener(this);
-            myDataObject = null;
+        if (folder == null) { // Item is removed, let's clean up.
+            synchronized (this) {
+                if (lastDataObject != null) {
+                    lastDataObject.removePropertyChangeListener(this);
+                    lastDataObject = null;
+                }
+            }
         }
     }
     
     public DataObject getLastDataObject(){
-        return myDataObject;
+        return lastDataObject;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -199,7 +190,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // Do nothing (IZ 87557, 94935)
             if (!((Boolean)evt.getNewValue()).booleanValue()) {
 //                getFolder().removeItemAction(this);
-                getFolder().refresh(this);
+                Folder containingFolder = getFolder();
+                if (containingFolder != null) {
+                    containingFolder.refresh(this);
+                }
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
@@ -262,7 +256,26 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return itemConfigurations;
     }
-    
+
+    /**
+     * Copies configuration from <code>src</code> item to <code>dst</code> item.
+     * Both items must be assigned to folders to correctly operate with
+     * their configurations. Otherwise NPEs will be thrown.
+     *
+     * @param src  item to copy configuration from
+     * @param dst  item to copy configuration to
+     */
+    private static void copyItemConfigurations(Item src, Item dst) {
+        MakeConfigurationDescriptor makeConfigurationDescriptor = src.getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor != null) {
+            for (Configuration conf : makeConfigurationDescriptor.getConfs().getConfs()) {
+                ItemConfiguration newConf = new ItemConfiguration(conf, dst);
+                newConf.assignValues(src.getItemConfiguration(conf));
+                conf.addAuxObject(newConf);
+            }
+        }
+    }
+
     public FileObject getFileObject() {
         File file = getCanonicalFile();
         FileObject fo = null;
@@ -282,6 +295,19 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             } catch (DataObjectNotFoundException e) {
                 // should not happen
                 ErrorManager.getDefault().notify(e);
+            }
+        }
+        if (dataObject != lastDataObject) {
+            // DataObject can change without notification. We need to track this
+            // and properly attach/detach listeners.
+            synchronized (this) {
+                if (lastDataObject != null) {
+                    lastDataObject.removePropertyChangeListener(this);
+                }
+                if (dataObject != null) {
+                    dataObject.addPropertyChangeListener(this);
+                }
+                lastDataObject = dataObject;
             }
         }
         return dataObject;
@@ -368,7 +394,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null)
             return vec;
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
@@ -421,7 +446,6 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null)
             return vec;
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
@@ -493,4 +517,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return path;
+    }
+
 }

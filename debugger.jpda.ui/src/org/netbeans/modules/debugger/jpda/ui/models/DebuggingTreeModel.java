@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,7 +65,6 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -109,8 +109,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private PropertyChangeListener debuggerListener = new DebuggerFinishListener();
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
-    private PropertyChangeListener otherThreadsListener;
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+
+    private static RequestProcessor RP = new RequestProcessor("Debugging Threads Refresh", 1);
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -160,7 +161,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         boolean showSystemThreads = preferences.getBoolean(SHOW_SYSTEM_THREADS, false);
         boolean showSuspendedThreadsOnly = preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false);
         if (!showSystemThreads || showSuspendedThreadsOnly) {
-            nodes = filterSystemThreads(nodes, !showSystemThreads, showSuspendedThreadsOnly);
+            nodes = filterThreadsAndGroups(nodes, !showSystemThreads, showSuspendedThreadsOnly);
         }
         boolean alphabet = preferences.getBoolean(SORT_ALPHABET, true);
         if (!alphabet) {
@@ -180,21 +181,46 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return nodes;
     }
     
-    private Object[] filterSystemThreads(Object[] nodes, boolean filterSystem, boolean filterRunning) {
+    private Object[] filterThreadsAndGroups(Object[] nodes, boolean filterSystem, boolean filterRunning) {
         List list = null;
+        JPDAThread currentThread = debugger.getCurrentThread();
         for (Object node : nodes) {
             if (node instanceof JPDAThread) {
                 JPDAThread t = (JPDAThread)node;
-                if ((filterSystem && isSystem(t) ||
-                        (filterRunning && !t.isSuspended() && t != debugger.getCurrentThread()))) {
+                watchState(t);
+                if (!t.isSuspended() && (filterSystem && isSystem(t) ||
+                        (filterRunning && t != currentThread))) {
                     if (list == null) {
                         list = new ArrayList(Arrays.asList(nodes));
                     }
                     list.remove(node);
                 } // if
-            } // if
+            } else if (filterRunning && node instanceof JPDAThreadGroup) {
+                if (!containsThread((JPDAThreadGroup)node, currentThread)) {
+                    if (list == null) {
+                        list = new ArrayList(Arrays.asList(nodes));
+                    }
+                    list.remove(node);
+                }
+            }
         } // for
         return (list != null) ? list.toArray() : nodes;
+    }
+
+    private boolean containsThread(JPDAThreadGroup group, JPDAThread currentThread) {
+        JPDAThread[] threads = group.getThreads();
+        for (int x = 0; x < threads.length; x++) {
+            if (threads[x].isSuspended() || threads[x] == currentThread) {
+                return true;
+            }
+        }
+        JPDAThreadGroup[] groups = group.getThreadGroups();
+        for (int x = 0; x < groups.length; x++) {
+            if (containsThread(groups[x], currentThread)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Object[] getTopLevelThreadsAndGroups() {
@@ -257,7 +283,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             return true;
         }
         if (node instanceof JPDAThread) {
-            if (!((JPDAThread) node).isSuspended()) {
+            if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
                 return true;
             }
         }
@@ -346,9 +372,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         
         private RequestProcessor.Task createTask() {
-            RequestProcessor.Task task =
-                new RequestProcessor("Debugging Threads Refresh", 1).create(
-                                new RefreshTree());
+            RequestProcessor.Task task = RP.create(new RefreshTree());
             return task;
         }
         
@@ -411,8 +435,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     
-    private void fireThreadStateChanged (Object node) {
+    private void fireThreadStateChanged (JPDAThread node) {
         if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            fireNodeChanged(ROOT);
+        } else if (!preferences.getBoolean(SHOW_SYSTEM_THREADS, false)
+                   && isSystem(node)) {
+
             fireNodeChanged(ROOT);
         }
         List<ModelListener> ls;
@@ -430,10 +458,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         synchronized (threadStateListeners) {
             if (!threadStateListeners.containsKey(t)) {
                 threadStateListeners.put(t, new ThreadStateListener(t));
-            }
-            if (otherThreadsListener == null) {
-                otherThreadsListener = new OtherThreadsListener();
-                debugger.getThreadsCollector().addPropertyChangeListener(WeakListeners.propertyChange(otherThreadsListener, debugger.getThreadsCollector()));
             }
         }
     }
@@ -453,12 +477,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
             JPDAThread t = tr.get();
-            if (t != null) {
+            if (t != null && (t.isSuspended() || !isMethodInvoking(t))) {
+                boolean suspended = t.isSuspended();
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = RP.create(new Refresher());
                     }
-                    task.schedule(200);
+                    task.schedule(suspended ? 200 : 1000);
                 }
             }
         }
@@ -472,27 +497,23 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             }
         }
     }
-    
-    
-    private class OtherThreadsListener implements PropertyChangeListener {
 
-        // It's necessary to refresh all other threads when one is resumed,
-        // due to invalidation of call stack frames.
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            if (ThreadsCollector.PROP_THREAD_RESUMED.equals(propertyName)) {
-                Set<JPDAThread> threadsToRefresh;
-                synchronized (threadStateListeners) {
-                    threadsToRefresh = new HashSet(threadStateListeners.keySet());
-                }
-                for (JPDAThread t : threadsToRefresh) {
-                    fireThreadStateChanged(t);
-                }
-            }
+    public static boolean isMethodInvoking(JPDAThread t) {
+        try {
+            return (Boolean) t.getClass().getMethod("isMethodInvoking").invoke(t);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        
+        return false;
     }
-    
     
     
     /**
@@ -680,7 +701,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (JPDADebugger.PROP_STATE.equals(evt.getPropertyName())) {
                 if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                     if (prefListener != null) {
-                        preferences.removePreferenceChangeListener(prefListener);
+                        try {
+                            preferences.removePreferenceChangeListener(prefListener);
+                        } catch (IllegalArgumentException e) {
+                        }
                     }
                     debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
                 }

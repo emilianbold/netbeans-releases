@@ -42,43 +42,42 @@
 package org.netbeans.modules.groovy.editor;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
+ * @todo we should check type of variable where property is called, now we check only name, see visitPropertyExpression
  *
  * @author Martin Adamek
  */
-public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
+public final class VariableScopeVisitor extends TypeVisitor {
 
-    private final SourceUnit sourceUnit;
-    private final AstPath path;
-    private final ASTNode leaf;
-    private final ASTNode leafParent;
     private final Set<ASTNode> occurrences = new HashSet<ASTNode>();
-    private ASTNode scope;
+    private final ASTNode leafParent;
 
-    public VariableScopeVisitor(SourceUnit sourceUnit, AstPath path) {
-        this.sourceUnit = sourceUnit;
-        this.path = path;
-        this.leaf = path.leaf();
+    public VariableScopeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc, int cursorOffset) {
+        super(sourceUnit, path, doc, cursorOffset);
         this.leafParent = path.leafParent();
     }
 
@@ -86,197 +85,181 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
         return occurrences;
     }
 
-    public ASTNode getScope() {
-        return scope;
-    }
-
-    public void collect() {
-        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-            scope = it.next();
-            if (leaf instanceof Variable) {
-                if (collectVariable()) {
-                    return;
-                }
-            } else {
-                collectFromWholeModule();
-            }
-        }
-    }
-
-    private boolean collectVariable() {
-        if (isDeclaringVariable(scope, (Variable) leaf)) {
-            if (scope instanceof MethodNode) {
-                MethodNode methodNode = (MethodNode) scope;
-                String name = ((Variable) leaf).getName();
-                for (Parameter parameter : methodNode.getParameters()) {
-                    if (name.equals(parameter.getName())) {
-                        occurrences.add(parameter);
-                    }
-                }
-                // we checked parameters, now let's go to method body,
-                // but use parent's method, as our impl is refusing to
-                // get in method if there is parameter with such name
-                super.visitMethod((MethodNode) scope);
-                return true;
-            } else if (scope instanceof ClassNode) {
-                visitClass((ClassNode) scope);
-                return true;
-            } else {
-                scope.visit(this);
-                return true;
-            }
-        } else {
-            // nobody is declaring this variable, so it is probably
-            // inherited from super class
-            if (scope instanceof ClassNode) {
-                visitClass((ClassNode) scope);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean collectFromWholeModule() {
-        ModuleNode moduleNode = (ModuleNode) path.root();
-        for (Object object : moduleNode.getClasses()) {
-            visitClass((ClassNode) object);
-        }
-        return false;
-    }
-
-    private static boolean isDeclaringVariable(ASTNode parent, Variable variable) {
-        String name = variable.getName();
-        if (parent instanceof MethodNode) {
-            MethodNode methodNode = (MethodNode) parent;
-            for (Parameter parameter : methodNode.getParameters()) {
-                if (name.equals(parameter.getName())) {
-                    return true;
-                }
-            }
-        } else if (parent instanceof ClassNode) {
-            ClassNode classNode = (ClassNode) parent;
-            for (Object object : classNode.getFields()) {
-                FieldNode fieldNode = (FieldNode) object;
-                if (name.equals(fieldNode.getName())) {
-                    return true;
-                }
-            }
-            for (Object object : classNode.getProperties()) {
-                PropertyNode propertyNode = (PropertyNode) object;
-                if (name.equals(propertyNode.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSameMethod(MethodNode methodNode, MethodCallExpression methodCall) {
-        if (methodNode.getName().equals(methodCall.getMethodAsString())) {
-            ArgumentListExpression argumentList = (ArgumentListExpression) methodCall.getArguments();
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (argumentList.getExpressions().size() == methodNode.getParameters().length) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSameMethod(MethodNode methodNode1, MethodNode methodNode2) {
-        if (methodNode1.getName().equals(methodNode2.getName())) {
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (methodNode1.getParameters().length == methodNode2.getParameters().length) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isSameMethod(MethodCallExpression methodCall1, MethodCallExpression methodCall2) {
-        if (methodCall1.getMethodAsString().equals(methodCall2.getMethodAsString())) {
-            int size1 = getParameterCount(methodCall1);
-            int size2 = getParameterCount(methodCall2);
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (size1 >= 0 && size1 == size2) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Tries to calculate number of method parameters.
-     *
-     * @param methodCall called method
-     * @return number of method parameters,
-     * 1 in case of named parameters represented by map,
-     * or -1 if it is unknown
-     */
-    private static int getParameterCount(MethodCallExpression methodCall) {
-        Expression expression = methodCall.getArguments();
-        if (expression instanceof ArgumentListExpression) {
-            return ((ArgumentListExpression) expression).getExpressions().size();
-        } else if (expression instanceof NamedArgumentListExpression) {
-            // this is in fact map acting as named parameters
-            // lets return size 1
-            return 1;
-        } else {
-            return -1;
-        }
-    }
-
     @Override
-    protected SourceUnit getSourceUnit() {
-        return sourceUnit;
+    protected void visitParameters(Parameter[] parameters, Variable variable) {
+        // method is declaring given variable, let's visit only the method,
+        // but we need to check also parameters as those are not part of method visit
+        for (Parameter parameter : parameters) {
+            if (parameter.getName().equals(variable.getName())) {
+                occurrences.add(parameter);
+                break;
+            }
+        }
     }
 
+    protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
+        // cursor must be positioned on identifier, otherwise occurences doesn't make sense
+        return token.id() == GroovyTokenId.IDENTIFIER;
+    }
+    
     @Override
     public void visitVariableExpression(VariableExpression variableExpression) {
         if (leaf instanceof Variable && ((Variable) leaf).getName().equals(variableExpression.getName())) {
             occurrences.add(variableExpression);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression property = (PropertyExpression) leafParent;
+            if (variableExpression.getName().equals(property.getPropertyAsString())) {
+                occurrences.add(variableExpression);
+                return;
+            }
         }
         super.visitVariableExpression(variableExpression);
+    }
+
+    @Override
+    public void visitDeclarationExpression(DeclarationExpression expression) {
+        if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression visitedDeclaration = (DeclarationExpression) expression;
+            DeclarationExpression declaration = (DeclarationExpression) leaf;
+            VariableExpression variable = declaration.getVariableExpression();
+            VariableExpression visited = visitedDeclaration.getVariableExpression();
+            if (!variable.isDynamicTyped() && !visited.isDynamicTyped()) {
+                String name = variable.getType().getNameWithoutPackage();
+                if (name.equals(visited.getType().getNameWithoutPackage())) {
+                    FakeASTNode fakeNode = new FakeASTNode(expression, name);
+                    occurrences.add(fakeNode);
+                }
+            }
+        } else if (leaf instanceof ClassExpression) {
+            ClassExpression clazz = (ClassExpression) leaf;
+            VariableExpression variable = expression.getVariableExpression();
+            if (!variable.isDynamicTyped()) {
+                if (clazz.getType().getName().equals(variable.getType().getName())) {
+                    FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getType().getNameWithoutPackage());
+                    occurrences.add(fakeNode);
+                }
+            }
+        } else if (leaf instanceof ClassNode) {
+            ClassNode clazz = (ClassNode) leaf;
+            VariableExpression variable = expression.getVariableExpression();
+            if (!variable.isDynamicTyped()) {
+                if (clazz.getName().equals(variable.getType().getName())) {
+                    FakeASTNode fakeNode = new FakeASTNode(expression, clazz.getNameWithoutPackage());
+                    occurrences.add(fakeNode);
+                }
+            }
+        } else if (leaf instanceof MethodNode) {
+            MethodNode method = (MethodNode) leaf;
+            OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
+            if (range != OffsetRange.NONE) {
+                VariableExpression variable = expression.getVariableExpression();
+                if (!variable.isDynamicTyped() && !method.isDynamicReturnType()) {
+                    if (variable.getType().getName().equals(method.getReturnType().getName())) {
+                        FakeASTNode fakeNode = new FakeASTNode(expression, method.getReturnType().getNameWithoutPackage());
+                        occurrences.add(fakeNode);
+                    }
+                }
+            }
+        }
+        super.visitDeclarationExpression(expression);
     }
 
     @Override
     public void visitField(FieldNode fieldNode) {
         if (leaf instanceof Variable && ((Variable) leaf).getName().equals(fieldNode.getName())) {
             occurrences.add(fieldNode);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression property = (PropertyExpression) leafParent;
+            if (fieldNode.getName().equals(property.getPropertyAsString())) {
+                occurrences.add(fieldNode);
+                return;
+            }
         }
         super.visitField(fieldNode);
     }
 
     @Override
-    public void visitProperty(PropertyNode propertyNode) {
-        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(propertyNode.getName())) {
-            occurrences.add(propertyNode);
-        }
-        super.visitProperty(propertyNode);
-    }
-
-    @Override
     public void visitMethod(MethodNode methodNode) {
+        VariableScope variableScope = methodNode.getVariableScope();
         if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
-            for (Parameter parameter : methodNode.getParameters()) {
-                if (name.equals(parameter.getName())) {
-                    return;
-                }
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            String name = ((ConstantExpression) leaf).getText();
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                return;
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
             MethodCallExpression methodCallExpression = (MethodCallExpression) leafParent;
-            if (isSameMethod(methodNode, methodCallExpression)) {
+            if (Methods.isSameMethod(methodNode, methodCallExpression)) {
                 occurrences.add(methodNode);
             }
         } else if (leaf instanceof MethodNode) {
-            if (isSameMethod(methodNode, (MethodNode) leaf)) {
-                occurrences.add(methodNode);
+            MethodNode method = (MethodNode) leaf;
+            if (Methods.isSameMethod(methodNode, method)) {
+                OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
+                if (range != OffsetRange.NONE) {
+                    FakeASTNode fakeNode = new FakeASTNode(methodNode, methodNode.getReturnType().getNameWithoutPackage());
+                    occurrences.add(fakeNode);
+                } else {
+                    occurrences.add(methodNode);
+                }
+            }
+        } else if (leaf instanceof ClassExpression) {
+            ClassExpression clazz = (ClassExpression) leaf;
+            if (methodNode.getReturnType().getName().equals(clazz.getType().getName())) {
+                String simpleName = clazz.getType().getNameWithoutPackage();
+                FakeASTNode fakeNode = new FakeASTNode(methodNode, simpleName);
+                occurrences.add(fakeNode);
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declaration = (DeclarationExpression) leaf;
+            VariableExpression variable = declaration.getVariableExpression();
+            if (!variable.isDynamicTyped() && !methodNode.isDynamicReturnType()) {
+                String name = variable.getType().getNameWithoutPackage();
+                if (name.equals(methodNode.getReturnType().getNameWithoutPackage())) {
+                    FakeASTNode fakeNode = new FakeASTNode(methodNode, name);
+                    occurrences.add(fakeNode);
+                }
+            }
+        } else if (leaf instanceof ClassNode) {
+            ClassNode clazz = (ClassNode) leaf;
+            if (!methodNode.isDynamicReturnType()) {
+                if (clazz.getName().equals(methodNode.getReturnType().getName())) {
+                    FakeASTNode fakeNode = new FakeASTNode(methodNode, clazz.getNameWithoutPackage());
+                    occurrences.add(fakeNode);
+                }
             }
         }
         super.visitMethod(methodNode);
+    }
+
+    @Override
+    public void visitConstructor(ConstructorNode constructor) {
+        VariableScope variableScope = constructor.getVariableScope();
+        if (leaf instanceof Variable) {
+            String name = ((Variable) leaf).getName();
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            String name = ((ConstantExpression) leaf).getText();
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            ConstructorCallExpression methodCallExpression = (ConstructorCallExpression) leaf;
+            if (Methods.isSameConstructor(constructor, methodCallExpression)) {
+                occurrences.add(constructor);
+            }
+        } else if (leaf instanceof ConstructorNode) {
+            if (Methods.isSameConstructor(constructor, (ConstructorNode) leaf)) {
+                occurrences.add(constructor);
+            }
+        }
+        super.visitConstructor(constructor);
     }
 
     @Override
@@ -284,11 +267,13 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
 
         if (leaf instanceof MethodNode) {
             MethodNode method = (MethodNode) leaf;
-            if (isSameMethod(method, methodCall)) {
+            if (Methods.isSameMethod(method, methodCall) &&
+                    // making sure cursor is not on method's return type
+                    getMethodReturnType(method, doc, cursorOffset) == OffsetRange.NONE) {
                 occurrences.add(methodCall);
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
-            if (isSameMethod(methodCall, (MethodCallExpression) leafParent)) {
+            if (Methods.isSameMethod(methodCall, (MethodCallExpression) leafParent)) {
                 occurrences.add(methodCall);
             }
         }
@@ -296,14 +281,41 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     }
 
     @Override
+    public void visitConstructorCallExpression(ConstructorCallExpression call) {
+        if (leaf instanceof ConstructorNode) {
+            ConstructorNode constructor = (ConstructorNode) leaf;
+            if (Methods.isSameConstructor(constructor, call)) {
+                occurrences.add(call);
+            }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            if (Methods.isSameConstuctor(call, (ConstructorCallExpression) leaf)) {
+                occurrences.add(call);
+            }
+        }
+        super.visitConstructorCallExpression(call);
+    }
+
+    @Override
     public void visitClassExpression(ClassExpression clazz) {
         if (leaf instanceof ClassNode) {
             ClassNode classNode = (ClassNode) leaf;
-            if (clazz.getText().equals(classNode.getName())) {
+            if (clazz.getType().getName().equals(classNode.getName())) {
                 occurrences.add(clazz);
             }
         } else if (leaf instanceof ClassExpression) {
-            if (clazz.getText().equals(((ClassExpression) leaf).getText())) {
+            if (clazz.getType().getName().equals(((ClassExpression) leaf).getText())) {
+                occurrences.add(clazz);
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declaration = (DeclarationExpression) leaf;
+            VariableExpression variable = (VariableExpression) declaration.getVariableExpression();
+            if (!variable.isDynamicTyped() && clazz.getType().getName().equals(variable.getType().getName())) {
+                occurrences.add(clazz);
+            }
+        } else if (leaf instanceof MethodNode) {
+            MethodNode method = (MethodNode) leaf;
+            OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
+            if (range != OffsetRange.NONE) {
                 occurrences.add(clazz);
             }
         }
@@ -320,10 +332,46 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
             if (classNode.getName().equals(((ClassNode) leaf).getName())) {
                 occurrences.add(classNode);
             }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declaration = (DeclarationExpression) leaf;
+            VariableExpression variable = (VariableExpression) declaration.getVariableExpression();
+            if (!variable.isDynamicTyped() && classNode.getName().equals(variable.getType().getName())) {
+                occurrences.add(classNode);
+            }
+        } else if (leaf instanceof MethodNode) {
+            MethodNode method = (MethodNode) leaf;
+            OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
+            if (range != OffsetRange.NONE) {
+                occurrences.add(classNode);
+            }
         }
         super.visitClass(classNode);
     }
 
+    @Override
+    public void visitPropertyExpression(PropertyExpression node) {
+        Expression property = node.getProperty();
+        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(node.getPropertyAsString())) {
+            occurrences.add(property);
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
+            String nodeAsString = node.getPropertyAsString();
+            if (nodeAsString != null && nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
+                occurrences.add(property);
+            }
+        }
+        super.visitPropertyExpression(node);
+    }
 
+    private static final OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
+        int offset = AstUtilities.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
+        if (!method.isDynamicReturnType()) {
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
+            if (range.containsInclusive(cursorOffset)) {
+                return range;
+            }
+        }
+        return OffsetRange.NONE;
+    }
 
 }

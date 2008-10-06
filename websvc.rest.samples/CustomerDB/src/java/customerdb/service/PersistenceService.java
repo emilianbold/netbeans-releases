@@ -44,43 +44,30 @@ package customerdb.service;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.Query;
 import javax.transaction.UserTransaction;
 
 /**
  * Utility class for dealing with persistence.
  *
- * @author __USER__
+ * @author PeterLiu
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "CustomerDBPU";
     
-    
-    private static EntityManagerFactory pmf;
-    
-    static {
-        try {
-            pmf = (EntityManagerFactory) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
-        } catch (NamingException ex) {
-            pmf = Persistence.createEntityManagerFactory(DEFAULT_PU);
-        }
-    }
-    
     private static ThreadLocal<PersistenceService> instance = new ThreadLocal<PersistenceService>() {
+        @Override
         protected PersistenceService initialValue() {
             return new PersistenceService();
         }
     };
     
-    //private EntityManagerFactory emf;
     private EntityManager em;
+    
     private UserTransaction utx;
     
     private PersistenceService() {
         try {
-            this.em = pmf.createEntityManager();
+            this.em = (EntityManager) new InitialContext().lookup("java:comp/env/persistence/" + DEFAULT_PU);
             this.utx = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
         } catch (NamingException ex) {
             throw new RuntimeException(ex);
@@ -96,76 +83,18 @@ public class PersistenceService {
         return instance.get();
     }
     
+    
     private static void removeInstance() {
         instance.remove();
     }
     
     /**
-     * Refreshes the state of the given entity from the database.
+     * Returns an instance of EntityManager.
      *
-     * @param entity the entity to refresh
+     * @return an instance of EntityManager
      */
-    public void refreshEntity(Object entity) {
-        em.refresh(entity);
-    }
-    
-    /**
-     * Merges the state of the given entity into the current persistence context.
-     *
-     * @param entity the entity to merge
-     * @return the merged entity
-     */
-    public <T> T mergeEntity(T entity) {
-        return (T) em.merge(entity);
-    }
-    
-    /**
-     * Makes the given entity managed and persistent.
-     *
-     * @param entity the entity to persist
-     */
-    public void persistEntity(Object entity) {
-        em.persist(entity);
-    }
-    
-    /**
-     * Removes the entity instance.
-     *
-     * @param entity the entity to remove
-     */
-    public void removeEntity(Object entity) {
-        em.remove(entity);
-    }
-    
-    /**
-     * Returns an entity reference given the entity class and primary key
-     *
-     * @param entityClass the entity class
-     * @param primary the primary key
-     * @return the resolved entity
-     */
-    public <T> T resolveEntity(Class<T> entityClass, Object primaryKey) {
-        return em.getReference(entityClass, primaryKey);
-    }
-    
-    /**
-     * Returns an instance of Query for executing a named query.
-     *
-     * @param query the named query
-     * @return an instance of Query
-     */
-    public Query createNamedQuery(String query) {
-        return em.createNamedQuery(query);
-    }
-    
-    /**
-     * Returns an instance of Query for executing a query.
-     *
-     * @param query the query string
-     * @return an instance of Query
-     */
-    public Query createQuery(String query) {
-        return em.createQuery(query);
+    public EntityManager getEntityManager() {
+        return em;
     }
     
     /**
@@ -206,10 +135,6 @@ public class PersistenceService {
      * Closes this instance.
      */
     public void close() {
-        if (em != null && em.isOpen()) {
-            em.close();
-        }
-        
         removeInstance();
     }
 }

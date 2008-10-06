@@ -27,6 +27,8 @@
  */
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+
 /**
  * Test the ExpandSameLineDef hint
  *
@@ -38,23 +40,26 @@ public class ExpandSameLineDefTest extends HintTestBase {
         super(testName);
     }
 
-//    // Not working yet
-//    public void testRegistered() throws Exception {
-//        ensureRegistered(new ExpandSameLineDef());
-//    }
-    
+    private RubyAstRule createRule() {
+        return new ExpandSameLineDef();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testWrongLine() throws Exception {
         String caretLine = "cl^ass FooControllerTest < Test::Unit::TestCase";
-        checkHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
+        checkHints(this, createRule(), "testfiles/sameline.rb", caretLine);
     }
 
     public void testExpandableLine() throws Exception {
         String caretLine = "cla^ss FooController; def rescue_action(e) raise e end; end";
-        checkHints(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine);
+        checkHints(this, createRule(), "testfiles/sameline.rb", caretLine);
     }
     
     public void testApplyFix() throws Exception {
         String caretLine = "cla^ss FooController; def rescue_action(e) raise e end; end";
-        applyHint(this, new ExpandSameLineDef(), "testfiles/sameline.rb", caretLine, "class");
+        applyHint(this, createRule(), "testfiles/sameline.rb", caretLine, "class");
     }
 }

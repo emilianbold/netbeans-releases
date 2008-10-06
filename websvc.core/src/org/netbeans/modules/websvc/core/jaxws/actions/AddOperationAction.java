@@ -63,16 +63,16 @@ public class AddOperationAction extends NodeAction  {
     }
     
     protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes.length == 1;
+        if (activatedNodes.length != 1) return false;
+        FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
+        return implClassFo != null && WebServiceActionProvider.getAddOperationAction(implClassFo) != null;
     }
     
     protected void performAction(Node[] activatedNodes) {
 
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        if (implClassFo!=null) {
-            AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
-            if (addOperationCookie!=null) addOperationCookie.addOperation(implClassFo);
-        }
+        AddOperationCookie addOperationCookie = WebServiceActionProvider.getAddOperationAction(implClassFo);
+        addOperationCookie.addOperation(implClassFo);
     }
 }
 

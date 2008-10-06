@@ -100,10 +100,23 @@ public class CssRuleContent {
             return  null;
         }
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof CssRuleContent) {
+            return toString().equals(obj.toString());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
     
     //TODO remove this from the API
     public void modifyProperty(String property, String newValue) throws BadLocationException {
-        if(Boolean.getBoolean("issue_118641_debug")) {
+        if(Boolean.getBoolean("issue_118641_debug")) { //NOI18N
             Thread.dumpStack();
         }
         CssRuleItem item = findItem(property);
@@ -147,9 +160,9 @@ public class CssRuleContent {
         for(CssRuleItem item : items) {
             String property = item.key().name();
             String propertyValue = item.value().name().trim();
-            if(!(propertyValue.equals(NOT_SET) || propertyValue.equals(""))){
-                strWriter.write("   " + property);
-                strWriter.write(": ");
+            if(!(propertyValue.equals(NOT_SET) || propertyValue.equals(""))){ //NOI18N
+                strWriter.write("   " + property); //NOI18N
+                strWriter.write(": "); //NOI18N
                 strWriter.write(propertyValue);
                 strWriter.write("; "); //NOI18N
             }
@@ -170,11 +183,11 @@ public class CssRuleContent {
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         //debug code >>>
         if(!listeners.isEmpty()) {
-            Exception e = new IllegalStateException("Trying to add second listener to CssRuleContent.");
-            LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", e);
-            LOGGER.log(Level.FINE, "Stacktraces of the previous listeners creators:");
+            Exception e = new IllegalStateException("Trying to add second listener to CssRuleContent."); //NOI18N
+            LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", e); //NOI18N
+            LOGGER.log(Level.FINE, "Stacktraces of the previous listeners creators:"); //NOI18N
             for(Exception ex : listenersCreators.values()) {
-                LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", ex);
+                LOGGER.throwing(CssRuleContent.class.getName(), "addPropertyChangeListener", ex); //NOI18N
             }
         }
         listenersCreators.put(listener, new Exception());
@@ -197,7 +210,7 @@ public class CssRuleContent {
     private synchronized void firePropertyChange(CssRuleItem oldVal, CssRuleItem newVal) {
         List<PropertyChangeListener> copy = new ArrayList<PropertyChangeListener>(listeners);
         for(PropertyChangeListener l : copy) {
-            l.propertyChange(new PropertyChangeEvent(this, "property", oldVal, newVal));
+            l.propertyChange(new PropertyChangeEvent(this, "property", oldVal, newVal)); //NOI18N
         }
     }
     

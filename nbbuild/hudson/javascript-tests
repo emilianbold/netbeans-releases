@@ -1,0 +1,5 @@
+#!/bin/sh
+
+hg --config extensions.purge= clean --all || exit 1
+ant -Dcluster.config=ruby || exit 2
+ant -f javascript.editing/build-javascript.xml runtests || exit 3

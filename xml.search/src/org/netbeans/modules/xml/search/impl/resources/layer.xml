@@ -51,7 +51,7 @@
         <folder name="Modes">
             <folder name="output">
                 <file name="search.wstcref" url="search.wstcref">
-                    <attr name="position" intvalue="1400"/>
+                    <attr name="position" intvalue="1850"/>
                 </file>
             </folder>
         </folder>

@@ -40,7 +40,6 @@
  */
 package org.netbeans.jellytools.modules.junit.actions;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /**
@@ -49,17 +48,17 @@ import org.netbeans.jellytools.actions.Action;
  */
 public class ResultWindowViewAction extends Action {
     
-    private static final String menu =
-            Bundle.getStringTrimmed("org.netbeans.core.Bundle",
-            "Menu/Window") +
-            "|" +
-            Bundle.getStringTrimmed("org.netbeans.modules.junit.output.Bundle",
-            "ACSN_TestResults");
+    private static final String menu = "Window|Output|JUnit Test Results";
+//            Bundle.getStringTrimmed("org.netbeans.core.Bundle",
+//            "Menu/Window") +
+//            "|" +
+//            Bundle.getStringTrimmed("org.netbeans.modules.junit.output.Bundle",
+//            "ACSN_TestResults");
     
     
     /** Creates a new instance of ResultWindowViewAction */
     public ResultWindowViewAction() {
-        super(menu, null, "org.netbeans.junit.output.ResultWindowOpenAction");
+        super(menu, null);
     }
     
     

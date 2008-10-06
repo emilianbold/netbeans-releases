@@ -44,6 +44,7 @@ package org.netbeans.performance.mobility;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.mobility.actions.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.mobility.setup.MobilitySetup;
 
 /**
@@ -54,8 +55,12 @@ import org.netbeans.performance.mobility.setup.MobilitySetup;
 public class MeasureMobilityActionsTest  {
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Actions suite");
+        PerformanceTestCase.prepareForMeasurements();
 
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilityActionsTest");
+
+        // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilitySetup.class)
                 .addTest(MobilitySetup.class, "cleanTempDir")
 
@@ -75,21 +80,6 @@ public class MeasureMobilityActionsTest  {
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
-//        // TODO add some test cases
-//        suite.addTest(new CreateMobilityProject("testCreateMobilityProject", "Create Mobile Application"));
-//        suite.addTest(new CreateMobilityProject("testCreateMobilityLibrary", "Create Mobile Class Library"));
-//        suite.addTest(new OpenMIDletEditor("measureTime","Open a visual MIDlet"));
-//
-///* Strange results in switch tests, will check it later
-//        suite.addTest(new MIDletViewsSwitch("testFlowToDesignSwitch","Flow To Design Switch"));
-//        suite.addTest(new MIDletViewsSwitch("testDesignToFlowSwitch","Design To Flow Switch"));
-//        suite.addTest(new MIDletViewsSwitch("testFlowToSourceSwitch","Flow To Source Switch"));
-//        suite.addTest(new MIDletViewsSwitch("testSourceToFlowSwitch","Source To Flow Switch"));
-//*/
-//        suite.addTest(new CreateVisualMIDlet("measureTime","Create Visual MIDlet"));
-//        suite.addTest(new CreateMIDlet("measureTime","Create MIDlet"));
-//        suite.addTest(new SwitchConfiguration("measureTime","Switch Configuration"));
-//        suite.addTest(new OpenMobileProject("measureTime","Open Mobile CLDC project"));
     }
     
 }

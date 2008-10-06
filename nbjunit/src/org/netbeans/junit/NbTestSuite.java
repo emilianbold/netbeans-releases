@@ -74,14 +74,15 @@ public class NbTestSuite extends TestSuite implements NbTest {
     public NbTestSuite(Class<? extends TestCase> theClass) {       
         super(testCaseClassOrDummy(theClass));
     }
-    private static Class testCaseClassOrDummy(Class testClass) {
-        if (ignoreRandomFailures() && ((Class<?>) testClass).isAnnotationPresent(RandomlyFails.class)) {
+    private static Class<? extends TestCase> testCaseClassOrDummy(Class<? extends TestCase> testClass) {
+        if (ignoreRandomFailures() && testClass.isAnnotationPresent(RandomlyFails.class)) {
+            System.err.println("Skipping " + testClass.getName());
             return APIJail.Dummy.class;
         } else {
             return testClass;
         }
     }
-    private static class APIJail {
+    private static class APIJail { // prevents Dummy from appearing as a public member
         public static class Dummy extends TestCase {
             public Dummy(String name) {
                 super(name);
@@ -127,6 +128,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     @Override
     public void addTestSuite(Class<? extends TestCase> testClass) {
         if (ignoreRandomFailures() && testClass.isAnnotationPresent(RandomlyFails.class)) {
+            System.err.println("Skipping " + testClass.getName());
             return;
         }
         NbTest t = new NbTestSuite(testClass);
@@ -176,6 +178,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     public static NbTestSuite speedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (ignoreRandomFailures()) {
+            System.err.println("Skipping " + clazz.getName());
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.CONSTANT);
@@ -194,6 +197,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     public static NbTestSuite linearSpeedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (ignoreRandomFailures()) {
+            System.err.println("Skipping " + clazz.getName());
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.LINEAR);

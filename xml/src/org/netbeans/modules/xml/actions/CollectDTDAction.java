@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.actions;
 
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.HelpCtx;
 
 /**
@@ -60,7 +61,7 @@ private static final long serialVersionUID = -284734180387549284L;
     /* Getter for name
     */
     public String getName () {
-        return Util.THIS.getString ("NAME_CollectDTDAction");
+        return Util.THIS.getString (CollectDTDAction.class, "NAME_CollectDTDAction");
     }
 
     /* Getter for help.

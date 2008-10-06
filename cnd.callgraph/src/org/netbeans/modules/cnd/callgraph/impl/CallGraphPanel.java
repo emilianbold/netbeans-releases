@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -55,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
@@ -69,6 +69,7 @@ import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
@@ -168,11 +169,14 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     }
     
     private void initGraph() {
-        graphView.setViewportView(scene.createView());
+        JComponent view = scene.createView();
+        graphView.setViewportView(view);
+        view.setFocusable(isCalls);
         GraphLayout<Function,Call> layout = new GridGraphLayout<Function,Call>();
         SceneLayout sceneLayout = LayoutFactory.createSceneGraphLayout(scene, layout);
         scene.setLayout(sceneLayout);
         sceneLayout.invokeLayout();
+        graphView.setFocusable(false);
     }
     
     /** This method is called from within the constructor to
@@ -202,7 +206,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.setRollover(true);
 
         refresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/refresh.png"))); // NOI18N
-        refresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "RefreshAction")); // NOI18N
+        refresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "RefreshActionTooltip")); // NOI18N
         refresh.setFocusable(false);
         refresh.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refresh.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -214,7 +218,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(refresh);
 
         focusOn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/focus.png"))); // NOI18N
-        focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction")); // NOI18N
+        focusOn.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "FocusOnActionTooltip")); // NOI18N
         focusOn.setFocusable(false);
         focusOn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         focusOn.setMaximumSize(new java.awt.Dimension(28, 28));
@@ -230,7 +234,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(jSeparator1);
 
         calls.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_is_called.png"))); // NOI18N
-        calls.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallsAction")); // NOI18N
+        calls.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallsActionTooltip")); // NOI18N
         calls.setFocusable(false);
         calls.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         calls.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -242,7 +246,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jToolBar1.add(calls);
 
         callers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/cnd/callgraph/resources/who_calls.png"))); // NOI18N
-        callers.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallersAction")); // NOI18N
+        callers.setToolTipText(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CallersActionTooltip")); // NOI18N
         callers.setFocusable(false);
         callers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         callers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -257,16 +261,25 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
 
         jSplitPane1.setDividerLocation(200);
         jSplitPane1.setResizeWeight(0.5);
+        jSplitPane1.setFocusable(false);
         jSplitPane1.setOneTouchExpandable(true);
+
+        graphView.setFocusable(false);
         jSplitPane1.setRightComponent(graphView);
 
-        jSplitPane2.setDividerLocation(-1);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setLeftComponent(treeView);
+        jSplitPane2.setFocusable(false);
 
-        contextPanel.setPreferredSize(new java.awt.Dimension(10, 10));
+        treeView.setFocusable(false);
+        jSplitPane2.setLeftComponent(treeView);
+        treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AN")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AD")); // NOI18N
+
+        contextPanel.setFocusable(false);
         jSplitPane2.setRightComponent(contextPanel);
+        contextPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
+        contextPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
 
         jSplitPane1.setLeftComponent(jSplitPane2);
 
@@ -386,6 +399,12 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     }
 
     @Override
+    public void requestFocus() {
+        super.requestFocus();
+        treeView.requestFocus();
+    }
+
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return treeView.requestFocusInWindow();
@@ -426,8 +445,8 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         public RefreshAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "RefreshAction"));  // NOI18N
             putValue(Action.SMALL_ICON, refresh.getIcon());
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -444,8 +463,8 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         public WhoCallsAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallersAction"));  // NOI18N
             putValue(Action.SMALL_ICON, callers.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -463,8 +482,8 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         public WhoIsCalledAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "CallsAction"));  // NOI18N
             putValue(Action.SMALL_ICON, calls.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -482,8 +501,8 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         public FocusOnAction() {
             putValue(Action.NAME, NbBundle.getMessage(CallGraphPanel.class, "FocusOnAction"));  // NOI18N
             putValue(Action.SMALL_ICON, focusOn.getIcon());
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -497,13 +516,23 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 
     private static final class ContextPanel extends JPanel implements ExplorerManager.Provider {
         private ExplorerManager managerCtx = new ExplorerManager();
+        private ListView listView = new ListView();
         private ContextPanel(){
-            ListView listView = new ListView();
+            listView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
+            listView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
             setLayout(new java.awt.BorderLayout());
             add(listView, java.awt.BorderLayout.CENTER);
+            listView.setFocusable(false);
         }
+        
         public ExplorerManager getExplorerManager() {
             return managerCtx;
+        }
+
+        @Override
+        public boolean requestFocusInWindow() {
+            super.requestFocusInWindow();
+            return listView.requestFocusInWindow();
         }
         
         private void setRootContent(CallNode node){

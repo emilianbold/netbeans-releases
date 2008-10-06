@@ -66,13 +66,10 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.spi.editor.highlighting.HighlightsLayer;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.Context;
-import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 
 /**
@@ -115,14 +112,28 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
 	    if (isIn(current, caretOffset)) {
-		mainRegion = current;
+            mainRegion = current;
 	    } else {
-		regions.add(current);
+            regions.add(current);
 	    }
 	}
 	
 	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret."); //NOI18N
+        Logger.getLogger(InstantRenamePerformer.class.getName()).warning("No highlight contains the caret (" + caretOffset + "; highlights=" + highlights + ")"); //NOI18N
+        // Attempt to use another region - pick the one closest to the caret
+        if (regions.size() > 0) {
+            mainRegion = regions.get(0);
+            int mainDistance = Integer.MAX_VALUE;
+            for (MutablePositionRegion r : regions) {
+                int distance = caretOffset < r.getStartOffset() ? (r.getStartOffset()-caretOffset) : (caretOffset-r.getEndOffset());
+                if (distance < mainDistance) {
+                    mainRegion = r;
+                    mainDistance = distance;
+                }
+            }
+        } else {
+            return;
+        }
 	}
 	
 	regions.add(0, mainRegion);
@@ -130,7 +141,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	region = new SyncDocumentRegion(doc, regions);
 	
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(this);
+            ((BaseDocument) doc).addPostModificationDocumentListener(this);
         }
         
 	target.addKeyListener(this);
@@ -153,8 +164,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private boolean inSync;
     
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+	if (inSync) {
+            return;
+        }
 	
 	inSync = true;
 	region.sync(0);
@@ -163,8 +175,9 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+	if (inSync) {
+            return;
+        }
 	
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
@@ -202,7 +215,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private void release() {
 	target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
-            ((BaseDocument) doc).setPostModificationDocumentListener(null);
+            ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
 	target.removeKeyListener(this);
 	target = null;
@@ -334,10 +347,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         if (bag == null) {
             doc.putProperty(InstantRenamePerformer.class, bag = new OffsetsBag(doc));
             
-            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+            Object stream = DataLoadersBridge.getDefault().getFileObject(doc);
             
-            if (stream instanceof DataObject) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
+            if (stream instanceof FileObject) {
+                Logger.getLogger("TIMER").log(Level.FINE, "Instant Rename Highlights Bag", new Object[] {(FileObject) stream, bag}); //NOI18N
             }
         }
         

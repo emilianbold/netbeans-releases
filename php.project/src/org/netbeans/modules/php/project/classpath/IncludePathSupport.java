@@ -117,9 +117,9 @@ public class IncludePathSupport extends BaseIncludePathSupport {
                 case FOLDER:
                     if (reference == null) {
                         // new file
-                        String file = item.getFilePath();
+                        File file = new File(item.getFilePath());
                         // pass null as expected artifact type to always get file reference
-                        reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                        reference = referenceHelper.createForeignFileReference(file, null);
                         item.property = reference;
                     }
                     break;

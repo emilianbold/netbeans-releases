@@ -51,6 +51,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.net.URL;
 import javax.swing.SwingUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddElementWizardIterator;
 import org.netbeans.modules.uml.ui.controls.newdialog.AddPackageWizardIterator;
@@ -357,7 +358,7 @@ public class UMLUserInterface
 		
 		try
 		{
-			retVal = Utilities.loadImage(iconLocation);
+			retVal = ImageUtilities.loadImage(iconLocation);
 		}
 		catch(Exception e)
 		{

@@ -73,6 +73,8 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/localsView/LocalVariable.gif"; // NOI18N
     public static final String WATCH =
             "org/netbeans/modules/debugger/resources/watchesView/watch_16.png"; // NOI18N
+    public static final String ERROR =
+            "org/netbeans/modules/cnd/debugger/gdb/resources/error_small_16.png"; // NOI18N
     
     private RequestProcessor evaluationRP = new RequestProcessor();
     private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
@@ -123,7 +125,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         throw new UnknownTypeException(o);
     }
     
-    private Map<Object, String> shortDescriptionMap = new HashMap<Object, String>();
+    private final Map<Object, String> shortDescriptionMap = new HashMap<Object, String>();
     
     public String getShortDescription(final Object o) throws UnknownTypeException {
         synchronized (shortDescriptionMap) {
@@ -199,7 +201,11 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         if (node == TreeModel.ROOT || node instanceof GdbWatchVariable || node instanceof Watch) {
             return WATCH;
         } else if (node instanceof Field) {
-            return FIELD;
+            if (node instanceof AbstractVariable.ErrorField) {
+                return ERROR;
+            } else {
+                return FIELD;
+            }
         } else if (node instanceof AbstractVariable) {
             return LOCAL;
         } else {

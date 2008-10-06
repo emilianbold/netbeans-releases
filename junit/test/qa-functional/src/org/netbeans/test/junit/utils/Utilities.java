@@ -50,6 +50,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.openide.loaders.DataObject;
@@ -68,7 +69,7 @@ public class Utilities {
     public static final String TEST_CLASS_NAME = "TestClass";
     
     /** label when deleting object */
-    public static final String CONFIRM_OBJECT_DELETION = "Safe Delete";
+    public static final String CONFIRM_OBJECT_DELETION = "Delete";
 //            Bundle.getString("org.openide.explorer.Bundle",
 //            "MSG_ConfirmDeleteObjectTitle");
     
@@ -122,16 +123,20 @@ public class Utilities {
      * using pop-up menu
      */
     public static void deleteNode(String path) {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(
-                Utilities.TEST_PROJECT_NAME);
-        if(pn != null && pn.isPresent()) {
-            pn.select();
-            Node n = new Node(pn, path);
-            n.select();
-            JPopupMenuOperator jpmo = n.callPopup();
-            jpmo.pushMenu("Delete");
-            new NbDialogOperator(CONFIRM_OBJECT_DELETION).btYes().push(); //confirm
-            takeANap(500);
+        try {
+            Node pn = new ProjectsTabOperator().getProjectRootNode(
+                    Utilities.TEST_PROJECT_NAME);
+            if(pn != null && pn.isPresent()) {
+                pn.select();
+                Node n = new Node(pn, path);
+                n.select();
+                JPopupMenuOperator jpmo = n.callPopup();
+                jpmo.pushMenu("Delete");
+                new NbDialogOperator(CONFIRM_OBJECT_DELETION).btOK().push(); //confirm
+                takeANap(500);
+            }
+        } catch (TimeoutExpiredException e) {
+            System.out.println("Node hasn't been found!!!");
         }
     }
     
@@ -200,5 +205,24 @@ public class Utilities {
      */
     public static void takeANap(long waitTimeout) {
         new org.netbeans.jemmy.EventTool().waitNoEvent(waitTimeout);
+    }
+    
+    public static String pathToProject(String projectName) {
+        String pathToNbProjects = "";
+        try {
+            String userHome =  System.getProperty("user.home") != null ? System.getProperty("user.home") : "";
+            String system = System.getProperty("os.name") != null ? System.getProperty("os.name") : "";
+            if (system.indexOf("Windows") == -1) {
+                //unix
+                pathToNbProjects = userHome + File.separator + "NetBeansProjects" + File.separator + projectName;
+            } else {
+                //windows
+                pathToNbProjects = userHome + File.separator + "My Documents" + File.separator + "NetBeansProjects" + File.separator + projectName;
+            } 
+            Utilities.deleteDirectory(new File(pathToNbProjects));
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+        return pathToNbProjects;
     }
 }

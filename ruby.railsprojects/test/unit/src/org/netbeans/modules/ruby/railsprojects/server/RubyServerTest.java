@@ -58,9 +58,9 @@ public class RubyServerTest extends RubyTestBase {
 
         String mongrel = "** Mongrel available at 127.0.0.1:3000 **";
         String mongrel_with_version_nro = "** Mongrel 1.1.3 available at 127.0.0.1:3000 **";
-        String mongrel_with_version_nro2 = "** Mongrel 1.1.2 available at 0.0.0.0:3000";
-        String mongrel_dos_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\r\n";
-        String mongrel_unix_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\n";
+        String mongrel_with_version_nro2 = "** Mongrel 1.1.3 available at 0.0.0.0:3000";
+        String mongrel_dos_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\r\n";
+        String mongrel_unix_line_end = "** Mongrel 1.1.3 available at 0.0.0.0:3000\n";
 
         Mongrel mongrelInstance = new Mongrel(RubyPlatformManager.addPlatform(setUpRubyWithGems()), "1.1.3");
         

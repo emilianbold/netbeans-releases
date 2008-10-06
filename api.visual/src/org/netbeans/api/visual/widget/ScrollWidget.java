@@ -47,6 +47,7 @@ import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -133,19 +134,19 @@ public class ScrollWidget extends Widget {
     }
 
     private Widget createUpArrow () {
-        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-up.png")); // NOI18N
+        return new ButtonWidget (getScene (), ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/arrow-up.png")); // NOI18N
     }
 
     private Widget createDownArrow () {
-        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-down.png")); // NOI18N
+        return new ButtonWidget (getScene (), ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/arrow-down.png")); // NOI18N
     }
 
     private Widget createLeftArrow () {
-        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-left.png")); // NOI18N
+        return new ButtonWidget (getScene (), ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/arrow-left.png")); // NOI18N
     }
 
     private Widget createRightArrow () {
-        return new ButtonWidget (getScene (), Utilities.loadImage ("org/netbeans/modules/visual/resources/arrow-right.png")); // NOI18N
+        return new ButtonWidget (getScene (), ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/arrow-right.png")); // NOI18N
     }
 
     /**

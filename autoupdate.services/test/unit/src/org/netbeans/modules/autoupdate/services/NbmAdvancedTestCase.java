@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -84,11 +86,12 @@ public class NbmAdvancedTestCase extends NbTestCase {
         
         installDir = new File (new File (getWorkDir (), "install"), "testnetbeans");
         new File (installDir, "config").mkdirs ();
-        System.setProperty ("netbeans.home", installDir.toString ());
-        assertEquals (installDir.toString (), System.getProperty ("netbeans.home"));
         
         platformDir = new File (installDir, "platform");
         assertTrue (platformDir.mkdirs ());
+        new File (platformDir, "config").mkdirs ();
+        System.setProperty ("netbeans.home", platformDir.toString ());
+        assertEquals (platformDir.toString (), System.getProperty ("netbeans.home"));
         
         nextDir = new File (installDir, "next");
         assertTrue (nextDir.mkdirs ());
@@ -180,6 +183,30 @@ public class NbmAdvancedTestCase extends NbTestCase {
         }
         res += "</module_updates>";
         return res;
+    }
+    
+    public static String generateInfo (String body) {
+        String res = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Info 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd\">";
+        if (body.indexOf ("</module>") != -1) {
+            res += body.substring (0, body.length () - "</module>".length ());
+        } else {
+            res += body;
+        }
+        res += "<license name=\"8B813426\">License for NetBeans module:</license></module>";
+        return res;
+    }
+    
+    public File generateNBM (String name, String info) throws IOException {
+        File f = new File (getWorkDir (), name);
+        
+        ZipOutputStream os = new ZipOutputStream (new FileOutputStream (f));
+        os.putNextEntry (new ZipEntry ("Info/info.xml"));
+        os.write (info.getBytes ());
+        os.closeEntry ();
+        os.close();
+        
+        return f;
     }
     
     protected URL generateFile (String s) throws IOException {

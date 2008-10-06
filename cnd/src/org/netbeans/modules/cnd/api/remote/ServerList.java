@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.Collection;
+
 /**
  * This is a place holder for a RemoteServerList which will be implemented in cnd.remote.
  * 
@@ -46,20 +48,30 @@ package org.netbeans.modules.cnd.api.remote;
  */
 public interface ServerList {
     
-    public final Object OK = new Object();
-    public final Object FAIL = new Object();
-    
     /** The index of the default development server */
-    public int getDefaultServerIndex();
+    public int getDefaultIndex();
+
+    public Collection<? extends ServerRecord> getRecords();
+    
+    /** Set the index of the default development server */
+    public void setDefaultIndex(int defaultIndex);
     
     /** A String[] containing the names of all currently defined development servers */
     public String[] getServerNames();
 
     public ServerRecord get(String key);
     
-    public void add(String key, boolean active);
+    public ServerRecord getDefaultRecord();
     
-    public Object show();
+    public void clear();
     
-    // Other methods are TBD...
+    public ServerRecord addServer(String key, boolean asDefault, boolean connect);
+
+    public void removeServer(int idx);
+    
+    public void removeServer(ServerRecord record);
+
+    public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
+    
+    public boolean isValidExecutable(String hkey, String path);
 }

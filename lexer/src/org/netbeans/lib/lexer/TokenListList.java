@@ -126,11 +126,18 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         
         if (joinSections) {
             JoinTokenList.create(this, 0, size());
-        } else {
-            // Init individual lists
+        } else { // Not joining sections
+            // Init individual lists if they are not yet.
+            // TLL may be created later once someone calls e.g. TH.tokenSequenceList() but
+            // individual non-joined ETLs might already been asked and populated with tokens.
             for (EmbeddedTokenList<T> etl : this) {
                 assert (!etl.embedding().joinSections());
-                etl.initAllTokens();
+                // Here some ETLs might already be initialized and some not.
+                // There is no extra flag whether tokens were inited or not.
+                // Therefore check for token-count and possibly offset span.
+                if (etl.tokenCountCurrent() == 0 && etl.textLength() > 0) {
+                    etl.initAllTokens();
+                }
             }
         }
     }
@@ -140,6 +147,10 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         Set<Language<?>> singleLanguageSet = Collections.<Language<?>>singleton(language);
         for (int i = 0; i < tokenCount; i++) {
             // Check for embedded token list of the given language
+            // Do not initialize tokens of ETLs - do so because
+            // there might be just few joinSections ETLs and rest non-joining 
+            // and then the whole TLL should become joining so avoid extra work
+            // that could be thrown away.
             EmbeddedTokenList<T> etl = EmbeddingContainer.embeddedTokenList(tokenList, i, singleLanguageSet, false);
             if (etl != null) {
                 add(etl);
@@ -318,7 +329,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
                 return "TOKEN-LIST-LIST Null ec at index=" + i + "\n" + this;
             }
             if (etl.embeddingContainer().isRemoved()) {
-                return "TOKEN-LIST-LIST Removed ec fat index=" + i + "\n" + this;
+                return "TOKEN-LIST-LIST Removed ec at index=" + i + "\n" + this;
             }
             lastEndOffset = etl.endOffset();
         }
@@ -331,11 +342,11 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(2048);
-        sb.append("TokenListList for ");
-        sb.append(languagePath().mimePath());
         if (joinSections()) {
-            sb.append(", joinSections");
+            sb.append("J");
         }
+        sb.append("TLL for \"");
+        sb.append(languagePath().mimePath()).append('"');
         if (hasChildren()) {
             sb.append(", hasChildren");
         }
@@ -346,12 +357,9 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             EmbeddingContainer ec = etl.embeddingContainer();
             ec.updateStatus();
-            if (ec != null && ec.isRemoved()) {
-                sb.append(", <--REMOVED-->");
-            }
             etl.dumpInfo(sb);
             sb.append('\n');
-            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);
+//            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);
         }
         return sb.toString();
     }

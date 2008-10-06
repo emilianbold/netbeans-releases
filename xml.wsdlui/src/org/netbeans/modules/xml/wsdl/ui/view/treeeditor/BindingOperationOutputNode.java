@@ -69,6 +69,7 @@ import org.netbeans.modules.xml.xam.Reference;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
@@ -82,11 +83,11 @@ import org.openide.util.datatransfer.NewType;
  */
 public class BindingOperationOutputNode extends WSDLExtensibilityElementNode<BindingOutput> {
     
-    private static Image ICON  = Utilities.loadImage
+    private static Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/bindingoutput.png");
     
     public BindingOperationOutputNode(BindingOutput wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<BindingOutput>(wsdlConstruct), wsdlConstruct, new BindingOperationOutputNewTypesFactory());
+        super(wsdlConstruct, new BindingOperationOutputNewTypesFactory());
         
     }
     

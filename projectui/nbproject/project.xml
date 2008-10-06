@@ -118,15 +118,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.8</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -203,7 +194,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -252,9 +243,8 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
-                <friend>org.netbeans.modules.php.project</friend>
+                <friend>org.netbeans.modules.projectui.buildmenu</friend>
                 <friend>org.netbeans.modules.startpage</friend>
-                <friend>org.netbeans.modules.web.core</friend>
                 <friend>org.netbeans.modules.welcome</friend>
                 <package>org.netbeans.modules.project.ui.api</package>
             </friend-packages>

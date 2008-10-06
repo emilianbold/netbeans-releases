@@ -54,31 +54,33 @@ import javax.swing.ImageIcon;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.jruby.ast.CallNode;
+import org.jruby.nb.ast.CallNode;
 
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.CommentNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.DefnNode;
-import org.jruby.ast.DefsNode;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.StrNode;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
-import org.jruby.lexer.yacc.ISourcePosition;
-import org.jruby.parser.RubyParserResult;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.CommentNode;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.DefnNode;
+import org.jruby.nb.ast.DefsNode;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jruby.nb.parser.RubyParserResult;
 import org.jruby.util.ByteList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -116,10 +118,10 @@ public class RubyStructureAnalyzer implements StructureScanner {
     private Set<AstClassElement> haveAccessModifiers;
     private List<AstElement> structure;
     private Map<AstClassElement, Set<InstAsgnNode>> fields;
+    private Map<String, GlobalAsgnNode> globals;
     private Set<String> requires;
     private List<AstMethodElement> methods;
     private Map<AstClassElement, Set<AstAttributeElement>> attributes;
-    private HtmlFormatter formatter;
     private CompilationInfo info;
     private boolean isTestFile;
 
@@ -129,14 +131,13 @@ public class RubyStructureAnalyzer implements StructureScanner {
     public RubyStructureAnalyzer() {
     }
 
-    public List<?extends StructureItem> scan(CompilationInfo info, HtmlFormatter formatter) {
-        if (RubyUtils.isRhtmlFile(info.getFileObject())) {
-            return scanRhtml(info, formatter);
+    public List<?extends StructureItem> scan(CompilationInfo info) {
+        if (RubyUtils.isRhtmlOrYamlFile(info.getFileObject())) {
+            return scanRhtml(info);
         }
 
         RubyParseResult result = AstUtilities.getParseResult(info);
         this.info = info;
-        this.formatter = formatter;
 
         AnalysisResult ar = result.getStructure();
         List<?extends AstElement> elements = ar.getElements();
@@ -155,6 +156,36 @@ public class RubyStructureAnalyzer implements StructureScanner {
         private Set<String> requires;
         
         private AnalysisResult() {
+        }
+
+        public AstElement getElementFor(Node node) {
+            for (AstElement element : getElements()) {
+                AstElement result = findElement(element, node);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
+        }
+
+        public AstElement findElement(AstElement element, Node node) {
+            if (element.getNode() == node) {
+                return element;
+            }
+
+            for (AstElement child : element.getChildren()) {
+                if (child.getNode() == node) {
+                    return child;
+                }
+
+                AstElement result = findElement(child, node);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
         }
         
         public Set<String> getRequires() {
@@ -266,6 +297,20 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                 names.clear();
             }
+        }
+        
+        // Globals
+        if (globals != null) {
+            List<String> sortedNames = new ArrayList<String>(globals.keySet());
+            Collections.sort(sortedNames);
+
+            for (String globalName : sortedNames) {
+                GlobalAsgnNode global = globals.get(globalName);
+                AstElement co = new AstNameElement(info, global, globalName,
+                        ElementKind.GLOBAL);
+                structure.add(co);
+            }
+            names.clear();
         }
 
         // Process access modifiers
@@ -529,6 +574,19 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+
+        case GLOBALASGNNODE: {
+            // We don't have unique declarations, only assignments (possibly many)
+            // so stash these in a map and extract unique fields when we're done
+            if (globals == null) {
+                globals = new HashMap<String, GlobalAsgnNode>();
+            }
+            GlobalAsgnNode global = (GlobalAsgnNode)node;
+            globals.put(global.getName(), global);
+
+            break;
+        }
+
         case INSTASGNNODE: {
             if (parent instanceof AstClassElement) {
                 // We don't have unique declarations, only assignments (possibly many)
@@ -552,6 +610,30 @@ public class RubyStructureAnalyzer implements StructureScanner {
             if (("private".equals(name) || "protected".equals(name)) &&
                     parent instanceof AstClassElement) { // NOI18N
                 haveAccessModifiers.add((AstClassElement)parent);
+            }
+            
+            break;
+        }
+        case LOCALASGNNODE: {
+            // Only include variables at the top level
+            if (parent == null && AstUtilities.findMethod(path) == null) {
+                // Make sure we're not inside a method
+                // TODO - avoid duplicates?
+
+                String name = ((INameNode)node).getName();
+                boolean found = false;
+                for (AstElement child : structure) {
+                    if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    AstElement co = new AstNameElement(info, node, name,
+                            ElementKind.VARIABLE);
+                    co.setIn(in);
+                    structure.add(co);
+                }
             }
             
             break;
@@ -691,7 +773,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         name.equals("should") || name.equals("it")) { // NOI18N
                     String desc = name;
                     FCallNode fc = (FCallNode)node;
-                    if (fc.getIterNode() != null) {
+                    if (fc.getIterNode() != null || "it".equals(name)) { // NOI18N   // "it" without do/end: pending
                         Node argsNode = fc.getArgsNode();
 
                         if (argsNode instanceof ListNode) {
@@ -909,7 +991,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return node.getName();
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(node.getName());
 
@@ -962,6 +1044,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             case FIELD:
             case KEYWORD:
             case VARIABLE:
+            case GLOBAL:
             case OTHER:
                 return true;
 
@@ -1094,7 +1177,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
         }
     }
     
-    public List<? extends StructureItem> scanRhtml(CompilationInfo info, final HtmlFormatter formatter) {
+    private List<? extends StructureItem> scanRhtml(CompilationInfo info) {
         List<RhtmlStructureItem> items = new ArrayList<RhtmlStructureItem>();
         AbstractDocument doc = (AbstractDocument) info.getDocument();
         if (doc == null) {
@@ -1126,7 +1209,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
                         }
 
                         String name = navigatorName((Document)doc, th, start);
-                        items.add(new RhtmlStructureItem(name, formatter, start, end));
+                        items.add(new RhtmlStructureItem(name, start, end));
                     }
                 }
             }
@@ -1165,6 +1248,22 @@ public class RubyStructureAnalyzer implements StructureScanner {
                                 return DEFAULT_LABEL;
                             }
 
+                            // Treat <%h specially!
+                            if (id == RubyTokenId.IDENTIFIER && TokenUtilities.equals(t.token().text(), "h")) { // NOI18N
+                                if (!t.moveNext()) {
+                                    // Just a <%h%>
+                                    int end = t.offset() + t.token().length();
+                                    return createName(doc, begin, end);
+                                }
+                                // Skip any whitespace after this one
+                                while (t.token().id() == RubyTokenId.WHITESPACE) {
+                                    if (!t.moveNext()) {
+                                        break;
+                                    }
+                                }
+                                id = t.token().id();
+                            }
+
                             if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN || id == RubyTokenId.REGEXP_BEGIN) {
                                 while (t.moveNext()) {
                                     id = t.token().id();
@@ -1180,8 +1279,8 @@ public class RubyStructureAnalyzer implements StructureScanner {
 
                             // See if this is a "foo.bar" expression and if so, include ".bar"
                             if (t.moveNext()) {
-                                id = t.token().id();
-                                if (id == RubyTokenId.DOT) {
+                                TokenId newId = t.token().id();
+                                if (newId == RubyTokenId.DOT || id == RubyTokenId.LPAREN) { // Also handle (expr)
                                     if (t.moveNext()) {
                                         end = t.offset() + t.token().length();
                                     }
@@ -1271,16 +1370,18 @@ public class RubyStructureAnalyzer implements StructureScanner {
         return DEFAULT_LABEL;
     }
     
+    public Configuration getConfiguration() {
+        return null;
+    }
+
     private class RhtmlStructureItem implements StructureItem {
         
         private final String name;
-        private final HtmlFormatter formatter;
         private final int start;
         private final int end;
 
-        public RhtmlStructureItem(String name, HtmlFormatter formatter, int start, int end) {
+        public RhtmlStructureItem(String name, int start, int end) {
             this.name = name;
-            this.formatter = formatter;
             this.start = start;
             this.end = end;
         }
@@ -1289,8 +1390,7 @@ public class RubyStructureAnalyzer implements StructureScanner {
             return name;
         }
 
-        public String getHtml() {
-            formatter.reset();
+        public String getHtml(HtmlFormatter formatter) {
             formatter.appendText(name);
             return formatter.getText();
         }

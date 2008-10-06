@@ -178,8 +178,9 @@ class FileScanningWorker implements Runnable {
                 
                 Set<FileTaskScanner> scannersToNotify = null;
                 ScanItem item = new ScanItem();
+                ScanMonitor monitor = ScanMonitor.getDefault();
                 while( true ) {
-
+                    monitor.waitEnabled();
                     synchronized( SCAN_LOCK ) {
                         if( getNext( item ) ) {
                             if( !scan( item ) ) {
@@ -277,7 +278,7 @@ class FileScanningWorker implements Runnable {
     private void cleanUp( Set<FileTaskScanner> scannersToNotify ) {
         progress.finished();
         
-        synchronized( this ) {
+        synchronized( SCAN_LOCK ) {
             resourceIterator = null;
             priorityResourceIterator.clear();
             priorityResource2scanner.clear();

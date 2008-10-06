@@ -100,21 +100,21 @@ public class OpenSolaris extends KnownProject {
     
     public OpenSolaris(){
         secondLevel = new HashMap<String,String>();
-        secondLevel.put("lib/gss_mechs/", "os.lib.gss_mechs.");
-        secondLevel.put("lib/fm/", "os.lib.fm.");
-        secondLevel.put("lib/hal/", "os.lib.hal.");
-        secondLevel.put("lib/lvm/", "os.lib.lvm.");
-        secondLevel.put("lib/libkfm/", "os.lib.libkfm.");
-        secondLevel.put("lib/openssl/", "os.lib.openssl.");
-        secondLevel.put("lib/policykit/", "os.lib.policykit.");
-        secondLevel.put("lib/print/", "os.lib.print.");
-        secondLevel.put("lib/scsi/", "os.lib.scsi.");
-        secondLevel.put("lib/smbsrv/", "os.lib.smbsrv.");
-        secondLevel.put("lib/udapl/", "os.lib.udapl.");
-        secondLevel.put("cmd/sgs/", "os.cmd.sgs.");
-        secondLevel.put("cmd/perl/", "os.cmd.perl.");
-        secondLevel.put("cmd/ssh/", "os.cmd.ssh.");
-        secondLevel.put("cmd/xntpd/", "os.cmd.xntpd.");
+        secondLevel.put("lib/gss_mechs/", "os.lib.gss_mechs."); // NOI18N
+        secondLevel.put("lib/fm/", "os.lib.fm."); // NOI18N
+        secondLevel.put("lib/hal/", "os.lib.hal."); // NOI18N
+        secondLevel.put("lib/lvm/", "os.lib.lvm."); // NOI18N
+        secondLevel.put("lib/libkfm/", "os.lib.libkfm."); // NOI18N
+        secondLevel.put("lib/openssl/", "os.lib.openssl."); // NOI18N
+        secondLevel.put("lib/policykit/", "os.lib.policykit."); // NOI18N
+        secondLevel.put("lib/print/", "os.lib.print."); // NOI18N
+        secondLevel.put("lib/scsi/", "os.lib.scsi."); // NOI18N
+        secondLevel.put("lib/smbsrv/", "os.lib.smbsrv."); // NOI18N
+        secondLevel.put("lib/udapl/", "os.lib.udapl."); // NOI18N
+        secondLevel.put("cmd/sgs/", "os.cmd.sgs."); // NOI18N
+        secondLevel.put("cmd/perl/", "os.cmd.perl."); // NOI18N
+        secondLevel.put("cmd/ssh/", "os.cmd.ssh."); // NOI18N
+        secondLevel.put("cmd/xntpd/", "os.cmd.xntpd."); // NOI18N
     }
 
     @Override
@@ -144,7 +144,7 @@ public class OpenSolaris extends KnownProject {
         }
         buildScript = parameters.get(OpenSolaris.BUILD_SCRIPT);
         if (buildScript == null) {
-            buildScript = "opensolaris.sh";
+            buildScript = "opensolaris.sh"; // NOI18N
         }
         return true;
     }
@@ -175,7 +175,7 @@ public class OpenSolaris extends KnownProject {
     private void createFolders(Map<String, ProjectSources> folders) throws IOException {
         FileObject fo = ProjectCreator.createProjectDir(new File(nb_root));
         for (Map.Entry<String, ProjectSources> entry : folders.entrySet()) {
-            StringTokenizer st = new StringTokenizer(entry.getKey(), "/");
+            StringTokenizer st = new StringTokenizer(entry.getKey(), "/"); // NOI18N
             FileObject f = fo;
             while (st.hasMoreTokens()) {
                 String fn = st.nextToken();
@@ -263,7 +263,7 @@ public class OpenSolaris extends KnownProject {
                 String g = getSecondlevel(entry.getKey());
                 display = secondLevel.get(g)+display;
             } else if (entry.getKey().startsWith("cmd/")){ // NOI18N
-                display = "os.cmd."+display;
+                display = "os.cmd."+display; // NOI18N
             } else if (entry.getKey().startsWith("lib/")){ // NOI18N
                 display = "os.lib."+display; // NOI18N
             } else {
@@ -309,13 +309,13 @@ public class OpenSolaris extends KnownProject {
 
     private Set<String> getLibraries(String displayName, String sourceRoot, String nbRoot){
         Set<String> res = new HashSet<String>();
-        if (displayName.indexOf(".sources")>0 ||
-            displayName.indexOf(".libraries")>0 ||
-            displayName.indexOf(".uts")>0 ||
-            displayName.indexOf(".commands")>0) {
+        if (displayName.indexOf(".sources")>0 || // NOI18N
+            displayName.indexOf(".libraries")>0 || // NOI18N
+            displayName.indexOf(".uts")>0 || // NOI18N
+            displayName.indexOf(".commands")>0) { // NOI18N
             return res;
         }
-        SortedMap<String,Set<String>> map = libraries.subMap(sourceRoot, sourceRoot+"/z");
+        SortedMap<String,Set<String>> map = libraries.subMap(sourceRoot, sourceRoot+"/z"); // NOI18N
         for(Map.Entry<String, Set<String>> entry : map.entrySet()){
             for(String s: entry.getValue()) {
                 res.add(s);
@@ -330,7 +330,7 @@ public class OpenSolaris extends KnownProject {
     private void createGlobalList(String sourceRoot, String nbRoot, List<SourceFileProperties> list){
         if (mapFiles != null) {
             Properties res = new Properties();
-            SortedMap<String,Set<String>> map = mapFiles.subMap(sourceRoot, sourceRoot+"/z");
+            SortedMap<String,Set<String>> map = mapFiles.subMap(sourceRoot, sourceRoot+"/z"); // NOI18N
             for(Map.Entry<String, Set<String>> entry : map.entrySet()){
                 for(String s: entry.getValue()) {
                     res.put(s, "");
@@ -342,8 +342,8 @@ public class OpenSolaris extends KnownProject {
             try {
                 if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "WRITING_GLOBALS", ""+res.size())); //NOI18N
                 grepDefinitions(res, list);
-                OutputStream os = new FileOutputStream(nbRoot + "/nbproject/private/globals.xml");
-                res.storeToXML(os, "Globals");
+                OutputStream os = new FileOutputStream(nbRoot + "/nbproject/private/globals.xml"); // NOI18N
+                res.storeToXML(os, "Globals"); // NOI18N
                 os.close();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -378,7 +378,7 @@ public class OpenSolaris extends KnownProject {
                         }
                         String id = line.substring(0,i).trim();
                         if (res.containsKey(id)){
-                            res.put(id, path+":"+lineNo);
+                            res.put(id, path+":"+lineNo); // NOI18N
                         }
                     }
                     in.close();
@@ -404,9 +404,9 @@ public class OpenSolaris extends KnownProject {
         String latest = null;
         String logfolder = root + "/log"; // NOI18N
         File log = new File(logfolder);
-        if (log.exists() && log.isDirectory()) {
+        if (log.exists() && log.isDirectory() && log.canRead()) {
             for (File when : log.listFiles()) {
-                if (when.isDirectory()) {
+                if (when.exists() && when.isDirectory() && when.canRead()) {
                     for (File l : when.listFiles()) {
                         String current = l.getAbsolutePath();
                         if (current.endsWith("/nightly.log")) { // NOI18N
@@ -483,6 +483,14 @@ public class OpenSolaris extends KnownProject {
         }
 
         public void setAditionalLibraries(String binaryPath) {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public String getBuildLog() {
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+        }
+
+        public void setBuildLog(String logFile) {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 

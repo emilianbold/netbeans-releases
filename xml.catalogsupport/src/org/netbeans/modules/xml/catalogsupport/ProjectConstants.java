@@ -58,6 +58,8 @@ public interface ProjectConstants {
     public static final String NBURI_SCHEME = "nb-uri";
     public static final String SOURCES_TYPE_XML = "xml";
     public static final String SOURCES_TYPE_JAVA = "java";
+    public static final String SOURCES_TYPE_PHP = "PHPSOURCE";
+    public static final String SOURCES_TYPE_RUBY = "ruby";
     public static final String TYPE_DOC_ROOT = "doc_root";
     public static final String TYPE_WEB_INF = "web_inf";
     public static final String ARTIFACT_TYPE_JAR = "jar";

@@ -60,7 +60,7 @@ public class CreatingEJBsWithoutSubstitution extends UMLTestCase {
     
     private EventTool eventTool = new EventTool();
     private boolean failedByBug = false;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static String prName= "EJB_uml";
     private static String project = prName+"|Model";
     private static boolean codeSync=false;

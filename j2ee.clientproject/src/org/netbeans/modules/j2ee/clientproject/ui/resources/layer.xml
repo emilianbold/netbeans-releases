@@ -111,11 +111,24 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServicesCategory"/>
                     <attr name="position" intvalue="500"/>
                 </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
 
             <folder name="Lookup"/>
             
         </folder>
     </folder>
-
+    <folder name="ProjectXMLCatalog">
+        <folder name="car-project">
+            <file name="1.xsd" url="../../resources/car-project.xsd"/>
+        </folder>
+        <folder name="car-project-private">
+            <file name="1.xsd" url="../../resources/car-project-private.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

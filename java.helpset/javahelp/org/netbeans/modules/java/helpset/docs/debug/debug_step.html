@@ -6,6 +6,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Stepping Through Your Program</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -24,7 +25,12 @@
         the Local Variables window. Each time you use the Step Over Expression command, the debugger
         advances to the next method call in the expression and the completed method call is underlined. 
         Step Over Expression behaves like Step Over when there are no additional method calls.</li>
-    <li><b>Step Into (F7).</b> Executes one source line. If the source line contains
+    <li><b>Step Into (F7).</b> Executes one method call in a source line. 
+        If the line has more than one method call you can choose which method call 
+        to step into by using the arrow keys or mouse in the source editor to select the method call.
+        The selected method call to step into is indicated by a box around the method call in the source editor.
+        The most likely method call in the line is selected by default.</li>
+    <li><b>Step Into Next Method (Shift-F7).</b> Executes one source line. If the source line contains
   	a call, the IDE stops just before executing the first statement of the routine.
   	You can also start a debugging session with the Step Into command. Program
   	execution stops on the first line after the <tt>main</tt> routine before

@@ -43,193 +43,43 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
 <project basedir="." default="netbeans" name="ide.branding">
 
-  <!-- Apparently needed by ML build? -->
-  <property name="nb_all" location="../ide/.."/>
+  <import file="../nbbuild/templates/projectized.xml"/>
 
-  <import file="${nb_all}/nbbuild/templates/projectized.xml"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
+           classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
-  <property name="locjar.warnMissingDir" value="true"/>
+  <target name="netbeans-extra">
 
-  <target name="init" depends="default.init,basic-init,files-init,build-init" >
-
-    <patternset id="ide/branding.files">
-      <include name="**/*_nb.jar"/>
-      <include name="modules/org-netbeans-modules-ide-branding.jar" />
-      <include name="config/Modules/org-netbeans-modules-ide-branding.xml" />
-      <include name="netbeans.icns" />
-      <include name="netbeans.png" />
-      <include name="shortcuts.pdf" />
-      <include name="CREDITS.html"/>
-      <include name="LICENSE.txt"/>
-      <include name="LEGALNOTICE.txt"/>
-      <include name="DISTRIBUTION.txt"/>
-      <include name="THIRDPARTYLICENSE.txt"/>
-    </patternset>
-  
-  
-    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="locmakenbm" classname="org.netbeans.nbbuild.LocMakeNBM"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="locjhindexer" classname="org.netbeans.nbbuild.LocJHIndexer"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef name="makelayer" 
-             classname="org.netbeans.nbbuild.MakeLayer" 
-	     classpath="${nb_all}/nbbuild/nbantext.jar"/>
-    <taskdef 
-        name="createmodulexml" 
-        classname="org.netbeans.nbbuild.CreateModuleXML" 
-        classpath="${nb_all}/nbbuild/nbantext.jar"
-    />
-  </target>
-  
-  <mkdir dir="src"/>
-  <target name="compile">
-      <mkdir dir="${build.classes.dir}"/>
-  </target>
-
-  <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
-  <!-- Note: jar has to be the last use of locjar so that inferring the        -->
-  <!-- location of the localizing bundle works!					-->
-  <target name="netbeans" depends="init,release,jar">
-    <genlist 
-      outputfiledir="${cluster}" 
-      module="modules/org-netbeans-modules-ide-branding.jar"
-      locales="${locales}"
-      brandings="${locjar.brands}"
-    >
-      <fileset dir="${cluster}">
-        <patternset refID="ide/branding.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  
-  <target name="netbeans-extra" depends="release"/>
-  <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
-
-  <target name="release" depends="init">
     <copy todir="${netbeans.dest.dir}">
-      <fileset dir="release">
-        <exclude name="netbeans.png"/>
-        <exclude name="netbeans.icns"/>
-        <exclude name="shortcuts.pdf"/>
-<!-- Issue 67806
-        <exclude name="LICENSE.txt"/>
-        <exclude name="LEGALNOTICE.txt"/>
-        <exclude name="DISTRIBUTION.txt"/>
-        <exclude name="THIRDPARTYLICENSE.txt"/>
--->
-      </fileset>
+      <fileset dir="release-toplevel"/>
     </copy>
-    <copy todir="${cluster}" file="release/netbeans.png"/>
-    <copy todir="${cluster}" file="release/netbeans.icns"/>
-    <copy todir="${cluster}" file="release/shortcuts.pdf"/>
-<!-- Issue 67806
-    <copy todir="${cluster}" file="release/LICENSE.txt"/>
-    <copy todir="${cluster}" file="release/LEGALNOTICE.txt"/>
-    <copy todir="${cluster}" file="release/DISTRIBUTION.txt"/>
-    <copy todir="${cluster}" file="release/THIRDPARTYLICENSE.txt"/>
--->
-  </target>
-  
-  <target name="basic-init" depends="projectized-common.basic-init">
-    <condition property="locjar.locales" value="${locales}">
-      <and>
-        <isset property="locales" />
-        <not>
-          <isset property="locjar.locales"/>
-        </not>
-      </and>
-    </condition>
-  </target>
-  
-  <target name="check-run-mlbuild" depends="basic-init">
-    <available file="${nb_all}/translatedfiles/src/ide/branding" type="dir" property="translated.src.dir.exist"/>
-    <condition property="run.ml.build" value="true">
-      <and>
-        <isset property="translated.src.dir.exist"/>
-        <isset property="locjar.locales"/>
-        <length string="${locjar.locales}" when="greater" length="0"/>
-      </and>
-    </condition>
-  </target>
-
-  <target name="release-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
-      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
-               classpath="${nb_all}/nbbuild/nbantext.jar"/>
-      <repeat target="release-one-locale" name="locale" values="${locales}"/>
-  </target>
-  
-  <target name="release-one-locale" if="locale">
-      <copy todir="${netbeans.dest.dir}">
-          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
-              <include name="**/*_${locale}.*"/>
-              <exclude name="netbeans*.png"/>
-              <exclude name="netbeans*.icns"/>
-              <exclude name="shortcuts*.pdf"/>
-          </fileset>
-      </copy>
-      <copy todir="${cluster}">
-          <fileset dir="${nb_all}/translatedfiles/src/ide/branding/release">
-              <include name="shortcuts_${locale}.pdf"/>
-          </fileset>
-      </copy>
-  </target>
-  
-  <target name="jar" depends="init">
-   <!-- <property name="locjar.writeSrcDir" value="true"/> -->
-
-    <mkdir  dir="build/org/netbeans/modules/ide/branding" />
-    <copy file="Bundle.properties" tofile="build/org/netbeans/modules/ide/branding/Bundle.properties" />
-    <copy file="layer.xml" tofile="build/org/netbeans/modules/ide/branding/layer.xml" />
-    <mkdir  dir="${cluster}/modules" />
-    <!-- core (main core) -->
-    <jar basedir="." 
-      excludes="**/*"
-      manifest="manifest.mf"
-      jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar" 
-      compress="${build.package.compress}"
-    >
-        <fileset dir="build" >
-            <include name="org/netbeans/modules/ide/branding/Bundle.properties" />
-            <include name="org/netbeans/modules/ide/branding/layer.xml" />
-        </fileset>
-    </jar>
-    <createmodulexml xmldir="${cluster}/config/Modules">
-      <autoload dir="${cluster}">
-        <include name="modules/org-netbeans-modules-ide-branding.jar"/>
-      </autoload>
-    </createmodulexml>
     
     <locjar warnMissingDir="true"
-      basedir="core/startup/src"
+      basedir="core.startup/src"
       jarfile="${cluster}/core/core.jar">
       <branding name="nb"/>
     </locjar>
 
     <locjar warnMissingDir="true"
-      basedir="core/src"
+      basedir="o.n.core/src"
       jarfile="${cluster}/modules/org-netbeans-core.jar">
       <branding name="nb"/>
     </locjar>
 
     <locjar warnMissingDir="true"
-      basedir="core/windows/src"
+      basedir="core.windows/src"
       jarfile="${cluster}/modules/org-netbeans-core-windows.jar">
       <branding name="nb"/>
     </locjar>
 
     <locjar warnMissingDir="true"
-      basedir="autoupdate/libsrc"
+      basedir="autoupdate.services/libsrc"
       jarfile="${cluster}/modules/ext/updater.jar">
       <branding name="nb"/>
     </locjar>
 
     <locjar warnMissingDir="true"
-      basedir="autoupdate/ui/src"
+      basedir="autoupdate.ui/src"
       jarfile="${cluster}/modules/org-netbeans-modules-autoupdate-ui.jar">
       <branding name="nb"/>
     </locjar>
@@ -242,12 +92,10 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       
   </target>
   
-  <target name="-jar-localized-module-jar" if="locjar.locales" unless="locjar.brands">
-      <locjar basedir="build/classes-ml"
-              jarfile="${cluster}/modules/org-netbeans-modules-ide-branding.jar"/>      
-  </target>
-
+  <!-- ML stuff; can it be deleted now? May be obsolete. -->
   <target name="jar-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
+      <property name="nb_all" location=".."/>
+      <property name="locjar.warnMissingDir" value="true"/>
       <mkdir  dir="build/classes-ml/org/netbeans/modules/ide/branding" />
       <copy todir="build/classes-ml/org/netbeans/modules/ide/branding">
           <fileset dir="${nb_all}/translatedfiles/src/ide/branding">
@@ -324,13 +172,4 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       </locjar>
     </target>
   
-    <target name="clean" depends="init" >
-        <delete dir="build" />
-        <delete>
-            <fileset dir="${cluster}">
-                <patternset refID="ide/branding.files"/>
-            </fileset>
-        </delete>
-    </target>
-
 </project>

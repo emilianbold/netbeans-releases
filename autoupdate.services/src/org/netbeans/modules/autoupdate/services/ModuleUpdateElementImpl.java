@@ -84,12 +84,6 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         codeName = item.getCodeName ();
         specVersion = item.getSpecificationVersion () == null ? null : new SpecificationVersion (item.getSpecificationVersion ());
         installInfo = new InstallInfo (item);
-        String dn = moduleInfo.getDisplayName ();
-        assert dn != null : "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.";
-        if (dn == null) {
-            getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
-        }
-        displayName = dn == null ? codeName : dn;
         author = item.getAuthor ();
         downloadSize = item.getDownloadSize ();
         homepage = item.getHomepage ();
@@ -103,6 +97,14 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getDisplayName () {
+        if (displayName == null) {
+            String dn = moduleInfo.getDisplayName ();
+            assert dn != null : "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.";
+            if (dn == null) {
+                getLogger ().log (Level.WARNING, "Module " + codeName + " doesn't provider display name. Value of \"OpenIDE-Module-Name\" cannot be null.");
+            }
+            displayName = dn == null ? codeName : dn;
+        }
         return displayName;
     }
     
@@ -241,6 +243,11 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
                (this.specVersion != null ? this.specVersion.hashCode()
                                          : 0);
         return hash;
+    }
+    
+    @Override
+    public String toString () {
+        return "Impl[" + getUpdateElement () + "]"; // NOI18N
     }
     
     private Logger getLogger () {

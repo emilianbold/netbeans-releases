@@ -6,10 +6,22 @@
     <description>Builds, tests, and runs the project org.netbeans.performance.mobility</description>
 
     <property name="nbextra.dir" location="../../../nbextra"/>
-    <property name="test.timeout" value="3000000"/>
-    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx1024m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -ea -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+    <property name="test.timeout" value="3600000"/>
+    <property name="test.run.args" value="-client -Xss2m -Xms32m -Xmx512m -XX:PermSize=32m -XX:MaxPermSize=200m -Xverify:none -Dcom.sun.aas.installRoot=&quot;${j2ee.appserver.path}&quot; -Dtomcat.installRoot=&quot;${tomcat.webserver.path}&quot;"/>
+
+    <loadfile property="perftestrun.buildnumber"
+      srcFile="../../../build.number"
+      failonerror="false"
+    />
 
     <target name="test-preinit" depends="init, prepare-wtk"/>
+
+    <condition property="nbjdk.home" value="e:\\space\\hudson\\jdks\\jdk1.6.0_10">
+        <os family="windows"/>
+    </condition>
+    <condition property="nbjdk.home" value="/space/hudson/jdks/jdk1.6.0_10">
+        <os family="unix"/>
+    </condition>
 
     <target name="set-wtk-path" unless="wtk.zipfile.name">
         <condition property="wtk.zipfile.name" value="wtk252-windows.zip">
@@ -26,6 +38,7 @@
         <unzip src="${nbextra.dir}/data/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility8"/>
     </target>
 
+<!-- why UML is here?
     <target name="test" description="Uses test-single to run each suite in different VM">
         <antcall target="test-single">
             <param name="test.includes" value="**\MeasureUMLSetupTest*"/>
@@ -44,6 +57,7 @@
             <param name="test.type" value="unit"/>
         </antcall>
     </target>
+-->
 
     <import file="nbproject/build-impl.xml"/>
 </project>

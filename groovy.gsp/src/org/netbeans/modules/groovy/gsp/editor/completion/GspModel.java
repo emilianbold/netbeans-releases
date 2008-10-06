@@ -40,6 +40,7 @@
  */
 
 package org.netbeans.modules.groovy.gsp.editor.completion;
+
 import java.util.ArrayList;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -51,20 +52,21 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
 
 /**
- * Creates a Ruby model for an RHTML file. Simulates ERB to generate Ruby from
- * the RHTML.
+ * Creates a Groovy model for an GSP file. 
  *
  * This class attaches itself to a document, and listens on changes. When
- * a client asks for the Ruby source of the RHTML file, it lazily generates it
+ * a client asks for the Groovy source of the GSP file, it lazily generates it
  * if and only if the document has been modified.
  *
  * @author Marek Fukala
  * @author Tor Norbye
+ * @author Martin Adamek
  */
 public class GspModel {
+    
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
-    private String rubyCode;
+    private String groovyCode;
     //private String rhtmlCode; // For debugging purposes
     private boolean documentDirty = true;
     
@@ -96,7 +98,7 @@ public class GspModel {
         }
     }
 
-    public String getRubyCode() {
+    public String getGroovyCode() {
         if (documentDirty) {
             documentDirty = false;
             
@@ -115,37 +117,26 @@ public class GspModel {
                 TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
                 TokenSequence<GspTokenId> tokenSequence = tokenHierarchy.tokenSequence(GspTokenId.language()); //get top level token sequence
 
-                egroovy(buffer, tokenHierarchy, tokenSequence);
+                groovy(buffer, tokenHierarchy, tokenSequence);
             } finally {
                 d.readUnlock();
             }
-            rubyCode = buffer.toString();
+            groovyCode = buffer.toString();
         }
-        
-        return rubyCode;
+
+        return groovyCode;
     }
     
-    /** Perform eruby translation 
+    /** Perform groovy translation
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    void egroovy(StringBuilder outputBuffer,
+    void groovy(StringBuilder outputBuffer,
             TokenHierarchy<Document> tokenHierarchy,            
             TokenSequence<GspTokenId> tokenSequence) {
         StringBuilder buffer = outputBuffer;
-        // Add a super class such that code completion, goto declaration etc.
-        // knows where to pull the various link_to etc. methods from
-        
-        // Pretend that this code is an extension to ActionView::Base such that
-        // code completion, go to declaration etc. sees the inherited methods from
-        // ActionView -- link_to and friends.
-        buffer.append("class ActionView::Base\n"); // NOI18N
-        // TODO Try to include the helper class as well as the controller fields too;
-        // for now this logic is hardcoded into Ruby's code completion engine (CodeCompleter)
-
-        // Erubis uses _buf; I've seen eruby using something else (_erbout?)
-        buffer.append("_buf='';"); // NOI18N
+        buffer.append("def _buf ='';"); // NOI18N
         codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
 
         boolean skipNewline = false;
@@ -157,8 +148,9 @@ public class GspModel {
                 int sourceEnd = sourceStart + token.length();
                 int generatedStart = buffer.length();
 
-                String text = token.text().toString();
-                
+                CharSequence charSequence = token.text();
+                String text = charSequence == null ? "" : charSequence.toString();
+
                 // If there is leading whitespace in this token followed by a newline,
                 // emit it directly first, then insert my buffer append. Otherwise,
                 // insert a semicolon if we're on the same line as the previous output.
@@ -178,19 +170,15 @@ public class GspModel {
                 if (found) {
                     buffer.append(text.substring(0, i));
                     text = text.substring(i);
-                } else {
-                    buffer.append(';');
                 }
-                buffer.append("_buf << '"); // NOI18N
+                buffer.append("_buf += \"\"\""); // NOI18N
                 if (skipNewline && text.startsWith("\n")) { // NOI18N
                     text = text.substring(1);
                     sourceEnd--;
                 }
-                // Escape 's in the document so they don't escape out of the ruby code
-                // I don't have to do this on lines that are in comments... But no big harm
-                text = text.replace("'", "\\'");
+                text = text.replace("\"", "\\\"");
                 buffer.append(text);
-                buffer.append("';\n"); // NOI18N
+                buffer.append("\"\"\";"); // NOI18N
                 int generatedEnd = buffer.length();
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
@@ -203,13 +191,19 @@ public class GspModel {
                 int generatedStart = buffer.length();
 
                 String text = token.text().toString();
-                skipNewline = false;
-                if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
-                    skipNewline = true;
+                // handle <%-- foo --%> and %{-- bar --%} comments
+                String trimmedText = text.trim();
+                if (trimmedText.startsWith("--") && trimmedText.endsWith("--")) { // NOI18N
+                    int first = text.indexOf("--");
+                    int last = text.lastIndexOf("--");
+                    buffer.append("/*");
+                    buffer.append(text.substring(first + 2, last));
+                    buffer.append("*/");
+                } else {
+                    buffer.append(text);
+                    buffer.append(';');
                 }
-
-                buffer.append(text);
+                skipNewline = false;
 
                 int generatedEnd = buffer.length();
 
@@ -218,35 +212,23 @@ public class GspModel {
 
                 skipNewline = false;
             } else if (token.id() == GspTokenId.GROOVY_EXPR) {
-                buffer.append("_buf << ("); // NOI18N
+                buffer.append("_buf += ("); // NOI18N
                 int sourceStart = token.offset(tokenHierarchy);
                 int sourceEnd = sourceStart + token.length();
                 int generatedStart = buffer.length();
 
                 String text = token.text().toString();
                 skipNewline = false;
-                if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
-                    skipNewline = true;
-            }
                 buffer.append(text);
+                buffer.append(';');
                 int generatedEnd = buffer.length();
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
                 codeBlocks.add(blockData);
-
-// Make code sanitizing work better:  buffer.append("\n).to_s;"); // NOI18N
-                buffer.append(").to_s;"); // NOI18N
-        }
+                buffer.append(")"); // NOI18N
+            }
         }
 
-        // Close off the class
-        // eruby also ends with this statement: _buf.to_s
-        String end = "\nend\n"; // NOI18N
-        buffer.append(end);
-        if (doc != null) {
-            codeBlocks.add(new CodeBlockData(doc.getLength(), doc.getLength(), buffer.length()-end.length(), buffer.length()));
-        }
     }
     
     public int sourceToGeneratedPos(int sourceOffset){
@@ -260,7 +242,7 @@ public class GspModel {
         // nearby searches
         
         // Not checking dirty flag here; sourceToGeneratedPos() should apply
-        // to the positions as they were when we generated the ruby code
+        // to the positions as they were when we generated the groovy code
         
         CodeBlockData codeBlock = getCodeBlockAtSourceOffset(sourceOffset);
         
@@ -290,7 +272,7 @@ public class GspModel {
 
         
         // Not checking dirty flag here; generatedToSourcePos() should apply
-        // to the positions as they were when we generated the ruby code
+        // to the positions as they were when we generated the groovy code
 
         CodeBlockData codeBlock = getCodeBlockAtGeneratedOffset(generatedOffset);
         
@@ -329,13 +311,13 @@ public class GspModel {
     }
     
     private class CodeBlockData {
-        /** Start of section in RHTML file */
+        /** Start of section in GSP file */
         private int sourceStart;
-        /** End of section in RHTML file */
+        /** End of section in GSP file */
         private int sourceEnd;
-        /** Start of section in generated Ruby */
+        /** Start of section in generated Groovy */
         private int generatedStart;
-        /** End of section in generated Ruby */
+        /** End of section in generated Groovy */
         private int generatedEnd;
         
         public CodeBlockData(int sourceStart, int sourceEnd, int generatedStart, int generatedEnd) {

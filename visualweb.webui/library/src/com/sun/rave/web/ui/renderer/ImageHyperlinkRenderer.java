@@ -67,8 +67,8 @@ public class ImageHyperlinkRenderer extends HyperlinkRenderer {
             "com.sun.rave.web.ui.component.util.factories.ImageComponentFactory"; //NOI18N
     
     // for positioning of the label.
-    private static final String LABEL_LEFT="left"; //NOI8N
-    private static final String LABEL_RIGHT="right"; //NOI8N
+    private static final String LABEL_LEFT="left"; //NOI18N
+    private static final String LABEL_RIGHT="right"; //NOI18N
     
     // -------------------------------------------------------- Renderer Methods
     protected void finishRenderAttributes(FacesContext context,

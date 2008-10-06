@@ -23,7 +23,7 @@
         <font style="italic"/>
     </fontcolor>
     <fontcolor name="PHP_VARIABLE" foreColor="6d3206"/>
-        
+    <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>    
     <fontcolor name="PHP_STRING" default="identifier">
     </fontcolor>    
     <!--<fontcolor name="FLOAT_LITERAL" default="number"/>
@@ -69,7 +69,7 @@
     <fontcolor name="mod-field" default="field"/>
     <fontcolor name="mod-local-variable" />
     <fontcolor name="mod-parameter" foreColor="A06001"/>
-    <fontcolor name="mod-method">
+    <fontcolor name="mod-method" foreColor="000000" >
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-constructor" >

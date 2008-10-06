@@ -1,0 +1,26 @@
+<g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+       <!-- Metadata information. Please don't edit. -->
+   <text display="none">type=textfield</text>
+       <text display="none">editable=true</text>
+       <text display="none">enabled=true</text>
+
+       <rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">
+           <animate attributeName="stroke" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" dur="0.25s" 
+                       fill="freeze" to="rgb(255,165,0)"/>
+           <animate attributeName="stroke" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" dur="0.25s" 
+                       fill="freeze" to="black"/>
+       </rect>
+       <g>
+             <text  id="%%COMPONENT_ID%%_text" x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">
+             Some Text</text>
+             <!-- Metadata information. Please don't edit. -->
+             <text display="none">type=text</text>
+       </g>
+   <g>
+           <!-- Metadata information. Please don't edit. -->
+           <text display="none">type=caret</text>
+
+           <rect id="%%COMPONENT_ID%%_caret" visibility="visible" x="20" y="4" 
+              width="3" height="22" fill="black" stroke="black"/>
+       </g>
+</g>

@@ -73,32 +73,55 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
     public static final int SWEEP_ITERATIONS = 3;
     public static final int CROSSING_ITERATIONS = 3;    // Options default settings 
     public static final int DUMMY_WIDTH = 1;
-    public static final int X_OFFSET = 9;
-    public static final int LAYER_OFFSET = 40;    // Options
+    public static final int X_OFFSET = 20;
+    public static final int LAYER_OFFSET = 30;    // Options
     private int dummyWidth;
     private int xOffset;
     private int layerOffset;
     private int layerCount;    // Variables
     private UniversalGraph<N, E> graph;
     private List<LayoutNode> nodes;
+    private Collection<N> nodesSubset = null;
     private HashMap<N, LayoutNode> vertexToLayoutNode;
     private Set<E> reversedLinks;
     private List<LayoutNode>[] layers;
-    
-    private boolean animate = false ;
+    private boolean animate = false;
+    private boolean invert = true;
+
+    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate,
+            boolean inverted, int xOffset, int layerOffset) {
+
+        dummyWidth = DUMMY_WIDTH;
+
+        // scene is not used yet. It will be used when the container agnostic feature
+        // is put into the NBVL
+        this.animate = animate;
+
+        if (xOffset > 0) {
+            this.xOffset = xOffset;
+        } else {
+            this.xOffset = X_OFFSET;
+        }
+
+        if (layerOffset > 0) {
+            this.layerOffset = layerOffset;
+        } else {
+            this.layerOffset = LAYER_OFFSET;
+        }
+        
+        this.invert = inverted;
+    }
+
+    public HierarchicalLayout(GraphScene<N, E> scene, boolean animate, boolean inverted) {
+        this(scene, animate, inverted, X_OFFSET, LAYER_OFFSET);
+    }
 
     public HierarchicalLayout(GraphScene<N, E> scene, boolean animate) {
-        dummyWidth = DUMMY_WIDTH;
-        xOffset = X_OFFSET;
-        layerOffset = LAYER_OFFSET;
-        
-        this.animate = animate ;
+        this(scene, animate, false);
     }
 
     public HierarchicalLayout() {
-        dummyWidth = DUMMY_WIDTH;
-        xOffset = X_OFFSET;
-        layerOffset = LAYER_OFFSET;
+        this(null, false);
     }
 
     private class LayoutNode {
@@ -144,7 +167,9 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 System.out.println("Starting part " + this.getClass().getName());
                 start = System.currentTimeMillis();
             }
+            
             run();
+            
             if (TRACE) {
                 System.out.println("Timing for " + this.getClass().getName() + " is " + (System.currentTimeMillis() - start));
                 printStatistics();
@@ -212,15 +237,22 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
 
     @Override
     protected void performNodesLayout(UniversalGraph<N, E> arg0, Collection<N> arg1) {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        this.nodesSubset = arg1;
+        this.performGraphLayout(arg0);
+
     }
 
     private class BuildDatastructure extends AlgorithmPart {
 
         protected void run() {
             // Set up nodes
-            Collection<N> vertices = graph.getNodes();
-
+            Collection<N> vertices;
+            if (nodesSubset == null) {
+                vertices = graph.getNodes();
+            } else {
+                vertices = nodesSubset;
+            }
             for (N v : vertices) {
                 LayoutNode node = new LayoutNode();
                 Widget w = graph.getScene().findWidget(v);
@@ -243,9 +275,17 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 LayoutEdge edge = new LayoutEdge();
                 assert vertexToLayoutNode.containsKey(graph.getEdgeSource(l));
                 assert vertexToLayoutNode.containsKey(graph.getEdgeTarget(l));
-                edge.from = vertexToLayoutNode.get(graph.getEdgeSource(l));
-                edge.to = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+
+                if (invert) {
+                    edge.to = vertexToLayoutNode.get(graph.getEdgeSource(l));
+                    edge.from = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                } else {
+                    edge.from = vertexToLayoutNode.get(graph.getEdgeSource(l));
+                    edge.to = vertexToLayoutNode.get(graph.getEdgeTarget(l));
+                }
+
                 Widget w = graph.getScene().findWidget(graph.getEdgeSource(l));
+
                 assert w != null;
                 Rectangle r = w.getBounds();
                 if (r == null) {
@@ -253,6 +293,7 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 }
                 Dimension size = r.getSize();
                 edge.relativeFrom = size.width / 2;
+
                 w = graph.getScene().findWidget(graph.getEdgeTarget(l));
                 assert w != null;
                 r = w.getBounds();
@@ -262,8 +303,10 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 size = r.getSize();
                 edge.relativeTo = size.width / 2;
                 edge.link = l;
+
                 edge.from.succs.add(edge);
                 edge.to.preds.add(edge);
+
             }
         }
 
@@ -1050,8 +1093,9 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 Widget w = graph.getScene().findWidget(v);
                 if (animate) {
                     graph.getScene().getSceneAnimator().animatePreferredLocation(w, p);
-                }else
+                } else {
                     w.setPreferredLocation(p);
+                }
             }
 
             for (E l : linkPositions.keySet()) {
@@ -1064,6 +1108,24 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                     }
                 }
 
+                //Kris - this is a hack to reverse the order of the control points
+                // that were created by the algorithm. This is used when the graph
+                // is inverted.
+                if (invert && points.size() > 3) {
+                    int numPoints = points.size();
+                    ArrayList<Point> invertedPoints = new ArrayList<Point>(numPoints);
+
+                    invertedPoints.add(points.get(0));
+
+                    for (int i = numPoints - 2; i > 0; i--) {
+                        invertedPoints.add(points.get(i));
+                    }
+
+                    invertedPoints.add(points.get(numPoints - 1));
+
+                    points = invertedPoints;
+                }
+
                 Widget w = graph.getScene().findWidget(l);
                 if (w instanceof ConnectionWidget) {
                     ConnectionWidget cw = (ConnectionWidget) w;
@@ -1071,6 +1133,10 @@ public class HierarchicalLayout<N, E> extends GraphLayout<N, E> {
                 }
 
             }
+            
+            graph.getScene().validate();
+            graph.getScene().repaint();
+            graph.getScene().revalidate();
         }
 
         protected void printStatistics() {

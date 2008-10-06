@@ -43,6 +43,7 @@ package org.netbeans.performance.web;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.menus.*;
 
 /**
@@ -54,10 +55,14 @@ public class MeasureWebMenusTest {
     
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite"); 
-   
-        suite.addTest(NbModuleSuite.create(WebProjectsViewPopupMenu.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(WebRuntimeViewPopupMenu.class, ".*", ".*"));
+        PerformanceTestCase.prepareForMeasurements();
+
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
+        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebMenusTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsViewPopupMenu.class)
+        .addTest(WebRuntimeViewPopupMenu.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
         
         return suite;
     }

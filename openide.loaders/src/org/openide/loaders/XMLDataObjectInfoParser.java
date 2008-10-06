@@ -280,9 +280,9 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                         }
                     }
                 } catch (FileNotFoundException ex) {
-                    XMLDataObject.ERR.log(Level.WARNING, null, ex);
+                    XMLDataObject.ERR.log(Level.INFO, null, ex);
                 } catch (IOException ex) {
-                    XMLDataObject.ERR.log(Level.WARNING, null, ex);
+                    XMLDataObject.ERR.log(Level.INFO, null, ex);
                 } finally {
                     if (Boolean.getBoolean("netbeans.profile.memory")) {
                         parser.setContentHandler(XMLDataObject.NullHandler.INSTANCE);
@@ -308,7 +308,7 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 }
             }
         }
-        if (ignorePreviousId != null && newID.equals(ignorePreviousId)) {
+        if (ignorePreviousId != null && ignorePreviousId.equals(newID)) {
             if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                 XMLDataObject.ERR.fine("No update to ID: " + ignorePreviousId + " for " + realXML);
             }

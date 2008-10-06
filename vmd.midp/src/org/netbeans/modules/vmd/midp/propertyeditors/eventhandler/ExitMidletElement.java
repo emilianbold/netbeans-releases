@@ -69,6 +69,11 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
     public ExitMidletElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(ExitMidletElement.class, "LBL_EXIT_MIDLET")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(ExitMidletElement.class, "ACSN_EXIT_MIDLET")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(ExitMidletElement.class, "ACSD_EXIT_MIDLET")); // NOI18N
     }
     
     public void createEventHandler(DesignComponent eventSource) {

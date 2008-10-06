@@ -104,6 +104,7 @@
                 <tocitem text="Creating an Entity Class" target="persist_entityclass" />
                 <tocitem text="Mapping Entity Classes" target="persist_mapping" />
                 <tocitem text="Generating Entity Classes from a Database" target="persist_fromdb" />
+                <tocitem text="Generating JPA Controller Classes from Entity Classes" target="persist_jpafromentity" />
                 <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
                 <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
                 <tocitem text="Adding Support for Java Persistence" target="persist_support" />

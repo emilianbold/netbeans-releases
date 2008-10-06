@@ -59,5 +59,10 @@ made subject to such option by the copyright holder.
             </folder>    
          </folder>
     </folder>
-    
+    <folder name="ProjectXMLCatalog">
+        <folder name="freeform-project">
+            <file name="1.xsd" url="freeform-project-general.xsd"/>
+            <file name="2.xsd" url="freeform-project-general-2.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

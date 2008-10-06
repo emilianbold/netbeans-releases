@@ -209,13 +209,11 @@ public class AntSettings {
     }
 
     public static List<File> getExtraClasspath() {
-        // XXX could perhaps populate with xerces.jar:dom-ranges.jar
-        // However currently there is no sure way to get the "good" Xerces
-        // from libs/xerces (rather than the messed-up one from xml/tax)
-        // without hardcoding the JAR name, which seems unwise since it is
-        // definitely subject to change.
         List<File> files = new ArrayList<File>();
         for (String f : prefs().get(PROP_EXTRA_CLASSPATH, "").split(Pattern.quote(File.pathSeparator))) {
+            if (f.length() == 0) {
+                continue; // otherwise would add CWD to CP!
+            }
             files.add(new File(f));
         }
         return files;

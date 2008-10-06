@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -78,6 +78,7 @@ public class AutoupdateCatalogFactory {
     private static final String SYSPROP_COUNTRY = "netbeans.autoupdate.country"; // NOI18N
     private static final String SYSPROP_LANGUAGE = "netbeans.autoupdate.language"; // NOI18N
     private static final String SYSPROP_VARIANT = "netbeans.autoupdate.variant"; // NOI18N
+    private static final String PROP_QUALIFIED_IDENTITY = "qualifiedId"; // NOI18N
     
     public static final String ORIGINAL_URL = "originalUrl"; // NOI18N
     public static final String ORIGINAL_DISPLAY_NAME = "originalDisplayName"; // NOI18N
@@ -171,7 +172,7 @@ public class AutoupdateCatalogFactory {
         }
         
         if (System.getProperty (IDE_HASH_CODE) == null) {
-            String id = getPreferences ().get ("ideIdentity", null);
+            String id = getPreferences ().get (PROP_QUALIFIED_IDENTITY, null);
             if (id == null) {
                 // can ignore it, property used only for logging purposes
                 Logger.getLogger(AutoupdateCatalogFactory.class.getName()).warning("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N

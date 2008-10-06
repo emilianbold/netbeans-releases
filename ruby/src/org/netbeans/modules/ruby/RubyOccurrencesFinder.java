@@ -48,40 +48,42 @@ import java.util.Map;
 
 import javax.swing.text.BadLocationException;
 
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.BlockArgNode;
-import org.jruby.ast.CallNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.NewlineNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.ReturnNode;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.VCallNode;
-import org.jruby.ast.YieldNode;
-import org.jruby.ast.types.INameNode;
-import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgsNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.BackRefNode;
+import org.jruby.nb.ast.BlockArgNode;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.ClassVarAsgnNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.ConstDeclNode;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.NewlineNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.NthRefNode;
+import org.jruby.nb.ast.ReturnNode;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.VCallNode;
+import org.jruby.nb.ast.YieldNode;
+import org.jruby.nb.ast.types.INameNode;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -91,6 +93,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -109,6 +112,7 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
 
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
@@ -139,6 +143,13 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
             return;
         }
 
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
+        }
+
         RubyParseResult rpr = AstUtilities.getParseResult(info);
         if (rpr == null) {
             return;
@@ -159,6 +170,9 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
         AstPath path = new AstPath(root, astOffset);
         Node closest = path.leaf();
+        if (closest == null) {
+            return;
+        }
 
         // When we sanitize the line around the caret, occurrences
         // highlighting can get really ugly
@@ -276,6 +290,14 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
             } else if (closest instanceof GlobalVarNode) {
                 // A global variable read
                 String name = ((GlobalVarNode)closest).getName(); // GlobalVarNode does not implement INameNode
+                highlightGlobal(root, name, highlights);
+            } else if (closest instanceof BackRefNode) {
+                // A global variable read
+                String name = "" + ((BackRefNode)closest).getType(); // BackRefNode does not implement INameNode
+                highlightGlobal(root, name, highlights);
+            } else if (closest instanceof NthRefNode) {
+                // A global variable read
+                String name = "" + ((NthRefNode)closest).getMatchNumber(); // NthRefNode does not implement INameNode
                 highlightGlobal(root, name, highlights);
             } else if (closest instanceof GlobalAsgnNode) {
                 // A global variable assignment
@@ -610,11 +632,11 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {
@@ -845,6 +867,18 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
         if (node instanceof GlobalVarNode) {
             //if (((INameNode)node).getName().equals(name)) { // GlobalVarNode does not implement INameNode
             if (((GlobalVarNode)node).getName().equals(name)) {
+                OffsetRange range = AstUtilities.getRange(node);
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (node instanceof BackRefNode) {
+            //if (((INameNode)node).getName().equals(name)) { // BackRefNode does not implement INameNode
+            if (("" + ((BackRefNode)node).getType() + "").equals(name)) {
+                OffsetRange range = AstUtilities.getRange(node);
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (node instanceof NthRefNode) {
+            //if (((INameNode)node).getName().equals(name)) { // NthRefNode does not implement INameNode
+            if (("" + ((NthRefNode)node).getMatchNumber()).equals(name)) {
                 OffsetRange range = AstUtilities.getRange(node);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -50,120 +50,145 @@ import org.openide.util.NbPreferences;
 public final class NbJSPreferences {
     private static NbJSPreferences INSTANCE = null;
     
-    private static final boolean SHOW_FUNCTIONS_DEFAULT = true;
-    private static final boolean SHOW_CONSTANTS_DEFAULT = true;
-    private static final boolean BYPASS_CONSTRUCTORS_DEFAULT = false;
-    private static final boolean ENABLE_STEP_FILTERS_DEFAULT = false;
-    private static final boolean SUSPEND_ON_FIRST_LINE_DEFAULT = false;
-    private static final boolean SUSPEND_ON_EXCEPTIONS_DEFAULT = false;
-    private static final boolean SUSPEND_ON_ERRORS_DEFAULT = false;
-    private static final boolean SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT = true;
-    private static final boolean HTTP_MONITOR_DEFAULT = true;
-    
-    
-    
-    // property names
-    public static final String PROP_SHOW_FUNCTIONS = "functionsShow"; // NOI18N
-    public static final String PROP_SHOW_CONSTANTS = "constantsShow"; // NOI18N
-    public static final String PROP_BYPASS_CONSTRUCTORS = "constructorsBypass"; // NOI18N
-    public static final String PROP_ENABLE_STEP_FILTERS = "stepFiltersEnable"; // NOI18N
-    public static final String PROP_SUSPEND_ON_FIRST_LINE = "firstLineSuspend"; // NOI18N
-    public static final String PROP_SUSPEND_ON_EXCEPTIONS = "exceptionsSuspend"; // NOI18N
-    public static final String PROP_SUSPEND_ON_ERRORS = "errorsSuspend"; // NOI18N
-    public static final String PROP_SUSPEND_ON_DEBUGGER_KEYWORD = "debuggerKeywordSuspend"; // NOI18N
-    public static final String PROP_HTTP_MONITOR = "http_monitor";
-    
-    public static NbJSPreferences getInstance() {
+    public enum PROPERTIES {
+        PROP_SUSPEND_ON_FIRST_LINE( "firstLineSuspend", false),             // NOI18N
+        PROP_SUSPEND_ON_EXCEPTIONS("exceptionsSuspend", false),             // NOI18N
+        PROP_SUSPEND_ON_ERRORS("errorsSuspend",false),                      // NOI18N
+        PROP_SUSPEND_ON_DEBUGGER_KEYWORD("debuggerKeywordSuspend", true),   // NOI18N
+        PROP_SHOW_FUNCTIONS("functionsShow", false),                        // NOI18N
+        PROP_SHOW_CONSTANTS("constantsShow", true),                         // NOI18N
+        PROP_HTTP_MONITOR_ENABLED("PROP_HTTP_MONITOR_ENABLED", true),       // NOI18N
+        PROP_HTTP_MONITOR_OPENED("http_monitor_opened", false),             // NOI18N
+        PROP_IGNORE_QUERY_STRINGS("ignoreQueryStrings", true);              // NOI18N
+        PROPERTIES( String string, boolean b_default){
+            this.string = string;
+            this.b_default = b_default;
+        }
+        private boolean getBooleanDefault() {
+            return b_default;
+        }
+
+        public boolean getBooleanPreference() {
+            return getPreferences().getBoolean(this.toString(), this.getBooleanDefault());
+        }
+
+        public void setBooleanPreferences(boolean b) {
+            getPreferences().putBoolean(this.toString(), b);
+        }
+        private String string;
+        private boolean b_default;
+        public boolean equals(String str) {
+            return this.toString().equals(str);
+        }
+
+    }
+
+    public static synchronized NbJSPreferences getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new NbJSPreferences();
         }
-        
+
         return INSTANCE;
     }
-    
+
+    /**
+     * @return  This preference is really used similar to HttpMonitorEnabled to be
+     * a mechanism in which the extension determines if it should be recording
+     * events.  In the future, we should consider monitor Showing/Hiding and
+     * Queue up the events.
+     */
+    public boolean getHttpMonitorOpened() {
+        return PROPERTIES.PROP_HTTP_MONITOR_OPENED.getBooleanPreference();
+    }
+
+    /**
+     * @param This preference is really used similar to HttpMonitorEnabled to be
+     * a mechanism in which the extension determines if it should be recording
+     * events.  In the future, we should consider monitor Showing/Hiding and
+     * Queue up the events.
+     */
+    public void setHttpMonitorOpened(boolean b) {
+        PROPERTIES.PROP_HTTP_MONITOR_OPENED.setBooleanPreferences(b);
+    }
+
     public boolean getShowFunctions() {
-        return getPreferences().getBoolean(PROP_SHOW_FUNCTIONS, SHOW_FUNCTIONS_DEFAULT);
+        return PROPERTIES.PROP_SHOW_FUNCTIONS.getBooleanPreference();
     }
-    
+
     public void setShowFunctions(boolean b) {
-        getPreferences().putBoolean(PROP_SHOW_FUNCTIONS, b);
+        PROPERTIES.PROP_SHOW_FUNCTIONS.setBooleanPreferences(b);
     }
-    
+
     public void setShowConstants(boolean b) {
-        getPreferences().putBoolean(PROP_SHOW_CONSTANTS, b);
+        PROPERTIES.PROP_SHOW_CONSTANTS.setBooleanPreferences(b);
     }
 
     public boolean getShowConstants() {
-        return getPreferences().getBoolean(PROP_SHOW_CONSTANTS, SHOW_CONSTANTS_DEFAULT);
+        return PROPERTIES.PROP_SHOW_CONSTANTS.getBooleanPreference();
     }
-    
-    public void setBypassConstructors(boolean b) {
-        getPreferences().putBoolean(PROP_BYPASS_CONSTRUCTORS, b);
-    }
-    
-    public boolean getBypassConstructors() {
-        return getPreferences().getBoolean(PROP_BYPASS_CONSTRUCTORS, BYPASS_CONSTRUCTORS_DEFAULT);
-    }
-    
-    public void setEnableStepFilters(boolean b) {
-        getPreferences().putBoolean(PROP_ENABLE_STEP_FILTERS, b);
-    }
-    
-    public boolean getEnableStepFilters() {
-        return getPreferences().getBoolean(PROP_ENABLE_STEP_FILTERS, ENABLE_STEP_FILTERS_DEFAULT);
-    }
-    
+
     public void setSuspendOnFirstLine(boolean b) {
-        getPreferences().putBoolean(PROP_SUSPEND_ON_FIRST_LINE, b);
+        PROPERTIES.PROP_SUSPEND_ON_FIRST_LINE.setBooleanPreferences(b);
     }
-    
-    
+
     public boolean getSuspendOnFirstLine() {
-        return getPreferences().getBoolean(PROP_SUSPEND_ON_FIRST_LINE, SUSPEND_ON_FIRST_LINE_DEFAULT);
+        return PROPERTIES.PROP_SUSPEND_ON_FIRST_LINE.getBooleanPreference();
     }
-    
+
     public void setSuspendOnExceptions(boolean b) {
-        getPreferences().putBoolean(PROP_SUSPEND_ON_EXCEPTIONS, b);
+        PROPERTIES.PROP_SUSPEND_ON_EXCEPTIONS.setBooleanPreferences(b);
     }
-    
+
     public boolean getSuspendOnExceptions() {
-        return getPreferences().getBoolean(PROP_SUSPEND_ON_EXCEPTIONS, SUSPEND_ON_EXCEPTIONS_DEFAULT);
+        return PROPERTIES.PROP_SUSPEND_ON_EXCEPTIONS.getBooleanPreference();
     }
-    
-    public void setHttpMonitor(boolean b) {
-        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
+
+    public void setHttpMonitorEnabled(boolean b) {
+        PROPERTIES.PROP_HTTP_MONITOR_ENABLED.setBooleanPreferences(b);
     }
-    
+
     public void setSuspendOnErrors(boolean b) {
-        getPreferences().putBoolean(PROP_SUSPEND_ON_ERRORS, b);
+        PROPERTIES.PROP_SUSPEND_ON_ERRORS.setBooleanPreferences(b);
     }
-    
+
     public boolean getSuspendOnErrors() {
-        return getPreferences().getBoolean(PROP_SUSPEND_ON_ERRORS, SUSPEND_ON_ERRORS_DEFAULT);
+        return PROPERTIES.PROP_SUSPEND_ON_ERRORS.getBooleanPreference();
     }
-    
+
     public void setSuspendOnDebuggerKeyword(boolean b) {
-        getPreferences().putBoolean(PROP_SUSPEND_ON_DEBUGGER_KEYWORD, b);
+        PROPERTIES.PROP_SUSPEND_ON_DEBUGGER_KEYWORD.setBooleanPreferences(b);
     }
-    
+
     public boolean getSuspendOnDebuggerKeyword() {
-        return getPreferences().getBoolean(PROP_SUSPEND_ON_DEBUGGER_KEYWORD, SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT);
-    } 
-    
-    public boolean getHttpMonitor() {
-        return getPreferences().getBoolean(PROP_HTTP_MONITOR, HTTP_MONITOR_DEFAULT);
-    }    
-     
-    public void addPreferencesChangeListener(PreferenceChangeListener listener) {
+        return PROPERTIES.PROP_SUSPEND_ON_DEBUGGER_KEYWORD.getBooleanPreference();
+    }
+
+    public boolean getHttpMonitorEnabled() {
+        return PROPERTIES.PROP_HTTP_MONITOR_ENABLED.getBooleanPreference();
+    }
+    public void seHttpMonitorEnabled(boolean b) {
+        PROPERTIES.PROP_HTTP_MONITOR_ENABLED.setBooleanPreferences(b);
+    }
+
+    public void setIgnoreQueryStrings(boolean b) {
+        PROPERTIES.PROP_IGNORE_QUERY_STRINGS.setBooleanPreferences(b);
+    }
+
+    public boolean getIgnoreQueryStrings() {
+        return PROPERTIES.PROP_IGNORE_QUERY_STRINGS.getBooleanPreference();
+    }
+
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().addPreferenceChangeListener(listener);
     }
-    
-    public void removePreferencesChangeListener(PreferenceChangeListener listener) {
+
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().removePreferenceChangeListener(listener);
     }
-    
-    private Preferences getPreferences() {
+
+    private static final Preferences getPreferences() {
         return NbPreferences.forModule(NbJSPreferences.class);
     }
-    
+
+
 }

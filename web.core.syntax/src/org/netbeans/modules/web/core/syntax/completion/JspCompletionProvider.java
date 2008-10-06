@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.core.syntax.completion;
 
 import java.net.URL;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -52,11 +51,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery;
-import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -72,9 +67,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  */
 public class JspCompletionProvider implements CompletionProvider {
     
-    /** Creates a new instance of JavaDocCompletionProvider */
-    public JspCompletionProvider() {
-    }
+    public JspCompletionProvider() {}
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         int type = JspSyntaxSupport.get(component.getDocument()).checkCompletion(component, typedText, false);
@@ -92,7 +85,7 @@ public class JspCompletionProvider implements CompletionProvider {
         return null;
     }
     
-    static final class Query extends AbstractQuery {
+    public static class Query extends AbstractQuery {
         
         private JTextComponent component;
         
@@ -102,69 +95,80 @@ public class JspCompletionProvider implements CompletionProvider {
             this.creationCaretOffset = caretOffset;
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CompletionQuery.Result res = queryImpl(component, caretOffset);
-            if(res != null) {
-                List/*<CompletionItem>*/ results = res.getData();
-                resultSet.addAllItems(results);
-                resultSet.setTitle(res.getTitle());
-                resultSet.setAnchorOffset(((JspCompletionQuery.SubstituteOffsetProvider)res).getSubstituteOffset());
-            }
+            JspCompletionQuery.instance().query(resultSet, component, caretOffset);
         }
+        
     }
     
-    static class DocQuery extends AbstractQuery {
+    public static class DocQuery extends AbstractQuery {
         
         private JTextComponent component;
-        private ResultItem item;
+        private JspCompletionItem item;
         
-        public  DocQuery(ResultItem item) {
+        public  DocQuery(JspCompletionItem item) {
             this.item = item;
         }
         
+        @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
         
         protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CompletionQuery.Result res = queryImpl(component, caretOffset);
-            if(item == null) {
-                if(res != null) {
-                    List result = res.getData();
-                    if(result != null && result.size() > 0) {
-                        Object resultObj = result.get(0);
-                        if(resultObj instanceof ResultItem) {
-                            item = (ResultItem)resultObj;
-                        } else if(resultObj instanceof HTMLResultItem) {
-                            HTMLResultItem htmlItem = (HTMLResultItem)resultObj;
-                            if(htmlItem != null && htmlItem.getHelpID() != null) {
-                                resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
-                                resultSet.setTitle(res.getTitle());
-                                return ;
-                            }
-                        }
-                    }
+            if(item != null) {
+                //this instance created from jsp completion item
+                if(item.hasHelp()) {
+                    resultSet.setDocumentation(new DocItem(item));
                 }
+            } else {
+                //called directly by infrastructure - run query
+                JspCompletionQuery.instance().query(resultSet, component, caretOffset);
             }
-            if(item != null &&
-                    !(item instanceof JspCompletionItem.ELItem) &&
-                    (item.getHelp() != null || item.getHelpURL() != null)) {
-                resultSet.setDocumentation(new DocItem(item));
-                if(res != null) {
-                    resultSet.setTitle(res.getTitle());
-                }
-            }
+            
+            
+            
+//            CompletionQuery.Result res = queryImpl(component, caretOffset);
+//            if(item == null) {
+//                if(res != null) {
+//                    List result = res.getData();
+//                    if(result != null && result.size() > 0) {
+//                        Object resultObj = result.get(0);
+//                        if(resultObj instanceof JspCompletionItem) {
+//                            item = (JspCompletionItem)resultObj;
+//                        } else if(resultObj instanceof HTMLResultItem) {
+//                            HTMLResultItem htmlItem = (HTMLResultItem)resultObj;
+//                            if(htmlItem != null && htmlItem.getHelpID() != null) {
+//                                resultSet.setDocumentation(new HTMLCompletionQuery.DocItem(htmlItem));
+//                                resultSet.setTitle(res.getTitle());
+//                                return ;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            if(item != null &&
+//                    !(item instanceof JspCompletionItem2.ELItem) &&
+//                    (item.getHelp() != null || item.getHelpURL() != null)) {
+//                resultSet.setDocumentation(new DocItem(item));
+//                if(res != null) {
+//                    resultSet.setTitle(res.getTitle());
+//                }
+//            }
+//        }
         }
     }
     
-    static class DocItem implements CompletionDocumentation {
-        private ResultItem ri;
+    private static class DocItem implements CompletionDocumentation {
         
-        public DocItem(ResultItem ri) {
+        private JspCompletionItem ri;
+        
+        public DocItem(JspCompletionItem ri) {
             this.ri = ri;
         }
         
@@ -177,7 +181,6 @@ public class JspCompletionProvider implements CompletionProvider {
         }
         
         public CompletionDocumentation resolveLink(String link) {
-            //????
             return null;
         }
         
@@ -185,18 +188,11 @@ public class JspCompletionProvider implements CompletionProvider {
             return null;
         }
     }
+ 
     
-    static CompletionQuery.Result queryImpl(JTextComponent component, int offset) {
-        Class kitClass = Utilities.getKitClass(component);
-        if (kitClass != null) {
-            return new JspCompletionQuery().query(component, offset);
-        } else {
-            return null;
-        }
-    }
-    
-    private static abstract class AbstractQuery extends AsyncCompletionQuery {
+        public static abstract class AbstractQuery extends AsyncCompletionQuery {
         
+        @Override
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();

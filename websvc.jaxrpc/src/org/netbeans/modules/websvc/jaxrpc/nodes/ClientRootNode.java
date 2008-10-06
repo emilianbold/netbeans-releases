@@ -55,6 +55,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -69,7 +70,7 @@ import org.openide.util.actions.NodeAction;
  */
 public final class ClientRootNode extends AbstractNode {
 
-    private static final Image WEB_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/jaxrpc/nodes/resources/webserviceclientgroup.png" ); // NOI18N
+    private static final Image WEB_SERVICES_BADGE = ImageUtilities.loadImage( "org/netbeans/modules/websvc/jaxrpc/nodes/resources/webserviceclientgroup.png" ); // NOI18N
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;	
     private FileObject wsdlFolder;
@@ -98,7 +99,6 @@ public final class ClientRootNode extends AbstractNode {
 		return new Action[] {
 			org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction(),
 			null,
-//			org.openide.util.actions.SystemAction.get( org.netbeans.modules.websvc.jaxrpc.actions.RefreshClientsAction.class ),
 			org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),
 			null,
 			org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),
@@ -129,7 +129,7 @@ public final class ClientRootNode extends AbstractNode {
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, WEB_SERVICES_BADGE, 7, 7 );
         return image;        
     }
 

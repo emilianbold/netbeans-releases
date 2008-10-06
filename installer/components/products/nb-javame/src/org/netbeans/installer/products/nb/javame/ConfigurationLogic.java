@@ -49,7 +49,6 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
-import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
@@ -67,10 +66,6 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "{enterprise-cluster}"; // NOI18N
     private static final String ID =
             "MOB"; // NOI18N
-    private static final String DISTRIBUTION_README_RESOURCE =
-            "org/netbeans/installer/products/nb/javame/DISTRIBUTION.txt";
-    private static final String THIRDPARTYLICENSE_RESOURCE =
-            "org/netbeans/installer/products/nb/javame/THIRDPARTYLICENSE.txt";
     private static final String[] MOBILITY_END_2_END = {
         "config/Modules/org-netbeans-modules-mobility-end2end.xml",
         "config/Modules/org-netbeans-modules-mobility-jsr172.xml",
@@ -168,15 +163,5 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                 }
             }
         }
-    }
-
-    public Text getDistributionReadme() {
-        final String text = parseString("$R{" + DISTRIBUTION_README_RESOURCE + ";utf-8}");
-        return new Text(text, Text.ContentType.PLAIN_TEXT);
-    }
-
-    public Text getThirdPartyLicense() {
-        final String text = parseString("$R{" + THIRDPARTYLICENSE_RESOURCE + ";utf-8}");
-        return new Text(text, Text.ContentType.PLAIN_TEXT);
     }
 }

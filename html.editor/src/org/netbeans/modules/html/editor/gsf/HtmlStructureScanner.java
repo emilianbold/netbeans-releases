@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 
 /**
  *
@@ -74,12 +75,15 @@ public class HtmlStructureScanner implements StructureScanner {
 
     private static final Logger LOGGER = Logger.getLogger(HtmlStructureScanner.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private HtmlFormatter formatter;
 
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
 
-        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
-        final TranslatedSource source = presult.getTranslatedSource();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyList();
+        }
+
+        ParserResult presult = presultIterator.next();     final TranslatedSource source = presult.getTranslatedSource();
         AstNode root = ((HtmlParserResult) presult).root();
 
 
@@ -90,7 +94,7 @@ public class HtmlStructureScanner implements StructureScanner {
 
         //return the root children
         List<StructureItem> elements = new  ArrayList<StructureItem>(1);
-        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info), source).getNestedItems());
+        elements.addAll(new HtmlStructureItem(new HtmlElementHandle(root, info.getFileObject()), source).getNestedItems());
         
         return elements;
         
@@ -102,7 +106,12 @@ public class HtmlStructureScanner implements StructureScanner {
             return Collections.emptyMap();
         }
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyMap();
+        }
+
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         AstNode root = ((HtmlParserResult) presult).root();
 
@@ -117,6 +126,12 @@ public class HtmlStructureScanner implements StructureScanner {
                     try {
                         int so = documentPosition(node.startOffset(), source);
                         int eo = documentPosition(node.endOffset(), source);
+                        if (eo > doc.getLength()) {
+                            eo = doc.getLength();
+                            if (so > eo) {
+                                so = eo;
+                            }
+                        }
 
                         if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
@@ -146,6 +161,10 @@ public class HtmlStructureScanner implements StructureScanner {
         return source == null ? astOffset : source.getLexicalOffset(astOffset);
     }
     
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
+
     private static final class HtmlStructureItem implements StructureItem {
 
         private TranslatedSource source;
@@ -155,7 +174,7 @@ public class HtmlStructureScanner implements StructureScanner {
         
         private HtmlStructureItem(HtmlElementHandle handle, TranslatedSource source) {
             this.handle = handle;
-            this.source= source;
+            this.source = source;
         }
 
         public String getName() {
@@ -169,7 +188,7 @@ public class HtmlStructureScanner implements StructureScanner {
             return Integer.toHexString(10000+(int)getPosition());
         }
 
-        public String getHtml() {
+        public String getHtml(HtmlFormatter formatter) {
             return getName();
         }
 
@@ -233,7 +252,7 @@ public class HtmlStructureScanner implements StructureScanner {
                 for(AstNode child : handle.node().children()) {
                     if(child.type() == AstNode.NodeType.TAG 
                             || child.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.compilationInfo());
+                        HtmlElementHandle childHandle = new HtmlElementHandle(child, handle.getFileObject());
                         items.add(new HtmlStructureItem(childHandle, source));
                     }
                 }

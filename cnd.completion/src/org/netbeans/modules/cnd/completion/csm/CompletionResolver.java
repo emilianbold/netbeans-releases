@@ -69,11 +69,11 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 public interface CompletionResolver {
     // flags indicating what we plan to resolve using this resolver
     public static final int RESOLVE_NONE                   = 0;
-    
+
     public static final int RESOLVE_CONTEXT                = 1 << 0;
 
     public static final int RESOLVE_CLASSES                = 1 << 1;
-    
+
     public static final int RESOLVE_GLOB_VARIABLES         = 1 << 2;
 
     public static final int RESOLVE_GLOB_FUNCTIONS         = 1 << 3;
@@ -81,44 +81,46 @@ public interface CompletionResolver {
     public static final int RESOLVE_CLASS_FIELDS           = 1 << 4;
 
     public static final int RESOLVE_CLASS_METHODS          = 1 << 5;
-    
+
     public static final int RESOLVE_LOCAL_VARIABLES        = 1 << 6;
 
-    public static final int RESOLVE_FILE_LOCAL_VARIABLES   = 1 << 7;
+    public static final int RESOLVE_LOCAL_CLASSES          = 1 << 7;
 
-    public static final int RESOLVE_LIB_CLASSES            = 1 << 8;
-    
-    public static final int RESOLVE_LIB_VARIABLES          = 1 << 9;
+    public static final int RESOLVE_FILE_LOCAL_VARIABLES   = 1 << 8;
 
-    public static final int RESOLVE_LIB_FUNCTIONS          = 1 << 10;
-    
-    public static final int RESOLVE_LIB_ENUMERATORS        = 1 << 11;
-    
-    public static final int RESOLVE_GLOB_ENUMERATORS       = 1 << 12;
+    public static final int RESOLVE_LIB_CLASSES            = 1 << 9;
 
-    public static final int RESOLVE_FILE_LOCAL_MACROS      = 1 << 13;
-    
-    public static final int RESOLVE_FILE_PRJ_MACROS        = 1 << 14;
+    public static final int RESOLVE_LIB_VARIABLES          = 1 << 10;
 
-    public static final int RESOLVE_FILE_LIB_MACROS        = 1 << 15;
+    public static final int RESOLVE_LIB_FUNCTIONS          = 1 << 11;
 
-    public static final int RESOLVE_GLOB_MACROS            = 1 << 16;
+    public static final int RESOLVE_LIB_ENUMERATORS        = 1 << 12;
 
-    public static final int RESOLVE_LIB_MACROS             = 1 << 17;
-    
-    public static final int RESOLVE_GLOB_NAMESPACES        = 1 << 18;
-    
-    public static final int RESOLVE_LIB_NAMESPACES         = 1 << 19;
-    
-    public static final int RESOLVE_CLASS_ENUMERATORS      = 1 << 20;
+    public static final int RESOLVE_GLOB_ENUMERATORS       = 1 << 13;
 
-    public static final int RESOLVE_CLASS_NESTED_CLASSIFIERS= 1 << 21;
-    
-    public static final int RESOLVE_FILE_LOCAL_FUNCTIONS   = 1 << 22;
-    
-    public static final int RESOLVE_CONTEXT_CLASSES        = 1 << 23; // as alternative to RESOLVE_CLASSES
-    
-    public static final int RESOLVE_TEMPLATE_PARAMETERS    = 1 << 24;
+    public static final int RESOLVE_FILE_LOCAL_MACROS      = 1 << 14;
+
+    public static final int RESOLVE_FILE_PRJ_MACROS        = 1 << 15;
+
+    public static final int RESOLVE_FILE_LIB_MACROS        = 1 << 16;
+
+    public static final int RESOLVE_GLOB_MACROS            = 1 << 17;
+
+    public static final int RESOLVE_LIB_MACROS             = 1 << 18;
+
+    public static final int RESOLVE_GLOB_NAMESPACES        = 1 << 19;
+
+    public static final int RESOLVE_LIB_NAMESPACES         = 1 << 20;
+
+    public static final int RESOLVE_CLASS_ENUMERATORS      = 1 << 21;
+
+    public static final int RESOLVE_CLASS_NESTED_CLASSIFIERS= 1 << 22;
+
+    public static final int RESOLVE_FILE_LOCAL_FUNCTIONS   = 1 << 23;
+
+    public static final int RESOLVE_CONTEXT_CLASSES        = 1 << 24; // as alternative to RESOLVE_CLASSES
+
+    public static final int RESOLVE_TEMPLATE_PARAMETERS    = 1 << 25;
 
     public static final int RESOLVE_MACROS                 = RESOLVE_FILE_LOCAL_MACROS | RESOLVE_FILE_PRJ_MACROS | RESOLVE_FILE_LIB_MACROS |
                                                                 RESOLVE_GLOB_MACROS | RESOLVE_LIB_MACROS;

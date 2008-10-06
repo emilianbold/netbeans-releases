@@ -41,12 +41,16 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.lang.ref.WeakReference;
+import java.util.Collection;
+import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.Cancellable;
 
 /**
  *
@@ -67,7 +71,9 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
         } else {
             weakDoc = null;
         }
-
+    }
+    
+    protected void init(Document doc){
         String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
         CsmFontColorManager.instance().addListener(mimeType, this);
     }
@@ -83,7 +89,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     // ChangeListener
     public void stateChanged(FontColorProvider provider) {
         updateFontColors(provider);
-        run(PhaseRunner.Phase.INIT);
+        //run(PhaseRunner.Phase.INIT);
     }
     
     protected abstract void updateFontColors(FontColorProvider provider);
@@ -91,4 +97,37 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     protected boolean isCancelled() {
         return Thread.interrupted();
     }
+
+    private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
+    protected void addCancelListener(Cancellable interruptor){
+        synchronized(listeners) {
+            listeners.add(interruptor);
+        }
+    }
+    
+    protected void removeCancelListener(Cancellable interruptor){
+        synchronized(listeners) {
+            listeners.remove(interruptor);
+        }
+    }
+
+    public void cancel() {
+        synchronized(listeners) {
+            for(Cancellable interruptor : listeners) {
+                interruptor.cancel();
+            }
+        }
+    }
+
+    protected class MyInterruptor implements Interrupter, Cancellable {
+        private boolean canceled = false;
+        public boolean cancelled() {
+            return canceled;
+        }
+        public boolean cancel() {
+            canceled = true;
+            return true;
+        }
+    }
+    
 }

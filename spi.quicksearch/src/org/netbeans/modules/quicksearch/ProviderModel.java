@@ -39,9 +39,20 @@
 
 package org.netbeans.modules.quicksearch;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.quicksearch.SearchProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -49,9 +60,25 @@ import org.netbeans.spi.quicksearch.SearchProvider;
  */
 public final class ProviderModel {
 
+    /** folder in layer file system where provider of fast access content are searched for */
+    private static final String SEARCH_PROVIDERS_FOLDER = "/QuickSearch"; //NOI18N
+    private static final String COMMAND_PREFIX = "command"; //NOI18N
+
+    private static ProviderModel instance;
+
     private List<Category> categories;
     
     private HashSet<String> knownCommands;
+
+    private ProviderModel () {
+    }
+
+    public static ProviderModel getInstance () {
+        if (instance == null) {
+            instance = new ProviderModel();
+        }
+        return instance;
+    }
 
     /**
      * Get the value of categories
@@ -59,60 +86,50 @@ public final class ProviderModel {
      * @return the value of categories
      */
     public List<Category> getCategories() {
-        return this.categories;
-    }
-
-    /**
-     * Set the value of categories
-     *
-     * @param newcategories new value of categories
-     */
-    public void setCategories(List<Category> newCategories) {
-        this.categories = newCategories;
-        knownCommands = new HashSet<String>();
-        for (Category cat:categories) {
-            knownCommands.add(cat.getCommandPrefix());
+        if (categories == null) {
+            categories = loadCategories();
         }
+        return this.categories;
     }
     
     public boolean isKnownCommand(String command) {
+        if (knownCommands == null) {
+            knownCommands = new HashSet<String>();
+            for (Category cat : getCategories()) {
+                knownCommands.add(cat.getCommandPrefix());
+            }
+        }
         return knownCommands.contains(command);
-    }
-
-    public Category getCategory (String commandPrefix) {
-        // TBD
-        return null;
     }
     
     public static class Category {
-        
-        private String name, displayName, commandPrefix;
+
+        private FileObject fo;
+
+        private String displayName, commandPrefix;
         
         private List<SearchProvider> providers;
 
-        public Category(String name, String displayName, String commandPrefix, List<SearchProvider> providers) {
-            this.name = name;
+        public Category(FileObject fo, String displayName, String commandPrefix) {
+            this.fo = fo;
             this.displayName = displayName;
             this.commandPrefix = commandPrefix;
-            this.providers = providers;
         }
         
         public List<SearchProvider> getProviders () {
+            if (providers == null) {
+                Collection<? extends SearchProvider> catProviders =
+                        Lookups.forPath(fo.getPath()).lookupAll(SearchProvider.class);
+                providers = new ArrayList<SearchProvider>(catProviders);
+            }
+
             return providers;
         }
         
-        public void setProviders (List<SearchProvider> newProviders) {
-            this.providers = newProviders;
-        }
-
         public String getName() {
-            return this.name;
+            return fo.getNameExt();
         }
 
-        public void setName(String newName) {
-            this.name = newName;
-        }
-        
         public String getDisplayName() {
             return displayName;
         }
@@ -121,15 +138,37 @@ public final class ProviderModel {
             return commandPrefix;
         }
         
-        /*private static CategoryDescription getCatDesc (SearchProvider provider) {
-            Lookup lkp = provider.getLookup();
-            if (lkp == null) {
-                return null;
-            }
-            return lkp.lookup(CategoryDescription.class);
-        }*/
-
-        
     } // end of Category
+
+    private static List<Category> loadCategories () {
+        FileObject[] categoryFOs = Repository.getDefault().getDefaultFileSystem().
+                findResource(SEARCH_PROVIDERS_FOLDER).getChildren();
+
+        // respect ordering defined in layers
+        List<FileObject> sortedCats = FileUtil.getOrder(Arrays.asList(categoryFOs), false);
+
+        List<ProviderModel.Category> categories = new ArrayList<ProviderModel.Category>(sortedCats.size());
+
+        for (FileObject curFO : sortedCats) {
+            String displayName = null;
+            try {
+                displayName = curFO.getFileSystem().getStatus().annotateName(
+                        curFO.getNameExt(), Collections.singleton(curFO));
+            } catch (FileStateInvalidException ex) {
+                Logger.getLogger(ProviderModel.class.getName()).log(Level.WARNING,
+                        "Obtaining display name for " + curFO + " failed.", ex);
+            }
+
+            String commandPrefix = null;
+            Object cpAttr = curFO.getAttribute(COMMAND_PREFIX);
+            if (cpAttr instanceof String) {
+                commandPrefix = (String)cpAttr;
+            }
+
+            categories.add(new Category(curFO, displayName, commandPrefix));
+        }
+
+        return categories;
+    }
 
 }

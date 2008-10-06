@@ -104,7 +104,8 @@ public abstract class AntArtifact {
      * is defined for JAR outputs.
      * Others may be defined as needed; for example, tag library JARs,
      * WARs, EJB JARs, deployment descriptor fragments, etc.
-     * XXX format - NMTOKEN maybe
+     * <p>
+     * Since the type will be stored in XML, avoid whitespace.
      * @return the type (format or usage) of the build artifact
      */
     public abstract String getType();

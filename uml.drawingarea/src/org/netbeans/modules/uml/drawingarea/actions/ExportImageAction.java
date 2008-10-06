@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.drawingarea.ui.ExportImagePanel;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
@@ -67,7 +68,9 @@ public class ExportImageAction extends AbstractAction
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("export-as-image.png")); // NOI18N
         putValue(Action.SHORT_DESCRIPTION, 
-                NbBundle.getMessage(ExportImageAction.class, "LBL_ExportImageAction")); // NOI18N
+        NbBundle.getMessage(ExportImageAction.class, "LBL_ExportImageAction")); // NOI18N
+        
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift X"));
     }
 
     public void actionPerformed(ActionEvent e)

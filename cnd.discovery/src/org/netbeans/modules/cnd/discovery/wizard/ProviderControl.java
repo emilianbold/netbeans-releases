@@ -99,6 +99,20 @@ public class ProviderControl {
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getKind()) {
             case MakeLogFile:
+                field = new JTextField();
+                chooserMode = JFileChooser.FILES_ONLY;
+                initBuildOrRoot(wizardDescriptor);
+                button = new JButton();
+                Mnemonics.setLocalizedText(button, getString("ROOT_DIR_BROWSE_BUTTON_TXT"));
+                layout(panel);
+                button.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
+                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
+                                                        getString("LOG_FILE_CHOOSER_TITLE_TXT"));
+                    }
+                });
+                addListeners();
+                break;
             case BinaryFile:
                 field = new JTextField();
                 chooserMode = JFileChooser.FILES_ONLY;
@@ -108,7 +122,8 @@ public class ProviderControl {
                 layout(panel);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile);
+                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
+                                                        getString("BINARY_FILE_CHOOSER_TITLE_TXT"));
                     }
                 });
                 addListeners();
@@ -122,7 +137,7 @@ public class ProviderControl {
                 layout(panel);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt, true);
+                        rootFolderButtonActionPerformed(evt, true, getString("ROOT_DIR_CHOOSER_TITLE_TXT"));
                     }
                 });
                 addListeners();
@@ -327,7 +342,7 @@ public class ProviderControl {
         }
     }
     
-    private void rootFolderButtonActionPerformed(ActionEvent evt, boolean isBinary) {
+    private void rootFolderButtonActionPerformed(ActionEvent evt, boolean isBinary, String title) {
         String seed = null;
         if (field.getText().length() > 0) {
             seed = field.getText();
@@ -361,7 +376,7 @@ public class ProviderControl {
         }
         
         JFileChooser fileChooser = new FileChooser(
-                getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
+                title,
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 chooserMode, false,
                 filters,

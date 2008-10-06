@@ -427,6 +427,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
         add(projectNameValue, gridBagConstraints);
+        projectNameValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSN_ProjectName")); // NOI18N
+        projectNameValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSD_ProjectName")); // NOI18N
 
         createdFiles.setLabelFor(createdFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(createdFiles, bundle.getString("LBL_CreatedFiles")); // NOI18N
@@ -457,6 +459,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         createdFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_CreatedFilesTip")); // NOI18N
         createdFilesValue.setBorder(null);
         createdFilesValueS.setViewportView(createdFilesValue);
+        createdFilesValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSN_CreatedFiles")); // NOI18N
+        createdFilesValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSD_CreatedFiles")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -473,6 +477,8 @@ final class NameAndLocationVisualPanel extends JPanel {
         modifiedFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "LBL_ModifiedFilesTip")); // NOI18N
         modifiedFilesValue.setBorder(null);
         modifiedFilesValueS.setViewportView(modifiedFilesValue);
+        modifiedFilesValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSN_ModifiedFiles")); // NOI18N
+        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NameAndLocationVisualPanel.class, "ACSD_ModifiedFiles")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

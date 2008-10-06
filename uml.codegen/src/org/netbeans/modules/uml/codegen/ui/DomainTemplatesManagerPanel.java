@@ -68,6 +68,7 @@ import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.Family;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamilies;
 import org.netbeans.modules.uml.codegen.dataaccess.xmlbeans.TemplateFamiliesHandler;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.NotifyDescriptor;
@@ -87,11 +88,11 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
     private Map<String, Boolean> treeExpandState = new HashMap<String, Boolean>();
     
     private static final Icon DOMAIN_OBJECT_NODE_ICON =
-        new ImageIcon(Utilities.loadImage(
+        new ImageIcon(ImageUtilities.loadImage(
         "org/netbeans/modules/uml/resources/images/templates.png")); // NOI18N
     
     private static final Icon TEMPLATE_FAMILY_NODE_ICON =
-        new ImageIcon(Utilities.loadImage(
+        new ImageIcon(ImageUtilities.loadImage(
         "org/netbeans/modules/uml/resources/images/default-category.gif")); // NOI18N
     
     public DomainTemplatesManagerPanel()
@@ -1003,20 +1004,27 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     
     private void updateTreeModel(String familyName, String domainName)
     {
-        DomainObject domainObject = dataHandler.getTemplateFamilies()
-            .getFamilyByName(familyName).getDomainByName(domainName);
-        
-        if (domainObject != null)
+        TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
+        if (templateFamilies != null) 
         {
-            domainObject.setModelElement(
-                modelElementCombo.getSelectedItem() == null
-                ? null : modelElementCombo.getSelectedItem().toString());
+            Family family = templateFamilies.getFamilyByName(familyName);
+            if (family != null) 
+            {
+                DomainObject domainObject = family.getDomainByName(domainName);
+
+                if (domainObject != null)
+                {
+                    domainObject.setModelElement(
+                        modelElementCombo.getSelectedItem() == null
+                        ? null : modelElementCombo.getSelectedItem().toString());
             
-            domainObject.setStereotype(stereotypeText.getText());
-            domainObject.setDescription(descriptionTextArea.getText());
-            
-            domainObject.updateTemplates(
-                (DefaultTableModel)templatesTable.getModel());
+                    domainObject.setStereotype(stereotypeText.getText());
+                    domainObject.setDescription(descriptionTextArea.getText());
+                    
+                    domainObject.updateTemplates(
+                         (DefaultTableModel)templatesTable.getModel());
+                }
+            }
         }
     }
 

@@ -1,7 +1,11 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<title>Resource table widget</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+    <head>
+	<title>TTL_DojoResources_Stubs - MSG_TestPage</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__"></meta>
+        <link rel="stylesheet" href="../rjs/css/clientstubs.css" type="text/css"/>
+        <link rel="stylesheet" href="../rjs/css/css_master-all.css" type="text/css"/>
 	<!--<script type="text/javascript">
             //dojo debug, uncomment to enable debugging
             var djConfig = {
@@ -19,11 +23,13 @@
 	</script>-->
 	<script type="text/javascript">
                 var store = "__CONTAINER_NAME__";
-                var storeUrl = "http://localhost:8080/__PROJECT_NAME__/resources/__CONTAINER_PATH_NAME__/";
+                var storeUrl = "__BASE_URL__/__CONTAINER_PATH_NAME__/";
 		function loadResourcesTable() {
                     var restStore = eval('new rdj.data.'+store+'Store({serviceUrl:"'+storeUrl+'"})');
                     var tableElement = djd43.byId("content");
                     var query = null;
+                    //Uncomment below if using proxy for javascript cross-domain.
+                    //rdj.setProxy("__BASE_URL__/../restproxy");
                     rdj.displayResourcesTable(restStore, query, tableElement);
 		}		
 		djd43.addOnLoad(loadResourcesTable);
@@ -42,20 +48,28 @@
                     loadResourcesTable();
 		}
 	</script>
-</head>
-<body>
-	<h2>Resources table widget</h2>
-        Select Resource: 
-        <select id='resourceSel' name='resourceSel' onchange='javascript:changeResource();'>
-<!--Do not remove - Begin -->
-<!-- __DOJO_RESOURCE_SELECT_LIST__ -->
-<!--Do not remove - Begin -->
-        </select>
-        <br/>
-        <br/>
-        <table id="content" style="width: 500px; height: 100px;" class="resourcesTable"></table>
-	<p>&nbsp;</p>
-	<!--<h2>djd43.debug output</h2>-->
-</body>
+    </head>
+    <body>
+        <div class="outerBorder">
+            <div class="header">
+                <div id="subheader" class="subheader"></div> <!-- sub-header -->
+                <div class="banner"><img src="../rjs/css/images/pname-clientstubs.png"/></div>
+            </div> <!-- header -->
+            <div id="main" class="main">
+                <h2>TTL_DojoResources_Stubs - MSG_TestPage</h2>
+                MSG_SelectResource:
+                <select id='resourceSel' name='resourceSel' onchange='javascript:changeResource();'>
+        <!--Do not remove - Begin -->
+        <!-- __DOJO_RESOURCE_SELECT_LIST__ -->
+        <!--Do not remove - End -->
+                </select>
+                <br/>
+                <br/>
+                <table id="content" style="width: 500px; height: 100px;" class="resourcesTable"></table>
+                <p>&nbsp;</p>
+                <!--<h2>djd43.debug output</h2>-->
+            </div> <!-- main -->
+        </div> <!-- outerborder -->
+    </body>
 </html>
 

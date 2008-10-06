@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -51,14 +50,24 @@ import javax.swing.*;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  *
  * @author Anton Chechel
  */
-public class TaskEditorElement extends PropertyEditorResourceElement {
+public class TaskEditorElement extends PropertyEditorResourceElement implements CleanUp {
 
     private WeakReference<DesignComponent> component;
+
+    public void clean(DesignComponent component) {
+        this.component = null;
+        gotoButton = null;
+        jScrollPane1 = null;
+        jTextArea1 = null;
+        taskLabel = null;
+        this.removeAll();
+    }
 
     public TaskEditorElement() {
         initComponents();
@@ -75,12 +84,12 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
     public List<String> getPropertyValueNames() {
         return Arrays.asList(SimpleCancellableTaskCD.PROP_CODE);
     }
-    
+
     @Override
     public String getResourceNameSuggestion() {
         return "task"; // NOI18N
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         boolean enableGoTo = true;
         if (wrapper != null) {
@@ -110,7 +119,7 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
 
-        taskLabel.setLabelFor(gotoButton);
+        taskLabel.setLabelFor(jTextArea1);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.taskLabel.text")); // NOI18N
         taskLabel.setEnabled(false);
 
@@ -129,6 +138,8 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
         jTextArea1.setRows(5);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.jTextArea1.text")); // NOI18N
         jScrollPane1.setViewportView(jTextArea1);
+        jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "ACSN_GoToSourceComment")); // NOI18N
+        jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "ACSD_GoToSourceComment")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -150,6 +161,9 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))
         );
+
+        gotoButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "ACSN_GoToSource")); // NOI18N
+        gotoButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "ACSD_GoToSource")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void gotoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoButtonActionPerformed

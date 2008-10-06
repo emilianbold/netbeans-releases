@@ -1,0 +1,5 @@
+Code completion result for source line:
+$t->|;
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     foo()                           [PUBLIC]   Test
+VARIABLE   ? variable                      [PUBLIC]   Test

@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 
@@ -60,6 +60,7 @@ public class HtmlEmbeddingModel implements IncrementalEmbeddingModel {
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     static final String JSP_TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     static final String PHP_TAG_MIME_TYPE = "text/x-php5"; // NOI18N
+    static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
@@ -68,6 +69,7 @@ public class HtmlEmbeddingModel implements IncrementalEmbeddingModel {
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(JSP_TAG_MIME_TYPE);
         sourceMimeTypes.add(PHP_TAG_MIME_TYPE);
+        sourceMimeTypes.add(GSP_TAG_MIME_TYPE);
     }
     
     public String getTargetMimeType() {

@@ -52,7 +52,9 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
@@ -65,20 +67,19 @@ import org.rubyforge.debugcommons.RubyDebuggerFactory;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 
+import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
+
 /**
  * Implementation of {@link RubyDebuggerImplementation} SPI, providing an entry
  * to point to the Ruby debugging.
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
     
-    /** For unit tests. */
-    static boolean FORCE_CLASSIC;
-    
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
     private ExecutionDescriptor descriptor;
     
-    private RubySession session;
+    private RubySession rubySession;
     
     static {
         String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
@@ -101,13 +102,16 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Process debug() {
         Process p = null;
         try {
-            session = startDebugging(descriptor);
-            if (session != null) {
-                p = session.getProxy().getDebugTarged().getProcess();
+            rubySession = startDebugging(descriptor);
+            if (rubySession != null) {
+                rubySession.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
+                p = rubySession.getProxy().getDebugTarged().getProcess();
             }
         } catch (IOException e) {
+            getFinishAction().run();
             problemOccurred(e);
         } catch (RubyDebuggerException e) {
+            getFinishAction().run();
             problemOccurred(e);
         }
         return p;
@@ -117,9 +121,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     public Runnable getFinishAction() {
         return new Runnable() {
             public void run() {
-                if (session != null) { // #131563
-                    session.getActionProvider().doAction(ActionsManager.ACTION_KILL);
-                    session = null;
+                if (rubySession != null) { // #131563
+                    rubySession.getActionProvider().doAction(ActionsManager.ACTION_KILL);
+                    rubySession = null;
                 }
             }
         };
@@ -152,16 +156,22 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
         debugDesc.setScriptPath(descriptor.getScript());
-        List<String> additionalOptions = new ArrayList<String>();
-        if (descriptor.getInitialArgs() != null) {
-            additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+        
+        if(descriptor.useInterpreter()) {
+            List<String> additionalOptions = new ArrayList<String>();
+            if (descriptor.getInitialArgs() != null) {
+                additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
+            }
+            if (jrubySet && descriptor.getJVMArguments() != null) {
+                for (String jvmArg : descriptor.getJVMArguments()) {
+                    additionalOptions.add("-J" + jvmArg); // NOI18N
+                }
+            }
+            if (!additionalOptions.isEmpty()) {
+                debugDesc.setAdditionalOptions(additionalOptions);
+            }
         }
-        if (descriptor.getJRubyProps() != null) {
-            additionalOptions.addAll(Arrays.asList(descriptor.getJRubyProps()));
-        }
-        if (!additionalOptions.isEmpty()) {
-            debugDesc.setAdditionalOptions(additionalOptions);
-        }
+        
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -178,9 +188,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.setEnvironment(env);
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
-        Util.finest("Using timeout: " + timeout + 's'); // NOI18N
+        Util.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
-        if (!platform.hasFastDebuggerInstalled() || FORCE_CLASSIC) {
+        if (!platform.hasFastDebuggerInstalled()) {
             Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
@@ -189,13 +199,20 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             debugDesc.setRubyDebugIDEVersion(version);
             Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
-            proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
-                    rDebugF.getAbsolutePath(), interpreter, timeout);
+            
+            if(descriptor.useInterpreter()) {
+                proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
+                        rDebugF.getAbsolutePath(), interpreter, timeout);
+            } else {
+                List<String> cmd = new ArrayList<String>(20);
+                cmd.add(descriptor.getCmd().getAbsolutePath());
+                cmd.addAll(Arrays.asList(descriptor.getInitialArgs()));
+                proxy = RubyDebuggerFactory.startRubyDebug(
+                        debugDesc, cmd, rDebugF.getAbsolutePath(), timeout);
+            }
         }
         
-        RubySession session = intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
-        proxy.startDebugging(RubyBreakpointManager.getBreakpoints());
-        return session;
+        return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
     }
 
     private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
@@ -221,21 +238,36 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         // Offers to install only for fast native Ruby debugger. Installation
         // does not work for jruby ruby-debug-base yet.
         if (!jrubySet) {
-            Util.offerToInstallFastDebugger(platform);
+            FastDebugInstallationResult result = Util.offerToInstallFastDebugger(platform);
+            if (result == CANCELLED || result == FAILED) {
+                return false;
+            }
         }
         
-        if (fastDebuggerRequired && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) { // NOI18N
-            return false;
+        if (fastDebuggerRequired) { // NOI18N
+            FastDebugInstallationResult result = Util.ensureRubyDebuggerIsPresent(
+                    platform, true, "RubyDebugger.wrong.fast.debugger.required"); // NOI18N
+            if (result != INSTALLED) {
+                if (jrubySet) {
+                    Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
+                            "RubyDebugger.instructionsToInstallJRubyDebugger", // NOI18N
+                            platform.getFastDebuggerProblemsInHTML()));
+                }
+                return false;
+            }
         }
 
         if (platform.hasFastDebuggerInstalled()) {
-            if (!Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.requiredMessage")) { // NOI18N
+            FastDebugInstallationResult result = Util.ensureRubyDebuggerIsPresent(
+                    platform, true, "RubyDebugger.requiredMessage"); // NOI18N
+            if (result != INSTALLED) {
                 return false;
             }
             String rDebugPath = Util.findRDebugExecutable(platform);
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
                         "RubyDebugger.wrong.rdebug-ide", // NOI18N
+                        platform.getInfo().getLongDescription(),
                         platform.getInterpreter(),
                         Util.rdebugPattern()));
                 return false;
@@ -250,10 +282,14 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         DebuggerInfo di = DebuggerInfo.create(
                 "RubyDebuggerInfo", new Object[] { sp, rubySession }); // NOI18N
         DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        DebuggerEngine[] es = dm.startDebugging(di);
+        DebuggerEngine[] de = dm.startDebugging(di);
+        assert de.length == 1 : "one debugger engine";
+        Session session = de[0].lookupFirst(null, Session.class);
+        assert session != null : "non-null Session in the lookup";
+        rubySession.setSession(session);
         
         RubyDebuggerActionProvider provider =
-                es[0].lookupFirst(null, RubyDebuggerActionProvider.class);
+                de[0].lookupFirst(null, RubyDebuggerActionProvider.class);
         assert provider != null;
         rubySession.setActionProvider(provider);
         proxy.addRubyDebugEventListener(provider);

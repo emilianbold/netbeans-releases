@@ -1,0 +1,5 @@
+    var x = "xâ†”y"
+              -
+HINT:Unicode in literals - convert to more portable escape sequence?
+FIX:Change â to \u201a
+FIX:Show more information about this warning

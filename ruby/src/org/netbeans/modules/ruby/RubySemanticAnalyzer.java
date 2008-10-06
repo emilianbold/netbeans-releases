@@ -42,23 +42,24 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.BlockArgNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.ForNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgsNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.BlockArgNode;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.ForNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -68,7 +69,7 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
  * Walk through the JRuby AST and note interesting things
- * @todo Use the org.jruby.ast.visitor.NodeVisitor interface
+ * @todo Use the org.jruby.nb.ast.visitor.NodeVisitor interface
  * @todo Do mixins and includes trip up my unused private method detection code?
  * @todo Treat toplevel methods as private?
  * @todo Show unused highlighting for unused class variables:
@@ -85,6 +86,13 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
 public class RubySemanticAnalyzer implements SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    private static final Set<String> JAVA_PREFIXES = new HashSet<String>();
+    static {
+        JAVA_PREFIXES.add("java"); // NOI18N
+        JAVA_PREFIXES.add("javax"); // NOI18N
+        JAVA_PREFIXES.add("org"); // NOI18N
+        JAVA_PREFIXES.add("com"); // NOI18N
+    }
 
     public RubySemanticAnalyzer() {
     }
@@ -154,7 +162,7 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
     }
 
     /** Find unused local and dynamic variables */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("fallthrough")
     private void annotate(Node node, Map<OffsetRange,Set<ColoringAttributes>> highlights, AstPath path,
         List<String> parameters, boolean isParameter) {
         switch (node.nodeId) {
@@ -202,7 +210,7 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
             parameters = AstUtilities.getDefArgs(def, true);
 
             if ((parameters != null) && (parameters.size() > 0)) {
-                List<String> unused = new ArrayList();
+                List<String> unused = new ArrayList<String>();
 
                 for (String parameter : parameters) {
                     boolean isUsed = isUsedInMethod(node, parameter, true);
@@ -240,9 +248,14 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
             break;
         }
         
-        case FCALLNODE:
+        case VCALLNODE:
+            // FALLTHROUGH!
+            if (JAVA_PREFIXES.contains(((INameNode)node).getName())) {
+                // Skip highlighting "org" in "org.foo.Bar" etc.
+                break;
+            }
         //case CALLNODE:
-        case VCALLNODE: {
+        case FCALLNODE: {
             // CallNode seems overly aggressive - it will show all operators for example
             OffsetRange range = AstUtilities.getCallRange(node);
             highlights.put(range, ColoringAttributes.METHOD_SET);
@@ -264,18 +277,18 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
 
     private void annotateParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> usedParameterNames) {
-        List<Node> nodes = (List<Node>)node.childNodes();
+        List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
             if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
                 if (an.getRequiredArgsCount() > 0) {
-                    List<Node> args = (List<Node>)an.childNodes();
+                    List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
                         if (arg instanceof ListNode) { // Many specific types
-                            List<Node> args2 = (List<Node>)arg.childNodes();
+                            List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {
@@ -329,18 +342,18 @@ public class RubySemanticAnalyzer implements SemanticAnalyzer {
 
     private void annotateUnusedParameters(MethodDefNode node,
         Map<OffsetRange, Set<ColoringAttributes>> highlights, List<String> names) {
-        List<Node> nodes = (List<Node>)node.childNodes();
+        List<Node> nodes = node.childNodes();
 
         for (Node c : nodes) {
             if (c.nodeId == NodeType.ARGSNODE) {
                 ArgsNode an = (ArgsNode)c;
 
                 if (an.getRequiredArgsCount() > 0) {
-                    List<Node> args = (List<Node>)an.childNodes();
+                    List<Node> args = an.childNodes();
 
                     for (Node arg : args) {
                         if (arg instanceof ListNode) { // Check subclasses
-                            List<Node> args2 = (List<Node>)arg.childNodes();
+                            List<Node> args2 = arg.childNodes();
 
                             for (Node arg2 : args2) {
                                 if (arg2.nodeId == NodeType.ARGUMENTNODE) {

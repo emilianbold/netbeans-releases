@@ -49,7 +49,6 @@ import org.netbeans.modules.clearcase.ui.checkin.CheckinAction;
 import org.netbeans.modules.clearcase.ui.status.RefreshAction;
 import org.netbeans.modules.clearcase.ui.status.ShowPropertiesAction;
 import org.netbeans.modules.clearcase.ui.add.AddAction;
-import org.netbeans.modules.clearcase.ui.add.AddToRepositoryAction;
 import org.netbeans.modules.clearcase.ui.checkout.CheckoutAction;
 import org.netbeans.modules.clearcase.ui.update.UpdateAction;
 import org.netbeans.modules.clearcase.ui.diff.DiffAction;
@@ -75,6 +74,7 @@ import org.netbeans.modules.clearcase.ui.checkout.ReserveAction;
 import org.netbeans.modules.clearcase.ui.label.LabelAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -102,8 +102,20 @@ public class ClearcaseAnnotator extends VCSAnnotator {
     private static MessageFormat removedFormat    = new MessageFormat("<font color=\"#999999\">{0}</font>{1}");         // NOI18N
     private static MessageFormat missingFormat    = new MessageFormat("<font color=\"#999999\">{0}</font>{1}");         // NOI18N
     private static MessageFormat eclipsedFormat   = new MessageFormat("<s><font color=\"#008000\">{0}</font></s>{1}");  // NOI18N
-    
-    
+
+    private static MessageFormat newLocallyTooltipFormat = new MessageFormat("<font color=\"#008000\">{0}</font>");         // NOI18N
+    private static MessageFormat checkedoutTooltipFormat = new MessageFormat("<font color=\"#0000FF\">{0}</font>");         // NOI18N
+    private static MessageFormat hijackedTooltipFormat   = new MessageFormat("<font color=\"#FF0000\">{0}</font>");         // NOI18N
+    private static MessageFormat ignoredTooltipFormat    = new MessageFormat("<font color=\"#999999\">{0}</font>");         // NOI18N
+    private static MessageFormat removedTooltipFormat    = new MessageFormat("<font color=\"#999999\">{0}</font>");         // NOI18N
+    private static MessageFormat missingTooltipFormat    = new MessageFormat("<font color=\"#999999\">{0}</font>");         // NOI18N
+    private static MessageFormat eclipsedTooltipFormat   = new MessageFormat("<s><font color=\"#008000\">{0}</font></s>");  // NOI18N
+
+    private static String badgeModified = "org/netbeans/modules/clearcase/resources/icons/modified-badge.png";
+
+    private static String toolTipModified = "<img src=\"" + ClearcaseAnnotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+            + NbBundle.getMessage(ClearcaseAnnotator.class, "MSG_Contains_Modified_Locally");
+
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
 
     private static final int STATUS_BADGEABLE =         
@@ -122,6 +134,13 @@ public class ClearcaseAnnotator extends VCSAnnotator {
     
     public static String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_VERSION, ANNOTATION_RULE};
     
+    private int INCLUDE_STATUS =
+                FileInformation.STATUS_VERSIONED_UPTODATE |
+                FileInformation.STATUS_LOCAL_CHANGE |
+                FileInformation.STATUS_NOTVERSIONED_IGNORED |
+                FileInformation.STATUS_NOTVERSIONED_ECLIPSED |
+                FileInformation.STATUS_VERSIONED_CHECKEDOUT;
+
     private MessageFormat format;     
     private String emptyFormat;
     
@@ -145,7 +164,96 @@ public class ClearcaseAnnotator extends VCSAnnotator {
             emptyFormat = null;
         }                     
         refreshAllAnnotations();
-    }    
+    }
+
+    private Image annotateFileIcon(VCSContext context, Image icon) {
+        FileInformation mostImportantInfo = null;
+
+        for (File file : context.getRootFiles()) {
+            FileInformation info = getCachedInfo(file);
+            if(info == null) {
+                return null;
+            }
+            int status = info.getStatus();
+            if ((status & INCLUDE_STATUS) == 0) continue;
+
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+            }
+        }
+        if(mostImportantInfo == null) return null;
+        String statusText = null;
+        int status = mostImportantInfo.getStatus();
+        if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            statusText = newLocallyTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if ((status & FileInformation.STATUS_VERSIONED_CHECKEDOUT) != 0) {
+            statusText = checkedoutTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (status == FileInformation.STATUS_VERSIONED_HIJACKED) {
+            statusText = hijackedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (status == FileInformation.STATUS_NOTVERSIONED_IGNORED ) {
+            statusText = ignoredTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (status == FileInformation.STATUS_NOTVERSIONED_ECLIPSED ) {
+            statusText = eclipsedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (status == FileInformation.STATUS_VERSIONED_CHECKEDOUT_BUT_REMOVED ) {
+            statusText = removedTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        } else if (status == FileInformation.STATUS_VERSIONED_LOADED_BUT_MISSING ) {
+            statusText = missingTooltipFormat.format(new Object [] { mostImportantInfo.getStatusText() });
+        }
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null; // NOI18N
+    }
+
+    private Image annotateFolderIcon(VCSContext context, Image icon) {
+        boolean isVersioned = false;
+        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = getCachedInfo(file);
+            if (info == null) {
+                return null;
+            }
+            if ((info.getStatus() & STATUS_BADGEABLE) != 0) {
+                isVersioned = true;
+                break;
+            }
+        }
+        if (!isVersioned) {
+            return null;
+        }
+        boolean allExcluded = true;
+        boolean modified = false;
+        for (File root : context.getRootFiles()) {
+            Map<File, FileInformation> modifiedFiles = cache.getAllModifiedValues(root); // XXX should go only after files from the context
+            if (VersioningSupport.isFlat(root)) {
+                for (File file : modifiedFiles.keySet()) {
+                    if (file.getParentFile().equals(root)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(file);
+                        if (info.isDirectory()) {
+                            continue;
+                        }
+                        modified = true;
+                        allExcluded &= ClearcaseModuleConfig.isExcludedFromCommit(file.getAbsolutePath());
+                    }
+                }
+            } else {
+                // TODO should go recursive!
+                for (File mf : modifiedFiles.keySet()) {
+                    if (Utils.isAncestorOrEqual(root, mf)) {
+                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
+                        if ((info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) && mf.equals(root)) {
+                            continue;
+                        }
+                        modified = true;
+                        allExcluded &= ClearcaseModuleConfig.isExcludedFromCommit(mf.getAbsolutePath());
+                    }
+                }
+            }
+        }
+        if (modified && !allExcluded) {
+            Image badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified); // NOI18N
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
+        } else {
+            return null;
+        }
+    }
     
     /**
      * Refreshes all textual annotations and badges.
@@ -163,13 +271,6 @@ public class ClearcaseAnnotator extends VCSAnnotator {
     }
     
     public String annotateName(String name, VCSContext context) {        
-        int includeStatus = 
-                FileInformation.STATUS_VERSIONED_UPTODATE | 
-                FileInformation.STATUS_LOCAL_CHANGE | 
-                FileInformation.STATUS_NOTVERSIONED_IGNORED | 
-                FileInformation.STATUS_NOTVERSIONED_ECLIPSED |                 
-                FileInformation.STATUS_VERSIONED_CHECKEDOUT;
-                
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
@@ -180,7 +281,7 @@ public class ClearcaseAnnotator extends VCSAnnotator {
                 return name;
             }
             int status = info.getStatus();
-            if ((status & includeStatus) == 0) continue;
+            if ((status & INCLUDE_STATUS) == 0) continue;
             
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
@@ -213,64 +314,9 @@ public class ClearcaseAnnotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false) {
-            return null;
+            return annotateFileIcon(context, icon);
         }
-
-        boolean isVersioned = false;
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = getCachedInfo(file);
-            if(info == null) {
-                return null;
-            }
-            if ((info.getStatus() & STATUS_BADGEABLE) != 0) {  
-                isVersioned = true;
-                break;
-            }
-        }
-        if (!isVersioned) return null;
-        
-        boolean allExcluded = true;
-        boolean modified = false;        
-
-        for (File root : context.getRootFiles()) {
-            Map<File, FileInformation> modifiedFiles = cache.getAllModifiedValues(root); // XXX should go only after files from the context
-            
-            if (VersioningSupport.isFlat(root)) {
-                
-                for (File file : modifiedFiles.keySet()) {
-                    
-                    if (file.getParentFile().equals(root)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(file);
-                        if (info.isDirectory()) continue;
-                        modified = true;
-                        allExcluded &= ClearcaseModuleConfig.isExcludedFromCommit(file.getAbsolutePath());
-                    }
-                }
-                
-            } else {
-                // TODO should go recursive!
-                for (File mf : modifiedFiles.keySet()) {
-                    
-                    if (Utils.isAncestorOrEqual(root, mf)) {
-                        FileInformation info = (FileInformation) modifiedFiles.get(mf);
-                        if ((info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) && mf.equals(root)) {
-                            continue;
-                        }
-                        modified = true;
-                        allExcluded &= ClearcaseModuleConfig.isExcludedFromCommit(mf.getAbsolutePath());
-                    }
-                    
-                }
-            }
-        }
-
-        if (modified && !allExcluded) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/clearcase/resources/icons/modified-badge.png", true); // NOI18N
-            return Utilities.mergeImages(icon, badge, 16, 9);
-        } else {
-            return null;
-        }
+        return annotateFolderIcon(context, icon);
     }
     
     public Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {

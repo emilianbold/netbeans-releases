@@ -87,9 +87,9 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebStrutsProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf, 
         "testPreconditions", "testNewStrutsWebProject", "testRedeployProject", 
-                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+                "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
 //        suite.addTest(new WebStrutsProjectValidation("testNewJSP"));
@@ -139,7 +139,7 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("GlassFish V2");
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
 
@@ -172,8 +172,11 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
         }
         ProjectSupport.waitScanFinished();
         // Check project contains all needed files.
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("welcomeStruts.jsp");
+        verifyWebPagesNode("WEB-INF|struts-config.xml");
+
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "welcomeStruts.jsp");
         Node strutsConfig = new Node(webPages, "WEB-INF|struts-config.xml");
         new OpenAction().performAPI(strutsConfig);
         webPages.setComparator(new DefaultStringComparator(true, true));
@@ -184,8 +187,5 @@ public class WebStrutsProjectValidation extends WebProjectValidationEE5 {
         assertTrue("ActionServlet should be created in web.xml.", webXMLEditor.getText().indexOf(expected) > -1);
         webXMLEditor.replace("index.jsp", "login.jsp");
         webXMLEditor.save();
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        assertEquals(true,ProjectSupport.closeProject(PROJECT_NAME));
     }
 }

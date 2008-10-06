@@ -45,17 +45,14 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -73,6 +70,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
@@ -119,17 +117,19 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public boolean handleTransfer(JTextComponent targetComponent) {
-        
         JsfFormCustomizer jsfFormCustomizer = new JsfFormCustomizer(this, targetComponent);
         boolean accept = jsfFormCustomizer.showDialog();
         if (accept) {
             try {
+                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
+                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
+                
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());
                 int len = targetComponent.getDocument().getLength() - position1;
                 boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
-                    && targetComponent.getText(position1, len).contains("</f:view>");
+                        && targetComponent.getText(position1, len).contains("</f:view>");
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {
@@ -168,148 +168,10 @@ public final class JsfForm implements ActiveEditorDrop {
         return stringBuffer.toString();
     }
     
-    public static final int REL_NONE = 0;
-    public static final int REL_TO_ONE = 1;
-    public static final int REL_TO_MANY = 2;
-    
-    public static int isRelationship(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? guessField(controller, method) : method;
-        if (element != null) {
-            if (isAnnotatedWith(element, "javax.persistence.OneToOne") || isAnnotatedWith(element, "javax.persistence.ManyToOne")) {
-                return REL_TO_ONE;
-            }
-            if (isAnnotatedWith(element, "javax.persistence.OneToMany") || isAnnotatedWith(element, "javax.persistence.ManyToMany")) {
-                return REL_TO_MANY;
-            }
-        }
-        return REL_NONE;
-    }
-    
-    public static ExecutableElement getOtherSideOfRelation(CompilationController controller, ExecutableElement executableElement, boolean isFieldAccess) {
-        TypeMirror passedReturnType = executableElement.getReturnType();
-        if (TypeKind.DECLARED != passedReturnType.getKind() || !(passedReturnType instanceof DeclaredType)) {
-            return null;
-        }
-        Types types = controller.getTypes();
-        TypeMirror passedReturnTypeStripped = stripCollection((DeclaredType)passedReturnType, types);
-        if (passedReturnTypeStripped == null) {
-            return null;
-        }
-        TypeElement passedReturnTypeStrippedElement = (TypeElement) types.asElement(passedReturnTypeStripped);
-        
-        //try to find a mappedBy annotation element on the possiblyAnnotatedElement
-        Element possiblyAnnotatedElement = isFieldAccess ? guessField(controller, executableElement) : executableElement;
-        String mappedBy = null;
-        AnnotationMirror persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToOne");  //NOI18N"
-        if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToMany");  //NOI18N"
-        }
-        if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToOne");  //NOI18N"
-        }
-        if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToMany");  //NOI18N"
-        }
-        if (persistenceAnnotation != null) {
-            mappedBy = findAnnotationValueAsString(persistenceAnnotation, "mappedBy");  //NOI18N
-        }
-        for (ExecutableElement method : getEntityMethods(passedReturnTypeStrippedElement)) {
-            if (mappedBy != null && mappedBy.length() > 0) {
-                String tail = mappedBy.length() > 1 ? mappedBy.substring(1) : "";
-                String getterName = "get" + mappedBy.substring(0,1).toUpperCase() + tail;
-                if (getterName.equals(method.getSimpleName().toString())) {
-                    return method;
-                }
-            }
-            else {
-                TypeMirror iteratedReturnType = method.getReturnType();
-                iteratedReturnType = stripCollection(iteratedReturnType, types);
-                TypeMirror executableElementEnclosingType = executableElement.getEnclosingElement().asType();
-                if (types.isSameType(executableElementEnclosingType, iteratedReturnType)) {
-                    return method;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public static String findAnnotationValueAsString(AnnotationMirror annotation, String annotationKey) {
-        String value = null;
-        Map<? extends ExecutableElement,? extends AnnotationValue> annotationMap = annotation.getElementValues();
-        for (ExecutableElement key : annotationMap.keySet()) {
-            if (annotationKey.equals(key.getSimpleName().toString())) {
-                AnnotationValue annotationValue = annotationMap.get(key);
-                value = annotationValue.getValue().toString();
-                break;
-            }
-        }
-        return value;
-    }
-    
-    public static TypeMirror stripCollection(TypeMirror passedType, Types types) {
-        if (TypeKind.DECLARED != passedType.getKind() || !(passedType instanceof DeclaredType)) {
-            return passedType;
-        }
-        TypeElement passedTypeElement = (TypeElement) types.asElement(passedType);
-        String passedTypeQualifiedName = passedTypeElement.getQualifiedName().toString();   //does not include type parameter info
-        Class passedTypeClass = null;
-        try {
-            passedTypeClass = Class.forName(passedTypeQualifiedName);
-        } catch (ClassNotFoundException e) {
-            //just let passedTypeClass be null
-        }
-        if (passedTypeClass != null && Collection.class.isAssignableFrom(passedTypeClass)) {
-            List<? extends TypeMirror> passedTypeArgs = ((DeclaredType)passedType).getTypeArguments();
-            if (passedTypeArgs.size() == 0) {
-                return passedType;
-            }
-            return passedTypeArgs.get(0);
-        }
-        return passedType;
-    }
-    
-    /** Returns all methods in class and its super classes which are entity
-     * classes or mapped superclasses.
-     */
-    public static ExecutableElement[] getEntityMethods(TypeElement entityTypeElement) {
-        List<ExecutableElement> result = new LinkedList<ExecutableElement>();
-        TypeElement typeElement = entityTypeElement;
-        while (typeElement != null) {
-            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
-                result.addAll(ElementFilter.methodsIn(typeElement.getEnclosedElements()));
-            }
-            typeElement = getSuperclassTypeElement(typeElement);
-        }
-        return result.toArray(new ExecutableElement[result.size()]);
-    }
-    
-    private static TypeElement getSuperclassTypeElement(TypeElement typeElement) {
-        TypeElement superclass = null;
-        TypeMirror superclassMirror = typeElement.getSuperclass();
-        if (superclassMirror.getKind() == TypeKind.DECLARED) {
-            DeclaredType superclassDeclaredType = (DeclaredType)superclassMirror;
-            Element superclassElement = superclassDeclaredType.asElement();
-            if (superclassElement.getKind() == ElementKind.CLASS && (superclassElement instanceof TypeElement) ) {
-                superclass = (TypeElement)superclassElement;
-            }
-        }
-        return superclass;
-    }
-    
     static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? guessField(controller, method) : method;
+        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
         if (element != null) {
-            if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? guessField(controller, method) : method;
-        if (element != null) {
-            if (isAnnotatedWith(element, "javax.persistence.GeneratedValue")) { // NOI18N
+            if (JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.Id") || JpaControllerUtil.isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
                 return true;
             }
         }
@@ -317,9 +179,9 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     static String getTemporal(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
-        Element element = isFieldAccess ? guessField(controller, method) : method;
+        Element element = isFieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
         if (element != null) {
-            AnnotationMirror annotationMirror = findAnnotation(element, "javax.persistence.Temporal"); // NOI18N
+            AnnotationMirror annotationMirror = JpaControllerUtil.findAnnotation(element, "javax.persistence.Temporal"); // NOI18N
             if (annotationMirror != null) {
                 Collection<? extends AnnotationValue> attributes = annotationMirror.getElementValues().values();
                 if (attributes.iterator().hasNext()) {
@@ -360,56 +222,10 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static boolean isEntityClass(TypeElement typeElement) {
-        if (isAnnotatedWith(typeElement, "javax.persistence.Entity")) {
+        if (JpaControllerUtil.isAnnotatedWith(typeElement, "javax.persistence.Entity")) {
             return true;
         }
         return false;
-    }
-    
-    public static boolean isEmbeddableClass(TypeElement typeElement) {
-        if (isAnnotatedWith(typeElement, "javax.persistence.Embeddable")) {
-            return true;
-        }
-        return false;
-    }
-    
-    public static boolean isFieldAccess(TypeElement clazz) {
-        boolean fieldAccess = false;
-        boolean accessTypeDetected = false;
-        TypeElement typeElement = clazz;
-        Name qualifiedName = typeElement.getQualifiedName();
-        whileloop:
-        while (typeElement != null) {
-            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
-                for (Element element : typeElement.getEnclosedElements()) {
-                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
-                        if (ElementKind.FIELD == element.getKind()) {
-                            fieldAccess = true;
-                        }
-                        accessTypeDetected = true;
-                        break whileloop;
-                    }
-                }
-            }
-            typeElement = getSuperclassTypeElement(typeElement);
-        }
-        if (!accessTypeDetected) {
-            Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
-        }
-        return fieldAccess;
-    }
-
-    public static VariableElement guessField(CompilationController controller, ExecutableElement getter) {
-        String name = getter.getSimpleName().toString().substring(3);
-        String guessFieldName = name.substring(0,1).toLowerCase() + name.substring(1);
-        TypeElement typeElement = (TypeElement) getter.getEnclosingElement();
-        for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (variableElement.getSimpleName().contentEquals(guessFieldName)) {
-                return variableElement;
-            }
-        }
-        Logger.getLogger("global").log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
-        return null;
     }
 
     /** Check if there is a setter corresponding with the getter */
@@ -441,122 +257,133 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer) {
-        createForm(controller, bean, formType, variable, stringBuffer, "", null, "");
+        createForm(controller, bean, formType, variable, stringBuffer, "", null, "", "");
     }
     
-    public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass) {
-        ExecutableElement methods [] = getEntityMethods(bean);
-        boolean fieldAccess = isFieldAccess(bean);
-        for (ExecutableElement method : methods) {
-            String methodName = method.getSimpleName().toString();
-            if (methodName.startsWith("get")) {
-                List<ExecutableElement> pkMethods = null;
-                boolean isId = isId(controller, method, fieldAccess);
-                boolean isGenerated = false;
-                if (isId) {
-                    isGenerated = isGenerated(controller, method, fieldAccess);
-                    TypeMirror t = method.getReturnType();
-                    TypeMirror tstripped = stripCollection(t, controller.getTypes());
-                    if (TypeKind.DECLARED == tstripped.getKind()) {
-                        DeclaredType declaredType = (DeclaredType)tstripped;
-                        TypeElement idClass = (TypeElement) declaredType.asElement();
-                        boolean embeddable = idClass != null && isEmbeddableClass(idClass);
-                        if (embeddable) {
-                            pkMethods = new ArrayList<ExecutableElement>();
-                            TypeElement entityType = controller.getElements().getTypeElement(entityClass);
-                            if (embeddedPkSupport == null) {
-                                embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
-                            }
-                            for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
-                                if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
-                                    pkMethods.add(pkMethod);
+    public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, String jsfUtilClass) {
+        if (bean != null) {
+            ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
+            boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
+            for (ExecutableElement method : methods) {
+                String methodName = method.getSimpleName().toString();
+                if (methodName.startsWith("get")) {
+                    List<ExecutableElement> pkMethods = null;
+                    boolean isId = isId(controller, method, fieldAccess);
+                    boolean isGenerated = false;
+                    if (isId) {
+                        isGenerated = JpaControllerUtil.isGenerated(controller, method, fieldAccess);
+                        TypeMirror t = method.getReturnType();
+                        TypeMirror tstripped = JpaControllerUtil.stripCollection(t, controller.getTypes());
+                        if (TypeKind.DECLARED == tstripped.getKind()) {
+                            DeclaredType declaredType = (DeclaredType)tstripped;
+                            TypeElement idClass = (TypeElement) declaredType.asElement();
+                            boolean embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
+                            if (embeddable) {
+                                pkMethods = new ArrayList<ExecutableElement>();
+                                TypeElement entityType = controller.getElements().getTypeElement(entityClass);
+                                if (embeddedPkSupport == null) {
+                                    embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
+                                }
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
+                                        pkMethods.add(pkMethod);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (pkMethods == null) {
-                    createFormInternal(method, bean, isId, isGenerated, false, fieldAccess, controller, formType, variable, stringBuffer, entityClass, embeddedPkSupport, controllerClass);
-                }
-                else {
-                    for (ExecutableElement pkMethod : pkMethods) {
-                        String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
-                        createFormInternal(pkMethod, bean, false, false, true, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass, embeddedPkSupport, controllerClass);
+                    if (pkMethods == null) {
+                        createFormInternal(method, bean, isId, isGenerated, false, fieldAccess, controller, formType, variable, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+                    }
+                    else {
+                        for (ExecutableElement pkMethod : pkMethods) {
+                            String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
+                            createFormInternal(pkMethod, bean, false, false, true, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+                        }
                     }
                 }
             }
         }
     }
     
-    private static void createFormInternal(ExecutableElement method, TypeElement bean, boolean isId, boolean isGenerated, boolean isEmbeddedPkMethod, boolean fieldAccess, CompilationController controller, int formType, String variable, StringBuffer stringBuffer, String entityClass, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass) {
-        String simpleEntityName = JSFClientGenerator.simpleClassName(entityClass);
+    private static void createFormInternal(ExecutableElement method, TypeElement bean, boolean isId, boolean isGenerated, boolean isEmbeddedPkMethod, boolean fieldAccess, CompilationController controller, int formType, String variable, StringBuffer stringBuffer, String entityClass, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, String jsfUtilClass) {
+        String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
         String methodName = method.getSimpleName().toString();
-        int isRelationship = isRelationship(controller, method, fieldAccess);
+        int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
         String name = methodName.substring(3);
-        String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
+        String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
         TypeMirror t = method.getReturnType();
-        TypeMirror tstripped = stripCollection(t, controller.getTypes());
+        Types types = controller.getTypes();
+        TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
+        
+        boolean isCollection = t != tstripped;
+        boolean isCollectionTypeAssignableToSet = false;
+        if (isCollection) {
+            TypeElement tAsElement = (TypeElement) types.asElement(t);
+            isCollectionTypeAssignableToSet = isCollectionTypeAssignableToSet(tAsElement);
+        }
+        
         String relType = tstripped.toString();
         if (relType.endsWith("[]")) {
             relType = relType.substring(0, relType.length() - 2);
         }
-        String simpleRelType = JSFClientGenerator.simpleClassName(relType); //just "Pavilion"
-        String relatedController = JSFClientGenerator.fieldFromClassName(simpleRelType);
-        boolean fieldOptionalAndNullable = isFieldOptionalAndNullable(controller, method, fieldAccess);
+        String simpleRelType = JpaControllerUtil.simpleClassName(relType); //just "Pavilion"
+        String relatedController = JpaControllerUtil.fieldFromClassName(simpleRelType);
+        boolean fieldOptionalAndNullable = JpaControllerUtil.isFieldOptionalAndNullable(controller, method, fieldAccess);
         String requiredMessage = fieldOptionalAndNullable ? null : "The " + propName + " field is required.";
         
         //only applies if method/otherSide are relationship methods
         boolean isMethodRedundantWithItsPkFields = false;
         boolean isOtherSideRedundantWithItsPkFields = false;
-        if (!isEmbeddedPkMethod && isRelationship != REL_NONE) {
+        if (!isEmbeddedPkMethod && isRelationship != JpaControllerUtil.REL_NONE) {
             if (embeddedPkSupport == null) {
-                embeddedPkSupport = new JSFClientGenerator.EmbeddedPkSupport();
+                embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
             }
             isMethodRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(controller, bean, method);
             if (!isMethodRedundantWithItsPkFields) {
-                ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
+                ExecutableElement otherSide = JpaControllerUtil.getOtherSideOfRelation(controller, method, fieldAccess);
                 if (otherSide != null) {
                     TypeElement relTypeElement = controller.getElements().getTypeElement(relType);
                     isOtherSideRedundantWithItsPkFields = embeddedPkSupport.isRedundantWithPkFields(controller, relTypeElement, otherSide);
                 }
             }
         }
-
+        
         if ( (formType == FORM_TYPE_NEW && 
                 ( isId &&  isGenerated) ) || 
                 formType == FORM_TYPE_EMPTY ) {
             //skip if formType is new and field is generated (or if formType is "empty")
-        } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE && 
+        } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE && 
                 (entityClass.length() == 0 || controllerClass.length() == 0) ) {
             //this method was called from outside the jsfcrud generator feature
             String template = "<h:outputText value=\"{0}:\"/>\n" +
                     "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n";
             Object[] args = new Object [] {name, variable, propName};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if (formType == FORM_TYPE_DETAIL && isRelationship == REL_TO_ONE) {
+        } else if (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_TO_ONE) {
             String template = "<h:outputText value=\"{0}:\"/>\n" +
                 "<h:panelGroup>\n" + 
                 "<h:outputText value=\" #'{'{1}.{2}'}'\"/>\n" +
                 "<h:panelGroup rendered=\"#'{'{1}.{2} != null'}'\">\n" +
                 "<h:outputText value=\" (\"/>\n" +
                 "<h:commandLink value=\"Show\" action=\"#'{'{4}.detailSetup'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}][{6}.converter].jsfcrud_invoke'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}.{2}][{4}.converter].jsfcrud_invoke'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
                 "<h:outputText value=\" \"/>\n" +
                 "<h:commandLink value=\"Edit\" action=\"#'{'{4}.editSetup'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}][{6}.converter].jsfcrud_invoke'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}.{2}][{4}.converter].jsfcrud_invoke'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
                 "<h:outputText value=\" \"/>\n" +
                 "<h:commandLink value=\"Destroy\" action=\"#'{'{4}.destroy'}'\">\n" +
-                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'{6}.asString[{1}]'}'\"/>\n" +
-                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'{4}.asString[{1}.{2}]'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{3}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}][{6}.converter].jsfcrud_invoke'}'\"/>\n" +
+                "<f:param name=\"jsfcrud.current{5}\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{1}.{2}][{4}.converter].jsfcrud_invoke'}'\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedController\" value=\"{6}\"/>\n" +
                 "<f:param name=\"jsfcrud.relatedControllerType\" value=\"{7}\"/>\n" +
                 "</h:commandLink>\n" +
@@ -565,106 +392,66 @@ public final class JsfForm implements ActiveEditorDrop {
                 "</h:panelGroup>\n";
             Object[] args = new Object [] {name, variable, propName, simpleEntityName, relatedController, simpleRelType, variable.substring(0, variable.lastIndexOf('.')), controllerClass};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == REL_NONE) || 
-                ( formType == FORM_TYPE_EDIT && (isId || isEmbeddedPkMethod || isMethodRedundantWithItsPkFields || isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != REL_TO_MANY ) || 
-                (formType == FORM_TYPE_NEW && (isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != REL_TO_MANY) ) {
+        } else if ( (formType == FORM_TYPE_DETAIL && isRelationship == JpaControllerUtil.REL_NONE) || 
+                ( formType == FORM_TYPE_EDIT && (isId || isEmbeddedPkMethod || isMethodRedundantWithItsPkFields || isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY ) || 
+                (formType == FORM_TYPE_NEW && (isOtherSideRedundantWithItsPkFields || isReadOnly(controller.getTypes(), method)) && isRelationship != JpaControllerUtil.REL_TO_MANY) ) {
             //non editable
-            String temporal = ( isRelationship == REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
-            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
+            String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
+            String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == JpaControllerUtil.REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if ( isRelationship == REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
+        } else if ( isRelationship == JpaControllerUtil.REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
             //editable
             String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
-            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
+            Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+            boolean isLob = JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob");
+            template += isLob ? "<h:inputTextarea rows=\"4\" cols=\"30\"" : "<h:inputText";
+            template += " id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if ( isRelationship == REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
+        } else if ( isRelationship == JpaControllerUtil.REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
             //combo box for editing toOne relationships
             String template = "<h:outputText value=\"{0}:\"/>\n <h:selectOneMenu id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{3}\" ";
-            template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n";
+            template += ">\n <f:selectItems value=\"#'{'{4}.{4}ItemsAvailableSelectOne'}'\"/>\n </h:selectOneMenu>\n";
             Object[] args = new Object [] {name, variable, propName, requiredMessage, relatedController};
             stringBuffer.append(MessageFormat.format(template, args));
-        } else if ( isRelationship == REL_TO_MANY && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
+        } else if ( isRelationship == JpaControllerUtil.REL_TO_MANY && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
             if (isOtherSideRedundantWithItsPkFields) {
-                String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText escape=\"false\" value=\"#'{'{3}.asString[{3}.{2}Of{1}]'}'\" title=\"{0}\" />\n";
+                String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText escape=\"false\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getCollectionAsString''][{3}.{3}.{2} == null ? jsfcrud_null : {3}.{3}.{2}].jsfcrud_invoke'}'\" title=\"{0}\" />\n";
                 Object[] args = new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.'))};
                 stringBuffer.append(MessageFormat.format(template, args));
             }
             else {
                 //listbox for editing toMany relationships
-                String template = "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{2}Of{1}'}'\" title=\"{0}\" size=\"6\" ";
+                String arrayToCollection = isCollectionTypeAssignableToSet ? "arrayToSet" : "arrayToList";
+                String template = "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{3}.jsfcrud_transform[jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method.collectionToArray][jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method." + arrayToCollection + "].{2}'}'\" title=\"{0}\" size=\"6\" converter=\"#'{'{4}.converter'}'\" ";
                 template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
-                template += ">\n <f:selectItems value=\"#'{'{4}.{4}sAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n";
+                template += ">\n <f:selectItems value=\"#'{'{4}.{4}ItemsAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n";
                 Object[] args = new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController, requiredMessage};
                 stringBuffer.append(MessageFormat.format(template, args));
             }
         }
     }
     
-    public static boolean isFieldOptionalAndNullable(CompilationController controller, ExecutableElement method, boolean fieldAccess) {
-        boolean isFieldOptional = true;
-        Boolean isFieldNullable = null;
-        Element fieldElement = fieldAccess ? guessField(controller, method) : method;
-        String[] fieldAnnotationFqns = {"javax.persistence.ManyToOne", "javax.persistence.OneToOne", "javax.persistence.Basic"};
-        Boolean isFieldOptionalBoolean = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "optional");
-        if (isFieldOptionalBoolean != null) {
-            isFieldOptional = isFieldOptionalBoolean.booleanValue();
+    private static boolean isCollectionTypeAssignableToSet(TypeElement tAsElement) {
+        String collectionTypeClass = tAsElement.getQualifiedName().toString();   //java.util.Collection, java.util.List, java.util.Set
+
+        Class collectionTypeAsClass = null;
+        try {
+            collectionTypeAsClass = Class.forName(collectionTypeClass);
+        } catch (ClassNotFoundException cfne) {
+            //let collectionTypeAsClass be null
         }
-        if (!isFieldOptional) {
-            return false;
+        if (collectionTypeAsClass != null && Set.class.isAssignableFrom(collectionTypeAsClass)) {
+            return true;
         }
-        //field is optional
-        fieldAnnotationFqns = new String[]{"javax.persistence.Column", "javax.persistence.JoinColumn"};
-        isFieldNullable = findAnnotationValueAsBoolean(fieldElement, fieldAnnotationFqns, "nullable");
-        if (isFieldNullable != null) {
-            return isFieldNullable.booleanValue();
-        }
-        //new ballgame
-        boolean result = true;
-        AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, "javax.persistence.JoinColumns"); //NOI18N
-        if (fieldAnnotation != null) {
-            //all joinColumn annotations must indicate nullable = false to return a false result
-            List<AnnotationMirror> joinColumnAnnotations = JsfForm.findNestedAnnotations(fieldAnnotation, "javax.persistence.JoinColumn");
-            for (AnnotationMirror joinColumnAnnotation : joinColumnAnnotations) {
-                String columnNullableValue = JsfForm.findAnnotationValueAsString(joinColumnAnnotation, "nullable"); //NOI18N
-                if (columnNullableValue != null) {
-                    result = Boolean.parseBoolean(columnNullableValue);
-                    if (result) {
-                        break;  //one of the joinColumn annotations is nullable, so return true
-                    }
-                }
-                else {
-                    result = true;
-                    break;  //one of the joinColumn annotations is nullable, so return true
-                }
-            }
-        }
-        return result;
-    }
-    
-    private static Boolean findAnnotationValueAsBoolean(Element fieldElement, String[] fieldAnnotationFqns, String annotationKey) {
-        Boolean isFieldXable = null;
-        for (int i = 0; i < fieldAnnotationFqns.length; i++) {
-            String fieldAnnotationFqn = fieldAnnotationFqns[i];
-            AnnotationMirror fieldAnnotation = findAnnotation(fieldElement, fieldAnnotationFqn); //NOI18N
-            if (fieldAnnotation != null) {  
-                String annotationValueString = findAnnotationValueAsString(fieldAnnotation, annotationKey); //NOI18N
-                if (annotationValueString != null) {
-                    isFieldXable = Boolean.valueOf(annotationValueString);
-                }
-                else {
-                    isFieldXable = Boolean.TRUE;
-                }
-                break;
-            }
-        }
-        return isFieldXable;
+        
+        return false;
     }
     
     public static String getFreeTableVarName(String name, List<String> entities) {
@@ -674,7 +461,7 @@ public final class JsfForm implements ActiveEditorDrop {
         while (i < 1000) {
             boolean match = false;
             for (String entityClass : entities) {
-                String simpleEntityName = JSFClientGenerator.simpleClassName(entityClass);
+                String simpleEntityName = JpaControllerUtil.simpleClassName(entityClass);
                 String managedBeanName = JSFClientGenerator.getManagedBeanName(simpleEntityName);
                 if (newName.equals(managedBeanName)) {
                     match = true;
@@ -692,54 +479,59 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createTablesForRelated(CompilationController controller, TypeElement bean, int formType, String variable, 
-            String idProperty, boolean isInjection, StringBuffer stringBuffer, JSFClientGenerator.EmbeddedPkSupport embeddedPkSupport, String controllerClass, List<String> entities) {
-        ExecutableElement methods [] = getEntityMethods(bean);
+            String idProperty, boolean isInjection, StringBuffer stringBuffer, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, List<String> entities, String jsfUtilClass) {
+        ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
         String entityClass = bean.getQualifiedName().toString();
         String simpleClass = bean.getSimpleName().toString();
         String managedBean = JSFClientGenerator.getManagedBeanName(simpleClass);
-        boolean fieldAccess = isFieldAccess(bean);
+        boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
         //generate tables of objects with ToMany relationships
         if (formType == FORM_TYPE_DETAIL) {
             for (ExecutableElement method : methods) {
                 String methodName = method.getSimpleName().toString();
                 if (methodName.startsWith("get")) {
-                    int isRelationship = isRelationship(controller, method, fieldAccess);
+                    int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
                     String name = methodName.substring(3);
-                    String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
-                    if (isRelationship == REL_TO_MANY) {
-                        Types types = controller.getTypes();                        
-                        TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
+                    String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
+                    if (isRelationship == JpaControllerUtil.REL_TO_MANY) {
+                        Types types = controller.getTypes(); 
+                        TypeMirror t = method.getReturnType();
+                        TypeMirror typeArgMirror = JpaControllerUtil.stripCollection(t, types);
                         TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
                         if (typeElement != null) {
+                            TypeElement tAsElement = (TypeElement) types.asElement(t);
+                            boolean isCollectionTypeAssignableToSet = isCollectionTypeAssignableToSet(tAsElement);
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
                             String tableVarName = getFreeTableVarName("item", entities); //NOI18N
                             stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No Items)\"/>\n");
-                            stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"" + tableVarName + "\" \n");
+                            String valueAttribute = isCollectionTypeAssignableToSet ? variable + ".jsfcrud_transform[jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method.setToList][jsfcrud_null]." + propName : variable + "." + propName;
+                            stringBuffer.append("<h:dataTable value=\"#{" + valueAttribute + "}\" var=\"" + tableVarName + "\" \n");
                             stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
+                            
                             String commands = "<h:column>\n"
                                     + "<f:facet name=\"header\">\n"
                                     + "<h:outputText escape=\"false\" value=\"&nbsp;\"/>\n"
                                     + "</f:facet>\n"
                                     + "<h:commandLink value=\"Show\" action=\"#'{'" + relatedManagedBean + ".detailSetup'}'\">\n" 
-                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
-                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][" + variable + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + relatedManagedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
                                     + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "<h:outputText value=\" \"/>\n"
                                     + "<h:commandLink value=\"Edit\" action=\"#'{'" + relatedManagedBean + ".editSetup'}'\">\n"
-                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
-                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][" + variable + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + relatedManagedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
                                     + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
                                     + "<h:outputText value=\" \"/>\n"
                                     + "<h:commandLink value=\"Destroy\" action=\"#'{'" + relatedManagedBean + ".destroy'}'\">\n" 
-                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'" + managedBean + ".asString[" + variable + "]'}'\"/>\n"
-                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'" + relatedManagedBean + ".asString[{0}]'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + simpleClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][" + variable + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                                    + "<f:param name=\"jsfcrud.current" + relatedClass + "\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + relatedManagedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                                     + "<f:param name=\"jsfcrud.relatedController\" value=\"" + managedBean + "\" />\n"
                                     + "<f:param name=\"jsfcrud.relatedControllerType\" value=\"" + controllerClass + "\" />\n"
                                     + "</h:commandLink>\n"
@@ -749,29 +541,12 @@ public final class JsfForm implements ActiveEditorDrop {
                             stringBuffer.append("</h:dataTable>\n");
                             stringBuffer.append("</h:panelGroup>\n");
                         } else {
-                            Logger.getLogger("global").log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
+                            Logger.getLogger(JsfForm.class.getName()).log(Level.INFO, "cannot find referenced class: " + method.getReturnType()); // NOI18N
                         }
                     }
                 }
             }
         }
-    }
-
-    public static ExecutableElement getIdGetter(CompilationController controller, final boolean isFieldAccess, final TypeElement typeElement) {
-        ExecutableElement[] methods = getEntityMethods(typeElement);
-        for (ExecutableElement method : methods) {
-            String methodName = method.getSimpleName().toString();
-            if (methodName.startsWith("get")) {
-                Element element = isFieldAccess ? JsfForm.guessField(controller, method) : method;
-                if (element != null) {
-                    if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
-                        return method;
-                    }
-                }
-            }
-        }
-        Logger.getLogger("global").log(Level.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
-        return null;
     }
     
     public String getVariable() {
@@ -798,58 +573,5 @@ public final class JsfForm implements ActiveEditorDrop {
         this.formType = formType;
     }
     
-    public static boolean isAnnotatedWith(Element element, String annotationFqn) {
-        return findAnnotation(element, annotationFqn) != null;
-    }
-    
-    public static AnnotationMirror findAnnotation(Element element, String annotationFqn) {
-        for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
-            String annotationQualifiedName = getAnnotationQualifiedName(annotationMirror);
-            if (annotationQualifiedName.equals(annotationFqn)) {
-                return annotationMirror;
-            }
-        }
-        return null;
-    }   
-    
-    public static String getAnnotationQualifiedName(AnnotationMirror annotationMirror) {
-        DeclaredType annotationDeclaredType = annotationMirror.getAnnotationType();
-        TypeElement annotationTypeElement = (TypeElement) annotationDeclaredType.asElement();
-        Name name = annotationTypeElement.getQualifiedName();
-        return name.toString();
-    } 
-    
-    public static List<AnnotationMirror> findNestedAnnotations(AnnotationMirror annotationMirror, String annotationFqn) {
-        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
-        findNestedAnnotationsInternal(annotationMirror, annotationFqn, result);
-        return result;
-    }
 
-    private static void findNestedAnnotationsInternal(Object object, String annotationFqn, List<AnnotationMirror> result) {
-        Collection<? extends AnnotationValue> annotationValueCollection = null;
-        if (object instanceof AnnotationMirror) {
-            AnnotationMirror annotationMirror = (AnnotationMirror)object;
-            String annotationQualifiedName = getAnnotationQualifiedName(annotationMirror);
-            if (annotationQualifiedName.equals(annotationFqn)) {
-                result.add(annotationMirror);
-            }
-            else {
-                //prepare to recurse
-                Map<? extends ExecutableElement,? extends AnnotationValue> annotationMap = annotationMirror.getElementValues();
-                annotationValueCollection = annotationMap.values();
-            }
-        }
-        else if (object instanceof List) {
-            //prepare to recurse
-            annotationValueCollection = (Collection<? extends AnnotationValue>)object;
-        }
-
-        //recurse
-        if (annotationValueCollection != null) {
-            for (AnnotationValue annotationValue : annotationValueCollection) {
-                Object value = annotationValue.getValue();
-                findNestedAnnotationsInternal(value, annotationFqn, result);
-            }
-        }
-    }
 }

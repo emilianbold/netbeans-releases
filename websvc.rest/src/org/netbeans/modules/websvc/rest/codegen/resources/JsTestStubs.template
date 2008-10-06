@@ -1,9 +1,13 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<?xml version="1.0" encoding="__FILE_ENCODING__"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>REST Client Stubs</title>
+        <title>TTL_RestClient_Stubs - MSG_TestPage</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
+        <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
         <!-- JS_DECLARE_START - DO NOT REMOVE-->
         <script type="text/javascript" src="./Support.js"></script>
         <!-- JS_DECLARE_END - DO NOT REMOVE-->
@@ -15,13 +19,17 @@
 	</script>-->
     </head>
     <body>
-
-    <h1>Test Page - Javascript client stub for RESTful Web Services.</h1>
-
-    <div id="containerContent"> </div>
-
-    <!-- JS_USAGE_START - DO NOT REMOVE-->
-    <!-- JS_USAGE_END - DO NOT REMOVE--> 
-    
+        <div class="outerBorder">
+            <div class="header">
+                <div id="subheader" class="subheader"></div> <!-- sub-header -->
+                <div class="banner"><img src="./css/images/pname-clientstubs.png"/></div>
+            </div> <!-- header -->
+            <div id="main" class="main">
+              <h2>TTL_RestClient_Stubs - MSG_TestPage</h2>
+              <div id="containerContent"> </div>
+              <!-- JS_USAGE_START - DO NOT REMOVE-->
+              <!-- JS_USAGE_END - DO NOT REMOVE--> 
+            </div> <!-- main -->
+        </div> <!-- outerborder -->
     </body>
 </html>

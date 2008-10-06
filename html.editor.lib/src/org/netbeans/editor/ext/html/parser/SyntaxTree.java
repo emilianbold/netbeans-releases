@@ -52,7 +52,7 @@ public class SyntaxTree {
         SyntaxElement last = elements.size() > 0 ? elements.get(elements.size() - 1) : null;
         int lastEndOffset = last == null ? 0 : last.offset() + last.length();
         
-        AstNode root = new AstNode("root", null, 0, lastEndOffset, null);
+        AstNode root = new AstNode("root", null, 0, lastEndOffset);
         LinkedList<AstNode> nodeStack = new  LinkedList<AstNode>();
         nodeStack.add(root);
         
@@ -62,12 +62,12 @@ public class SyntaxTree {
                 // create tag node, push it on stack
                 // add opening tag node
                 
-                String tagName = extractTagName(element.text());
+                String tagName = ((SyntaxElement.Named)element).getName();
                 int openingTagEndOffset = element.offset() + element.length();
                 
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), openingTagEndOffset, element);
-                
+                        element.offset(), openingTagEndOffset);
+                        
                 nodeStack.getLast().addChild(newTagNode);
                 assert element instanceof SyntaxElement.Tag;
                 
@@ -76,7 +76,7 @@ public class SyntaxTree {
                 }
                 
                 AstNode openingTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
-                        element.offset(), openingTagEndOffset, element);
+                        element.offset(), openingTagEndOffset);
                 
                 newTagNode.addChild(openingTagNode);
             } else if (element.type() == SyntaxElement.TYPE_ENDTAG) {
@@ -85,7 +85,7 @@ public class SyntaxTree {
                 // add closing tag node
                 // pop current node from the stack
                 
-                String tagName = extractTagName(element.text());                
+                String tagName = ((SyntaxElement.Named)element).getName();        
                 int lastMatchedTag = nodeStack.size() - 1;
                 
                 while (!tagName.equals(nodeStack.get(lastMatchedTag).name()) && lastMatchedTag > 0){
@@ -95,7 +95,7 @@ public class SyntaxTree {
                 int closingTagEndOffset = element.offset() + element.length();
                             
                 AstNode closingTag = new AstNode(tagName, AstNode.NodeType.ENDTAG,
-                       element.offset(), closingTagEndOffset, element);
+                       element.offset(), closingTagEndOffset);
                 
                 if (tagName.equals(nodeStack.get(lastMatchedTag).name())){
                     int nodesToDelete = nodeStack.size() - lastMatchedTag - 1;
@@ -107,7 +107,7 @@ public class SyntaxTree {
                 } else {
                     // unmatched closing tag
                     AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
-                        element.offset(), closingTagEndOffset, null);
+                        element.offset(), closingTagEndOffset);
                 
                     newTagNode.markUnmatched();
                     nodeStack.getLast().addChild(newTagNode);
@@ -115,12 +115,17 @@ public class SyntaxTree {
                     newTagNode.addChild(closingTag);
                 }
                 
-            } else{
+            } else {
                 // add a new AST node to the last node on the stack
                 AstNode.NodeType nodeType = intToNodeType(element.type());
                 
                 AstNode node = new AstNode(null, nodeType, element.offset(),
-                        element.offset() + element.length(), element);
+                        element.offset() + element.length());
+                
+                //hack
+                if(nodeType == AstNode.NodeType.DECLARATION) {
+                    node.setAttribute("public_id", ((SyntaxElement.Declaration)element).getPublicIdentifier()); //NOI18N
+                }
                 
                 nodeStack.getLast().addChild(node);
             }
@@ -156,25 +161,6 @@ public class SyntaxTree {
         }
     }
 
-    private static String extractTagName(String text) {
-        int beginIndex = 1;
-        
-        if (text.length() > 1 && text.charAt(1) == '/'){
-            beginIndex ++;
-        }
-        
-        int endIndex = beginIndex;
-        
-        while (!Character.isWhitespace(text.charAt(endIndex)) 
-                && text.charAt(endIndex) != '/'
-                && text.charAt(endIndex) != '>'
-                && endIndex < text.length()){
-            endIndex ++;
-        }
-        
-        return text.substring(beginIndex, endIndex);
-    }
-    
     private static AstNode.NodeType intToNodeType(int type){
         switch (type) {
             case SyntaxElement.TYPE_COMMENT:

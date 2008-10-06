@@ -187,11 +187,13 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				break;
 			case COL_INDEX_LAYER_POS_X:
 				Integer xPos = (Integer) aValue;
-				this.scene.setLayerPositionX(layer, xPos.intValue(), false);
+				this.scene.setLayerPositionX(layer, 
+                                        xPos == null ? 0 : xPos.intValue(), false);
 				break;
 			case COL_INDEX_LAYER_POS_Y:
 				Integer yPos = (Integer) aValue;
-				this.scene.setLayerPositionY(layer, yPos.intValue(), false);
+				this.scene.setLayerPositionY(layer, 
+                                        yPos == null ? 0 : yPos.intValue(), false);
 				break;
 		}
 	}

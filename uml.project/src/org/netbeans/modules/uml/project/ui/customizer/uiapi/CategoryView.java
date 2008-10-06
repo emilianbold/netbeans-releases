@@ -61,6 +61,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -202,7 +203,7 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
      */
     private static class CategoryNode extends AbstractNode {
 
-        private Image icon = Utilities.loadImage(
+        private Image icon = ImageUtilities.loadImage(
             ImageUtil.IMAGE_FOLDER + "default-category.gif"); // NOI18N    
 
         public CategoryNode( ProjectCustomizer.Category category ) {

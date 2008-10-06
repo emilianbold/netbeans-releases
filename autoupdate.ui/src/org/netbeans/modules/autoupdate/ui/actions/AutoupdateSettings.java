@@ -42,10 +42,14 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -69,8 +73,14 @@ public class AutoupdateSettings {
     private static String tempIdeIdentity = null;
     private static final Logger err = Logger.getLogger (AutoupdateSettings.class.getName ());
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
+    private static final String PROP_SUPER_IDENTITY = "superId"; // NOI18N
+    private static final String PROP_QUALIFIED_IDENTITY = "qualifiedId"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
     private static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
+    private static final String DEFAULT_NETBEANS_DIR = ".netbeans"; // NOI18N
+    private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
+    private static final char IDE_ID_DELIMETER = '0'; // NOI18N
+    private static final char QUALIFIED_ID_DELIMETER = '_'; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
@@ -92,28 +102,31 @@ public class AutoupdateSettings {
     };
     
     private static int checkInterval = 0;
+    private static String superId;
 
     private AutoupdateSettings () {
     }
     
-    public static String getIdeIdentity () {
+    public static void generateIdentity () {
         expirationCheck ();
         if (tempIdeIdentity instanceof String) {
-            return tempIdeIdentity;
+            return;
         }
         Object oldIdeIdentity = getPreferences ().get (PROP_IDE_IDENTITY, null);
         String newIdeIdentity = null;
         if (oldIdeIdentity == null) {
-            newIdeIdentity = modifyIdeIdentityIfNeeded (generateNewId ());
+            newIdeIdentity = modifyIdeIdentityIfNeeded (IDE_ID_DELIMETER + generateNewId ());
         } else {
             newIdeIdentity = modifyIdeIdentityIfNeeded ((String) oldIdeIdentity);
         }
         tempIdeIdentity = newIdeIdentity;
-        if (! newIdeIdentity.equals (oldIdeIdentity)) {
+        if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity () || getPreferences ().get (PROP_QUALIFIED_IDENTITY, null) == null) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
+            getPreferences ().put (PROP_SUPER_IDENTITY, getSuperIdentity ());
+            getPreferences ().put (PROP_QUALIFIED_IDENTITY, getQualifiedIdentity (newIdeIdentity));
         }
-        return tempIdeIdentity;
+        return;
     }
     
     public static int getPeriod () {
@@ -160,7 +173,7 @@ public class AutoupdateSettings {
     
     // helper methods
     private static String modifyIdeIdentityIfNeeded (String oldIdeIdentity) {
-        int idx = oldIdeIdentity.indexOf ('0');
+        int idx = oldIdeIdentity.indexOf (IDE_ID_DELIMETER);
         String [] ideIdentityArr = oldIdeIdentity.split ("\\d"); // NOI18N
         String id = null;
         String oldPrefix = null;
@@ -170,7 +183,7 @@ public class AutoupdateSettings {
             id = oldIdeIdentity;
             oldPrefix = "";
         // a way for UUID    
-        } else if (idx != -1 && oldIdeIdentity.substring (ideIdentityArr [0].length ()).startsWith ("0")) {
+        } else if (idx != -1 && oldIdeIdentity.substring (ideIdentityArr [0].length ()).startsWith (new StringBuffer (IDE_ID_DELIMETER).toString ())) {
             oldPrefix = oldIdeIdentity.substring (0, idx);
             id = oldIdeIdentity.substring (oldPrefix.length ());
         // old way for stored IDs Random.nextInt()
@@ -188,6 +201,10 @@ public class AutoupdateSettings {
                 try {
                     BufferedReader r = new BufferedReader(new InputStreamReader (is));
                     newPrefix = r.readLine().trim();
+                    // don't exceed 128 chars for prefix
+                    if (newPrefix.length () > 128) {
+                        newPrefix = newPrefix.substring (0, 128);
+                    }
                 } finally {
                     is.close();
                 }
@@ -204,7 +221,7 @@ public class AutoupdateSettings {
     }
 
     private static String generateNewId () {
-        return "0" + UUID.randomUUID ().toString ();
+        return UUID.randomUUID ().toString ();
     }
     
     private static Integer parse (String s) {
@@ -254,6 +271,95 @@ public class AutoupdateSettings {
         err.log (Level.FINEST, "Store current version " + currentVersion + " for future import.");
         getPreferences ().put (EXPIRATION_RECORD, currentVersion);
     }
+    
+    private static boolean existsSuperIdentity () {
+        File superFile = getSuperFile ();
+        if (superFile == null) {
+            return true;
+        }
+        err.log (Level.FINE, "Does " + superFile + " exist? " + superFile.exists ());
+        return superFile.exists ();
+    }
+    
+    private static File getSuperFile () {
+        String home = System.getProperty ("user.home"); // NOI18N
+        // check if IDE is lauchned as JNLP
+        if ("memory".equals (home)) { // NOI18N
+            err.log (Level.INFO, "IDE launched as JNLP");
+            return null;
+        }
+        File nbDir = new File (home, DEFAULT_NETBEANS_DIR);
+        nbDir.mkdirs ();
+        return new File (nbDir, SUPER_IDENTITY_FILE_NAME);
+    }
 
+    
+    private static String getSuperIdentity () {
+        if (superId != null) {
+            return superId;
+        }
+        File superFile = getSuperFile ();
+        if (superFile == null) {
+            err.log (Level.FINE, "superFile is returns null.");
+        }
+        if (superFile.exists ()) {
+            // read existing super Id
+            InputStream is = null;
+            try {
+                is = new FileInputStream (superFile);
+                BufferedReader r = new BufferedReader (new InputStreamReader (is));
+                superId = r.readLine ().trim ();
+                err.log (Level.FINE, "Read Super Id: " + superId);
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            } finally {
+                try {
+                    is.close ();
+                } catch (IOException ex) {
+                    // let's ignore it
+                    err.log (Level.FINER, null, ex);
+                }
+            }
+        } else {
+            // generate new one and store it
+            Writer os = null;
+            try {
+                os = new BufferedWriter (new FileWriter (superFile));
+                String id = generateNewId ();
+                os.write (id);
+                superId = id;
+                err.log (Level.FINE, "Wrote Super Id: " + superId);
+            } catch (IOException ex) {
+                // let's ignore it
+                err.log (Level.FINER, null, ex);
+            } finally {
+                try {
+                    os.close ();
+                } catch (IOException ex) {
+                    // let's ignore it
+                    err.log (Level.FINER, null, ex);
+                }
+            }
+        }
+        if (superId != null) {
+            err.log (Level.FINE, "Returns Super Id: " + superId);
+            return superId;
+        } else {
+            err.log (Level.FINE, "Was problem while handling Super Id. Returns null");
+            return null;
+        }
+    }
+    
+    private static String getQualifiedIdentity (String ideIdentity) {
+        if (getSuperIdentity () != null) {
+            err.log (Level.FINE, "Returns Qualified Id: " + ideIdentity + QUALIFIED_ID_DELIMETER + getSuperIdentity ());
+            return ideIdentity + QUALIFIED_ID_DELIMETER + getSuperIdentity ();
+        } else {
+            err.log (Level.FINE, "Was problem while handling Qualified Id. Returns only original Id: " + ideIdentity);
+            return ideIdentity;
+        }
+
+    }
     
 }

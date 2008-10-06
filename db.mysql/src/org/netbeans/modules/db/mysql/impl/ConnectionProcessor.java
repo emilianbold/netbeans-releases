@@ -40,8 +40,12 @@
 package org.netbeans.modules.db.mysql.impl;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.util.NbBundle;
 
 /**
  * This class encapsulates a database connection and serializes
@@ -54,6 +58,7 @@ public class ConnectionProcessor implements Runnable {
     final BlockingQueue<Runnable> inqueue;
     
     private Connection conn;
+    private Thread taskThread;
     
     void setConnection(Connection conn) {
         this.conn = conn;
@@ -62,9 +67,35 @@ public class ConnectionProcessor implements Runnable {
     Connection getConnection() {
         return this.conn;
     }
+
+    void validateConnection() throws DatabaseException {
+        try {
+            // A connection only needs to be validated if it already exists.
+            // We're trying to see if something went wrong to an existing connection...
+            if (conn == null) {
+                return;
+            }
+            
+            if (conn.isClosed()) {
+                conn = null;
+                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
+            }
+
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException e) {
+            conn = null;
+            LOGGER.log(Level.FINE, null, e);
+            throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
+        }
+    }
     
     boolean isConnected() {
         return conn != null;
+    }
+
+    boolean isConnProcessorThread() {
+        return Thread.currentThread().equals(taskThread);
     }
     
     public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
@@ -72,6 +103,7 @@ public class ConnectionProcessor implements Runnable {
     } 
     
     public void run() {
+        taskThread = Thread.currentThread();
         for ( ; ; ) {
             try {              
                 Runnable command = inqueue.take();

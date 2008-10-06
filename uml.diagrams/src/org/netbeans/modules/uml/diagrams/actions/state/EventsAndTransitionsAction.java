@@ -51,6 +51,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.basic.basicactions.IProcedure;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITransition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.State;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -62,13 +63,12 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class EventsAndTransitionsAction extends NodeAction implements ContextAwareAction
+public class EventsAndTransitionsAction extends SceneNodeAction implements ContextAwareAction
 {
 
     private JMenu popupMenu;
@@ -86,14 +86,18 @@ public class EventsAndTransitionsAction extends NodeAction implements ContextAwa
     {
         scene = actionContext.lookup(DesignerScene.class);
         pe = actionContext.lookup(IPresentationElement.class);
-        IElement e = pe.getFirstSubject();
-        if (e instanceof State)
+        
+        if(pe != null)
         {
-            state = (State) e;
-            if (state.getIsSubmachineState())
-                return this;
+            IElement e = pe.getFirstSubject();
+            if (e instanceof State)
+            {
+                state = (State) e;
+                if (state.getIsSubmachineState())
+                    return this;
+            }
         }
-        return null;
+        return this;
     }
 
     @Override
@@ -135,9 +139,20 @@ public class EventsAndTransitionsAction extends NodeAction implements ContextAwa
     @Override
     public JMenuItem getPopupPresenter()
     {
+        StateWidget widget = getStateWidget(scene, pe);
+        
+        boolean enable = false;
+        if(state != null)
+        {
+            enable = state.getIsSubmachineState() &&
+                         widget != null && 
+                         widget.isDetailVisible() &&
+                         scene.isReadOnly() == false;
+        }
+        
         popupMenu = new JMenu(loc("ACT_EventsAndTransitions")); // NOI18N
 
-        popupMenu.setEnabled(isEnabled());
+        popupMenu.setEnabled(enable);
 
         entry = new JMenuItem(state.getEntry() == null ? loc("CTL_SetEntry") : loc("CTL_DeleteEntry")); // NOI18N
 
@@ -250,7 +265,7 @@ public class EventsAndTransitionsAction extends NodeAction implements ContextAwa
     {
         ITransition transition = (ITransition) Util.retrieveModelElement("Transition");
         transition.setIsInternal(true);
-        transition.setName("Unnamed");
+        transition.setName(NbBundle.getMessage (org.netbeans.modules.uml.common.Util.class, "UNNAMED"));
         transition.setContainer(state.getFirstContent());
         return transition;
     }

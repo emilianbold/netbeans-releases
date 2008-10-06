@@ -70,7 +70,7 @@ public final class ImportWizard implements ChangeListener {
     private ImportStep importStep;
     private ImportPreviewStep importPreviewStep;
 
-    private String errorMessage;
+    private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
     
@@ -119,10 +119,19 @@ public final class ImportWizard implements ChangeListener {
         importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath);
     }
     
-    private void setErrorMessage(String msg) {
+    private void setErrorMessage(AbstractStep.WizardMessage msg) {
         errorMessage = msg;
         if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+            if(errorMessage != null) {
+                if(errorMessage.isInfo()) {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, errorMessage.getMessage()); // NOI18N
+                } else {
+                    wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage.getMessage()); // NOI18N
+                }
+            } else {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null); // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
+            }
         }
     }
 

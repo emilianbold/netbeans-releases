@@ -108,7 +108,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     
     @Override
     public void doAction(final Object action) {
-        Util.finest("Performing \"" + action + '"');
+        Util.finer("Performing \"" + action + '"');
         if (action == ActionsManager.ACTION_KILL) {
             finish(true);
             return;
@@ -178,13 +178,10 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         }
         if (event.isSuspensionType() || event.isExceptionType()) {
             String path = event.getFilePath();
-            // HACK, do not try to step into the 'eval-code'. Cf. #106115.
+            // HACK, do not try to trace the 'eval-code'. Cf. #106115, #146894
             if ("(eval)".equals(path)) { // NOI18N
-                try {
-                    event.getRubyThread().stepReturn();
-                } catch (RubyDebuggerException e) {
-                    Util.severe(e);
-                }
+                rubySession.stepOver(true);
+                ContextProviderWrapper.getSessionsModel().fireChanges();
                 backEndSemaphore.release();
                 return;
             }
@@ -224,7 +221,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
      */
     private void finish(boolean terminate) {
         synchronized (terminated) {
-            Util.finest("Finishing session: " + rubySession.getName());
+            Util.finer("Finishing session: " + rubySession.getName());
             if (terminated) {
                 Util.warning("Finish is not supposed to be called when a process is already terminated");
                 return;

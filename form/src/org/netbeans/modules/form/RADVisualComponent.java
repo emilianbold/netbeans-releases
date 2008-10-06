@@ -227,7 +227,8 @@ public class RADVisualComponent extends RADComponent {
                     FormUtils.getBundleString("CTL_LayoutTabHint")) // NOI18N
             {
                 public Node.Property[] getProperties() {
-                    return getConstraintsProperties();
+                    Node.Property[] props = getConstraintsProperties();
+                    return (props == null) ? NO_PROPERTIES : props;
                 }
             });
 
@@ -524,9 +525,14 @@ public class RADVisualComponent extends RADComponent {
                         setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
                     } else {
                         try {
-                            setValue(new Integer(Integer.parseInt(str)));
-                        } 
-                        catch (NumberFormatException e) {} // ignore                        
+                            int size = Integer.parseInt(str);
+                            if (size < 0) {
+                                throw new IllegalArgumentException();
+                            }
+                            setValue(size);
+                        }  catch (NumberFormatException e) {
+                            throw new IllegalArgumentException();
+                        }
                     }
                 }
             };

@@ -48,7 +48,7 @@ Contributor(s):
                             </file>
                         </folder>
                     </folder>
-                    <folder name="Earth">
+                    <folder name="NetBeansEarth">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Earth-CCHL-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>
@@ -73,7 +73,7 @@ Contributor(s):
                             </file>
                         </folder>
                     </folder>
-                    <folder name="Earth">
+                    <folder name="NetBeansEarth">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Earth-CCHL-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>

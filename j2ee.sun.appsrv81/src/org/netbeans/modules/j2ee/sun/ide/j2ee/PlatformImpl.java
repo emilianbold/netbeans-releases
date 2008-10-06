@@ -58,16 +58,15 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.sun.ide.ws.GlassfishJaxWsStack;
-import org.netbeans.modules.websvc.serverapi.spi.WSStackFactory;
-import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -377,7 +376,7 @@ public class PlatformImpl extends J2eePlatformImpl {
      * @return platform's icon.
      */
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N;
+        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N;
     }
     
     /**
@@ -744,8 +743,10 @@ public class PlatformImpl extends J2eePlatformImpl {
     }
     
     public Lookup getLookup() {
-        WSStackSPI metroStack = new GlassfishJaxWsStack(root);
-        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
+        Lookup baseLookup = Lookups.fixed(root);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/J2EE/Lookup"); //NOI18N
+//        WSStackSPI metroStack = new GlassfishJaxWsStack(root);
+//        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
     
 }

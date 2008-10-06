@@ -41,19 +41,20 @@
 
 package customerdb.converter;
 
+import customerdb.Customer;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import customerdb.Customer;
-import customerdb.service.PersistenceService;
+import javax.persistence.EntityManager;
+import customerdb.DiscountCode;
 
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @XmlRootElement(name = "customer")
@@ -64,6 +65,7 @@ public class CustomerConverter {
     
     /** Creates a new instance of CustomerConverter */
     public CustomerConverter() {
+        entity = new Customer();
     }
 
     /**
@@ -97,7 +99,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public Integer getCustomerId() {
-        return (expandLevel > 0) ? getEntity().getCustomerId() : null;
+        return (expandLevel > 0) ? entity.getCustomerId() : null;
     }
 
     /**
@@ -106,7 +108,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setCustomerId(Integer value) {
-        getEntity().setCustomerId(value);
+        entity.setCustomerId(value);
     }
 
     /**
@@ -116,7 +118,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getZip() {
-        return (expandLevel > 0) ? getEntity().getZip() : null;
+        return (expandLevel > 0) ? entity.getZip() : null;
     }
 
     /**
@@ -125,7 +127,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setZip(String value) {
-        getEntity().setZip(value);
+        entity.setZip(value);
     }
 
     /**
@@ -135,7 +137,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getName() {
-        return (expandLevel > 0) ? getEntity().getName() : null;
+        return (expandLevel > 0) ? entity.getName() : null;
     }
 
     /**
@@ -144,7 +146,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setName(String value) {
-        getEntity().setName(value);
+        entity.setName(value);
     }
 
     /**
@@ -154,7 +156,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getAddressline1() {
-        return (expandLevel > 0) ? getEntity().getAddressline1() : null;
+        return (expandLevel > 0) ? entity.getAddressline1() : null;
     }
 
     /**
@@ -163,7 +165,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setAddressline1(String value) {
-        getEntity().setAddressline1(value);
+        entity.setAddressline1(value);
     }
 
     /**
@@ -173,7 +175,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getAddressline2() {
-        return (expandLevel > 0) ? getEntity().getAddressline2() : null;
+        return (expandLevel > 0) ? entity.getAddressline2() : null;
     }
 
     /**
@@ -182,7 +184,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setAddressline2(String value) {
-        getEntity().setAddressline2(value);
+        entity.setAddressline2(value);
     }
 
     /**
@@ -192,7 +194,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getCity() {
-        return (expandLevel > 0) ? getEntity().getCity() : null;
+        return (expandLevel > 0) ? entity.getCity() : null;
     }
 
     /**
@@ -201,7 +203,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setCity(String value) {
-        getEntity().setCity(value);
+        entity.setCity(value);
     }
 
     /**
@@ -211,7 +213,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getState() {
-        return (expandLevel > 0) ? getEntity().getState() : null;
+        return (expandLevel > 0) ? entity.getState() : null;
     }
 
     /**
@@ -220,7 +222,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setState(String value) {
-        getEntity().setState(value);
+        entity.setState(value);
     }
 
     /**
@@ -230,7 +232,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getPhone() {
-        return (expandLevel > 0) ? getEntity().getPhone() : null;
+        return (expandLevel > 0) ? entity.getPhone() : null;
     }
 
     /**
@@ -239,7 +241,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setPhone(String value) {
-        getEntity().setPhone(value);
+        entity.setPhone(value);
     }
 
     /**
@@ -249,7 +251,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getFax() {
-        return (expandLevel > 0) ? getEntity().getFax() : null;
+        return (expandLevel > 0) ? entity.getFax() : null;
     }
 
     /**
@@ -258,7 +260,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setFax(String value) {
-        getEntity().setFax(value);
+        entity.setFax(value);
     }
 
     /**
@@ -268,7 +270,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public String getEmail() {
-        return (expandLevel > 0) ? getEntity().getEmail() : null;
+        return (expandLevel > 0) ? entity.getEmail() : null;
     }
 
     /**
@@ -277,7 +279,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setEmail(String value) {
-        getEntity().setEmail(value);
+        entity.setEmail(value);
     }
 
     /**
@@ -287,7 +289,7 @@ public class CustomerConverter {
      */
     @XmlElement
     public Integer getCreditLimit() {
-        return (expandLevel > 0) ? getEntity().getCreditLimit() : null;
+        return (expandLevel > 0) ? entity.getCreditLimit() : null;
     }
 
     /**
@@ -296,7 +298,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setCreditLimit(Integer value) {
-        getEntity().setCreditLimit(value);
+        entity.setCreditLimit(value);
     }
 
     /**
@@ -307,8 +309,8 @@ public class CustomerConverter {
     @XmlElement
     public DiscountCodeConverter getDiscountCode() {
         if (expandLevel > 0) {
-            if (getEntity().getDiscountCode() != null) {
-                return new DiscountCodeConverter(getEntity().getDiscountCode(), uri.resolve("discountCode/"), expandLevel - 1, false);
+            if (entity.getDiscountCode() != null) {
+                return new DiscountCodeConverter(entity.getDiscountCode(), uri.resolve("discountCode/"), expandLevel - 1, false);
             }
         }
         return null;
@@ -320,7 +322,7 @@ public class CustomerConverter {
      * @param value the value to set
      */
     public void setDiscountCode(DiscountCodeConverter value) {
-        getEntity().setDiscountCode((value != null) ? value.resolveEntity() : null);
+        entity.setDiscountCode((value != null) ? value.getEntity() : null);
     }
 
     /**
@@ -348,8 +350,11 @@ public class CustomerConverter {
      */
     @XmlTransient
     public Customer getEntity() {
-        if (entity == null) {
-            entity = new Customer();
+        if (entity.getCustomerId() == null) {
+            CustomerConverter converter = UriResolver.getInstance().resolve(CustomerConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -359,11 +364,11 @@ public class CustomerConverter {
      *
      * @return an resolved entity
      */
-    public Customer resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(Customer.class, entity.getCustomerId());
-        } else {
-            return (Customer) UriResolver.getInstance().resolve(CustomerConverter.class, uri);
+    public Customer resolveEntity(EntityManager em) {
+        DiscountCode discountCode = entity.getDiscountCode();
+        if (discountCode != null) {
+            entity.setDiscountCode(em.getReference(DiscountCode.class, discountCode.getDiscountCode()));
         }
+        return entity;
     }
 }

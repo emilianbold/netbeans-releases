@@ -41,6 +41,15 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+
 /**
  * pre-integration tests for parser
  * @author Vladimir Voskresensky
@@ -53,7 +62,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-	System.setProperty("parser.report.errors", "true");
+        System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -336,6 +345,27 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138551.cc"); // NOI18N
     }
 
+    public void testIZ144276() throws Exception {
+        // IZ 144276 : StackOverflowError on typedef C::C C;
+        performTest("IZ144276.cc"); // NOI18N
+        for(CsmProject p : getModel().projects()){
+            for(CsmFile f : p.getAllFiles()){
+                for (CsmDeclaration d : f.getDeclarations()){
+                    if (CsmKindUtilities.isTypedef(d)) {
+                        CsmType t = ((CsmTypedef)d).getType();
+                        if (t != null) {
+                            t.isTemplateBased();
+                            CsmClassifier c = t.getClassifier();
+                            if (c != null) {
+                                CsmBaseUtilities.getOriginalClassifier(c);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void testArrayCast() throws Exception {
         // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
         performTest("array_cast.cc");
@@ -355,6 +385,124 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 138962 : Passer fails on template method calls
         performTest("template_method_call.cc"); // NOI18N
     }
+
+    public void testExpressions() throws Exception {
+        // IZ 138962 : Passer fails on template method calls
+        performTest("expressions.cc"); // NOI18N
+    }
+
+    public void testFunctionPointerAsTemplateParameter() throws Exception {
+        performTest("function_pointer_as_template_parameter.cc"); // NOI18N
+    }
+
+    public void test100000parameters() throws Exception {
+        performTest("100000parameters.c"); // NOI18N
+    }
+    
+    public void testTypedefPointerToStaticMember() throws Exception {
+        // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
+        performTest("typedef_pointer_to_static_member.cc"); // NOI18N
+    }
+
+    public void testEmptyArrayInitializer() throws Exception {
+        // IZ 140082 : parser fails on "int empty[] = {}"
+        performTest("empty_array_initializer.cc"); // NOI18N
+    }
+
+    public void testTemplatePointerToMethod() throws Exception {
+        // IZ 140559 : parser fails on code from boost
+        performTest("template_pointer_to_method.cc"); // NOI18N
+    }
+
+    public void testResolverNs_1() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_general.cc"); // NOI18N
+    }
+
+    public void testResolverNs_2() throws Exception {
+        // IZ 140704 A constant in namespace is highlighted as an unresolved id
+        performTest("resolver_ns_using_declaration.cc"); // NOI18N
+    }
+
+    public void testResolverUsingDeclarationInClass() throws Exception {
+        performTest("resolver_using_declaration_in_class.cc"); // NOI18N
+    }
+
+    public void testTwoBranches() throws Exception {
+        // iz #142110 For a header file, that is included with different
+        // preprocessor states, code model should include the most complete data
+        performTest("branches_1.cc"); // NOI18N
+    }
+
+    public void testMacrodef() throws Exception {
+        performTest("macrodef.cc"); // NOI18N
+    }
+
+    public void testClassBodyIncluded() throws Exception {
+        performTest("class_body_included.cc"); // NOI18N
+    }
+
+    public void testResolverClassString() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
+    }
+
+    public void testResolverTypedefString() throws Exception {
+        performTest("resolver_typedef_string.cc"); // NOI18N
+    }
+
+    public void testTemplateInnerClassDtorDefinition() throws Exception {
+        performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+    }
+
+    // #143611 If a class inherits some template *specialization*, unresolved IDs appear
+    public void testTemplateSpecializationInheritance_1() throws Exception {
+        performTest("template_spec_inherited_1.cc"); // NOI18N
+    }
+    
+    // #144156 Template specialization functions: incorrect navigation between definitions and declarations
+    public void testTemplateFunctionSpecialization() throws Exception {
+        performTest("template_fun_spec.cc"); // NOI18N
+    }
+
+    // #144968 A lot of parser errors in boost: instances.hpp
+    public void testIZ144968() throws Exception {
+        performTest("IZ144968.cc"); // NOI18N
+    }
+    
+    // #144009 wrong error highlighting for inline structure
+    public void testIZ144009() throws Exception {
+        performTest("IZ144009.cc"); // NOI18N
+    }   
+
+    // #145963 can't resolve template class implementations
+    public void testLocalVariables() throws Exception {
+        performTest("local_variables.cc"); // NOI18N
+    }   
+    
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testIZ146150() throws Exception {
+        performTest("IZ146150.cc"); // NOI18N
+    }   
+
+    // #146150 unexpected token: ; message appears on extern int errno; line
+    public void testMethodsWithFunctionAsReturnType() throws Exception {
+        performTest("methods_with_function_as_return_type.cc"); // NOI18N
+    }   
+
+    // #145071 : forward declarations marked as error
+    public void testForwardDeclarations() throws Exception {        
+        performTest("forward_declarations.cc"); // NOI18N
+    }
+
+    // #146966 : parser fails on recognizing some operator's definitions
+    public void testTemplateTypeCastOperators() throws Exception {        
+        performTest("template_type_cast_operators.cc"); // NOI18N        
+    }
+    
+    // IZ#136731 : No hyper link on local extern function
+    public void testFunctionDeclarationAsParameter() throws Exception {      
+        performTest("function_declaration_as_parameter.cc"); // NOI18N        
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -363,6 +511,14 @@ public class FileModelTest extends TraceModelTestBase {
 	
         public Failed(String testName) {
             super(testName);
+        }
+
+//        public void testParserRecover() throws Exception {
+//            performTest("parser_recover.cc");
+//        }
+
+        public void testPreProcDefinedKeyword() throws Exception {
+            performTest("preproc_defined_keyword.cc");        
         }
 
 	@Override
@@ -376,15 +532,6 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-	public void testTemplateInnerClassDtorDefinition() throws Exception {
-	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
-        
-        public void testTypedefPointerToStaticMember() throws Exception {
-            // IZ 138325 : IDE highlights 'typedef R (T::*F);' line as wrong
-            performTest("typedef_pointer_to_static_member.cc"); // NOI18N
-        }
-        
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
@@ -394,5 +541,6 @@ public class FileModelTest extends TraceModelTestBase {
    }
     
 }
+
 
 

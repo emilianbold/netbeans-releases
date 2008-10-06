@@ -51,6 +51,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.GotoDeclarationAction;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
 import org.openide.util.NbBundle;
 
@@ -97,9 +98,9 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getSelectionStart();
             // first try include provider
-            if (new CsmIncludeHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
+            if (new CsmIncludeHyperlinkProvider().isHyperlinkPoint(doc, offset, HyperlinkType.GO_TO_DECLARATION)) {
                 return true;
-            } else if (new CsmHyperlinkProvider().isHyperlinkPoint(doc, offset)) {
+            } else if (new CsmHyperlinkProvider().isHyperlinkPoint(doc, offset, HyperlinkType.GO_TO_DECLARATION)) {
                 return true;
             }
         }
@@ -146,6 +147,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
         if (target != null && (target.getDocument() instanceof BaseDocument)) {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getSelectionStart();
+            // don't need to lock document because we are in EQ
             Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {

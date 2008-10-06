@@ -117,8 +117,10 @@ public class BuiltinTypes {
         public String toString() {
             return "" + getKind() + " " +  getQualifiedName(); // NOI18N
         }
-        
-        
+
+        public boolean isValid() {
+            return true;
+        }
     }
     
     private static Map<CharSequence, CsmBuiltIn> types = new HashMap();

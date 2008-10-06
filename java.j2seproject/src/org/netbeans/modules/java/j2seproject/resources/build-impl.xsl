@@ -481,7 +481,7 @@ is divided into following sections:
                 </macrodef>
             </target>
             
-            <target name="-init-macrodef-nbjpda">
+            <target name="-init-macrodef-nbjpda" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -498,7 +498,7 @@ is divided into following sections:
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <sequential>
-                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
+                        <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -550,6 +550,12 @@ is divided into following sections:
                 <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
                     <istrue value="${{have-jdk-older-than-1.4}}"/>
                 </condition>
+                <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
+                    <os family="windows"/>
+                </condition>
+                <condition property="debug-transport" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
+                    <isset property="debug.transport"/>
+                </condition>
             </target>
             
             <target name="-init-macrodef-debug" depends="-init-debug-args">
@@ -575,7 +581,7 @@ is divided into following sections:
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -816,7 +822,7 @@ is divided into following sections:
             </target>
             
             <target name="compile-single">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,-verify-automatic-build,-pre-pre-compile,-pre-compile-single,-do-compile-single,-post-compile-single</xsl:attribute>
             </target>
             
             <xsl:comment>

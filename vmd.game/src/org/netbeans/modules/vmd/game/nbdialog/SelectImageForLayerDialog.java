@@ -43,6 +43,8 @@ package org.netbeans.modules.vmd.game.nbdialog;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -57,9 +59,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.openide.DialogDescriptor;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -67,11 +71,11 @@ import org.openide.util.Utilities;
  *
  * @author  kherink
  */
-public class SelectImageForLayerDialog extends javax.swing.JPanel {
+public class SelectImageForLayerDialog extends javax.swing.JPanel implements ActionListener{
 	
 	public static final boolean DEBUG = false;
 
-	private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+	private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
 	
 	private String path;
 	private Collection<FileObject> images;
@@ -79,6 +83,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	private PartialImageGridPreview imagePreview = new PartialImageGridPreview();
 	
 	private FileObject imgFile;
+        boolean cancelled = false;
 	
 		
 	public SelectImageForLayerDialog(String missingImagePath, Collection<FileObject> images) {
@@ -88,6 +93,17 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 		init();
 	}
 	
+
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
+                cancelled = true;
+            }
+        }
+
+        public boolean isCancelled() {
+            return cancelled;
+        }
+            
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is

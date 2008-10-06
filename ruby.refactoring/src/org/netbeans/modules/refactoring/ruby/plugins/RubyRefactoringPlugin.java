@@ -144,7 +144,9 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
         if (cpInfo==null) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Missing scope (ClasspathInfo), using default scope (all open projects)");
             cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
-            refactoring.getContext().add(cpInfo);
+            if (cpInfo != null) {
+                refactoring.getContext().add(cpInfo);
+            }
         }
         return cpInfo;
     }
@@ -200,7 +202,11 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
             for (FileObject file : files) {
                 if (RubyUtils.isRubyFile(file)) {
                     rubyFiles.add(file);
-                } else if (RubyUtils.isRhtmlFile(file)) {
+                } else if (RubyUtils.isRhtmlOrYamlFile(file)) {
+                    // Avoid opening HUGE Yaml files - they may be containing primarily data
+                    if (file.getSize() > 512*1024) {
+                        continue;
+                    }
                     rhtmlFiles.add(file);
                 }
             }

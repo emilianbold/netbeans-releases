@@ -66,11 +66,12 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class TableEditorPanel extends ListEditorPanel {
-    private static Image brokenProjectBadge = Utilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
+    private static Image brokenProjectBadge = ImageUtilities.loadImage( "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif" ); // NOI18N
 
     private String baseDir;
     private JTable targetList;
@@ -113,10 +114,8 @@ public class TableEditorPanel extends ListEditorPanel {
 	// Set column sizes
 	getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
 	getTargetList().getColumnModel().getColumn(1).setMaxWidth(200);
-	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
 	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
-	getTargetList().getColumnModel().getColumn(2).setResizable(false);
+	getTargetList().getColumnModel().getColumn(2).setMaxWidth(100);
 	//
 	getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
@@ -237,16 +236,16 @@ public class TableEditorPanel extends ListEditorPanel {
 	    Object element = listData.elementAt(row);
 	    if (!(element instanceof LibraryItem)) {
 		// FIXUP ERROR!
-		label.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif"))); // NOI18N
+		label.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/resources/blank.gif"))); // NOI18N
 		label.setToolTipText("unknown"); // NOI18N
 		return label;
 	    }
 	    LibraryItem libraryItem = (LibraryItem)element;
 	    if (col == 0) {
-		Image iconImage = Utilities.loadImage(libraryItem.getIconName());
+		Image iconImage = ImageUtilities.loadImage(libraryItem.getIconName());
 		label.setToolTipText(libraryItem.getToolTip());
 		if (libraryItem instanceof LibraryItem.ProjectItem && ((LibraryItem.ProjectItem)libraryItem).getProject(baseDir) == null) {
-		    iconImage = Utilities.mergeImages(iconImage, brokenProjectBadge, 8, 0);
+		    iconImage = ImageUtilities.mergeImages(iconImage, brokenProjectBadge, 8, 0);
 		    label.setToolTipText(getString("BROKEN") + label.getToolTipText());
 		}
 		label.setIcon(new ImageIcon(iconImage));

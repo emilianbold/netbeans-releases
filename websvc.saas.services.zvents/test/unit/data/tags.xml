@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>8</stream_count>
+    <tag id="4">
+        <name>performance</name>
+    </tag>
+    <tag id="5">
+        <name>arts</name>
+    </tag>
+    <tag id="6">
+        <name>stage</name>
+    </tag>
+    <tag id="9">
+        <name>jazz</name>
+    </tag>
+    <tag id="17">
+        <name>live music</name>
+    </tag>
+    <tag id="273">
+        <name>concert</name>
+    </tag>
+    <tag id="309">
+        <name>show</name>
+    </tag>
+    <tag id="1680">
+        <name>band</name>
+    </tag>
+</rsp>

@@ -67,6 +67,7 @@
         socket.transport = transport;
         socket.output = outstream;
         socket.input = stream;
+        socket.consoleService = NetBeans.Logger.getLogger();
 
         socket.close = function() {
             if (this.closed) {
@@ -84,7 +85,7 @@
             }
 
             if (data instanceof XML) {
-                data = '<?xml version="1.0" encoding="iso-8859-1"?>' + data.toXMLString();
+                data = NetBeans.Utils.convertUnicodeToUTF8('<?xml version="1.0" ?>' + data.toXMLString());
             } else {
                 // DBGP expects only XML messages back from the debugger
                 return;
@@ -99,6 +100,7 @@
             this.output.write(outputData, outputData.length);
 
             this.output.flush();
+            socket.sentFlag = true;
         };
 
         var inputStreamPump = {
@@ -108,11 +110,18 @@
             data: "",
 
             startInThread: function() {
-                var eqService = NetBeans.Utils.CCSV(
-                NetBeans.Constants.EventQueueServiceCID,
-                NetBeans.Constants.EventQueueServiceIF);
-                this.eventQueue = eqService.getSpecialEventQueue(
-                NetBeans.Constants.EventQueueServiceIF.CURRENT_THREAD_EVENT_QUEUE);
+                if (NetBeans.Utils.isFF2()) {
+                    var eqService = NetBeans.Utils.CCSV(
+                    NetBeans.Constants.EventQueueServiceCID,
+                    NetBeans.Constants.EventQueueServiceIF);
+                    this.eventQueue = eqService.getSpecialEventQueue(
+                    NetBeans.Constants.EventQueueServiceIF.CURRENT_THREAD_EVENT_QUEUE);
+                } else {
+                    this.eventQueue = NetBeans.Utils.CCSV(                
+                    NetBeans.Constants.ThreadManagerServiceCID,
+                    NetBeans.Constants.ThreadManagerService).currentThread;
+                }
+
                 this.astream.asyncWait(this, 0, 0, this.eventQueue);
             },
 
@@ -145,7 +154,7 @@
                         // extract the command
                         var command = this.data.substr(0, end_pt);
                         // send the command to the Debugger
-                        listener.onDBGPCommand(command);
+                        listener.onDBGPCommand(NetBeans.Utils.convertUTF8ToUnicode(command));
                     }
                     // keep the remaining input
                     this.data = this.data.substr(end_pt + 1);
@@ -171,8 +180,21 @@
                     } catch(exc) {
                         // TODO Use Components.results.NS_BASE_STREAM_CLOSED
                         if ( exc.result != 0x80470002) {
+                            try {
+                                NetBeans.Logger.logMessage("Unexpected socket failure:");
+                                NetBeans.Logger.logException(exc);
+                            } catch (exc) {
+                                if (socket && socket.consoleService && socket.consoleService.logStringMessage) {
+                                    socket.consoleService.logStringMessage("Unexpected socket failure:");
+                                    socket.consoleService.logStringMessage(exc.toString());
+                                    if (exc.stack) {
+                                        socket.consoleService.logStringMessage(exc.stack);
+                                    }
+                                }
+                            }
                             astream.closeWithStatus(exc.result);
                         }
+                        
                         this.onStopRequest();
                         return;
                     }
@@ -194,7 +216,7 @@
             try {
                 inputStreamPump.startInThread();
             } catch(exc) {
-                NetBeans.Logger.log('' + exc);
+                NetBeans.Logger.logException(exc);
             }
         };
 
@@ -203,7 +225,7 @@
             try {
                 inputStreamPump.stopInThread();
             } catch(exc) {
-                NetBeans.Logger.log('' + exc);
+                NetBeans.Logger.logException(exc);
             }
         };
 

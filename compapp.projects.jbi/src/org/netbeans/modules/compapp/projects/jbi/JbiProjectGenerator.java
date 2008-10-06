@@ -65,6 +65,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.projects.jbi.ComponentInfoGenerator;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
+import org.openide.filesystems.FileStateInvalidException;
 
 
 /**
@@ -102,20 +103,9 @@ public class JbiProjectGenerator {
      */
     public static AntProjectHelper createProject(File dir, String name, String j2eeLevel)
         throws IOException {
-        dir.mkdirs();
-
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
-        File rootF = dir;
-
-        while (rootF.getParentFile() != null /*UNC*/&& rootF.getParentFile().exists()) {
-            rootF = rootF.getParentFile();
-        }
-
-        FileObject fo = FileUtil.toFileObject(rootF);
-        assert fo != null : "At least disk roots must be mounted! " + rootF; // NOI18N
-        fo.getFileSystem().refresh(false);
-        fo = FileUtil.toFileObject(dir);
-
+        
+        final FileObject fo = createProjectDir(dir);
+        
         // vlv # 113228
         if (fo == null) {
           throw new IOException("Can't create " + dir.getName());
@@ -169,6 +159,57 @@ public class JbiProjectGenerator {
         CasaHelper.createDefaultCasaFileObject((JbiProject)p);
         
         return h;
+    }
+    
+    private static FileObject createProjectDir(File dir) throws IOException {
+        FileObject dirFO;
+        if(!dir.exists()) {
+            //Refresh before mkdir not to depend on window focus
+            refreshFileSystem (dir);
+            dirFO = FileUtil.createFolder(dir);
+        } else {
+            dirFO = FileUtil.toFileObject(dir);
+        }
+
+        if (dirFO == null) {
+          throw new IOException("Can't create " + dir.getName());
+        }
+        assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
+        assert dirFO.getChildren().length == 0 : "Dir must have been empty: " + dir;
+        return dirFO;                        
+    }
+    
+    private static void refreshFileSystem (final File dir) 
+            throws FileStateInvalidException {
+        File rootF = getRoot(dir);
+        FileObject dirFO = FileUtil.toFileObject(rootF);
+        assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        dirFO.getFileSystem().refresh(false);
+    }
+    
+    // copied from FileInfo#getRoot() 
+    private static File getRoot(File child) {
+        File root = null;
+        File tmp = child;
+        root = tmp;
+        while (tmp != null) {
+            root = tmp;
+            tmp = tmp.getParentFile();
+        }
+        if ("\\\\".equals(root.getPath())) {  // NOI18N
+            // UNC paths => return \\computerName\sharedFolder (or \\ if path is only \\ or \\computerName)
+            String filename = child.getAbsolutePath();
+            int firstSlash = filename.indexOf("\\", 2);  //NOI18N
+            if(firstSlash != -1) {
+                int secondSlash = filename.indexOf("\\", firstSlash+1);  //NOI18N
+                if(secondSlash != -1) {
+                    filename = filename.substring(0, secondSlash);
+                }
+                root = new File(filename);
+            }
+        }
+
+        return root;
     }
 
     /**

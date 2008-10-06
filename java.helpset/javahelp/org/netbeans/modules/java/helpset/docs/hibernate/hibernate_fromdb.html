@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Generating Hibernate Mapping Files and POJOs from a Database</title> 
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Generating Hibernate Mapping Files and POJOs from a Database</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>In addition to writing Hibernate mapping files and POJOs 
+        (Plain Old Java Objects) from scratch, 
+        you can also generate the mapping files and POJOs from a connected database with the
+        Hibernate Mapping Files and POJOs from Database wizard.</p>
+
+        <p><b>To generate Hibernate mapping files and POJOs from a database:</b></p> 
+        <ol>
+            <li>Right-click the project node in the Projects window and choose New &gt; Other to open the New File wizard.</li>
+            <li>In the New File wizard, select Hibernate Mapping Files and POJOs from Database from the Hibernate category.</li>
+            <li>Specify the Folder where you want to save the generated <tt>hibernate.reveng</tt> reverse engineering file. Click Next.</li>
+            <li>Select the Configuration File (<tt>hibernate.cfg.xml</tt>) from the drop down list.
+                <ul class="note">
+                    <li>The configuration file contains the database connection details.
+                    If a connection to the database is not open you may be prompted to 
+                    supply a username and password to connect to the database.
+                    The database must be running.</li>
+                </ul>
+            </li>
+            
+            <li>Select any tables in the Available Tables pane and click the Add to move the tables to the Selected Tables pane. 
+                Any tables related to the tables you select are automatically added to the list in the Selected Tables pane. 
+                The IDE will generate Hibernate mapping files and POJOs for each table listed in the Selected Tables pane.</li>
+            <li>Click Next.</li>
+            <li>Specify any options for the generated files.</li>
+            <li>Select Domain Code to generate the POJOs.</li> 
+            <li>Select Hibernate XML Mappings to generate the mapping files.</li>
+            <li>Select an existing package from the Package drop down list or type the name of a new package.</li>
+            <li>Click Finish.</li>
+        </ol>
+        
+        <p>When you click Finish the IDE generates the following files:</p>
+        <ul>
+            <li>POJOs based on the selected specified tables (if you selected Domain Code in the wizard)</li>
+            <li>Hibernate mapping files based on the specified tables (if you selected Hibernate XML Mappings in the wizard)</li>
+            <li>A <tt>hibernate.reveng</tt> reverse engineering file in the specified location</li>
+        </ul>
+        
+
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
+            <dd><a href="hibernate_mapping.html">Creating Hibernate Mapping Files</a> </dd>
+            <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+            <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

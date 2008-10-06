@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<admin_getMetrics_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <metrics>
+        <end_time>1213858800</end_time>
+        <active_users>2147</active_users>
+        <canvas_page_views>6045</canvas_page_views>
+    </metrics>
+    <metrics>
+        <end_time>1213945200</end_time>
+        <active_users>2221</active_users>
+        <canvas_page_views>6174</canvas_page_views>
+    </metrics>
+</admin_getMetrics_response>

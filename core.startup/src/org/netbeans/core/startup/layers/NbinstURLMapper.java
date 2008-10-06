@@ -100,7 +100,8 @@ public class NbinstURLMapper extends URLMapper {
                 String path = uri.getPath();
                 if (path.length()>0) {
                     try {
-                        File file = InstalledFileLocator.getDefault().locate(path.substring(1),module,false);
+                        String relpath = path.substring(1).replaceFirst("/$", ""); // NOI18N
+                        File file = InstalledFileLocator.getDefault().locate(relpath, module, false);
                         if (file != null) {
                             return new FileObject[] {URLMapper.findFileObject(file.toURI().toURL())};
                         }

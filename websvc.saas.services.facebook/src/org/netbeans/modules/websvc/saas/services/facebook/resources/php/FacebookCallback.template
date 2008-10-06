@@ -1,9 +1,11 @@
 <?php
+    session_start();
 
-    $authToken = $_POST["auth_token"];
-    $_SESSION["facebook_auth_token"] = authToken;
-            
-    FacebookSocialNetworkingServiceAuthenticator::login();
+    include_once "FacebookSocialNetworkingServiceAuthenticator.php";
+
+    $authToken = $_GET["auth_token"];
+        
+    FacebookSocialNetworkingServiceAuthenticator::login($authToken);
     $sessionKey = FacebookSocialNetworkingServiceAuthenticator::getSessionKey();
          
     printf("<html>");
@@ -11,8 +13,8 @@
     printf("<title>Servlet FacebookCallback</title>");
     printf("</head>");
     printf("<body>");
-    printf("<h1>Servlet FacebookCallback at " + $_SERVER['REQUEST_URI'] + "</h1>");
-    printf("<p> Your Session Key is " + sessionKey + "</p>");
+    printf("<h1>Servlet FacebookCallback at " . $_SERVER['REQUEST_URI'] . "</h1>");
+    printf("<p> Your Session Key is " . $sessionKey . "</p>");
     printf("</body>");
     printf("</html>");
 ?>

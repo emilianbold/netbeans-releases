@@ -41,11 +41,17 @@
 
 package org.netbeans.test.ide;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -76,7 +82,7 @@ public class IDECommitValidationTest extends JellyTestCase {
         super(name);
     }
     
-    public static Test suite() {
+    public static Test suite() throws IOException {
         
         boolean blacklistEnabled = initBlacklistedClassesHandler();
         
@@ -84,11 +90,28 @@ public class IDECommitValidationTest extends JellyTestCase {
             IDEValidation.class
         ).clusters(".*").enableModules(".*");
 
+        Set<String> allowedFiles = new HashSet<String>();
+        InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedFiles.add(line);
+        }
+
+        CountingSecurityManager.initialize(null, allowedFiles);
         
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
-        conf = conf.addTest("testInitGCProjects");
+        // too easy to break: conf = conf.addTest("testReflectionUsage");
+        conf = conf.addTest("testWriteAccess");
+        conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");
         conf = conf.addTest("testOptions");
@@ -106,9 +129,25 @@ public class IDECommitValidationTest extends JellyTestCase {
         conf = conf.addTest("testXML");
         conf = conf.addTest("testDb");
         conf = conf.addTest("testWindowSystem");
-        conf = conf.addTest("testGCProjects");
+//        conf = conf.addTest("testGCDocuments");
+//        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
-        return NbModuleSuite.create(conf);
+//        conf = conf.addTest("testReflectionUsageAtTheEnd");
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(NbModuleSuite.create(conf));
+        suite.addTest(new IDECommitValidationTest("testPostRunCheck"));
+        return suite;
+    }
+
+    public void testPostRunCheck() throws Exception {
+        String ud = System.getProperty("netbeans.user");
+        assertNotNull("User dir is provided", ud);
+
+        File loaders = new File(new File(new File(ud), "config"), "loaders.ser");
+        if (loaders.exists()) {
+            fail("loaders.ser file shall not be created, as loaders shall now be " +
+                "defined using layers:\n" + loaders);
+        }
     }
 }

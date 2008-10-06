@@ -46,16 +46,13 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  * 'Welcome' tab of the Start Page
@@ -67,11 +64,10 @@ class WelcomeTab extends AbstractTab {
     private ContentSection getStartedSection;
     private ContentSection learnMoreSection;
     private JComponent bottomBar;
+    private JPanel bottomStripe;
 
     protected void buildContent() {
-        JPanel main = new JPanel( new GridBagLayout() );
-        main.setOpaque( true );
-        main.setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
+        JPanel main = new BackgroundPanel( new GridBagLayout() );
         main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
         setBorder(BorderFactory.createEmptyBorder());
@@ -113,49 +109,18 @@ class WelcomeTab extends AbstractTab {
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,2,0),0,0) );
         
-        JPanel bottomSpace = new Stripe( false );
-        bottomSpace.setBackground( Color.red );
-        main.add( bottomSpace,
+        bottomStripe = new Stripe( false );
+        main.add( bottomStripe,
                 new GridBagConstraints(0,4,2,1,1.0,1.0,GridBagConstraints.CENTER,GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
     }
 
-    protected Point getTopStripOrigin() {
-        Point p;
-        if( null == getStartedSection ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = getStartedSection.getTitleBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p = SwingUtilities.convertPoint( getStartedSection, p, this );
+    protected int getBottomStripeOrigin() {
+        int res = 0;
+        if( null != bottomStripe ) {
+            res = bottomStripe.getLocation().y;
+            if( res == 0 )
+                res = getHeight();
         }
-        return p;
-    }
-
-    protected Point getMiddleStripOrigin() {
-        Point p;
-        if( null == learnMoreSection ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = learnMoreSection.getTitleBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p.x += r.getWidth();
-            p = SwingUtilities.convertPoint( learnMoreSection, p, this );
-        }
-        return p;
+        return res;
     }    
-
-    protected Point getBottomStripOrigin() {
-        Point p;
-        if( null == bottomBar ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = bottomBar.getBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p.x += r.getWidth();
-        }
-        return p;
-    }
 }

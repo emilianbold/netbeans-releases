@@ -58,10 +58,12 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
@@ -126,18 +128,45 @@ public final class PlatformComponentFactory {
      * which contains all Ruby platform.
      */
     public static JList getRubyPlatformsList() {
-        JList plafList = new JList(new RubyPlatformListModel());
+        final JList plafList = new JList(createComboWaitModel());
         plafList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         plafList.setCellRenderer(new RubyPlatformListRenderer());
+        if (RubyPreferences.isFirstPlatformTouch()) {
+            plafList.setModel(createListWaitModel());
+            plafList.setEnabled(false);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    RubyPlatformManager.performPlatformDetection();
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            plafList.setModel(new RubyPlatformListModel());
+                            plafList.setEnabled(true);
+                        }
+                    });
+                }
+            });
+        } else {
+            plafList.setModel(new RubyPlatformListModel());
+        }
         return plafList;
     }
 
     /**
      * Use this model in situation when you need to populate combo in the
-     * background. The only item in this model is {@link #WAIT_VALUE}.
+     * background. The only item in this model is {@link #DETECTING_VALUE}.
      */
     public static ComboBoxModel createComboWaitModel() {
         return new DefaultComboBoxModel(new Object[]{ DETECTING_VALUE });
+    }
+
+    /**
+     * Use this model in situation when you need to populate list in the
+     * background. The only item in this model is {@link #DETECTING_VALUE}.
+     */
+    public static ListModel createListWaitModel() {
+        DefaultListModel listModel = new DefaultListModel();
+        listModel.addElement(DETECTING_VALUE);
+        return listModel;
     }
 
     public static void addPlatformChangeListener(final JComboBox platforms, final PlatformChangeListener pcl) {
@@ -155,7 +184,9 @@ public final class PlatformComponentFactory {
         public abstract void platformChanged();
 
         public void itemStateChanged(ItemEvent e) {
-            platformChanged();
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                platformChanged();
+            }
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -286,9 +317,11 @@ public final class PlatformComponentFactory {
                 label = (String) value;
             } else {
                 RubyPlatform plaf = ((RubyPlatform) value);
-                label = plaf.getLabel();
-                if (plaf != null && !plaf.isValid()) {
+                if (plaf == null || !plaf.isValid()) {
+                    label = NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.select.valid.platform");
                     setForeground(INVALID_PLAF_COLOR);
+                } else {
+                    label = plaf.getLabel();
                 }
             }
             setText(label);

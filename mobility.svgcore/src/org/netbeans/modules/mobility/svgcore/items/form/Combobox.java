@@ -39,60 +39,22 @@
 
 package org.netbeans.modules.mobility.svgcore.items.form;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
+import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 
 /**
- *
- * @author avk
+ * SVGComponentDrop implementation for Button.
+ * loads snippet text from button_snippet.xml_template
+ * <p>
+ * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%, %%COMPONENT_ID%%
+ * 
+ * @author akorostelev
  */
-public class Combobox extends SVGComponentDrop{
+public class Combobox extends SVGFormElement{
 
-    private static final String XML_MAIN_SNIPPET_PATH 
-                                        = "combobox_main_snippet.xml_template";//NOI18N
-    private static final String XML_HIDDEN_SNIPPET_PATH 
-                                        = "combobox_hidden_snippet.xml_template";//NOI18N
-    private static final String PATTERN = "%%";//NOI18N
-    private static final String ID_PATTERN = PATTERN + "country_combobox_id" + PATTERN;//NOI18N
+    private static final String SNIPPET_PATH = "combobox_snippet.xml_template"; //NOI18N
+                        
     
-    protected boolean doTransfer() {
-        try {
-            String main = getMainSnippet();
-            if (main != null){
-                String id = getSVGDataObject().getModel().mergeImage(main, false);
-                String additional = getHiddenSnippet(id);
-                getSVGDataObject().getModel().mergeImage(additional, false);
-                setSelection(id);
-            }
-            return true;
-        } catch (Exception ex) {
-            SceneManager.error("Error during image merge", ex); //NOI18N
-        }
-        return false;
+    public Combobox() {
+        super(SVGComponentsSupport.ID_PREFIX_COMBOBOX, SNIPPET_PATH);
     }
-    
-    private String getMainSnippet() throws IOException{
-        return getResourceAsString(XML_MAIN_SNIPPET_PATH);
-    }
-    
-    private String getHiddenSnippet(String id) throws IOException{
-        String text = getResourceAsString(XML_HIDDEN_SNIPPET_PATH);
-        return text.replace(ID_PATTERN, id);
-    }
-    
-    private String getResourceAsString(String name) throws IOException{
-        InputStream is = Combobox.class.getResourceAsStream(name);
-        assert is != null : name+" resource Input Stream is null";
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        StringBuffer buffer = new StringBuffer();
-        String line;
-        while ((line = in.readLine()) != null) {
-            buffer.append(line);
-        }
-        return buffer.toString();
-    }
-  
 }

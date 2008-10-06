@@ -44,61 +44,62 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
-import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
     
-    private int old;
     private PlatformNodeProp pnp;
+    private DevelopmentHostConfiguration dhconf;
 
-    public PlatformConfiguration(int def, String[] names) {
+    public PlatformConfiguration(DevelopmentHostConfiguration dhconf, int def, String[] names) {
         super(null, def, names, null);
-        old = -1;
         pnp = null;
+        this.dhconf = dhconf;
+    }
+
+    private PlatformConfiguration(PlatformConfiguration conf) {
+        super(null, conf.getDefault(), conf.getNames(), null);
+        setValue(conf.getValue());
+        setModified(conf.getModified());
+        pnp = conf.pnp;
+        dhconf = conf.dhconf;
     }
     
     public void setPlatformNodeProp(PlatformNodeProp pnp) {
         this.pnp = pnp;
     }
 
+    @Override
+    public String getName() {
+        return dhconf.isOnline() ? super.getName() : "";
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
-        setValue(Platform.PLATFORM_NONE);
-        final PlatformConfiguration pconf = this;
-        final String key = evt.getNewValue().toString();
-        
-        if (key.equals(CompilerSetManager.LOCALHOST)) {
-            if (old != -1) {
-                setValue(old);
-            }
-        } else {
-            old = getValue();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-                    if (server != null) {
-                        ServerRecord record = server.get(key);
-                        if (record != null) {
-                            pconf.setValue(record.getPlatform());
-                            if (pnp != null) {
-                                pnp.repaint();
-                            }
-                        }
-                    }
-                }
-            });
+        dhconf = (DevelopmentHostConfiguration) evt.getNewValue();
+        String hkey = dhconf.getName();
+        int platform = CompilerSetManager.getDefault(hkey).getPlatform();
+        if (platform == -1) {
+            // TODO: CompilerSet is not reliable about platform; it must be.
+            platform = PlatformTypes.PLATFORM_NONE;
         }
+        setValue(platform);
+    }
+
+    public boolean isDevHostOnline() {
+        return dhconf.isOnline();
+    }
+
+    // Clone and Assign
+    public void assign(PlatformConfiguration conf) {
+        super.assign(conf);
+        pnp = conf.pnp;
+        dhconf = conf.dhconf;
     }
 
     @Override
     public Object clone() {
-	PlatformConfiguration clone = new PlatformConfiguration(getDefault(), getNames());
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	return clone;
+        PlatformConfiguration clone = new PlatformConfiguration(this);
+        return clone;
     }
 }

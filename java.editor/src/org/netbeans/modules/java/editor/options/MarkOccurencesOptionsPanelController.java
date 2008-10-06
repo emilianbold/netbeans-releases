@@ -42,16 +42,12 @@ package org.netbeans.modules.java.editor.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 
-final class MarkOccurencesOptionsPanelController extends OptionsPanelController {
-    
-    private Preferences node;
+public final class MarkOccurencesOptionsPanelController extends OptionsPanelController {
     
     private MarkOccurencesPanel panel;
     
@@ -104,5 +100,5 @@ final class MarkOccurencesOptionsPanelController extends OptionsPanelController 
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
-   
+    
 }

@@ -65,7 +65,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.java.source.usages.VirtualSourceProvider;
+import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -92,22 +92,20 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 // source is probably broken and there is no AST
                 // let's generate empty Java stub with simple name equal to file name
                 FileObject fo = FileUtil.toFileObject(file);
-                String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
-                if (pkg != null) {
-                    pkg = pkg.replace('/', '.');
-                    StringBuilder sb = new StringBuilder();
-                    if (!pkg.equals("")) { // NOI18N
-                        sb.append("package " + pkg + ";"); // NOI18N
+                if (fo != null) {
+                    String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
+                    if (pkg != null) {
+                        pkg = pkg.replace('/', '.');
+                        StringBuilder sb = new StringBuilder();
+                        if (!pkg.equals("")) { // NOI18N
+                            sb.append("package " + pkg + ";"); // NOI18N
+                        }
+                        String name = fo.getName();
+                        sb.append("public class " + name + "{}"); // NOI18N
+                        result.add(file, pkg, name, sb.toString());
                     }
-                    String name = fo.getName();
-                    sb.append("public class " + name + "{}"); // NOI18N
-                    result.add(file, pkg, name, sb.toString());
                 }
-            } else {
-                
-                // TODO: temporary workaround for #134067, taking only 1st class from file!
-                classNodes = Collections.singletonList(classNodes.get(0));
-                
+            } else {                                
                 for (ClassNode classNode : classNodes) {
                     try {
                         CharSequence javaStub = generator.generateClass(classNode);
@@ -128,21 +126,23 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     static List<ClassNode> getClassNodes(File file) {
         final List<ClassNode> resultList = new ArrayList<ClassNode>();
         FileObject fo = FileUtil.toFileObject(file);
-        try {
-            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-                public void run(GroovyParserResult result) throws Exception {
-                    AstRootElement astRootElement = result.getRootElement();
-                    if (astRootElement != null) {
-                        ModuleNode moduleNode = astRootElement.getModuleNode();
-                        if (moduleNode != null) {
-                            resultList.addAll(moduleNode.getClasses());
+        if (fo != null) {
+            try {
+                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+                    public void run(GroovyParserResult result) throws Exception {
+                        AstRootElement astRootElement = result.getRootElement();
+                        if (astRootElement != null) {
+                            ModuleNode moduleNode = astRootElement.getModuleNode();
+                            if (moduleNode != null) {
+                                resultList.addAll(moduleNode.getClasses());
+                            }
                         }
                     }
-                }
-                public void cancel() {}
-            }, false);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                    public void cancel() {}
+                }, false);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         return resultList;
@@ -155,13 +155,13 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         private boolean requireSuperResolved = false;
         private List toCompile = new ArrayList();
 
-        public JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
+        private JavaStubGenerator(final boolean requireSuperResolved, final boolean java5) {
             this.requireSuperResolved = requireSuperResolved;
             this.java5 = java5;
         }
 
         public JavaStubGenerator() {
-            this(false, false);
+            this(false, true);
         }
 
         public CharSequence generateClass(ClassNode classNode) throws FileNotFoundException {
@@ -757,6 +757,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             out.println();
         }
 
+    }
+
+    public boolean index() {
+        return false;
     }
 
 }

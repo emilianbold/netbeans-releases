@@ -45,13 +45,14 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <folder name="REST">
+                <folder name="Metro">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/category.html"/>
-                    <!-- HelloWorld Sample -->
-                    <attr name="position" intvalue="275"/>
+                    <!-- Not used and commented out so it doesn't get overridden by other modules and break the validation test.
+                    attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/category.html"/>
+                    -->
+                    <attr name="position" intvalue="250"/>
                     <file name="HelloWorldSampleProject" url="HelloWorld.zip">
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="500"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.HelloWorldSampleWizardIterator.createIterator"/>
@@ -60,22 +61,32 @@ made subject to such option by the copyright holder.
                     </file>
                     <!-- CustomerDB Sample -->
                     <file name="CustomerDBSampleProject" url="CustomerDB.zip">
-                        <attr name="position" intvalue="500"/>
+                        <attr name="position" intvalue="510"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
+                    </file> 
+                    <!-- CustomerDBSpring Sample -->
+                    <file name="CustomerDBSpringSampleProject" url="CustomerDBSpring.zip">
+                        <attr name="position" intvalue="520"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBSpringSampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBSpringSampleDescription.html"/>
+                        <attr name="template" boolvalue="true"/>
                     </file>
+                    
                     <!-- CustomerDBClient Sample -->
-                    <file name="CustomerDBClientSampleProject" url="CustomerDBClient.zip">
-                        <attr name="position" intvalue="600"/>
+                    <!--<file name="CustomerDBClientSampleProject" url="CustomerDBClient.zip">
+                        <attr name="position" intvalue="520"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.CustomerDBClientSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/CustomerDBClientSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
-                    </file>
+                    </file>-->
                 </folder>
             </folder>
         </folder>

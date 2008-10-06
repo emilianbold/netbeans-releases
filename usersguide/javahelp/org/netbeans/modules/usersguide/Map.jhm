@@ -80,7 +80,6 @@
 
 
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
-<mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
@@ -101,13 +100,9 @@
 <mapID target="configure.importing" url="configure/configure_importing.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
-<mapID target="configure.system.settings" url="configure/system_settings.html" />
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
-<mapID target="configure.menucustomize" url="configure/workspace/menu_customize.html" />
-<mapID target="configure.menucommands" url="configure/workspace/menu_commands.html" />
-<mapID target="configure.menucontextual" url="configure/workspace/menu_contextual.html" />
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
@@ -295,31 +290,12 @@
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
 
-   <mapID target="org.netbeans.core.LoaderPoolNode" url="configure/options_object_types.html" /> 
 <!--nodes in Options | System | Object Types:-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
      
-   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
-
-   <!--nodes for Diff Settings and Diff and Merge Types:-->
-   <mapID target="org.netbeans.modules.diff.DiffSettings" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.types" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.providers" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.visualizers" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="configure/diff_textual.html" />
-   <mapID target="org.netbeans.modules.diff.Diff.services" url="configure/diff_textual.html" />
-<!-- are these merge visualizers still used? -->   
-   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="configure/diff_textual.html" />
-   
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
-   <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />
@@ -334,7 +310,6 @@
 <mapID target="dbexpovew" url="files/files_runtime.html" />
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
-   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
 
@@ -371,7 +346,14 @@
   <!--ID for CSH in Options | Basic Options - General Category: --> 
   <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
   <!--ID for CSH in Options | Basic Options - Editor Category: --> 
-  <mapID target="netbeans.optionsDialog.editor" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.general" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.hints" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.tasklist" url="configure/options_editor.html" />
+
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
   
@@ -394,10 +376,6 @@
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
   <!--for Services node and its subnodes in Templates folder:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
-
-   <!--Write topic to say what you can do with Actions pool?:-->
-   <mapID target="org.netbeans.core.ActionsPoolNode" url="configure/workspace/menu_commands.html" />
-   
  
 <!--found as ID for subfolders of Actions in Options; probably used in other  places as well:-->
    <mapID target="org.openide.explorer.view.TreeTable" url="pending.html" />

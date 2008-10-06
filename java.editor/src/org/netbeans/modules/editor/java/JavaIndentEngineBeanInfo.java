@@ -75,16 +75,16 @@ public class JavaIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
         return JavaIndentEngine.class;
     }
 
-    protected String[] createPropertyNames() {
-        return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
-            new String[] {
-                JavaIndentEngine.JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-                JavaIndentEngine.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-                JavaIndentEngine.JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
-                JavaIndentEngine.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
-            }
-        );
-    }
+//    protected String[] createPropertyNames() {
+//        return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
+//            new String[] {
+//                JavaIndentEngine.JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+//                JavaIndentEngine.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+//                JavaIndentEngine.JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+//                JavaIndentEngine.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
+//            }
+//        );
+//    }
 
     protected String getString(String key) {
         try {

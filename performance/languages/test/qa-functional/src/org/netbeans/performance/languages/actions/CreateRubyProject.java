@@ -41,15 +41,19 @@
 package org.netbeans.performance.languages.actions;
 
 
-import org.netbeans.jellytools.NbDialogOperator;
+import java.awt.Container;
+import javax.swing.JComponent;
+import junit.framework.Test;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
@@ -61,29 +65,54 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
     
     public String category, project, project_name, project_type,  editor_name;
     
-    public CreateRubyProject(String testName)
-    {
+    public CreateRubyProject(String testName) {
         super(testName);        
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
     
-    public CreateRubyProject(String testName, String performanceDataName)
-    {
+    public CreateRubyProject(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN=20000;
     }
 
     @Override
     public void initialize(){
-        log("::initialize::");              
-                
+        log("::initialize::");
+
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            public boolean accept(JComponent c) {
+                String cn = c.getClass().getName();
+                if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                    return false;
+                } else if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                    return false;
+                } else if ("javax.swing.JRootPane".equals(cn)
+                        && "org.netbeans.core.windows.view.ui.MainWindow".equals(
+                        c.getParent().getClass().getName())) {
+                    return false;
+                } else if ("null.nbGlassPane".equals(c.getName())) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            public String getFilterName() {
+                return "Ignores 1) DiffSidebar, 2) TreeView$ExplorerTree, 3) JRootPane under MainWindow, and 4) nbGlassPane";
+            }
+        });
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+
+        closeAllModal();
     }
+
     @Override
     public void prepare(){
         log("::prepare");
-        System.out.println("::prepare");
         createProject();
     }
     
@@ -94,36 +123,24 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("nbjunit.workdir")+ java.io.File.separator + "createdProjects";
-        System.out.println(directory);
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
        
         wizard_location.txtProjectLocation().setText("");
-                
         waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
-        System.out.println(wizard_location.txtProjectLocation().getText());
         
         project_name = project_type + "_" + System.currentTimeMillis();
-        log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
-        
-   
     }
 
-    public ComponentOperator open(){
+    public ComponentOperator open() {
         log("::open");    
         wizard_location.finish();
-        
         long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
-        System.out.println("wait wizard closed...");
         wizard_location.waitClosed();
-        System.out.println("done1...");
-        System.out.println("project creation dialog closed");
-        waitProjectCreatingDialogClosed();
-        System.out.println("done2....");
 
         JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
 
@@ -132,51 +149,37 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
     }
     
     @Override
-    public void close(){
+    public void close() {
         log("::close");
 
-        try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
-        try {
-            CommonUtilities.deleteProject(project_name);
-        } catch(Exception ee) {
-            log("Exception during project deletion: "+ee.getMessage());
-        }
+        ProjectSupport.closeProject(project_name);
     }    
     
-    private void waitProjectCreatingDialogClosed()
-    {
-       String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
-       try {
-           NbDialogOperator dlg = new NbDialogOperator(dlgName);
-           dlg.waitClosed();
-       } catch(TimeoutExpiredException tex) {
-           //
-       }
-       
-    }
-    
-    public void testCreateRubyProject()
-    {
+    public void testCreateRubyProject() {
         category = "Ruby";
-        project = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle", "Templates/Project/Ruby/emptyRuby.xml");
-        project_type="RubyProject";
+        project = Bundle.getString("org.netbeans.modules.ruby.rubyproject.ui.wizards.Bundle",
+                "Templates/Project/Ruby/emptyRuby.xml");
+        project_type = "RubyProject";
         editor_name = "main.rb";
-        doMeasurement();        
+        doMeasurement();
     }
     
-    public void testCreateRubyOnRailsProject()
-    {
+    public void testCreateRubyOnRailsProject() {
         category = "Ruby";
         project = "Ruby on Rails Application";
-        project_type="RailsProject";
-        editor_name = "database.yml";        
-        doMeasurement();         
+        project_type = "RailsProject";
+        editor_name = "database.yml";
+        doMeasurement();
     }
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new CreateRubyProject("testCreateRubyProject"));
-    }    
+
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(CreateRubyProject.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );    
+    }
 }

@@ -324,8 +324,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
                 int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree.getLeaf());
                 GuardedDocument gdoc = (GuardedDocument) doc;
                 MarkBlockChain guardedBlockChain = gdoc.getGuardedBlockChain();
-
-                if ((guardedBlockChain.compareBlock(start, end) & MarkBlock.INSIDE) != 0) {
+                if (guardedBlockChain.compareBlock(start, end) == MarkBlock.INNER) {
                     return true;
                 }
             }

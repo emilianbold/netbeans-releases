@@ -133,7 +133,7 @@ public class ClassifierUtilities extends ElementUtilities
                     IImplementation pRel = impRels.get(idx);
                     if ( pRel != null )
                     {
-                        IInterface pInterface = pRel.getContract();
+                        IClassifier pInterface = pRel.getContract();
                         if ( pInterface != null )
                         {
                             pRetVal.add(pInterface);

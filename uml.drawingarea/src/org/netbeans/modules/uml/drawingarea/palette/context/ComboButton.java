@@ -42,25 +42,43 @@ package org.netbeans.modules.uml.drawingarea.palette.context;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteButtonModel;
 
 /**
  *
  * @author treyspiva
  */
-public class ComboButton extends JPanel
+public class ComboButton extends ContextPaletteButton
 {
+    private static final Border RIGHT_POPOUT_BORDER = BorderFactory.createEmptyBorder(1, 4, 1, 1);
+    private static final Border RIGHT_POPOUT_FOCUSBORDER = 
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1),
+                                               BorderFactory.createEmptyBorder(0, 2, 0, 0));
+    private static final Border LEFT_POPOUT_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 4);
+    private static final Border LEFT_POPOUT_FOCUSBORDER = 
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1),
+                                               BorderFactory.createEmptyBorder(0, 0, 0, 3));
+    
     private Widget associatedWidget = null;
     private ContextPaletteButtonModel model = null;
     private ArrayList < ComboButtonListener > listeners = 
@@ -81,6 +99,39 @@ public class ComboButton extends JPanel
         
         setBackground(ContextPalette.BACKGROUND);
         setExpanded(false);
+        
+        addFocusListener(new FocusAdapter() 
+        {
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+//                setExpanded(false);
+            }
+            
+        });
+        
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "LeftAction");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "RightAction");
+        getActionMap().put("LeftAction", new LeftMoveButtonAction());
+        getActionMap().put("RightAction", new RightMoveButtonAction());
+    }
+    
+    protected Border getFocusBorder()
+    {
+        Border retVal = BorderFactory.createLineBorder(Color.BLUE, 1);
+        if(isExpanded() == true)
+        {
+            retVal = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+        }
+        
+        return retVal;
+    }
+    
+    protected Border getNonFocusedBorder()
+    {
+        return BorderFactory.createEmptyBorder(1, 1, 1, 1);
     }
     
     /**
@@ -144,32 +195,60 @@ public class ComboButton extends JPanel
             ArrayList<ContextPaletteButtonModel> popupContents = model.getChildren();
             if(getDirection() == PaletteDirection.RIGHT)
             {
-                Border border = BorderFactory.createEmptyBorder(0, 4, 0, 0);
+                
                 for (ContextPaletteButtonModel curDesc : popupContents)
                 {
                     PaletteButton curBtn = new PaletteButton(associatedWidget, 
                                                              curDesc, 
                                                              getDirection(),
-                                                             false);
+                                                             false)
+                    {
+                        protected Border getFocusBorder()
+                        {
+                            return RIGHT_POPOUT_FOCUSBORDER;
+                        }
+
+                        protected Border getNonFocusedBorder()
+                        {
+                            return RIGHT_POPOUT_BORDER;
+                        }
+                    };
+                    
                     curBtn.addContextButtonListener(myButtonListener);
-                    curBtn.setBorder(border);
+//                    curBtn.setBorder(RIGHT_POPOUT_BORDER);
+                    
+                    InputMap inputMap = curBtn.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                    inputMap.remove(UP_KEYSTROKE);
+                    inputMap.remove(DOWN_KEYSTROKE);
 
                     container.add(curBtn);
                 }
             }
             else
             {
-                Border border = BorderFactory.createEmptyBorder(0, 0, 0, 4);
                 for (int index = popupContents.size() - 1; index >= 0; index--)
                 {
                     ContextPaletteButtonModel curDesc = popupContents.get(index);
                     PaletteButton curBtn = new PaletteButton(associatedWidget, 
                                                              curDesc, 
                                                              getDirection(),
-                                                             false);
+                                                             false)
+                    {
+                        protected Border getFocusBorder()
+                        {
+                            return LEFT_POPOUT_FOCUSBORDER;
+                        }
+
+                        protected Border getNonFocusedBorder()
+                        {
+                            return LEFT_POPOUT_BORDER;
+                        }
+                    };
                     
                     curBtn.addContextButtonListener(myButtonListener);
-                    curBtn.setBorder(border);
+                    curBtn.setBorder(LEFT_POPOUT_BORDER);
+                    curBtn.getInputMap().remove(UP_KEYSTROKE);
+                    curBtn.getInputMap().remove(DOWN_KEYSTROKE);
 
                     container.add(curBtn);
                 }
@@ -186,18 +265,21 @@ public class ComboButton extends JPanel
                                               getDirection(),
                                               false);
         
+        Box mainBtnPanel = Box.createHorizontalBox();
         if(getDirection() == PaletteDirection.RIGHT)
         {
-            container.add(btn);
-            container.add(popupBtn);
+            mainBtnPanel.add(btn);
+            mainBtnPanel.add(popupBtn);
         }
         else
         {
-            container.add(popupBtn);
-            container.add(btn);
+            mainBtnPanel.add(popupBtn);
+            mainBtnPanel.add(btn);
         }
 
-        
+        mainBtnPanel.getPreferredSize();
+        //mainBtnPanel.setBorder(getNonFocusedBorder());
+        container.add(mainBtnPanel);
     }
     
     protected void fireComboExpandChanged()
@@ -346,6 +428,150 @@ public class ComboButton extends JPanel
             g.fillPolygon(xPoints, yPoints, 3);
             g.setColor(origColor);
         }
+    }
+    
+    private void setFocusToFirstChild()
+    {
+        if (getComponent(0) instanceof Container)
+        {
+            Container container = (Container) getComponent(0);
+            
+            if(isExpanded() == true)
+            {
+                if(getDirection() == PaletteDirection.RIGHT)
+                {
+                    container.getComponent(2).requestFocusInWindow();
+                }
+                else
+                {
+                    int firstChild = container.getComponentCount() - 4;
+                    container.getComponent(firstChild).requestFocusInWindow();
+                }
+            }
+            else
+            {
+                requestFocusInWindow();
+            }
+        }
+    }
+
+    @Override
+    protected void moveFocusToNextSibling(int startChildIndex, int endChildIndex)
+    {
+        setExpanded(false);
+        super.moveFocusToNextSibling(startChildIndex, endChildIndex);
+    }
+
+    @Override
+    protected void moveFocusToPreviousSibling(int startChildIndex, int endChildIndex)
+    {
+        setExpanded(false);
+        super.moveFocusToPreviousSibling(startChildIndex, endChildIndex);
+    }
+
+    
+    private PaletteButton getFocusedChild()
+    {
+        PaletteButton retVal = null;
+        
+        if (getComponent(0) instanceof Container)
+        {
+            Container container = (Container) getComponent(0);
+            for(Component child : container.getComponents())
+            {
+                if (child instanceof PaletteButton)
+                {
+                    PaletteButton button = (PaletteButton) child;
+                    if(button.isFocusOwner() == true)
+                    {
+                        retVal = button;
+                        break;
+                    }
+                }
+            }
+        }
+        return retVal;
+    }
+    
+    /**
+     * LeftMoveButtonAction handles the left arrow keystroke.  When the combo 
+     * button is collapsed the button will first be expanded, then the first
+     * child will be selected.  
+     */
+    public class LeftMoveButtonAction extends AbstractAction
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            if(isExpanded() == false)
+            {
+                if(getDirection() == PaletteDirection.LEFT)
+                {
+                    setExpanded(true);
+                    setFocusToFirstChild();
+                }
+                else
+                {
+                    setExpanded(false);
+                    setFocusToFirstChild();
+                }
+            }
+            else
+            {
+                PaletteButton curFocus = getFocusedChild();
+                if(curFocus != null)
+                {
+                    if(getDirection() == PaletteDirection.LEFT)
+                    {
+                        int endChildIndex = getModel().getChildren().size() - 1;
+                        curFocus.moveFocusToNextSibling(endChildIndex, -1);
+                    }
+                    else
+                    {
+                        curFocus.moveFocusToPreviousSibling(2, END_CHILD_INDEX);
+                    }
+                }
+            }
+        }
+        
+    }
+    
+    public class RightMoveButtonAction extends AbstractAction
+    {
+
+        public void actionPerformed(ActionEvent e)
+        {
+            if(isExpanded() == false)
+            {
+                if(getDirection() == PaletteDirection.LEFT)
+                {
+                    setExpanded(false);
+                    setFocusToFirstChild();
+                }
+                else
+                {
+                    setExpanded(true);
+                    setFocusToFirstChild();
+                }
+            }
+            else
+            {
+                PaletteButton curFocus = getFocusedChild();
+                if(curFocus != null)
+                {
+                    if(getDirection() == PaletteDirection.RIGHT)
+                    {
+                        curFocus.moveFocusToNextSibling(2, END_CHILD_INDEX);
+                    }
+                    else
+                    {
+                        int endChildIndex = getModel().getChildren().size() - 1;
+                        curFocus.moveFocusToPreviousSibling(endChildIndex, 0);
+                    }
+                }
+            }
+        }
+        
     }
     
     public class ButtonListener implements ContextButtonListener

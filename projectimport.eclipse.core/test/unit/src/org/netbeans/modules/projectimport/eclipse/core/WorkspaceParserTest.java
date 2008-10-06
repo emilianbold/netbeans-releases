@@ -44,7 +44,6 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;

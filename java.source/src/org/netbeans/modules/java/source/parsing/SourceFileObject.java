@@ -132,7 +132,10 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
         this.root = root;
         this.filter = filter;
         String ext = this.file.getExt();        
-        this.kind = FileObjects.getKind(ext);
+        this.kind = filter == null ? FileObjects.getKind(ext) : Kind.SOURCE; //#141411
+        if (renderNow && this.kind != Kind.CLASS) {
+            getCharContentImpl(true);
+        }
     }
 
     

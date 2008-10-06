@@ -77,7 +77,7 @@ public class CLD_PermissionLinkTests extends ClassDiagramTestCase {
     private static String prName = "UMLProjectForPermissionLink";
     private static String dpdName = "ClassDiagramForPermissionLink";
 
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

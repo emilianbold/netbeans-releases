@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -55,7 +54,7 @@ import org.netbeans.modules.gsf.api.StructureScanner;
  */
 public class JspStructureScanner implements StructureScanner {
 
-    public List<? extends StructureItem> scan(final CompilationInfo info, HtmlFormatter formatter) {
+    public List<? extends StructureItem> scan(final CompilationInfo info) {
         return Collections.emptyList();
     }
 
@@ -63,4 +62,7 @@ public class JspStructureScanner implements StructureScanner {
         return Collections.emptyMap();
     }
 
+    public Configuration getConfiguration() {
+        return new Configuration(false, false, 0);
+    }
 }

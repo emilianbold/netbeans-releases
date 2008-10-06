@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -181,7 +182,7 @@ public final class CsmFinderFactory {
 //            addClasspathFinders(finders, fileObjects, cp, true);
 //            cp = ClassPath.getClassPath(fo, ClassPath.BOOT);
 //            addClasspathFinders(finders, fileObjects, cp, true);
-            finder = new CsmFinderImpl(cf, getKitClass());
+            finder = new CsmFinderImpl(cf, getMimeType());
             return finder;
 //            finders.add();
         }else{
@@ -243,7 +244,7 @@ public final class CsmFinderFactory {
 //        }
 
 //        finder = new CompoundFinder(finders, CCKit.class);
-	finder = new CsmFinderImpl((FileObject)null, getKitClass());
+	finder = new CsmFinderImpl((FileObject)null, getMimeType());
         synchronized (CACHE_LOCK) {
             globalFinder = new SoftReference(finder);
         }
@@ -319,6 +320,10 @@ public final class CsmFinderFactory {
     /** Returns kitClass over MDRFinder will operate and retrieve settings */
     protected Class getKitClass(){
         return CCKit.class;
+    }
+
+    private String getMimeType() {
+        return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
     
     private void removeFromCache(FileObject fo) {

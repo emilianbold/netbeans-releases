@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -91,11 +91,11 @@ public abstract class Trampoline<Support> extends Object {
     // api.OperationContainer
     protected abstract OperationContainerImpl impl (OperationContainer container);
     protected abstract OperationInfoImpl impl (OperationInfo info);
-    protected abstract OperationInfo createOperationInfo (OperationInfoImpl impl);
+    protected abstract OperationInfo<Support> createOperationInfo (OperationInfoImpl impl);
     
     // api.UpdateUnitProvider
     protected abstract UpdateUnitProvider createUpdateUnitProvider (UpdateUnitProviderImpl impl);
-    protected abstract UpdateUnitProviderImpl impl (UpdateUnitProvider provider);
+    public abstract UpdateUnitProviderImpl impl (UpdateUnitProvider provider);
 
     // spi.UpdateItem
     public abstract UpdateItemImpl impl (UpdateItem item);

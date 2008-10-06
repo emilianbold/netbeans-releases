@@ -60,6 +60,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
 import org.openide.util.NbBundle;
+import org.openide.awt.Mnemonics;
 
 /**
  *
@@ -72,7 +73,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
     private static final String INSTANCE_NAME_TEXT = NbBundle.getMessage(PropertyEditorInstanceName.class, "LBL_INSTANCE_NAME"); // NOI18N
 
     private TypeID typeID;
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor;
     private WeakReference<DesignComponent> component;
 
     private PropertyEditorInstanceName(TypeID typeID) {
@@ -92,6 +93,18 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
         }
         return customEditor;
     }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        typeID = null;
+    }
+
+
 
     @Override
     public String getAsText() {
@@ -174,10 +187,16 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             initComponents();
         }
 
+        void cleanUp() {
+            textField = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel(getLabelName());
+            JLabel label = new JLabel();
+            Mnemonics.setLocalizedText( label, getLabelName() );
             constraints.insets = new Insets(12, 12, 3, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
@@ -188,6 +207,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             add(label, constraints);
 
             textField = new JTextField();
+            label.setLabelFor( textField );
             constraints.insets = new Insets(0, 12, 12, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
@@ -196,6 +216,10 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
             constraints.weighty = 0.0;
             constraints.fill = GridBagConstraints.HORIZONTAL;
             add(textField, constraints);
+            
+            textField.getAccessibleContext().setAccessibleName( label.getText() );
+            textField.getAccessibleContext().setAccessibleDescription( 
+                    label.getText() );
 
             JPanel spacer = new JPanel();
             constraints.insets = new Insets(0, 0, 0, 0);

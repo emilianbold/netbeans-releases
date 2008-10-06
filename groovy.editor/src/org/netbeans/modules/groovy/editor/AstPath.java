@@ -74,7 +74,13 @@ public class AstPath implements Iterable<ASTNode> {
     public AstPath(ASTNode root, int caretOffset, BaseDocument document) {
 
         try {
-            Scanner scanner = new Scanner(document.getText(0, caretOffset + 1));
+            // make sure offset is not higher than document length, see #138353
+            int length = document.getLength();
+            int offset = length == 0 ? 0 : caretOffset + 1;
+            if (length > 0 && offset >= length) {
+                offset = length - 1;
+            }
+            Scanner scanner = new Scanner(document.getText(0, offset));
             int line = 0;
             String lineText = "";
             while (scanner.hasNextLine()) {
@@ -131,6 +137,29 @@ public class AstPath implements Iterable<ASTNode> {
         assert node instanceof ModuleNode : "ASTNode must be a ModuleNode";
         
         path.addAll(find(node, line, column));
+
+        // in scripts ClassNode is not in path, let's add it
+        // find class that has same name as the file
+        if (path.size() == 0 || !(path.get(0) instanceof ClassNode)) {
+            ModuleNode moduleNode = (ModuleNode) node;
+            String name = moduleNode.getContext().getName();
+            int index = name.lastIndexOf(".groovy"); // NOI18N
+            if (index != -1) {
+                name = name.substring(0, index);
+            }
+            index = name.lastIndexOf('.');
+            if (index != -1) {
+                name = name.substring(index + 1);
+            }
+            for (Object object : moduleNode.getClasses()) {
+                ClassNode classNode = (ClassNode) object;
+                if (name.equals(classNode.getNameWithoutPackage())) {
+                    path.add(0, classNode);
+                    break;
+                }
+            }
+        }
+
         path.add(0, node);
 
         ASTNode result = path.get(path.size() - 1);
@@ -157,8 +186,6 @@ public class AstPath implements Iterable<ASTNode> {
             pathFinder.visitMethod((MethodNode)object);
         }
 
-        pathFinder.visitBlockStatement(moduleNode.getStatementBlock());
-        
         return pathFinder.getPath();
     }
 
@@ -197,7 +224,7 @@ public class AstPath implements Iterable<ASTNode> {
             String name = n.getClass().getName();
             name = name.substring(name.lastIndexOf('.') + 1);
             sb.append(name);
-            sb.append(":");
+            sb.append("\n");
         }
 
         sb.append("]");

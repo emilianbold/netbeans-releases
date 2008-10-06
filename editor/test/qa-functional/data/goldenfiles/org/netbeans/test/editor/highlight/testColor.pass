@@ -1,7 +1,7 @@
 0 6
     default comment
     display name Comment
-    foreground java.awt.Color[r=115,g=115,b=115]
+    foreground java.awt.Color[r=150,g=150,b=150]
     name comment
 6 7
     default whitespace
@@ -9,11 +9,9 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 7 14
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 14 15
     default whitespace
@@ -25,37 +23,50 @@
     display name Identifier
     name identifier
 18 19
+    default separator
+    display name Separator
+    name separator
 19 27
     default identifier
     display name Identifier
     name identifier
 27 28
+    default separator
+    display name Separator
+    name separator
 28 32
     default identifier
     display name Identifier
     name identifier
 32 33
+    default separator
+    display name Separator
+    name separator
 33 39
     default identifier
     display name Identifier
     name identifier
 39 40
+    default separator
+    display name Separator
+    name separator
 40 49
     default identifier
     display name Identifier
     name identifier
 49 50
+    default separator
+    display name Separator
+    name separator
 50 52
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 52 58
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 58 59
     default whitespace
@@ -63,11 +74,9 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 59 64
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 64 65
     default whitespace
@@ -84,17 +93,18 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 75 76
+    default separator
+    display name Separator
+    name separator
 76 83
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 83 86
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 86 87
     default whitespace
@@ -122,20 +132,21 @@
 91 92
     default number
     display name Number
-    foreground java.awt.Color[r=120,g=0,b=0]
+    foreground java.awt.Color[r=0,g=0,b=0]
     name number
 92 93
+    default separator
+    display name Separator
+    name separator
 93 98
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 98 104
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 104 105
     default whitespace
@@ -143,11 +154,9 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 105 108
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 108 109
     default whitespace
@@ -159,17 +168,18 @@
     display name Identifier
     name identifier
 114 115
+    default separator
+    display name Separator
+    name separator
 115 124
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 124 131
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 131 132
     default whitespace
@@ -177,11 +187,9 @@
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 132 135
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 135 136
     default whitespace
@@ -193,17 +201,18 @@
     display name Identifier
     name identifier
 142 143
+    default separator
+    display name Separator
+    name separator
 143 149
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 149 155
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 155 156
     default whitespace
@@ -215,12 +224,13 @@
     display name Identifier
     name identifier
 165 166
+    default separator
+    display name Separator
+    name separator
 166 169
-    bold true
     default keyword
     display name Keyword
-    foreground java.awt.Color[r=0,g=0,b=153]
-    italic false
+    foreground java.awt.Color[r=0,g=0,b=230]
     name keyword
 169 170
     default whitespace
@@ -232,24 +242,36 @@
     display name Identifier
     name identifier
 171 172
+    default separator
+    display name Separator
+    name separator
 172 173
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 173 174
+    default separator
+    display name Separator
+    name separator
 174 198
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 198 199
+    default separator
+    display name Separator
+    name separator
 199 213
     default whitespace
     display name Whitespace
     foreground java.awt.Color[r=0,g=0,b=0]
     name whitespace
 213 214
+    default separator
+    display name Separator
+    name separator
 214 215
     default whitespace
     display name Whitespace

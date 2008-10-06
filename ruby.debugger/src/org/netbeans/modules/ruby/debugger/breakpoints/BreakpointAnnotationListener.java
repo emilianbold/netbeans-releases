@@ -48,12 +48,14 @@ import java.util.Map;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
 import org.netbeans.modules.ruby.debugger.DebuggerBreakpointAnnotation;
 import org.openide.text.Annotation;
+import org.openide.text.AnnotationProvider;
+import org.openide.text.Line.Set;
+import org.openide.util.Lookup;
 
 public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
-        implements PropertyChangeListener {
+        implements PropertyChangeListener, AnnotationProvider {
     
     private Map<Breakpoint, Annotation> breakpointToAnnotation
             = new HashMap<Breakpoint, Annotation>();
@@ -97,6 +99,10 @@ public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
         if (annotation == null) return;
         annotation.detach();
         b.removePropertyChangeListener(this);
+    }
+
+    public void annotate(Set set, Lookup context) {
+        DebuggerManager.getDebuggerManager().getBreakpoints();
     }
     
 }

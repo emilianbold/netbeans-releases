@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.InterruptedException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -364,12 +363,20 @@ public class WebservicesImpl implements Webservices {
                         result.add(new WebserviceDescriptionImpl(helper, type));
                 }
             });
+            helper.getAnnotationScanner().findAnnotations("javax.xml.ws.WebServiceProvider", AnnotationScanner.TYPE_KINDS, new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    result.add(new WebserviceDescriptionImpl(helper, type));
+                }
+            });
             return result;
         }
         
         public List<WebserviceDescriptionImpl> createObjects(TypeElement type) {            
             if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
                 if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.jws.WebService")) { // NOI18N
+                    return Collections.singletonList(new WebserviceDescriptionImpl(helper, type));
+                }
+                if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.xml.ws.WebServiceProvider")) { // NOI18N
                     return Collections.singletonList(new WebserviceDescriptionImpl(helper, type));
                 }
             }

@@ -19,10 +19,13 @@
 
 package org.netbeans.modules.bpel.debugger;
 
+import java.awt.Component;
+import java.beans.beancontext.BeanContextChildComponentProxy;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -53,7 +56,7 @@ public class BpelDebuggerEngineProvider extends DebuggerEngineProvider {
     }
     
     public Object[] getServices() {
-        return new Object [0];
+        return getUiComponentProxies();
     }
     
     public void setDestructor(DebuggerEngine.Destructor desctuctor) {
@@ -76,5 +79,32 @@ public class BpelDebuggerEngineProvider extends DebuggerEngineProvider {
      */
     public Session getSession() {
         return mySession;
+    }
+    
+    private static Object[] getUiComponentProxies() {
+        
+        class ComponentProxy implements BeanContextChildComponentProxy {
+            
+            private String name;
+            
+            public ComponentProxy(final String name) {
+                this.name = name;
+            }
+            
+            public Component getComponent() {
+                return WindowManager.getDefault().findTopComponent(name);
+            }
+            
+        }
+        
+        return new Object[] {
+            new ComponentProxy("localsView"),
+            new ComponentProxy("watchesView"),
+            new ComponentProxy("breakpointsView"),
+            new ComponentProxy("BPELPLinksView"),
+            new ComponentProxy("ProcessExecutionView"),
+            new ComponentProxy("ProcessView")
+        };
+        
     }
 }

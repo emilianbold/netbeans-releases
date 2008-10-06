@@ -49,6 +49,10 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Exceptions;
@@ -86,8 +90,11 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jComboBoxJ2eePlatform.setModel (uiProperties.J2EE_SERVER_INSTANCE_MODEL );
         jComboBoxJ2eeSpecVersion.setModel (uiProperties.J2EE_PLATFORM_MODEL );
         jCheckBoxDeployOnSave.setModel(uiProperties.DEPLOY_ON_SAVE_MODEL);
+        vmOptions.setDocument(uiProperties.RUNMAIN_JVM_MODEL);
         
         initialJ2eeSpecVersion = uiProperties.J2EE_PLATFORM_MODEL.getSelectedItem();
+
+        setDeployOnSaveState();
     }
     
     public HelpCtx getHelpCtx() {
@@ -107,9 +114,12 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jComboBoxJ2eePlatform = new javax.swing.JComboBox();
         jLabelJ2eeVersion = new javax.swing.JLabel();
         jComboBoxJ2eeSpecVersion = new javax.swing.JComboBox();
-        jPanel1 = new javax.swing.JPanel();
         errorLabel = new javax.swing.JLabel();
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel1 = new javax.swing.JLabel();
+        vmOptions = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -123,6 +133,11 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jComboBoxJ2eePlatform.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 jComboBoxJ2eePlatformItemStateChanged(evt);
+            }
+        });
+        jComboBoxJ2eePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBoxJ2eePlatformActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -153,53 +168,104 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jComboBoxJ2eeSpecVersion, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
 
         errorLabel.setForeground(new java.awt.Color(89, 71, 191));
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(errorLabel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_JCheckBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jCheckBoxDeployOnSave, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 11, 0);
+        add(jSeparator1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_JVM_Argument")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(vmOptions, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_VM_Hint")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(jLabel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxJ2eeSpecVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eeSpecVersionItemStateChanged
-        setMessages();
-    }//GEN-LAST:event_jComboBoxJ2eeSpecVersionItemStateChanged
+        setMessages();//GEN-LAST:event_jComboBoxJ2eeSpecVersionItemStateChanged
+    }                                                         
 
 private void jComboBoxJ2eePlatformItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eePlatformItemStateChanged
-        // TODO add your handling code here:
+        // TODO add your handling code here://GEN-LAST:event_jComboBoxJ2eePlatformItemStateChanged
         setMessages();
-}//GEN-LAST:event_jComboBoxJ2eePlatformItemStateChanged
+}                                                      
+
+private void jComboBoxJ2eePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxJ2eePlatformActionPerformed
+    setDeployOnSaveState();
+}//GEN-LAST:event_jComboBoxJ2eePlatformActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel errorLabel;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JComboBox jComboBoxJ2eePlatform;
     private javax.swing.JComboBox jComboBoxJ2eeSpecVersion;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabelJ2eePlatform;
     private javax.swing.JLabel jLabelJ2eeVersion;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JTextField vmOptions;
     // End of variables declaration//GEN-END:variables
+
+    private void setDeployOnSaveState() {
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            String serverInstanceID = J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+
+            J2eeModule module = uiProperties.getProject().getEjbModule().getJ2eeModule();
+            ServerInstance instance = Deployment.getDefault().getServerInstance(serverInstanceID);
+
+            try {
+                jCheckBoxDeployOnSave.setEnabled(instance.isDeployOnSaveSupported(module));
+            } catch (InstanceRemovedException ex) {
+                jCheckBoxDeployOnSave.setEnabled(false);
+            }
+        } else {
+            jCheckBoxDeployOnSave.setEnabled(false);
+        }
+    }
 
     private void setMessages() {
         StringBuilder sb = new StringBuilder();

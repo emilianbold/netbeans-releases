@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.model.common.ValidatorPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -76,11 +77,14 @@ public class SceneCD extends ComponentDescriptor {
     }
 
     protected List<? extends Presenter> createPresenters() {
+        List<String> fqnForImport = new LinkedList<String>();
 		return Arrays.asList(
             // validation
             new ValidatorPresenter().addValidChildrenTypeID(SceneItemCD.TYPEID),
             // code
-            GameCodeSupport.createSceneCodePresenter ()
+            GameCodeSupport.createSceneCodePresenter ( fqnForImport ),
+            GameCodeSupport.createAddImportPresenter(fqnForImport)            
+
 			
 //			new CodeNamePresenter() {
 //				public List<String> getReservedNames() {

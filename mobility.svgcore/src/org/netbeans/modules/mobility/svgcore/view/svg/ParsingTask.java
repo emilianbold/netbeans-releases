@@ -41,14 +41,18 @@
 
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import com.sun.perseus.platform.ThreadSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -60,6 +64,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.EncodingInputStream;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
@@ -80,6 +85,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
     private static final String HTML_BEGIN  = "<html><body><font face=\"Monospaced\" size=\"4\" color=\"black\">"; //NOI18N
     private static final String HTML_END    = "</font></body><html>"; //NOI18N
     private static final String PARSE_TOKEN = "parse"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(ParsingTask.class.getName());
 
     private static final class ErrorDescription {      
         private static final int SEVERITY_FATAL   = 0;
@@ -187,13 +193,20 @@ final class ParsingTask extends Thread implements HyperlinkListener {
                     public void write(int b) throws IOException {
                     }
                 }));
-                final SVGImage svgImage = fileModel.parseSVGImage();
-                assert svgImage != null;
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        m_svgView.showImage(svgImage);
-                    }
-                });  
+                if (!Thread.currentThread().isInterrupted()) {
+                    final SVGImage svgImage = fileModel.parseSVGImage();
+                    assert svgImage != null;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            m_svgView.showImage(svgImage);
+                            m_svgView.enableImageContext();
+                        }
+                    });
+                } else {
+                    throw new InterruptedException();
+                }
+            } catch(InterruptedException ie){
+                LOG.log(Level.INFO, null, ie);
             } catch(Exception e) {
                 showParsingErrors(fileModel.getModel().getDocument(), e);
             } finally {
@@ -201,7 +214,7 @@ final class ParsingTask extends Thread implements HyperlinkListener {
                 System.setErr(System.err);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, null, e);
         }
     }
 
@@ -294,7 +307,15 @@ final class ParsingTask extends Thread implements HyperlinkListener {
             XMLUtil.parse( isource, true, true, errorHandler, EntityCatalog.getDefault());
         } catch( SAXException e) { 
             //Not interested in these errors ...
-        } catch (Exception e) {
+        }
+        // Fix for IZ#145734 .
+        catch ( ConnectException e ){
+            /*
+             * Ignore this exception . It can be caused by connection 
+             * error from entity resolver.
+             */
+        }    
+        catch (Exception e) {
             SceneManager.error("Error during document parse", e); //NOI18N
         } finally {
             try {

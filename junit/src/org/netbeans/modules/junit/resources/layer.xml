@@ -3,7 +3,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
  The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml"/>
-            <file name="junit-4.1.xml" url="junit_4_1_lib.xml"/>
+            <file name="junit-4.5.xml" url="junit_4_5_lib.xml"/>
         </folder>
     </folder>
 
@@ -199,24 +199,11 @@ made subject to such option by the copyright holder.
         -->
     </folder>
     
-    <folder name="UI">
-    	<folder name="Services">
-                <!-- Display the system option under the "Testing" category in Options. -->
-        	<folder name="Testing">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
-                    <!-- Point to the real settings file (always on the system file system). -->
-                    <file name="org-netbeans-modules-junit-JUnitSettingsNode.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.junit.JUnitSettings.createViewNode"/>
-                    </file>
-                </folder>
-    	</folder>
-    </folder>
-
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">        <!-- "output" is defined in core/ui -->
                 <file name="junit-test-results.wstcref" url="../output/junit-test-results.wstcref">
-                    <attr name="position" intvalue="200"/>
+                    <attr name="position" intvalue="2000"/>
                 </file>
             </folder>
         </folder>

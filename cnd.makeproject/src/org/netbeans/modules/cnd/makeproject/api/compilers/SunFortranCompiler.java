@@ -42,25 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 
 public class SunFortranCompiler extends BasicCompiler {
-    private static final String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -O", // Performance Debug" // NOI18N
-        "-g", // Test Coverage // NOI18N
-        "-g -O2", // Dianosable Release // NOI18N
-        "-O3", // Release // NOI18N
-        "-O4", // Performance Release // NOI18N
-    };
-
-    private static final String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "-w1", // Default // NOI18N
-        "-w2", // More Warnings // NOI18N
-        "-errwarn", // Convert Warnings to Errors // NOI18N
-    };
     
     /** Creates a new instance of SunCCompiler */
     public SunFortranCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
@@ -73,46 +57,9 @@ public class SunFortranCompiler extends BasicCompiler {
         copy.setName(getName());
         return copy;
     }
-    
+
     @Override
-    public String getDevelopmentModeOptions(int value) {
-        return DEVELOPMENT_MODE_OPTIONS[value];
-    }
-    
-    @Override
-    public String getWarningLevelOptions(int value) {
-        if (value < WARNING_LEVEL_OPTIONS.length)
-            return WARNING_LEVEL_OPTIONS[value];
-        else
-            return ""; // NOI18N
-    }
-    
-    @Override
-    public String getSixtyfourBitsOption(int value) {
-        if (getFlavor() == CompilerFlavor.Sun12) {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return "-m32"; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-m64"; // NOI18N
-        else
-                return ""; // NOI18N
-    }
-        else {
-            if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_32)
-                return ""; // NOI18N
-            else if (value == BasicCompilerConfiguration.BITS_64)
-                return "-xarch=generic64"; // NOI18N
-            else
-                return ""; // NOI18N
-        }
-    }
-    
-    @Override
-    public String getStripOption(boolean value) {
-        return value ? "-s" : ""; // NOI18N
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getFortran();
     }
 }

@@ -1,1 +1,1 @@
-152-152:ParserException while scanning a block mapping we had this expected <block end>, but found org.jvyamlb.tokens.PositionedScalarToken
+152-152:While scanning a block mapping we had this expected <block end>, but found org.jvyamlb.tokens.PositionedScalarToken

@@ -104,6 +104,7 @@ public class ParserTest extends JavaTestCase {
      * Sets up logging facilities.
      */
     public void setUp() {
+        openDefaultProject();
         System.out.println("########  "+getName()+"  #######");
         try {
             File wd = getWorkDir();

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.uml.diagrams.edges;
 
+import java.util.Collections;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -47,7 +48,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
-import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.SceneConnectProvider;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
@@ -137,6 +137,11 @@ public class NestedLinkConnectProvider extends SceneConnectProvider
                 IElement sourceElement = source.getFirstSubject();
                 IElement targetElement = target.getFirstSubject();
                 
+                // link to self is not allowed 
+                if (sourceElement ==  targetElement || sourceElement.isSame(targetElement) )
+                {
+                    return;
+                }
                 INamedElement ownedElement = (INamedElement)targetElement;
                 INamespace namespace = (INamespace)sourceElement;
                 
@@ -146,6 +151,7 @@ public class NestedLinkConnectProvider extends SceneConnectProvider
                     
                     IPresentationElement edge = createNodePresentationElement(source, "NestedLink");
                     Widget edgeWidget = scene.addEdge(edge);
+                    
                     if((edgeWidget != null) && 
                        (scene.isNode(source) == true) && 
                        (scene.isNode(target) == true))
@@ -161,6 +167,9 @@ public class NestedLinkConnectProvider extends SceneConnectProvider
                                 manager.createInitialLabels();
                             }
                         }
+                        // fixed iz #146256
+                        scene.setFocusedObject(edge);
+                        scene.userSelectionSuggested(Collections.singleton(edge), false);  
                     }
                 }
             }

@@ -53,11 +53,11 @@ public final class RubyBreakpointTest extends TestBase {
         super(testName);
     }
     
-    public void testBreakpointBasics() {
+    public void vtestBreakpointBasics() {
         assertTrue("enabled by default", new RubyBreakpoint() {}.isEnabled());
     }
     
-    public void testGetBreakpoints() throws Exception {
+    public void vtestGetBreakpoints() throws Exception {
         String[] vegetableContent = {
             "puts 'pea, cucumber, cauliflower, broccoli'",
         };
@@ -80,42 +80,39 @@ public final class RubyBreakpointTest extends TestBase {
         assertEquals("one Ruby breakpoint for vegetable.rb", 1, RubyBreakpointManager.getLineBreakpoints(vegetableFO).length);
     }
     
-    public void testSetCondition() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "1.upto(10) do |i|",
-                "  sleep 0.01",
-                "  sleep 0.01",
-                "end"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            RubyLineBreakpoint bp = addBreakpoint(testFO, 2);
-            bp.setCondition("i>7");
-            Process p = startDebugging(testF);
-            doContinue(); // i == 8
-            doContinue(); // i == 9
-            doContinue(); // i == 10
-            waitFor(p);
-        }
+    public void vtestSetCondition() throws Exception {
+        String[] testContent = {
+            "1.upto(10) do |i|",
+            "  sleep 0.01",
+            "  sleep 0.01",
+            "end"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        RubyLineBreakpoint bp = addBreakpoint(testFO, 2);
+        bp.setCondition("i>7");
+        Process p = startDebugging(testF);
+        doContinue(); // i == 8
+        doContinue(); // i == 9
+        doContinue(); // i == 10
+        waitFor(p);
     }
 
     public void testExceptionBreakpoint() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "sleep 0.01",
-                "5/0",
-                "sleep 0.01"};
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 1);
-            RubyBreakpointManager.addExceptionBreakpoint("ZeroDivisionError");
+        String[] testContent = {
+            "sleep 0.01",
+            "5/0",
+            "sleep 0.01"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 1);
+        RubyBreakpointManager.addExceptionBreakpoint("ZeroDivisionError");
 
-            Process p = startDebugging(testF);
-            doAction(ActionsManager.ACTION_STEP_OVER);
-            doAction(ActionsManager.ACTION_STEP_OVER);
-            doContinue();
-            waitFor(p);
-        }
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_OVER);
+        doAction(ActionsManager.ACTION_STEP_OVER);
+        doContinue();
+        waitFor(p);
     }
 }

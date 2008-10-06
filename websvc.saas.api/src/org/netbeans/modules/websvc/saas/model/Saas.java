@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.File;
@@ -64,32 +63,43 @@ import org.openide.util.RequestProcessor;
  *
  * @author nam
  */
-public class Saas {
+public class Saas implements Comparable<Saas> {
+
     public static final String PROP_PARENT_GROUP = "parentGroup";
     public static final String PROP_STATE = "saasState";
 
-    public static enum State { 
-        UNINITIALIZED, 
-        INITIALIZING, 
+    public static enum State {
+        UNINITIALIZED,
+        INITIALIZING,
         RETRIEVED,
-        READY
-     
+        READY,
+        REMOVED
     }
-    
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    
     public static final String ARTIFACT_TYPE_LIBRARY = "library";
+    
+    private static final String JAVA_TARGETS = "java,servlet,resource,jsp";     //NOI18N
+    private static final String PHP_TARGETS = "php";        //NOI18N
+
+    public static final String[] SUPPORTED_TARGETS = {JAVA_TARGETS, PHP_TARGETS};
+    
+    public static final String WSDL_EXT = "wsdl";      //NOI18N
+    public static final String WADL_EXT = "wadl";      //NOI18N
+    public static final String ASMX_EXT = "asmx";       //NOI18N
+    public static final String XML_EXT = "xml";         //NOI18N
+    
+    public static final String[] SUPPORTED_EXTENSIONS = {WSDL_EXT, WADL_EXT, ASMX_EXT, XML_EXT};
     
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
     private SaasGroup topGroup;
     private List<SaasMethod> saasMethods;
-    
     private State state = State.UNINITIALIZED;
     protected FileObject saasFolder; // userdir folder to store customization and consumer artifacts
+
     private boolean userDefined = true;
     private List<FileObject> libraryJars; // library artifacts to add to consumer project classpath
 
@@ -97,23 +107,20 @@ public class Saas {
         this.delegate = services;
         this.parentGroup = parentGroup;
     }
-    
+
     public Saas(SaasGroup parent, String url, String displayName, String packageName) {
         delegate = new SaasServices();
         delegate.setUrl(url);
         delegate.setDisplayName(displayName);
+
+        SaasMetadata m = new SaasMetadata();
+        delegate.setSaasMetadata(m);
         
-        SaasMetadata m = delegate.getSaasMetadata();
-        if (m == null) {
-            m = new SaasMetadata();
-            this.getDelegate().setSaasMetadata(m);
-        }
-        CodeGen cg = m.getCodeGen();
-        if (cg == null) {
-            cg = new CodeGen();
-            m.setCodeGen(cg);
-        }
+        CodeGen cg = new CodeGen();
+        updateArtifacts(cg);
         cg.setPackageName(packageName);
+        m.setCodeGen(cg);
+        
         setParentGroup(parent);
         computePathFromRoot();
     }
@@ -129,29 +136,31 @@ public class Saas {
     protected void setParentGroup(SaasGroup parentGroup) {
         this.parentGroup = parentGroup;
     }
-    
+
     public SaasGroup getTopLevelGroup() {
         if (topGroup == null && parentGroup != null) {
             topGroup = parentGroup;
             while (topGroup != null && topGroup.getParent() != SaasServicesModel.getInstance().getRootGroup()) {
                 topGroup = topGroup.getParent();
             }
-            
-            if (topGroup == null) 
+
+            if (topGroup == null) {
                 topGroup = SaasServicesModel.getInstance().getRootGroup();
+            }
         }
         return topGroup;
     }
-    
+
     protected void computePathFromRoot() {
         delegate.getSaasMetadata().setGroup(parentGroup.getPathFromRoot());
     }
-    
     protected FileObject saasFile;
+
     public FileObject getSaasFile() throws IOException {
         if (saasFile == null) {
             FileObject folder = getSaasFolder();
             String filename = folder.getName() + "-saas.xml"; //NOI18N
+
             saasFile = folder.getFileObject(filename);
             if (saasFile == null) {
                 saasFile = getSaasFolder().createData(filename);
@@ -159,7 +168,7 @@ public class Saas {
         }
         return saasFile;
     }
-    
+
     public void save() {
         try {
             SaasUtil.saveSaas(this, getSaasFile());
@@ -169,10 +178,12 @@ public class Saas {
                     out = getPropFile(true).getOutputStream();
                     getProperties().store(out, getDisplayName() + " : " + getUrl());
                 } finally {
-                    if (out != null) { out.close(); }
+                    if (out != null) {
+                        out.close();
+                    }
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
     }
@@ -180,17 +191,17 @@ public class Saas {
     public boolean isUserDefined() {
         return userDefined;
     }
-    
+
     protected void setUserDefined(boolean v) {
         if (userDefined) {
             userDefined = v;
         }
     }
-    
+
     public String getUrl() {
         return delegate.getUrl();
     }
-    
+
     public State getState() {
         return state;
     }
@@ -200,7 +211,7 @@ public class Saas {
         state = v;
         SaasServicesModel.getInstance().fireChange(PROP_STATE, this, old, state);
     }
-    
+
     /**
      * Asynchronous call to transition Saas to READY state; mainly for UI usage
      * Sub-class need to completely override as needed, without calling super().
@@ -210,13 +221,14 @@ public class Saas {
             setState(state);
         } else {
             RequestProcessor.getDefault().post(new Runnable() {
+
                 public void run() {
                     setState(State.READY);
                 }
             });
         }
     }
-    
+
     public SaasMetadata getSaasMetadata() {
         return delegate.getSaasMetadata();
     }
@@ -230,13 +242,14 @@ public class Saas {
                 }
             }
         }
-        return Collections.unmodifiableList(saasMethods);
+        
+        return new ArrayList<SaasMethod>(saasMethods);
     }
 
     protected SaasMethod createSaasMethod(Method method) {
         return new SaasMethod(this, method);
     }
-    
+
     public Header getHeader() {
         return delegate.getHeader();
     }
@@ -252,35 +265,34 @@ public class Saas {
     public String getApiDoc() {
         return delegate.getApiDoc();
     }
-    
+
     public FileObject getSaasFolder() {
         if (saasFolder == null) {
-            String folderName = SaasUtil.toValidJavaName(getDisplayName()); 
+            String folderName = SaasUtil.toValidJavaName(getDisplayName());
             saasFolder = SaasServicesModel.getWebServiceHome().getFileObject(folderName);
             if (saasFolder == null) {
                 try {
                     saasFolder = SaasServicesModel.getWebServiceHome().createFolder(folderName);
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         }
         return saasFolder;
     }
-    
+
     @Override
     public String toString() {
         return getDisplayName();
     }
-    
+
     protected void refresh() {
         setState(State.INITIALIZING);
         saasMethods = null;
     }
-
     private Properties props;
     public static final String SAAS_PROPERTIES = "saas.properties";
-    
+
     private Properties getProperties() throws IOException {
         if (props == null) {
             props = new Properties();
@@ -296,11 +308,9 @@ public class Saas {
         }
         return props;
     }
-
-
     public static final String PROP_LOCAL_SERVICE_FILE = "local.service.file";
-    
     private FileObject propFile;
+
     private FileObject getPropFile(boolean create) throws IOException {
         if (propFile == null) {
             propFile = getSaasFolder().getFileObject(SAAS_PROPERTIES);
@@ -308,29 +318,30 @@ public class Saas {
                 propFile = getSaasFolder().createData(SAAS_PROPERTIES);
                 try {
                     Thread.sleep(50);
-                } catch(InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
         }
         return propFile;
     }
-    
+
     protected String getProperty(String name) {
         try {
             return getProperties().getProperty(name);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
         return null;
     }
-    
+
     protected void setProperty(String name, String value) {
         try {
             getProperties().setProperty(name, value);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
     }
-    
+
     /**
      * @eturns absolute paths to all library jars, generated or 
      * provided by vendor module.  Generated
@@ -339,7 +350,7 @@ public class Saas {
         if (getState() != State.READY) {
             throw new IllegalStateException("Should only access libraries when in ready state");
         }
-        
+
         if (libraryJars == null) {
             libraryJars = new ArrayList<FileObject>();
             if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
@@ -349,7 +360,7 @@ public class Saas {
                             try {
                                 URL url = new URL(art.getUrl());
                                 libraryJars.add(FileUtil.toFileObject(new File(url.toURI())));
-                            } catch(Exception ex) {
+                            } catch (Exception ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
@@ -359,11 +370,69 @@ public class Saas {
         }
         return Collections.unmodifiableList(libraryJars);
     }
-    
+
     public String getPackageName() {
 //        if (getSaasMetadata() != null && getSaasMetadata().getCodeGen() != null) {
 //            return getSaasMetadata().getCodeGen().getPackageName();
 //        }
         return SaasUtil.deriveDefaultPackageName(this);
+    }
+
+    public void upgrade() {
+        if (!userDefined) return;
+        
+        boolean needsSave = false;
+        
+        SaasMetadata m = delegate.getSaasMetadata();       
+        if (m == null) {
+            m = new SaasMetadata();
+            delegate.setSaasMetadata(m);
+            needsSave = true;
+        }
+     
+        CodeGen cg = m.getCodeGen();
+        if (cg == null) {
+            cg = new CodeGen();
+            m.setCodeGen(cg);
+            needsSave = true;
+        }
+        
+        if (updateArtifacts(cg)) {
+            needsSave = true;
+        }
+        
+        if (needsSave) {
+            save();
+        }
+    }
+    
+    private boolean updateArtifacts(CodeGen cg) {
+        List<Artifacts> list = cg.getArtifacts();
+        int size = list.size();
+        boolean needsSave = false;
+        
+        for (int i = 0; i < SUPPORTED_TARGETS.length; i++) {
+            Artifacts artifacts = null;
+            String targets = SUPPORTED_TARGETS[i];
+            
+            if (i < size) {
+                artifacts = list.get(i);
+                if (!targets.equals(artifacts.getTargets())) {
+                    artifacts.setTargets(targets);
+                    needsSave = true;
+                }
+            } else {
+                artifacts = new Artifacts();
+                artifacts.setTargets(targets);
+                list.add(artifacts);
+                needsSave = true;
+            }
+        }
+        
+        return needsSave;
+    }
+    
+    public int compareTo(Saas saas) {
+        return getDisplayName().compareTo(saas.getDisplayName());
     }
 }

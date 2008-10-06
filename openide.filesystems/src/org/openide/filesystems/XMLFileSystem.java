@@ -89,7 +89,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Mandatory attributes:
  *         -for filesystem    version=... (e.g. "1.0")
  *         -for file,folder,attr name=....  (e.g.: &lt;folder name="Config"&gt;)
- *         -for attr is mandatory one of bytevalue,shortvalue,intvalue,longvalue,floatvalue,doublevalue,boolvalue,charvalue,stringvalue,methodvalue,serialvalue,urlvalue
+ *         -for attr is mandatory one of bytevalue,shortvalue,intvalue,longvalue,floatvalue,doublevalue,boolvalue,charvalue,stringvalue,methodvalue,serialvalue,urlvalue,bundlevalue
  *
  * Allowed atributes:
  *         -for file:        url=.... (e.g.: &lt;file name="sample.xml" url="file:/c:/sample.xml"&gt;)
@@ -109,7 +109,8 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * This class implements virtual FileSystem. It is special case of FileSystem in XML format.
  *
- * Description of this format best ilustrate DTD file that is showed in next lines:
+ * Description of this format best ilustrate <a href="http://www.netbeans.org/dtds/filesystem-1_2.dtd">DTD file</a>
+ * that is showed in the following few lines:
  * &lt; !ELEMENT filesystem (file | folder)*&gt;
  * &lt; !ATTLIST filesystem version CDATA #REQUIRED&gt; //version not checkked yet
  * &lt; !ELEMENT folder (file |folder | attr)*&gt;
@@ -131,6 +132,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * &lt; !ATTLIST attr methodvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr serialvalue CDATA #IMPLIED&gt;
  * &lt; !ATTLIST attr urlvalue CDATA #IMPLIED&gt;
+ * &lt; !ATTLIST attr bundlevalue CDATA #IMPLIED&gt; &lt;!-- since version 7.10 --&gt;
  * </PRE>
  *
  * <p>
@@ -148,7 +150,16 @@ import org.xml.sax.helpers.DefaultHandler;
  * </pre>
  * where <code>Value</code> can be any java type.
  *
- *
+ * <p>
+ * If you are interested just in the Class of an attribute, but
+ * without creating its instance, use <code>fileObject.getAttribute("class:attrName")</code>.
+ * This instructs the XMLFileSystem to scan its XML files for definition of <code>attrName</code>
+ * attribute and <i>guess</i> its class. The <i>guessing</i> is usually easy,
+ * just for <code>methodvalue</code> types, the system needs to use
+ * some kind of heuristic: it locates the appropriate factory method and returns
+ * its return type. This may not be the actual type of the returned object at the end,
+ * but it seems as the best guess without instantiating it.
+
  * @author Radek Matous
  */
 public final class XMLFileSystem extends AbstractFileSystem {
@@ -162,6 +173,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
     static {
         DTD_MAP.put("-//NetBeans//DTD Filesystem 1.0//EN", "org/openide/filesystems/filesystem.dtd"); //NOI18N
         DTD_MAP.put("-//NetBeans//DTD Filesystem 1.1//EN", "org/openide/filesystems/filesystem1_1.dtd"); //NOI18N        
+        DTD_MAP.put("-//NetBeans//DTD Filesystem 1.2//EN", "org/openide/filesystems/filesystem1_2.dtd"); //NOI18N        
     }
 
     /**  Url location of XML document    */

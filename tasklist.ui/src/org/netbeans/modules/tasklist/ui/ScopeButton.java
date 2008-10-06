@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
+import javax.swing.ToolTipManager;
 import org.netbeans.modules.tasklist.impl.Accessor;
 import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -65,9 +66,14 @@ class ScopeButton extends JToggleButton implements PropertyChangeListener {
         this.scope = scope;
         setText( null );
         setIcon( new ImageIcon( Accessor.getIcon( scope ) ) );
-        setToolTipText( Accessor.getDescription( scope ) );
+        ToolTipManager.sharedInstance().registerComponent(this);
         setSelected( scope.equals( tm.getScope() ) );
         setFocusable( false );
+    }
+
+    @Override
+    public String getToolTipText() {
+        return null == scope ? null : Accessor.getDescription( scope );
     }
     
     @Override

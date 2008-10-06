@@ -85,7 +85,7 @@ public class OverrideMethods extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Source") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
+        MENU = Bundle.getStringTrimmed("org.netbeans.modules.editor.Bundle","Menu/Source") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
         
         // open a java file in the editor

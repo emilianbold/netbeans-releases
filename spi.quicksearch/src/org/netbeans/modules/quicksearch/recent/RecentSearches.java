@@ -39,22 +39,46 @@
 
 package org.netbeans.modules.quicksearch.recent;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.quicksearch.CommandEvaluator;
+import org.netbeans.modules.quicksearch.ResultsModel;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 
 /**
+ * Recent Searches items storage and its persistance
  *
  * @author Jan Becicka
+ * @authoe Max Sauer
  */
 public class RecentSearches {
-    private LinkedList<ItemResult> recent;
+    
     private static final int MAX_ITEMS = 5;
+    private static final long FIVE_DAYS = 86400000 * 5;
+
+    private LinkedList<ItemResult> recent;
     private static RecentSearches instance;
 
     private RecentSearches() {
-        recent = new LinkedList<ItemResult>();
+        recent = new LinkedList<ItemResult>() {
+
+            @Override
+            public String toString() {
+                StringBuffer buf = new StringBuffer();
+                for(ItemResult td : this) {
+                    buf.append(td.getDisplayName() + ":" + td.getDate().getTime() + ",");
+                }
+                return buf.toString();
+            }
+
+        };
+        readRecentFromPrefs(); //read recent searhces from preferences
     }
     
     public static RecentSearches getDefault() {
@@ -65,9 +89,12 @@ public class RecentSearches {
     } 
     
     public void add(ItemResult result) {
+        Date now = new GregorianCalendar().getTime();
+
         // don't create duplicates, however poor-man's test only
         for (ItemResult ir : recent) {
             if (ir.getDisplayName().equals(result.getDisplayName())) {
+                ir.setDate(now);
                 return;
             }
         }
@@ -75,10 +102,87 @@ public class RecentSearches {
         if (recent.size()>=MAX_ITEMS) {
             recent.removeLast();
         }
+        result.setDate(now);
         recent.addFirst(result);
+        prefs().put(RECENT_SEARCHES, stripHTMLnames(recent.toString()));
     }
     
     public List<ItemResult> getSearches() {
-        return recent;
+        LinkedList<ItemResult> fiveDayList = new LinkedList<ItemResult>();
+        for (ItemResult ir : recent) {
+            if ((new GregorianCalendar().getTime().getTime() - ir.getDate().getTime()) < FIVE_DAYS)
+                fiveDayList.add(ir);
+        }
+        //provide only recent searches newer than five days
+        return fiveDayList;
     }
+
+    //preferences
+    private static final String RECENT_SEARCHES = "recentSearches"; // NOI18N
+
+    private Preferences prefs() {
+        return NbPreferences.forModule(RecentSearches.class);
+    }
+
+    private void readRecentFromPrefs() {
+        String[] items = prefs().get(RECENT_SEARCHES, "").split(","); // NOI18N
+        if (items[0].length() != 0) {
+            for (int i = 0; i < items.length; i++) {
+                int semicolonPos = items[i].lastIndexOf(":"); // NOI18N
+                final String name = items[i].substring(0, semicolonPos);
+                final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
+                ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
+                recent.add(incomplete);
+            }
+        }
+    }
+
+    /**
+     * Lazy initied action used for recent searches
+     * In order to not init all recent searched item
+     */
+    public final class FakeAction implements Runnable {
+
+        private String name; //display name to search for
+        private Runnable action; //remembered action
+
+        private FakeAction(String name) {
+            this.name = name;
+        }
+
+        public void run() {
+            if (action == null || action instanceof FakeAction) {
+                ResultsModel model = ResultsModel.getInstance();
+                CommandEvaluator.evaluate(stripHTMLandPackageNames(name), model);
+                try {
+                    Thread.sleep(350);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                int rSize = model.getSize();
+                for (int j = 0; j < rSize; j++) {
+                    ItemResult res = (ItemResult) model.getElementAt(j);
+                    if (stripHTMLnames(res.getDisplayName()).equals(stripHTMLnames(name))) {
+                        action = res.getAction();
+                        if (!(action instanceof FakeAction)) {
+                            action.run();
+                            break;
+                        }
+                    }
+                }
+            } else {
+                action.run();
+            }
+        }
+
+        private String stripHTMLandPackageNames(String s) {
+            s = stripHTMLnames(s);
+            return s.replaceAll("\\(.*\\)", "").trim();
+        }
+    }
+
+    private String stripHTMLnames(String s) {
+        return s.replaceAll("<.*?>", "").trim();
+    }
+
 }

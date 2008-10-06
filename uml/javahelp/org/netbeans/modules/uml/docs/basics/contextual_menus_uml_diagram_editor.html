@@ -5,6 +5,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
 <title>Pop-Up Menus: Diagram Editor (UML Modeling)</title>
 </head>
@@ -26,32 +27,16 @@
 <th scope="col" align="left">Description</th>
 </tr>
 <tr valign="top">
-<td>Edit</td>
-<td>Lets you paste any cut or copied diagram element, and lets you select all elements in the diagram for further cutting, copying, deleting, and so on.</td>
+<td>Select all </td>
+<td>Selects all the elements in a diagram. </td>
 </tr>
 <tr valign="top">
-<td>Layout</td>
-<td>Lets you <a href="../editors_windows/modifying_diagram_layouts.html">modify the layout</a> for your diagram.</td>
+<td>Show/Hide List Compartments </td>
+<td>Lets you show/hide list compartments, expanding or contracting all. </td>
 </tr>
 <tr valign="top">
-<td>Zoom In</td>
-<td>Lets you <a href="../editors_windows/zooming_in_diagrams.html">zoom in</a> to the diagram.</td>
-</tr>
-<tr valign="top">
-<td>Zoom Out</td>
-<td>Lets you <a href="../editors_windows/zooming_in_diagrams.html">zoom out</a> of the diagram.</td>
-</tr>
-<tr valign="top">
-<td>Zoom</td>
-<td>Lets you set the <a href="../editors_windows/zooming_in_diagrams.html">custom zoom</a> level for the diagram.</td>
-</tr>
-<tr valign="top">
-<td>Synchronize Element with Data</td>
-<td>Lets you synchronize the elements in the diagram with the data stored in their data files.</td>
-</tr>
-<tr valign="top">
-<td>Associate With </td>
-<td>Lets you associate two elements in a diagram. </td>
+<td>Paste</td>
+<td>Provides paste functionality. </td>
 </tr>
 <tr valign="top">
 <td>Apply Design Pattern</td>
@@ -63,13 +48,10 @@
 </tr>
 <tr valign="top">
 <td>Properties</td>
-<td>Opens the <a href="../editors_windows/display_drawing_preferences_db.html">Display and Drawing Preferences dialog box</a>, which lets you customize the way your diagrams appear.</td>
+<td>Opens the Properties for this Diagram.</td>
 </tr>
 </table>
 <p>When you right-click individual elements and links in the Diagram editor, the IDE displays different pop-up menus.</p>
-<ul class="note">
-<li>Not all of these menu items are enabled for all elements.</li>
-</ul>
 <h3><a name="rightclick_comp_in_umldiagramwindow">Right-Clicking Elements of Diagrams</a></h3>
 <p>The following table describes the functions that are enabled when you right-click an individual diagram element in the Diagram editor:</p>
 <table border="1" cellpadding="5" cellspacing="0">
@@ -78,120 +60,115 @@
 <th scope="col" align="left">Description</th>
 </tr>
 <tr valign="top">
-<td>Edit</td>
-<td>Lets you <a href="../diagrams/editing_diagram_elements_copying.html">Copy</a>, <a href="../diagrams/editing_diagram_elements_cutting.html">Cut</a>, <a href="../diagrams/deleting_diagram_elements.html">Delete</a>, and<a href="../diagrams/editing_diagram_elements_pasting.html"> Paste</a> the element. Also, lets you <a href="../diagrams/editing_diagram_elements_selecting_all.html">Select all</a> or <a href="../diagrams/editing_diagram_elements_selecting_all_similar.html">Select all similar</a> elements.</td>
+<td>Select All </td>
+<td>Select all parts of elements in a diagram. </td>
 </tr>
 <tr valign="top">
-<td>Transform</td>
-<td><a href="../diagrams/class_transforming_diagram_elements.html">Transforms</a> the element into one of two different types of elements.</td>
+<td>Invert Selection</td>
+<td>Lets you invert an element or elements you have selected in a diagram. </td>
 </tr>
 <tr valign="top">
-<td>Compartment</td>
-<td>Opens the <a href="../diagrams/class_using_compartment_customize_db.html">Compartment Customize dialog box</a>, which lets you show and hide selected compartments of a class. This option is only available for class elements and for interfaces (when the interface is not displayed as an icon).</td>
+<td>Select All Similar Elements </td>
+<td>Lets you select elements that have something in common. </td>
 </tr>
 <tr valign="top">
-<td>Reset Edges</td>
-<td>Brings the element back to its default location in the Diagram editor.</td>
+<td>Create Attribute</td>
+<td><p>Lets you create a <a href="../diagrams/class_creating_attributes.html">new attribute</a> for the class or interface.</p>
+  <p>&nbsp;</p></td>
 </tr>
 <tr valign="top">
-<td>Resize Element to Contents</td>
-<td>Resizes the element so you can see all its attributes and operations from left to right.</td>
-</tr>
-<tr valign="top">
-<td>Synchronize Element with Data</td>
-<td>Lets you synchronize the element in the active diagram with its associated data file.</td>
-</tr>
-<tr valign="top">
-<td>Hide</td>
-<td>Lets you hide parent and children elements (objects) for the element.</td>
-</tr>
-<tr valign="top">
-<td>Show</td>
-<td>Lets you show hidden parent and child elements (objects) for the element.</td>
-</tr>
-<tr valign="top">
-<td><em>name_of_selected_element</em></td>
-<td>Lets you edit the font, font color, background color and the border color of the element.</td>
-</tr>
-<tr valign="top">
-<td>Select in Model </td>
-<td><a href="../diagrams/editing_diagram_elements_finding.html">Locates</a> and highlights the element in the <a href=nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_project_window.html">Projects window</a>.</td>
-</tr>
-<tr valign="top">
-<td>Insert Attribute or Operation<br>
-(available for classes and interfaces)</td>
-<td>Lets you create a <a href="../diagrams/class_creating_attributes.html">new attribute</a> or a <a href="../diagrams/class_creating_operations.html">new operation</a> for the class or interface.</td>
-</tr>
-<tr valign="top">
-<td>Delete Attribute or Operation<br>
-(available for classes and interfaces)</td>
-<td>Lets you <a href="../diagrams/deleting_diagram_elements.html">delete</a> an attribute or operation from the class or interface.</td>
-</tr>
-<tr valign="top">
-<td>Interaction Operator<br>
-(available for combined fragments)</td>
-<td>Lets you <a href="../diagrams/sequence_creating_populating_combined_fragments.html">specify an interaction operator</a> for any combined fragment in a Sequence diagram.</td>
-</tr>
-<tr valign="top">
-<td>Interaction Operand<br>
-(available for combined fragments)</td>
-<td>Lets you <a href="../diagrams/sequence_interaction_operators.html">create a new (or edit an existing) interaction constraint</a>, <a href="../diagrams/sequence_ww_interaction_operand_boxes.html#insert">insert</a> a new interaction operand box above the currently selected box, <a href="../diagrams/sequence_ww_interaction_operand_boxes.html#add">add</a> a new interaction operand box at the bottom of all boxes in the combined fragment, or <a href="../diagrams/sequence_ww_interaction_operand_boxes.html#delete">delete</a> the currently selected interaction operand box for any combined fragment in a Sequence diagram.</td>
-</tr>
-<tr valign="top">
-<td>Properties</td>
-<td>Opens the <a href="../editors_windows/display_drawing_preferences_db.html">Display and Drawing Preferences dialog box</a>, which lets you customize diagram parameters.</td>
-</tr>
-<tr valign="top">
-<td><a href="../diagrams/associating_elements.html">Associate With</a></td>
-<td>The Associate dialog box lets you associate any element with any other element. </td>
-</tr>
-<tr valign="top">
-<td><a href="../diagrams/creating_diagram_dependency.html">Generate Dependency Diagram</a></td>
-<td>Lets you create a diagram showing all the dependencies for a Classifier. UML Modeling depicts the following types of relationships on the new diagram: Generalizations, Associations, Implementations, and Operations with parameters of a given class type.</td>
-</tr>
-<tr valign="top">
-<td><a href="../diagrams/generating_code.html">Generate Code</a></td>
-<td>Lets you quickly generate source code for classes and interfaces in your diagram. </td>
+<td>Create Operation</td>
+<td>Lets you create a new operation.</td>
 </tr>
 <tr valign="top">
 <td>Redefine Operations</td>
-<td>Redefines (overrides) operations from a parent class to a child class. A dialog box opens listing the operations to redefine.</td>
+<td><p>Redefines (overrides) operations from a parent class to a child class. A dialog box opens listing the operations to redefine.</p></td>
 </tr>
 <tr valign="top">
-<td>Apply Design Pattern</td>
-<td>Opens the Design Pattern Apply Wizard.</td>
+<td>Resize Element to Contents </td>
+<td>Resizes the element so you can see all its attributes and operations from left to right.</td>
+</tr>
+<tr valign="top">
+<td>Set Dimension</td>
+<td>Opens a Set Dimension dialog that enables you to set the dimensions of an element. </td>
+</tr>
+<tr valign="top">
+<td>Synchronize Element with Data </td>
+<td><p>&nbsp;</p>
+  <p>Lets you synchronize the element in the active diagram with its associated data file.</p></td>
+</tr>
+<tr valign="top">
+<td>Show/Hide List Compartments</td>
+<td><p>Lets you show/hide hidden parent and child elements (objects) for the element.</p>
+  <p>&nbsp;</p></td>
+</tr>
+<tr valign="top">
+<td>Fonts and Colors </td>
+<td><p>Lets you edit the font, font color, background color and the border color of the element.</p>  </td>
+</tr>
+<tr valign="top">
+<td>Apply Design Pattern </td>
+<td>Opens the Design Pattern Apply Wizard. </td>
+</tr>
+<tr valign="top">
+<td>Generate Code </td>
+<td>Lets you quickly generate source code for classes and interfaces in your diagram. .</td>
+</tr>
+<tr valign="top">
+  <td>Generate Dependency Diagram</td>
+  <td>Lets you create a diagram showing all the dependencies for a Classifier. UML Modeling depicts the following types of relationships on the new diagram: Generalizations, Associations, Implementations, and Operations with parameters of a given class type.</td>
+</tr>
+<tr valign="top">
+  <td>Navigate to Source</td>
+  <td>Lets you navigate from a specific location on the diagram to the source corresponding to that diagram. </td>
+</tr>
+<tr valign="top">
+  <td>Cut</td>
+  <td>Cuts an element and places it on the clipboard for pasting to the diagram, to another diagram, or to third party applications.</td>
+</tr>
+<tr valign="top">
+  <td>Copy</td>
+  <td>Copies an element for placement elsewhere in the diagram or another diagram. </td>
+</tr>
+<tr valign="top">
+  <td>Delete</td>
+  <td>Deletes elements from a diagram, prompting you if you want to delete them from a model. </td>
+</tr>
+<tr valign="top">
+  <td>Select in Model </td>
+  <td>Lets you select the corresponding source in the Project Tree. </td>
 </tr>
 </table>
 <h3><a name="rightclick_comp_in_seqdiagramheader">Right-Clicking Elements in Sequence Diagram Headers</a></h3>
-<p>The following table describes the functions that become available when you right-click the space between objects displayed in the header of a Sequence diagram:</p>
+<p>The following table describes the functions that become available when you right-click the background of the Sequence diagram. </p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tr valign="top">
 <th scope="col" align="left">Pop-Up Menu Item</th>
 <th scope="col" align="left">Description</th>
 </tr>
 <tr valign="top">
-<td>Navigate to Instance</td>
-<td>Lets you <a href="../editors_windows/navigating_between_instances_classifiers.html">navigate the diagram</a> by centering the Diagram editor on the target object, its incoming object, or its outgoing object.</td>
+<td>Select All </td>
+<td>Select all parts of an element such as a Lifeline. </td>
 </tr>
 <tr valign="top">
-<td>Navigate to Classifier</td>
-<td>Lets you <a href="../editors_windows/navigating_between_instances_classifiers.html">navigate the diagram</a> by centering the Diagram editor on the target classifier in its corresponding Class diagram.</td>
+<td>Show All Return Messages </td>
+<td>Shows optional return messages. </td>
 </tr>
 <tr valign="top">
-<td>No Width Restrictions</td>
-<td>Lets you <a href="../diagrams/sequence_specifying_nowidth_spacing.html">clear any spacing restriction</a> on the space between any two adjacent lifelines.</td>
+<td>Show Message Boundaries </td>
+<td> <p>Shows the  boundary of an element is where the output of one element becomes the input of another,  </p></td>
 </tr>
 <tr valign="top">
 <td>Retain This Minimum Width</td>
-<td>Lets you specify the <a href="../diagrams/sequence_specifying_retainminwidth_spacing.html">minimum width spacing restriction</a> on the space between any two adjacent lifelines.</td>
+<td> Lets you specify the minimum width spacing restriction  on the space between any two adjacent lifelines.  </td>
 </tr>
 <tr valign="top">
 <td>Set Width to Message Width</td>
-<td>Lets you specify the <a href="../diagrams/sequence_specifying_messagewidth_spacing.html">auto-expand spacing restriction</a> on the space between any two adjacent lifelines, based on the width of messages.</td>
+<td> Lets you specify the auto-expand spacing restriction  on the space between any two adjacent lifelines, based on the width of messages.  </td>
 </tr>
 <tr valign="top">
 <td>Show Indicators in Track Bar</td>
-<td>Lets you <a href="../diagrams/sequence_ww_element_spacing_restrictions.html">show or hide</a> spacing restriction indicators in the gray header bar.</td>
+<td> Lets you show or hide  spacing restriction indicators in the gray header bar. </td>
 </tr>
 </table>
 <h3><a name="rightclick_link_in_umldiagramwindow">Right-Clicking Links in Diagrams</a></h3>
@@ -205,16 +182,16 @@
 <th scope="col" align="left">Description</th>
 </tr>
 <tr valign="top">
-<td>Edit</td>
-<td>Lets you <a href="../diagrams/editing_diagram_elements_copying.html">Copy</a>, <a href="../diagrams/editing_diagram_elements_cutting.html">Cut</a>, <a href="../diagrams/deleting_diagram_elements.html">Delete</a>, and<a href="../diagrams/editing_diagram_elements_pasting.html"> Paste</a> the link. Also, lets you <a href="../diagrams/editing_diagram_elements_selecting_all.html">Select all</a> or <a href="../diagrams/editing_diagram_elements_selecting_all_similar.html">Select all similar</a> links.</td>
+<td>Select All</td>
+<td>Lets you select all links. </td>
 </tr>
 <tr valign="top">
-<td>Transform</td>
-<td>Lets you convert association lines to aggregations, and aggregation lines to associations.</td>
+<td>Invert Selection </td>
+<td>Inverts the selection. </td>
 </tr>
 <tr valign="top">
 <td>Find</td>
-<td><a href="../diagrams/editing_diagram_elements_finding.html">Locates</a> and highlights the elements in the <a href=nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_project_window.html">Projects window</a>. Also, locates source and target nodes.</td>
+<td>Locates and highlights the elements in the Projects window. Also, locates source and target nodes.</td>
 </tr>
 <tr valign="top">
 <td>Labels</td>
@@ -225,24 +202,40 @@
 <td>Lets you synchronize the link in the active diagram with its associated data file.</td>
 </tr>
 <tr valign="top">
-<td>Association</td>
-<td>Opens a Color dialog box allowing you to change the border color of the link.</td>
+<td>Fonts and Colors </td>
+<td>Lets you change fonts and allows you to change the background and foreground colors of a link. </td>
 </tr>
 <tr valign="top">
-<td><a href="../diagrams/associating_elements.html">Associate With</a></td>
-<td>The Associate dialog box lets you associate any element with any other element. </td>
+<td>Labels</td>
+<td>Lets you choose a name for a label or to reset labels.</td>
 </tr>
 <tr valign="top">
-<td><a href="../diagrams/creating_diagram_dependency.html">Generate Dependency Diagram</a></td>
-<td>Lets you create a diagram showing all the dependencies for a Classifier. UML Modeling depicts the following types of relationships on the new diagram: Generalizations, Associations, Implementations, and Operations with parameters of a given class type.</td>
+  <td>Remove All Bends </td>
+  <td>Lets you remove bends from link.</td>
+</tr>
+<tr valign="top">
+  <td>Find</td>
+  <td>Lets you find a Source or Target element.</td>
 </tr>
 <tr valign="top">
 <td>Apply Design Pattern</td>
 <td>Opens the Design Pattern Apply Wizard.</td>
 </tr>
 <tr valign="top">
+  <td>Cut</td>
+  <td>Cuts the link and places it on  the clipboard for placement elsewhere in the diagram or in another diagram. </td>
+</tr>
+<tr valign="top">
+  <td>Copy</td>
+  <td>Copies the link to the clipboard for placement elsewhere in the diagram or in another diagram. </td>
+</tr>
+<tr valign="top">
+  <td>Delete</td>
+  <td>Deletes the link.</td>
+</tr>
+<tr valign="top">
 <td>Properties</td>
-<td>Opens the <a href="../editors_windows/display_drawing_preferences_db.html">Display and Drawing Preferences dialog box</a>, which lets you customize diagram parameters.</td>
+<td>Opens the Display and Drawing Preferences dialog box, which lets you customize diagram parameters.</td>
 </tr>
 </table>
 <dl>

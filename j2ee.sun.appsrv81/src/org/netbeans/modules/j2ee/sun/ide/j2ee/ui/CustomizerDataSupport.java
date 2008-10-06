@@ -72,7 +72,6 @@ public class CustomizerDataSupport {
     // model dirty flags
     private boolean sourceModelFlag;
     private boolean javadocModelFlag;
-    private boolean serverPortModelFlag;
     
     /**
      * Creates a new instance of CustomizerDataSupport 

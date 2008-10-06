@@ -165,8 +165,11 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-parsing-api" value="${javadoc.web.root}/org-netbeans-modules-parsing-api"/>
 <property name="javadoc.docs.org-netbeans-spi-quicksearch" value="${javadoc.web.root}/org-netbeans-spi-quicksearch"/>
 <property name="javadoc.docs.org-netbeans-api-java-classpath" value="${javadoc.web.root}/org-netbeans-api-java-classpath"/>
-<property name="javadoc.docs.org-netbeans-modules-websvc-serverapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-serverapi"/>
 <property name="javadoc.docs.org-netbeans-modules-extexecution" value="${javadoc.web.root}/org-netbeans-modules-extexecution"/>
 <property name="javadoc.docs.org-netbeans-modules-print" value="${javadoc.web.root}/org-netbeans-modules-print"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-core" value="${javadoc.web.root}/org-netbeans-modules-xml-core"/>
 <property name="javadoc.docs.org-netbeans-modules-websvc-wsstackapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-wsstackapi"/>
+<property name="javadoc.docs.org-netbeans-swing-outline" value="${javadoc.web.root}/org-netbeans-swing-outline"/>
+<property name="javadoc.docs.org-netbeans-modules-maven" value="${javadoc.web.root}/org-netbeans-modules-maven"/>
+<property name="javadoc.docs.org-netbeans-modules-maven-indexer" value="${javadoc.web.root}/org-netbeans-modules-maven-indexer"/>
+<property name="javadoc.docs.org-netbeans-modules-maven-embedder" value="${javadoc.web.root}/org-netbeans-modules-maven-embedder"/>

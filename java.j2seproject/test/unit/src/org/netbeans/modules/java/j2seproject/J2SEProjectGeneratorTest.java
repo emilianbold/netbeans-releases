@@ -43,6 +43,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
 import java.util.ArrayList;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -89,6 +91,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "build.test.results.dir",
         "debug.classpath",
         "debug.test.classpath",
+        "disable.compile.on.save",
         "dist.dir",
         "dist.jar",
         "dist.javadoc.dir",
@@ -132,6 +135,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         "build.test.results.dir",
         "debug.classpath",
         "debug.test.classpath",
+        "disable.compile.on.save",
         "dist.dir",
         "dist.jar",
         "dist.javadoc.dir",
@@ -237,6 +241,24 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
             }
         }
         assertEquals("Found unexpected property: "+l,createdPropertiesExtSources.length, props.keySet().size() - extFileRefCount);
+    }
+    
+    //Tests issue: #147128:J2SESources does not register new external roots immediately
+    public void testProjectFromExtSourcesOwnsTheSources () throws Exception {
+        File root = getWorkDir();
+        clearWorkDir();
+        File proj = new File (root, "ProjectDir");
+        proj.mkdir();
+        File srcRoot = new File (root, "src");
+        srcRoot.mkdir ();
+        File testRoot = new File (root, "test");
+        testRoot.mkdir ();
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf", null, null);
+        final Project expected = FileOwnerQuery.getOwner(helper.getProjectDirectory());
+        assertNotNull(expected);
+        assertEquals(expected, FileOwnerQuery.getOwner(srcRoot.toURI()));
+        assertEquals(expected, FileOwnerQuery.getOwner(testRoot.toURI()));
     }
     
 }

@@ -44,11 +44,12 @@ package org.netbeans.modules.properties;
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -66,6 +67,11 @@ import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.SaveAsTemplateAction;
 import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileObject;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
@@ -87,19 +93,43 @@ public final class PropertiesLocaleNode extends FileEntryNode
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale.gif"; // NOI18N
 
+    private FileStatusListener fsStatusListener;
     
     /** Creates a new PropertiesLocaleNode for the given locale-specific file */
     public PropertiesLocaleNode (PropertiesFileEntry fe) {
         super(fe, fe.getChildren());
         setDisplayName(Util.getLocaleLabel(fe));
-        
+
         setIconBaseWithExtension(LOCALE_ICON_BASE);        
         setShortDescription(messageToolTip());
 
-        getCookieSet().add(PropertiesOpen.class, this);
-        getCookieSet().add(fe.getDataObject());
+        // the node uses lookup based on CookieSet from PropertiesFileEntry
+        CookieSet cookieSet = fe.getCookieSet();
+        cookieSet.add(PropertiesOpen.class, this);
+        cookieSet.add(fe);
+        cookieSet.add(fe.getDataObject());
+        cookieSet.add(this);
+
+        fsStatusListener = new FSListener();
+        try {
+            FileSystem fs = fe.getFile().getFileSystem();
+            fs.addFileStatusListener(FileUtil.weakFileStatusListener(fsStatusListener, fs));
+        } catch (FileStateInvalidException ex) {
+        }
     }
-            
+
+    private class FSListener implements FileStatusListener, Runnable {
+        public void annotationChanged(FileStatusEvent ev) {
+            if (ev.isNameChange() && ev.hasChanged(getFileEntry().getFile())) {
+                SwingUtilities.invokeLater(this);
+            }
+        }
+
+        public void run() {
+            fireDisplayNameChange(null, null);
+        }
+    }
+
     /** Implements <code>CookieSet.Factory</code> interface method. */
     @SuppressWarnings("unchecked")
     public <T extends Node.Cookie> T createCookie(Class<T> clazz) {
@@ -109,7 +139,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
             return null;
         }
     }
-    
+
     /** Lazily initialize set of node's actions.
      * Overrides superclass method.
      *
@@ -120,7 +150,6 @@ public final class PropertiesLocaleNode extends FileEntryNode
         return new SystemAction[] {
             SystemAction.get(EditAction.class),
             SystemAction.get(OpenAction.class),
-            SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(CutAction.class),
             SystemAction.get(CopyAction.class),
@@ -131,6 +160,8 @@ public final class PropertiesLocaleNode extends FileEntryNode
             null,
             SystemAction.get(NewAction.class),
             SystemAction.get(SaveAsTemplateAction.class),
+            null,
+            SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(ToolsAction.class),
             SystemAction.get(PropertiesAction.class)
@@ -188,23 +219,31 @@ public final class PropertiesLocaleNode extends FileEntryNode
         return FileUtil.getFileDisplayName(fo);
     }
     
+    @Override
+    public String getHtmlDisplayName() { // inspired by DataNode
+        try {
+            FileSystem.Status stat = getFileEntry().getFile().getFileSystem().getStatus();
+            if (stat instanceof FileSystem.HtmlStatus) {
+                FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
+
+                String result = hstat.annotateNameHtml (
+                    super.getDisplayName(), Collections.singleton(getFileEntry().getFile()));
+
+                //Make sure the super string was really modified
+                if (!super.getDisplayName().equals(result)) {
+                    return result;
+                }
+            }
+        } catch (FileStateInvalidException e) {
+            //do nothing and fall through
+        }
+        return super.getHtmlDisplayName();
+    }
+
     /** This node can be renamed. Overrides superclass method. */
     @Override
     public boolean canRename() {
         return getFileEntry().isDeleteAllowed ();
-    }
-
-    /** Returns all the item in addition to "normal" cookies. Overrides superclass method. */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> cls) {
-        if (cls.isInstance(getFileEntry())) {
-            return (T) getFileEntry();
-        }
-        if (cls == PropertiesLocaleNode.class) {
-            return (T) this;
-        }
-        return super.getCookie(cls);
     }
 
     /** List new types that can be created in this node. Overrides superclass method.
@@ -212,8 +251,15 @@ public final class PropertiesLocaleNode extends FileEntryNode
      */
     @Override
     public NewType[] getNewTypes () {
-        return new NewType[] {
-            new NewType() {
+        return new NewType[] { new NewPropertyType((PropertiesFileEntry)getFileEntry()) };
+    }
+
+    static class NewPropertyType extends NewType {
+        private PropertiesFileEntry pfEntry;
+
+        NewPropertyType(PropertiesFileEntry pfe) {
+            pfEntry = pfe;
+        }
 
                 /** Getter for name property. */
             @Override
@@ -245,19 +291,16 @@ public final class PropertiesLocaleNode extends FileEntryNode
                     String comment = panel.getComment();
 
                     // add key to all entries
-                    if(!((PropertiesFileEntry)getFileEntry()).getHandler().getStructure().addItem(key, value, comment)) {
+            if(!pfEntry.getHandler().getStructure().addItem(key, value, comment)) {
                         DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(
                                         NbBundle.getMessage(
                                                 PropertiesLocaleNode.class, "MSG_KeyExists",
                                                 key,
-                                                Util.getLocaleLabel(getFileEntry())),
+                                        Util.getLocaleLabel(pfEntry)),
                                         NotifyDescriptor.ERROR_MESSAGE));
                     }
                 }
-                
-            } // End of annonymous class.
-        };
     }
 
     /** Indicates if this node has a customizer. Overrides superclass method. 

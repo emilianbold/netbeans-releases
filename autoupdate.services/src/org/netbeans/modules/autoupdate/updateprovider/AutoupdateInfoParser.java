@@ -44,76 +44,323 @@ package org.netbeans.modules.autoupdate.updateprovider;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Stack;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import org.netbeans.spi.autoupdate.UpdateItem;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.autoupdate.services.Trampoline;
+import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
+import org.netbeans.modules.autoupdate.services.Utilities;
+import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.netbeans.spi.autoupdate.UpdateItem;
+import org.netbeans.spi.autoupdate.UpdateLicense;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-public class AutoupdateInfoParser {
-    public static final String INFO_NAME = "info";
-    public static final String INFO_EXT = ".xml";
-    public static final String INFO_FILE = INFO_NAME + INFO_EXT;
-    public static final String INFO_DIR = "Info";
-    public static final String INFO_LOCALE = "locale";
+public class AutoupdateInfoParser extends DefaultHandler {
+    private static final String INFO_NAME = "info";
+    private static final String INFO_EXT = ".xml";
+    private static final String INFO_FILE = INFO_NAME + INFO_EXT;
+    private static final String INFO_DIR = "Info";
+    private static final String INFO_LOCALE = "locale";
     
-    private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParser");
+    private final Map<String, UpdateItem> items;
+    private final EntityResolver entityResolver;
+    private final File nbmFile;
+    private UpdateLicenseImpl currentUpdateLicenseImpl;
+    
+    private AutoupdateInfoParser (Map<String, UpdateItem> items, File nbmFile) {
+        this.items = items;
+        this.entityResolver = org.netbeans.updater.XMLUtil.createAUResolver ();
+        this.nbmFile = nbmFile;
+    }
+    
+    private static final Logger ERR = Logger.getLogger (AutoupdateInfoParser.class.getName ());
+    
+    private static enum ELEMENTS {
+        module, description,
+        module_notification, external_package, manifest, l10n, license
+    }
+    
+    private static final String LICENSE_ATTR_NAME = "name";
+    
+    private static final String MODULE_ATTR_CODE_NAME_BASE = "codenamebase";
+    private static final String MODULE_ATTR_HOMEPAGE = "homepage";
+    private static final String MODULE_ATTR_DOWNLOAD_SIZE = "downloadsize";
+    private static final String MODULE_ATTR_NEEDS_RESTART = "needsrestart";
+    private static final String MODULE_ATTR_MODULE_AUTHOR = "moduleauthor";
+    private static final String MODULE_ATTR_RELEASE_DATE = "releasedate";
+    private static final String MODULE_ATTR_IS_GLOBAL = "global";
+    private static final String MODULE_ATTR_TARGET_CLUSTER = "targetcluster";
+    private static final String MODULE_ATTR_EAGER = "eager";
+    private static final String MODULE_ATTR_AUTOLOAD = "autoload";
+    private static final String MODULE_ATTR_LICENSE = "license";
+    
+    private static final String MANIFEST_ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version";
+    
+    private static final String L10N_ATTR_LOCALE = "langcode";
+    private static final String L10N_ATTR_BRANDING = "brandingcode";
+    private static final String L10N_ATTR_MODULE_SPECIFICATION = "module_spec_version";
+    private static final String L10N_ATTR_MODULE_MAJOR_VERSION = "module_major_version";
+    private static final String L10N_ATTR_LOCALIZED_MODULE_NAME = "OpenIDE-Module-Name";
+    private static final String L10N_ATTR_LOCALIZED_MODULE_DESCRIPTION = "OpenIDE-Module-Long-Description";
     
     public static Map<String, UpdateItem> getUpdateItems (File nbmFile) throws IOException, SAXException {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
-        Document doc = getAutoupdateInfo (nbmFile);
-        SimpleItem simple = createSimpleItem (doc, false);
-        assert ! (simple instanceof SimpleItem.License) : simple + " is not instanceof License.";
-        UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile), nbmFile);
-        items.put (simple.getId (), update);
-        
+        try {
+            SAXParser saxParser = SAXParserFactory.newInstance ().newSAXParser ();
+            saxParser.parse (getAutoupdateInfoInputStream (nbmFile), new AutoupdateInfoParser (items, nbmFile));
+        } catch (SAXException ex) {
+            ERR.log (Level.INFO, ex.getMessage (), ex);
+        } catch (IOException ex) {
+            ERR.log (Level.INFO, ex.getMessage (), ex);
+        } catch (ParserConfigurationException ex) {
+            ERR.log (Level.INFO, ex.getMessage (), ex);
+        }
         return items;
     }
     
-    public static Map<String, String> getLicenses (File nbmFile) {
-        Map<String, String> res = new HashMap<String, String> ();
-        try {
-            Document doc = getAutoupdateInfo (nbmFile);
-            SimpleItem simple = createSimpleItem (doc, true);
-            if (simple != null) {
-                assert simple instanceof SimpleItem.License : simple + " is instanceof License.";
-                SimpleItem.License license = (SimpleItem.License) simple;
-                res.put (license.getLicenseId (), license.getLicenseContent ());
-            }
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, ex.getMessage(), ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, ex.getMessage(), ex);
+    private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
+    private Stack<String> currentLicense = new Stack<String> ();
+    private List<String> lines = new ArrayList<String> ();
+
+    @Override
+    public void characters (char[] ch, int start, int length) throws SAXException {
+        lines.add (new String(ch, start, length));
+    }
+
+    @Override
+    public void endElement (String uri, String localName, String qName) throws SAXException {
+        switch (ELEMENTS.valueOf (qName)) {
+            case module :
+                assert ! currentModule.empty () : "Premature end of module " + qName;
+                currentModule.pop ();
+                break;
+            case l10n :
+                break;
+            case manifest :
+                break;
+            case description :
+                ERR.info ("Not supported yet.");
+                break;
+            case module_notification :
+                // write module notification
+                ModuleDescriptor md = currentModule.peek ();
+                assert md != null : "ModuleDescriptor found for " + nbmFile;
+                StringBuffer buf = new StringBuffer ();
+                for (String line : lines) {
+                    buf.append (line);
+                }
+                md.appendNotification (buf.toString ());
+                lines.clear ();
+                break;
+            case external_package :
+                ERR.info ("Not supported yet.");
+                break;
+            case license :
+                assert ! currentLicense.empty () : "Premature end of license " + qName;
+                
+                // find and fill UpdateLicenseImpl
+                StringBuffer sb = new StringBuffer ();
+                for (String line : lines) {
+                    sb.append (line);
+                }
+                
+                assert currentUpdateLicenseImpl != null : "UpdateLicenseImpl found for " + nbmFile;
+                currentUpdateLicenseImpl.setAgreement (sb.toString ());
+                
+                currentLicense.pop ();
+                lines.clear ();
+                break;
+            default:
+                ERR.warning ("Unknown element " + qName);
+        }
+    }
+
+    @Override
+    public void endDocument () throws SAXException {
+        ERR.fine ("End parsing " + nbmFile + " at " + System.currentTimeMillis ());
+    }
+
+    @Override
+    public void startDocument () throws SAXException {
+        ERR.fine ("Start parsing " + nbmFile + " at " + System.currentTimeMillis ());
+    }
+
+    @Override
+    public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        switch (ELEMENTS.valueOf (qName)) {
+            case module :
+                ModuleDescriptor md = new ModuleDescriptor (nbmFile);
+                md.appendModuleAttributes (attributes);
+                currentModule.push (md);
+                break;
+            case l10n :
+                // construct l10n
+                // XXX
+                break;
+            case manifest :
+                
+                // construct module
+                ModuleDescriptor desc = currentModule.peek ();
+                desc.appendManifest (attributes);
+                UpdateItem m = desc.createUpdateItem ();
+                
+                // put license impl to map for future refilling
+                UpdateItemImpl impl = Trampoline.SPI.impl (m);
+                currentUpdateLicenseImpl = impl.getUpdateLicenseImpl ();
+                
+                // put module into UpdateItems
+                items.put (desc.getId (), m);
+                
+                break;
+            case description :
+                ERR.info ("Not supported yet.");
+                break;
+            case module_notification :
+                break;
+            case external_package :
+                ERR.info ("Not supported yet.");
+                break;
+            case license :
+                assert lines.isEmpty (): "No other license is processing at start of new license.";
+                currentLicense.push (attributes.getValue (LICENSE_ATTR_NAME));
+                break;
+            default:
+                ERR.warning ("Unknown element " + qName);
+        }
+    }
+    
+    @Override
+    public InputSource resolveEntity (String publicId, String systemId) throws IOException, SAXException {
+        return entityResolver.resolveEntity (publicId, systemId);
+    }
+    
+    private static class ModuleDescriptor {
+        private String moduleCodeName;
+        private String targetcluster;
+        private String homepage;
+        private String downloadSize;
+        private String author;
+        private String publishDate;
+        private String notification;
+
+        private Boolean needsRestart;
+        private Boolean isGlobal;
+        private Boolean isEager;
+        private Boolean isAutoload;
+
+        private String specVersion;
+        private Manifest mf;
+
+        private UpdateLicense lic;
+        
+        private final File nbmFile;
+        
+        public ModuleDescriptor (File nbmFile) {
+            this.nbmFile = nbmFile;
         }
         
-        return res;
-    }
-    
-    // package-private only for unit testing purpose
-    static SimpleItem createSimpleItem (Document xmlDocument, boolean onlyLicense) {
-        assert xmlDocument.getDocumentElement () != null : xmlDocument + " contains DocumentElement.";
-        //NodeList moduleUpdatesChildren = xmlDocument.getDocumentElement ().getChildNodes ();
-        NodeList moduleUpdatesChildren = xmlDocument.getChildNodes ();
+        public void appendModuleAttributes (Attributes module) {
+            moduleCodeName = module.getValue (MODULE_ATTR_CODE_NAME_BASE);
+            targetcluster = module.getValue (MODULE_ATTR_TARGET_CLUSTER);
+            homepage = module.getValue (MODULE_ATTR_HOMEPAGE);
+            downloadSize = module.getValue (MODULE_ATTR_DOWNLOAD_SIZE);
+            author = module.getValue (MODULE_ATTR_MODULE_AUTHOR);
+            publishDate = module.getValue (MODULE_ATTR_RELEASE_DATE);
+            if (publishDate == null || publishDate.length () == 0) {
+                publishDate = Utilities.formatDate (new Date (nbmFile.lastModified ()));
+            }
+            String needsrestart = module.getValue (MODULE_ATTR_NEEDS_RESTART);
+            String global = module.getValue (MODULE_ATTR_IS_GLOBAL);
+            String eager = module.getValue (MODULE_ATTR_EAGER);
+            String autoload = module.getValue (MODULE_ATTR_AUTOLOAD);
+                        
+            needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
+            isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
+            isEager = Boolean.parseBoolean (eager);
+            isAutoload = Boolean.parseBoolean (autoload);
+                        
+            String licName = module.getValue (MODULE_ATTR_LICENSE);
+            lic = UpdateLicense.createUpdateLicense (licName, null);
+        }
         
-        return parseUpdateItem (moduleUpdatesChildren, onlyLicense);
+        public void appendManifest (Attributes manifest) {
+            specVersion = manifest.getValue (MANIFEST_ATTR_SPECIFICATION_VERSION);
+            mf = getManifest (manifest);
+        }
+        
+        public void appendNotification (String notification) {
+            this.notification = notification;
+        }
+        
+        public String getId () {
+            return moduleCodeName + '_' + specVersion; // NOI18N
+        }
+        
+        public UpdateItem createUpdateItem () {
+            URL distributionUrl = null;
+            try {
+                distributionUrl = nbmFile.toURL (); // nbm as a source
+            } catch (MalformedURLException ex) {
+                ERR.log (Level.INFO, null, ex);
+            }
+            UpdateItem res = UpdateItem.createModule (
+                    moduleCodeName,
+                    specVersion,
+                    distributionUrl,
+                    author,
+                    downloadSize,
+                    homepage,
+                    publishDate,
+                    null, // no group
+                    mf,
+                    isEager,
+                    isAutoload,
+                    needsRestart,
+                    isGlobal,
+                    targetcluster,
+                    lic);
+            
+            // read module notification
+            UpdateItemImpl impl = Trampoline.SPI.impl(res);
+            ((ModuleItem) impl).setModuleNotification (notification);
+            
+            return res;
+        }
     }
     
+    private static Manifest getManifest (Attributes attrList) {
+        Manifest mf = new Manifest ();
+        java.util.jar.Attributes mfAttrs = mf.getMainAttributes ();
+
+        for (int i = 0; i < attrList.getLength (); i++) {
+            mfAttrs.put (new java.util.jar.Attributes.Name (attrList.getQName (i)), attrList.getValue (i));
+        }
+        return mf;
+    }
+
     // package-private only for unit testing purpose
-    static Document getAutoupdateInfo (File nbmFile) throws IOException, SAXException {        
+    static InputSource getAutoupdateInfoInputStream (File nbmFile) throws IOException, SAXException {
         // find info.xml entry
         JarFile jf = new JarFile (nbmFile);
         String locale = Locale.getDefault ().toString ();
@@ -124,53 +371,8 @@ public class AutoupdateInfoParser {
         if (entry == null) {
             throw new IllegalArgumentException ("info.xml found in file " + nbmFile);
         }        
-        // get xml document
-        InputSource xmlInputSource = new InputSource (new BufferedInputStream (jf.getInputStream (entry)));
-        return XMLUtil.parse (xmlInputSource, false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
-    }
-    
-    private static SimpleItem parseUpdateItem (NodeList children, boolean onlyLicense) {
-        SimpleItem res = null;
-        for (int i = 0; i < children.getLength (); i++) {
-            Node n = children.item (i);
-            if (Node.ELEMENT_NODE != n.getNodeType()) {
-                continue;
-            }
-            assert n instanceof Element : n + " is instanceof Element";
-            String tagName = ((Element) n).getTagName ();
-            if (AutoupdateCatalogParser.TAG_MODULE_GROUP.equals (tagName)) {
-                assert false : AutoupdateCatalogParser.TAG_MODULE_GROUP + " is not allowed in Info.xml";
-            } else if (AutoupdateCatalogParser.TAG_MODULE.equals (tagName)) {
-                // split Module and Localization (and Licences only for info.xml)
-                NodeList l10nElements = ((Element) n).getElementsByTagName (AutoupdateCatalogParser.TAG_ELEMENT_L10N);
-                NodeList manifestElements = ((Element) n).getElementsByTagName (AutoupdateCatalogParser.TAG_MANIFEST);
-                NodeList licenseElements = ((Element) n).getElementsByTagName (AutoupdateCatalogParser.TAG_LICENSE);
-                if (l10nElements != null && l10nElements.getLength () == 1) {
-                    if (! onlyLicense) {
-                        res = new SimpleItem.Localization (n, null);
-                    }
-                } else if (manifestElements != null && manifestElements.getLength () == 1) {
-                    if (! onlyLicense) {
-                        res = new SimpleItem.Module (n, null);
-                    }
-                }
-                if (licenseElements != null && licenseElements.getLength () == 1) {
-                    if (onlyLicense) {
-                        res = new SimpleItem.License (licenseElements.item(0));
-                    }
-                }
-            } else if (AutoupdateCatalogParser.TAG_FEATURE.equals (tagName)) {
-                assert false : AutoupdateCatalogParser.TAG_FEATURE + " is not allowed in Info.xml";
-            } else if (AutoupdateCatalogParser.TAG_LICENSE.equals (tagName)) {
-                if (onlyLicense) {
-                    res = new SimpleItem.License (n);
-                }
-            } else {
-                assert false : "Unknown element tag " + tagName;
-            }
-        }
-        return res;
-        
+
+        return new InputSource (new BufferedInputStream (jf.getInputStream (entry)));
     }
     
 }

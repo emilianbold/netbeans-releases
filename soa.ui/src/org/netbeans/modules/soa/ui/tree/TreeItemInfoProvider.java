@@ -21,6 +21,7 @@ package org.netbeans.modules.soa.ui.tree;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -36,7 +37,7 @@ public interface TreeItemInfoProvider {
     Icon getIcon(TreeItem treeItem);
     String getToolTipText(TreeItem treeItem);
     
-    Icon UNKNOWN_IMAGE = new ImageIcon(Utilities.loadImage(
+    Icon UNKNOWN_IMAGE = new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/soa/ui/tree/UNKNOWN_ICON.png"));
     
 }

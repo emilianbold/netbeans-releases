@@ -41,10 +41,13 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.accessibility.AccessibleRole;
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -58,6 +61,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.openide.util.Lookup;
 
 /**
@@ -73,11 +77,16 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     protected static final String TAGGEDVALUE = "TaggedValue"; //NOI18N
     protected static final String OPERATION = "Operation"; //NOI18N
     public final static AnchorShape ARROW_END = AnchorShapeFactory.createArrowAnchorShape(50, 10);
+    public static final String LABEL_TYPE = "LABEL_TYPE"; //NOI18N
+    
+    //key to specify that a proxy pres elt should be created while loading the diagram. Eg: Nested Link
+    public static final String PROXY_PRESENTATION_ELEMENT = "PROXY_PRESENTATION_ELEMENT";  //NOI18N
 
     public UMLEdgeWidget(Scene scene)
     {
         super(scene);
         this.scene = (DesignerScene) scene;
+        setAccessibleContext(new UMLEdgeWidgetAccessibleContext(this));
     }
 
     protected LabelManager getLabelManager()
@@ -93,6 +102,24 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             }
         }
         return manager;
+    }
+
+    @Override
+    public void setControlPoints(Collection<Point> controlPoints, boolean sceneLocations) {
+        if (scene != null && scene.getEngine() instanceof SQDDiagramEngineExtension)
+        {
+            super.setControlPoints(controlPoints, sceneLocations);
+        }
+        else 
+        {
+            int ctrlPtCount = this.getControlPoints().size();
+            super.setControlPoints(controlPoints, sceneLocations);
+            //Mark the diagram dirty after setting control points
+            if (scene != null && ctrlPtCount != this.getControlPoints().size()) 
+            {
+                ((DesignerScene) scene).getDiagram().setDirty(true);
+            }
+        }
     }
 
     public void save(EdgeWriter edgeWriter)
@@ -114,13 +141,12 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         
         edgeWriter.setSrcAnchorID(PersistenceUtil.findAnchor(this.getSourceAnchor()));
         edgeWriter.setTargetAnchorID(PersistenceUtil.findAnchor(this.getTargetAnchor()));
-
+        
         edgeWriter.beginGraphEdge();
         LabelManager manager = getLabelManager();
         if (manager != null)
         {
             HashMap<String, Widget> labMap = manager.getLabelMap();
-            System.out.println(" labMap = " + labMap);
             edgeWriter.beginContained();
             for (String child : labMap.keySet())
             {
@@ -130,11 +156,16 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 {
                     //begin contained  
                     edgeWriter.setTypeInfo(childType);
+
+                    HashMap map = edgeWriter.getProperties();
+                    map.put(LABEL_TYPE, child);
+                    edgeWriter.setProperties(map);
+
                     ((DiagramEdgeWriter) childWidget).save(edgeWriter);
                 }
                 else
                 {
-                    System.out.println(" not a label... ");
+//                    System.out.println(" not a label... ");
                 }
             }
             edgeWriter.endContained();
@@ -156,12 +187,13 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                 if (!(nodesList.contains(edgeReader.getSourcePE())) 
                         || !(nodesList.contains(edgeReader.getTargetPE())))
                 {
-                    System.out.println(" invalid edge...");
+//                    System.out.println(" invalid edge...");
                     return;
                 }
             }
             scene.setEdgeSource(PersistenceUtil.getPresentationElement(this), edgeReader.getSourcePE());
             scene.setEdgeTarget(PersistenceUtil.getPresentationElement(this), edgeReader.getTargetPE());
+            setControlPoints(edgeReader.getWayPoints(), true);
         }
         LabelManager manager = getLabelManager();
         if (manager != null)
@@ -171,32 +203,83 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             for (Iterator<EdgeInfo.EdgeLabel> it = edgeLabels.iterator(); it.hasNext();)
             {
                 EdgeInfo.EdgeLabel edgeLabel = it.next();
-                manager.showLabel(edgeLabel.getLabel());
+                String labelTypeStr = edgeLabel.getLabelProperties().get(LABEL_TYPE); 
+                LabelManager.LabelType labelType = null;
+                if (labelTypeStr != null && labelTypeStr.trim().length() > 0)
+                {                    
+                    if (labelTypeStr.endsWith(LabelManager.LabelType.SOURCE.toString()))
+                        labelType = LabelManager.LabelType.SOURCE;
+                    else if (labelTypeStr.endsWith(LabelManager.LabelType.TARGET.toString()))
+                        labelType = LabelManager.LabelType.TARGET;
+                    else if (labelTypeStr.endsWith(LabelManager.LabelType.EDGE.toString()))
+                        labelType = LabelManager.LabelType.EDGE;
+                }
+                    manager.showLabel(edgeLabel.getLabel(), labelType, edgeLabel.getPosition());
             }
         }
     }
 
     public void duplicate(Widget copy)
     {
-        // TODO: 
-        if (copy instanceof ConnectionWidget)
+        assert copy instanceof UMLEdgeWidget;
+        
+        //((UMLEdgeWidget)copy).initialize(((UMLEdgeWidget)copy).getObject());
+        ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
+        ConnectionWidget dup = (ConnectionWidget) copy;
+
+        Anchor sourceAnchor = dup.getSourceAnchor();
+        Anchor targetAnchor = dup.getTargetAnchor();
+        if (sourceAnchor == null || targetAnchor == null)
         {
-            ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
-            ((ConnectionWidget) copy).setControlPoints(this.getControlPoints(), true);
+            return;
         }
+
+        List<Point> list = new ArrayList<Point>();
+
+        ArrayList<Point> oldList = new ArrayList<Point>(getControlPoints());
+        oldList.remove(getFirstControlPoint());
+        oldList.remove(getLastControlPoint());
+
+        Point sourceP = sourceAnchor.compute(dup.getSourceAnchorEntry()).getAnchorSceneLocation();
+        list.add(sourceP);
+
+        int dx = sourceAnchor.getRelatedSceneLocation().x - getSourceAnchor().getRelatedSceneLocation().x;
+        int dy = sourceAnchor.getRelatedSceneLocation().y - getSourceAnchor().getRelatedSceneLocation().y;
+
+        for (Point p: oldList)
+        {
+            Point np = new Point(p.x + dx, p.y + dy);
+            list.add(np);
+        }
+        list.add(targetAnchor.compute(dup.getTargetAnchorEntry()).getAnchorSceneLocation());
+
+        dup.setControlPoints(list, true);        
     }
 
-    protected IPresentationElement getObject()
+    public IPresentationElement getObject()
     {
         return (IPresentationElement) scene.findObject(this);
     }
 
     public void remove()
     {
+        Widget sourceWidget = getSourceAnchor().getRelatedWidget();
+        Widget targetWidget = getTargetAnchor().getRelatedWidget();
         scene.removeEdge(getObject());
+        
+        // Fixed iz #139489 and 148365
+        // removed entries on source and target widget that are attatched to this edge.
+        if (sourceWidget != null && sourceWidget instanceof UMLNodeWidget)
+        {
+            ((UMLNodeWidget)sourceWidget).removeAttachedEntries(this);
+        }
+         if (targetWidget != null && targetWidget instanceof UMLNodeWidget)
+        {
+            ((UMLNodeWidget)targetWidget).removeAttachedEntries(this);
+        }
     }
 
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe == null || pe.getFirstSubject() == null)
@@ -205,4 +288,24 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             scene.validate();
         }
     }
+    abstract public void initialize(IPresentationElement element);
+
+    ///////////// 
+    // Accessible
+    /////////////
+   
+
+    public class UMLEdgeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLEdgeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return UMLAccessibleRole.GRAPH_EDGE;
+        }
+        
+    }
+    
 }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors.api.resource;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,6 +68,7 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.DatabindingElementUI;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.FontEditorElement;
@@ -94,11 +96,33 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     private PropertyEditorResourceElement perElement;
     private DatabindingElement databindingElement;
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (createdComponents != null) {
+            createdComponents.clear();
+            createdComponents = null;
+        }
+        if (rePanel != null) {
+            rePanel.clean(component);
+            rePanel = null;
+        }
+        radioButton = null;
+        if (perElement instanceof CleanUp) {
+            ((CleanUp) perElement).clean(component);
+        }
+        perElement = null;
+        if (databindingElement != null) {
+            databindingElement.clean(component);
+        }
+        databindingElement = null;
+    }
+
     private PropertyEditorResource(PropertyEditorResourceElement perElement,
-                                   String newComponentAsText,
-                                   String noneComponentAsText,
-                                   String userCodeLabel,
-                                   boolean databinding) {
+            String newComponentAsText,
+            String noneComponentAsText,
+            String userCodeLabel,
+            boolean databinding) {
         super(userCodeLabel);
 
         if (newComponentAsText == null || noneComponentAsText == null) {
@@ -120,13 +144,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         // TODO lazy init
         radioButton = new JRadioButton();
         rePanel = new ResourceEditorPanel(perElement, noneComponentAsText, radioButton);
-        Mnemonics.setLocalizedText(radioButton, 
+        Mnemonics.setLocalizedText(radioButton,
                 NbBundle.getMessage(PropertyEditorResource.class, "LBL_RB_RESOURCE")); // NOI18N
-        radioButton.getAccessibleContext().setAccessibleName( 
+        radioButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
-        radioButton.getAccessibleContext().setAccessibleDescription( 
+        radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
-         if (databinding) {
+        perElement.addPropertyEditorResourceElementListener(rePanel);
+        if (databinding) {
             Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
             databindingElement = new DatabindingElement(this);
             elements.add(this);
@@ -152,9 +177,15 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     public static final DesignPropertyEditor createImagePropertyEditor() {
         return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), false); //NOI18N
     }
-    
+
     public static final DesignPropertyEditor createImagePropertyEditorWithDatabinding() {
         return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true); //NOI18N
+    }
+
+    @Override
+    public final Component getCustomEditor() {
+        perElement.getCustomEdiotrNotification();
+        return super.getCustomEditor();
     }
 
     private Map<String, DesignComponent> getComponentsMap() {
@@ -195,6 +226,9 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
+        }
+        if (component == null || getPropertyNames() == null) {
+            return null;
         }
         String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
         if (databinding != null) {
@@ -248,11 +282,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             }
         }
     }
-    
+
     private void setValue(PropertyValue value) {
         super.setValue(value);
-        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component.get())) {
-            perElement.postSetValue(component.get(), value.getComponent());
+        final DesignComponent component_ = component.get();
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+            perElement.postSetValue(component_, value.getComponent());
+        } else if (NULL_VALUE.equals(value)) {
+            perElement.nullValueSet(component_);
         }
     }
 
@@ -284,6 +321,12 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     }
 
     @Override
+    public void init(DesignComponent component) {
+        perElement.setDesignComponent(component);
+        super.init(component);
+    }
+
+    @Override
     public String[] getTags() {
         Set<String> components = getComponentsMap().keySet();
         List<String> tags = new ArrayList<String>(components.size() + 2);
@@ -297,6 +340,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         return tags.toArray(new String[tags.size()]);
     }
 
+    @Override
     public Boolean canEditAsText() {
         return null;
     }
@@ -311,9 +355,25 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
-          } else if (databindingElement != null) {
+        } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+    }
+
+    @Override
+    public boolean executeInsideWriteTransaction() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return false;
+        }
+        return super.executeInsideWriteTransaction();
+    }
+
+    @Override
+    public boolean isExecuteInsideWriteTransactionUsed() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return true;
+        }
+        return super.isExecuteInsideWriteTransactionUsed();
     }
 
     public String getTextForPropertyValue() {
@@ -392,7 +452,10 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                         }
                     });
                 }
+
             }
+            perElement.postSaveValue(component.get());
+
         }
     }
 
@@ -418,11 +481,27 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
             databindingElement.updateDesignComponent(c);
         }
         if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
-           ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
+            ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
         } else if (rePanel.needsUpdate()) {
             radioButton.setSelected(!isCurrentValueAUserCodeType());
             rePanel.update(getComponentsMap(), getDecodeValue(value));
         }
+    }
+
+    @Override
+    public boolean isResetToDefaultAutomatically() {
+        if (component == null) {
+            super.isResetToDefaultAutomatically();
+        }
+        return perElement.isResetToDefaultAutomatically(component.get());
+    }
+
+    @Override
+    public void customEditorResetToDefaultButtonPressed() {
+        if (component != null && component.get() != null) {
+            perElement.preResetToDefaultValue(component.get());
+        }
+        super.customEditorResetToDefaultButtonPressed();
     }
 
     public void setTextForPropertyValue(String text) {

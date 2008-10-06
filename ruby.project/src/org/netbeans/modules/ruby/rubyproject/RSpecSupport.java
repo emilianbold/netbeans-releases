@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
@@ -107,6 +108,7 @@ public class RSpecSupport {
     }
 
     public static boolean isSpecFile(FileObject fo) {
+//        return RubyUtils.isSpecFile(fo);
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             return false;
         }

@@ -35,10 +35,10 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.ast.IArgumentNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.nb.ast.IArgumentNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
@@ -513,7 +513,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new RubyFormatter(), true);
+            edits.setFormatAll(true);
         }
 
         private void collapse(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
@@ -636,7 +636,7 @@ public class ConvertBlockType extends RubyAstRule {
                     Exceptions.printStackTrace(ble);
                 }
             }
-            edits.setFormatter(new RubyFormatter(), true);
+            edits.setFormatAll(true);
         }
 
         /** Determine whether parentheses are necessary around the call

@@ -63,6 +63,7 @@ import org.netbeans.modules.ruby.modules.project.rake.FileChangeSupportListener;
 import org.netbeans.modules.ruby.modules.project.rake.UserQuestionHandler;
 import org.netbeans.modules.ruby.modules.project.rake.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
@@ -915,7 +916,21 @@ public final class RakeProjectHelper {
     public AuxiliaryConfiguration createAuxiliaryConfiguration() {
         return new ExtensibleMetadataProviderImpl(this);
     }
-    
+
+    /**
+     * Create an object permitting this project to expose {@link AuxiliaryProperties}.
+     * Would be placed into the project's lookup.
+     *
+     * This implementation places the properties into {@link #PROJECT_PROPERTIES_PATH}
+     * or {@link #PRIVATE_PROPERTIES_PATH} (depending on shared value). The properties are
+     * prefixed with "<code>auxiliary.</code>".
+     *
+     * @return an instance of {@link AuxiliaryProperties} suitable for the project lookup
+     */
+    public AuxiliaryProperties createAuxiliaryProperties() {
+        return new AuxiliaryPropertiesImpl(this);
+    }
+
     /**
      * Create an object permitting this project to expose a cache directory.
      * Would be placed into the project's lookup.

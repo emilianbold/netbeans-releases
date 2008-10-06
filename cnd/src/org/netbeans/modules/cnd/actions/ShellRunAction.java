@@ -47,87 +47,59 @@ import java.io.IOException;
 import javax.swing.AbstractAction;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.LifecycleManager;
+import org.openide.cookies.SaveCookie;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Base class for Make Actions ...
  */
-public class ShellRunAction extends NodeAction {
-
-    protected boolean enable(Node[] activatedNodes)  {
-	boolean enabled = false;
-
-	if (activatedNodes == null || activatedNodes.length == 0 || activatedNodes.length > 1) {
-	    enabled = false;
-	}
-	else {
-	    DataObject dataObject = activatedNodes[0].getCookie(DataObject.class);
-	    if (dataObject instanceof ShellDataObject)
-		enabled = true;
-	    else
-		enabled = false;
-	}
-	return enabled;
-    }
+public class ShellRunAction extends AbstractExecutorRunAction {
 
     public String getName() {
         return getString("BTN_Run");
     }
 
+    @Override
+    protected boolean accept(DataObject object) {
+        return object instanceof ShellDataObject;
+    }
+
     protected void performAction(Node[] activatedNodes) {
         // Save everything first
         LifecycleManager.getDefault().saveAll();
-        
-        for (int i = 0; i < activatedNodes.length; i++)
+
+        for (int i = 0; i < activatedNodes.length; i++) {
             performAction(activatedNodes[i]);
         }
-
-    public HelpCtx getHelpCtx () {
-	return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
 
-    public void performAction(Node node) {
+    public static void performAction(Node node) {
 	ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
-        DataObject dataObject = node.getCookie(DataObject.class);
-        FileObject fileObject = dataObject.getPrimaryFile();
-        
-        CompilerSet cs = null;
-        String csdirs = ""; // NOI18N
-        String dcsn = CppSettings.getDefault().getCompilerSetName();
-        if (dcsn != null && dcsn.length() > 0) {
-            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(dcsn);
-            if (cs != null) {
-                csdirs = cs.getDirectory();
-                if (cs.getCompilerFlavor() == CompilerFlavor.MinGW) {
-                    // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    String msysBase = CppUtils.getMSysBase();
-                    if (msysBase != null && msysBase.length() > 0) {
-                        csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N
-                    }
-                }
+        if (bes == null) {
+            return;
+        }
+        //Save file
+        SaveCookie save = node.getLookup().lookup(SaveCookie.class);
+        if (save != null) {
+            try {
+                save.save();
+            } catch (IOException ex) {
             }
         }
+        DataObject dataObject = node.getCookie(DataObject.class);
+        FileObject fileObject = dataObject.getPrimaryFile();
         
         File shellFile = FileUtil.toFile(fileObject);
         // Build directory
@@ -153,11 +125,12 @@ public class ShellRunAction extends NodeAction {
         String shellCommand = shellCommandAndArgs[0];
         String shellFilePath = IpeUtils.toRelativePath(buildDir.getPath(), shellFile.getPath()); // Absolute path to shell file
 	String[] args = bes.getArguments(); // from properties
-        
+
+        String developmentHost = getDevelopmentHost(fileObject);
         // Windows: The command is usually of the from "/bin/sh", but this
         // doesn't work here, so extract the 'sh' part and use that instead. 
         // FIXUP: This is not entirely correct though.
-        if (Utilities.isWindows() && shellCommand.length() > 0) {
+        if (PlatformInfo.getDefault(developmentHost).isWindows() && shellCommand.length() > 0) {
             int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
             if (i >= 0) {
                 shellCommand = shellCommand.substring(i+1);
@@ -177,29 +150,32 @@ public class ShellRunAction extends NodeAction {
             argsFlat.append(args[i]);
         }
        
-        // Execute the makefile
-        String[] envp = { Path.getPathName() + '=' + Path.getPathAsString() + File.pathSeparatorChar + csdirs};
-            NativeExecutor nativeExecutor = new NativeExecutor(
-                buildDir.getPath(),
-                shellCommand,
-                argsFlat.toString(),
-                envp,
-                tabName,
-                "Run", // NOI18N
-                false,
-                true);
-            new ShellExecuter(nativeExecutor).execute();
+        // Execute the shellfile
+
+        NativeExecutor nativeExecutor = new NativeExecutor(
+            developmentHost,
+            buildDir.getPath(),
+            shellCommand,
+            argsFlat.toString(),
+            prepareEnv(developmentHost),
+            tabName,
+            "Run", // NOI18N
+            false,
+            true,
+            false);
+
+        new ShellExecuter(nativeExecutor).execute();
     }
     
-    class ShellExecuter implements ExecutionListener {
-        private NativeExecutor nativeExecutor = null;
+    private static class ShellExecuter implements ExecutionListener {
+        private final NativeExecutor nativeExecutor;
+        private final ProgressHandle progressHandle;
         private ExecutorTask executorTask = null;
-        private ProgressHandle progressHandle = null;
 
         public ShellExecuter(NativeExecutor nativeExecutor) {
             this.nativeExecutor = nativeExecutor;
             nativeExecutor.addExecutionListener(this);
-            progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
+            this.progressHandle = createPogressHandle(new StopAction(this), nativeExecutor);
         }
         
         public void execute() {
@@ -223,7 +199,7 @@ public class ShellRunAction extends NodeAction {
     }
     
     private static final class StopAction extends AbstractAction {
-        ShellExecuter shellExecutor;
+        private final ShellExecuter shellExecutor;
 
         public StopAction(ShellExecuter shellExecutor) {
             this.shellExecutor = shellExecutor;
@@ -241,8 +217,9 @@ public class ShellRunAction extends NodeAction {
 //        }
 
         public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
+            if (!isEnabled()) {
                 return;
+            }
             setEnabled(false);
             if (shellExecutor.getExecutorTask() != null) {
                 shellExecutor.getExecutorTask().stop();
@@ -250,7 +227,7 @@ public class ShellRunAction extends NodeAction {
         }
     }
     
-    private ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
+    private static ProgressHandle createPogressHandle(final AbstractAction sa, final NativeExecutor nativeExecutor) {
         ProgressHandle handle = ProgressHandleFactory.createHandle(nativeExecutor.getTabeName(), new Cancellable() {
             public boolean cancel() {
                 sa.actionPerformed(null);
@@ -265,14 +242,6 @@ public class ShellRunAction extends NodeAction {
         return handle;
     }
         
-    protected final static String getString(String key) {
-        return NbBundle.getBundle(ShellRunAction.class).getString(key);
-    }
-    
-    protected final static String getString(String key, String a1) {
-        return NbBundle.getMessage(ShellRunAction.class, key, a1);
-    }
-
     @Override
     protected boolean asynchronous() {
         return false;

@@ -45,17 +45,14 @@ import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
 import org.netbeans.modules.welcome.content.RecentProjectsPanel;
-import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -66,11 +63,10 @@ class MyNetBeansTab extends AbstractTab {
     private ContentSection recentProjectsSection;
     private ContentSection blogsSection;
     private JComponent bottomBar;
+    private JPanel bottomStripe;
 
     protected void buildContent() {
-        JPanel main = new JPanel( new GridBagLayout() );
-        main.setOpaque( true );
-        main.setBackground(Utils.getColor(COLOR_SCREEN_BACKGROUND));
+        JPanel main = new BackgroundPanel( new GridBagLayout() );
         main.setBorder(BorderFactory.createEmptyBorder());
         add( main, BorderLayout.CENTER );
         setBorder(BorderFactory.createEmptyBorder());
@@ -110,50 +106,19 @@ class MyNetBeansTab extends AbstractTab {
                 new GridBagConstraints(0,3,2,1,1.0,0.0,GridBagConstraints.CENTER,
                 GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
         
-        main.add( new Stripe(false),
+        bottomStripe = new Stripe( false );
+        main.add( bottomStripe,
                 new GridBagConstraints(0,4,2,1,1.0,1.0,GridBagConstraints.CENTER,
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
     }
 
-
-    protected Point getTopStripOrigin() {
-        Point p;
-        if( null == recentProjectsSection ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = recentProjectsSection.getTitleBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p.x += r.getWidth()/2;
-            p = SwingUtilities.convertPoint( recentProjectsSection, p, this );
+    protected int getBottomStripeOrigin() {
+        int res = 0;
+        if( null != bottomStripe ) {
+            res = bottomStripe.getLocation().y;
+            if( res == 0 )
+                res = getHeight();
         }
-        return p;
-    }
-
-    protected Point getMiddleStripOrigin() {
-        Point p;
-        if( null == blogsSection ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = blogsSection.getTitleBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p.x += r.getWidth();
-            p = SwingUtilities.convertPoint( blogsSection, p, this );
-        }
-        return p;
-    }
-
-    protected Point getBottomStripOrigin() {
-        Point p;
-        if( null == bottomBar ) {
-            p = new Point(0,0);
-        } else {
-            Rectangle r = bottomBar.getBounds();
-            p = r.getLocation();
-            p.y += r.getHeight();
-            p.x += r.getWidth();
-        }
-        return p;
-    }
+        return res;
+    }    
 }

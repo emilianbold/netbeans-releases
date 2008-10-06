@@ -223,9 +223,9 @@ public class OpenFiles extends PerformanceTestCase {
     
     /** Tests if created and later dclosed projects can be GCed from memory.
      */
-    public void testGC() throws Exception {
+/*    public void testGC() throws Exception {
         Thread.sleep(60*1000);
         runTestGC(EDITOR_REFS);
     }
-    
+  */  
 }

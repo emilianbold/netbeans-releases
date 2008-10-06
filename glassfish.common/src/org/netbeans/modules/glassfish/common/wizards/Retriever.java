@@ -42,24 +42,22 @@
 package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -121,19 +119,20 @@ public class Retriever implements Runnable {
     }
     
     private void setDownloadState(int newState) {
-        status = newState;
-        updateMessage(STATUS_MESSAGE[newState]);
+        setDownloadState(newState, true);
     }
     
+    private void setDownloadState(int newState, boolean display) {
+        status = newState;
+        if(display) {
+            updateMessage(STATUS_MESSAGE[newState]);
+        }
+    }
+
     private void setDownloadState(int newState, String msg, Exception ex) {
         status = newState;
         Object [] args = new Object [] { msg, ex.getMessage()};
         updateStatus(MessageFormat.format(STATUS_MESSAGE[newState], args));
-    }
-    
-    private void updateMessage(final String text, int count) {
-        final String size = countAsString(count);
-        updateMessage(text + size);
     }
     
     private void updateMessage(final String msg) {
@@ -147,15 +146,15 @@ public class Retriever implements Runnable {
     private String countAsString(int c) {
         String size = "";
         if(c < 1024) {
-            size = c + " bytes";
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeBytes", c);
         } else if(c < 1048676) {
-            size = c / 1024 + "k";
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeKb", c / 1024);
         } else {
             int m = c / 1048676;
             int d = (c - m * 1048676)*10 / 1048676;
-            size = m + "." + d + "m";
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeMb", m, d);
         }
-        return " (" + size + ")";
+        return size;
     }
 
     // Thread plumbing
@@ -173,14 +172,15 @@ public class Retriever implements Runnable {
         InputStream in = null;
         File backupDir = null;
         long start = System.currentTimeMillis();
-        
+        String message = null;
+
         try {
             backupDir = backupInstallDir(targetInstallDir);
             
             setDownloadState(STATUS_CONNECTING);
             targetUrl = new URL(getDownloadLocation());
 
-            Logger.getLogger("glassfish").fine("Downloading V3 from " + targetUrl);
+            Logger.getLogger("glassfish").fine("Downloading V3 from " + targetUrl); // NOI18N
             connection = targetUrl.openConnection();
             connection.setConnectTimeout(ZIP_DOWNLOAD_TIMEOUT);
             connection.setReadTimeout(ZIP_DOWNLOAD_TIMEOUT);
@@ -193,11 +193,11 @@ public class Retriever implements Runnable {
             if(!shutdown) {
                 long end = System.currentTimeMillis();
                 String duration = getDurationString((int) (end - start));
-                setDownloadState(STATUS_COMPLETE);
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration));
+                setDownloadState(STATUS_COMPLETE, false);
+                message = NbBundle.getMessage(Retriever.class, "MSG_DownloadComplete", duration); // NOI18N
             } else {
-                setDownloadState(STATUS_TERMINATED);
-                updateMessage(NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"));
+                setDownloadState(STATUS_TERMINATED, false);
+                message = NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"); // NOI18N
             }
         } catch(ConnectException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
@@ -218,14 +218,16 @@ public class Retriever implements Runnable {
             if(in != null) {
                 try { in.close(); } catch(IOException ex) { }
             }
-            
+            if(message != null) {
+                updateMessage(message);
+            }
             updater.clearCancelState();
         }
     }
     
     private String getDownloadLocation() {
         URLConnection conn = null;
-        DataInputStream is = null;
+        BufferedReader reader = null;
         String result = defaultTargetUrl;
 
         if(locationUrl != null && locationUrl.length() > 0) {
@@ -233,23 +235,23 @@ public class Retriever implements Runnable {
             while(tries++ < LOCATION_TRIES) {
                 try {
                     URL url = new URL(locationUrl);
-                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get V3 download URL suffix from " + url);
+                    Logger.getLogger("glassfish").fine("Attempt " + tries + " to get V3 download URL suffix from " + url); // NOI18N
                     conn = url.openConnection();
                     conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                    is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-                    while((result = is.readLine()) != null) {
-                        return targetUrlPrefix + result; // First line is the one we want.
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8")); // NOI18N
+                    while((result = reader.readLine()) != null) {
+                        return targetUrlPrefix + result; // Only need the the first line
                     }
                 } catch(Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                 } finally {
                     try {
-                        if(is != null) {
-                            is.close();
+                        if( reader != null) {
+                             reader.close();
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex); // NOI18N
                     }
                 }
             }
@@ -278,18 +280,18 @@ public class Retriever implements Runnable {
                 final File entryFile = new File(targetFolder, entryName);
                 if(entryFile.exists()) {
                     // !PW FIXME entry already exists, offer overwrite option...
-                    throw new RuntimeException("Target " + entryFile.getPath() +
-                            " already exists.  Terminating archive installation.");
+                    throw new RuntimeException(NbBundle.getMessage(
+                            Retriever.class, "ERR_TargetExists", entryFile.getPath())); // NOI18N
                 } else if(entry.isDirectory()) {
                     if(!entryFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
-                                entryFile.getName() + ".  Terminating archive installation.");
+                        throw new RuntimeException(NbBundle.getMessage(
+                                Retriever.class, "ERR_FolderCreationFailed", entryFile.getName())); // NOI18N
                     }
                 } else {
                     File parentFile = entryFile.getParentFile();
                     if(!parentFile.exists() && !parentFile.mkdirs()) {
-                        throw new RuntimeException("Failed to create folder: " +
-                                parentFile.getName() + ".  Terminating archive installation.");
+                        throw new RuntimeException(NbBundle.getMessage(
+                                Retriever.class, "ERR_FolderCreationFailed", parentFile.getName())); // NOI18N
                     }
                     
                     int bytesRead = 0;
@@ -302,7 +304,8 @@ public class Retriever implements Runnable {
                             bytesRead += len;
                             long update = System.currentTimeMillis() / 333;
                             if(update != lastUpdate) {
-                                updateMessage("Installing " + entryName, bytesRead);
+                                updateMessage(NbBundle.getMessage(Retriever.class,
+                                        "MSG_Installing", entryName, countAsString(bytesRead))); // NOI18N
                                 lastUpdate = update;
                             }
                             os.write(buffer, 0, len);
@@ -322,71 +325,9 @@ public class Retriever implements Runnable {
                 try { jarStream.close(); } catch(IOException ex) { }
             }
         }
-        
-        if(!shutdown) {
-            // enable execute permission for asadmin on UNIX
-            ensureExecutable(targetFolder);
-        }
-        
+
+        // execute permissions on script files will be corrected in instantiate()
         return shutdown;
-    }
-    
-    // Borrowed from RubyPlatform...
-    private void ensureExecutable(File installDir) {
-        // No excute permissions on Windows. On Unix and Mac, try.
-        if(Utilities.isWindows()) {
-            return;
-        }
-
-        List<File> binList = new ArrayList<File>();
-        for(String binPath: new String[] { "bin", "glassfish/bin", "javadb/bin" }) {
-            File dir = new File(installDir, binPath);
-            if(dir.exists()) {
-                binList.add(dir);
-            }
-        }
-        
-        if(binList.size() == 0) {
-            return;
-        }
-
-        // Ensure that the binaries are installed as expected
-        // The following logic is from CLIHandler in core/bootstrap:
-        File chmod = new File("/bin/chmod"); // NOI18N
-
-        if(!chmod.isFile()) {
-            // Linux uses /bin, Solaris /usr/bin, others hopefully one of those
-            chmod = new File("/usr/bin/chmod"); // NOI18N
-        }
-
-        if(chmod.isFile()) {
-            try {
-                for(File binDir: binList) {
-                    List<String> argv = new ArrayList<String>();
-                    argv.add(chmod.getAbsolutePath());
-                    argv.add("u+rx"); // NOI18N
-
-                    String[] files = binDir.list();
-
-                    for(String file : files) {
-                        if(file.indexOf('.') == -1) {
-                            argv.add(file);
-                        }
-                    }
-
-                    ProcessBuilder pb = new ProcessBuilder(argv);
-                    pb.directory(binDir);
-                    Process process = pb.start();
-                    int chmoded = process.waitFor();
-
-                    if(chmoded != 0) {
-                        throw new IOException("could not run " + argv + " : Exit value=" + chmoded); // NOI18N
-                    }
-                }
-            } catch (Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
     }
     
     private static final String TOP_LEVEL_PREFIX = "glassfishv3"; // NOI18N
@@ -420,15 +361,15 @@ public class Retriever implements Runnable {
                 File target = new File(parent, tempName + i);
                 if(!target.exists()) {
                     if(!installDir.renameTo(target)) {
-                        throw new IOException("Unable to move existing " 
-                                + (installDir.isDirectory() ? "folder \"" : "file \"")
-                                + installDir.getAbsolutePath() + "\" out of the way.");
+                        throw new IOException(NbBundle.getMessage(Retriever.class,
+                                installDir.isDirectory() ? "ERR_FolderCreationFailed" : "ERR_FileCreationFailed",  // NOI18N
+                                installDir.getAbsolutePath()));
                     }
                     return target;
                 }
             }
-            throw new IOException("Unable to backup \"" + installDir.getAbsolutePath() 
-                    + "\".  Too many V3 backups already.");
+            throw new IOException(NbBundle.getMessage(
+                    Retriever.class, "ERR_TooManyBackups", installDir.getAbsolutePath())); // NOI18N
         }
         return null;
     }
@@ -447,6 +388,7 @@ public class Retriever implements Runnable {
         // < 1000 -> XXX ms
         // > 1000 -> XX seconds
         // > 60000 -> XX minutes, XX seconds
+        // > 3600000 -> XX hours, XX minutes, XX seconds
         StringBuilder builder = new StringBuilder(100);
         if(time < 0) {
             builder.append("an eternity");

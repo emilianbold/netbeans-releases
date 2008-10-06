@@ -50,6 +50,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
+import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
@@ -125,7 +126,9 @@ public class Statement {
         StatementTree stmtTree = (StatementTree) stmtTreePathHandle.resolve(cinfo).getLeaf();
         //StatementTree stmtTree = method.findPropertyStatement(cinfo, beanName, setterName);
         if (stmtTree != null) {
-            return getMethodInvocationTree(cinfo, stmtTree).getArguments().get(0);
+            // #137584 Fixing IndexOutOfBoundsException.
+            List<? extends ExpressionTree> list = getMethodInvocationTree(cinfo, stmtTree).getArguments();
+            return list.isEmpty() ? null : list.get(0);
         }
         return null;
     }

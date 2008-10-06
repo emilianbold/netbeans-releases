@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -85,13 +86,14 @@ public final class CallGraphTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(CallGraphTopComponent.class, "CTL_CallGraphTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(CallGraphTopComponent.class, "HINT_CallGraphTopComponent")); // NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         pop = new JPopupMenu();
         pop.add(new Close());
         pop.add(new CloseAll());
         pop.add(new CloseAllButCurrent());
         listener = new PopupListener();
         closeL = new CloseListener();
+        setFocusCycleRoot(true);
     }
 
     public void setModel(CallModel model, CallGraphUI graphUI) {
@@ -210,6 +212,37 @@ public final class CallGraphTopComponent extends TopComponent {
     // TODO add custom code on component opening
     }
 
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        requestActive();
+    }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        CallGraphPanel graph = getCurrentCallGraphPanel();
+        if (graph != null) {
+            graph.requestFocus();
+            graph.requestFocusInWindow();
+        }
+    }
+
+    private CallGraphPanel getCurrentCallGraphPanel(){
+        if (getComponentCount() > 0) {
+            Component comp = getComponent(0);
+            if (comp instanceof JTabbedPane) {
+                comp = ((JTabbedPane)comp).getSelectedComponent();
+                if (comp instanceof CallGraphPanel) {
+                    return (CallGraphPanel) comp;
+                }
+            } else if (comp instanceof CallGraphPanel) {
+                    return (CallGraphPanel) comp;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void componentClosed() {
         if (getComponentCount() == 0) {

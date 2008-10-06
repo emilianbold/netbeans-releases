@@ -87,23 +87,23 @@ public class ContactsDataSetCD extends ComponentDescriptor {
     }
     
     //Runtime parameters
-    public static final String NAME                 = "name";
-    public static final String ADDRESS              = "address";
-    public static final String EMAIL                = "email";
-    public static final String FORMATTED_NAME       = "formatted_name";
-    public static final String NICKNAME             = "nickname";
-    public static final String NOTE                 = "note";
-    public static final String ORGANIZATION         = "organization";
-    public static final String TELEPHONE            = "telephone";
-    public static final String TITLE                = "title";
-    public static final String UID                  = "uid";
-    public static final String URL                  = "url";
-    public static final String BIRTHDAY             = "birthday";
-    public static final String REVISION             = "revision";
-    public static final String PHOTO                = "photo";
-    public static final String PUBLIC_KEY           = "public_key";    
-    public static final String PHOTO_URL            = "photo_url";
-    public static final String PUBLIC_KEY_STRING    = "public_key_string";        
-    public static final String CLASS                = "class";
+//    public static final String NAME                 = "name";
+//    public static final String ADDRESS              = "address";
+//    public static final String EMAIL                = "email";
+//    public static final String FORMATTED_NAME       = "formatted_name";
+//    public static final String NICKNAME             = "nickname";
+//    public static final String NOTE                 = "note";
+//    public static final String ORGANIZATION         = "organization";
+//    public static final String TELEPHONE            = "telephone";
+//    public static final String TITLE                = "title";
+//    public static final String UID                  = "uid";
+//    public static final String URL                  = "url";
+//    public static final String BIRTHDAY             = "birthday";
+//    public static final String REVISION             = "revision";
+//    public static final String PHOTO                = "photo";
+//    public static final String PUBLIC_KEY           = "public_key";    
+//    public static final String PHOTO_URL            = "photo_url";
+//    public static final String PUBLIC_KEY_STRING    = "public_key_string";        
+//    public static final String CLASS                = "class";
     
 }

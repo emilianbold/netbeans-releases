@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.debugger.jpda.projects
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/jpda/projects/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/debugger/jpda/projects/resources/mf-layer.xml
 OpenIDE-Module-Provides: org.netbeans.spi.debugger.jpda.EditorContext, org.netbeans.spi.debugger.jpda.SourcePathProvider

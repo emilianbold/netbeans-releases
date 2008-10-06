@@ -52,11 +52,15 @@ import org.netbeans.spi.quicksearch.SearchResponse;
 public class JavaTypeSearchProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
-        GoToTypeWorker worker = new GoToTypeWorker(request.getText());
+        String text = removeNonJavaChars(request.getText());
+        if(text.length() == 0) {
+            return;
+        }
+        GoToTypeWorker worker = new GoToTypeWorker(text);
         worker.run();
         
         for (TypeDescriptor td : worker.getTypes()) {
-            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getContextName(), null)) {
+            if (!response.addResult(new GoToTypeCommand(td), td.getSimpleName() + td.getContextName(), td.getFileObject().getPath(), null)) {
                 break;
             }
         }
@@ -74,4 +78,15 @@ public class JavaTypeSearchProvider implements SearchProvider {
         }
     }
 
+    private static String removeNonJavaChars(String text) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

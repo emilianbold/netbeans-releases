@@ -112,7 +112,10 @@ public abstract class JspContextInfo {
             }
             if (instance == null) {
                 Logger.getLogger("global").log(Level.WARNING, null,
-                                               new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")));
+                                               new Exception(NbBundle.getBundle(JspContextInfo.class).getString("EXC_JspContextInfoNotInstalled")
+                                               + "; instance path = " + CONTEXT_NAME + fo.getMIMEType() //NOI18N
+                                               + "; fileObject = " + fo.getPath() //NOI18N
+                                               ));
             }
         }
         return instance;

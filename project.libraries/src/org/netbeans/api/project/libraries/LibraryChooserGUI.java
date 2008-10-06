@@ -110,6 +110,8 @@ class LibraryChooserGUI extends JPanel implements ExplorerManager.Provider, Help
             buttonA11YDesc = NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.import.button.a11y.desc");
             createButton.setVisible(false);
         }
+        inset.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.AccessibleContext.accessibleName")); // NOI18N
+        inset.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LibraryChooserGUI.class, "LibraryChooserGUI.accessibleDescription")); // NOI18N
         DialogDescriptor dd = new DialogDescriptor(inset, title);
         dd.setModal(true);
         final JButton add = new JButton(buttonLabel);

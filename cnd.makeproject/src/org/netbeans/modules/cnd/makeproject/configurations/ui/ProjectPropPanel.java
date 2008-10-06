@@ -56,6 +56,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -81,7 +82,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
         MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider) project.getLookup().lookup(MakeCustomizerProvider.class);
         makeCustomizerProvider.addActionListener(this);
         
-        originalEncoding = makeConfigurationDescriptor.getSourceEncoding();
+        originalEncoding = ((MakeProject)project).getSourceEncoding();
 //        if (originalEncoding != null) {
 //            try {
 //                FileEncodingQuery.setDefaultEncoding(Charset.forName(value));
@@ -105,15 +106,19 @@ public class ProjectPropPanel extends javax.swing.JPanel implements ActionListen
     }
     
     private void handleEncodingChange () {
-            Charset enc = (Charset) encoding.getSelectedItem();
-            String encName;
-            if (enc != null) {
-                encName = enc.name();
-            }
-            else {
-                encName = originalEncoding;
-            }
-            makeConfigurationDescriptor.setSourceEncoding(encName);
+    }
+    
+    public void save() {
+        Charset enc = (Charset) encoding.getSelectedItem();
+        String encName;
+        if (enc != null) {
+            encName = enc.name();
+        }
+        else {
+            encName = originalEncoding;
+        }
+        ((MakeProject)project).setSourceEncoding(encName);
+        
     }
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {

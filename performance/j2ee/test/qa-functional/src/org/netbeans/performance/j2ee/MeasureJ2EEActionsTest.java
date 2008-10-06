@@ -42,19 +42,10 @@
 package org.netbeans.performance.j2ee;
 
 
-import org.netbeans.performance.j2ee.actions.CreateJ2EEProject;
-import org.netbeans.performance.j2ee.actions.MeasureCallEjbAction;
-import org.netbeans.performance.j2ee.actions.MeasureWebServiceAction;
-import org.netbeans.performance.j2ee.actions.OpenJ2EEFiles;
-import org.netbeans.performance.j2ee.actions.ExpandEJBNodesProjectsView;
-import org.netbeans.performance.j2ee.actions.OpenJ2EEFilesWithOpenedEditor;
-import org.netbeans.performance.j2ee.actions.MeasureSessionBeanAction;
-import org.netbeans.performance.j2ee.actions.Deploy;
-import org.netbeans.performance.j2ee.actions.CreateNewFile;
-import org.netbeans.performance.j2ee.actions.MeasureEntityBeanAction;
 import org.netbeans.performance.j2ee.actions.*;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -66,18 +57,23 @@ public class MeasureJ2EEActionsTest  {
 
     
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEActionsTest");
+
         
-        suite.addTest(NbModuleSuite.create(Deploy.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateJ2EEProject.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateNewFile.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ExpandEJBNodesProjectsView.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureCallEjbAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureEntityBeanAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureSessionBeanAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(MeasureWebServiceAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenJ2EEFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenJ2EEFilesWithOpenedEditor.class, ".*", ".*"));
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(Deploy.class)
+        .addTest(CreateJ2EEProject.class)
+        .addTest(CreateNewFile.class)
+        .addTest(ExpandEJBNodesProjectsView.class)
+        .addTest(MeasureCallEjbAction.class)
+        .addTest(MeasureEntityBeanAction.class)
+        .addTest(MeasureSessionBeanAction.class)
+        .addTest(MeasureWebServiceAction.class)
+        .addTest(OpenJ2EEFiles.class)
+        .addTest(OpenJ2EEFilesWithOpenedEditor.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }

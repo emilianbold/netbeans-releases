@@ -42,6 +42,7 @@
 package org.openide.loaders;
 
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -72,6 +73,8 @@ public class MultiDataObject extends DataObject {
     /** A RequestProceccor used for firing property changes asynchronously */
     private static final RequestProcessor firingProcessor =
 		new RequestProcessor( "MDO PropertyChange processor");
+    /** map of changes to be delivered later */
+    private Map<String,PropertyChangeEvent> later;
     
     /** A RequestProceccor used for waiting for finishing refresh */
     private static final RequestProcessor delayProcessor =
@@ -143,13 +146,13 @@ public class MultiDataObject extends DataObject {
     * @return true if the object can be deleted
     */
     public boolean isDeleteAllowed() {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
     
     private boolean existReadOnlySecondary() {
         synchronized ( synchObjectSecondary() ) {
             for (FileObject f : getSecondary().keySet()) {
-                if (f.isReadOnly()) {
+                if (!f.canWrite()) {
                     return true;
                 }
             }
@@ -195,14 +198,14 @@ public class MultiDataObject extends DataObject {
     * @return true if the object can be moved
     */
     public boolean isMoveAllowed() {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
 
     /* Getter for rename action.
     * @return true if the object can be renamed
     */
     public boolean isRenameAllowed () {
-        return !getPrimaryFile ().isReadOnly () && !existReadOnlySecondary();
+        return getPrimaryFile().canWrite() && !existReadOnlySecondary();
     }
 
     /* Help context for this object.
@@ -227,6 +230,7 @@ public class MultiDataObject extends DataObject {
     * @return the node representation
     * @see DataNode
     */
+    @Override
     protected Node createNodeDelegate () {
         DataNode dataNode = (DataNode) super.createNodeDelegate ();
         return dataNode;
@@ -292,6 +296,10 @@ public class MultiDataObject extends DataObject {
     * @param recognized object to mark recognized file to
     */
     final void markSecondaryEntriesRecognized (DataLoader.RecognizedFiles recognized) {
+        if (recognized == DataLoaderPool.emptyDataLoaderRecognized) {
+            return;
+        }
+
         synchronized (getSecondary()) {
             for (FileObject fo : getSecondary().keySet()) {
                 recognized.markRecognized (fo);
@@ -358,10 +366,13 @@ public class MultiDataObject extends DataObject {
     * @return immutable set of entries
     */
     public final Set<Entry> secondaryEntries () {
+        return secondaryEntries(true);
+    }
+    final Set<Entry> secondaryEntries (boolean allocate) {
         synchronized ( synchObjectSecondary() ) {
             removeAllInvalid ();
 
-            return new HashSet<Entry>(getSecondary().values());
+            return allocate ? new HashSet<Entry>(getSecondary().values()) : null;
         }
     }
 
@@ -412,6 +423,7 @@ public class MultiDataObject extends DataObject {
     * @exception IOException if it is not possible to set the template
     *   state.
     */
+    @Override
     protected FileLock takePrimaryFileLock () throws IOException {
         return getPrimaryEntry ().takeLock ();
     }
@@ -474,7 +486,8 @@ public class MultiDataObject extends DataObject {
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
 
         boolean fullRescan = getMultiFileLoader() == null ||
-            getMultiFileLoader().findPrimaryFile(fo) != fo;
+            getMultiFileLoader().findPrimaryFile(fo) != fo ||
+            getMultiFileLoader() == DataLoaderPool.getDefaultFileLoader();
         try {
             return fullRescan ? DataObject.find(fo) : createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
@@ -687,7 +700,7 @@ public class MultiDataObject extends DataObject {
                    );
         }
 
-        FileObject primary = null;
+        FileObject pf = null;
         Map<String,Object> params = null;
         for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
             FileObject current = getPrimaryEntry().getFile();
@@ -695,16 +708,16 @@ public class MultiDataObject extends DataObject {
                 if (params == null) {
                     params = DataObject.CreateAction.findParameters(name);
                 }
-                primary = h.createFromTemplate(current, df.getPrimaryFile(), name, 
+                pf = h.createFromTemplate(current, df.getPrimaryFile(), name,
                     DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
                 );
-                assert primary != null;
+                assert pf != null;
                 break;
             }
         }
         if (params == null) {
             // do the regular creation
-            primary = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
+            pf = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
         }
         
         
@@ -729,11 +742,11 @@ public class MultiDataObject extends DataObject {
         
         try {
             // #61600: not very object oriented, but covered by DefaultVersusXMLDataObjectTest
-            if (this instanceof DefaultDataObject) {
-                return DataObject.find(primary);
+            if (getMultiFileLoader() == DataLoaderPool.getDefaultFileLoader()) {
+                return DataObject.find(pf);
             }
             
-            return createMultiObject (primary);
+            return createMultiObject (pf);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
         }
@@ -741,7 +754,7 @@ public class MultiDataObject extends DataObject {
 
     @Override
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
-        if( getLoader() instanceof UniFileLoader ) {
+        if (getLoader() instanceof UniFileLoader || getLoader() == DataLoaderPool.getDefaultFileLoader()) {
             //allow the operation for single file DataObjects
             FileObject fo = getPrimaryEntry().copyRename (df.getPrimaryFile (), name, ext);
             return DataObject.find( fo );
@@ -795,10 +808,15 @@ public class MultiDataObject extends DataObject {
     * @return the cookie set (never <code>null</code>)
     */
     protected final CookieSet getCookieSet () {
-        CookieSet s = cookieSet;
-        if (s != null) return s;
+        return getCookieSet(true);
+    }
+
+    final CookieSet getCookieSet(boolean create) {
         synchronized (cookieSetLock) {
             if (cookieSet != null) return cookieSet;
+            if (!create) {
+                return null;
+            }
 
             // generic cookie set with reference to data object and 
             // a callback that updates FileObjects in its list.
@@ -836,14 +854,31 @@ public class MultiDataObject extends DataObject {
     private void firePropertyChangeLater (
         final String name, final Object oldV, final Object newV
     ) {
+        synchronized (firingProcessor) {
+            if (later == null) {
+                later = new LinkedHashMap<String, PropertyChangeEvent>();
+            }
+            later.put(name, new PropertyChangeEvent(this, name, oldV, newV));
+        }
         firingProcessor.post(new Runnable () {
     	    public void run () {
-                firePropertyChange (name, oldV, newV);
-                if (PROP_FILES.equals(name) || PROP_PRIMARY_FILE.equals(name)) {
-                    updateFilesInCookieSet();
+                Map<String,PropertyChangeEvent> fire;
+                synchronized (firingProcessor) {
+                    fire = later;
+                    later = null;
+                }
+                if (fire == null) {
+                    return;
+                }
+                for (PropertyChangeEvent ev : fire.values()) {
+                    String name = ev.getPropertyName();
+                    firePropertyChange (name, ev.getOldValue(), ev.getNewValue());
+                    if (PROP_FILES.equals(name) || PROP_PRIMARY_FILE.equals(name)) {
+                        updateFilesInCookieSet();
+                    }
                 }
             }
-        });
+        }, 100, Thread.MIN_PRIORITY);
     }
 
     /**
@@ -874,6 +909,7 @@ public class MultiDataObject extends DataObject {
     }
     
     /** sets checked to true */
+    @Override
     final void recognizedByFolder() {
         checked = true;
     }
@@ -1029,16 +1065,18 @@ public class MultiDataObject extends DataObject {
         */
         private transient WeakReference<FileLock> lock;
 
+        @SuppressWarnings("deprecation")
         protected Entry (FileObject file) {
             this.file = file;
-	    if (!isImportant()) {
+            if (!isImportant()) {
                 file.setImportant(false);
-	    }
+            }
         }
 
         /** A method to change the entry file to some else.
         * @param newFile
         */
+        @SuppressWarnings("deprecation")
         final void changeFile (FileObject newFile) {
             assert newFile != null : "NPE for " + file;
             if (newFile.equals (file)) {
@@ -1051,7 +1089,7 @@ public class MultiDataObject extends DataObject {
             this.file = newFile;
             
             // release lock for old file
-            FileLock l = lock == null ? null : (FileLock)lock.get ();
+            FileLock l = lock == null ? null : lock.get();
             if (l != null && l.isValid ()) {
                 if (ERR.isLoggable(Level.FINE)) {
                     ERR.fine("releasing old lock: " + this + " was: " + l);
@@ -1165,11 +1203,13 @@ public class MultiDataObject extends DataObject {
             return l != null && l.isValid ();
         }
 
+        @Override
         public boolean equals(Object o) {
             if (! (o instanceof Entry)) return false;
             return getFile ().equals(((Entry) o).getFile ());
         }
 
+        @Override
         public int hashCode() {
             return getFile ().hashCode();
         }
@@ -1186,6 +1226,7 @@ public class MultiDataObject extends DataObject {
         }
     }    
 
+    @Override
     void notifyFileDeleted (FileEvent fe) {
         removeFile (fe.getFile ());
         if (fe.getFile ().equals (getPrimaryFile ())) {
@@ -1201,12 +1242,16 @@ public class MultiDataObject extends DataObject {
     /** Fired when a file has been added to the same folder
      * @param fe the event describing context where action has taken place
      */
+    @Override
     void notifyFileDataCreated(FileEvent fe) {
         checked = false;
     }
 
     final void updateFilesInCookieSet() {
-        getCookieSet().assign(FileObject.class, files().toArray(new FileObject[0]));
+        CookieSet set = getCookieSet(false);
+        if (set != null) {
+            set.assign(FileObject.class, files().toArray(new FileObject[0]));
+        }
     }
 
     void checkCookieSet(Class<?> c) {
@@ -1254,7 +1299,7 @@ public class MultiDataObject extends DataObject {
                         entry = m.getPrimaryEntry ();
                     } else {
                         // secondary entry
-                        Entry e = (Entry)m.findSecondaryEntry (file);
+                        Entry e = m.findSecondaryEntry(file);
                         if (e == null) {
                             throw new InvalidObjectException (obj.toString ());
                         }

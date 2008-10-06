@@ -450,6 +450,7 @@ class TabsComponent extends JPanel {
          */
         @Override
         public void mousePressed(MouseEvent e) {
+            e.consume();
             AbstractButton b = (AbstractButton)e.getComponent();
             MultiViewModel model = TabsComponent.this.model;
             if (model != null) {

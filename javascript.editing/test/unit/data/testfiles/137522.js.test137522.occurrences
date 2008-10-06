@@ -1,0 +1,3 @@
+            updated.each(function(|>MARK_OCCURRENCES:it^em<|) {
+                ctl.load(|>MARK_OCCURRENCES:item<|, function() {
+                    test_func_2(|>MARK_OCCURRENCES:item<|);

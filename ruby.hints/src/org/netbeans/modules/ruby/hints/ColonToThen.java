@@ -47,9 +47,9 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.WhenNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.WhenNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
@@ -235,7 +235,7 @@ public class ColonToThen extends RubyAstRule {
             EditList list = new EditList(doc);
             switch (mode) {
             case INSERT_NEWLINE:
-                list.setFormatter(new RubyFormatter(), false);
+                list.setFormatAll(false);
                 list.replace(offset, 1, "\n", true, 0); // NOI18N
                 break;
             case INSERT_THEN: {

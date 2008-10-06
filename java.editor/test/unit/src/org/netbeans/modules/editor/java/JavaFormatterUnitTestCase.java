@@ -76,19 +76,20 @@ public class JavaFormatterUnitTestCase extends JavaBaseDocumentUnitTestCase {
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        BaseDocument doc = getDocument();
-        Reformat formatter = Reformat.get(getDocument());
+        final BaseDocument doc = getDocument();
+        final Reformat formatter = Reformat.get(getDocument());
         formatter.lock();
         try {
-            doc.atomicLock();
-            try {
-                formatter.reformat(0, doc.getLength());
-            } catch (BadLocationException e) {
-                e.printStackTrace(getLog());
-                fail(e.getMessage());
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic (new Runnable () {
+                public void run () {
+                    try {
+                        formatter.reformat(0, doc.getLength());
+                    } catch (BadLocationException e) {
+                        e.printStackTrace(getLog());
+                        fail(e.getMessage());
+                    }
+                }
+            });
         } finally {
             formatter.unlock();
         }

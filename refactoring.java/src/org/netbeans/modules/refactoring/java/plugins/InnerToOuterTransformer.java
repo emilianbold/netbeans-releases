@@ -70,6 +70,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     private Element inner;
     private Element outer;
     private InnerToOuterRefactoring refactoring;
+    private boolean isInInnerClass = false;
     
     private Element getCurrentElement() {
         return workingCopy.getTrees().getElement(getCurrentPath());
@@ -100,6 +101,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
              
             rewrite(node, m);
+        } else if (isInInnerClass) {
+            GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper
+            // #it is impossible to call GeneratorUtilities.importFQNs
+            // for the whole nested class since the method creates new identity
+            // of the passed tree
+            Tree newTree = genUtils.importFQNs(node);
+            rewrite(node, newTree);
         }
         return super.visitIdentifier(node, p);
     }
@@ -164,12 +172,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         if (currentElement!=null && currentElement == outer) {
             Element outerouter = outer.getEnclosingElement();
             
+            super.visitClass(classTree, element);
             TreePath tp = workingCopy.getTrees().getPath(inner);
             ClassTree innerClass = (ClassTree) tp.getLeaf();
 
             ClassTree newInnerClass = innerClass;
             newInnerClass = genUtils.importComments(newInnerClass, workingCopy.getCompilationUnit());
-            newInnerClass = genUtils.importFQNs(newInnerClass);
 
             newInnerClass = make.setLabel(newInnerClass, refactoring.getClassName());
             
@@ -185,7 +193,8 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = RetoucheUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-                workingCopy.rewrite(null, newCompilation);        
+                workingCopy.rewrite(null, newCompilation);
+                return newOuter;
             } else {
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
@@ -194,11 +203,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 workingCopy.rewrite(outerTree, newOuter);
                 JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
                 workingCopy.rewrite(outerouterTree, newOuterOuter);
+                return newOuterOuter;
             }
             
-            for (Element superType:RetoucheUtils.getSuperTypes((TypeElement)inner, workingCopy, true)) {
-                ClassTree tree = (ClassTree) workingCopy.getTrees().getTree(superType);
-            }
         } else if (refactoring.getReferenceName() != null && currentElement!=null && workingCopy.getTypes().isSubtype(currentElement.asType(), inner.asType()) && currentElement!=inner) {
                 VariableTree variable = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), make.Type(outer.asType()), null);
                 for (Tree member:classTree.getMembers()) {
@@ -238,6 +245,16 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     }
                 }                
             }
+
+        if (currentElement == inner) {
+            try {
+                isInInnerClass = true;
+                return super.visitClass(classTree, element);
+            } finally {
+                isInInnerClass = false;
+            }
+        }
+        
         return super.visitClass(classTree, element);
     }
     
@@ -261,7 +278,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
             }
-        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString())) { //NOI18N
+        } else if (isThisReferenceToOuter() && !"class".equals(memberSelect.getIdentifier().toString()) && !current.getModifiers().contains(Modifier.STATIC)) { //NOI18N
             if (refactoring.getReferenceName()!=null) {
                 MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
                 rewrite(memberSelect, m);

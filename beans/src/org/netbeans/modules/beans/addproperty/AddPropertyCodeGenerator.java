@@ -71,7 +71,9 @@ import org.openide.util.Exceptions;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.DialogDescriptor;
 import org.openide.loaders.DataObject;
@@ -126,6 +128,18 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
     static void insertCode(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
         try {
+            JavaSource.create(ClasspathInfo.create(file)).runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    insertCodeImpl(file, pane, config);
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static void insertCodeImpl(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
+        try {
             final Document doc = pane.getDocument();
             final Reformat r = Reformat.get(pane.getDocument());
 
@@ -155,7 +169,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                                 }
                             }).commit();
 
-                            r.reformat(start.getOffset(), end.getOffset());
+                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
 
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);

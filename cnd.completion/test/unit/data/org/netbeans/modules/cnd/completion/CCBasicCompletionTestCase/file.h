@@ -22,4 +22,10 @@ public:
     void test(){
         
     }
+
+private:
+    void strMethod(char* s) {
+         //
+        strMethod("sss");
+    }
 };

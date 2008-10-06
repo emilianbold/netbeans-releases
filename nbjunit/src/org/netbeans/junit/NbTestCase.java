@@ -128,10 +128,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     public boolean canRun() {
         if (NbTestSuite.ignoreRandomFailures()) {
             if (getClass().isAnnotationPresent(RandomlyFails.class)) {
+                System.err.println("Skipping " + getClass().getName());
                 return false;
             }
             try {
                 if (getClass().getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
+                    System.err.println("Skipping " + getClass().getName() + "." + getName());
                     return false;
                 }
             } catch (NoSuchMethodException x) {
@@ -1196,8 +1198,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             if (ref.get() == null) {
                 return;
             }
-            System.gc();
-            System.runFinalization();
+            try {
+                System.gc();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
+            try {
+                System.runFinalization();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
             try {
                 alloc.add(new byte[size]);
                 size = (int)(((double)size) * 1.3);
@@ -1216,6 +1226,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             str = findRefsFromRoot(ref.get(), rootsHint);
         } catch (Exception e) {
             throw new AssertionFailedErrorException(e);
+        } catch (OutOfMemoryError err) {
+            // OK
         }
         fail(text + ":\n" + str);
     }

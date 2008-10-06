@@ -39,11 +39,20 @@
 
 package org.netbeans.modules.uml.drawingarea.keymap;
 
+import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramInputkeyAction;
+import org.openide.awt.Toolbar;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -54,6 +63,10 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
     private static DiagramInputkeyMapper mapper;
     private TopComponent component;
     
+    public static String MAC_ACCELERATOR = "MAC_ACCELERATOR";
+    public static String ADDITIONAL_ACCELERATORS = "ADDITIONAL_ACCELERATORS";
+    public static String ADDITIONAL_MAC_ACCELERATORS = "ADDITIONAL_MAC_ACCELERATORS";
+
     public static DiagramInputkeyMapper getInstance() 
     {
         if (mapper == null)
@@ -73,6 +86,194 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
     {
         this.component = component;
     }
+    public void registerToolbarActions(Toolbar editorToolbar)
+    {
+        if(component == null)
+        {
+            return;
+        }
+        
+        InputMap inputMap = component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = component.getActionMap();
+        
+        boolean useMac = Utilities.isMac();
+        
+        int unnamedActionCnt = 0;
+        for(Component curComponent : editorToolbar.getComponents())
+        {
+            if (curComponent instanceof AbstractButton)
+            {
+                AbstractButton button = (AbstractButton) curComponent;
+                Action action = button.getAction();
+                
+                if(useMac == true)
+                {
+                    if(action.getValue(MAC_ACCELERATOR) != null)
+                    {
+                        action.putValue(Action.ACCELERATOR_KEY, 
+                                        action.getValue(MAC_ACCELERATOR));
+                    }
+                    
+                    if(action.getValue(ADDITIONAL_MAC_ACCELERATORS) != null)
+                    {
+                        action.putValue(ADDITIONAL_ACCELERATORS, 
+                                        action.getValue(ADDITIONAL_MAC_ACCELERATORS)); 
+                    }
+                }
+                
+                String actionName = (String)action.getValue(Action.NAME);
+                if(actionName == null)
+                {
+                    actionName = "UnnamedAction" + (unnamedActionCnt++);
+                    
+                    // The action must have a name so we can unregister the action.
+                    action.putValue(Action.NAME, actionName);
+                    button.setText(null);
+                }
+                
+                if(action.getValue(Action.ACCELERATOR_KEY) != null)
+                {
+                    KeyStroke keystroke = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
+                    inputMap.put(keystroke, actionName);
+                    actionMap.put(actionName, action);
+                    button.getAccessibleContext().setAccessibleName((String) action.getValue(action.SHORT_DESCRIPTION));
+                    button.setToolTipText(buildTooltip(action));
+                }
+                
+                if(action.getValue(ADDITIONAL_ACCELERATORS) != null)
+                {
+                    KeyStroke[] additional = (KeyStroke[]) action.getValue(ADDITIONAL_ACCELERATORS);
+                    for(int index = 0; index < additional.length; index++)
+                    {
+                        KeyStroke stroke = additional[index];
+                        
+                        String name = actionName + (index + 1);
+                        inputMap.put(stroke, name);
+                        actionMap.put(name, action);
+                    }
+                }
+            }
+        }
+    }
+
+    public void unRegisterToolbarActions(Toolbar editorToolbar)
+    {
+        if(component == null)
+        {
+            return;
+        }
+        
+        InputMap inputMap = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = component.getActionMap();
+        
+        for(Component curComponent : editorToolbar.getComponents())
+        {
+            if (curComponent instanceof JButton)
+            {
+                JButton button = (JButton) curComponent;
+                Action action = button.getAction();
+                
+                if(action.getValue(Action.ACCELERATOR_KEY) != null)
+                {
+                    String actionName = (String)action.getValue(Action.NAME);
+                    inputMap.remove((KeyStroke)action.getValue(Action.ACCELERATOR_KEY));
+                    actionMap.remove(actionName);
+                }
+            }
+        }
+    }
+
+    public static String buildTooltip(Action action)
+    {
+       String tooltip = (String)action.getValue(Action.SHORT_DESCRIPTION);
+        if((tooltip == null) || (tooltip.length() == 0))
+        {
+            tooltip = (String)action.getValue(Action.NAME);
+        }
+        
+        KeyStroke stroke = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
+        if(stroke != null)
+        {
+            String keystroke = keyStrokeToString(stroke);
+            tooltip = NbBundle.getMessage(DiagramInputkeyMapper.class, 
+                                          "FMT_ButtonHint", tooltip, keystroke);
+        }
+        
+        return tooltip;
+    }
+   
+    /**
+     * Creates nice textual representation of KeyStroke.
+     * Modifiers and an actual key label are concated by plus signs
+     * @param the KeyStroke to get description of
+     * @return String describing the KeyStroke
+     */
+    public static String keyStrokeToString(KeyStroke stroke)
+    {
+        String retVal = "";
+        
+        String modifText = KeyEvent.getKeyModifiersText(stroke.getModifiers());
+        
+        String keyText = (stroke.getKeyCode() == KeyEvent.VK_UNDEFINED) ? 
+                          String.valueOf(stroke.getKeyChar()) : 
+            getKeyText(stroke.getKeyCode());
+        
+        if (modifText.length() > 0)
+        {
+            // The mac does not put the '+' character between the keys.
+            if(Utilities.isMac() == true)
+            {
+                retVal = modifText.replaceAll("\\+", "");
+            }
+            else
+            {
+                retVal = modifText + '+';
+            }
+            retVal += keyText;
+        }
+        else
+        {
+            retVal = keyText;
+        }
+        
+        return retVal;
+    }
+    
+    /** @return slight modification of what KeyEvent.getKeyText() returns.
+     *  The numpad Left, Right, Down, Up get extra result.
+     */
+    private static String getKeyText(int keyCode)
+    {
+        String ret = KeyEvent.getKeyText(keyCode);
+        if (ret != null)
+        {
+            switch (keyCode)
+            {
+                case KeyEvent.VK_KP_DOWN:
+                    ret = prefixNumpad(ret, KeyEvent.VK_DOWN);
+                    break;
+                case KeyEvent.VK_KP_LEFT:
+                    ret = prefixNumpad(ret, KeyEvent.VK_LEFT);
+                    break;
+                case KeyEvent.VK_KP_RIGHT:
+                    ret = prefixNumpad(ret, KeyEvent.VK_RIGHT);
+                    break;
+                case KeyEvent.VK_KP_UP:
+                    ret = prefixNumpad(ret, KeyEvent.VK_UP);
+                    break;
+            }
+        }
+        return ret;
+    }
+
+    private static String prefixNumpad(String key, int testKeyCode)
+    {
+        if (key.equals(KeyEvent.getKeyText(testKeyCode)))
+        {
+            key = NbBundle.getBundle(DiagramInputkeyMapper.class).getString("key-prefix-numpad") + key;
+        }
+        return key;
+     }
     
     public void registerKeyMap ()
     {
@@ -97,7 +298,18 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
             
             inputkeyAction = new DiagramInputkeyAction(component, command);
             inputMap = component.getInputMap(focus);
-            inputMap.put(KeyStroke.getKeyStroke(keyCode, modifiers), command);
+            
+            
+            if((Utilities.isMac() == true) && 
+               (bundle.getStringResource("key." + i + ".mac_modifiers") != null))
+            {
+                int macModifiers = Integer.valueOf(bundle.getStringResource("key." + i + ".mac_modifiers")).intValue();
+                inputMap.put(KeyStroke.getKeyStroke(keyCode, macModifiers), command);
+            }
+            else
+            {
+                inputMap.put(KeyStroke.getKeyStroke(keyCode, modifiers), command);
+            }
             actionMap.put(command, inputkeyAction);
             
             i++;
@@ -121,7 +333,6 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
         {
             int keyCode = Integer.valueOf(keyCodeString).intValue();
             int modifiers = Integer.valueOf(bundle.getStringResource("key." + i + ".modifiers")).intValue();
-            //String command = bundle.getStringResource("key." + i + ".command");
             int focus = Integer.valueOf(bundle.getStringResource("key." + i + ".focus")).intValue();
             
             inputMap = component.getInputMap(focus);

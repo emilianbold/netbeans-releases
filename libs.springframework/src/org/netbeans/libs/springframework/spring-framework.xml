@@ -45,6 +45,7 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.libs.commons_logging/modules/ext/commons-logging-1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.cglib/modules/ext/cglib-2.2.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring/spring-2.5.jar!/</resource>
     </volume>
     <volume>

@@ -42,14 +42,14 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
-import org.openide.ErrorManager;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -62,27 +62,40 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
     
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
 
+    private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
+        "abstract",     "continue",     "for",          "new",  	"switch",
+        "assert", 	"default", 	"goto", 	"package", 	"synchronized",
+        "boolean", 	"do",           "if",           "private", 	/*"this",*/
+        "break",        "double", 	"implements", 	"protected", 	"throw",
+        "byte",         "else", 	"import", 	"public", 	"throws",
+        "case",         "enum", 	"instanceof", 	"return", 	"transient",
+        "catch",        "extends", 	"int",          "short", 	"try",
+        "char",         "final", 	"interface", 	"static", 	"void",
+        /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
+        "const",        "float", 	"native", 	"super", 	"while",
+    }));
+
     private Part lp;
     private EditorCookie ec;
 
     public String getShortDescription () {
+        // [TODO] hack for org.netbeans.modules.debugger.jpda.actions.MethodChooser that disables tooltips
+        if ("true".equals(System.getProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"))) { // NOI18N
+            return null;
+        }
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) return null;
@@ -116,13 +129,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
         if (ep == null) return ;
         int offset;
+        boolean[] isMethodPtr = new boolean[] { false };
         String expression = getIdentifier (
             doc, 
             ep,
             offset = NbDocument.findLineOffset (
                 doc,
                 lp.getLine ().getLineNumber ()
-            ) + lp.getColumn ()
+            ) + lp.getColumn (),
+            isMethodPtr
         );
         if (expression == null) return ;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
@@ -148,6 +163,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 }
             }
             if (v == null) {
+                if (isMethodPtr[0]) {
+                    return ; // We do not evaluate methods
+                }
                 v = d.evaluate (expression);
             }
             String type = v.getType ();
@@ -156,7 +174,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     String toString = null;
                     try {
                         java.lang.reflect.Method toStringMethod =
-                                v.getClass().getMethod("getToStringValue",  // NOI8N
+                                v.getClass().getMethod("getToStringValue",  // NOI18N
                                                        new Class[] { Integer.TYPE });
                         toStringMethod.setAccessible(true);
                         toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
@@ -197,7 +215,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private static String getIdentifier (
         StyledDocument doc, 
         JEditorPane ep, 
-        int offset
+        int offset,
+        boolean[] isMethodPtr
     ) {
         String t = null;
         if ( (ep.getSelectionStart () <= offset) &&
@@ -238,7 +257,21 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
 
             if (identStart == identEnd) return null;
-            return t.substring (identStart, identEnd);
+            String ident = t.substring (identStart, identEnd);
+            if (JAVA_KEYWORDS.contains(ident)) {
+                // Java keyword => Do not show anything
+                return null;
+            }
+            while (identEnd < lineLen &&
+                   Character.isWhitespace(t.charAt(identEnd))
+            ) {
+                identEnd++;
+            }
+            if (identEnd < lineLen && t.charAt(identEnd) == '(') {
+                // We're at a method call
+                isMethodPtr[0] = true;
+            }
+            return ident;
         } catch (BadLocationException e) {
             return null;
         }

@@ -91,15 +91,17 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
     protected MethodCustomizer createDialog(FileObject fileObject, MethodModel methodModel) throws IOException {
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+        boolean hasRemote = ejbMethodController != null ? ejbMethodController.hasRemote() : false;
+        boolean hasLocal = ejbMethodController != null ? ejbMethodController.hasLocal() : false;
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.businessMethod(
                 getTitle(),
                 methodModel,
                 ClasspathInfo.create(fileObject),
-                ejbMethodController.hasRemote(),
-                ejbMethodController.hasLocal(),
-                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
-                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
+                hasRemote,
+                hasLocal,
+                methodsNode == null ? hasLocal : methodsNode.isLocal(),
+                methodsNode == null ? hasRemote : !methodsNode.isLocal(),
                 _RetoucheUtil.getMethods(fileObject, className)
                 );
     }

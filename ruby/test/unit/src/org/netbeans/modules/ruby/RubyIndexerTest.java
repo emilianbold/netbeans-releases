@@ -224,5 +224,17 @@ public class RubyIndexerTest extends RubyTestBase {
         checkIndexer("testfiles/migrate/20080403222904_add_names.rb");
     }
     
+    public void testEmpty1() throws Exception {
+        checkIndexer("testfiles/empty.rb");
+    }
+
+    public void testGlobals() throws Exception {
+        checkIndexer("testfiles/globals.rb");
+    }
+
+    public void testGlobals2() throws Exception {
+        checkIndexer("testfiles/globals2.rb");
+    }
+    
     // TODO - test :nodoc: on methods and classes!!!
 }

@@ -94,7 +94,7 @@ public final class ServerManager {
     
     /**
      * Displays the add server instance wizarad and returns the ID of the added
-     * server instance.
+     * server instance. It is intended for J2EE related code only.
      * 
      * @return server instance ID of the new server instance, or <code>null</code>
      *         if the wizard was cancelled.

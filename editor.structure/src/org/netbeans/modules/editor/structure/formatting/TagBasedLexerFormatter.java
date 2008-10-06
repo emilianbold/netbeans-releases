@@ -53,7 +53,6 @@ import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -159,265 +158,54 @@ public abstract class TagBasedLexerFormatter {
     public void reformat(Context context) throws BadLocationException{
         reformat(context, context.startOffset(), context.endOffset());
     }
-
+    
     public void reformat(Context context, int startOffset, int endOffset) throws BadLocationException {
-        LinkedList<TagIndentationData> unprocessedOpeningTags = new LinkedList<TagIndentationData>();
-        List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
         BaseDocument doc = (BaseDocument) context.document();
-        doc.atomicLock();
-        
-        try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-
-            if (tokenHierarchy == null) {
-                logger.severe("Could not retrieve TokenHierarchy for document " + doc);
-                return;
-            }
-            
-            TransferData transferData = null;
-            
-            if (isTopLevelLanguage(doc)){
-                // store data for compatible formatters that will be called later
-                transferData = new TransferData();
-                transferData.init(doc);
-            } else {
-                // read data from compatible formatters called before
-                transferData = TransferData.readFromDocument(doc);
-                assert transferData != null;
-            }
-            
-            // PASS 1: Calculate EmbeddingType and AbsoluteIndentLevel 
-            // (determined by the tags of the current language) for each line
-            
-            int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
-            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
-            int firstUnformattableLine = -1;
-
-            EmbeddingType embeddingType[] = new EmbeddingType[transferData.getNumberOfLines()];
-            Arrays.fill(embeddingType, EmbeddingType.OUTER);
-            int[] indentsWithinTags = new int[transferData.getNumberOfLines()];
-
-            TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
-            TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
-
-            for (int i = 0; i < tokenSequenceBounds.length; i++) {
-                tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
-
-                if (tokenSequenceBounds[i].getStartLine() > -1) {
-                    // skip white-space blocks
-                    markCurrentLanguageLines(doc, tokenSequenceBounds[i], embeddingType);
-                }
-            }
-
-            if (tokenSequences.length > 0) {
-                JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
-                tokenSequence.moveStart();
-                boolean thereAreMoreTokens = tokenSequence.moveNext();
-                
-                do {
-                    boolean isOpenTag = isOpeningTag(tokenSequence, tokenSequence.offset());
-                    boolean isCloseTag = isClosingTag(tokenSequence, tokenSequence.offset());
-
-                    if (isOpenTag || isCloseTag) {
-
-                        String tagName = extractTagName(tokenSequence, tokenSequence.offset());
-
-                        if (isOpenTag) {
-
-                            thereAreMoreTokens &= calcIndents_processOpeningTag(doc, tokenSequence, tagName, unprocessedOpeningTags, indentsWithinTags);
-                        } else {
-                            int tagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
-                            calcIndents_processClosingTag(tagName, tagLine, transferData, unprocessedOpeningTags, matchedOpeningTags);
-                        }
-                    }
-
-                    // process a block of unformattable tokens (which may be separated with white spaces)
-                    boolean wasPreviousTokenUnformattable = firstUnformattableLine != -1 && isWSToken(tokenSequence.token())
-                            || isUnformattableToken(tokenSequence, tokenSequence.offset());
-
-                    if (wasPreviousTokenUnformattable && firstUnformattableLine == -1) {
-                        firstUnformattableLine = Utilities.getLineOffset(doc, tokenSequence.offset());
-                    }
-
-                    // detect the end of an unformattable block; mark it
-                    if (firstUnformattableLine > -1 && (!wasPreviousTokenUnformattable || !thereAreMoreTokens)) {
-
-                        int lastUnformattableLine = thereAreMoreTokens ? Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : transferData.getNumberOfLines() - 1;
-
-                        for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i++) {
-                            transferData.setNonFormattable(i);
-                        }
-
-                        firstUnformattableLine = -1;
-                    }
-                    
-                    // Mark blocks of embedded language
-                    if (tokenSequence.embedded() != null && !isWSToken(tokenSequence.token())) {
-                        int firstLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset());
-                        int lastLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset() + getTxtLengthWithoutWhitespaceSuffix(tokenSequence.token().text()));
-
-                        if (Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStartFromLineOffset(doc, firstLineOfEmbeddedBlock)) < Utilities.getFirstNonWhiteFwd(doc, tokenSequence.offset())) {
-
-                            firstLineOfEmbeddedBlock++;
-                        }
-
-                        for (int i = firstLineOfEmbeddedBlock; i <= lastLineOfEmbeddedBlock; i++) {
-                            embeddingType[i] = EmbeddingType.INNER;
-                        }
-                    }
-                    
-                    thereAreMoreTokens &= tokenSequence.moveNext();
-
-                } while (thereAreMoreTokens);
-            }
-            
-            // PASS 2: handle formatting order for languages on the same level of mime-hierarchy
-            
-            for (int line = 0; line < transferData.getNumberOfLines(); line ++){
-                if (embeddingType[line] == EmbeddingType.CURRENT_LANG){
-                    transferData.setProcessedByNativeFormatter(line);
-                } else if (embeddingType[line] == EmbeddingType.OUTER){
-                    // play master
-                    if (!transferData.wasProcessedByNativeFormatter(line)){
-                        embeddingType[line] = EmbeddingType.INNER; 
-                    }
-                }
-            }
-            
-            //****************
-            // PASS 3: calc line indents
-            // TODO: optimize it
-            int[] indentLevels = new int[transferData.getNumberOfLines()];
-            Arrays.fill(indentLevels, 0);
-
-            for (TagIndentationData td : matchedOpeningTags) {
-                // increase indent from one line after the opening tag
-                // up to one line before the closing tag
-                for (int i = td.getLine() + 1; i <= td.getClosedOnLine() - 1; i++) {
-                    indentLevels[i]++;
-                }
-            }
-            
-            int[] previousIndents = transferData.getTransformedOffsets();
-            int[] absoluteIndents = new int[transferData.getNumberOfLines()];
-            
-            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                absoluteIndents[i] = indentLevels[i] * doc.getShiftWidth() + indentsWithinTags[i];
-            }
-            
-            int lastCrossPoint = 0;
-            int lastOuterCrossPoint = 0;
-            EmbeddingType lastEmbeddingType = null;
-            
-            int[] newIndents = new int[transferData.getNumberOfLines()];
-            boolean topLevel = isTopLevelLanguage(doc);
-
-            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                if (lastEmbeddingType != embeddingType[i]){
-                    lastCrossPoint = i;
-                    
-                    if (lastEmbeddingType == EmbeddingType.OUTER){
-                        lastOuterCrossPoint = i;
-                    }
-                    
-                    lastEmbeddingType = embeddingType[i];
-                }
-
-                if (!transferData.isFormattable(i)) {
-                    newIndents[i] = transferData.getOriginalIndent(i);
-                } else {
-                    if (embeddingType[i] == EmbeddingType.OUTER) {
-                        newIndents[i] = previousIndents[i] + absoluteIndents[i];
-                    } else if (embeddingType[i] == EmbeddingType.INNER) { // INNER
-                        if (lastCrossPoint == i){ // first line of inner embedding
-                            int previousLineIndent = i > 0 ? newIndents[lastCrossPoint - 1] : 0;
-                            int absDiff = absoluteIndents[i] - (i > 0 ? absoluteIndents[i - 1] : 0);
-                            newIndents[i] = previousLineIndent + absDiff;
-                        } else {
-                            int diff = topLevel ? (transferData.getOriginalIndent(i) - transferData.getOriginalIndent(lastCrossPoint))
-                                    : (previousIndents[i] - previousIndents[lastCrossPoint]);
-                            
-                            newIndents[i] = newIndents[lastCrossPoint] + diff;
-                        }
-                    } else { // embeddingType[i] == EmbeddingType.CURRENT_LANG
-                        newIndents[i] = previousIndents[lastOuterCrossPoint] + absoluteIndents[i];
-                    }
-                }
-            }
-            
-            int lineBeforeSelectionBias = 0;
-            
-            if (firstRefBlockLine > 0){
-                lineBeforeSelectionBias = transferData.getOriginalIndent(firstRefBlockLine - 1) - newIndents[firstRefBlockLine - 1];
-            }
-            
-            // PASS 4: apply line indents
-            
-            for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
-                int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
-                int newIndent = newIndents[line] + lineBeforeSelectionBias;
-                context.modifyIndent(lineStart, newIndent > 0 ? newIndent : 0);
-            }
-            
-            transferData.setTransformedOffsets(newIndents);
-
-            if (logger.isLoggable(Level.FINE)) {
-                StringBuilder buff = new StringBuilder();
-
-                for (int i = 0; i < transferData.getNumberOfLines(); i++) {
-                    int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
-
-                    char formattingTypeSymbol = 0;
-                    
-                    if (!transferData.isFormattable(i)){
-                        formattingTypeSymbol = '-';
-                    } else if (embeddingType[i] == EmbeddingType.INNER){
-                        formattingTypeSymbol = 'I';
-                    } else if (embeddingType[i] == EmbeddingType.OUTER) {
-                        formattingTypeSymbol = 'O';
-                    } else {
-                        formattingTypeSymbol = 'C';
-                    }
-                    
-                    char formattingRange = (i >= firstRefBlockLine && i <= lastRefBlockLine) 
-                            ? '*' : ' ';
-
-                    buff.append(i + ":" + formattingRange + ":" + indentLevels[i] + ":" + formattingTypeSymbol + ":" + doc.getText(lineStart, Utilities.getRowEnd(doc, lineStart) - lineStart) + ".\n"); //NOI18N
-                }
-
-                buff.append("\n-------------\n"); //NOI18N
-                logger.fine(getClass().getName() + ":\n" + buff);
-            }
-
-        } finally {
-            doc.atomicUnlock();
-        }
+        doc.runAtomic(new FormattingTask(context, startOffset, endOffset));
     }
     
-    public boolean isJustAfterClosingTag(BaseDocument doc, int pos) throws BadLocationException {
-        doc.atomicLock();
-        try {
-            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-            
-            TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
-            TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+    private class IsJustAfterClosingTagTask implements Runnable{
+        private BaseDocument doc;
+        private int pos;
+        private boolean result = false;
 
-            for (int i = 0; i < tokenSequenceBounds.length; i++) {
-                tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
-            }
-            
-            if (tokenSequences.length > 0) {
-                JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
-                tokenSequence.moveStart();
-                tokenSequence.moveNext();
-                int tagPos = getTagEndingAtPosition(tokenSequence, pos);
-                return tagPos >= 0 && isClosingTag(tokenSequence, tagPos);
-            }
-        } finally {
-            doc.atomicUnlock();
+        public IsJustAfterClosingTagTask(BaseDocument doc, int pos) {
+            this.doc = doc;
+            this.pos = pos;
         }
-        
-        return false;
+
+        public void run() {
+            try {
+                TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+
+                TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+                TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+
+                for (int i = 0; i < tokenSequenceBounds.length; i++) {
+                    tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
+                }
+
+                if (tokenSequences.length > 0) {
+                    JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+                    tokenSequence.moveStart();
+                    tokenSequence.moveNext();
+                    int tagPos = getTagEndingAtPosition(tokenSequence, pos);
+                    result = tagPos >= 0 && isClosingTag(tokenSequence, tagPos);
+                }
+            } catch (BadLocationException e) {
+                logger.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+
+        public boolean getResult() {
+            return result;
+        }
+    }
+
+    public boolean isJustAfterClosingTag(BaseDocument doc, int pos) {
+        IsJustAfterClosingTagTask task = new IsJustAfterClosingTagTask(doc, pos);
+        doc.runAtomic(task);
+        return task.getResult();
     }
     
     private static int getTxtLengthWithoutWhitespaceSuffix(CharSequence txt){
@@ -506,6 +294,11 @@ public abstract class TagBasedLexerFormatter {
         // format content of a tag that spans across multiple lines
         int firstTagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
         int tagEndOffset = getTagEndOffset(tokenSequence, tokenSequence.offset());
+        
+        if (tagEndOffset == -1){
+            return true; // unterminated tag, ignore
+        }
+        
         int lastTagLine = Utilities.getLineOffset(doc, tagEndOffset);
 
         TagIndentationData tagData = new TagIndentationData(tagName, lastTagLine);
@@ -685,12 +478,25 @@ public abstract class TagBasedLexerFormatter {
         int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
         return IndentUtils.lineIndent(doc, lineStart);
     }
-    
-    public void enterPressed(Context context) {
-        BaseDocument doc = (BaseDocument)context.document();   
-        doc.atomicLock();
+
+    private class EnterPressedTask implements Runnable{
+        private Context context;
+
+        public EnterPressedTask(Context context) {
+            this.context = context;
+        }
         
-        try {
+        public void run() {
+            try {
+                enterPressed();
+            } catch (BadLocationException e) {
+                logger.log(Level.SEVERE, e.getMessage(), e);
+            }
+        }
+
+        private void enterPressed() throws BadLocationException{
+            BaseDocument doc = (BaseDocument) context.document();
+            
             if (isTopLevelLanguage(doc)) {
                 doc.putProperty(TransferData.ORG_CARET_OFFSET_DOCPROPERTY, new Integer(context.caretOffset()));
             }
@@ -742,11 +548,12 @@ public abstract class TagBasedLexerFormatter {
                     }
                 }
             }
-        } catch (BadLocationException e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
-        } finally {
-            doc.atomicUnlock();
         }
+    }
+    
+    public void enterPressed(Context context) {
+        BaseDocument doc = (BaseDocument)context.document();   
+        doc.runAtomic(new EnterPressedTask(context));
     }
     
     private boolean indexWithinCurrentLanguage(BaseDocument doc, int index) throws BadLocationException{
@@ -837,6 +644,268 @@ public abstract class TagBasedLexerFormatter {
         
         return true;
     }
+
+    private String formatterName(){
+        return getClass().getSimpleName();
+    }
+    
+    private class FormattingTask implements Runnable{
+        private Context context;
+        private int startOffset;
+        private int endOffset;
+
+        public FormattingTask(Context context, int startOffset, int endOffset) {
+            this.context = context;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+        
+        public void run() {
+            try {
+                reformat();
+            } catch (BadLocationException ex) {
+                logger.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+        }
+
+        private void reformat() throws BadLocationException{
+            BaseDocument doc = (BaseDocument) context.document();
+            LinkedList<TagIndentationData> unprocessedOpeningTags = new LinkedList<TagIndentationData>();
+            List<TagIndentationData> matchedOpeningTags = new ArrayList<TagIndentationData>();
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+
+            if (tokenHierarchy == null) {
+                logger.severe("Could not retrieve TokenHierarchy for document " + doc);
+                return;
+            }
+            
+            TransferData transferData = null;
+            
+            if (isTopLevelLanguage(doc)){
+                // store data for compatible formatters that will be called later
+                transferData = new TransferData();
+                transferData.init(doc);
+            } else {
+                // read data from compatible formatters called before
+                transferData = TransferData.readFromDocument(doc);
+                assert transferData != null;
+            }
+            
+            // PASS 1: Calculate EmbeddingType and AbsoluteIndentLevel 
+            // (determined by the tags of the current language) for each line
+            
+            int firstRefBlockLine = Utilities.getLineOffset(doc, startOffset);
+            int lastRefBlockLine = Utilities.getLineOffset(doc, endOffset);
+            int firstUnformattableLine = -1;
+
+            EmbeddingType embeddingType[] = new EmbeddingType[transferData.getNumberOfLines()];
+            Arrays.fill(embeddingType, EmbeddingType.OUTER);
+            int[] indentsWithinTags = new int[transferData.getNumberOfLines()];
+
+            TokenSequence[] tokenSequences = (TokenSequence[]) tokenHierarchy.tokenSequenceList(
+                    supportedLanguagePath(), 0, Integer.MAX_VALUE).toArray(new TokenSequence[0]);
+            
+            TextBounds[] tokenSequenceBounds = new TextBounds[tokenSequences.length];
+
+            for (int i = 0; i < tokenSequenceBounds.length; i++) {
+                tokenSequenceBounds[i] = findTokenSequenceBounds(doc, tokenSequences[i]);
+
+                if (tokenSequenceBounds[i].getStartLine() > -1) {
+                    // skip white-space blocks
+                    markCurrentLanguageLines(doc, tokenSequenceBounds[i], embeddingType);
+                }
+            }
+
+            if (tokenSequences.length > 0) {
+                JoinedTokenSequence tokenSequence = new JoinedTokenSequence(tokenSequences, tokenSequenceBounds);
+                tokenSequence.moveStart();
+                boolean thereAreMoreTokens = tokenSequence.moveNext();
+                
+                do {
+                    boolean isOpenTag = isOpeningTag(tokenSequence, tokenSequence.offset());
+                    boolean isCloseTag = isClosingTag(tokenSequence, tokenSequence.offset());
+
+                    if (isOpenTag || isCloseTag) {
+
+                        String tagName = extractTagName(tokenSequence, tokenSequence.offset());
+
+                        if (isOpenTag) {
+
+                            thereAreMoreTokens &= calcIndents_processOpeningTag(doc,
+                                    tokenSequence, tagName, unprocessedOpeningTags, indentsWithinTags);
+                        } else {
+                            int tagLine = Utilities.getLineOffset(doc, tokenSequence.offset());
+                            
+                            calcIndents_processClosingTag(tagName, tagLine, transferData,
+                                    unprocessedOpeningTags, matchedOpeningTags);
+                        }
+                    }
+
+                    // process a block of unformattable tokens (which may be separated with white spaces)
+                    boolean wasPreviousTokenUnformattable = firstUnformattableLine != -1 && isWSToken(tokenSequence.token())
+                            && !tokenSequence.isJustAfterGap()
+                            || isUnformattableToken(tokenSequence, tokenSequence.offset());
+
+                    if (wasPreviousTokenUnformattable && firstUnformattableLine == -1) {
+                        firstUnformattableLine = Utilities.getLineOffset(doc, tokenSequence.offset());
+                    }
+
+                    // detect the end of an unformattable block; mark it
+                    if (firstUnformattableLine > -1 && (!wasPreviousTokenUnformattable || !thereAreMoreTokens)) {
+
+                        int lastUnformattableLine = thereAreMoreTokens ?
+                            Utilities.getLineOffset(doc, tokenSequence.offset() - 1) : transferData.getNumberOfLines() - 1;
+
+                        for (int i = firstUnformattableLine + 1; i < lastUnformattableLine; i++) {
+                            transferData.setNonFormattable(i);
+                        }
+
+                        firstUnformattableLine = -1;
+                    }
+                    
+                    // Mark blocks of embedded language
+                    if (tokenSequence.embedded() != null && !isWSToken(tokenSequence.token())) {
+                        int firstLineOfEmbeddedBlock = Utilities.getLineOffset(doc, tokenSequence.offset());
+
+                        int lastLineOfEmbeddedBlock = Utilities.getLineOffset(doc,
+                                tokenSequence.offset() + getTxtLengthWithoutWhitespaceSuffix(tokenSequence.token().text()));
+
+                        if (Utilities.getFirstNonWhiteFwd(doc, Utilities.getRowStartFromLineOffset(doc,
+                                firstLineOfEmbeddedBlock)) < Utilities.getFirstNonWhiteFwd(doc, tokenSequence.offset())) {
+
+                            firstLineOfEmbeddedBlock++;
+                        }
+
+                        for (int i = firstLineOfEmbeddedBlock; i <= lastLineOfEmbeddedBlock; i++) {
+                            embeddingType[i] = EmbeddingType.INNER;
+                        }
+                    }
+                    
+                    thereAreMoreTokens &= tokenSequence.moveNext();
+
+                } while (thereAreMoreTokens);
+            }
+            
+            // PASS 2: handle formatting order for languages on the same level of mime-hierarchy
+            
+            for (int line = 0; line < transferData.getNumberOfLines(); line ++){
+                if (embeddingType[line] == EmbeddingType.CURRENT_LANG){
+                    transferData.setProcessedByNativeFormatter(line);
+                } else if (embeddingType[line] == EmbeddingType.OUTER){
+                    // play master
+                    if (!transferData.wasProcessedByNativeFormatter(line)){
+                        embeddingType[line] = EmbeddingType.INNER; 
+                    }
+                }
+            }
+            
+            //****************
+            // PASS 3: calc line indents
+            // TODO: optimize it
+            int[] indentLevels = new int[transferData.getNumberOfLines()];
+            Arrays.fill(indentLevels, 0);
+
+            for (TagIndentationData td : matchedOpeningTags) {
+                // increase indent from one line after the opening tag
+                // up to one line before the closing tag
+                for (int i = td.getLine() + 1; i <= td.getClosedOnLine() - 1; i++) {
+                    indentLevels[i]++;
+                }
+            }
+            
+            int[] previousIndents = transferData.getTransformedOffsets();
+            int[] absoluteIndents = new int[transferData.getNumberOfLines()];
+            
+            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
+                absoluteIndents[i] = indentLevels[i] * doc.getShiftWidth() + indentsWithinTags[i];
+            }
+            
+            int lastCrossPoint = 0;
+            int lastOuterCrossPoint = 0;
+            EmbeddingType lastEmbeddingType = null;
+            
+            int[] newIndents = new int[transferData.getNumberOfLines()];
+            boolean topLevel = isTopLevelLanguage(doc);
+
+            for (int i = 0; i < transferData.getNumberOfLines(); i++) {
+                if (lastEmbeddingType != embeddingType[i]){
+                    lastCrossPoint = i;
+                    
+                    if (lastEmbeddingType == EmbeddingType.OUTER){
+                        lastOuterCrossPoint = i;
+                    }
+                    
+                    lastEmbeddingType = embeddingType[i];
+                }
+
+                if (!transferData.isFormattable(i)) {
+                    newIndents[i] = transferData.getOriginalIndent(i);
+                } else {
+                    if (embeddingType[i] == EmbeddingType.OUTER) {
+                        newIndents[i] = previousIndents[i] + absoluteIndents[i];
+                    } else if (embeddingType[i] == EmbeddingType.INNER) { // INNER
+                        if (lastCrossPoint == i){ // first line of inner embedding
+                            int previousLineIndent = i > 0 ? newIndents[lastCrossPoint - 1] : 0;
+                            int absDiff = absoluteIndents[i] - (i > 0 ? absoluteIndents[i - 1] : 0);
+                            newIndents[i] = previousLineIndent + absDiff;
+                        } else {
+                            int diff = topLevel ? (transferData.getOriginalIndent(i) - transferData.getOriginalIndent(lastCrossPoint))
+                                    : (previousIndents[i] - previousIndents[lastCrossPoint]);
+                            
+                            newIndents[i] = newIndents[lastCrossPoint] + diff;
+                        }
+                    } else { // embeddingType[i] == EmbeddingType.CURRENT_LANG
+                        newIndents[i] = previousIndents[lastOuterCrossPoint] + absoluteIndents[i];
+                    }
+                }
+            }
+            
+            int lineBeforeSelectionBias = 0;
+            
+            if (firstRefBlockLine > 0){
+                lineBeforeSelectionBias = transferData.getOriginalIndent(firstRefBlockLine - 1) - newIndents[firstRefBlockLine - 1];
+            }
+            
+            // PASS 4: apply line indents
+            
+            for (int line = firstRefBlockLine; line <= lastRefBlockLine; line++) {
+                int lineStart = Utilities.getRowStartFromLineOffset(doc, line);
+                int newIndent = newIndents[line] + lineBeforeSelectionBias;
+                context.modifyIndent(lineStart, newIndent > 0 ? newIndent : 0);
+            }
+            
+            transferData.setTransformedOffsets(newIndents);
+
+            if (logger.isLoggable(Level.FINE)) {
+                StringBuilder buff = new StringBuilder();
+
+                for (int i = 0; i < transferData.getNumberOfLines(); i++) {
+                    int lineStart = Utilities.getRowStartFromLineOffset(doc, i);
+
+                    char formattingTypeSymbol = 0;
+                    
+                    if (!transferData.isFormattable(i)){
+                        formattingTypeSymbol = '-';
+                    } else if (embeddingType[i] == EmbeddingType.INNER){
+                        formattingTypeSymbol = 'I';
+                    } else if (embeddingType[i] == EmbeddingType.OUTER) {
+                        formattingTypeSymbol = 'O';
+                    } else {
+                        formattingTypeSymbol = 'C';
+                    }
+                    
+                    char formattingRange = (i >= firstRefBlockLine && i <= lastRefBlockLine) 
+                            ? '*' : ' ';
+
+                    buff.append(i + ":" + formattingRange + ":" + indentLevels[i] + ":" + formattingTypeSymbol + ":" + doc.getText(lineStart, Utilities.getRowEnd(doc, lineStart) - lineStart) + ".\n"); //NOI18N
+                }
+
+                buff.append("\n-------------\n"); //NOI18N
+                logger.fine(formatterName() + ":\n" + buff);
+            }
+        }
+    }
+    
 
     protected static class TagIndentationData {
 

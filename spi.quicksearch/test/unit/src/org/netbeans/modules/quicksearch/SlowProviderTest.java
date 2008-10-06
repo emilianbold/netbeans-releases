@@ -39,12 +39,12 @@
 
 package org.netbeans.modules.quicksearch;
 
-import org.netbeans.junit.NbTest;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -55,23 +55,11 @@ public class SlowProviderTest extends NbTestCase {
     private static final int MAX_TIME = 1000;
     private static final int WAIT_TIME = 4000;
 
-    public SlowProviderTest() {
-        super("");
-    }
-    
     public SlowProviderTest(String testName) {
         super(testName);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(SlowProviderTest.class);
-        return suite;
-    }
-    
+
+    @RandomlyFails
     public void testResponsiveness () throws Exception {
         UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testSlowProvider.xml" });
 
@@ -89,6 +77,7 @@ public class SlowProviderTest extends NbTestCase {
                 (endTime - startTime) > 1000);
 
         System.out.println("Testing CommandEvaluator.Wait4AllTask...");
+        RequestProcessor.getDefault().post(t);
 
         // should be still running
         assertFalse(t.isFinished());

@@ -101,7 +101,7 @@ public final class PartToken<T extends TokenId> extends PropertyToken<T> {
 
     @Override
     protected String dumpInfoTokenType() {
-        return "ParT[" + partTokenIndex + "]"; // NOI18N
+        return "ParT[" + partTokenIndex + "/" + joinToken().joinedParts().size() + "]"; // NOI18N
     }
 
 }

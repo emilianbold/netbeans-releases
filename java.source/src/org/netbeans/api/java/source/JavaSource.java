@@ -197,6 +197,9 @@ public final class JavaSource {
         if (files == null) {
             throw new IllegalArgumentException ();
         }
+    
+    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding,
+            final Collection<? extends FileObject> files, final boolean fixedCpInfo) throws IllegalArgumentException {
         try {
             return new JavaSource(cpInfo, files);
         } catch (DataObjectNotFoundException donf) {
@@ -374,6 +377,10 @@ public final class JavaSource {
      * </div>
      */
     public void runUserActionTask( final Task<CompilationController> task, final boolean shared) throws IOException {
+        runUserActionTaskImpl(task, shared);
+    }
+    
+    private long runUserActionTaskImpl ( final Task<CompilationController> task, final boolean shared) throws IOException {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
@@ -485,6 +492,7 @@ public final class JavaSource {
                     }                                        
                 }                
         }
+        return currentId;
     }
 
     private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
@@ -492,6 +500,28 @@ public final class JavaSource {
         this.runUserActionTask (_task, shared);
     }
     
+    
+    long createTaggedController (final long timestamp, final Object[] controller) throws IOException {        
+        assert controller.length == 1;
+        if (isCurrent(timestamp)) {
+            assert controller[0] instanceof CompilationController;
+            return timestamp;
+        }
+        else {
+            final Task<CompilationController> wrapperTask = new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    controller[0] = parameter;
+                }
+            };            
+            final long newTimestamp = runUserActionTaskImpl(wrapperTask, false);
+            assert controller[0] != null;
+            return newTimestamp;
+        }        
+    }
+    //where
+    private boolean isCurrent (long timestamp) {        
+        return eventCounter == timestamp;
+    }
     
     /**
      * Performs the given task when the scan finished. When no background scan is running
@@ -596,7 +626,6 @@ public final class JavaSource {
         final Task<WorkingCopy> _task = task;
         return this.runModificationTask (_task);
     }
-         
     /**
      * Returns the classpaths ({@link ClasspathInfo}) used by this
      * {@link JavaSource}
@@ -635,13 +664,17 @@ public final class JavaSource {
             assert compilationInfo != null;
             return compilationInfo.impl.getJavacTask();
         }
-                                                                       
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, files);
         }
 
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
             return new PositionConverter(fo, offset, length, component);
+        }
+
+        @Override
+        public long createTaggedCompilationController(JavaSource js, long currentTag, Object[] out) throws IOException {
+            return js.createTaggedController(currentTag, out);
         }
         
         public CompilationInfo createCompilationInfo (final CompilationInfoImpl impl) {

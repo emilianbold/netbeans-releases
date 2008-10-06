@@ -45,42 +45,37 @@
 # the list is iterated from first to last and the last match
 # decides the result
 
-# Confirmed for 6.5
-
 include Preferences/.*
-exclude config/Preferences/org/netbeans/modules/welcome.properties!feedback.*
+exclude Preferences/org/netbeans/modules/welcome.properties!feedback.*
+include Databases/.*
 include Editors/.*
 exclude Editors/.*/macros.xml
-
-# Copied from copy6.0 (TBD remove or move above)
-
-include Services/org-netbeans-modules-debugger-Settings\.properties 
-include Templates/Classes/.*
-include WebServices/websvc_ref.xml
 exclude Editors/.*/Popup.*
 exclude Editors/.*/.*\.instance
 exclude Editors/.*/Settings\.settings
-include Services/IndentEngine/.*
-#does not import C/C++ indent settings
-exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
-exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings
-include Keymaps/.*
-include Shortcuts/.*
-include Services/DiffProviders/.*
-include Services/Diffs/.*
-include Services/DiffVisualizers/.*
-include Services/MergeVisualizers/.*
-include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
-include Templates/J2MEProjectConfigurations/.*\.cfg
-exclude MVD/.*
-exclude Windows2Local/Components/DesignInspector.settings
-exclude Windows2Local/Groups/mvd/DesignInspector.wstcgrp
-exclude Windows2Local/Modes/navigator/DesignInspector.wstcref
-include Databases/.*
-include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
-#include Services/org-netbeans-modules-derby-DerbyOptions\.settings
-include JSPPalette/.*
+include Favorites/.*
+include FormDesignerPalette/.*
 include HTMLPalette/.*
 include J2EE/.*
+include JSPPalette/.*
+include Keymaps/.*
 include org-netbeans-api-project-libraries/Libraries/.*\.xml
-exclude Services/org-netbeans-modules-beans-beans.settings
+include Services/Browsers/.*
+include Services/DiffProviders/.*
+include Services/formsettings.settings
+include Services/IndentEngine/.*
+include Services/org-netbeans-modules-db-explorer-DatabaseOption\.settings
+include Services/org-netbeans-modules-debugger-Settings\.properties
+include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
+include Shortcuts/.*
+exclude Templates/Beans/Bean.java
+exclude Templates/Beans/BeanInfo.java
+exclude Templates/Beans/NoIconBeanInfo.java
+exclude Templates/Beans/Customizer.java
+exclude Templates/Beans/Customizer.form
+exclude Templates/Beans/PropertyEditor.java
+include Templates/Classes/.*
+include Templates/J2MEProjectConfigurations/.*\.cfg
+include Toolbars/.*
+exclude Toolbars/Progress/.*
+include vmd-midp/palette/custom/.*

@@ -1,2 +1,4 @@
+#position 20
 org.netbeans.modules.cnd.highlight.error.IncludeErrorProvider
+#position 30
 org.netbeans.modules.cnd.highlight.error.IdentifierErrorProvider

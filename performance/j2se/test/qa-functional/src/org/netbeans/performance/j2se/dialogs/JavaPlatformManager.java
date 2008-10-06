@@ -77,7 +77,7 @@ public class JavaPlatformManager extends PerformanceTestCase {
     }
         
     public void prepare() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle","CTL_PlatformManager");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.java.platform.ui.Bundle","CTL_PlatformManager");
         TITLE = Bundle.getStringTrimmed("org.netbeans.api.java.platform.Bundle","TXT_PlatformsManager");
         // do nothing
    }

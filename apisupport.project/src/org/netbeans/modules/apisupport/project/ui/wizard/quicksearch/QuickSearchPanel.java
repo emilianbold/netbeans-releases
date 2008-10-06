@@ -127,7 +127,7 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         final String fileName = classNameTextField.getText().trim();
         if (fileName.length() == 0) {
-            setError(getMessage("ERR_FN_EMPTY"));
+            setWarning(getMessage("ERR_FN_EMPTY"), false);
             return false;
         }
 
@@ -138,17 +138,17 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
 
         String packName = packageCombo.getEditor().getItem().toString();
         if (packName.equals("")) {
-            setWarning(getMessage("EMPTY_PACKAGE"));
-            return true;
+            setWarning(getMessage("EMPTY_PACKAGE"), false);
+            return false;
         }
 
         if (categoryNameTextField.getText().equals("")) {
-            setError(getMessage("EMPTY_CATEGORY"));
+            setWarning(getMessage("EMPTY_CATEGORY"), false);
             return false;
         }
 
         if (commandPrefixTextField.getText().trim().equals("")) {
-            setError(getMessage("ERR_EMPTY_PREFIX"));
+            setWarning(getMessage("ERR_EMPTY_PREFIX"), false);
         }
 
         if (!commandPrefixTextField.getText().trim().matches("\\w*")) {//alfanumeric only
@@ -157,7 +157,7 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
         }
 
         if (positionTextField.getText().equals("")) {
-            setError(getMessage("ERR_POSITION_EMPTY"));
+            setWarning(getMessage("ERR_POSITION_EMPTY"), false);
             return false;
         }
 
@@ -190,23 +190,28 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
         positionLabel = new javax.swing.JLabel();
         positionTextField = new javax.swing.JTextField();
 
-        fileNameLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.fileNameLabel.text")); // NOI18N
+        fileNameLabel.setLabelFor(classNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fileNameLabel, org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.fileNameLabel.text")); // NOI18N
 
         classNameTextField.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.classNameTextField.text")); // NOI18N
 
-        packageLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.packageLabel.text")); // NOI18N
+        packageLabel.setLabelFor(packageCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.packageLabel.text")); // NOI18N
 
         packageCombo.setEditable(true);
 
-        categoryNameLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.categoryNameLabel.text")); // NOI18N
+        categoryNameLabel.setLabelFor(categoryNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(categoryNameLabel, org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.categoryNameLabel.text")); // NOI18N
 
         categoryNameTextField.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.categoryNameTextField.text")); // NOI18N
 
-        commandLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandLabel.text")); // NOI18N
+        commandLabel.setLabelFor(commandPrefixTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandLabel.text")); // NOI18N
 
         commandPrefixTextField.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandPrefixTextField.text")); // NOI18N
 
-        positionLabel.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.positionLabel.text")); // NOI18N
+        positionLabel.setLabelFor(positionTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(positionLabel, org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.positionLabel.text")); // NOI18N
 
         positionTextField.setText(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.positionTextField.text")); // NOI18N
 
@@ -256,6 +261,22 @@ public class QuickSearchPanel extends BasicWizardIterator.Panel {
                     .add(positionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(124, Short.MAX_VALUE))
         );
+
+        fileNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.fileNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.classNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        packageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.packageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        packageCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.packageCombo.AccessibleContext.accessibleName")); // NOI18N
+        packageCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.packageCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.categoryNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        categoryNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.categoryNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        commandLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        commandPrefixTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandPrefixTextField.AccessibleContext.accessibleName")); // NOI18N
+        commandPrefixTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.commandPrefixTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        positionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.positionLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        positionTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.positionTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QuickSearchPanel.class, "QuickSearchPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel categoryNameLabel;

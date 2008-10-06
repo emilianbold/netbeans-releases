@@ -160,6 +160,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
+        ((JComponent)cbEffectColor.getEditor()).addPropertyChangeListener (this);
         cbEffectColor.addActionListener (this);
         
         loc(bFont, "CTL_Font_button");
@@ -450,6 +451,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
         List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
+        languages.remove ("text/x-all-languages");
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
         Object lastLanguage = cbLanguage.getSelectedItem ();

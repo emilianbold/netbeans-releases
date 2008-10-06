@@ -41,6 +41,7 @@
 
 package org.netbeans;
 
+import java.awt.AWTPermission;
 import java.io.FileDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -66,8 +67,8 @@ import org.openide.util.Lookup;
 * @author Ales Novak, Jesse Glick
 */
 public class TopSecurityManager extends SecurityManager {
-
-    private static boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(TopSecurityManager.class.getName());
 
     private Permission allPermission;
     
@@ -78,9 +79,10 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
+    private static final Class awtPermissionClass = AWTPermission.class;
     private static SecurityManager fsSecManager;
 
-    private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
+    private static final List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
      * Currently only checkExit and checkTopLevelWindow are supported.
      * @param sm the delegate to register
@@ -264,20 +266,6 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
         }
-        
-        if ("javax.xml.parsers.SAXParserFactory".equals(x)) {
-            if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/startup/SAXFactoryImpl.class") != null) return;
-            throw new SecurityException ("");            
-        }
-        
-        if ("javax.xml.parsers.DocumentBuilderFactory".equals(x)) {
-            if (Thread.currentThread().getContextClassLoader().getResource(
-                    "org/netbeans/core/startup/DOMFactoryImpl.class") != null) return;
-            throw new SecurityException ("");            
-        }
-        
-        return;
     }
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
@@ -379,7 +367,7 @@ public class TopSecurityManager extends SecurityManager {
         // part of makeSwingUseSpecialClipboard that makes it work on
         // JDK 1.5
         //
-        if (perm instanceof java.awt.AWTPermission) {
+        if (awtPermissionClass.isInstance(perm)) {
             if ("accessClipboard".equals (perm.getName ())) { // NOI18N
                 ThreadLocal<Object> t;
                 synchronized (TopSecurityManager.class) {
@@ -409,8 +397,8 @@ public class TopSecurityManager extends SecurityManager {
         try {
             System.setSecurityManager(new TopSecurityManager());
         } catch (SecurityException ex) {
-            Logger.getLogger("global").log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
-            Logger.getLogger("global").log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
+            LOG.log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
+            LOG.log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
         }
     }
     static void uninstall() {

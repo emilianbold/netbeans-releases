@@ -244,15 +244,93 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         });
     }
     
+    public void testPaletteInNonActivatedEditor() throws IOException {
+        final TopComponent palette = PaletteTopComponent.getDefault();
+        PaletteController pc = PaletteFactory.createPalette( lookupPaletteRootName, new DummyActions() );
+        
+        final MyTopComponentWithSwitchablePalette tc = new MyTopComponentWithSwitchablePalette(pc);
+        tc.setPaletteAvailable(true);
+        initEditorTopComponent(tc);
+        
+        final TopComponent noPaletteTc = new TopComponent();
+        initViewTopComponent(noPaletteTc);
+        
+        final PaletteSwitch paletteSwitch = PaletteSwitch.getDefault();
+        paletteSwitch.startListening();
+        
+        tc.requestActive();
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                assertEquals( TopComponent.getRegistry().getActivated(), tc );
+                assertNotNull( "TC with PaletteController is active", 
+                        paletteSwitch.getCurrentPalette() );
+                assertTrue( "Palette window opens by default when a document with PaletteController is active", 
+                        palette.isOpened() );
+                
+                noPaletteTc.requestActive();
+                
+                //switch to window with no palette while the palette editor is still showing
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        assertEquals( TopComponent.getRegistry().getActivated(), noPaletteTc );
+                        assertNotNull( "TC without PaletteController is active", 
+                                paletteSwitch.getCurrentPalette() );
+                        assertTrue( "Palette window opens by default when a document with PaletteController is showing", 
+                                palette.isOpened() );
+
+                        tc.setPaletteAvailable(false);
+
+                
+                        //remove palette from the showing non-active editor
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                assertEquals( TopComponent.getRegistry().getActivated(), noPaletteTc );
+                                assertNull( "Showing editor(s) has no palette", 
+                                        paletteSwitch.getCurrentPalette() );
+                                assertFalse( "Palette window is closed when no palette is available", 
+                                        palette.isOpened() );
+
+                                tc.setPaletteAvailable(true);
+
+
+                                //add palette to the showing non-active editor
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        assertEquals( TopComponent.getRegistry().getActivated(), noPaletteTc );
+                                        assertNotNull( "Showing editor(s) has a palette, PaletteSwitch must listen to changes in Lookup of showing editors", 
+                                                paletteSwitch.getCurrentPalette() );
+                                        assertTrue( palette.isOpened() );
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+    
     private MyTopComponent createTopComponentWithPalette( PaletteController pc ) throws IOException {
         MyTopComponent tc = new MyTopComponent( pc );
-        
+        initEditorTopComponent( tc );
+        return tc;
+    }
+    
+    private void initEditorTopComponent( TopComponent tc ) throws IOException {
         Mode editorMode = WindowManagerImpl.getInstance().findMode( "unitTestEditorMode" );
         if( null == editorMode ) {
             editorMode = WindowManagerImpl.getInstance().createMode( "unitTestEditorMode", Constants.MODE_KIND_EDITOR, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
         }
         editorMode.dockInto(tc);
-        return tc;
+    }
+    
+    private void initViewTopComponent( TopComponent tc ) throws IOException {
+        Mode viewMode = WindowManagerImpl.getInstance().findMode( "unitTestViewMode" );
+        if( null == viewMode ) {
+            viewMode = WindowManagerImpl.getInstance().createMode( "unitTestViewMode", Constants.MODE_KIND_VIEW, Constants.MODE_STATE_JOINED, false, new SplitConstraint[0] );
+        }
+        viewMode.dockInto(tc);
     }
     
     private static class MyTopComponent extends TopComponent {
@@ -262,7 +340,7 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
             this( new InstanceContent(), palette );
         }
         
-        private MyTopComponent( InstanceContent ic, PaletteController palette ) throws DataObjectNotFoundException {
+        MyTopComponent( InstanceContent ic, PaletteController palette ) throws DataObjectNotFoundException {
             super( new AbstractLookup( ic ) );
             if( null != palette )
                 ic.add( palette );
@@ -283,6 +361,29 @@ public class PaletteSwitchTest extends AbstractPaletteTestHid {
         protected void componentDeactivated() {
             super.componentDeactivated();
             hackIsShowing = false;
+        }
+    }
+    
+    private static class MyTopComponentWithSwitchablePalette extends MyTopComponent {
+        private InstanceContent ic;
+        private PaletteController pc;
+        
+        public MyTopComponentWithSwitchablePalette( PaletteController palette ) throws DataObjectNotFoundException {
+            this( new InstanceContent(), palette );
+        }
+        
+        private MyTopComponentWithSwitchablePalette( InstanceContent ic, PaletteController palette ) throws DataObjectNotFoundException {
+            super( ic, palette );
+            this.ic = ic;
+            this.pc = palette;
+            this.ic.remove(pc);
+        }
+        
+        public void setPaletteAvailable( boolean paletteAvailable ) {
+            if( paletteAvailable )
+                ic.add( pc );
+            else
+                ic.remove( pc );
         }
     }
     

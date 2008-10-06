@@ -42,6 +42,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.utils</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.options.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -179,7 +187,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -202,6 +210,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.dlight</friend>
+                <friend>com.sun.dlight.projectsupport</friend>
+                <friend>com.sun.dlight.remotesupport</friend>
+                <friend>com.sun.dlight.xyplot</friend>
                 <friend>com.sun.dlight.model</friend>
                 <friend>com.sun.dlight.target</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>

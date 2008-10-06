@@ -78,7 +78,7 @@ public class HttpMonitorWindow extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle","Menu/Window") + "|Debugging|" + Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
     }
     

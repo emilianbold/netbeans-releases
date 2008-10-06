@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<photos_getTags_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <photo_tag>
+        <pid>34995991612795</pid>
+        <subject>1240078</subject>
+        <xcoord>51.4901</xcoord>
+        <ycoord>23.6203</ycoord>
+        <created>1132183424</created>
+    </photo_tag>
+</photos_getTags_response>

@@ -56,6 +56,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -90,23 +91,23 @@ public final class RubyProject extends RubyBaseProject {
     }
 
     protected @Override Lookup createLookup(final AuxiliaryConfiguration aux,
+            final AuxiliaryProperties auxProperties,
             final ProjectInformation info,
             final ProjectOpenedHook projectOpenedHook) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         Lookup base = Lookups.fixed(new Object[] {
             info,
             aux,
+            auxProperties,
             helper.createCacheDirectoryProvider(),
             spp,
             new RubyActionProvider( this, this.updateHelper ),
             new RubyLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            // new RubyCustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             new RubySources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new RubySharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new RubyFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RubyProject - use lookup instead
             new RubyProjectOperations(this),

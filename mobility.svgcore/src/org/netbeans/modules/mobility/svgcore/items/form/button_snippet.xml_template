@@ -1,0 +1,31 @@
+<g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" id="%%COMPONENT_ID%%">        
+	<!-- Metadata information. Please don't edit. -->
+	<text display="none">type=button</text>
+
+       <rect x="0" y="0" rx="5" ry="5" width="80" height="30" fill="white"/>
+        <rect x="2" y="2" rx="5" ry="5" width="80" height="31" fill="rgb(0,0,128)"/>
+	<g>
+		<text display="none">type=body</text>
+                <rect id="%%COMPONENT_ID%%_body" x="1" y="1" rx="5" ry="5" width="80" height="30" fill="rgb(176,196,222)" stroke="rgb(255,165,0)" stroke-width="0">
+		    <animate attributeName="stroke-width" attributeType="XML" begin="%%COMPONENT_ID%%.focusin" dur="0.25s" 
+                                fill="freeze" to="2"/>
+		    <animate attributeName="stroke-width" attributeType="XML" begin="%%COMPONENT_ID%%.focusout" dur="0.25s" 
+                                fill="freeze" to="0"/>
+	            <!-- The third and fourth animation elements are used for animate button : on press, on release -->
+		    <animate id="%%COMPONENT_ID%%_body_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                fill="freeze" to="rgb(156,176,202)"/>
+		    <animate id="%%COMPONENT_ID%%_body_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" 
+                                fill="freeze" to="rgb(176,196,222)"/>
+		</rect>
+	</g>
+        <g>
+	        <text id="%%COMPONENT_ID%%_stext" x="24" y="23" fill="black" font-size="20">
+		OK</text>
+                <text display="none">type=shadow_text</text>
+        </g>
+        <g>
+                <text id="%%COMPONENT_ID%%_text" x="23" y="21" fill="gray" font-size="20">
+		OK</text>
+                <text display="none">type=text</text>
+        </g>
+    </g>

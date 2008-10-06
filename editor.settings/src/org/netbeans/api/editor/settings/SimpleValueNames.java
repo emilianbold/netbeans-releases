@@ -383,7 +383,13 @@ public final class SimpleValueNames {
      * @since 1.15
      */
     public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
-    
+
+    /**
+     * Whether javadoc popup should be displayed to the right of CC popup
+     * @since 1.22
+     */
+    public static final String JAVADOC_POPUP_NEXT_TO_CC = "javadoc-popup-next-to-cc"; // NOI18N
+
     private SimpleValueNames() {
         // to prevent instantialization
     }

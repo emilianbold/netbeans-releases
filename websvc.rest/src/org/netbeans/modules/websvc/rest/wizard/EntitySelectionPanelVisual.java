@@ -365,7 +365,9 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
         }
 
         if (persistenceUnit == null) {
-            persistenceUnit = EntitySelectionPanel.getPersistenceUnitName(settings, project);
+            if (EntitySelectionPanel.getPersistenceUnit(settings, project) != null) {
+                persistenceUnit = EntitySelectionPanel.getPersistenceUnit(settings, project).getName();
+            }
         }
 
         if (mappings == null) {

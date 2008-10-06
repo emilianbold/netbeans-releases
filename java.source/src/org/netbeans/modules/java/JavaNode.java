@@ -70,6 +70,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -84,6 +85,9 @@ import static org.openide.util.NbBundle.getMessage;
  */
 public final class JavaNode extends DataNode implements ChangeListener {
 
+    private static final String EXECUTABLE_BADGE_URL = "org/netbeans/modules/java/resources/executable-badge.png";
+    private static final String NEEDS_COMPILE_BADGE_URL = "org/netbeans/modules/java/resources/needs-compile.png";
+
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
 
@@ -94,12 +98,14 @@ public final class JavaNode extends DataNode implements ChangeListener {
     private static final Image IS_EXECUTABLE_CLASS;
     
     static {
-        String needsCompileTP = getMessage(JavaNode.class, "TP_NeedsCompileBadge");
-        NEEDS_COMPILE = assignToolTipToImage(loadImage("org/netbeans/modules/java/resources/needs-compile.png"), needsCompileTP); // NOI18N
-        String executableTP = getMessage(JavaNode.class, "TP_ExecutableBadge");
-        IS_EXECUTABLE_CLASS = assignToolTipToImage(loadImage("org/netbeans/modules/java/resources/executable-badge.png"), executableTP); // NOI18N
+        URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
+        String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
+        NEEDS_COMPILE = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP); // NOI18N
+        URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
+        String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
+        IS_EXECUTABLE_CLASS = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP); // NOI18N
     }
-    
+
     private Status status;
     private final AtomicBoolean isCompiled;
     private ChangeListener executableListener;
@@ -290,11 +296,11 @@ public final class JavaNode extends DataNode implements ChangeListener {
     
     private Image enhanceIcon(Image i) {
         if (isCompiled != null && !isCompiled.get()) {
-            i = Utilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
+            i = ImageUtilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
         }
         
         if (isExecutable != null && isExecutable.get()) {
-            i = Utilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
+            i = ImageUtilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
         }
         
         return i;

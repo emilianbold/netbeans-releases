@@ -39,8 +39,13 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
@@ -49,12 +54,16 @@ import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
 import org.netbeans.modules.php.project.ui.LocalServer;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -68,27 +77,32 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final JTextField[] textFields;
     private final String[] propertyNames;
     private final String displayName;
+    private final SourcesFolderProvider sourcesFolderProvider;
     private final CopyFilesVisual copyFilesVisual;
 
-    public RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider) {
-        this(manager, sourcesFolderNameProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
+    public RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider) {
+        this(manager, sourcesFolderProvider, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
     }
 
-    private RunAsLocalWeb(ConfigManager manager, SourcesFolderNameProvider sourcesFolderNameProvider, String displayName) {
+    private RunAsLocalWeb(ConfigManager manager, SourcesFolderProvider sourcesFolderProvider, String displayName) {
         super(manager);
         this.displayName = displayName;
+        this.sourcesFolderProvider = sourcesFolderProvider;
         initComponents();
-        copyFilesVisual = new CopyFilesVisual(sourcesFolderNameProvider);
+        copyFilesVisual = new CopyFilesVisual(sourcesFolderProvider);
         copyFilesPanel.add(BorderLayout.NORTH, copyFilesVisual);
 
-        this.labels = new JLabel[] {
+        labels = new JLabel[] {
             urlLabel,
+            indexFileLabel,
         };
-        this.textFields = new JTextField[] {
+        textFields = new JTextField[] {
             urlTextField,
+            indexFileTextField,
         };
-        this.propertyNames = new String[] {
+        propertyNames = new String[] {
             RunConfigurationPanel.URL,
+            RunConfigurationPanel.INDEX_FILE,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -194,6 +208,20 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         copyFilesVisual.selectLocalServer(localServer);
     }
 
+    public String getIndexFile() {
+        return indexFileTextField.getText().trim();
+    }
+
+    public void setIndexFile(String indexFile) {
+        indexFileTextField.setText(indexFile);
+    }
+
+    public void hideIndexFile() {
+        indexFileLabel.setVisible(false);
+        indexFileTextField.setVisible(false);
+        indexFileBrowseButton.setVisible(false);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -203,57 +231,115 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
-        runAsLabel = new javax.swing.JLabel();
-        runAsCombo = new javax.swing.JComboBox();
-        copyFilesPanel = new javax.swing.JPanel();
+        urlLabel = new JLabel();
+        urlTextField = new JTextField();
+        runAsLabel = new JLabel();
+        runAsCombo = new JComboBox();
+        indexFileLabel = new JLabel();
+        indexFileTextField = new JTextField();
+        indexFileBrowseButton = new JButton();
+        copyFilesPanel = new JPanel();
+
+        setFocusTraversalPolicy(null);
 
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
         runAsLabel.setLabelFor(runAsCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
-        copyFilesPanel.setLayout(new java.awt.BorderLayout());
+        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
+        indexFileLabel.setLabelFor(indexFileTextField);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+        indexFileTextField.setEditable(false);
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex"));
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                indexFileBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        copyFilesPanel.setLayout(new BorderLayout());
+
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(runAsLabel)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(urlLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
-                            .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                    .add(GroupLayout.LEADING, copyFilesPanel, GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
+                    .add(GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(urlLabel)
+                            .add(indexFileLabel))
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
+                            .add(urlTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(indexFileBrowseButton)))))
                 .add(0, 0, 0))
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(runAsLabel)
-                    .add(runAsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(urlLabel)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(urlTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(indexFileLabel)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileBrowseButton))
                 .add(18, 18, 18)
-                .add(copyFilesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(copyFilesPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        
         );
+
+        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleName")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleName")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.copyFilesPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
+        Utils.browseFolderFile(sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+    }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel copyFilesPanel;
-    private javax.swing.JComboBox runAsCombo;
-    private javax.swing.JLabel runAsLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
+    private JPanel copyFilesPanel;
+    private JButton indexFileBrowseButton;
+    private JLabel indexFileLabel;
+    private JTextField indexFileTextField;
+    private JComboBox runAsCombo;
+    private JLabel runAsLabel;
+    private JLabel urlLabel;
+    private JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 }

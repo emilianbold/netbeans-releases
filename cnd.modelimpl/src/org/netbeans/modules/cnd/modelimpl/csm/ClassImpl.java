@@ -57,12 +57,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 
 /**
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate, SelectImpl.FilterableMembers {
 
     private final CsmDeclaration.Kind kind;
 
@@ -105,7 +106,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.LITERAL_template:
                         templateDescriptor = new TemplateDescriptor(
                                 TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this),
-                                '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+                                '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
@@ -143,14 +144,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         if( typedefs != null && typedefs.length > 0 ) {
                             for (int i = 0; i < typedefs.length; i++) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                 addMember((MemberTypedef) typedefs[i]);
                             }
                         }
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile());
+                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
                         renderVariableInClassifier(token, innerEnum, null, null);
@@ -193,14 +194,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			if( child != null && child.getType() == CPPTokenTypes.LITERAL_friend) {
                             addFriend(new FriendClassImpl(child, (FileImpl) getContainingFile(),ClassImpl.this));
                         } else {
-                            if( renderVariable(token, null, null) ) {
+                            if( renderVariable(token, null, null, false) ) {
                                 break;
                             }
-                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this);
+                            typedefs = renderTypedef(token, (FileImpl) getContainingFile(), ClassImpl.this, null);
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                    ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                     addMember((MemberTypedef) typedefs[i]);
                                 }
                                 break;
@@ -211,6 +212,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
+                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
                         }
@@ -220,11 +222,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
+                                fd.init(token, ClassImpl.this, !isRenderingLocalContext());
                                 break;
                             }
                         }
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                     case CPPTokenTypes.CSM_USER_TYPE_CAST:
 			child = token.getFirstChild();
@@ -263,6 +267,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 			}
                         break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                    case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                     case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		    case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
 			child = token.getFirstChild();
@@ -361,6 +366,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
             return new MemberTypedef(ClassImpl.this, ast, type, name, curentVisibility);
         }
+        
+        @Override
+        protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
+            ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility);
+            addMember(fd);
+            fd.init(ast, ClassImpl.this, !isRenderingLocalContext());
+            return fd;
+        }
     }
 
     public static class MemberTypedef extends TypedefImpl implements CsmMember<CsmTypedef> {
@@ -457,14 +470,32 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public CsmClass getCsmClass() {
+            CsmClass cls = null;
             if (classDefinition != null){
-                return classDefinition.getObject();
+                cls = classDefinition.getObject();
             }
-            return  super.getCsmClass();
+            // we need to replace i.e. ForwardClass stub
+            if (cls != null && cls.isValid()) {
+                return cls;
+            } else {
+                cls = super.getCsmClass();
+                setCsmClass(cls);
+            }
+            return cls;
         }
 
+        @Override
+        protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
+            CsmClass cls = super.createForwardClassIfNeed(ast, scope, registerInProject);
+            if (cls != null) {
+                classDefinition = cls.getUID();
+                RepositoryUtils.put(this);
+            }
+            return cls;
+        }
+        
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls.getUID();
+            classDefinition = cls == null ? null : cls.getUID();
         }
 
         @Override
@@ -513,13 +544,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	kind = findKind(ast);
     }
 
-    @Override
     protected void init(CsmScope scope, AST ast) {
-	super.init(scope, ast);
+	initScope(scope, ast);
+        initQualifiedName(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        new ClassAstRenderer().render(ast);
+        render(ast);
         leftBracketPos = initLeftBracketPos(ast);
         register(getScope(), false);
+    }
+
+    protected void render(AST ast) {
+        new ClassAstRenderer().render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {

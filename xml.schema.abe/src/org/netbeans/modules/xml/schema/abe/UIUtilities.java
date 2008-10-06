@@ -154,7 +154,7 @@ public class UIUtilities {
         Font font = contentModelInfoLabel.getFont();
 //        font = new Font(font.getFontName(), Font.PLAIN,
 //                InstanceDesignConstants.PROPS_FONT_SIZE);
-        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
         contentModelInfoLabel.setFont(font);
         
         if(component instanceof Element){
@@ -445,7 +445,7 @@ public class UIUtilities {
         
         Font font = infoLabel.getFont();
         //font = new Font(font.getName(), Font.BOLD, font.getSize());
-        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
         if(foreGroundColor != null)
             infoLabel.setForeground(foreGroundColor);
         else

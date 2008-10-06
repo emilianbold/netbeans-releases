@@ -54,7 +54,6 @@ import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Properties;
 import javax.swing.Action;
@@ -88,10 +87,17 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
  * <p>Explorer view displaying nodes in a tree table.</p>
+ * 
+ * <p>Related documentation:
+ * <ul>
+ * <li><a href="http://weblogs.java.net/blog/timboudreau/archive/2008/06/egads_an_actual.html">Egads! An actual Swing Tree-Table!</a>
+ * <li><a href="http://blogs.sun.com/geertjan/entry/swing_outline_component">Swing Outline Component</a>
+ * </ul>
  * 
  * <p><b>Note:</b> This API is still under development and may change even in
  * incompatible way during its stabilization phase. The API will be finalized in
@@ -339,7 +345,8 @@ public class OutlineView extends JScrollPane {
     /** Synchronize the root context from the manager of this Explorer.
     */
     final void synchronizeRootContext() {
-        treeModel.setNode(manager.getRootContext());
+        if( null != treeModel )
+            treeModel.setNode(manager.getRootContext());
     }
 
     /** Synchronize the selected nodes from the manager of this Explorer.
@@ -787,6 +794,7 @@ public class OutlineView extends JScrollPane {
     private static class OutlineViewOutline extends Outline {
         public OutlineViewOutline(OutlineModel mdl) {
             super(mdl);
+            setSelectVisibleColumnsLabel(NbBundle.getMessage(OutlineView.class, "ACN_ColumnsSelector")); //NOI18N
         }
         
         @Override

@@ -42,47 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
-  <folder name="Services">
-    <folder name="Diffs">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle"/>
-      <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.DefaultDiff"/>
-      </file>
-      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.services"/>
-    </folder>
-    <folder name="DiffProviders">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle"/>
-      <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider"/>
-      </file>
-      <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider"/>
-      </file>
-      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.providers"/>
-    </folder>
-    <folder name="DiffVisualizers">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle"/>
-      <file name="org-netbeans-modules-diff-builtin-visualizer-editable-EditableDiffVisualizer.settings" url="EditableDiffVisualizer.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.editable.EditableDiffVisualizer"/>
-      </file>
-      <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer"/>
-      </file>
-      <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer"/>
-      </file>
-      <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.visualizers"/>
-    </folder>
-    <folder name="MergeVisualizers">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.merge.builtin.visualizer.Bundle"/>
-      <file name="org-netbeans-modules-merge-builtin-visualizer-GraphicalMergeVisualizer.settings" url="GraphicalMergeVisualizer.settings">
-        <attr name="helpID" stringvalue="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer"/>
-      </file>
-      <attr name="helpID" stringvalue="org.netbeans.modules.merge.Merge.visualizers"/>
-    </folder>
-
-  </folder>
-
   <!-- register into action pool to allow user to define shortcut, put it on toolbar etc. -->  
   <folder name="Actions">
       <folder name="Tools">
@@ -90,34 +49,19 @@ made subject to such option by the copyright holder.
           <file name="org-netbeans-modules-diff-PatchAction.instance"/>
       </folder>
   </folder>
-
-  <folder name="UI">
+    
     <folder name="Services">
-      <folder name="IDEConfiguration">
-        <folder name="ServerAndExternalToolSettings">
-          
-          <folder name="DiffTypes">
+        <folder name="DiffProviders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif"/>
-            <file name="Diffs.shadow">
-                <attr name="originalFile" stringvalue="Services/Diffs"/>
+            <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings">
+                <attr name="helpID" stringvalue="org.netbeans.modules.diff.cmdline.CmdlineDiffProvider"/>
             </file>
-            <file name="DiffProviders.shadow">
-                <attr name="originalFile" stringvalue="Services/DiffProviders"/>
+            <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings">
+                <attr name="helpID" stringvalue="org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider"/>
             </file>
-            <file name="DiffVisualizers.shadow">
-                <attr name="originalFile" stringvalue="Services/DiffVisualizers"/>
-            </file>
-            <file name="MergeVisualizers.shadow">
-                <attr name="originalFile" stringvalue="Services/MergeVisualizers"/>
-            </file>
-            <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.types"/>
-          </folder>
-
+            <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.providers"/>
         </folder>
-      </folder>
     </folder>
-  </folder>
     
     <folder name="Editors">
         <file name="org-netbeans-modules-diff-builtin-visualizer-editable-DiffHighlightsLayerFactory.instance"/>

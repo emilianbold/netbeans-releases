@@ -5,6 +5,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
 <title>UML Categories in the Options Window (UML Modeling)</title>
 <style type="text/css">
@@ -34,24 +35,67 @@
 	</li>
 	<li>Diagrams
 		<ul>
-			<li>Automatically Resize Elements </li>
-			<li>Display Compartment Titles</li>
-		    <li>Display Empty Lists </li>
-			<li>Reconnect to Presentation Boundary </li>
-			<li>Resize with Show Aliases Mode</li>
-			<li>Show Stereotype Icons</li>
-		    <li>Gradient Background</li>
-		    <li>Ask Before Layout </li>
-		    <li>Set Global Colors and Fonts </li>
-		</ul>
+			<li>Automatically Resize Elements
+              <ul>
+                <li>Expand or Contract as Needed </li>
+                <li>Expand but Never Contract</li>
+                <li> Expand Unless Manually Resized</li>
+                <li>Never Expand or Contract </li>
+              </ul>
+			</li>
+			<li>Display Compartment Titles
+              <ul>
+                <li>Always</li>
+                <li>When Selected </li>
+                <li>Never</li>
+              </ul>
+			</li>
+		    <li>Display Sequence Diagram Elements</li>
+		    <li> Show Nothing</li>
+		    <li> Show Operation</li>
+		    <li>Show Name  </li>
+		    <li>Diagram Elements </li>
+		    <ul>
+		      <li>Display Empty Lists </li>
+		      <li>Reconnect to Presentation Boundary </li>
+		      <li>Resize with Show Aliases Mode</li>
+		      <li>Show Stereotype Icons</li>
+		      <li>Gradient Background</li>
+		      <li>Ask Before Layout </li>
+	        </ul>
+		    </ul>
 	</li>
 	</ul>
 </td>
 </tr>
   <td>Templates</td>
-    <td>Includes the properties you set for the templates to use during your UML Modeling session. You can add new templates or edit or remove existing templates. See <a href="./configuring_templates_options.html">Configuring Domain Templates Options</a> for more information.
-	
-</td>
+    <td><p>Includes the properties you set for the templates to use during your UML Modeling session. You can add new templates or edit or remove existing templates. Included on this tab are:</p>
+      <ul>
+        <li>Domain Templates
+          <ul>
+            <li>Categories</li>
+            <li>Java
+              <ul>
+                <li>Basic Class</li>
+                <li>Basic Interface</li>
+                <li>Basic Enumeration</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>Element Type</li>
+        <li>Stereotype</li>
+        <li>Description </li>
+        <li>Output Parameters
+          <ul>
+            <li>Filename Format</li>
+            <li>Extension</li>
+            <li>Folder Path</li>
+            <li>Template File </li>
+          </ul>
+        </li>
+      </ul>      
+      <p>Also, a button enables you to add your own Domain Templates. See <a href="./configuring_templates_options.html">Configuring Domain Templates Options</a> for more information. </p>      </td>
 </tr>
 <tr valign="top">
 <td>Java Code Generation</td>
@@ -68,23 +112,16 @@
 	<ul>
 		<li> Remove Prefix from Name</li>
 		<li>Capitalize Attribute Name</li>
-        <li>Prefix for Write Accessors </li>
-        <li>Prefix for Read Accessors </li>
-        <li>Prefix for Member Attributes</li>
-	    </ul>
+        </ul>
 </li>
-<li>Collections
-  <ul>
-    <li>Collection Override Default</li>
-    <li> Collections Use Generics Default </li>
-    </ul>
-</li>
-<li>Miscellaneous
-  <ul>
-    <li>Display Duplicate Operation Dialog </li>
-    <li>Name Navigable Ends</li>
-  </ul>
-</li>
+<li>Prefix for Write Accessors </li>
+<li>Prefix for Read Accessors </li>
+<li>Prefix for Member Attributes</li>
+<li>Collection Override Default
+(usually java.util.ArrayList)</li>
+<li>Collections Use Generics Default </li>
+<li>Display Duplicate Operations Dialog</li>
+<li>Name Navigable Ends </li>
 </ul>
   </tr>
 <tr valign="top">
@@ -99,7 +136,8 @@
     <li>Automatically Create Classifiers</li>
     <li>Delete Combined Fragment Messages</li>
     <li>Move Invoked Operation</li>
-    <li>Allow Lengthy Searches  </li>
+    <li>Allow Lengthy Searches </li>
+  <li>Convert 6.1 and older diagram files </li>
   </ul>
   <p> When the property is set to <code>Ask</code>, the corresponding dialog  will appear. Otherwise, the specified action for the property will occur automatically.</p></td>
 </tr>

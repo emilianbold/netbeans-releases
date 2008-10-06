@@ -41,25 +41,25 @@
 package org.netbeans.performance.languages.actions;
 
 
-import org.netbeans.jellytools.NbDialogOperator;
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
 public class CreatePHPSampleProject  extends org.netbeans.modules.performance.utilities.PerformanceTestCase {
     public static final String suiteName="Scripting UI Responsiveness Actions suite";
     private NewProjectNameLocationStepOperator wizard_location;
     
-    public String category, project, project_name, project_type,  editor_name;
+    public String category, project, project_name, project_type;
     
     public CreatePHPSampleProject(String testName)
     {
@@ -83,7 +83,6 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
     @Override
     public void prepare(){
         log("::prepare");
-        System.out.println("::prepare");
         createProject();
     }
     
@@ -94,40 +93,37 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
         wizard.next();
         wizard_location = new NewProjectNameLocationStepOperator();
         
-        String directory = System.getProperty("nbjunit.workdir")+ java.io.File.separator + "createdProjects";
-        System.out.println(directory);
-       
+        String directory = CommonUtilities.getTempDir() + "createdProjects";
+
+        // TODO Remove this workaround once issue 145104 is fixed
+        new File(directory).mkdirs();
+
         wizard_location.txtProjectLocation().setText("");
-                
         waitNoEvent(1000);
-        wizard_location.txtProjectLocation().setText(directory);
-        System.out.println(wizard_location.txtProjectLocation().getText());
+        wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + System.currentTimeMillis();
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
-        
-   
     }
 
     public ComponentOperator open(){
         log("::open");    
         wizard_location.finish();
         
-        long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",120000);
-        System.out.println("wait wizard closed...");
+        //long oldTimeout = JemmyProperties.getCurrentTimeouts().getTimeout("ComponentOperator.WaitStateTimeout");
+        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        //System.out.println("wait wizard closed...");
         wizard_location.waitClosed();
-        System.out.println("done1...");
-        System.out.println("project creation dialog closed");
-        waitProjectCreatingDialogClosed();
-        System.out.println("done2....");
+        //System.out.println("done1...");
+        //System.out.println("project creation dialog closed");
+        //waitProjectCreatingDialogClosed();
+        //System.out.println("done2....");
 
-        JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout",oldTimeout);        
-
-        TopComponentOperator.findTopComponent(editor_name, 0);
+        //JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", oldTimeout);
+        
         return null;
     }
     
@@ -135,47 +131,38 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
     public void close(){
         log("::close");
 
-        try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
-        try {
-            CommonUtilities.deleteProject(project_name);
-        } catch(Exception ee) {
-            log("Exception during project deletion: "+ee.getMessage());
-        }
+        ProjectSupport.closeProject(project_name);
     }    
     
-    private void waitProjectCreatingDialogClosed()
-    {
-       String dlgName = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
-       try {
-           NbDialogOperator dlg = new NbDialogOperator(dlgName);
-           dlg.waitClosed();
-       } catch(TimeoutExpiredException tex) {
-           //
-       }
-       
-    }
-    
-    public void testCreatePhpProject()
-    {
-        category = "PHP";
-        project = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "Templates/Project/PHP/PHPProject.php");
-        project_type="PHPApplication";
-        editor_name = "index.php";
-        doMeasurement();        
-    }
+//    private void waitProjectCreatingDialogClosed()
+//    {
+//       String dlgName = Bundle.getString("org.netbeans.modules.visualweb.project.jsf.ui.Bundle", "CAP_Opening_Projects");
+//       try {
+//           NbDialogOperator dlg = new NbDialogOperator(dlgName);
+//           dlg.waitClosed();
+//       } catch(TimeoutExpiredException tex) {
+//           tex.printStackTrace(getLog());
+//       }
+//
+//    }
     
     public void testCreatePhpSampleProject() {
-        category = "Samples|PHP";
-        project = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle", "Templates/Project/Samples/PHP/AirAlliance");
-        project_type="PHPSampleApp";
-        editor_name = "index.php";        
+        category = "Samples|PHP";        
+        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle",
+                "Templates/Project/Samples/PHP/AirAlliance");  // "Air Alliance Sample Application"
+        project_type="PHPSampleApp";              
         doMeasurement();
     }
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new CreatePHPSampleProject("testCreatePhpProject"));
-    }    
+
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(CreatePHPSampleProject.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+
+        );    
+    }
 }

@@ -58,7 +58,7 @@ H23
         
 #if FOUR > 5
         HI    
-#elseif FOUR+FOUR > 7
+#elif FOUR+FOUR > 7
         HI
 #else
         H2

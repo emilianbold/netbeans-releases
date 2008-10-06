@@ -126,7 +126,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
         if (enabled) {
-            boolean withDatasources = Util.isSupportedJavaEEVersion(project) || Util.isEjb21Module(project);
+            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
             if (withDatasources) {
                 initializeWithDatasources();
             } else {
@@ -637,6 +637,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         tableClosureCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_IncludeRelatedTables")); // NOI18N
+        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "TXT_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -667,8 +668,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                     .add(dbschemaRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dbschemaComboBox, 0, 380, Short.MAX_VALUE)
-                    .add(datasourceComboBox, 0, 380, Short.MAX_VALUE)))
+                    .add(dbschemaComboBox, 0, 387, Short.MAX_VALUE)
+                    .add(datasourceComboBox, 0, 387, Short.MAX_VALUE)))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, tablesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
         );
@@ -682,7 +683,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(dbschemaRadioButton)
                     .add(dbschemaComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, Short.MAX_VALUE)
                 .add(tablesPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -818,6 +819,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         private boolean cmp;
 
         boolean waitingForScan;
+        
+        private String title;
+        
+        public WizardPanel(String wizardTitle) {
+            title = wizardTitle;
+        }
 
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
@@ -845,6 +852,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 

@@ -59,7 +59,7 @@ public interface SelectionTreeBuilder {
         }
 
         public String getDisplayName() {
-            return "YOU SHOULD NOT SEE THIS";
+            return "YOU SHOULD NOT SEE THIS"; // NOI18N
         }
 
         public String getID() {

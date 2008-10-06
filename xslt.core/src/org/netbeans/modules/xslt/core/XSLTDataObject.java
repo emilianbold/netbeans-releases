@@ -78,7 +78,6 @@ public class XSLTDataObject extends MultiDataObject {
     private static final long serialVersionUID = 1L;
     private static final String FILE_DESC = "LBL_FileNode_desc";      // NOI18N
     private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
-    private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
     private XSLTDataEditorSupport myDataEditorSupport;
     
     public XSLTDataObject(final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
@@ -97,17 +96,7 @@ public class XSLTDataObject extends MultiDataObject {
     
     @SuppressWarnings("unchecked")
     public Lookup getLookup() {
-        Lookup lookup;
-        List<Lookup> list = new LinkedList<Lookup>();
-        //TODO m
         if (myLookup.get() == null) {
-            
-            list.add(Lookups.fixed( new Object[]{
-                    super.getLookup(), 
-                    this}));            
-            
-            list.add(getCookieSet().getLookup());
-
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
                 private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
@@ -122,9 +111,6 @@ public class XSLTDataObject extends MultiDataObject {
                     }
                     if (obj == MapperContext.class) {
                         return getEditorSupport().getMapperContext();
-                    }
-                    if (obj == XSLTDataEditorSupport.class) {
-                        return getEditorSupport();
                     }
                     return null;
                 }
@@ -141,15 +127,16 @@ public class XSLTDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            list.add(Lookups.fixed(
-                    new Class[] { XslModel.class,
-                    Controller.class,
-                    MapperContext.class, 
-                    XSLTDataEditorSupport.class}, conv));
-            lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
+            
+            Lookup lookup = new ProxyLookup(
+                    // No need to add XSLTDataEditorSupport, since already added to the cookie set,
+                    // and thus already present in getCookieSet().getLookup().
+                    Lookups.fixed(new Class[] { XslModel.class, Controller.class, MapperContext.class }, conv),
+                    // Do not call super.getLookup(), it is deadlock-prone!
+                    getCookieSet().getLookup()
+            );
             
             myLookup.compareAndSet(null, lookup);
-            isLookupInit.compareAndSet( false, true );
         }
         return myLookup.get();
     }

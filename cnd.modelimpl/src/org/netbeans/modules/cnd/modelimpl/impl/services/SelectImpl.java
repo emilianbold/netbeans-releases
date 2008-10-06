@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -236,13 +235,17 @@ public class SelectImpl extends CsmSelect {
 
     @Override
     public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
-        if (cls instanceof ClassImpl){
-            return ((ClassImpl)cls).getMembers(filter);
+        if (cls instanceof FilterableMembers){
+            return ((FilterableMembers)cls).getMembers(filter);
         }
         return cls.getMembers().iterator();
     }
 
     private static interface Filter extends CsmFilter, UIDFilter {
+    }
+    
+    public static interface FilterableMembers {
+        Iterator<CsmMember> getMembers(CsmFilter filter);
     }
     
     @SuppressWarnings("unchecked")
@@ -258,6 +261,10 @@ public class SelectImpl extends CsmSelect {
 
         public CsmFilter createOffsetFilter(final int startOffset, final int endOffset) {
             return new OffsetFilterImpl(startOffset, endOffset);
+        }
+
+        public CsmFilter createOffsetFilter(int innerOffset) {
+            return new InnerOffsetFilterImpl(innerOffset);
         }
 
         public CsmFilter createCompoundFilter(final CsmFilter first, final CsmFilter second) {
@@ -348,6 +355,31 @@ public class SelectImpl extends CsmSelect {
             @Override
             public String toString() {
                 return "start offset=" + startOffset + "; endOffset=" + endOffset; // NOI18N
+            }
+        }
+
+        private static class InnerOffsetFilterImpl implements Filter {
+            private final int innerOffset;
+
+            public InnerOffsetFilterImpl(int innerOffset) {
+                this.innerOffset = innerOffset;
+            }
+
+            public boolean accept(CsmUID uid) {
+                int start = UIDUtilities.getStartOffset(uid);
+                int end = UIDUtilities.getEndOffset(uid);
+                if (start < 0) {
+                    return true;
+                }
+                if (start <= innerOffset && innerOffset <= end) {
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return "inner offset=" + innerOffset; // NOI18N
             }
         }
 

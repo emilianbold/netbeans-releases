@@ -40,3 +40,4 @@
 # Old repackaging.
 org.UnknownClass=org.netbeans.modules.settings.convertors.FooSetting
 org.netbeans.modules.settings.convertors.ObsoleteClass=org.netbeans.modules.settings.convertors.FooSetting
+org.netbeans.modules.settings.convertors.RemovedClass=

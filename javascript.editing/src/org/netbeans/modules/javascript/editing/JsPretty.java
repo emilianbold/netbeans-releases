@@ -41,19 +41,20 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
@@ -71,7 +72,7 @@ public class JsPretty {
     private final TokenSequence<? extends JsTokenId> ts;
     private final int begin;
     private final int end;
-    private final LinkedList<Diff> diffs = new LinkedList<Diff>();
+    private final ArrayList<Diff> diffs = new ArrayList<Diff>();
     private int indent;
     // marker for last handled offset, we don't want to handle token twice
     private int lastHandledOffset = -1;
@@ -79,14 +80,14 @@ public class JsPretty {
     private final int continuationIndentSize;
     private final int tabSize;
     
-    public JsPretty(CompilationInfo info, BaseDocument document, int begin, int end, CodeStyle codeStyle) {
+    public JsPretty(CompilationInfo info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
         this.info = info;
         this.doc = document;
         this.begin = begin;
         this.end = end;
         this.ts = LexUtilities.getPositionedSequence(doc, 0, false);
-        this.indentSize = codeStyle.getIndentSize();
-        this.continuationIndentSize = codeStyle.getContinuationIndentSize();
+        this.indentSize = indentSize;
+        this.continuationIndentSize = continuationIndentSize;
         //Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
         // Tab settings are still global...
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
@@ -472,10 +473,10 @@ public class JsPretty {
                             positionedTs.moveNext();
                             org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(positionedTs);
                             String indentString = null;
-                            if (indent > 0 && next.id() == JsTokenId.LBRACE) {
+                            if (indent > 0 && next.id() == JsTokenId.LBRACE && !diffs.isEmpty()) {
                                 lbraceOnNewLine = true;
                                 // dirty trick - take indent from previous line if LBRACE is on new line
-                                indentString = diffs.getFirst().text;
+                                indentString = diffs.get(diffs.size()-1).text;
                             } else {
                                 indentString = getIndent();
                             }
@@ -614,25 +615,7 @@ public class JsPretty {
     }
     
     private String getIndent() {
-
-        // TODO: use global settings
-        boolean expandTabToSpaces = true;
-
-        StringBuilder sb = new StringBuilder();
-        int col = 0;
-        if (!expandTabToSpaces) {
-            while (col + tabSize <= indent) {
-                sb.append('\t'); //NOI18N
-
-                col += tabSize;
-            }
-        }
-        while (col < indent) {
-            sb.append(" "); //NOI18N
-
-            col++;
-        }
-        return sb.toString();
+        return IndentUtils.createIndentString(doc, indent);
     }
 
     private void addDiff(int start, int end, String text, String caller) {
@@ -644,15 +627,15 @@ public class JsPretty {
 //        System.out.println("> addDiff(" + start + "," + end + ",[" + text + "]) - " + caller);
 
         if (end < doc.getLength()) {
-            diffs.addFirst(new Diff(start, end, text));
+            diffs.add(new Diff(start, end, text));
         }
     }
 
-    LinkedList<Diff> getDiffs() {
+    ArrayList<Diff> getReverseDiffs() {
         return diffs;
     }
 
-    static class Diff {
+    static class Diff implements Comparable<Diff> {
 
         final int start;
         final int end;
@@ -666,7 +649,24 @@ public class JsPretty {
 
         @Override
         public String toString() {
-            return "Diff<" + start + "," + end + ">: [" + text + "]"; //NOI18N
+            //StringBuilder sb = new StringBuilder();
+            //sb.append("Diff<" + start + "," + end + ">:");
+            //if (end > start && text.length() > 0) {
+            //    sb.append("Replace " + (end-start) + " chars with '" + text + "'");
+            //} else if (end > start) {
+            //    sb.append("Delete " + (end-start) + " chars");
+            //} else {
+            //    sb.append("Insert '" + text + "'");
+            //}
+            //return sb.toString();
+            return "Diff<" + start + "," + end + ">: [" + text.replace("\n", "\\n") + "]"; //NOI18N
+        }
+
+        public int compareTo(Diff other) {
+            if (start != other.start) {
+                return start-other.start;
+            }
+            return end-other.end;
         }
     }
 

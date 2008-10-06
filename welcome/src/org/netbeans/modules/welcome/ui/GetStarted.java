@@ -60,6 +60,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.openide.cookies.InstanceCookie;
@@ -68,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -75,14 +77,13 @@ import org.openide.util.Utilities;
  *
  * @author S. Aubrecht
  */
-class GetStarted extends JPanel implements Constants {
+class GetStarted extends BackgroundPanel implements Constants {
 
     private int row;
 
     /** Creates a new instance of RecentProjects */
     public GetStarted() {
         super( new GridBagLayout() );
-        setOpaque( false );
         buildContent();
     }
     
@@ -128,8 +129,7 @@ class GetStarted extends JPanel implements Constants {
         }
         OpenCookie oc = (OpenCookie)dob.getCookie( InstanceCookie.class );
         if( null != oc ) {
-            JPanel panel = new JPanel( new GridBagLayout() );
-            panel.setOpaque( false );
+            JPanel panel = new BackgroundPanel( new GridBagLayout() );
             
             LinkAction la = new LinkAction( dob );
             ActionButton lb = new ActionButton( la, false, Utils.getUrlString( dob ) );
@@ -145,7 +145,7 @@ class GetStarted extends JPanel implements Constants {
                 Object imgKey = dob.getPrimaryFile().getAttribute("imageKey"); //NOI18N
                 if( null != imgKey ) {
                     String imgLocation = bundle.getString(imgKey.toString());
-                    Image img = Utilities.loadImage(imgLocation, true);
+                    Image img = ImageUtilities.loadImage(imgLocation, true);
                     JLabel lbl = new JLabel( new ImageIcon(img) );
                     lbl.setVerticalAlignment( SwingConstants.TOP );
                     panel.add( lbl, 

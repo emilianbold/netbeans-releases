@@ -66,10 +66,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.MigrateAction;
-import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.plugins.PluginAction;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
+import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
@@ -147,15 +147,15 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = root.getLookup().lookup(Project.class);
-        if (project == null) {
+        Project _project = root.getLookup().lookup(Project.class);
+        if (_project == null) {
             return null;
         }
         
         if (target instanceof FileObject) {
             FileObject targetFO = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(targetFO);
-            if (!project.equals(owner)) {
+            if (!_project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
             
@@ -211,30 +211,10 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-//    private static Lookup createLookup( Project project ) {
-//        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-//        // XXX Remove root folder after FindAction rewrite
-//        return Lookups.fixed(new Object[] {project, rootFolder});
-//    }
-    
-    
-    // Private innerclasses ----------------------------------------------------------------
-    
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        RailsProjectProperties.JAVAC_CLASSPATH,
-        RailsProjectProperties.RUN_CLASSPATH,
-        RailsProjectProperties.DEBUG_CLASSPATH,
-        RailsProjectProperties.RUN_TEST_CLASSPATH,
-        RailsProjectProperties.DEBUG_TEST_CLASSPATH,
-        RailsProjectProperties.JAVAC_TEST_CLASSPATH,
-    };
-    
-//    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
-    
-    /** Filter node containin additional features for the Ruby physical
-     */
-    private final class RailsLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
-        
+    /** Filter node containin additional features for the Ruby physical. */
+    private final class RailsLogicalViewRootNode extends AbstractNode
+            implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+
         private Set<FileObject> files;
         private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
@@ -474,12 +454,11 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         // Private methods -------------------------------------------------------------
         
-        @SuppressWarnings("unchecked")
         private Action[] getAdditionalActions() {
             
             ResourceBundle bundle = NbBundle.getBundle(RailsLogicalViewProvider.class);
             
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             
             actions.add(SystemAction.get(GenerateAction.class));
             actions.add(null);
@@ -490,6 +469,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             //actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
             //actions.add(null);
             actions.add(SystemAction.get(RakeRunnerAction.class));
+            actions.add(SystemAction.get(IrbAction.class));
             actions.add(SystemAction.get(MigrateAction.class));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_RAILS_CONSOLE, bundle.getString("LBL_ConsoleAction_Name"), null)); // NOI18N
@@ -526,7 +506,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
 
         public @Override String toString() {

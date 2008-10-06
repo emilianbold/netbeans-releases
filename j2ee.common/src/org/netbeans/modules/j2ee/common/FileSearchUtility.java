@@ -71,14 +71,13 @@ public final class FileSearchUtility {
     * @param onlyWritables only recurse into wriable directories
     * @return enumeration of type <code>FileObject</code>
     */
-    public static Enumeration getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
-        class WithChildren implements Enumerations.Processor {
+    public static Enumeration<FileObject> getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
+        class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
             private int rootDepth;
             public WithChildren(final int rootDepth) {
                 this.rootDepth = rootDepth;
             }
-            public Object process(final Object obj, final Collection toAdd) {
-                FileObject fo = (FileObject)obj;
+            public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (!onlyWritables || (onlyWritables && fo.canWrite())) {
                     if (fo.isFolder() && (getDepth(fo) - rootDepth) < depth) {
                         toAdd.addAll(Arrays.asList(fo.getChildren()));
@@ -95,9 +94,9 @@ public final class FileSearchUtility {
     }
 
     public static FileObject guessWebInf(FileObject dir) {        
-        Enumeration ch = getChildrenToDepth(dir, 3, true);
+        Enumeration<FileObject> ch = getChildrenToDepth(dir, 3, true);
         while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
+            FileObject f = ch.nextElement ();
             if (f.isFolder()) {
                 final FileObject webXmlFO = f.getFileObject("web.xml"); //NOI18N
                 if (webXmlFO != null && webXmlFO.isData()) {
@@ -111,9 +110,9 @@ public final class FileSearchUtility {
     
     public static FileObject guessDocBase(FileObject dir) {
         FileObject potentialDocBase = null;
-        Enumeration ch = getChildrenToDepth(dir, 3, true);
+        Enumeration<FileObject> ch = getChildrenToDepth(dir, 3, true);
         while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
+            FileObject f = ch.nextElement ();
             if (f.isData() && f.getExt().equals("jsp")) { //NOI18N
                 return f.getParent();
             } else if (f.isFolder() && (f.getName().equalsIgnoreCase("web") || f.getName().equalsIgnoreCase("webroot"))) { //NOI18N
@@ -132,9 +131,9 @@ public final class FileSearchUtility {
                 return lib;
             }
         }
-        Enumeration ch = getChildrenToDepth(dir, 3, true);
+        Enumeration<FileObject> ch = getChildrenToDepth(dir, 3, true);
         while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
+            FileObject f = ch.nextElement ();
             if (f.getExt ().equals ("jar")) { //NOI18N
                 return f.getParent ();
             }
@@ -143,14 +142,14 @@ public final class FileSearchUtility {
     }
     
     public static FileObject[] guessJavaRoots(final FileObject dir) {
-        List foundRoots = new ArrayList();
+        List<FileObject> foundRoots = new ArrayList<FileObject>();
         if (null == dir)
             return null;
-        Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 10, true); // .getChildren(true);
+        Enumeration<FileObject> ch = FileSearchUtility.getChildrenToDepth(dir, 10, true); // .getChildren(true);
         try {
             // digging through 10 levels exhaustively is WAY TOO EXPENSIVE
             while (ch.hasMoreElements () && foundRoots.isEmpty()) {
-                FileObject f = (FileObject) ch.nextElement ();
+                FileObject f = ch.nextElement ();
                 if (f.getExt().equals("java") && !f.isFolder()) { //NOI18N
                     String pckg = guessPackageName(f);
                     String pkgPath = f.getParent().getPath(); 
@@ -181,7 +180,7 @@ public final class FileSearchUtility {
         } else {
             FileObject[] resultArr = new FileObject[foundRoots.size()];
             for (int i = 0; i < foundRoots.size(); i++) {
-                resultArr[i] = (FileObject) foundRoots.get(i);
+                resultArr[i] = foundRoots.get(i);
             }
             return resultArr;
         }

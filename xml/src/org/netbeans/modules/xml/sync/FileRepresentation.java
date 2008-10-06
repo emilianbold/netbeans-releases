@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.sync;
 
+import org.netbeans.modules.xml.util.Util;
 import java.util.Date;
 import java.io.*;
 
@@ -49,7 +50,6 @@ import org.xml.sax.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.lib.*;
 import org.netbeans.modules.xml.sync.*;
 
@@ -123,7 +123,7 @@ public class FileRepresentation extends SyncRepresentation {
      * conflict.
      */
     public String getDisplayName() {
-        return Util.THIS.getString ("PROP_File_representation");
+        return Util.THIS.getString (FileRepresentation.class, "PROP_File_representation");
     }
 
     /**

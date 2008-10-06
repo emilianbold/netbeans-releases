@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -54,22 +52,21 @@ import org.openide.filesystems.FileObject;
  */
 public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementation {
     
-    
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private MakeConfigurationDescriptor projectDescriptor = null;
+    private MakeProject project;
     private String nameCache = null;
     private Charset cache = null;
     
     /** Creates a new instance of J2SEProjectEncodingQueryImpl */
-    public MakeProjectEncodingQueryImpl(ConfigurationDescriptorProvider projectDescriptorProvider) {
-        this.projectDescriptorProvider = projectDescriptorProvider;
+    public MakeProjectEncodingQueryImpl(MakeProject project) {
+        this.project = project;
     }
     
     public Charset getEncoding(FileObject file) {
         assert file != null;
         
         synchronized (this) {
-            String enc = getMakeConfigurationDescriptor().getSourceEncoding();
+            String enc = project.getSourceEncoding();
+            
             if (!enc.equals(nameCache)) {
                 cache = null;
                 nameCache = enc;
@@ -93,12 +90,5 @@ public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementatio
             }
             return cache;
         }
-    }
-    
-    private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
-        if (projectDescriptor == null) {
-            projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-        }
-        return projectDescriptor;
     }
 }

@@ -19,6 +19,7 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -32,23 +33,26 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="filesPanel" pref="610" max="32767" attributes="0"/>
+                  </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="284" max="-2" attributes="0"/>
                       <Component id="progressPanel" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="filesPanel" alignment="1" pref="637" max="32767" attributes="0"/>
-                          <Component id="jScrollPane1" alignment="0" pref="637" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="496" max="32767" attributes="0"/>
-                      <Component id="recentLink" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="filesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="jScrollPane1" alignment="0" pref="610" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="482" max="32767" attributes="0"/>
+                              <Component id="recentLink" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="filesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -68,12 +72,11 @@
               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               <Component id="filesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="filesPanel" min="-2" pref="181" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="filesPanel" pref="164" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -135,12 +138,12 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="637" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="610" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="181" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="164" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -166,9 +169,9 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Component id="jLabel3" pref="163" max="32767" attributes="0"/>
+                  <Component id="jLabel3" pref="156" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="barPanel" pref="190" max="32767" attributes="0"/>
+                  <Component id="barPanel" pref="182" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -202,7 +205,7 @@
             </Property>
           </Properties>
         </Component>
-  </SubComponents>
+      </SubComponents>
     </Container>
   </SubComponents>
 </Form>

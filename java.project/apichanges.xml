@@ -107,20 +107,38 @@ is the proper place.
 
     <changes>
         
-        <change id="ProjectRunner">
+        <change id="javadoc-root-and-source-root-detection">
             <api name="general"/>
-            <summary>Added ProjectRunner</summary>
-            <version major="1" minor="19"/>
-            <date day="7" month="7" year="2008"/>
+            <summary>Detection of Javadoc root and source root</summary>
+            <version major="1" minor="20"/>
+            <date day="22" month="7" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Class <code>JavadocAndSourceRootDetection</code> added with couple of
+                    helper methods to detect Javadoc and/or sources root.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="JavadocAndSourceRootDetection"/>
+            <issue number="124779"/>
+        </change>
+
+        <change id="JavaRunner">
+            <api name="general"/>
+            <summary>Added JavaRunner</summary>
+            <version major="1" minor="22"/>
+            <date day="29" month="9" year="2008"/>
             <author login="jlahoda"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Class <code>ProjectRunner</code> added.
+                    Classes <code>JavaRunner</code> and <code>JavaRunnerImplementation</code> added.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.project.runner" name="ProjectRunner"/>
-            <issue number="999999"/>
+            <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
+            <class package="org.netbeans.spi.java.project.runner" name="JavaRunnerImplementation"/>
+            <issue number="138504"/>
         </change>
         
         <change id="LookupMerger">

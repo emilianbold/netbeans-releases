@@ -61,6 +61,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String PRIVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
+    public static final String LOG_FILE = "DW:logFile"; // NOI18N
     public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
     public static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
     public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
@@ -119,6 +120,14 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     
     public void setAditionalLibraries(String binaryPath) {
         putProperty(ADDITIONAL_LIBRARIES, binaryPath);
+    }
+
+    public String getBuildLog() {
+        return (String) getProperty(LOG_FILE);
+    }
+
+    public void setBuildLog(String logFile) {
+        putProperty(LOG_FILE, logFile);
     }
     
     public DiscoveryProvider getProvider(){
@@ -243,6 +252,14 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         public void setAditionalLibraries(String binaryPath) {
             wizard.putProperty(ADDITIONAL_LIBRARIES, binaryPath);
         }
+
+        public String getBuildLog() {
+            return (String) wizard.getProperty(LOG_FILE);
+        }
+
+        public void setBuildLog(String logFile) {
+            wizard.putProperty(LOG_FILE, logFile);
+        }
         
         public DiscoveryProvider getProvider(){
             return (DiscoveryProvider) wizard.getProperty(PRIVIDER);
@@ -320,6 +337,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setRootFolder(null);
             setBuildResult(null);
             setAditionalLibraries(null);
+            setBuildLog(null);
             setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);
@@ -373,6 +391,14 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         public void setAditionalLibraries(String binaryPath) {
             map.put(ADDITIONAL_LIBRARIES, binaryPath);
+        }
+
+        public String getBuildLog() {
+            return (String) map.get(LOG_FILE);
+        }
+
+        public void setBuildLog(String logFile) {
+            map.put(LOG_FILE, logFile);
         }
         
         public DiscoveryProvider getProvider(){
@@ -451,6 +477,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setRootFolder(null);
             setBuildResult(null);
             setAditionalLibraries(null);
+            setBuildLog(null);
             setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);

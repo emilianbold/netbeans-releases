@@ -60,6 +60,10 @@ import org.openide.util.NbBundle;
  */
 public class SequenceTimeSpinner extends JSpinner {
 	
+    private static final int STEP = 10;
+    private static final int MIN = 10;
+    
+    
 	private Sequence sequence;
 		
 	public SequenceTimeSpinner(Sequence sequence) {
@@ -72,7 +76,7 @@ public class SequenceTimeSpinner extends JSpinner {
 			}
 		});
 		//System.out.println("MS " + this.sequence.getFrameMs());
-		SpinnerNumberModel model = new SpinnerNumberModel(this.sequence.getFrameMs(), 10, Integer.MAX_VALUE, 10);
+		SpinnerNumberModel model = new SpinnerNumberModel(this.sequence.getFrameMs(), MIN, Integer.MAX_VALUE, STEP);
 		this.setModel(model);
 		this.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -107,8 +111,13 @@ public class SequenceTimeSpinner extends JSpinner {
 			}
 			try {
 				int ms = Integer.parseInt(str);
-				this.spinner.getModel().setValue(ms);
-				this.setForeground(Color.BLACK);
+                if (ms < MIN) {
+                    this.setForeground(Color.RED);
+                }
+                else {
+                    this.spinner.getModel().setValue(ms);
+                    this.setForeground(Color.BLACK);
+                }
 			}  catch (NumberFormatException nfe) {
 				this.setForeground(Color.RED);
 			}

@@ -45,7 +45,6 @@ import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.uml.drawingarea.persistence.util.XMIConstants;
-import org.netbeans.modules.uml.drawingarea.persistence.XMIWriter;
 
 /**
  *
@@ -60,10 +59,19 @@ public class EdgeWriter extends Writer {
     protected String srcAnchorID;
     protected String targetAnchorID;
     protected HashMap edgeAttrs = new HashMap();
+    private HashMap edgeProperties = new HashMap();
 
     public EdgeWriter(BufferedWriter writer) {
         super(writer);
 //        this.bw = writer;
+    }
+
+    public HashMap getEdgeProperties() {
+        return edgeProperties;
+    }
+
+    public void setEdgeProperties(HashMap edgeProperties) {
+        this.edgeProperties = edgeProperties;
     }
 
     public void setAnchorType(String anchorType) {
@@ -97,6 +105,10 @@ public class EdgeWriter extends Writer {
         XMIWriter.writeGraphElementPosition(bw, "GRAPHELEMENT", location);
         //write graph edge way points
         XMIWriter.writeEdgeWayPoints(bw, wayPoints);
+        if (!getEdgeProperties().isEmpty())
+        {
+            XMIWriter.writeProperties(bw, getDiagramElementProperties(getEdgeProperties()));
+        }
         //write graph elemnet symantic model
         XMIWriter.writeSymanticModelBridge(bw, getSymanticModelBridgeAttrs(), elementType, MEID);
     //write contained.
@@ -105,6 +117,20 @@ public class EdgeWriter extends Writer {
 
     public void endGraphEdge() {
         XMIWriter.writeEndElement(bw, XMIConstants.UML_GRAPHEDGE);
+    }
+
+    @Override
+    public void beginGraphNode()
+    {
+        XMIWriter.writeElement(bw, XMIConstants.UML_GRAPHNODE, getNodeAttrs());
+        writePositionSize();
+        //do we have any properties?
+        if (!getProperties().isEmpty())
+        {
+            XMIWriter.writeProperties(bw, getDiagramElementProperties(getProperties()));
+        }
+        //write graph elemnet symantic model
+        XMIWriter.writeSimpleSymanticModel(bw, getSimpleSymanticModelEltAttrs());
     }
 
     public void writeEdgeAnchors() {

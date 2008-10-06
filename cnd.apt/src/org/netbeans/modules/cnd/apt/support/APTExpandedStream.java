@@ -355,7 +355,7 @@ public class APTExpandedStream implements TokenStream {
                             case APTTokenTypes.ID:
                             {
                                 // may be it is parameter of macro to substitute with input parameter value  
-                                List<Token> paramValue = paramsMap.get(APTUtils.getTokenTextKey(token));
+                                List<Token> paramValue = paramsMap.get(token.getText());
                                 if (paramValue != null) {
                                     // found param, so expand it and skip current token
                                     List<Token> expandedValue = expandParamValue(paramValue, callback, expandPPExpression);
@@ -363,11 +363,11 @@ public class APTExpandedStream implements TokenStream {
                                         if (DebugUtils.STANDALONE) {
                                             System.err.printf(
                                                     "parameter '%s' was empty substituted due to very long output value when expanding macros:\n %s\n", // NOI18N
-                                                    APTUtils.getTokenTextKey(token), macro.getName());
+                                                    token.getText(), macro.getName());
                                         } else {
                                             APTUtils.LOG.log(Level.WARNING,
                                                     "parameter '{0}' was empty substituted due to very long output value when expanding macros:\n {1}\n", // NOI18N
-                                                    new Object[] {APTUtils.getTokenTextKey(token), macro.getName()});
+                                                    new Object[] {token.getText(), macro.getName()});
                                         }
                                         return Collections.<Token>emptyList();
                                     }
@@ -417,7 +417,7 @@ public class APTExpandedStream implements TokenStream {
                     token = null;                    
                     // stringize next token, it must be param!
                     assert (laToken.getType() == APTTokenTypes.ID);
-                    Token stringized = stringizeParam(paramsMap.get(APTUtils.getTokenTextKey(laToken)));
+                    Token stringized = stringizeParam(paramsMap.get(laToken.getText()));
                     laToken = body.nextToken(); 
                     switch (laToken.getType()) {
                         case APTTokenTypes.DBL_SHARP:
@@ -454,7 +454,7 @@ public class APTExpandedStream implements TokenStream {
         int i=0;
         Token lastMacroParam = null;
         for (Token macroParam : macroParams) {
-            map.put(APTUtils.getTokenTextKey(macroParam), i < numInList ? params.get(i) : Collections.<Token>emptyList());
+            map.put(macroParam.getText(), i < numInList ? params.get(i) : Collections.<Token>emptyList());
             i++;
             lastMacroParam = macroParam;
         }
@@ -462,7 +462,7 @@ public class APTExpandedStream implements TokenStream {
         // if remains values and last param of macro is VA_ARG => 
         // add all remains to the last value separating by comma as it was in macro call
         if (i < numInList && APTUtils.isVaArgsToken(lastMacroParam)) {
-            List<Token> vaArgsVal = map.get(APTUtils.getTokenTextKey(lastMacroParam));
+            List<Token> vaArgsVal = map.get(lastMacroParam.getText());
             for (; i < numInList; i++) {
                 vaArgsVal.add(APTUtils.COMMA_TOKEN);
                 vaArgsVal.addAll(params.get(i));
@@ -473,14 +473,14 @@ public class APTExpandedStream implements TokenStream {
 
     private static List<Token> createConcatenation(Token tokenLeft, Token tokenRight, final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap) {
         //TODO: finish it, use lexer
-        List<Token> valLeft = paramsMap.get(APTUtils.getTokenTextKey(tokenLeft));
+        List<Token> valLeft = paramsMap.get(tokenLeft.getText());
         String leftText;
         if (valLeft != null) {
             leftText = toText(valLeft, false);
         } else {
             leftText = tokenLeft.getText();
         }
-        List<Token> valRight = paramsMap.get(APTUtils.getTokenTextKey(tokenRight));
+        List<Token> valRight = paramsMap.get(tokenRight.getText());
         String rightText;
         if (valRight != null) {
             rightText = toText(valRight, false);

@@ -38,11 +38,9 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * There hardly is a way to unit test remote operations.
@@ -56,6 +54,50 @@ public class ScpTestCase extends RemoteTestBase {
         super(testName);
     }
 
+//    public void testNewJsch() throws Exception {
+//        // this test will fail, setEnv doesn't allow to set any vars
+//        System.err.println("test");
+//        Map<String, String> env = new HashMap<String, String>();
+//        env.put("envTestKey", "envTestValue");
+//        String key = getKey();
+//        RemoteCommandSupport support = new RemoteCommandSupport(key, "setenv", env, 32);
+//        support.run();
+//        System.err.println("result = " + support.getExitStatus());
+//        System.err.println("output=" + support.toString());
+//        assert support.toString().indexOf("envTestKey=envTestValue") > -1;
+//    }
+
+    private static final String cshLine = "setenv envTestKey \"envTestValue\";setenv envTestKey2 \"envTestValue2\";";
+    private static final String cshLine2 = "setenv envTestKey2 \"envTestValue2\";setenv envTestKey \"envTestValue\";";
+    private static final String bashLine = "export envTestKey=\"envTestValue\";export envTestKey2=\"envTestValue2\";";
+    private static final String bashLine2 = "export envTestKey2=\"envTestValue2\";export envTestKey=\"envTestValue\";";
+
+    public void testShellUtils() throws Exception {
+        Map<String, String> env = new HashMap<String, String>();
+        env.put("envTestKey", "envTestValue");
+        env.put("envTestKey2", "envTestValue2");
+        String line = ShellUtils.prepareExportString(true, env);
+        assert cshLine.equals(line) || cshLine2.equals(line);
+        String line2 = ShellUtils.prepareExportString(false, env);
+        assert bashLine.equals(line2) || bashLine2.equals(line2);
+        String[] env2 = {"envTestKey=envTestValue","envTestKey2=envTestValue2"};
+        String line3= ShellUtils.prepareExportString(true, env2);
+        assert cshLine.equals(line3) || cshLine2.equals(line3);
+        String line4 = ShellUtils.prepareExportString(false, env2);
+        assert bashLine.equals(line4) || bashLine2.equals(line4);
+    }
+
+//    public void testFileExistst() throws Exception {
+//        HostInfoProvider hip = HostInfoProvider.getDefault();
+//        assert hip.fileExists(getKey(), "/tmp/xxx");
+//        assert !hip.fileExists(getKey(), "/tmp/xxx222");
+//    }
+
+//    public void testGetEnv() throws Exception {
+//        Map<String, String> env = RemoteHostInfoProvider.getDefault().getEnv(getKey());
+//        assert env != null && env.size() > 0;
+//    }
+//
 //    public void testCopyTo() throws Exception {
 //        File localFile = File.createTempFile("cnd", ".cnd");
 //        FileWriter fstream = new FileWriter(localFile);

@@ -115,6 +115,9 @@ class LogFormatter extends XMLFormatter{
     }
     
     private void printFrame(StackTraceElement frame, StringBuffer sb){
+        if (frame == null){ // might be caused by OOM bugs see #145298
+            return;
+        }
         sb.append("    <frame>\n");// NOI18N
         sb.append("      <class>");// NOI18N
         escape(sb, frame.getClassName());
@@ -283,14 +286,12 @@ class LogFormatter extends XMLFormatter{
         sb.append(record.getThreadID());
         sb.append("</thread>\n");// NOI18N
         
-        // Format the message string and its accompanying parameters.
-        String message = formatMessage(record);
         if (record.getMessage() != null) {
             sb.append("  <message>");// NOI18N
-            escape(sb, message);
+            escape(sb, record.getMessage());
             sb.append("</message>\n");// NOI18N
         }
-        
+                
         // If the message is being localized, output the key, resource
         // bundle name, and params.
         ResourceBundle bundle = record.getResourceBundle();
@@ -307,7 +308,7 @@ class LogFormatter extends XMLFormatter{
             // The message is not in the catalog.  Drop through.
             Logger.getLogger(LogFormatter.class.getName()).log(Level.FINE, "Catalog loading error", exc);// NOI18N
         }
-        
+
         Object parameters[] = record.getParameters();
         //  Check to see if the parameter was not a messagetext format
         //  or was not null or empty

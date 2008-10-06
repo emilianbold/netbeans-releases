@@ -174,7 +174,10 @@ public class CommentLinkFactory implements RelationshipFactory
             }
         }
         
-        comment.removeAnnotatedElement(annotated);
+        if(fromModel == true)
+        {
+            comment.removeAnnotatedElement(annotated);
+        }
     }
     
     public String getElementType()

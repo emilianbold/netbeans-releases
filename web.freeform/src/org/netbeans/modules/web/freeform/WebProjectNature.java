@@ -43,7 +43,6 @@ package org.netbeans.modules.web.freeform;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -63,10 +62,8 @@ import org.openide.util.NbBundle;
 public class WebProjectNature implements ProjectNature {
 
     public static final String NS_WEB_1 = "http://www.netbeans.org/ns/freeform-project-web/1"; // NOI18N
-    private static final String SCHEMA_1 = "nbres:/org/netbeans/modules/web/freeform/resources/freeform-project-web.xsd"; // NOI18N
     public static final String EL_WEB = "web-data";
     public static final String NS_WEB_2 = "http://www.netbeans.org/ns/freeform-project-web/2"; // NOI18N
-    private static final String SCHEMA_2 = "nbres:/org/netbeans/modules/web/freeform/resources/freeform-project-web-2.xsd"; // NOI18N
     
   
     public WebProjectNature() {}
@@ -80,10 +77,6 @@ public class WebProjectNature implements ProjectNature {
         return l;
     }
     
-    public Set<String> getSchemas() {
-        return new HashSet<String>(Arrays.asList(SCHEMA_1, SCHEMA_2));
-    }
-
     public Set<String> getSourceFolderViewStyles() {
         return Collections.<String>emptySet();
     }

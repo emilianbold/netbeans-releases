@@ -46,6 +46,7 @@ import java.util.Map;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.html.lexer.HTMLLexer;
@@ -143,7 +144,17 @@ public enum HTMLTokenId implements TokenId {
                             // TODO:
                             // XXX Don't handle JavaScript for non-quoted attributes
                             // (Or use separate state so I can do 0,0 as offsets there
-                            return LanguageEmbedding.create(lang, 1, 1, true);
+                            
+                            // Marek: AFAIK value of the onSomething methods is always javascript
+                            // so having the attribute unqouted doesn't make much sense -  the html spec
+                            // allows only a-zA-Z characters in unqouted values so I belive
+                            // it is not possible to write reasonable js code - it ususally 
+                            // contains some whitespaces, brackets, quotations etc.
+                            
+                            PartType ptype = token.partType();
+                            int startSkipLength = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
+                            int endSkipLength = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
+                            return LanguageEmbedding.create(lang, startSkipLength, endSkipLength, true);
                         }
                     }
                     break;

@@ -24,7 +24,14 @@ org.netbeans.modules.uml.project.UMLProjectDataObject$Loader
 
 # org.netbeans.modules.java.jarloader.JarDataLoader
 
-
+org.netbeans.modules.profiler.categories.Categorization
+org.netbeans.modules.profiler.categories.Category
+org.netbeans.modules.profiler.categories.CategoryBuilder
+org.netbeans.modules.profiler.categories.CategoryContainer
+org.netbeans.modules.profiler.nbmodule.LookupProviderImpl
+org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider
+org.netbeans.modules.profiler.utilities.Visitable
+org.netbeans.modules.profiler.utilities.Visitor
 
 # issue 136587:
  org.netbeans.modules.cnd.loaders.CndAbstractDataLoader
@@ -269,3 +276,18 @@ sun.security.provider.JavaKeyStore$JKS
 sun.security.provider.JavaKeyStore$KeyEntry
 org.netbeans.modules.mobility.project.security.KeyStoreRepository$KeyStoreBean$KeyAliasBean
 sun.security.provider.JavaKeyStore$TrustedCertEntry
+
+
+# Removal of actions from Windows menu
+org.netbeans.modules.project.ui.ProjectTabAction
+org.netbeans.modules.palette.ShowPaletteAction
+org.netbeans.modules.tasklist.ui.TaskListAction
+org.netbeans.core.windows.actions.ResetWindowsAction
+org.netbeans.core.actions.GlobalPropertiesAction
+org.netbeans.modules.favorites.Actions$View
+
+
+# issue 140389
+org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader
+org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader
+org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader

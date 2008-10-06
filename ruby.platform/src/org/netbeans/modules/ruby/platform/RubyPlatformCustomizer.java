@@ -47,8 +47,10 @@ import java.io.File;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
@@ -128,7 +130,8 @@ public class RubyPlatformCustomizer extends JPanel {
     }
 
     private RubyPlatform getSelectedPlatform() {
-        return (RubyPlatform) platformsList.getSelectedValue();
+        Object value = platformsList.getSelectedValue();
+        return value instanceof RubyPlatform ? (RubyPlatform) value : null;
     }
 
     private void refreshPlatformList() {
@@ -175,9 +178,10 @@ public class RubyPlatformCustomizer extends JPanel {
         RubyPlatform plaf = getSelectedPlatform();
 
         if (plaf == null) {
-            removeButton.setEnabled(false);
+            setEnabledGUI(false);
             return;
         }
+        setEnabledGUI(true);
         lastSelectedPlatformID = plaf.getID();
         plfNameValue.setText(plaf.getInfo().getLongDescription());
         plfInterpreterValue.setText(plaf.getInterpreter());
@@ -197,10 +201,26 @@ public class RubyPlatformCustomizer extends JPanel {
         browseGemHome.setEnabled(gemsInstalled);
         gemHomeValue.setForeground(color);
         gemToolValue.setForeground(color);
-        removeButton.setEnabled(!plaf.isDefault());
         removeGemPath.setEnabled(gemPathList.getSelectedValue() != null);
 
         refreshDebugger();
+    }
+    
+    private void setEnabledGUI(final boolean enabled) {
+        JComponent[] controls = new JComponent[] {
+            removeButton, browseGemHome, addGemPath, removeGemPath,
+            installFastDebugger
+        };
+        for (JComponent comp : controls) {
+            comp.setEnabled(enabled);
+        }
+        if (!enabled) {
+            plfInterpreterValue.setText(null);
+            plfNameValue.setText(null);
+            gemHomeValue.setText(null);
+            gemToolValue.setText(null);
+            gemPathList.setModel(new DefaultListModel());
+        }
     }
 
     private ListModel createGemPathsModel(final RubyPlatform plaf) {

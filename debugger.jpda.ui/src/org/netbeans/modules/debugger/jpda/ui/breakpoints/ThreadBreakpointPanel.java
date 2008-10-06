@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.Dimension;
 import javax.swing.JPanel;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 
@@ -63,6 +61,7 @@ import org.openide.util.NbBundle;
 public class ThreadBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.thread"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ThreadBreakpoint            breakpoint;
@@ -105,7 +104,8 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.showCondition(false);
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
@@ -118,7 +118,7 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.thread"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
     

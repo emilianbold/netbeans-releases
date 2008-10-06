@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<events_get_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <event>
+        <eid>1037629024</eid>
+        <name>Technology Tasting</name>
+        <tagline>Who said Engineering can't be delicious?</tagline>
+        <nid>12409987</nid>
+        <pic>http://photos-628.facebook.com/ip006/object/1345/48/s1037629024_30775.jpg</pic>
+        <pic_big>http://photos-628.facebook.com/ip006/object/1345/48/n1037629024_30775.jpg</pic_big>
+        <pic_small>http://photos-628.facebook.com/ip006/object/1345/48/t1037629024_30775.jpg</pic_small>
+        <host>Facebook</host>
+        <description>Facebook will be hosting technology thought leaders and avid software engineers for a social evening of technology tasting. We invite you to connect with some of our newest technologies and innovative people over hors d'oeuvres and wine. Come share ideas, ask questions, and challenge existing technology paradigms in the spirit of the open source community.</description>
+        <event_type>Party</event_type>
+        <event_subtype>Cocktail Party</event_subtype>
+        <start_time>107800</start_time>
+        <end_time>1172115000</end_time>
+        <creator>1078</creator>
+        <update_time>1170096157</update_time>
+        <location>Facebook's New Office</location>
+        <venue>
+            <street>156 University Ave.</street>
+            <city>Palo Alto</city>
+            <state>CA</state>
+            <country>United States</country>
+        </venue>
+    </event>
+</events_get_response>

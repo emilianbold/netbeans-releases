@@ -42,6 +42,7 @@ package org.netbeans.modules.php.dbgp;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,11 +55,19 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.breakpoints.BreakpointModel;
 import org.netbeans.modules.php.dbgp.models.AbstractIDEBridge;
+import org.netbeans.modules.php.dbgp.models.CallStackModel;
+import org.netbeans.modules.php.dbgp.models.ThreadsModel;
+import org.netbeans.modules.php.dbgp.models.VariablesModel;
+import org.netbeans.modules.php.dbgp.models.WatchesModel;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -83,11 +92,13 @@ public class DebugSession implements Runnable {
         synchronized (myCommands) {
             moreCommands = myCommands.size() > 0;
         }
-        while (!isStopped.get() || moreCommands) {
+        while (continueDebugging()) {
             try {
                 sendCommands();
-                receiveData();
-                sleepTillNewCommand();
+                if (continueDebugging()) {
+                    receiveData();
+                    sleepTillNewCommand();
+                }
             } catch (IOException e) {
                 log(e);
             }
@@ -97,7 +108,38 @@ public class DebugSession implements Runnable {
             getSocket().close();
         } catch (IOException e) {
             log(e);
+        } finally {
+            IDESessionBridge bridge = getBridge();
+            if (bridge != null) {
+                bridge.setSuspended(false);
+                bridge.hideAnnotations();
+                BreakpointModel breakpointModel = bridge.getBreakpointModel();
+                if (breakpointModel != null) {
+                    breakpointModel.setCurrentStack(null, this);
+                }
+                CallStackModel callStackModel = bridge.getCallStackModel();
+                if (callStackModel != null) {
+                    callStackModel.clearModel();
+                }
+                ThreadsModel threadsModel = bridge.getThreadsModel();
+                if (threadsModel != null) {
+                    threadsModel.update();
+                }
+                VariablesModel variablesModel = bridge.getVariablesModel();
+                if (variablesModel != null) {
+                    variablesModel.clearModel();
+                }
+                WatchesModel watchesModel = bridge.getWatchesModel();
+                if (watchesModel != null) {
+                    watchesModel.clearModel();
+                }
+            }
+            StartActionProviderImpl.getInstance().removeSession(this);
         }
+    }
+
+    private boolean continueDebugging() {
+        return !isStopped.get() && mySocket != null && !mySocket.isClosed();
     }
 
     public void sendCommandLater(DbgpCommand command) {
@@ -120,7 +162,9 @@ public class DebugSession implements Runnable {
     }
 
     public DbgpResponse sendSynchronCommand(DbgpCommand command) {
-        if (getSessionThread() != Thread.currentThread()) {
+        Thread sessionThread = getSessionThread();
+        if (sessionThread == null) return null;
+        if (sessionThread != Thread.currentThread()) {
             throw new IllegalStateException("Method incorrect usage. " +
                     "It should be called in handler thread only");  // NOI18N
 
@@ -150,14 +194,6 @@ public class DebugSession implements Runnable {
 
     public void stop() {
         isStopped.set(true);
-        getBridge().setSuspended(false);
-        getBridge().hideAnnotations();
-        StartActionProviderImpl.getInstance().removeSession(this);
-        getBridge().getBreakpointModel().setCurrentStack(null, this);
-        getBridge().getCallStackModel().clearModel();
-        getBridge().getThreadsModel().update();
-        getBridge().getVariablesModel().clearModel();
-        getBridge().getWatchesModel().clearModel();
     }
 
     public void setId(InitMessage message) {
@@ -167,16 +203,17 @@ public class DebugSession implements Runnable {
                 DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine engine : engines) {
             SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 mySessionId.set(id);
                 id.setFileUri(message.getFileUri());
                 myEngine.set(engine);
             }
         }
+        assert myEngine.get() != null;
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 StartActionProviderImpl.getInstance().attachDebugSession(session,
                         this);
             }
@@ -231,11 +268,39 @@ public class DebugSession implements Runnable {
             myCommands.clear();
         }
         for (DbgpCommand command : list) {
-            command.send(getSocket().getOutputStream());
-            if (command.wantAcknowledgment()) {
-                receiveData(command);
+            if (continueDebugging()) {
+                // #146724
+                try {
+                    command.send(getSocket().getOutputStream());
+                    if (continueDebugging() && command.wantAcknowledgment()) {
+                        receiveData(command);
+                    }
+                } catch (SocketException exc) {
+                    Logger.getLogger(DebugSession.class.getName()).log(Level.INFO, null, exc);
+                    Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+                    SessionId sessionId = getSessionId();
+                    for (Session session : sessions) {
+                        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+                        if (id != null && id.getId().equals(sessionId.getId())) {
+                            StartActionProviderImpl.getInstance().stop(session);
+                        }
+                    }
+
+                    warnUserInCaseOfSocketException();
+                }
             }
         }
+    }
+
+    private void warnUserInCaseOfSocketException() {
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketError"),
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketErrorTitle"),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
     }
 
     private void addCommand(DbgpCommand command) {
@@ -244,7 +309,7 @@ public class DebugSession implements Runnable {
         }
     }
 
-    private Thread getSessionThread() {
+    private synchronized Thread getSessionThread() {
         return mySessionThread;
     }
 

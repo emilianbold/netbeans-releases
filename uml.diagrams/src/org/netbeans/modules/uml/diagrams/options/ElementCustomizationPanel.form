@@ -24,10 +24,10 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="typeLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="typeComboBox" min="-2" pref="172" max="-2" attributes="1"/>
+                              <Component id="typeComboBox" min="-2" pref="216" max="-2" attributes="1"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="144" max="32767" attributes="0"/>
+                      <EmptySpace pref="106" max="32767" attributes="0"/>
                       <Component id="restoreBtn" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -100,7 +100,7 @@
                           <Component id="bgComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="previewPane" alignment="1" pref="276" max="32767" attributes="0"/>
+                  <Component id="previewPane" alignment="1" pref="295" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

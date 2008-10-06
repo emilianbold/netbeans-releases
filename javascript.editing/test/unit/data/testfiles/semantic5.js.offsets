@@ -7,8 +7,8 @@
                 <EXPR_VOID><SETNAME><BINDNAME>result</BINDNAME> = <NAME>value</NAME></SETNAME></EXPR_VOID>;
                 <THROW>throw <NAME>$break</NAME></THROW>;
                 <EXPR_VOID><SETNAME><BINDNAME>global</BINDNAME> = <NAME>result</NAME></SETNAME></EXPR_VOID>;
-            }<TARGET></TARGET></BLOCK></BLOCK>
-    <RETURN></RETURN></BLOCK>}</FUNCTION>)</CALL></EXPR_VOID>;
+            }</BLOCK></BLOCK><TARGET/>
+    </BLOCK><RETURN/>}</FUNCTION>)</CALL></EXPR_VOID>;
     <RETURN>return <NAME>result</NAME></RETURN>;</BLOCK>
 }</FUNCTION></SCRIPT>  
 

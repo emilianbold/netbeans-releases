@@ -203,6 +203,9 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
             throw new IllegalStateException();
         }
 
+        if (insertPosition == null) {
+            return;
+        }
         // create tag string
         // resolve indentation
         // take start of javadoc and find /** and compute distance od \n and first *
@@ -431,7 +434,9 @@ final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
             isLastTag[0] = true;
         }
 
-        return insertBefore? bounds[0]: bounds[1];
+        return bounds == null
+                ? null
+                : insertBefore ? bounds[0] : bounds[1];
     }
 
     private int findParamIndex(List<? extends Element> params, String name) {

@@ -93,12 +93,7 @@ public class NbBasePanel extends DestinationPanel {
         setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_JDK_LOCATION_LABEL_TEXT);
         setProperty(BROWSE_BUTTON_TEXT_PROPERTY,
-                DEFAULT_BROWSE_BUTTON_TEXT);
-        
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MAXIMUM_JDK_VERSION);
+                DEFAULT_BROWSE_BUTTON_TEXT);        
     }
     
     @Override
@@ -116,30 +111,88 @@ public class NbBasePanel extends DestinationPanel {
         
         jdkLocationPanel.setWizard(getWizard());
         
-        jdkLocationPanel.setProperty(
-                JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
-        jdkLocationPanel.setProperty(
-                JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
-        
-        if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
-            jdkLocationPanel.setProperty(
-                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
-                    getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        //first, initialize the min and max values with the panel`s default
+        //second, check if nbProduct has the properties set
+        //third, check other nb- products if they have these properties set        
+        String minVersionNbBase = getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
+        String maxVersionNbBase = getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
+        String preferredVersion = getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY);
+        String jreAllowedStr = getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY);
+
+        Version min = (minVersionNbBase != null) ? Version.getVersion(minVersionNbBase) : null;
+        Version max = (maxVersionNbBase != null) ? Version.getVersion(maxVersionNbBase) : null;
+        Version preferred = (preferredVersion != null) ? Version.getVersion(preferredVersion) : null;
+        boolean jreAllowed = !"false".equals(jreAllowedStr); // if nothing defined - then true
+
+        if (getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY) != null) {
+            min = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
         }
-        List <Product> toInstall = Registry.getInstance().getProductsToInstall();
-        jdkLocationPanel.setJreAllowed(true);
-        for(Product product : toInstall) {
-            String uid = product.getUid();
-            if(uid.startsWith("nb-") && !uid.matches("nb-(base|cnd|php|ruby)")) {
-                jdkLocationPanel.setJreAllowed(false);
-                break;
+        if (getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY) != null) {
+            max = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            preferred = Version.getVersion(getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY) != null) {
+            jreAllowed = !"false".equals(getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+        }
+        
+        for (Product product : Registry.getInstance().getProductsToInstall()) {
+            if (product.getUid().startsWith("nb-")) {
+                jreAllowed &= !"false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+
+                String minVersionString = product.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
+                if (minVersionString != null) {
+                    Version depMinVersion = Version.getVersion(minVersionString);
+                    if (min == null || depMinVersion.newerThan(min)) {
+                        min = depMinVersion;
+                    }
+                }
+                String maxVersionString = product.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
+                if (maxVersionString != null) {
+                    Version depMaxVersion = Version.getVersion(maxVersionString);
+                    if (min == null || depMaxVersion.olderThan(max)) {
+                        max = depMaxVersion;
+                    }
+                }
+            // do not check preferred version of the dependent nb product :
+            // it is not clear how to handle that
             }
         }
+
+
+        String finalMinVersion = (min == null) ? null : min.toString();
+        String finalMaxVersion = (max == null) ? null : max.toString();
+        String preferedVersion = (preferred == null) ? null : preferred.toString();
+        String jreAllowedString = Boolean.toString(jreAllowed);
+
+        if (finalMinVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
+                    finalMinVersion);
+        }
+        if (finalMaxVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
+                    finalMaxVersion);
+        }
+        if (preferedVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
+                    preferedVersion);
+        }
+        jdkLocationPanel.setProperty(
+                JdkLocationPanel.JRE_ALLOWED_PROPERTY,
+                jreAllowedString);
         
         jdkLocationPanel.initialize();
         
+        //reinitialize labels which are different for cases of jdk and jre allowance
+        setProperty(DESCRIPTION_PROPERTY, 
+                jreAllowed ? DEFAULT_DESCRIPTION_JAVA : DEFAULT_DESCRIPTION);
+        setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY, 
+                jreAllowed ? DEFAULT_JAVA_LOCATION_LABEL_TEXT : DEFAULT_JDK_LOCATION_LABEL_TEXT);
+                
         //This makes it possible to perform silent installation with emptry state files 
         //that means that JDK_LOCATION_PROPERTY property is explicitely set to the first location
         //that fits the requirements
@@ -215,7 +268,7 @@ public class NbBasePanel extends DestinationPanel {
                 statusLabel.setText(StringUtils.format(
                         jdkLocationPanel.getProperty(JdkLocationPanel.ERROR_NOTHING_FOUND_PROPERTY),
                         minVersion.toJdkStyle(),
-                        minVersion.toJdkStyle()));
+                        maxVersion.toJdkStyle()));
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
@@ -383,6 +436,9 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.description"); // NOI18N
+    public static final String DEFAULT_DESCRIPTION_JAVA =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.description.java"); // NOI18N
     
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
@@ -394,14 +450,10 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_JDK_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.jdk.location.label.text"); // NOI18N
+    public static final String DEFAULT_JAVA_LOCATION_LABEL_TEXT =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.java.location.label.text"); // NOI18N
     public static final String DEFAULT_BROWSE_BUTTON_TEXT =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.browse.button.text"); // NOI18N
-    
-    public static final String DEFAULT_MINIMUM_JDK_VERSION =
-            ResourceUtils.getString(NbBasePanel.class,
-            "NBP.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
-            ResourceUtils.getString(NbBasePanel.class,
-            "NBP.maximum.jdk.version"); // NOI18N
 }

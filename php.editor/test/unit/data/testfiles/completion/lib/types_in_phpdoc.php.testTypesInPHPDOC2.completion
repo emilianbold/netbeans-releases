@@ -1,0 +1,4 @@
+Code completion result for source line:
+* @return TypesinPHPD|oc desc
+(QueryType=COMPLETION, NameKind=PREFIX)
+CLASS      TypesinPHPDoc                              types_in_phpdoc.php

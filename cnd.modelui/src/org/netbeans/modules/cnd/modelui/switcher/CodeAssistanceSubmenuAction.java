@@ -65,7 +65,7 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
             popupMenu = new LazyPopupMenu(getName(), items); 
         }
         items.clear();
-        items.addAll(Utilities.actionsForPath("NativeProjects/Actions"));
+        items.addAll(Utilities.actionsForPath("NativeProjects/Actions")); // NOI18N
         popupMenu.setEnabled(!items.isEmpty());
     }
 

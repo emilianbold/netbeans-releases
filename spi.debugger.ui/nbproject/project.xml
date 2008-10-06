@@ -140,7 +140,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -169,12 +169,21 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.api.debugger.jpda</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                          <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                          <recursive/>
                          <compile-dependency/>
                      </test-dependency>
                      <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

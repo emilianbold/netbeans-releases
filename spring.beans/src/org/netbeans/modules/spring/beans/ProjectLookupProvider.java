@@ -54,18 +54,22 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProjectLookupProvider implements LookupProvider {
 
-    private final boolean web;
+    private final Kind kind;
 
-    public static ProjectLookupProvider createNonWeb() {
-        return new ProjectLookupProvider(false);
+    public static ProjectLookupProvider standard() {
+        return new ProjectLookupProvider(Kind.NON_WEB);
     }
 
-    public static ProjectLookupProvider createWeb() {
-        return new ProjectLookupProvider(true);
+    public static ProjectLookupProvider web() {
+        return new ProjectLookupProvider(Kind.WEB);
     }
 
-    public ProjectLookupProvider(boolean web) {
-        this.web = web;
+    public static ProjectLookupProvider simple() {
+        return new ProjectLookupProvider(Kind.SIMPLE);
+    }
+
+    private ProjectLookupProvider(Kind kind) {
+        this.kind = kind;
     }
 
     public Lookup createAdditionalLookup(Lookup baseContext) {
@@ -75,12 +79,23 @@ public class ProjectLookupProvider implements LookupProvider {
         }
         List<Object> instances = new ArrayList<Object>(3);
         instances.add(new ProjectSpringScopeProvider(project));
-        instances.add(new RecommendedTemplatesImpl(web));
-        if (!web) {
-            // For a web project, SpringConfigFileLocationProvider is
-            // provided by the Web MVC support (since it needs to use the WebModule API).
+        if (kind != Kind.SIMPLE) {
+            instances.add(new RecommendedTemplatesImpl(kind == Kind.WEB));
             instances.add(new SpringConfigFileLocationProviderImpl(project));
         }
         return Lookups.fixed(instances.toArray(new Object[instances.size()]));
+    }
+
+    enum Kind {
+
+        // For most projects.
+        NON_WEB,
+
+        // For web projects, whose config file providers are provided by the Web MVC support
+        // (since it needs to use the WebModule API).
+        WEB,
+
+        // For Maven projects, which implement everything.
+        SIMPLE
     }
 }

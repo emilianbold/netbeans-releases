@@ -1,0 +1,10 @@
+argc int
+argv char**
+customerName string
+discount int
+Cpu
+Customer
+Disk
+Memory
+Module
+System

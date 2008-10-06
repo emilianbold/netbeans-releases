@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <target name="build-pkg" depends="build-app">
-        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;" file="pkg/scripts/env.sh"/>
+        <echo message="NETBEANS_INSTALL_DIR=&quot;${app.name}&quot;${line.separator}GLASSFISH_INSTALL_DIR=&quot;${glassfish.install.dir}&quot;${line.separator}TOMCAT_INSTALL_DIR=&quot;${tomcat.install.dir}&quot;${line.separator}NB_CLUSTER_DIR=&quot;${nbClusterDir}&quot;${line.separator}GLASSFISH_V3_INSTALL_DIR=&quot;${glassfish.v3.install.dir}&quot;${line.separator}MYSQL_INSTALL_DIR=&quot;${mysql.install.dir}&quot;${line.separator}" file="pkg/scripts/env.sh"/>
         
         <copy file="pkg/Info.plist" filtering="true" tofile="${basedir}/build/Info.plist">
             <filterset>
@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${basedir}/pkg/scripts/unpack200.sh"/>
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${basedir}/pkg/scripts/get_current_jdk.sh"/>
         
         
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="pkg/scripts/Description.plist">

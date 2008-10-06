@@ -90,6 +90,7 @@ Usage: $0 {options} arguments
 
 General options:
   --help                show this help 
+  --nosplash            do not show the splash screen
   --jdkhome <path>      path to Java(TM) 2 SDK, Standard Edition
   -J<jvm_option>        pass <jvm_option> to JVM
 
@@ -182,25 +183,76 @@ args="--userdir \"${userdir}\" $args"
 
 append_jars_to_cp() {
     dir="$1"
+    subpath="$2"
     for ex in jar zip ; do
         if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
             for x in "${dir}"/*.$ex ; do
-                if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
-                cp="$cp$x"
+                subx=`basename "$x"`
+                if echo "$paths" | fgrep -v "$subpath$subx" > /dev/null ; then
+                    if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
+                    cp="$cp$x"
+                    if [ ! -z "$paths" ] ; then paths="$paths:" ; fi
+                    paths="$paths$subpath$subx"
+                fi
             done
         fi
     done
 }
 
+construct_cp() {
+    cp=""
+    updatercp=""
+    paths=""
+    
+    build_cp "${userdir}"
+    build_cp "${plathome}"
+    
+    if [ -f "${userdir}/modules/ext/updater.jar" ] ; then
+        updatercp="${userdir}/modules/ext/updater.jar"
+    else 
+        if [ -f "${plathome}/modules/ext/updater.jar" ] ; then
+            updatercp="${plathome}/modules/ext/updater.jar"
+        fi
+    fi
+
+    # JDK tools
+    for x in "${jdkhome}/lib/dt.jar" "${jdkhome}/lib/tools.jar"; do
+        if [ -f "$x" ]; then
+            if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
+            cp="${cp}$x"
+        fi
+    done
+
+    # user-specified prefix and postfix CLASSPATH
+    
+    if [ ! -z "${prefixcp}" ] ; then
+        cp="${prefixcp}:$cp"
+    fi
+    
+    if [ ! -z "${postfixcp}" ] ; then
+        cp="$cp:${postfixcp}"
+    fi
+
+
+    # prepend IDE's classpath to updater's classpath
+    # (just xml-apis.jar and one XML parser would suffice)
+    if [ ! -z "$updatercp" ] ; then
+        updatercp=${cp}:${updatercp}
+    else
+        updatercp=${cp}
+    fi
+}
+
 build_cp() {
     base="$1"
-    append_jars_to_cp "${base}/lib/patches"
-    append_jars_to_cp "${base}/lib"
-    append_jars_to_cp "${base}/lib/locale"
+    append_jars_to_cp "${base}/lib/patches" "patches"
+    append_jars_to_cp "${base}/lib" "lib"
+    append_jars_to_cp "${base}/lib/locale" "locale"
 }
 
 do_run_updater() {
     eval "\"$jdkhome/bin/java\"" -classpath "\"${updatercp}\"" $jargs "-Dnetbeans.user=\"$userdir\"" $updater_class "$args"
+    construct_cp
 }
 
 look_for_pre_runs() {
@@ -270,6 +322,13 @@ install_new_updater() {
 
 # detect system http proxy setting
 
+detect_system_proxy () {
+    if [ ! -z "$http_proxy" ]; then
+        http_proxy_tmp=$http_proxy
+    fi
+    return 0
+}
+
 detect_gnome_proxy () {
     gconftool=/usr/bin/gconftool-2
     if [ -x  $gconftool ] ; then
@@ -289,7 +348,10 @@ detect_gnome_proxy () {
             return 0
         else
             if [ "$proxy_mode" = "none" ] ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi
@@ -312,7 +374,10 @@ detect_kde_proxy () {
             fi
         else
             if /bin/grep -q 'ProxyType=0' "$kioslaverc" ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi
@@ -399,47 +464,8 @@ while [ "$restart" ] ; do
     #
     # build CLASSPATH
     #
+    construct_cp
     
-    cp=""
-    updatercp=""
-    
-    build_cp "${plathome}"
-    
-    if [ -f "${userdir}/modules/ext/updater.jar" ] ; then
-        updatercp="${userdir}/modules/ext/updater.jar"
-    else 
-        if [ -f "${plathome}/modules/ext/updater.jar" ] ; then
-            updatercp="${plathome}/modules/ext/updater.jar"
-        fi
-    fi
-
-    # JDK tools
-    for x in "${jdkhome}/lib/dt.jar" "${jdkhome}/lib/tools.jar"; do
-        if [ -f "$x" ]; then
-            if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
-            cp="${cp}$x"
-        fi
-    done
-
-    # user-specified prefix and postfix CLASSPATH
-    
-    if [ ! -z "${prefixcp}" ] ; then
-        cp="${prefixcp}:$cp"
-    fi
-    
-    if [ ! -z "${postfixcp}" ] ; then
-        cp="$cp:${postfixcp}"
-    fi
-
-
-    # prepend IDE's classpath to updater's classpath
-    # (just xml-apis.jar and one XML parser would suffice)
-    if [ ! -z "$updatercp" ] ; then
-        updatercp=${cp}:${updatercp}
-    else
-        updatercp=${cp}
-    fi
-
     # First check for pre-run updates.
     if [ "$first_time_starting" ] ; then
         run_updater=""

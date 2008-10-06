@@ -42,11 +42,12 @@ made subject to such option by the copyright holder.
 -->
 <html>
 
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
         <title>New Database Connection Dialog Box</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
+</head>
 
     <body>
         <h2>New Database Connection Dialog Box</h2>
@@ -59,49 +60,68 @@ made subject to such option by the copyright holder.
             <li>Right-click a driver node under the Databases node in the Services window and choose Connect Using.</li>
         </ul>
 
+        <p><b>Basic setting tab</b></p>
         <p>When you create a database connection, you supply the details needed to connect to a specific database.
-        You need to supply the following database connection details.</p>
-            <ul>
+        Depending on the database driver you are using, you need to supply some or all of the following database connection details. </p>
+        <p><strong>Data Input Mode</strong></p>
+        <p>There are two ways in which you can enter the URL of the database:</p>
+        <ul>
+          <li><b>Field Entry.</b> When this radio button is selected, enter the information requested in each text field. </li>
+        
+     
+<ul>
                 <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
                 The drop-down list only contains drivers registered with the IDE. 
                 If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> before
                 you can connect to the database.</li>
+                <li><strong>Host.</strong> Type the host for the database. Use <tt>localhost</tt> if the database is located on a local machine.</li>
+                <li><strong>Port.</strong> Type the post to be used by the database connection.</li>
+                <li>Database. Type the name of the database.</li>
                 <li><b>Driver.</b> This field is automatically supplied based on the selected registered driver.</li>
-                <li><b>Database URL.</b> Type the JDBC database URL for the database connection. 
-                <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
-                for the driver, followed by another colon. The rest of the URL depends on 
-                the type of driver you are using. For example, you might need to specify 
-                a host and port; alternatively, the name of a database file might suffice, 
-                or an ODBC DSN. For MySQL, the Database URL might look as follows:
-                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
-                To help you get started, the IDE provides templates for the correct URL format for
-                the most common drivers. If in doubt, refer to the documentation 
-                for the driver that you are using. </p></li>
-                <li><b>User Name.</b> Type user name for the database.</li>
+                  <li><b>User Name.</b> Type user name for the database.</li>
                 <li><b>Password.</b> Type the password for the database.</li>
-                <li><b>Remember Password.</b> Select this if you want the IDE to remember your password. 
-                  <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database
-                and the Remember Password property is set to True.</p> 
-                <p>To set the Remember Password property to False, right-click the database connection node
-                in the Services window and choose Properties and modify the property in the Properties window.</p></li>
-            </ul>
-        <ul class="note">
+                <li><b>Remember Password.</b> Select this if you want the IDE to remember your password.
+                 If selected, you will not be prompted for the user name and password on subsequent connections to the database
+                  and the Remember Password property is set to True.
+                 To set the Remember Password property to False, right-click the database connection node
+                  in the Services window and choose Properties and modify the property in the Properties window.
+                <ul class="note">
             <li>Storing a password represents a potential security risk.
             Connection passwords are stored in an xml file in the <tt>config/Databases/Connections</tt> directory in the IDE user dir.
             Passwords are scrambled but they are not encrypted.
-            <p>For more about securing database passwords, see the following NetBeans FAQ:<p>
+            For more about securing database passwords, see the following NetBeans FAQ:<p>
                 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://wiki.netbeans.org/wiki/view/FaqSecuringDBConnectionPasswords">
                 <param name="text" value="<html><u>How do I secure my database password?</u></html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
-                </object></p>
-            </li>
-        </ul>
+                </object>
+            </li></ul>
+            <li><b>Show JDBC URL.</b> When you select this checkbox, the IDE displays the JDBC URL in the text field. This can be useful for identifying the database connection. Ths URL resembles ths following URL:
+          <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
+          </li>
+            </ul>
+    <li><b>Direct URL Entry.</b> When this radio button is selected, you enter the URL of the database directly. 
+    <ul><li><b>Name:</b> Select the name of the driver from the drop down list.</li>
+    <li><b>User Name:</b> Type user name for the database.</li>
+    <li><b>Password:</b> Type the password for the database.</li>
+    <li><b>JDBC URL.</b> Type the JDBC URL for the connection in this text field.</li>  
+    </ul>
+    </li></ul>
+<p><b>Advanced tab</b></p>                 
+In the Advanced tab of the New Database Connection dialog box, you select the database schema you want to use for your connection. The Database Explorer displays only tables that use the selected schema. 
+<ul class="note">
+  <li><b>Note: </b>The Advanced tab of the New Database Connection dialog box is enabled only if the database to which you want to connect contains existing schemas. Otherwise, the Advanced tab is grayed out. </li>
+
+  <li><b>Note: </b>A schema does not appear in the Select Schema drop down list until you first create an object in the schema.</li>
+</ul> 
+<p>
+<ul>
+
+</ul>
 
 
-
-        <dl>
+<dl>
                 <dt><a name="seealso">See Also</a></dt>
                 <dd><a href="connectdb.html">Connecting to a Database</a></dd>
                 <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>

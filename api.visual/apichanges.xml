@@ -682,6 +682,63 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.widget" name="Scene" link="yes"/>
             <issue number="128348"/>
         </change>
+        <change id="GraphLayoutFactory.createHierarchicalGraphLayout2">
+            <api name="general"/>
+            <summary>GraphLayoutFactory.createHierarchicalGraphLayout added two additional
+            calls to allow configuration of inverted and layout spacing.</summary>
+            <version major="2" minor="15"/>
+            <date day="24" month="6" year="2008"/>
+            <author login="krichard"/>
+            <compatibility addition="yes"/>
+            <description>
+                There are certain graphs which demand that the hierarchical layout 
+                be inverted (target above source). One such graph would be a UML 
+                class diagram. For this reason I propose adding a static call to 
+                the GraphLayoutFactory to allow for an "inverted" flag to be provided. 
+                The default behavior sets inverted to false.
+                
+                Another call to be added the the GraphLayoutFactory would include 
+                "inverted", "horizontal spacing", and "layer spacing" (vertical). 
+                The default all remain the same.
+            </description>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutFactory" link="yes"/>
+            <issue number="138104"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>Added interface that extends EditorController for ability to query for invocation type</summary>
+            <version major="2" minor="16"/>
+            <date day="25" month="8" year="2008"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                 <a href="@TOP@/org/netbeans/api/visual/action/InplaceEditorProvider.TypedEditorController.html"><code>InplaceEditorProvider.TypedEditorController</code></a>
+                contains <code>getEditorInvocationType()</code> which returns <a href="@TOP@/org/netbeans/api/visual/action/InplaceEditorProvider.EditorInvocationType.html">invocation type</a>  
+                (<code>MOUSE</code>, <code>KEY</code>, <code>CODE</code>).
+            </description>
+            <class package="org.netbeans.api.visual.action" name="InplaceEditorProvider" link="yes"/>
+            <issue number="144123"/>
+        </change>
+        <change>
+            <api name="general"/>
+            <summary>Support for contiguous selection action added (factory method+provider+event)</summary>
+            <version major="2" minor="17"/>
+            <date day="7" month="9" year="2008"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                <a href="@TOP@/org/netbeans/api/visual/action/ActionFactory.html#createContiguousSelectAction(org.netbeans.api.visual.action.ContiguousSelectProvider)">
+                    <code>ActionFactory.createContiguousSelectAction</code></a> creates contiguous selection action.
+                <a href="@TOP@/org/netbeans/api/visual/action/ContiguousSelectProvider.html"><code>ContiguousSelectProvider</code></a>
+                provides logic for selection action. 
+                <a href="@TOP@/org/netbeans/api/visual/action/ContiguousSelectEvent.html"><code>ContiguousSelectEvent</code></a>
+                is an event for <code>ContiguousSelectProvider</code>.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <class package="org.netbeans.api.visual.action" name="ContiguousSelectProvider" link="yes"/>
+            <class package="org.netbeans.api.visual.action" name="ContiguousSelectEvent" link="yes"/>
+            <issue number="144139"/>
+        </change>
     </changes>
 
     <htmlcontents>

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation.InstantiationUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.FileUID;
@@ -144,7 +145,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (Map.Entry<CharSequence, CsmUID<T>> anEntry : aMap.entrySet()) {
             String key = anEntry.getKey().toString();
             assert key != null;
-            aStream.writeUTF(key);
+            PersistentUtils.writeUTF(key, aStream);
             CsmUID anUID = anEntry.getValue();
             assert anUID != null;
             writeUID(anUID, aStream);
@@ -192,7 +193,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (Map.Entry<CharSequence, Object> anEntry : aMap.entrySet()) {
             String key = anEntry.getKey().toString();
             assert key != null;
-            aStream.writeUTF(key);
+            PersistentUtils.writeUTF(key, aStream);
             Object o = anEntry.getValue();
             if (o instanceof CsmUID){
                 aStream.writeInt(1);
@@ -231,7 +232,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
         
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = aStream.readUTF();
+            CharSequence key = PersistentUtils.readUTF(aStream);
             key = manager == null ? key : manager.getString(key);
             assert key != null;
             CsmUID uid = readUID(aStream);
@@ -277,7 +278,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         int collSize = aStream.readInt();
         
         for (int i = 0; i < collSize; ++i) {
-            CharSequence key = aStream.readUTF();
+            CharSequence key = PersistentUtils.readUTF(aStream);
             key = manager == null ? key : manager.getString(key);
             assert key != null;
             int arrSize = aStream.readInt();
@@ -416,7 +417,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
         return anUID;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     //  constants which defines the handle of an UID in the stream
     

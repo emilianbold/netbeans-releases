@@ -1,0 +1,13 @@
+a A
+argc int
+argv char**
+i int
+pExtra void*
+pointer int*
+value int
+A
+B
+C
+globInt int
+globFoo() void
+main(int argc, char** argv) int

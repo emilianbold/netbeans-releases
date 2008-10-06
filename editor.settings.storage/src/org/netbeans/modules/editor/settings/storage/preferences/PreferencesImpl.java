@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -137,7 +138,13 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             putValueJavaType.set(String.class.getName());
         }
         try {
-            super.put(key, value);
+            synchronized(lock) {
+                if (key != null && value != null && value.equals(getSpi(key))) {
+                    return;
+                } else {
+                    super.put(key, value);
+                }
+            }
         } finally {
             if (putValueJavaType.get().equals(String.class.getName())) {
                 putValueJavaType.remove();
@@ -196,6 +203,24 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             super.putByteArray(key, value);
         } finally {
             putValueJavaType.remove();
+        }
+    }
+
+    @Override
+    public void removePreferenceChangeListener(PreferenceChangeListener pcl) {
+        try {
+            super.removePreferenceChangeListener(pcl);
+        } catch (IllegalArgumentException e) {
+            // ignore, see #143581
+        }
+    }
+
+    @Override
+    public void removeNodeChangeListener(NodeChangeListener ncl) {
+        try {
+            super.removeNodeChangeListener(ncl);
+        } catch (IllegalArgumentException e) {
+            // ignore, see #143581
         }
     }
     

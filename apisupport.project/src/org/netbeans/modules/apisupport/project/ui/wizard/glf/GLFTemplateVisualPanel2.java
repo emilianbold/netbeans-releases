@@ -5,16 +5,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public final class GLFTemplateVisualPanel2 extends JPanel {
+public final class GLFTemplateVisualPanel2 extends BasicVisualPanel {
 
     private GLFTemplateWizardPanel2 wizardPanel;
     private CreatedModifiedFiles cmf;
@@ -22,6 +21,7 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
 
     /** Creates new form GLFTemplateVisualPanel2 */
     public GLFTemplateVisualPanel2(final GLFTemplateWizardPanel2 wizardPanel) {
+        super(wizardPanel.getIterator().getWizardDescriptor());
         this.wizardPanel = wizardPanel;
         initComponents();
         wizardPanel.getIterator().getWizardDescriptor().putProperty("NewFileWizard_Title", // NOI18N
@@ -71,33 +71,31 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         tfMimeType.getDocument().addDocumentListener(documentListener);
         update();
     }
-    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w+-.]+/[\\w+-.]+");  // NOI18N
+    private static final Pattern MIME_PATTERN = Pattern.compile("[\\w.]+(?:[+-][\\w.]+)?/[\\w.]+(?:[+-][\\w.]+)?");  // NOI18N
     private static final Pattern EXT_PATTERN = Pattern.compile("(\\w+\\s*)+");  // NOI18N
 
     void update() {
-        final WizardDescriptor wd = wizardPanel.getIterator().getWizardDescriptor();
-        // reasonable mime type check
-        if (!MIME_PATTERN.matcher(getMimeType().trim()).matches()) {
-            wd.putProperty(
-                    WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                    NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
-            wizardPanel.setValid(false);
+        if (getMimeType().trim().length() == 0) {
+            setInfo(NbBundle.getMessage(GLFTemplateVisualPanel2.class, "MSG_Empty_Mime_Type"), false);
+            return;
+        } else if (!MIME_PATTERN.matcher(getMimeType().trim()).matches()) {    // reasonable mime type check
+            setError(NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Mime_Type"));
             return;
         }
-        if (!EXT_PATTERN.matcher(getExtensions().trim()).matches()) {
-            wd.putProperty(
-                    WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                    NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
-            wizardPanel.setValid(false);
-            return;
-        }
-        wd.putProperty(
-                WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                null);
-        if (!initialized)
-            return;
         
-        wizardPanel.setValid(true);
+        if (getExtensions().trim().length() == 0) {
+            setInfo(NbBundle.getMessage(GLFTemplateVisualPanel2.class, "MSG_Empty_Extensions"), false);
+            return;
+        } else if (!EXT_PATTERN.matcher(getExtensions().trim()).matches()) {
+            setError(NbBundle.getMessage(GLFTemplateVisualPanel2.class, "CTL_Invalid_Extensions"));
+            return;
+        }
+        
+        if (!initialized) {
+            markInvalid();
+            return;
+        }
+        markValid();
 
         String mimeType = getMimeType();
         String extensions = getExtensions();
@@ -154,6 +152,7 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         extensionsHint = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        mimeTypeHint = new javax.swing.JLabel();
 
         modifiedFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         modifiedFiles.setColumns(20);
@@ -181,6 +180,8 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
         jLabel2.setLabelFor(modifiedFiles);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "GLFTemplateVisualPanel2.jLabel2.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(mimeTypeHint, org.openide.util.NbBundle.getMessage(GLFTemplateVisualPanel2.class, "LBL_mimeTypeHint")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -192,12 +193,13 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
                     .add(jLabel1)
                     .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(modifiedFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, extensionsHint)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, createdFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tfMimeType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tfExtensions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, modifiedFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(extensionsHint)
+                    .add(createdFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(tfExtensions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, tfMimeType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
+                    .add(mimeTypeHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -208,6 +210,8 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
                     .add(lMimeType)
                     .add(tfMimeType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(mimeTypeHint)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lExtensions)
                     .add(tfExtensions, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -216,10 +220,10 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(createdFiles))
+                    .add(createdFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(modifiedFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                    .add(modifiedFiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
                     .add(jLabel2))
                 .addContainerGap())
         );
@@ -238,6 +242,7 @@ public final class GLFTemplateVisualPanel2 extends JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel lExtensions;
     private javax.swing.JLabel lMimeType;
+    private javax.swing.JLabel mimeTypeHint;
     private javax.swing.JTextArea modifiedFiles;
     private javax.swing.JTextField tfExtensions;
     private javax.swing.JTextField tfMimeType;

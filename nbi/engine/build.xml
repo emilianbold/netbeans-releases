@@ -129,6 +129,8 @@
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows.amd64}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
+        <copy file="${native.dirname}/${native.jnilib.dir.windows}/${native.dist.dir}/${native.jnilib.file.windows.ia64}" 
+              todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.windows}"/>
         <copy file="${native.dirname}/${native.jnilib.dir.linux}/${native.dist.dir}/${native.jnilib.file.linux.i386}" 
               todir="${build.classes.dir}/${native.dirname}/${native.jnilib.dir.linux}"/>
 	<copy file="${native.dirname}/${native.jnilib.dir.linux}/${native.dist.dir}/${native.jnilib.file.linux.amd64}" 

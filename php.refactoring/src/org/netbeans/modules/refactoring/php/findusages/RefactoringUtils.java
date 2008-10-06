@@ -47,13 +47,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -352,9 +353,15 @@ public class RefactoringUtils {
                 p = FileOwnerQuery.getOwner(fo);
             }
             if (p != null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
+                assert fo != null;
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    Logger.getLogger(RefactoringUtils.class.getName()).log(
+                            Level.WARNING, "ClassPath.getClassPath(fo, ClassPath.SOURCE) == null for fo: " + fo.getPath());//NOI18N
+                    continue;
+                }
+                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
                 dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
                 for (SourceGroup root : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                     dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
                 }
@@ -371,6 +378,10 @@ public class RefactoringUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.BOOT) : nullPath;
         ClassPath compile = files[0] != null ? ClassPath.getClassPath(files[0], ClassPath.COMPILE) : nullPath;
+        if (boot == null || compile == null) { // 146499
+            return null;
+        }
+
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }

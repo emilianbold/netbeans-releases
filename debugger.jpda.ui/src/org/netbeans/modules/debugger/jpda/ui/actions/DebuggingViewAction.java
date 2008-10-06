@@ -60,14 +60,12 @@ import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 public class DebuggingViewAction extends AbstractAction {
 
     public DebuggingViewAction () {
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         putValue (
             Action.NAME, 
             NbBundle.getMessage (DebuggingViewAction.class, "CTL_DebuggingViewAction")
         );
-        putValue (
-            Action.SMALL_ICON, 
-            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")) // NOI18N
-        );
+        putValue("iconbase", "org/netbeans/modules/debugger/jpda/resources/debugging.png"); // NOI18N
     }
 
     public void actionPerformed (ActionEvent evt) {

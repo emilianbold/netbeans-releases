@@ -6,6 +6,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Debugging Tasks: Quick Reference</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -24,10 +25,10 @@
     <td>Start a local debugging session.</td>
     <td> 
       <ul>
-        <li>To debug the main project, choose Run  &gt; <a href="debug_local.html">Debug 
+        <li>To debug the main project, choose Debug  &gt; <a href="debug_local.html">Debug 
           Main Project</a> (Ctrl-F5).</li>
         <li>To debug any individual project, right-click the project and choose 
-          Debug Project.</li>
+          Debug.</li>
       </ul>
     </td>
   </tr>
@@ -38,7 +39,7 @@
         <li>On the computer where the program is located, start the program in debugging mode. </li>
         <li>On the computer where the IDE is running, open the projects that contain 
           the source for the program. </li>
-        <li>Choose Run  &gt; <a href="debug_remote.html">Attach Debugger</a>.</li>
+        <li>Choose Debug  &gt; <a href="debug_remote.html">Attach Debugger</a>.</li>
         <li>Select the debugger, specify the  connector type,  enter any
         	additional required process information and click OK. <!--See your VM documentation
         	for information about the connectors it provides.--></li>
@@ -50,8 +51,7 @@
     <td> 
       <ol>
         <li>Select any runnable file in the Projects window </li>
-        <li>Choose Run  &gt; Run
-        	 File  &gt; Debug <i>file_name</i>. </li>
+        <li>Choose Debug <i>file_name</i>. </li>
       </ol>
     </td>
   </tr>
@@ -59,7 +59,7 @@
     <td>Finish a debugging session.</td>
     <td> 
       <ul>
-        <li>To finish the current session, choose Run  &gt; Finish 
+        <li>To finish the current session, choose Debug  &gt; Finish 
           Debugger Session (Shift-F5).</li>
         <li>To finish any session, open the Sessions window (Alt-Shift-6), right-click 
           the session, and choose Finish.</li>
@@ -81,7 +81,7 @@
 	 <ol>
     	<li>In the Source Editor, select the element of code on which you
     			want to set a breakpoint.</li>
-         <li>Choose Run  &gt; <a href="breakpoint_setting.html">New
+         <li>Choose Debug  &gt; <a href="breakpoint_setting.html">New
          		 Breakpoint</a> (Ctrl-Shift-F8). </li>
          <li> In the New Breakpoint dialog box, select the breakpoint type, set
          	any required options, and click OK.</li>
@@ -94,7 +94,7 @@
       <ol>
         <li>Open the Breakpoints window (Alt-Shift-5).</li>
         <li>Right-click the breakpoint, and 
-          	choose Customize.</li>
+          	choose Properties.</li>
         <li>Change any required settings and actions and click OK. </li>
       </ol>
     </td>
@@ -113,8 +113,7 @@
     <td> 
       <ol>
         <li>Open the Local Variables window (Alt-Shift-1) or Watches window (Alt-Shift-2).</li>
-        <li>Right-click a variable or watch and choose <a href="debug_fix_watch.html">Create 
-          Fixed Watch</a>. </li>
+        <li>Right-click a variable or watch and choose <a href="debug_fix_watch.html">Create Fixed Watch</a>. </li>
       </ol>
     </td>
   </tr>
@@ -123,8 +122,7 @@
     <td> 
       <ol>
         <li>Open the Watches window (Alt-Shift-2).</li>
-        <li>Right-click the watch, and
-        	 	choose Customize. </li>
+        <li>Right-click the watch, and choose Customize. </li>
       </ol>
     </td>
   </tr>
@@ -132,8 +130,8 @@
     <td>Suspend and resume a thread.</td>
     <td> 
       <ol>
-        <li>Open the <a href="debug_threads.html">Threads window</a> (Alt-Shift-7).</li>
-        <li>Right-click the thread and choose Suspend or Resume. </li>
+        <li>Open the Debugging window or Threads window (Alt-Shift-7).</li>
+        <li>Right-click the <a href="debug_threads.html">thread</a> and choose Suspend or Resume. </li>
       </ol>
     </td>
   </tr>
@@ -161,9 +159,7 @@
     <td>Pop the most recent  call from the call stack.</td>
     <td> 
       <ul>
-        <li>Choose Run  &gt; Stack 
-           &gt; <a href="debug_pop.html">Pop
-           Topmost Call</a>.</li>
+        <li>Choose Debug  &gt; Stack &gt; <a href="debug_callstack.html#pop">Pop Topmost Call</a>.</li>
         </ul>
     </td>
   </tr>
@@ -172,10 +168,8 @@
     <td>Pop multiple calls from the call stack.</td>
     <td> 
       <ol>
-        <li>Open the Call Stack window (Alt-Shift-3).</li>
-        <li>Right-click 
-          	the call that you want to remain at the top of the call stack.</li>
-        <li>Choose  Pop to Here. </li>
+        <li>Open the Debugging window (Alt-Shift-9).</li>
+        <li>Right-click the call that you want to remain at the top of the call stack and choose  Pop to Here. </li>
       </ol>
     </td>
   </tr>
@@ -183,14 +177,11 @@
     <td>Browse information for calls on the call stack.</td>
     <td> 
       <ul>
-        <li>To move one level away from the <tt>main</tt> routine, choose Run 
-           &gt; Stack  &gt; Make 
+        <li>To move one level away from the <tt>main</tt> routine, choose Debug &gt; Stack  &gt; Make 
           Callee Current (Ctrl-Alt-up arrow). </li>
-        <li>To move one level toward the <tt>main</tt> routine, choose Run  &gt; Stack 
-           &gt; Make Caller Current 
-          (Ctrl-Alt-down arrow). </li>
-        <li>To make a call current, double-click the call in the <a href="debug_callstack.html">Call 
-          Stack window</a>.</li>
+        <li>To move one level toward the <tt>main</tt> routine, choose Debug &gt; Stack 
+           &gt; Make Caller Current (Ctrl-Alt-down arrow). </li>
+        <li>To make a call current, double-click the call in the <a href="debug_debuggingwindow.html">Debugging window</a>.</li>
       </ul>
     </td>
   </tr>

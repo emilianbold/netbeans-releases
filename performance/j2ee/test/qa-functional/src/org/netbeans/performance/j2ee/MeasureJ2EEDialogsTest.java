@@ -42,12 +42,10 @@
 package org.netbeans.performance.j2ee;
 
 
-import org.netbeans.performance.j2ee.dialogs.InvokeEJBAction;
-import org.netbeans.performance.j2ee.dialogs.InvokeWSAction;
-import org.netbeans.performance.j2ee.dialogs.SelectJ2EEModuleDialog;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.dialogs.*;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -58,11 +56,15 @@ public class MeasureJ2EEDialogsTest {
 
     
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
+        PerformanceTestCase.prepareForMeasurements();
 
-        suite.addTest(NbModuleSuite.create(InvokeEJBAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(InvokeWSAction.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SelectJ2EEModuleDialog.class, ".*", ".*"));
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEDialogsTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeEJBAction.class)
+        .addTest(InvokeWSAction.class)
+        .addTest(SelectJ2EEModuleDialog.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
     }

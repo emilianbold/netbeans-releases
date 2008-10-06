@@ -1,12 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2008 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="4Jul07">
-<!-- p2 -->
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Creating an Applet</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -16,23 +15,51 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>If you want to run an applet in a web application,
-you must create it in a separate Java Class Library project
-and then package the applet's JAR file in the
-web application. </p>
-<b>To create an applet:</b>
+<p>Before you create an applet in the IDE, you must determine the type of project
+from which you want to run the applet. You can create the applet in one of the
+following two places:</p>
+<ol>
+  <li>Within a Java Application project with Java WebStart enabled and with 
+  an applet descriptor specified in the application's JNLP file.</li>
+  <li>Within a Java Class Library project that is a library for a Web Application 
+  project.</li>
+</ol>
+<a name="applet-jnlp"/>
+<b>To create and run an applet that is called from a JNLP file:</b>
+<ol>
+  <li> Choose File &gt;  New Project.
+    Under Categories, select Java. Under Projects, select Java Application.
+    Complete the wizard. </li>
+  <li>Right-click the node of the new project in the Projects window
+  and select New &gt; Other. Under Categories,
+select Swing GUI Forms.
+Under File Types, select JApplet Form. Click Next.</li>
+<li>
+In the Class Name text field, type the name of your applet.
+In the Package text field, enter the package to which the applet
+will belong.</li>
+<li>Click Finish. The IDE creates the applet in the
+specified package. The applet opens in the Source editor.</li>
+<li>
+Design the applet with the GUI Builder or type code in the source view.
+</li>
+<li>Right-click the project's node, choose Properties, and select the Web Start panel.</li>
+<li>Select the Enable Web Start checkbox.</li>
+<li>Select the Applet Descriptor radio button and make sure that your applet
+is selected in the Applet Class combo box.</li>
+<li>Close the Project Properties dialog box.</li>
+<li>Right click the project node in the Projects window and choose Build  from the pop-up menu.</li>
+<li>Right-click the project node and choose Run Project.</li></ol>
+
+<b>To create an applet in a web application:</b>
 <ol>
   <li> Choose File &gt;  New Project. 
     Under Categories, select Java. Under Projects, select Java Class Library. 
-    Click Next. </li>
-  <li>
-In the Project Name text field, type the name of your application. 
-Change the Project Location to any folder on your computer.</li>
-  <li>Specify whether to use a dedicated folder for storing libraries and enter the name of the libraries folder. Click Finish. <br>The IDE creates the project folder.</li>
-  <li>Right-click the project node in the Projects window or
-Files window and select New &gt; Other. Under Categories, 
-select Java. 
-Under File Types, select JApplet or Applet. Click Next.</li>
+    Complete the wizard. </li>
+  <li>Right-click the node of the new project in the Projects window
+  and select New &gt; Other. Under Categories,
+select Swing GUI Forms.
+Under File Types, select JApplet Form. Click Next.</li>
 <li>
 In the Class Name text field, type the name of your applet. 
 In the Package text field, enter the package to which the applet
@@ -40,21 +67,16 @@ will belong.</li>
 <li>Click Finish. The IDE creates the applet in the
 specified package. The applet opens in the Source editor.</li> 
 <li>
-Type the code for your applet class, such as the following:
-
-<pre>
-<tt>     import java.applet.Applet;
-     import java.awt.Graphics;
-
-     public class MyApplet extends Applet {
-         public void paint(Graphics g) {
-             g.drawString("Hello world!", 50, 25);
-         }
-     }
-</tt></pre>
+Design the applet with the GUI Builder or type code in the source view.
 </li>
 <li>Right click the project node in the Projects window and choose  Build  from the pop-up menu.</li>
 <li><a href="applet_run.html">Run the applet</a>.</li></ol>
+
+  <ul class="note">
+  <li><b>Note:</b> When you create the applet, you can also choose from the JApplet
+  or Applet templates in the Java category. These templates do not work with the
+  IDE's GUI Builder.</li>
+</ul>
 
 
 <dl>

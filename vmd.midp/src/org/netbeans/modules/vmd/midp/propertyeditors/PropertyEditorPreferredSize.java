@@ -94,9 +94,25 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
         return new PropertyEditorPreferredSize(label, ucLabel, parentTypeID);
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        label = null;
+        radioButton = null;
+        parentTypeID = null;
+    }
+    
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
+        
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
+        
         customEditor = new CustomEditor();
     }
 
@@ -240,6 +256,16 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             initComponents();
         }
 
+         void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            unlockedCheckBox.removeActionListener(this);
+            unlockedCheckBox = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new BorderLayout());
 
@@ -247,9 +273,23 @@ public class PropertyEditorPreferredSize extends PropertyEditorUserCode implemen
             unlockedCheckBox.addActionListener(this);
             unlockedCheckBox.addFocusListener(this);
             Mnemonics.setLocalizedText(unlockedCheckBox, NbBundle.getMessage(PropertyEditorPreferredSize.class, "LBL_PREF_SIZE_UNLOCKED")); // NOI18N
+            
+            unlockedCheckBox.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorPreferredSize.class,
+                            "ACSN_PREF_SIZE_UNLOCKED"));
+            unlockedCheckBox.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorPreferredSize.class,
+                    "ACSD_PREF_SIZE_UNLOCKED"));
+            
             add(unlockedCheckBox, BorderLayout.NORTH);
 
             textField = new JTextField();
+            
+            textField.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            textField.getAccessibleContext().setAccessibleDescription( 
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+            
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);

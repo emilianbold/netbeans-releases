@@ -91,11 +91,17 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     private Collection<PHPRule> rules;
     private List<Hint> result = new LinkedList<Hint>();
     private VariableStack varStack = new VariableStack();
+    private boolean maintainVarStack;
     
 
-    public PHPVerificationVisitor(PHPRuleContext context, Collection rules) {
+    public PHPVerificationVisitor(PHPRuleContext context, Collection<PHPRule> rules, boolean maintainVarStack) {
+        this.maintainVarStack = maintainVarStack;
         this.context = context;
-        context.variableStack = varStack;
+        
+        if (maintainVarStack){
+            context.variableStack = varStack;
+        }
+        
         context.path = getPath();
         context.index = PHPIndex.get(context.compilationInfo.getIndex(PHPLanguage.PHP_MIME_TYPE));
         this.rules = rules;
@@ -254,29 +260,31 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(MethodInvocation node) {
-        String className = null;
-        String fname = null;
-        
-        if (node.getDispatcher() instanceof Variable) {
-            Variable var = (Variable) node.getDispatcher();
-            String varName = CodeUtils.extractVariableName(var);
+        if (maintainVarStack) {
+            String className = null;
+            String fname = null;
             
-            if (varName.startsWith("$")) { //NOI18N
-                VariableWrapper wrapper = context.variableStack.getVariableWraper(varName.substring(1));
+            if (node.getDispatcher() instanceof Variable) {
+                Variable var = (Variable) node.getDispatcher();
+                String varName = CodeUtils.extractVariableName(var);
+                
+                if (varName != null && varName.startsWith("$")) { //NOI18N
+                    VariableWrapper wrapper = context.variableStack.getVariableWraper(varName.substring(1));
 
-                if (wrapper != null) {
-                    className = wrapper.type;
+                    if (wrapper != null) {
+                        className = wrapper.type;
+                    }
                 }
             }
-        }
-        
-        fname = CodeUtils.extractFunctionName(node.getMethod());
-        
-        if (fname != null && className != null){
-            Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult)context.parserResult,
-                    className, fname, NameKind.EXACT_NAME, Modifier.PUBLIC);
             
-             assumeParamsPassedByRefInitialized(functions, node.getMethod());
+            fname = CodeUtils.extractFunctionName(node.getMethod());
+            
+            if (fname != null && className != null) {
+                Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult) context.parserResult,
+                        className, fname, NameKind.EXACT_NAME, Modifier.PUBLIC);
+                
+                assumeParamsPassedByRefInitialized(functions, node.getMethod());
+            }
         }
         
         for (PHPRule rule : rules){
@@ -291,15 +299,17 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     
     @Override
     public void visit(StaticMethodInvocation node) {
-        String className = node.getClassName().getName();
-        String fname = CodeUtils.extractFunctionName(node.getMethod());
-        
-        if (fname != null && className != null){
-            Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult)context.parserResult,
-                    className, fname, NameKind.EXACT_NAME,
-                    Modifier.PUBLIC | Modifier.STATIC);
+        if (maintainVarStack) {
+            String className = node.getClassName().getName();
+            String fname = CodeUtils.extractFunctionName(node.getMethod());
             
-             assumeParamsPassedByRefInitialized(functions, node.getMethod());
+            if (fname != null && className != null) {
+                Collection<IndexedFunction> functions = context.index.getAllMethods((PHPParseResult) context.parserResult,
+                        className, fname, NameKind.EXACT_NAME,
+                        Modifier.PUBLIC | Modifier.STATIC);
+                
+                assumeParamsPassedByRefInitialized(functions, node.getMethod());
+            }
         }
         
         for (PHPRule rule : rules){
@@ -314,11 +324,13 @@ class PHPVerificationVisitor extends DefaultTreePathVisitor {
     
     @Override
     public void visit(FunctionInvocation node) {
-        String fname = CodeUtils.extractFunctionName(node);
-        
-        if (fname != null) {  
-            Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, NameKind.EXACT_NAME);
-            assumeParamsPassedByRefInitialized(functions, node);
+        if (maintainVarStack) {
+            String fname = CodeUtils.extractFunctionName(node);
+            
+            if (fname != null) {                
+                Collection<IndexedFunction> functions = context.index.getFunctions((PHPParseResult) context.parserResult, fname, NameKind.EXACT_NAME);
+                assumeParamsPassedByRefInitialized(functions, node);
+            }
         }
         
         for (PHPRule rule : rules){

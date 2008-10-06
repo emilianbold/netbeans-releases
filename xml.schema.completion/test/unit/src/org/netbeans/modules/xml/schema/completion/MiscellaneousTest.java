@@ -41,13 +41,16 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import java.util.List;
+import javax.xml.namespace.QName;
 import junit.framework.*;
+import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRootAttribute;
 
 /**
- * Tests various utility methods that are used heavily for code completion.
+ * Tests initialization of CompletionContext and various utility methods that
+ * are used heavily for code completion.
  * 
  * @author Samaresh
  */
@@ -59,13 +62,51 @@ public class MiscellaneousTest extends AbstractTestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite();
+        suite.addTest(new MiscellaneousTest("testCompletionContext1"));        
+        suite.addTest(new MiscellaneousTest("testReadNamespace"));
         suite.addTest(new MiscellaneousTest("testGetDocRoot"));
-        
+        suite.addTest(new MiscellaneousTest("testIsDTDBasedDocument1"));
+        suite.addTest(new MiscellaneousTest("testIsDTDBasedDocument2"));        
         return suite;
     }
+    
+    //issue 133819
+    public void testCompletionContext1() throws Exception {
+        setupCompletion("resources/Context.xml", null);
+        
+        //at offset 320
+        CompletionContextImpl context = getContextAtOffset(320);
+        assert(context.getPathFromRoot().size() == 1);
+        QName qname = context.getPathFromRoot().get(0);
+        assert(qname.getLocalPart().equals("application"));
+        assert(qname.getNamespaceURI().
+                equals("http://geronimo.apache.org/xml/ns/j2ee/application-2.0"));
+        assert(context.getSchemas().get(0).toString().
+                equals("http://geronimo.apache.org/xml/ns/j2ee/application-2.0"));
+        
+        //at offset 614
+        context = getContextAtOffset(614);
+        assert(context.getPathFromRoot().size() == 1);
+        qname = context.getPathFromRoot().get(0);
+        assert(qname.getLocalPart().equals("environment"));
+        assert(qname.getNamespaceURI().
+                equals("http://geronimo.apache.org/xml/ns/deployment-1.2"));
+        assert(context.getSchemas().get(0).toString().
+                equals("http://geronimo.apache.org/xml/ns/deployment-1.2"));
+        
+        //at offset 643
+        context = getContextAtOffset(643);
+        assert(context.getPathFromRoot().size() == 1);
+        qname = context.getPathFromRoot().get(0);
+        assert(qname.getLocalPart().equals("application"));
+        assert(qname.getNamespaceURI().
+                equals("http://geronimo.apache.org/xml/ns/j2ee/application-2.0"));
+        assert(context.getSchemas().get(0).toString().
+                equals("http://geronimo.apache.org/xml/ns/j2ee/application-2.0"));
+    }    
 
     /**
-     * Tests the .
+     * Finds the docroot and its attributes.
      */
     public void testGetDocRoot() throws Exception {
         String[] expectedResult = {
@@ -86,6 +127,38 @@ public class MiscellaneousTest extends AbstractTestCase {
         for(int i=0; i<attributes.size(); i++) {
             results[i] = attributes.get(i).toString();
         }
+        assertResult(results, expectedResult);
+    }
+    
+    /**
+     * Tests to see if the document declares any DOCTYPE.
+     */
+    public void testIsDTDBasedDocument1() throws Exception {
+        setupCompletion("resources/Doctype.xml", null);
+        assert(CompletionUtil.isDTDBasedDocument(instanceDocument));
+    }
+    
+    /**
+     * Tests to see if the document declares any DOCTYPE. Also it serves to
+     * test the performance of finding DOCTYPE declaration in a XML.
+     */
+    public void testIsDTDBasedDocument2() throws Exception {
+        long start = System.currentTimeMillis();
+        setupCompletion("resources/NFL.xml", null);
+        assert(!CompletionUtil.isDTDBasedDocument(instanceDocument));
+        long end = System.currentTimeMillis();
+        System.out.println("Time taken for isDTDBasedDocument: " + (end-start));
+    }
+    
+    /**
+     * Reads the namespaces specified in an instance document like project.xml.
+     */
+    public void testReadNamespace() throws Exception {
+        setupCompletion("resources/project.xml", null);
+        java.util.HashMap<String, String> nsMap = CompletionUtil.getNamespacesFromStartTags(getDocument());
+        String[] results = new String[nsMap.size()];
+        results = nsMap.keySet().toArray(results);
+        String[] expectedResult = {"http://www.netbeans.org/ns/project/1","http://www.netbeans.org/ns/nb-module-project/3"};
         assertResult(results, expectedResult);
     }
     

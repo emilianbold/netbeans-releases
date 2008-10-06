@@ -9,6 +9,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -34,7 +35,6 @@
                           <Component id="cbCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbInsertClosingBracketsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbShowDeprecated" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="cbCaseSensitive" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbFoldInitialComments" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbFoldJavadocComments" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbFoldImports" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -45,37 +45,40 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="cbAutoPopup" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbInsertSingleProposalsAutomatically" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbCaseSensitive" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="91" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="cbJavadocNextToCC" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbGuessMethodArgs" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbDocsAutoPopup" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
+                          <Component id="lCamelCaseBehaviorExample" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="lCamelCaseBehavior" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="133" max="32767" attributes="0"/>
+              <EmptySpace pref="98" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="138" pref="138" max="138" attributes="0"/>
               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="168" max="32767" attributes="0"/>
+              <EmptySpace pref="196" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
-              <Component id="jSeparator3" pref="774" max="32767" attributes="0"/>
+              <Component id="jSeparator3" pref="799" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeCompletion" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator2" pref="768" max="32767" attributes="0"/>
+              <Component id="jSeparator2" pref="800" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="lCodeFolding" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jSeparator1" pref="796" max="32767" attributes="0"/>
+              <Component id="jSeparator1" pref="826" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -124,7 +127,10 @@
                   <Component id="cbGuessMethodArgs" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="cbCaseSensitive" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cbCaseSensitive" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbJavadocNextToCC" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="cbShowDeprecated" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -138,7 +144,7 @@
               <Component id="cbCamelCaseBehavior" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="13" max="32767" attributes="0"/>
+              <EmptySpace pref="33" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -301,8 +307,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lCamelCaseBehaviorExample">
       <Properties>
-        <Property name="text" type="java.lang.String" value="(Example: Caret stops at J, T, N in &quot;JavaTypeName&quot; when using next/previous word acctions)"/>
-        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="text" type="java.lang.String" value="Example: Caret stops at J, T, N in &quot;JavaTypeName&quot; when using next/previous word acctions"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbDocsAutoPopup">
@@ -324,6 +329,26 @@
           </Border>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="cbJavadocNextToCC">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/generaleditor/Bundle.properties" key="CTL_Javadoc_Next_To_CC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/generaleditor/Bundle.properties" key="AN_Javadoc_Next_To_CC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/generaleditor/Bundle.properties" key="AD_Javadoc_Next_To_CC" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
   </SubComponents>
 </Form>

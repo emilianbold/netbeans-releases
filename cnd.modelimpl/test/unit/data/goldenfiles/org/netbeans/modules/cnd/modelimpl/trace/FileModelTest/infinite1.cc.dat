@@ -11,19 +11,19 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS InfiniteB (InfiniteB ) [2:1/1-6:3/63] lcurly=29 SCOPE: $Global$ 
+CLASS InfiniteB (InfiniteB ) [2:1/1-6:2/62] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=InfiniteA VISIBILITY==PRIVATE virtual==false text='InfiniteA'
     MEMBERS:
-        CLASS D (InfiniteB::D ) [3:5/35-5:7/60] lcurly=43 SCOPE: InfiniteB 
+        CLASS D (InfiniteB::D ) [3:5/35-5:6/59] lcurly=43 SCOPE: InfiniteB 
             BASE CLASSES:
             MEMBERS:
 NAMESPACE DEFINITOIN N [8:1/65-12:2/122] SCOPE: infinite1.cc
-    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:7/120] lcurly=111 SCOPE: N 
+    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:6/119] lcurly=111 SCOPE: N 
         BASE CLASSES:
             CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
         MEMBERS:
-CLASS InfiniteA (InfiniteA ) [14:1/124-16:3/172] lcurly=152 SCOPE: $Global$ 
+CLASS InfiniteA (InfiniteA ) [14:1/124-16:2/171] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
     MEMBERS:
@@ -44,14 +44,14 @@ FUNCTION DEFINITION foo  [18:1/174-20:2/208] FunctionDefinitionImpl SCOPE: infin
             VARIABLE a [19:5/202-19:9/206]  TYPE: $unresolved$::C TEXT=C  [19:5/202-19:6/203]  INIT: null  SCOPE: Stmt  [18:23/196-20:2/208]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS InfiniteB (InfiniteB ) [2:1/1-6:3/63] lcurly=29 SCOPE: $Global$ 
+CLASS InfiniteB (InfiniteB ) [2:1/1-6:2/62] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=InfiniteA VISIBILITY==PRIVATE virtual==false text='InfiniteA'
     MEMBERS:
-        CLASS D (InfiniteB::D ) [3:5/35-5:7/60] lcurly=43 SCOPE: InfiniteB 
+        CLASS D (InfiniteB::D ) [3:5/35-5:6/59] lcurly=43 SCOPE: InfiniteB 
             BASE CLASSES:
             MEMBERS:
-CLASS InfiniteA (InfiniteA ) [14:1/124-16:3/172] lcurly=152 SCOPE: $Global$ 
+CLASS InfiniteA (InfiniteA ) [14:1/124-16:2/171] lcurly=152 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
     MEMBERS:
@@ -64,7 +64,7 @@ CLASS InfiniteA (InfiniteA ) [14:1/124-16:3/172] lcurly=152 SCOPE: $Global$
 NAMESPACE DEFINITIONS for N (N) 
     infinite1.cc  [8:1/65-12:2/122]
 NAMESPACE N (N) 
-    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:7/120] lcurly=111 SCOPE: N 
+    CLASS InfiniteA (N::InfiniteA ) [9:5/83-11:6/119] lcurly=111 SCOPE: N 
         BASE CLASSES:
             CLASS=InfiniteB VISIBILITY==PRIVATE virtual==false text='InfiniteB'
         MEMBERS:

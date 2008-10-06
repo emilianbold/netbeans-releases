@@ -57,7 +57,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,7 +72,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
@@ -92,6 +90,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -116,7 +115,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private GoToPanel panel;
     private Dialog dialog;
     private JButton okButton;
-    private final Collection<? extends TypeProvider> typeProviders;
+    private Collection<? extends TypeProvider> typeProviders;
     private final TypeBrowser.Filter typeFilter;
     private final String title;
 
@@ -124,8 +123,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     public GoToTypeAction() {
         this(
             NbBundle.getMessage( GoToTypeAction.class, "DLG_GoToType" ),
-            null,
-            Lookup.getDefault().lookupAll(TypeProvider.class).toArray(new TypeProvider[0])
+            null
         );
     }
     
@@ -134,7 +132,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
         this.title = title;
         this.typeFilter = typeFilter;
-        this.typeProviders = Arrays.asList(typeProviders);
+        this.typeProviders = typeProviders.length == 0 ? null : Arrays.asList(typeProviders);
     }
     
     public void actionPerformed( ActionEvent e ) {
@@ -287,6 +285,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
    private Dialog createDialog( final GoToPanel panel) {
        
         okButton = new JButton (NbBundle.getMessage(GoToTypeAction.class, "CTL_OK"));
+        okButton.getAccessibleContext().setAccessibleDescription(okButton.getText());
         okButton.setEnabled (false);
         panel.getAccessibleContext().setAccessibleName( NbBundle.getMessage( GoToTypeAction.class, "AN_GoToType") ); //NOI18N
         panel.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( GoToTypeAction.class, "AD_GoToType") ); //NOI18N
@@ -327,7 +326,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         d.setBounds(Utilities.findCenterBounds(dim));
         initialDimension = dim;
         d.addWindowListener(new WindowAdapter() {
-            public void windowClosed(WindowEvent e) {
+            public @Override void windowClosed(WindowEvent e) {
                 cleanup();
             }
         });
@@ -356,8 +355,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             GoToTypeAction.this.dialog.dispose();
             GoToTypeAction.this.dialog = null;
             //GoToTypeAction.this.cache = null;
-            for (TypeProvider provider : typeProviders) {
-                provider.cleanup();
+            if (typeProviders != null) {
+                for (TypeProvider provider : typeProviders) {
+                    provider.cleanup();
+                }
             }
         }
     }
@@ -369,6 +370,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private class Worker implements Runnable {
         
         private volatile boolean isCanceled = false;
+        private volatile TypeProvider current;
         private final String text;
         
         private final long createTime;
@@ -390,7 +392,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             }
             ListModel model = Models.fromList(types);
             if (typeFilter != null) {
-                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");;
+                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
             }
             final ListModel fmodel = model;
             if ( isCanceled ) {            
@@ -417,8 +419,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( panel.time != -1 ) {
                 LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
             }
-
-            isCanceled = true;
+            TypeProvider _provider;
+            synchronized (this) {
+                isCanceled = true;
+                _provider = current;
+            }
+            if (_provider != null) {
+                _provider.cancel();
+            }
         }
 
         @SuppressWarnings("unchecked")
@@ -430,11 +438,23 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             String[] message = new String[1];
             TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
             TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+            if (typeProviders == null) {
+                typeProviders = Lookup.getDefault().lookupAll(TypeProvider.class);
+            }
             for (TypeProvider provider : typeProviders) {
                 if (isCanceled) {
                     return null;
                 }
-                provider.computeTypeNames(context, result);
+                current = provider;
+                long start = System.currentTimeMillis();
+                try {
+                    provider.computeTypeNames(context, result);
+                } finally {
+                    current = null;
+                }
+                long delta = System.currentTimeMillis() - start;
+                LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
+                
             }
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
@@ -543,7 +563,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             fgSelectionColor = list.getSelectionForeground();        
         }
         
-        public Component getListCellRendererComponent( JList list,
+        public @Override Component getListCellRendererComponent( JList list,
                                                        Object value,
                                                        int index,
                                                        boolean isSelected,
@@ -603,7 +623,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
+            jlName.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);

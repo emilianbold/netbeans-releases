@@ -134,7 +134,11 @@ public final class Manager {
     private Manager() {
         lateWindowPromotion = true;
     }
-    
+
+    public synchronized void emptyTestRun(TestSession session) {
+        testStarted(session);
+        sessionFinished(session);
+    }
     /**
      * Called when an Ant task running JUnit tests is started.
      * Displays a message in the JUnit results window.
@@ -143,6 +147,10 @@ public final class Manager {
         displayMessage(
                 session,
                 NbBundle.getMessage(getClass(), "LBL_RunningTests"));   //NOI18N
+
+        if (session.getStartingMsg() != null) {
+            displayOutput(session, session.getStartingMsg(), true);
+        }
     }
     
     /**

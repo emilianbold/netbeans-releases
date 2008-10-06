@@ -42,9 +42,6 @@
 package org.netbeans.modules.gsf;
 
 import org.netbeans.modules.gsf.api.GsfLanguage;
-import org.netbeans.editor.DrawLayer;
-import org.netbeans.editor.DrawLayerFactory;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
@@ -54,7 +51,6 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class GsfDocument extends NbEditorDocument {
     private Language language;
-    private Formatter formatter;
     
     public GsfDocument(Language language) {
         super(language.getMimeType());
@@ -73,40 +69,5 @@ public class GsfDocument extends NbEditorDocument {
         }
         
         return super.isIdentifierPart(ch);
-    }
-    
-    @Override
-    public boolean addLayer(DrawLayer layer, int visibility) {
-        if (DrawLayerFactory.SyntaxLayer.class.equals(layer.getClass()))
-            return false;
-        
-        return super.addLayer(layer, visibility);
-    }
-// XXX: I think this is no longer needed
-//    /** Get the formatter for this document. */
-//    @Override
-//    public Formatter getFormatter() {
-//        if (formatter == null) {
-//            // NbDocument will go looking in the settings map for a formatter - let's make
-//            // sure it finds one with -MY- kit associated with it (without this it finds
-//            // a BaseKit one which has the wrong formatting defaults!
-//            Settings.setValue(getKitClass(), FORMATTER, 
-//                    new ExtFormatter(GsfEditorKitFactory.GsfEditorKit.class));
-//            formatter = super.getFormatter();
-//        }
-//        
-//        return formatter;
-//    }
-    
-    @Override
-    public int getShiftWidth() {
-        org.netbeans.modules.gsf.api.Formatter f = language.getFormatter();
-        if (f != null) {
-            int shiftWidth = f.indentSize();
-            if (shiftWidth > 0) {
-                return shiftWidth;
-            }
-        }
-        return super.getShiftWidth();
     }
 }

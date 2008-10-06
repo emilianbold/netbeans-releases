@@ -160,6 +160,10 @@ import org.openide.ErrorManager;
                 TokenItem whitespaceTokenItem = tokenItem;
                 while (whitespaceTokenItem != null && "whitespace".equals(whitespaceTokenItem.getTokenID().getName())) {
                     int wsOffset = whitespaceTokenItem.getOffset();
+                    if (wsOffset == 0) {
+                        //#145250: at the very beginning of a file
+                        return 0;
+                    }
                     whitespaceTokenItem =((ExtSyntaxSupport) syntaxSupport).getTokenChain(wsOffset - 1, wsOffset);
                 }
                 if (whitespaceTokenItem != null) {
@@ -179,14 +183,23 @@ import org.openide.ErrorManager;
         replaceText(textComponent, offset, 1, String.valueOf(c));
     }
 
-    static void replaceText(JTextComponent textComponent, int offset, int length, String text) {
+    static void replaceText (final JTextComponent textComponent, final int offset, final int length, final String text) {
         if (!textComponent.isEditable()) {
             return;
         }
         Document document = textComponent.getDocument();
-        if (document instanceof BaseDocument) {
-            ((BaseDocument)document).atomicLock();
-        }
+        if (document instanceof BaseDocument)
+            ((BaseDocument) document).runAtomic (new Runnable () {
+                public void run () {
+                    replaceText2 (textComponent, offset, length, text);
+                }
+            });
+        else
+            replaceText2 (textComponent, offset, length, text);
+    }
+
+    static void replaceText2 (JTextComponent textComponent, int offset, int length, String text) {
+        Document document = textComponent.getDocument();
         try {
             if (length > 0) {
                 document.remove(offset, length);
@@ -194,10 +207,6 @@ import org.openide.ErrorManager;
             document.insertString(offset, text, null);
         } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify(ble);
-        } finally {
-            if (document instanceof BaseDocument) {
-                ((BaseDocument)document).atomicUnlock();
-            }
         }
     }
 }

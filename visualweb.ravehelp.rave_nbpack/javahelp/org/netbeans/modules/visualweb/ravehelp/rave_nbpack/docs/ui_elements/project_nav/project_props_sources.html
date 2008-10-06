@@ -6,7 +6,7 @@
  * Use is subject to license terms.
 -->
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Visual Web JSF Project Properties: Sources Category</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -27,19 +27,29 @@ Then select Sources in the Categories list on the left side. </p>
   <li>All  the source roots must be packaged into the same JAR file and share the 
   	same classpath. </li>
 </ul>
-<p>If you have a source root that you want to use with  several projects, you 
+<p>If you have a source root that you want to use with several projects, you 
   	must create a separate project for the source root and set up compilation 
 	dependencies between the projects. </p>
-<!--
-<P>You can use the Source/Binary Format drop-down list at the bottom of the Sources page to 
-set the Java platform version that the generated Java code should be compatible with. 
-This setting corresponds to the javac -source option. 
+
+<b>Setting the Source/Binary Format</b>
+
+<p>You can use the Source/Binary Format combo box  
+to set the lowest Java platform version with which the generated Java code should be 
+compatible. This setting corresponds to the javac <tt>-source</tt> option. 
+Setting the source/binary format helps prevent you from using Java language constructs 
+that are not available in the platform version to which you want to deploy. 
+However, setting the source/binary format does not ensure that the platform APIs 
+are used compatibly with that platform version. To make sure that your application 
+is fully compatible with an earlier Java platform version, you need to 
+switch to the <a href="project_props_libraries.html">Libraries tab</a> 
+and set the Java Platform setting to the minimum version on which you plan
+to deploy.</p>
 <UL class=note>
   <li>Specifying the source/binary format does not change the Java platform whose 
   	libraries and executables are used to compile and run your project. To 
 	set the Java platform that is used for compiling and running your project, 
 	click Libraries and set the Java Platform setting. You cannot set the source/binary format of a project to a higher release than the project's Java platform.</li>
-</UL>-->
+</UL>
 <dl>
   <dt><a name="seealso">See Also</a></dt>
   <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_project_window.html">Projects Window</a></dd>

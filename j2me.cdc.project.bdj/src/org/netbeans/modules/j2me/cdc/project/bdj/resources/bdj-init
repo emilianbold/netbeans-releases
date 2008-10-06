@@ -1,0 +1,40 @@
+<xsl:comment>bdj-init</xsl:comment>
+
+    <target name="-bdj-pre-pre-init" if="cdc-platform.trigger">
+        <echo message="Calling BD-J init"/>
+        <condition property="bdj-platform.trigger">
+            <equals arg1="bdj" arg2="${{platform.type}}" casesensitive="false"/>
+        </condition>
+    </target>
+
+    <target name="-pre-bdj-init" if="bdj-platform.trigger"/>
+    <target name="-bdj-init" if="bdj-platform.trigger">
+        <condition property="bdj.organization.id.invalid">
+            <or>
+                <contains string="${{bdj.organization.id}}" substring="$${{"/>
+                <equals arg1="${{bdj.organization.id}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <fail if="bdj.organization.id.invalid">Missing organization ID!</fail>
+        <condition property="bdj.application.id.invalid">
+            <or>
+                <contains string="${{bdj.application.id}}" substring="$${{"/>
+                <equals arg1="${{bdj.application.id}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <fail if="bdj.application.id.invalid">Missing application ID!</fail>
+        <condition property="bdj.deployment.dir.invalid">
+            <or>
+                <contains string="${{bdj.deployment.dir}}" substring="$${{"/>
+                <equals arg1="${{bdj.deployment.dir}}" arg2="" trim="true"/>
+            </or>
+        </condition>
+        <fail if="bdj.deployment.dir.invalid">Deployment directory is set!</fail>
+        <property name="deployment.dir" location="${{dist.dir}}"/>
+        <patternset id="deployment.patternset">
+            <include name="${{dist.jar}}"/>
+        </patternset>
+    </target>
+    <target name="-post-bdj-init" if="bdj-platform.trigger"/>
+    <target name="bdj-init" depends="-bdj-pre-pre-init, -pre-bdj-init, -bdj-init, -post-bdj-init" if="bdj-platform.trigger"/>
+    

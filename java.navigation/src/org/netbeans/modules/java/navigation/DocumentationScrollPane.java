@@ -56,6 +56,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
@@ -66,6 +67,7 @@ import org.netbeans.editor.*;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +109,10 @@ public class DocumentationScrollPane extends JScrollPane {
         view = new HTMLDocView( getDefaultBackground() );
         view.addHyperlinkListener(new HyperlinkAction());
         setViewportView(view);
-        
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
+        view.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
+        view.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
         installTitleComponent();
 //        installKeybindings(view);
         setFocusable(true);
@@ -130,7 +135,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private ImageIcon resolveIcon(String res){
-        return new ImageIcon(org.openide.util.Utilities.loadImage (res));
+        return new ImageIcon(ImageUtilities.loadImage (res));
     }
 
     private void installTitleComponent() {
@@ -147,8 +152,9 @@ public class DocumentationScrollPane extends JScrollPane {
         if (icon != null) {            
             bBack = new BrowserButton(icon);
             bBack.addMouseListener(new MouseEventListener(bBack));
+            bBack.addActionListener(new DocPaneAction(ACTION_JAVADOC_BACK));
             bBack.setEnabled(false);
-            bBack.setFocusable(false);
+            //bBack.setFocusable(false);
             bBack.setContentAreaFilled(false);
             bBack.setMargin(new Insets(0, 0, 0, 0));
             bBack.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_back_button")); //NOI18N
@@ -162,8 +168,9 @@ public class DocumentationScrollPane extends JScrollPane {
         if (icon != null) {
             bForward = new BrowserButton(icon);
             bForward.addMouseListener(new MouseEventListener(bForward));
+            bForward.addActionListener(new DocPaneAction(ACTION_JAVADOC_FORWARD));
             bForward.setEnabled(false);
-            bForward.setFocusable(false);
+            //bForward.setFocusable(false);
             bForward.setContentAreaFilled(false);
             bForward.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_forward_button")); //NOI18N
             bForward.setMargin(new Insets(0, 0, 0, 0));
@@ -177,8 +184,9 @@ public class DocumentationScrollPane extends JScrollPane {
         if (icon != null) {            
             bShowWeb = new BrowserButton(icon);
             bShowWeb.addMouseListener(new MouseEventListener(bShowWeb));
+            bShowWeb.addActionListener(new DocPaneAction(ACTION_JAVADOC_OPEN_IN_BROWSER));
             bShowWeb.setEnabled(false);
-            bShowWeb.setFocusable(false);
+            //bShowWeb.setFocusable(false);
             bShowWeb.setContentAreaFilled(false);
             bShowWeb.setMargin(new Insets(0, 0, 0, 0));
             bShowWeb.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_show_web_button")); //NOI18N
@@ -193,14 +201,16 @@ public class DocumentationScrollPane extends JScrollPane {
         if (icon != null) {
             bGoToSource = new BrowserButton(icon);
             bGoToSource.addMouseListener(new MouseEventListener(bGoToSource));
+            bGoToSource.addActionListener(new DocPaneAction(ACTION_JAVADOC_OPEN_SOURCE));
             bGoToSource.setEnabled(false);
-            bGoToSource.setFocusable(false);
+            //bGoToSource.setFocusable(false);
             bGoToSource.setContentAreaFilled(false);
             bGoToSource.setMargin(new Insets(0, 0, 0, 0));
             bGoToSource.setToolTipText(NbBundle.getMessage(DocumentationScrollPane.class, "HINT_doc_browser_goto_source_button")); //NOI18N
             toolbar.add(bGoToSource, gdc);
         }
         setColumnHeaderView(toolbar);
+        installKeybindings(view);
     }
     
     private synchronized void setDocumentation(ElementJavadoc doc) {
@@ -209,9 +219,10 @@ public class DocumentationScrollPane extends JScrollPane {
             String text = currentDocumentation.getText();
             URL url = currentDocumentation.getURL();
             if (text != null){
+                Document document = view.getDocument();
+                document.putProperty(Document.StreamDescriptionProperty, null);
                 if (url!=null){
                     // fix of issue #58658
-                    javax.swing.text.Document document = view.getDocument();
                     if (document instanceof HTMLDocument){
                         ((HTMLDocument)document).setBase(url);
                     }
@@ -246,7 +257,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private synchronized void backHistory() {
-        if (currentHistoryIndex > 0) {
+        if (currentHistoryIndex > 0 && currentHistoryIndex <= history.size()) {
             currentHistoryIndex--;
             setDocumentation(history.get(currentHistoryIndex));            
             if (currentHistoryIndex == 0)
@@ -314,9 +325,9 @@ public class DocumentationScrollPane extends JScrollPane {
     private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName, JTextComponent component){
         KeyStroke[] keys = findEditorKeys(editorActionName, stroke, component);
         for (int i = 0; i < keys.length; i++) {
-            getInputMap().put(keys[i], actionName);
+            view.getInputMap().put(keys[i], actionName);
         }
-        getActionMap().put(actionName, new DocPaneAction(action));
+        view.getActionMap().put(actionName, new DocPaneAction(action));
     }
     
     private void installKeybindings(JTextComponent component) {
@@ -352,11 +363,11 @@ public class DocumentationScrollPane extends JScrollPane {
     }        
     
     private void mapWithShift(KeyStroke key) {
-        InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        InputMap inputMap = view.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object actionKey = inputMap.get(key);
         if (actionKey != null) {
             key = KeyStroke.getKeyStroke(key.getKeyCode(), key.getModifiers() | InputEvent.SHIFT_MASK);
-            getInputMap().put(key, actionKey);
+            view.getInputMap().put(key, actionKey);
         }
     }
     
@@ -373,19 +384,19 @@ public class DocumentationScrollPane extends JScrollPane {
     private class BrowserButton extends JButton {
         public BrowserButton() {
             setBorderPainted(false);
-            setFocusPainted(false);
+            //setFocusPainted(false);
         }
         
         public BrowserButton(String text){
             super(text);
             setBorderPainted(false);
-            setFocusPainted(false);
+            //setFocusPainted(false);
         }
         
         public BrowserButton(Icon icon){
             super(icon);
             setBorderPainted(false);
-            setFocusPainted(false);
+            //setFocusPainted(false);
         }
 
         public @Override void setEnabled(boolean b) {
@@ -411,19 +422,7 @@ public class DocumentationScrollPane extends JScrollPane {
         public @Override void mouseExited(MouseEvent ev) {
             button.setContentAreaFilled(false);
             button.setBorderPainted(false);
-        }
-        
-        public @Override void mouseClicked(MouseEvent evt) {
-            if (button.equals(bBack)){
-                backHistory();
-            }else if(button.equals(bForward)){
-                forwardHistory();
-            }else if(button.equals(bGoToSource)){
-                goToSource();
-            }else if (button.equals(bShowWeb)){
-                openInExternalBrowser();
-            }
-        }
+        }          
     }
 
     private class HyperlinkAction implements HyperlinkListener {
@@ -433,7 +432,9 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     ElementJavadoc doc = currentDocumentation.resolveLink(desc);
-                    setData(doc, false);
+                    if (doc != null) {
+                        setData(doc, false);
+                    }
                 }                    
             }
         }

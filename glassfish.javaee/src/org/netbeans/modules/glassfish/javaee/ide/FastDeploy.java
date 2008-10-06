@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,27 +42,27 @@
 package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.File;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.enterprise.deploy.shared.ActionType;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressEvent;
-import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
-import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -92,26 +92,38 @@ public class FastDeploy extends IncrementalDeployment {
      * @param file 
      * @return 
      */
-    public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
-        // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
-        String moduleName = dir.getParentFile().getParentFile().getName();
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
-                moduleName, dir.getAbsolutePath());
+    public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, File dir) {
+        String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
+        String contextRoot;
+        try {
+            ContextRootConfiguration contextRootConfig = configuration.getLookup().lookup(ContextRootConfiguration.class);
+            contextRoot = contextRootConfig.getContextRoot();
+        } catch(ConfigurationException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Unable to read context-root for " + moduleName, ex);
+            contextRoot = moduleName;
+        }
+        // XXX fix cast -- need error instance for ProgressObject to return errors
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) target, moduleName, 
+                contextRoot, dir.getAbsolutePath());
         MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
 
         GlassfishModule commonSupport = dm.getCommonServerSupport();
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(progressObject);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
+        }
         commonSupport.deploy(progressObject, dir, moduleName);
 
-        return progressObject;
-    }
-    
-    public ProgressObject initialDeploy(Target target,  File dir, String moduleName) {
-        // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
-                moduleName, dir.getAbsolutePath());
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
-        GlassfishModule commonSupport = dm.getCommonServerSupport();
-        commonSupport.deploy(progressObject, dir, moduleName);
         return progressObject;
     }
     
@@ -122,9 +134,34 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID,CommandType.REDEPLOY);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
-        commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+        try {
+            boolean restart = HttpMonitorHelper.synchronizeMonitor(
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
+                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
+                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
+                    "modules/org-netbeans-modules-schema2beans.jar");
+            if (restart) {
+                commonSupport.restartServer(progressObject);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
+                    ex);
+        } catch (SAXException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
+                    ex);
+        }
+        // j2eeserver does this check for "regular" in-place deployment
+        // but not for "on-save" in-place deploymnent
+        if (appChangeDescriptor.classesChanged() || appChangeDescriptor.descriptorChanged() ||
+                appChangeDescriptor.ejbsChanged() || appChangeDescriptor.manifestChanged() ||
+                appChangeDescriptor.serverDescriptorChanged()) {
+            commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+        } else {
+            progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
+                    NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));
+        }
         return progressObject;
     }
     
@@ -142,12 +179,14 @@ public class FastDeploy extends IncrementalDeployment {
             return false;
         }
         
-        if (deployable.getModuleType() == ModuleType.EAR ||
-                deployable.getModuleType() == ModuleType.EJB){
+        if (deployable.getModuleType() == ModuleType.EAR) {
             return false;
         }
-        // return dm.isLocal();
-//        System.out.println("canFileDeploy");
+
+        if (deployable.getModuleType() == ModuleType.EJB){
+            return "true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"));
+        }
+
         return true;
         
     }
@@ -181,6 +220,17 @@ public class FastDeploy extends IncrementalDeployment {
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
         return null;
     }
+
+    @Override
+    public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
+        return incrementalDeploy(module, desc);
+    }
+
+    @Override
+    public boolean isDeployOnSaveSupported() {
+        return !"false".equals(System.getProperty("glassfish.javaee.deployonsave"));
+    }
+
 
     /**
      * Progress object that monitors events from GlassFish Common and translates
@@ -318,5 +368,4 @@ public class FastDeploy extends IncrementalDeployment {
 //        }
 //        
 //    }
-    
 }

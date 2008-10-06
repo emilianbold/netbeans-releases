@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.CppTokenProcessor;
+import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression.*;
 
 /**
 * Token processor that parses the text and produces jc expressions.
@@ -53,51 +55,8 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 * @version 1.00
 */
 
-final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
+final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements TokenProcessor*/ {
 
-    private static final int CONSTANT = CsmCompletionExpression.CONSTANT;
-    private static final int VARIABLE = CsmCompletionExpression.VARIABLE;
-    private static final int OPERATOR = CsmCompletionExpression.OPERATOR;
-    private static final int UNARY_OPERATOR = CsmCompletionExpression.UNARY_OPERATOR;
-    private static final int DOT = CsmCompletionExpression.DOT;
-    private static final int DOT_OPEN = CsmCompletionExpression.DOT_OPEN; 
-    private static final int ARROW = CsmCompletionExpression.ARROW;
-    private static final int ARROW_OPEN = CsmCompletionExpression.ARROW_OPEN;
-    private static final int SCOPE = CsmCompletionExpression.SCOPE;
-    private static final int SCOPE_OPEN = CsmCompletionExpression.SCOPE_OPEN;
-    private static final int ARRAY_OPEN = CsmCompletionExpression.ARRAY_OPEN;
-    private static final int ARRAY = CsmCompletionExpression.ARRAY;
-    private static final int PARENTHESIS_OPEN = CsmCompletionExpression.PARENTHESIS_OPEN;
-    private static final int PARENTHESIS = CsmCompletionExpression.PARENTHESIS;
-    private static final int METHOD_OPEN = CsmCompletionExpression.METHOD_OPEN;
-    private static final int METHOD = CsmCompletionExpression.METHOD;
-    private static final int CONSTRUCTOR = CsmCompletionExpression.CONSTRUCTOR;
-    private static final int CONVERSION = CsmCompletionExpression.CONVERSION;
-    private static final int CONVERSION_OPEN = CsmCompletionExpression.CONVERSION_OPEN;
-    private static final int TYPE = CsmCompletionExpression.TYPE;
-    private static final int NEW = CsmCompletionExpression.NEW;
-    private static final int GOTO = CsmCompletionExpression.GOTO;
-    private static final int LABEL = CsmCompletionExpression.LABEL;
-    private static final int INSTANCEOF = CsmCompletionExpression.INSTANCEOF;
-    private static final int GENERIC_TYPE = CsmCompletionExpression.GENERIC_TYPE;
-    private static final int GENERIC_TYPE_OPEN = CsmCompletionExpression.GENERIC_TYPE_OPEN;
-    private static final int GENERIC_WILD_CHAR = CsmCompletionExpression.GENERIC_WILD_CHAR;
-    private static final int ANNOTATION = CsmCompletionExpression.ANNOTATION;
-    private static final int ANNOTATION_OPEN = CsmCompletionExpression.ANNOTATION_OPEN;
-//    private static final int CPPINCLUDE = CsmCompletionExpression.CPPINCLUDE;
-    private static final int CASE = CsmCompletionExpression.CASE;
-    /** "const" as type prefix in the 'const A*'*/
-    private static final int TYPE_PREFIX = CsmCompletionExpression.TYPE_PREFIX;
-    /** "const" as type postfix in the 'char* const'*/
-    private static final int TYPE_POSTFIX = CsmCompletionExpression.TYPE_PREFIX;
-    /** "*" or "&" at type postfix in the 'char*' or 'int &'*/
-    private static final int TYPE_REFERENCE = CsmCompletionExpression.TYPE_REFERENCE;    
-    /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
-    private static final int MEMBER_POINTER = CsmCompletionExpression.MEMBER_POINTER;
-    private static final int MEMBER_POINTER_OPEN = CsmCompletionExpression.MEMBER_POINTER_OPEN;
-    private static final int CLASSIFIER = CsmCompletionExpression.CLASSIFIER;
-    private static final int PREPROC_DIRECTIVE = CsmCompletionExpression.PREPROC_DIRECTIVE;
-    private static final int PREPROC_DIRECTIVE_OPEN = CsmCompletionExpression.PREPROC_DIRECTIVE_OPEN;
     private static final int NO_EXP = -1;
 
     /** Buffer that is scanned */
@@ -110,9 +69,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     * in the source buffer.
     */
     private int bufferOffsetDelta;
-
-    /** The scanning was stopped by request by the token processor */
-    private boolean stopped;
 
     /** Stack of the expressions. */
     private ArrayList<CsmCompletionExpression> expStack = new ArrayList<CsmCompletionExpression>();
@@ -134,9 +90,11 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     private int endScanOffset;
     
     private boolean java15;
+    private int nrQuestions = 0;
 
-    CsmCompletionTokenProcessor(int endScanOffset) {
+    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
+        this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     /**
@@ -176,11 +134,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
         return inPreprocessor;
     }
 
-    /** Was the scanning stopped by request by the token processor */
-    final boolean isStopped() {
-        return stopped;
-    }
-
     final CsmCompletionExpression getResultExp() {
         CsmCompletionExpression result = peekExp();
         return result;
@@ -192,6 +145,28 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
     boolean isSeparatorOrOperator(CppTokenId tokenID) {
         return CndLexerUtilities.isSeparatorOrOperator(tokenID);
+    }
+
+    private boolean isEqOperator(CppTokenId tokenID) {
+        switch (tokenID) {
+            case EQ:
+            case EQEQ:
+            case GTEQ:
+            case GTGTEQ:
+            case AMPEQ:
+            case LTEQ:
+            case LTLTEQ:
+            case PLUSEQ:
+            case NOTEQ:
+            case MINUSEQ:
+            case STAREQ:
+            case SLASHEQ:
+            case BAREQ:
+            case CARETEQ:
+            case PERCENTEQ:
+                return true;
+        }
+        return false;
     }
 
     /** Push exp to top of stack */
@@ -249,6 +224,14 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                 return ARROW_OPEN;
             case SCOPE: // '::' found    
                 return SCOPE_OPEN;
+            case IF:
+                return IF;
+            case FOR:
+                return FOR;
+            case SWITCH:
+                return SWITCH;
+            case WHILE:
+                return WHILE;
             default:
                 assert (false) : "unexpected tokenID " + tokenID;
         }
@@ -355,6 +338,10 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case PLUSPLUS:
                             case MINUSMINUS:
                                 break;
+                            case LT:
+                                if (java15) {
+                                    break;
+                                }
 
                             case LPAREN:
                             {
@@ -410,6 +397,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             switch(tokenID) { 
                                 case LPAREN:
                                 case SCOPE:
+                                case LBRACKET:
                                     break;
                                 default:                            
                                     popExp();
@@ -602,24 +590,31 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     }
 
     public boolean token(Token<CppTokenId> token, int tokenOffset) {
+        if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            return true;
+        }
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = token.id();
         if (tokenID != null){
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)){
-                if (tokenOffset+tokenLen == endScanOffset)
+                if (tokenOffset+tokenLen == endScanOffset) {
                     tokenID = CppTokenId.IDENTIFIER;
+                }
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
         }
         // assign helper variables
         if (tokenID != null) {
+            if (lastValidTokenID == CppTokenId.COLON) {
+                nrQuestions--;
+            }
             lastValidTokenID = tokenID;
         }
 
@@ -634,7 +629,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
         curTokenText = txt.toString();
         lastValidTokenText = curTokenText;
         errorState = false; // whether the parser cannot understand given tokens
-        stopped = false;
 
         checkJoin(tokenID);
 
@@ -788,43 +782,19 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         pushExp(createTokenExp(CASE));
                         break;
 
+                    case FOR:
+                    case IF:
+                    case SWITCH:
+                    case WHILE:
+                        if (topID == NO_EXP) {
+                            pushExp(createTokenExp(tokenID2OpenExpID(tokenID)));
+                        } else {
+                            errorState = true;
+                        }
+                        break;
 //                    case EXTENDS:
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
-
-                    // TODO - the following block should be in default:
-                    case VOID:
-//                    case ABSTRACT:
-//                    case ASSERT:
-                    case BREAK:
-                    case CATCH:
-                    case CONTINUE:
-                    case DEFAULT:
-                    case DO:
-                    case ELSE:
-//                    case FINAL:
-//XXX                    case FINALLY:
-                    case FOR:
-                    case IF:
-//                    case IMPLEMENTS:
-//                    case INTERFACE:
-//                    case NATIVE:
-//                    case PACKAGE:
-                    case PRIVATE:
-                    case PROTECTED:
-                    case PUBLIC:
-                    case RETURN:
-//                    case STRICTFP:
-                    case SWITCH:
-//                    case SYNCHRONIZED:
-                    case THROW:
-//XXX                    case THROWS:
-//                    case TRANSIENT:
-                    case TRY:
-                    case VOLATILE:
-                    case WHILE:
-                        errorState = true;
-                        break;
 
                     case IDENTIFIER: // identifier found e.g. 'a'
                         {
@@ -835,6 +805,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case SCOPE_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case METHOD_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case NEW:
@@ -854,6 +825,10 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case TYPE_PREFIX:
                                 pushExp(createTokenExp(VARIABLE));
                                 break;
+                            case TERNARY_OPERATOR:
+                                popExp();
+                                pushExp(createTokenExp(VARIABLE));
+                                break;
 
                             case GENERIC_WILD_CHAR:
                                 top.setExpID(VARIABLE);
@@ -861,15 +836,21 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                 break;
 
                             case TYPE:
+                                if (getValidExpID(peekExp2()) != METHOD_OPEN) {
+                                    popExp();
+                                    pushExp(createTokenExp(VARIABLE));
+                                    break;
+                                }
+                                // no break;
                             case VARIABLE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
                                     //top.setExpID(VARIABLE);
                                     addTokenTo(top);
                                     //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case TYPE_REFERENCE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
@@ -880,9 +861,9 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                     var.addParameter(top);
                                     pushExp(var);
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case PREPROC_DIRECTIVE_OPEN:
                                 top.setExpID(PREPROC_DIRECTIVE);
@@ -898,8 +879,11 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                     case QUESTION:
                         if (topID == GENERIC_TYPE_OPEN) {
                             pushExp(new CsmCompletionExpression(GENERIC_WILD_CHAR));
-                            break;
+                        } else {
+                            nrQuestions++;
+                            pushExp(new CsmCompletionExpression(TERNARY_OPERATOR));
                         }
+                        break;
 
                     case STAR:
                     case AMP:
@@ -913,6 +897,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             //case OPERATOR: ??? collision with usual operator behavior
                             //case UNARY_OPERATOR:
                             case NO_EXP:
@@ -931,6 +916,14 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                 exp.addParameter(top);
                                 pushExp(exp);
                                 pointer = true;
+                                break;
+                            case OPERATOR:
+                                if (top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) {
+                                    // member pointer operator
+                                    CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                    pushExp(memPtrExp); // add operator as new exp
+                                    pointer = true;
+                                }
                                 break;
                         }
                         if (pointer) {
@@ -967,7 +960,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                     case PERCENT:
 
                     case COLON:
-
                         // Operator handling
                         switch (topID) {
                             case CONSTANT:
@@ -1059,14 +1051,16 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                     case CONSTANT: // check for "List<const" plus ">" case
                                     case VARIABLE: // check for "List<var" plus ">" case
                                     case TYPE: // check for "List<int" plus ">" case
+                                    case TYPE_REFERENCE: // check for "List<int*" plus ">" case
                                     case DOT: // check for "List<var1.var2" plus ">" case
                                     case ARROW: // check for "List<var1.var2" plus ">" case
                                     case SCOPE: // check for "List<NS::Class" plus ">" case
                                     case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
-                                    case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
-                                    case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
-                                    case ARRAY: // chack for "List<String[]" plus ">" case
-                                    case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
+                                    case GENERIC_TYPE_OPEN: // check for "List<" plus ">" case
+                                    case GENERIC_WILD_CHAR: // check for "List<?" plus ">" case
+                                    case ARRAY: // check for "List<String[]" plus ">" case
+                                    case PARENTHESIS: // check for "T<(1+1)" plus ">" case
+                                    case METHOD: // check for "T<func(param)" plus ">" case
                                         int cnt = expStack.size();
                                         CsmCompletionExpression gen = null;
                                         for (int i = 0; i < cnt; i++) {
@@ -1307,6 +1301,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
@@ -1352,6 +1347,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case MEMBER_POINTER_OPEN:
                             case OPERATOR:
                             case NO_EXP:
@@ -1373,6 +1369,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case METHOD_OPEN:
                             case ARRAY_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
                             case MEMBER_POINTER:
@@ -1415,6 +1412,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case METHOD:
                             case CONSTRUCTOR:
                             case PARENTHESIS:
+                            case CONVERSION:
                             case GENERIC_TYPE:
                             case MEMBER_POINTER:
                             {
@@ -1423,6 +1421,10 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                 // create correspondent *_OPEN expression ID
                                 int openExpID = tokenID2OpenExpID(tokenID);
                                 CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
+                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                    top.setExpID(PARENTHESIS);
+                                }
                                 opExp.addParameter(top);
                                 pushExp(opExp);
                                 break;
@@ -1444,6 +1446,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
                             case METHOD_OPEN:
                             case PARENTHESIS_OPEN:
+                            case SPECIAL_PARENTHESIS_OPEN:
                             case OPERATOR:
                             case UNARY_OPERATOR:
                             case NO_EXP: // alone :: is OK as access to global context
@@ -1575,6 +1578,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
                             case ARRAY_OPEN:       // a[(
                             case PARENTHESIS_OPEN: // ((
+                            case SPECIAL_PARENTHESIS_OPEN: // if((
                             case METHOD_OPEN:      // a((
                             case NO_EXP:
                             case OPERATOR:         // 3+(
@@ -1583,6 +1587,14 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             case PARENTHESIS:      // if (a > b) (
                             case GENERIC_TYPE_OPEN:// a < (
                                 pushExp(createTokenExp(PARENTHESIS_OPEN));
+                                break;
+
+                            case IF:
+                            case FOR:
+                            case SWITCH:
+                            case WHILE:
+                                popExp();
+                                pushExp(createTokenExp(SPECIAL_PARENTHESIS_OPEN));
                                 break;
 
                             default:
@@ -1647,6 +1659,11 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                             top2.setExpID(CsmCompletionExpression.isValidType(top) ? CONVERSION : PARENTHESIS);
                                             addTokenTo(top2);
                                         }
+                                        break;
+
+                                    case SPECIAL_PARENTHESIS_OPEN:
+                                        popExp();
+                                        popExp();
                                         break;
 
                                     case GENERIC_TYPE_OPEN:
@@ -1836,7 +1853,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                                 top2.addParameter(top.getParameter(0));
                                 top2.addToken(top.getTokenID(0), top.getTokenOffset(0), top.getTokenText(0));
                                 top2.addToken(top.getTokenID(1), top.getTokenOffset(1), top.getTokenText(1));
-                                stopped = true;
+//                                stopped = true;
                                 break;
                             }
                         }
@@ -1847,14 +1864,15 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         errorState = true;
                         break;
 
-
-
+                    case NEW_LINE:
+                        if (topID == PREPROC_DIRECTIVE) {
+                            // end line finishes preproc directive
+                            popExp();
+                        }
+                    case WHITESPACE:
                     case LINE_COMMENT:
-                        // Skip line comment
-                        break;
-
                     case BLOCK_COMMENT:
-                        // Skip block comment
+                        // just skip them
                         break;
 
                     case CHAR_LITERAL:
@@ -1866,7 +1884,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
                         break;
-
+                        
                     case INT_LITERAL:
 //                    case HEX_LITERAL:
 //                    case OCTAL_LITERAL:
@@ -1876,7 +1894,9 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         break;
 
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
@@ -1890,10 +1910,13 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("double"); // NOI18N
                         break;
-                    case CONST:
-                        // only type has const
-                        kwdType = "const"; // NOI18N
+
+                    case TYPENAME:
+                        // OK, just skip it
                         break;
+
+                    default:
+                        errorState = true;
                 } // end of testing keyword type
             }
         }
@@ -1911,6 +1934,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
             case ARRAY_OPEN:
             case PARENTHESIS_OPEN:
+            case SPECIAL_PARENTHESIS_OPEN:
             case PARENTHESIS: // can be conversion
             case METHOD_OPEN:
             case ANNOTATION_OPEN:
@@ -1928,6 +1952,15 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                 errorState = false;
                 break;
 
+            case CONSTANT:
+                if (CsmCompletion.CONST_STRING_TYPE.format(true).equals(top.getType()) &&
+                        CsmCompletion.CONST_STRING_TYPE.format(true).equals(constExp.getType())) {
+                    errorState = false;
+                } else {
+                    errorState = true;
+                }
+                break;
+                
             default:
                 errorState = true;
                 break;
@@ -1936,6 +1969,7 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
 
         if (kwdType != null) { // keyword constant (in conversions)
             switch (topID) {
+            case NO_EXP: // declaration started with type name
             case NEW: // possibly new kwdType[]
             case PARENTHESIS_OPEN: // conversion
             {
@@ -1947,19 +1981,31 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                 break;
             }
             case METHOD_OPEN:
+            case GENERIC_TYPE_OPEN:
             {
-                // TODO: we know, this is method declaration/definition
-                CsmCompletionExpression kwdExp = createTokenExp(
-                        "const".equals(kwdType)? TYPE_PREFIX : TYPE);
-                //addTokenTo(kwdExp);
+                int expType = TYPE;
+                switch (token.id()) {
+                    case CONST:
+                    case VOLATILE:
+                        expType = TYPE_PREFIX;
+                }
+                CsmCompletionExpression kwdExp = createTokenExp(expType);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
                 errorState = false;
                 break;
             }
             case TYPE_PREFIX:
-                top.setExpID(TYPE);
+            {
+                int expType = TYPE;
+                switch (token.id()) {
+                    case CONST:
+                    case VOLATILE:
+                        expType = TYPE_PREFIX;
+                }
+                top.setExpID(expType);
                 // fallthrough
+            }
             case TYPE:
             {
                 CsmCompletionExpression kwdExp = top;
@@ -1976,14 +2022,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                 errorState = false;
                 break;
             }
-            case GENERIC_TYPE_OPEN:
-            {
-                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                kwdExp.setType(kwdType);
-                pushExp(kwdExp);
-                errorState = false;
-                break;
-            }
             default: // otherwise not recognized
                 errorState = true;
                 break;
@@ -1996,27 +2034,51 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
             if (tokenID == CppTokenId.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
+            } else {
+                lastSeparatorOffset = tokenOffset;
             }
         }
 
-        return !stopped;
+//        return !stopped;
+        return false;
     }
 
-    public int eot(int offset) {
+    private int lastSeparatorOffset = -1;
+    
+    public int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
+    }
+    
+    public void start(int startOffset, int firstTokenOffset) {
+    }
+
+    public void end(int offset, int lastTokenOffset) {
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
             // add empty variable to save last position
             switch (lastValidTokenID) {
+                case COLON:
+                    if (nrQuestions <= 0) {
+                        // error construction
+                        break;
+                    }
+                    // else continue, it was (...) ? (...) : (...)
+                case QUESTION:
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
+                case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
+                    errorState = false;
                     break;
                 default:
                     if (getValidExpID(peekExp()) == GENERIC_TYPE) {
                         pushExp(CsmCompletionExpression.createEmptyVariable(
                             bufferStartPos + bufferOffsetDelta + offset));
+                        errorState = false;
                     }
                     break;
             }
@@ -2124,9 +2186,13 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
                             reScan = false;
                         }
                         break;
+                    case MEMBER_POINTER_OPEN:
+                        popExp();
+                        top2.addParameter(top);
+                        reScan = false; // by default do not nest more - can be changed if necessary
+                        break;
                     }
                     break;
-                    
                 case ARRAY_OPEN:
                 case PARENTHESIS_OPEN:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
@@ -2197,7 +2263,6 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
             }
         }
         //    System.out.println(this);
-        return 0;
     }
 
 //    public void nextBuffer(char[] buffer, int offset, int len,
@@ -2213,9 +2278,9 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
     public String toString() {
         int cnt = expStack.size();
         StringBuilder sb = new StringBuilder();
-        if (stopped) {
-            sb.append("Parsing STOPPED by request.\n"); // NOI18N
-        }
+//        if (stopped) {
+//            sb.append("Parsing STOPPED by request.\n"); // NOI18N
+//        }
         sb.append("Stack size is " + cnt + "\n"); // NOI18N
         if (cnt > 0) {
             sb.append("Stack expressions:\n"); // NOI18N
@@ -2231,3 +2296,4 @@ final class CsmCompletionTokenProcessor /*implements TokenProcessor*/ {
         return sb.toString();
     }
 }
+

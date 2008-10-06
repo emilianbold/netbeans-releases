@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import java.util.List;
 import org.netbeans.api.visual.action.ConnectDecorator;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.ConnectorState;
@@ -51,6 +52,10 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
+import java.util.Collections;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  * Override at least isTargetWidget and createConnection methods. isSourceWidget is always called before isTargetWidget.
@@ -80,7 +85,15 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return sourceWidget != null;
     }
 
-    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) {
+    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) 
+    {
+        if (isLocked ())
+            return WidgetAction.State.createLocked (widget, this);
+        return mousePressedCore (widget, event);
+    }
+    
+    protected State mousePressedCore (Widget widget, WidgetMouseEvent event)
+    {
         if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
             if (provider.isSourceWidget (widget)) {
                 sourceWidget = widget;
@@ -99,7 +112,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
     public WidgetAction.State mouseReleased (Widget widget, WidgetAction.WidgetMouseEvent event) {
         Point point = event.getPoint ();
         boolean state = move (widget, point);
-        if (state) 
+        if ((state) && (event.getButton () == MouseEvent.BUTTON1))
         {
             if (targetWidget != null)
             {
@@ -108,18 +121,25 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             }
             else if(provider.hasTargetWidgetCreator() == true)
             {
+                // The EXConnectProvider is expecting the location to be in 
+                // scene coordinates, not relative to the source widget.
+                Point sourceLocation = sourceWidget.getLocation();
+                point.translate(sourceLocation.x, sourceLocation.y);
+                Point sceneLocation = sourceWidget.getParentWidget().convertLocalToScene(point);
+
                 targetWidget = provider.createTargetWidget(interractionLayer.getScene(), 
                                                            sourceWidget, 
-                                                           point);
+                                                           sceneLocation);
                 if(targetWidget != null)
                 {
-                    Point targetSceneLocation = widget.convertLocalToScene (point);
-                    
-                    targetWidget.setPreferredLocation(targetSceneLocation);
                     provider.createConnection (sourceWidget, targetWidget);
                 }
             }
             cancel ();
+        }
+        else
+        {
+            cancel();
         }
         return state ? State.CONSUMED : State.REJECTED;
     }
@@ -136,6 +156,45 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
 
     public WidgetAction.State mouseDragged (Widget widget, WidgetAction.WidgetMouseEvent event) {
         return move (widget, event.getPoint ()) ? State.createLocked (widget, this) : State.REJECTED;
+    }
+
+    private void createConnectionViaKeyboard(Widget widget)
+    {
+        if (widget.getScene() instanceof DesignerScene)
+        {
+            DesignerScene scene = (DesignerScene) widget.getScene();
+            List<IPresentationElement> selectedObjects = scene.getOrderedSelection();
+            if (selectedObjects.size() >= 2)
+            {
+                // When a new relationship is created it will be selected.
+                // If we keep using the selected objects set a concurrent
+                // modification exeception will occur.  So, store the selected
+                // objects in an array so the list does not change while we
+                // are processing.
+                Object[] selectedArray = selectedObjects.toArray();
+                Widget source = null;
+                for (Object curSelected : selectedArray)
+                {
+                    Widget curWidget = scene.findWidget(curSelected);
+                    if (source == null)
+                    {
+                        source = curWidget;
+                    }
+                    else
+                    {
+                        provider.createConnection(source, curWidget);
+                        // fixed iz #146256
+                        Widget newWidget = scene.getFocusedWidget();
+                        if (newWidget instanceof ConnectionWidget)
+                        {
+                            Object obj = scene.findObject(newWidget);
+                            scene.setFocusedObject(obj);
+                            scene.userSelectionSuggested(Collections.singleton(obj), false);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private boolean move (Widget widget, Point point) {
@@ -191,12 +250,18 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return true;
     }
 
-
-    public State keyPressed (Widget widget, WidgetKeyEvent event) {
-        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) {
+    public State keyPressed (Widget widget, WidgetKeyEvent event) 
+    {
+        if (isLocked ()  &&  event.getKeyCode () == KeyEvent.VK_ESCAPE) 
+        {
             cancel ();
             return State.CONSUMED;
         }
+        else if(Util.isPaletteExecute(event) == true)
+        {
+            createConnectionViaKeyboard(widget);
+        }
+        
         return super.keyPressed (widget, event);
     }
 

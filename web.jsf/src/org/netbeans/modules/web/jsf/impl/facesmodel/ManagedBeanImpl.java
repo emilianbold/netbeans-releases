@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigVisitor;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.w3c.dom.Element;
@@ -97,7 +98,7 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanName() {
         if (beanName == null) {
-            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
+            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI())).trim();
         }
         return beanName;
     }
@@ -108,7 +109,7 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanClass() {
         if (beanClass ==  null) {
-            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI()));
+            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI())).trim();
         }
         return beanClass;
     }
@@ -120,12 +121,12 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     public ManagedBean.Scope getManagedBeanScope() {
         if (beanScope == null) {
             String scopeText = getChildElementText(JSFConfigQNames.MANAGED_BEAN_SCOPE.getQName(getNamespaceURI()));
-            scopeText = scopeText.trim().toUpperCase();
+            scopeText = scopeText.trim().toUpperCase(Locale.ENGLISH);
             try{
                 beanScope = ManagedBean.Scope.valueOf(scopeText);
             }
             catch (IllegalArgumentException exception){
-                // do nothing. The value is wrong and the method should return null. 
+                // do nothing. The value is wrong and the method should return null.
             }
         }
         return beanScope;

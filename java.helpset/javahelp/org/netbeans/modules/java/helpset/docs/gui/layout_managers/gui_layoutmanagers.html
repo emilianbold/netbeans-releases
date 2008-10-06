@@ -5,7 +5,8 @@
  *
 -->
 <html>
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>About IDE Layout Managers</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
@@ -17,32 +18,31 @@
         by determining
         the size and position of components within containers. This is accomplished by
         implementing the <tt>LayoutManager</tt> interface. 
-        <p>By default, new forms created with the GUI Builder use
-        a FreeDesign paradigm which enables you to lay out your form using
+        <p>By default, new forms created with the GUI Builder use the GroupLayout
+        layout manager. The IDE has special support for GroupLayout called
+        Free Design. Free Design enables you to lay out your form using
         visual guidelines that automatically suggest optimal alignment and spacing
         of components. As you work, the GUI Builder
         translates your design decisions into a functional UI without requiring
-        you to specify a layout manager. Because FreeDesign employs a dynamic layout
+        you to specify a layout manager. Because Free Design employs a dynamic layout
         model, whenever you resize the form or switch locales the GUI adjusts to
         accommodate your changes without changing the relationships between components. 
         <ul class="note"> 
-            <li>In order for the interfaces you create with the GUI Builder to work
-            outside of the IDE, the Swing Layout Extensions library must be on the 
-            classpath at runtime. To simplify the process of deploying of your 
-            GUI applications, the IDE automatically copies the JAR (and any other JAR 
-            files on the project's classpath) to the <tt>dist/lib</tt> folder 
-            when you build the project. The IDE also adds the JAR 
-            to the Class-Path element in the application JAR file's <tt>manifest.mf</tt> 
-            file to simplify running the application outside the IDE. For more information, 
-            see <a href="../gui_deploying.html">Deploying Java GUI Applications</a>.</li>
+            <li>GroupLayout was added to version 6 of the Java Platform. If you
+            need to deploy your application to version 5 of the Java Platform, you
+            need to use the version of GroupLayout that is in the
+            Swing Layout Extensions library. You can set the version of GroupLayout
+            in the property sheet for each form. With the form selected in the
+            Design view, select the form's root node in the Inspector window. Then
+            change the Layout Generation Style property.</li>
         </ul>  
         
-        <p><b>Layout Managers provided in the IDE</b></p>
-        <p>If you are working with forms created in earlier
-        versions of the IDE or want your form to be compatible with 
-        standard Java classes, for example, you can specify a layout manager for your
-        forms.</p>
-        <p>You can choose from the  following Layout Managers  in the IDE: </p>
+        <h3>Other Layout Managers</h3>
+        <p>You can use other layout managers in the IDE, which might be
+        neccessary if you are working with forms created in earlier
+        versions of the IDE or you want your form to be compatible with
+        Java Platform version 5 or earlier.</p>
+        <p>You can choose from the  following Layout Managers in the IDE: </p>
         <ul>
 
             <li><b>FlowLayout</b>
@@ -98,7 +98,8 @@
             are added or even when the container is resized. </p>
             <li><b>AbsoluteLayout</b>
             <p> AbsoluteLayout &nbsp;(<img src="../images/absoluteLayout.gif" alt="AbsoluteLayout icon">)&nbsp;is
-            a special IDE layout manager that enables  components to be placed exactly
+            a layout manager that is provided with the IDE. AbsoluteLayout enables
+            components to be placed exactly
             where you want them in the form, move them around in the IDE, and resize
             them using their selection borders. It is particularly useful for making
             prototypes since there
@@ -106,15 +107,6 @@
             property settings. However, it is not recommended for production applications
             since the fixed locations and sizes of components do not change with the
             environment.</p>
-            <ul class="note"> 
-                <li> To distribute an application with the IDE's
-                AbsoluteLayout manager, you must include  the IDE's AbsoluteLayout
-                classes, as these are not part of the standard Java layout sets.
-                These classes are ready for deployment in <tt>&lt;install-dir&gt;/ide9/modules/ext/AbsoluteLayout.jar</tt>. 
-                <!--<p> The source code is also redistributable. It is available in the files 
-                <tt>AbsoluteLayout.java</tt> and <tt>AbsoluteConstraints.java</tt>, found 
-                in <tt>&lt;install-dir&gt;/sources/org/netbeans/lib/awtextra</tt>. --></li>
-            </ul>
 
 
             <li><b>Null Layout</b>

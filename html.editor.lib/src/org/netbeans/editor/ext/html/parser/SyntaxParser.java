@@ -42,9 +42,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -58,7 +56,6 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -91,7 +88,7 @@ public final class SyntaxParser {
     private List<SyntaxElement> parsedElements;
     private boolean isSuccessfulyParsed = false;
 
-    protected final ParserSource parserSource;
+    protected ParserSource parserSource;
     
     /** Returns an instance of SyntaxParser for given document.
      *  The client is supposed to add a SyntaxParserListener to the obtained instance
@@ -107,9 +104,36 @@ public final class SyntaxParser {
         return parser;
     }
 
-    /** Creates a new instance of SyntaxParser parsing the immutable source. */
-    public static SyntaxParser create(CharSequence source) {
-        return new SyntaxParser(source);
+    /** Creates a new instance of SyntaxParser parsing the immutable source. 
+     * 
+     * @param source A non null sequence of characters - parser input
+     */
+    public static List<SyntaxElement> parseImmutableSource(final CharSequence source) {
+        if(source == null) {
+            throw new NullPointerException("Parser source cannot be null!");
+        }
+        
+        SyntaxParser parser = new SyntaxParser(source);
+
+        parser.parserSource = new ParserSource() {
+
+            public CharSequence getText(int offset, int length) throws BadLocationException {
+                return source.subSequence(offset, offset + length);
+            }
+        };
+
+        try {
+            return parser.parseDocument();
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
+            return null;
+
+        } finally {
+            //help GC - the SyntaxElements returned by the parser
+            //holds references to the parser source 
+            parser.parserSource = null; 
+        }
+
     }
     
     private SyntaxParser(final CharSequence source) {
@@ -118,11 +142,6 @@ public final class SyntaxParser {
         this.parsedElements = EMPTY_ELEMENTS_LIST;
         this.languagePath = LanguagePath.get(HTMLTokenId.language());
         this.hi = TokenHierarchy.create(source, HTMLTokenId.language());
-        this.parserSource = new ParserSource() {
-            public CharSequence getText(int offset, int length) throws BadLocationException {
-                return source.subSequence(offset, offset + length);
-            }
-        };
     }
     
     private SyntaxParser(Document document, LanguagePath languagePath) {
@@ -159,21 +178,6 @@ public final class SyntaxParser {
         restartParser();
 
     }
-    
-    /** Parses the immutable source. */
-    public List<SyntaxElement> parseImmutableSource() {
-        if(doc != null) {
-            throw new IllegalStateException("Cannot explicitly parse muttable source!");
-        } else {
-            try {
-                return parseDocument();
-            } catch (BadLocationException ex) {
-                LOGGER.log(Level.WARNING, "Error during parsing html content", ex);
-                return null;
-                
-            }
-        }
-    }
 
     //---------------------------- public methods ------------------------------
     public void addSyntaxParserListener(SyntaxParserListener spl) {
@@ -192,7 +196,7 @@ public final class SyntaxParser {
         parse();
     }
     
-    List<SyntaxElement> elements() {
+    public List<SyntaxElement> elements() {
         return parsedElements;
     }
     
@@ -275,8 +279,8 @@ public final class SyntaxParser {
                 if(values == null) {
                     //attribute has no value
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString(), 
-                            joinedValue.toString(), 
+                            key.text().toString().intern(), 
+                            joinedValue.toString().intern(), 
                             key.offset(hi), 
                             key.offset(hi) + key.length(),
                             0);
@@ -290,8 +294,8 @@ public final class SyntaxParser {
                     Token lastValuePart = values.get(values.size() - 1);
 
                     SyntaxElement.TagAttribute ta = new SyntaxElement.TagAttribute(
-                            key.text().toString(), 
-                            joinedValue.toString(), 
+                            key.text().toString().intern(), 
+                            joinedValue.toString().intern(), 
                             key.offset(hi), 
                             firstValuePart.offset(hi),
                             lastValuePart.offset(hi) + lastValuePart.length() - firstValuePart.offset(hi));
@@ -302,8 +306,8 @@ public final class SyntaxParser {
         elements.add(new SyntaxElement.Tag(parserSource, 
                 start, 
                 token.offset(hi) + token.length() - start, 
-                tagName, 
-                attributes,
+                tagName.intern(), 
+                attributes.isEmpty() ? null : attributes,
                 openTag,
                 emptyTag));
         
@@ -539,10 +543,12 @@ public final class SyntaxParser {
                        switch(id) {
                             case DECLARATION:
                                 if(token.text().toString().equals("PUBLIC")) {
+                                    doctype_public_id = new String();
                                     state = S_DOCTYPE_PUBLIC_ID;
                                     break;
                                 } else if(token.text().toString().equals("SYSTEM")) {
                                     state = S_DOCTYPE_FILE;
+                                    doctype_file = new String();
                                     break;
                                 }
                                 //not of the expected
@@ -567,13 +573,27 @@ public final class SyntaxParser {
                         
                     case S_DOCTYPE_PUBLIC_ID:
                         switch(id) {
+                            case WS:
                             case DECLARATION:
-                                doctype_public_id = token.text().toString();
-                                state = S_DOCTYPE_FILE;
+                                String tokenText = token.text().toString();
+                                if(tokenText.startsWith("\"")) {
+                                    //first token
+                                    tokenText = tokenText.substring(1); //cut off the quotation mark
+                                }
+                                if(tokenText.endsWith("\"")) {
+                                    //last token
+                                    tokenText = tokenText.substring(0, tokenText.length() - 1); //cut off the quotation mark
+                                    doctype_public_id += tokenText; //short and rare strings, no perf problem
+                                    doctype_public_id = doctype_public_id.trim();
+                                    state = S_DOCTYPE_FILE;
+                                    break;
+                                }
+                                doctype_public_id += tokenText; //short and rare strings, no perf problem
+                                
                                 break;
                             case SGML_COMMENT:
                             case EOL:
-                            case WS:
+                            
                                 break;  
                               default:
                                 backup(1);

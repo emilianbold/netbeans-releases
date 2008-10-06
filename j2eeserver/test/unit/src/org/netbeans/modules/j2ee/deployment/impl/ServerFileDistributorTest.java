@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
@@ -97,6 +98,18 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
                 false, true, false, false, false);
     }
 
+    public void testDistributeOnSaveEjb() throws IOException, ServerException {
+        // class
+        // TODO ejbs changed not working :((
+        singleFileTest("deploytest2", "build/jar/test/TestSessionBeanBean.class",
+                "testplugin/applications/jar/test/TestSessionBeanBean.class",
+                true, false, false, false, false);
+
+        // MANIFEST.MF
+        singleFileTest("deploytest2", "build/jar/META-INF/MANIFEST.MF", "testplugin/applications/jar/META-INF/MANIFEST.MF",
+                false, false, false, true, false);
+    }
+
     private void singleFileTest(String projectName, String testFilePath, String createdFilePath,
             boolean classesChanged, boolean descriptorChanged, boolean ejbChanged, boolean manifestChanged,
             boolean serverDescriptorChanged) throws IOException, ServerException {
@@ -125,7 +138,7 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
         File testFile = new File(f,
                 testFilePath.replace("/", File.separator));
         DeploymentChangeDescriptor desc = dist.distributeOnSave(module,
-                dtarget.getModuleChangeReporter(), Collections.singleton(testFile));
+                dtarget.getModuleChangeReporter(), Collections.singleton(Artifact.forFile(testFile)));
 
         File created = new File(getWorkDir(),
                 createdFilePath.replace("/", File.separator));

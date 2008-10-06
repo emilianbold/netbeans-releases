@@ -124,7 +124,6 @@
     </target>
 
 
-
     <target name="-remove-wrong-locale-files" if="nb.locales.isset">
         <echo file="${nbi.all.dir}/locales.tmp">**/*_${nb.locales}.*</echo> 
         <loadfile srcFile="${nbi.all.dir}/locales.tmp" property="locale.pattern.excludes">
@@ -245,10 +244,6 @@
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.ExportRegistry"/>
         <taskdef 
-            name="generate-components-js" 
-            classpath="${custom.tasks.cls}" 
-            classname="org.netbeans.installer.infra.build.ant.registries.GenerateComponentsJs"/>
-        <taskdef 
             name="create-bundle" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
@@ -313,15 +308,6 @@
 	     <equals arg1="${build.netbeans.bundles}" arg2="1"/>
         </condition>
 
-        <condition property="do.build.jdk.no.netbeans">
-	     <and>
-		<isset property="do.build.jdk"/>
-		<not>
-                    <isset property="do.build.netbeans"/>
-		</not>
-	     </and>
-        </condition>
-
         <condition property="do.build.jtb">
 	     <and>
 		     <equals arg1="${build.jtb}" arg2="1"/>
@@ -330,20 +316,17 @@
 		     </not>
              </and>
         </condition>
+	<condition property="server-uid" value="sjsas" else="glassfish">	
+	    <isset property="do.build.jtb"/>
+	</condition>
 
         <condition property="do.build.mysql">
 	     <equals arg1="${build.mysql}" arg2="1"/>
         </condition>
 
-        <condition property="do.build.mysql.no.netbeans">
-	     <and>
-		<isset property="do.build.mysql"/>
-		<not>
-                    <isset property="do.build.netbeans"/>
-		</not>
-	     </and>
+        <condition property="do.build.javafx">
+	     <equals arg1="${build.javafx}" arg2="1"/>
         </condition>
-
 
         <condition property="nb.locales.isset">
  	     <not>
@@ -363,6 +346,10 @@
             prefix="sjsas"/>
 	-->
 
+	<set property="tomcat.version"      value="6.0.18"/>
+	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
+
+
 	<set property="glassfish.milestone.number" value="04"/>
 	<set property="glassfish.milestone.number.real" value="04"/>
 	<set property="glassfish.build.type" value="fcs"/>
@@ -373,20 +360,27 @@
 	        	        
 	<if property="gf.build.type" value="">
         	<set property="glassfish.build.number" value="20080411"/>
-		<set property="sjsas.build.number" value="20080515"/>
+		<set property="sjsas.build.number" value="20080411"/>
 	</if>
 
 	<if property="gf.build.type" value="ml">
-	        <set property="glassfish.build.number" value="20080412"/>
+	        <set property="glassfish.build.number" value="20080515"/>
 	        <set property="sjsas.build.number" value="20080515"/>
 	</if>
 
+        <get
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/prelude/latest/archive/bundles"
+            dest="${temp.file}"/>
+        <glassfish-buildnumber 
+            file="${temp.file}" 
+            prefix="glassfish-mod"/>
 
-	<set property="glassfish-mod.milestone.number"      value="10"/>
-	<set property="glassfish-mod.milestone.number.real" value="10d"/>
-	<set property="glassfish-mod.build.type"            value="preview"/>
-	<set property="glassfish-mod.build.number"          value="20080610"/>
-
+	<!--
+	<set property="glassfish-mod.milestone.number"      value="15"/>
+	<set property="glassfish-mod.milestone.number.real" value="15a"/>
+	<set property="glassfish-mod.build.type"            value="express"/>
+	<set property="glassfish-mod.build.number"          value="20080722"/>
+	-->
 
         <!--
         -->
@@ -411,7 +405,7 @@
                 prefix="swdp"/>
 	    -->
             <get
-                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_05/archive/fcs/latest/bundles/"
+                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_06/archive/fcs/latest/bundles/"
                 dest="${temp.file}"/>
 	    <sjsam-buildnumber
 	        file="${temp.file}" 
@@ -434,7 +428,7 @@
                 prefix="wsrp"/>
             
             <get
-                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb61/build.txt"
+                src="${portalpack.builds.host}/portalserver/PortalTooling/updates/nb65/build.txt"
                 dest="${temp.file}"/>
             <loadfile property="portalpack.build.number"
           	    srcFile="${temp.file}">
@@ -444,7 +438,20 @@
 	    </loadfile>            
             <property name="javaeesdk-javadocs.build.number" value="20070814"/>
         </if>
-        
+
+        <if property="do.build.javafx">
+             <get
+            	src="${javafx.builds.host}/lastSuccessfulBuild/buildNumber"
+            	dest="${temp.file}"/>
+             <loadfile property="javafx.build.number"
+          	    srcFile="${temp.file}">
+	        <filterchain>
+        	    <striplinebreaks/>
+    	        </filterchain>
+	     </loadfile>
+	     <property name="javafx.full.version"
+		       value="1.0.0.0.${javafx.build.number}"/>
+         </if>
         <delete file="${temp.file}" failonerror="false"/>
     </target>
     
@@ -498,6 +505,9 @@ glassfish-mod.milestone.number.real=${glassfish-mod.milestone.number.real}
 glassfish-mod.build.type=${glassfish-mod.build.type}
 glassfish-mod.build.number=${glassfish-mod.build.number}
 
+tomcat.full.version=${tomcat.full.version}
+tomcat.version=${tomcat.version}
+
 sjsas.milestone.number=${sjsas.milestone.number}
 sjsas.milestone.number.real=${sjsas.milestone.number.real}
 sjsas.build.type=${sjsas.build.type}
@@ -541,10 +551,12 @@ javaeesdk-firstcup.micro.number=${javaeesdk-firstcup.micro.number}
 javaeesdk-blueprints.milestone.number=${javaeesdk-blueprints.milestone.number}
 javaeesdk-blueprints.build.number=${javaeesdk-blueprints.build.number}
 javaeesdk-blueprints.build.type=${javaeesdk-blueprints.build.type}
+javaeesdk-blueprints.update.number=${javaeesdk-blueprints.update.number}
 
 javaeesdk-samples.milestone.number=${javaeesdk-samples.milestone.number}
 javaeesdk-samples.build.type=${javaeesdk-samples.build.type}
 javaeesdk-samples.build.number=${javaeesdk-samples.build.number}
+javaeesdk-samples.update.number=${javaeesdk-samples.update.number}
 
 javaeesdk-javadocs.build.number=${javaeesdk-javadocs.build.number}
 
@@ -554,18 +566,14 @@ portletcontainer.macro.number=${portletcontainer.macro.number}
 portletcontainer.micro.number=${portletcontainer.micro.number}
 portletcontainer.minor.number=${portletcontainer.minor.number}
 
+wsrp.macro.number=${wsrp.macro.number}
+wsrp.micro.number=${wsrp.micro.number}
 wsrp.milestone.number=${wsrp.milestone.number}
 wsrp.build.number=${wsrp.build.number}
 portalpack.build.number=${portalpack.build.number}
         </echo>
         </if>
 
-	<!-- WTK component properties -->
-	 <!--
-         <echo file="${environment.properties}" append="true">
-wtk.builds.host=${wtk.builds.host}
-	 </echo>
-	 -->
         <if property="do.build.jtb">
 	<!-- SJSAS Image properties -->
          <echo file="${environment.properties}" append="true">
@@ -597,6 +605,13 @@ sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
         </echo>
         </if>
 
+        <if property="do.build.javafx">
+ 	<echo file="${environment.properties}" append="true">
+javafx.full.version=${javafx.full.version}
+javafx.build.number=${javafx.build.number}
+ 	 </echo>
+
+         </if>
         <!-- Jar singing properties -->
 	<if property="jarsigner.enabled" value="true">
 	    <echo file="${environment.properties}" append="true">
@@ -617,6 +632,7 @@ jarsigner.storepass=${jarsigner.storepass}
 		<include name="**/nb*"/>
                 <exclude name="**/nb*${build.number}*"/>
                 <exclude name="**/nb-portalpack*"/>
+                <exclude name="**/nb-javafx*"/>
 
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
@@ -629,7 +645,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
                 <!-- tomcat -->
 		<include name="**/tomcat*"/>
-                <exclude name="**/tomcat*6.0.16.0.0*"/>
+                <exclude name="**/tomcat*${tomcat.full.version}*"/>
 
 		<!-- wtk -->
                 <exclude name="**/wtk*"/>
@@ -669,26 +685,55 @@ jarsigner.storepass=${jarsigner.storepass}
 
 			<include name="**/nb-portalpack*"/>
 			<exclude name="**/nb-portalpack*${portalpack.build.number}*"/>
-                	
+        	    </fileset>
+	        </delete>
+	</if>
+
+        <if property="do.build.javafx">
+		<delete failonerror="false">
+        	    <fileset dir="${nbi.cache.dir}/packaged">        
+			<include name="**/nb-javafx*"/>
+			<exclude name="**/nb-javafx*${javafx.full.version}*"/>                	
         	    </fileset>
 	        </delete>
 	</if>
     </target>
 
 
+    <target name="prepare-web-page">
+	<ant dir="${basedir}/web">
+	    <property name="web.page.dir"                 value="${nbi.all.dir}/webtemp"/>
+            <property name="web.page.translatedfiles.dir" value="${nbi.all.dir}/translatedfiles/src/installer/infra/build/web"/>
+	    <property name="registry.root.dir"            value="${output.dir}/registry-temp"/>
+            <property name="web.page.release.dir"         value="${output.dir}"/>
+	</ant>
+    </target>
+
+    <target name="prepare-output-dir">
+	<delete dir="${output.dir}"/>
+        
+        <mkdir dir="${output.dir}"/>
+        <mkdir dir="${nb.bundles.output.dir}"/>
+        <mkdir dir="${output.dir}/components"/>        
+    </target>
+
+    <target name="export-temp-registry">
+	<export-registry 
+            root="${output.dir}/registry-temp" 
+            destination="${output.dir}/registry" 
+            codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
+    </target>
 
 
     <target name="-build">     
         <antcall target="prepare-output-dir"/>
         <antcall target="build-engine"/>
-
-        <antcall target="build-netbeans"/>
-        <antcall target="build-runtimes"/>
-	<antcall target="build-mysql-components"/>
-
-	<!--<antcall target="build-wtk"/>-->
-        <antcall target="build-javaeesdk"/>
-        <antcall target="build-jdk"/>
+                
+        <antcall target="build-netbeans-components"/>
+	<antcall target="build-nbmysql-components"/>
+        <antcall target="build-javatools-components"/>
+        <antcall target="build-nbjdk-components"/>
+        <antcall target="build-javafx-components"/>
 
         <!--<antcall target="export-temp-registry"/>-->
         
@@ -700,97 +745,61 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete dir="${output.dir}/components"/>
     </target>
 
+
+    <target name="build-list">
+	<for-each list="${build.list}" separator=" " property="tobuild.component.uid">
+	    <antcall target="build-${tobuild.component.uid}"/>
+        </for-each>
+    </target>
+
     <target name="build-engine">
 	<antcall target="build-core-engine"/>
         <antcall target="build-netbeans-engine"/>
     </target>
-    <target name="build-mysql-components" if="do.build.mysql">
-        <antcall target="build-netbeans-for-mysql"/>
-	<antcall target="build-mysql"/>
-	<antcall target="build-mysql-connector"/>
-    </target>
-    <target name="build-netbeans" if="do.build.netbeans">
+    <target name="build-nbmysql-components" if="do.build.mysql">
 	<set property="netbeans.group.uid" value=""/>
-
-        <antcall target="build-nb-base"/>
-        <antcall target="build-nb-javase"/>        
-	<!--<antcall target="build-nb-addons-group"/>-->
-	<antcall target="build-nb-webcommon"/>
-	<antcall target="build-nb-javaee"/>
-        <antcall target="build-nb-javame"/>
-        <antcall target="build-nb-soa"/>
-        <antcall target="build-nb-uml"/>
-        <antcall target="build-nb-ruby"/>
-	<antcall target="build-nb-groovy"/>
-        <antcall target="build-nb-cnd"/>
-        <antcall target="build-nb-php"/>
+        <antcall target="build-list">
+	    <param name="build.list" value="nb-base nb-javase nb-javaee nb-webcommon nb-ruby runtimes-group glassfish mysql mysql-connector"/>
+        </antcall>
     </target>
 
-    <target name="build-netbeans-for-jdk" if="do.build.jdk.no.netbeans">
+    <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
-        <antcall target="build-nb-base"/>
-        <antcall target="build-nb-javase"/>        
-    </target>
+	<antcall target="build-list">
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-soa nb-ruby nb-cnd nb-php runtimes-group glassfish glassfish-mod tomcat openesb"/>
+        </antcall>
+     </target>
 
-    <target name="build-netbeans-for-mysql" if="do.build.mysql.no.netbeans">
+    <target name="build-nbjdk-components" if="do.build.jdk">
 	<set property="netbeans.group.uid" value=""/>
-        <antcall target="build-nb-base"/>
-        <antcall target="build-nb-javase"/>        
-        <antcall target="build-nb-javaee"/>        
-        <antcall target="build-nb-ruby"/>
-        <antcall target="build-runtimes-group"/>
-        <antcall target="build-glassfish"/>
+        <antcall target="build-list">
+	     <param name="build.list" value="nb-base nb-javase jdk5 jdk6"/>
+        </antcall>
     </target>
 
-    <target name="build-tools" if="do.build.jtb">
+    <target name="build-javafx-components" if="do.build.javafx">
+	<set property="netbeans.group.uid" value=""/>
+        <antcall target="build-list">
+	     <param name="build.list" value="nb-base nb-javase nb-javafx"/>
+        </antcall>
+    </target>
+
+
+    <target name="build-javatools-components" if="do.build.jtb">
 	<set property="netbeans.group.uid" value="nb-ide-group"/>
-	<antcall target="build-tools-group"/>
-        <antcall target="build-nb-ide-group"/>
-        <antcall target="build-nb-base"/>
-        <antcall target="build-nb-javase"/>        
-        <antcall target="build-nb-javaee"/>
-        <antcall target="build-nb-soa"/>
-        <antcall target="build-nb-portalpack"/>
-    </target>
-
-     <target name="build-runtimes" if="do.build.netbeans">
-         <antcall target="build-runtimes-group"/>
-         <antcall target="build-glassfish"/>
-         <antcall target="build-glassfish-mod"/>
-         <antcall target="build-tomcat"/>
-         <antcall target="build-openesb"/>
-     </target>
-
-     <target name="build-jdk" if="do.build.jdk">
-	 <antcall target="build-netbeans-for-jdk"/>
-         <antcall target="build-jdk5"/>
-         <antcall target="build-jdk6"/>
-     </target>
-
-    <target name="build-javaeesdk" depends="build-tools" if="do.build.jtb">        
-        <antcall target="build-runtimes-group"/>
-	<antcall target="build-sjsas"/>
-        <antcall target="build-sjsam"/>
-        <antcall target="build-openesb"/>
-        <antcall target="build-portletcontainer"/>
-	<antcall target="build-wsrp"/>
-
-	<antcall target="build-documentation-group"/>
-        <antcall target="build-javaeesdk-firstcup"/>
-        <antcall target="build-javaeesdk-blueprints"/>
-        <antcall target="build-javaeesdk-samples"/>
-        <!--<antcall target="build-javaeesdk-javadocs"/>-->
+        <antcall target="build-list">
+	    <param name="build.list"  value="tools-group nb-ide-group nb-base nb-javase nb-javaee nb-webcommon nb-soa nb-portalpack"/>
+        </antcall>
+        <antcall target="build-list">
+	     <param name="build.list" value="runtimes-group sjsas sjsam openesb portletcontainer wsrp documentation-group javaeesdk-firstcup javaeesdk-blueprints javaeesdk-samples"/>
+        </antcall>
     </target>
 
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-	<antcall target="generate-netbeans-javase-bundles"/>
-        <antcall target="generate-netbeans-javaee-bundles"/>
-        <antcall target="generate-netbeans-javame-bundles"/>
-        <antcall target="generate-netbeans-ruby-bundles"/>
-        <antcall target="generate-netbeans-cpp-bundles"/>
-        <antcall target="generate-netbeans-php-bundles"/>
-        <antcall target="generate-netbeans-full-bundles"/>
+        <for-each list="javase java ruby cpp php full" separator=" " property="bundle.type">
+	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
+        </for-each>
     </target>
 
     <target name="generate-bundles">
@@ -799,6 +808,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <antcall target="generate-mysql-bundles"/>
         <antcall target="generate-jdk-bundles"/>
         <antcall target="generate-javatoolsbundle-bundles"/>
+        <antcall target="generate-javafx-bundles"/>
     </target>
 
     <target name="generate-jdk-bundles" depends="init-jdk-bundles,init-bundled-jvms" if="do.build.jdk">	
@@ -844,19 +854,19 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="build-nb-ide-group">
-        <echo message="BUILDING NB-IDE-GROUP ====================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group" target="release-all">
+    <target name="build-group">
+        <echo message="BUILDING GROUP ${component.uid} ====================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/groups/${component.uid}" target="release-all">
             <property 
                 name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/groups/nb-ide-group"/>
+                value="${nbi.netbeans.dir}/infra/build/groups/${component.uid}"/>
             <property 
                 name="environment.properties" 
                 value="${environment.properties}"/>
             
             <property
                 name="release.parent.uid"
-                value="tools-group"/>
+                value="${release.parent.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -866,56 +876,12 @@ jarsigner.storepass=${jarsigner.storepass}
         </ant>
     </target>
 
-    <target name="build-tools-group">
-        <echo message="BUILDING TOOLS-GROUP ====================================="/>        
-        <ant dir="${nbi.netbeans.dir}/infra/build/groups/tools-group" target="release-all">
+    <target name="build-product">
+        <echo message="BUILDING PRODUCT ${component.uid} =========================================="/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/${component.uid}" target="release-all">
             <property 
                 name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/groups/tools-group"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>   
-            
-            <property
-                name="release.parent.uid"
-                value=""/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant> 
-    </target>
-
-    <target name="build-documentation-group">
-        <echo message="BUILDING DOCUMENTATION-GROUP ==================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/groups/documentation-group" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/groups/documentation-group"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="release.parent.uid"
-                value=""/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-    </target>
-
-    <target name="build-nb-base">
-        <echo message="BUILDING NB-BASE =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-base" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-base"/>
+                value="${nbi.netbeans.dir}/infra/build/products/${component.uid}"/>
             <property 
                 name="environment.properties" 
                 value="${environment.properties}"/>
@@ -926,7 +892,7 @@ jarsigner.storepass=${jarsigner.storepass}
             
             <property
                 name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
+                value="${release.parent.uid}"/>
             <property
                 name="release.parent.version"
                 value=""/>
@@ -934,1329 +900,722 @@ jarsigner.storepass=${jarsigner.storepass}
                 name="release.parent.platforms"
                 value=""/>
         </ant>
+    </target>
+
+    <target name="build-jdk-product">
+        <echo message="BUILDING JDK (${jdk.build.file}) ========================================"/>
+        <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="${jdk.build.file}" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.netbeans.dir}/infra/build/products/jdk"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+            
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+        </ant>
+     </target>
+
+    <target name="build-tools-group">
+	<antcall target="build-group">
+             <param name="component.uid" value="tools-group"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-ide-group">
+	<antcall target="build-group">
+             <param name="component.uid"      value="nb-ide-group"/>
+	     <param name="release.parent.uid" value="tools-group"/>
+        </antcall>
+    </target>
+
+    <target name="build-documentation-group">
+	<antcall target="build-group">
+             <param name="component.uid" value="documentation-group"/>
+        </antcall>
+    </target>
+
+
+    <target name="build-nb-product">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
+        </antcall>
+    </target>
+
+    <target name="build-runtime-product">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="runtimes-group"/>
+        </antcall>
+    </target>
+
+    <target name="build-documentation-component">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="documentation-group"/>
+        </antcall>
+    </target>
+
+
+    <target name="build-runtimes-group">
+	<antcall target="build-group">
+             <param name="component.uid" value="runtimes-group"/>
+        </antcall>
+     </target>
+
+    <target name="build-nb-base">
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-base"/>
+        </antcall>
     </target>
 
 
     <target name="build-nb-javase">        
-        <echo message="BUILDING NB-JAVASE ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javase" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-javase"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javase"/>
+        </antcall>
     </target>
 
     <target name="build-nb-webcommon">        
-        <echo message="BUILDING NB-WEBCOMMON ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-webcommon" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-webcommon"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-webcommon"/>
+        </antcall>
     </target>
-
-
-    <target name="build-nb-addons-group">        
-        <echo message="BUILDING NB-ADDONS-GROUP =================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/groups/nb-addons-group" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/groups/nb-addons-group"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="release.parent.uid"
-                value="nb-ide-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-    </target>
-
 
     <target name="build-nb-javaee">        
-        <echo message="BUILDING NB-JAVA-EE ======================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javaee" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-javaee"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javaee"/>
+        </antcall>
     </target>
 
 
     <target name="build-nb-javame">        
-        <echo message="BUILDING NB-JAVA-ME ======================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-javame" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-javame"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javame"/>
+        </antcall>
     </target>
 
 
     <target name="build-nb-soa">        
-	<set property="server-uid" value="glassfish"/>
-        <if property="do.build.jtb">
-		<set property="server-uid" value="sjsas"/>
-        </if>
-
-        <echo message="BUILDING NB-SOA ==========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-soa" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-soa"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-	    <property
-                name="server-uid"
-                value="${server-uid}"/>
-
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-soa"/>
+        </antcall>
     </target>
 
 
     <target name="build-nb-uml">        
-        <echo message="BUILDING NB-UML ==========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-uml" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-uml"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-uml"/>
+        </antcall>
     </target>
 
-
     <target name="build-nb-ruby">        
-        <echo message="BUILDING NB-RUBY =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-ruby" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-ruby"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-ruby"/>
+        </antcall>
     </target>
 
     <target name="build-nb-groovy">        
-        <echo message="BUILDING NB-GROOVY ======================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-groovy" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-groovy"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-groovy"/>
+        </antcall>
     </target>
-
 
     <target name="build-nb-cnd">
-	<echo message="BUILDING NB-CND =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-cnd" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-cnd"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-cnd"/>
+        </antcall>
     </target>
 
-
     <target name="build-nb-php">	
-        <echo message="BUILDING NB-PHP =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-php" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-php"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="${netbeans.group.uid}"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>        
-     </target>
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-php"/>
+        </antcall>
+    </target>
 
-     <target name="build-runtimes-group">
-        <echo message="BUILDING RUNTIMES-GROUP ==================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/groups/runtimes-group" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/groups/runtimes-group"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="release.parent.uid"
-                value=""/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
+    <target name="build-nb-javafx">	
+	<antcall target="build-nb-product">
+	    <param name="component.uid"  value="nb-javafx"/>
+        </antcall>
+    </target>
 
-     <target name="build-glassfish">        
-        <echo message="BUILDING GLASSFISH ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/glassfish"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
+    <target name="build-glassfish">        
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="glassfish"/>
+        </antcall>
+    </target>
 
-     <target name="build-glassfish-mod">        
-        <echo message="BUILDING GLASSFISH MODULAR ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/glassfish-mod" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/glassfish-mod"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
+    <target name="build-glassfish-mod">        
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="glassfish-mod"/>
+        </antcall>
+    </target>
 
-     <target name="build-tomcat">        
-        <echo message="BUILDING TOMCAT ==========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/tomcat" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/tomcat"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
+    <target name="build-tomcat">        
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="tomcat"/>
+        </antcall>
+    </target>
 
-     <target name="build-openesb">
-	<set property="server-uid" value="glassfish"/>
-        <if property="do.build.jtb">
-		<set property="server-uid" value="sjsas"/>
-        </if>
-
-        <echo message="BUILDING OPENESB =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/openesb" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/openesb"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-	    <property
-                name="server-uid"
-                value="${server-uid}"/>
-        </ant>
+    <target name="build-openesb">
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="openesb"/>
+        </antcall>
     </target>
 
     <target name="build-mysql">
-        <echo message="BUILDING MySQL ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql"  target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/mysql"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="mysql"/>
+        </antcall>
     </target>
 
     <target name="build-mysql-connector">
-        <echo message="BUILDING MySQL Connector =========================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/mysql-connector" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/mysql-connector"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="mysql-connector"/>
+        </antcall>
     </target>
 
     <target name="build-sjsas">        
-	<echo message="BUILDING SJSAS ============================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsas" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/sjsas"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="sjsas"/>
+        </antcall>
     </target>
 
     <target name="build-sjsam">        
-	<echo message="BUILDING SJSAM ============================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/sjsam" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/sjsam"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>        
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="sjsam"/>
+        </antcall>
     </target>
 
     <target name="build-swdp">        
-	<echo message="BUILDING SWDP ============================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/swdp" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/swdp"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-runtime-product">
+	    <param name="component.uid" value="swdp"/>
+        </antcall>
     </target>
 
     <target name="build-javaeesdk-firstcup">        
-        <echo message="BUILDING JAVAEESDK: FIRSTCUP =============================="/>        
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-firstcup" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/javaeesdk-firstcup"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="documentation-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-documentation-component">
+	    <param name="component.uid" value="javaeesdk-firstcup"/>
+        </antcall>
     </target>
 
     <target name="build-javaeesdk-blueprints">
-        <echo message="BUILDING JAVAEESDK: BLUEPRINTS ============================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-blueprints" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/javaeesdk-blueprints"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="documentation-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-documentation-component">
+	    <param name="component.uid" value="javaeesdk-blueprints"/>
+        </antcall>
     </target>
 
     <target name="build-javaeesdk-samples">
-        <echo message="BUILDING JAVAEESDK: SAMPLES ==============================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-samples" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/javaeesdk-samples"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="documentation-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+       <antcall target="build-documentation-component">
+	    <param name="component.uid" value="javaeesdk-samples"/>
+        </antcall>
     </target>
 
     <target name="build-javaeesdk-javadocs">
-        <echo message="BUILDING JAVAEESDK: JAVADOCS =============================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/javaeesdk-javadocs" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/javaeesdk-javadocs"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+        <antcall target="build-documentation-component">
+	    <param name="component.uid" value="javaeesdk-javadocs"/>
+        </antcall>
     </target>
 
     <target name="build-portletcontainer">
-        <echo message="BUILDING PORTLET CONTAINER ================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/portletcontainer" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/portletcontainer"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+        <antcall target="build-runtime-product">
+	    <param name="component.uid" value="portletcontainer"/>
+        </antcall>
     </target>
 
     <target name="build-wsrp">
-        <echo message="BUILDING WSRP ================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/wsrp" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/wsrp"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+        <antcall target="build-runtime-product">
+	    <param name="component.uid" value="wsrp"/>
+        </antcall>
     </target>
 
     <target name="build-nb-portalpack">
-	<echo message="BUILDING PORTAL PACK PLUGIN ================================"/>        
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/nb-portalpack" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/nb-portalpack"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-                
-            <property
-                name="release.parent.uid"
-                value="tools-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
-
-     <target name="build-wtk">
-	<echo message="BUILDING WTK ======================================="/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/wtk" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/wtk"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value="runtimes-group"/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-     </target>
-
+        <antcall target="build-product">
+	    <param name="component.uid" value="nb-portalpack"/>
+	    <param name="release.parent.uid" value="tools-group"/>
+        </antcall>
+    </target>
 
      <target name="build-jdk5" if="do.build.jdk5">
-        <echo message="BUILDING JDK5 ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk5.xml" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/jdk"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value=""/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk5.xml"/>
+	</antcall>
      </target>
 
+
      <target name="build-jdk6" if="do.build.jdk6">
-        <echo message="BUILDING JDK6 ========================================"/>
-        <ant dir="${nbi.netbeans.dir}/infra/build/products/jdk" antfile="build_jdk6.xml" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.netbeans.dir}/infra/build/products/jdk"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="dist.dir"
-                value="${output.dir}/components"/>
-            
-            <property
-                name="release.parent.uid"
-                value=""/>
-            <property
-                name="release.parent.version"
-                value=""/>
-            <property
-                name="release.parent.platforms"
-                value=""/>
-        </ant>
-    </target>    
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk6.xml"/>
+	</antcall>
+     </target>
 
 
-  
+    <!-- GENERATE NetBeans/JDK/JavaTools/MySQL BUNDLES -->
+
+    <target name="generate-netbeans-javase-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"   version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="javase"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-java-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-java-${bundle.platform}"/>
+        <condition property="is.mobility.available" value="false" else="true">
+	    <or>
+                <contains string="${bundle.platform}" substring="macosx"/>
+	        <contains string="${bundle.platform}" substring="solaris"/>
+	    </or>
+        </condition>
+
+	<if property="is.mobility.available" value="true">
+            <condition property="is.solaris.platform" value="true" else="false">
+                <contains string="${bundle.platform}" substring="solaris"/>
+            </condition>
+
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-javame"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"  version="${nb.full.version}"/>
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
+
+	<if property="is.mobility.available" value="false">
+            <condition property="is.solaris.platform" value="true" else="false">
+                <contains string="${bundle.platform}" substring="solaris"/>
+            </condition>
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"  version="${nb.full.version}"/>
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="java"/>
+            </create-bundle>
+	</if>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-javame-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mobility-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"   version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="javame"/>
+        </create-bundle>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-ruby-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"        version="${nb.full.version}"/>
+            <component uid="nb-webcommon"   version="${nb.full.version}"/>
+            <component uid="nb-ruby"        version="${nb.full.version}"/>
+            <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
+        </create-bundle>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-cpp-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd"  version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-php-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"      version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
+            <component uid="nb-php"       version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="php"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-netbeans-full-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-${bundle.platform}"/>
+
+        <condition property="is.mac.platform" value="true" else="false">
+            <contains string="${bundle.platform}" substring="macosx"/>
+        </condition>
+
+	<if property="is.mac.platform" value="false">
+            <condition property="is.solaris.platform" value="true" else="false">
+                <contains string="${bundle.platform}" substring="solaris"/>
+            </condition>
+	    <if property="is.solaris.platform" value="false">	    
+                   <create-bundle root="${output.dir}/registry-temp" 
+                                  platform="${bundle.platform}" 
+                                  target="${bundle.prefix}.${bundle.extension}">
+                       <component uid="nb-base"        version="${nb.full.version}"/>
+                       <component uid="nb-javase"      version="${nb.full.version}"/>
+                       <component uid="nb-webcommon"   version="${nb.full.version}"/>
+                       <component uid="nb-javaee"      version="${nb.full.version}"/>
+                       <component uid="nb-javame"      version="${nb.full.version}"/>
+                       <component uid="nb-soa"         version="${nb.full.version}"/>
+                       <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+                       <component uid="nb-cnd"         version="${nb.full.version}"/>
+                       <component uid="nb-php"         version="${nb.full.version}"/>
+                       <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                       <component uid="tomcat"         version="${tomcat.full.version}"/>
+                   <component uid="openesb"        version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
+                   </create-bundle>
+            </if>
+            <if property="is.solaris.platform" value="true">	    
+                   <create-bundle root="${output.dir}/registry-temp" 
+                                  platform="${bundle.platform}" 
+                                  target="${bundle.prefix}.${bundle.extension}">
+                       <component uid="nb-base"        version="${nb.full.version}"/>
+                       <component uid="nb-javase"      version="${nb.full.version}"/>
+                       <component uid="nb-webcommon"   version="${nb.full.version}"/>
+                       <component uid="nb-javaee"      version="${nb.full.version}"/>
+                       <!--<component uid="nb-javame"      version="${nb.full.version}"/>-->
+                       <component uid="nb-soa"         version="${nb.full.version}"/>
+                       <!--<component uid="nb-uml"         version="${nb.full.version}"/>-->
+                       <component uid="nb-ruby"        version="${nb.full.version}"/>
+                       <component uid="nb-cnd"         version="${nb.full.version}"/>
+                       <component uid="nb-php"         version="${nb.full.version}"/>
+                       <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+                       <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+                       <component uid="tomcat"         version="${tomcat.full.version}"/>
+                       <component uid="openesb"        version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
+                   </create-bundle>
+            </if>
+        </if>
+
+	<if property="is.mac.platform" value="true">
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"       version="${nb.full.version}"/>
+            <component uid="nb-javase"     version="${nb.full.version}"/>
+            <component uid="nb-webcommon"  version="${nb.full.version}"/>
+            <component uid="nb-javaee"     version="${nb.full.version}"/>
+            <!--<component uid="nb-javame"     version="${nb.full.version}"/>-->
+            <component uid="nb-soa"        version="${nb.full.version}"/>
+            <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
+            <component uid="nb-ruby"       version="${nb.full.version}"/>
+            <component uid="nb-cnd"        version="${nb.full.version}"/>
+            <component uid="nb-php"        version="${nb.full.version}"/>
+            <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
+            <component uid="openesb"       version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
+        </create-bundle>
+        </if>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+ 
+    <target name="convert-netbeans-bundle" depends="convert-zip-to-tgz"/>
+
+    <target name="convert-zip-to-tgz" depends="init-zip-to-tgz,perform-zip-to-tgz"/>
+
+    <target name="init-zip-to-tgz">
+        <condition property="convert.zip.to.tgz">
+            <contains string="${bundle.platform}" substring="macos"/>
+        </condition>
+    </target>
+
+    <target name="perform-zip-to-tgz" if="convert.zip.to.tgz">
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${bundle.prefix}.${bundle.extension}"/>
+            <param name="output.file" value="${bundle.prefix}.tgz"/>
+        </antcall>
+	<delete file="${bundle.prefix}.${bundle.extension}"/>
+     </target>
+
+    <target name="convert-zip-to-dmg" depends="init-zip-to-dmg,perform-zip-to-dmg"/>
+
+    <target name="init-zip-to-dmg">
+        <condition property="convert.zip.to.dmg">
+            <contains string="${bundle.platform}" substring="macos"/>
+        </condition>
+    </target>
+
+    <target name="perform-zip-to-dmg" if="convert.zip.to.dmg">
+         <antcall target="zip-to-dmg">
+             <param name="input.file"   value="${bundle.prefix}.${bundle.extension}"/>
+             <param name="output.file"  value="${bundle.prefix}.dmg"/>
+             <param name="dmg.name"     value="${bundle.dmg.name}"/>
+         </antcall>        
+	 <delete file="${bundle.prefix}.${bundle.extension}"/>
+    </target>
+
+
     <target name="generate-netbeans-javase-bundles">
         <!-- JavaSE bundles -->        
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javase"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-x86.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javase-macosx-ppc.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-javase-macosx-*zip"/>
-            </fileset>
-        </delete>
-    </target>
-    
-    <target name="generate-netbeans-javaee-bundles">
-        <!-- JavaEE bundles -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="javaee"/>
-        </create-bundle>
-	<antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-x86.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javaee-macosx-ppc.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
         </antcall>
-        <delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-javaee-macosx-*zip"/>
-            </fileset>
-        </delete>
-    </target>
-    
-    <target name="generate-netbeans-javame-bundles">
-        <!-- JavaME bundles (only for windows and linux) -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mobility-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-javame" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javame"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mobility-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-javame" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javame"/>
-        </create-bundle>
-    </target>
-    
-    <target name="generate-netbeans-ruby-bundles">
-        <!-- Ruby bundles -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-x86.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-macosx-ppc.tgz"/>
+	<antcall target="generate-netbeans-javase-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
         </antcall>
-        <delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-ruby-macosx-*zip"/>
-            </fileset>
-        </delete>
-    </target>
-    
-    <target name="generate-netbeans-cpp-bundles">
-        <!-- C/C++ bundles -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-x86.tgz"/>
-        </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-macosx-ppc.tgz"/>
-        </antcall>
-	<delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-cpp-macosx-*zip"/>
-            </fileset>
-        </delete>
     </target>
 
+
+    <target name="generate-netbeans-javaee-bundles">
+        <!-- JavaEE bundles -->        
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-javaee-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+
+    <target name="generate-netbeans-java-bundles">
+        <!-- JavaEE bundles -->        
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-java-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+
+    <target name="generate-netbeans-javame-bundles">
+        <!-- JavaME bundles (only for windows and linux) -->
+	<antcall target="generate-netbeans-javame-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-javame-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+    </target>
+   
+    <target name="generate-netbeans-ruby-bundles">
+        <!-- Ruby bundles -->
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-ruby-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+    <target name="generate-netbeans-cpp-bundles">
+        <!-- CPP bundles -->
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-cpp-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+    </target>
+
+    
     <target name="generate-netbeans-php-bundles">
         <!-- PHP bundles -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-x86.tgz"/>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-macosx-ppc.tgz"/>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
         </antcall>
-	<delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-php-macosx-*zip"/>
-            </fileset>
-        </delete>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-php-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
     </target>
-    
+
+
     <target name="generate-netbeans-full-bundles">
         <!-- Full bundles -->
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-javame" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-uml" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/>
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-javame" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-uml" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-uml" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-uml" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <!--<component uid="nb-uml" version="${nb.full.version}"/>-->
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="nb-groovy" version="${nb.full.version}"/>
-            <component uid="nb-cnd" version="${nb.full.version}"/> 
-            <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat" version="6.0.16.0.0"/>
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-x86.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-x86.tgz"/>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
         </antcall>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-ppc.zip"/>
-            <param name="output.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-macosx-ppc.tgz"/>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
         </antcall>
-        <delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-macosx-*zip"/>
-            </fileset>
-        </delete>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="macosx-x86"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="macosx-ppc"/>
+	    <param name="bundle.extension" value="zip"/>
+        </antcall>
     </target>
+
+  
 
     <target name="init-jtb-bundles" if="do.build.jtb">
 	<set property="jtb.output.dir"
@@ -2268,153 +1627,92 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-    <target name="generate-javatoolsbundle-bundles" depends="init-jtb-bundles" if="do.build.jtb">
-	<!-- Java Tools Bundle installer -->
-        <set property="jtb.bundles.prefix" value="java-tools-bundle-update5"/>
-        <set property="jtb.dmg.name"       value="Java EE 5 Tools Bundle Update 5"/>
+    <target name="generate-javafx-bundles" if="do.build.javafx">
+	<antcall target="generate-javafx-bundle">
+               <param name="bundle.platform"  value="windows"/>
+               <param name="bundle.extension" value="exe"/>
+        </antcall>
+    </target>
+
+    <target name="generate-javafx-bundle">
+	<!-- JavaFX bundles --> 	
+        <mkdir dir="${nb.bundles.output.dir}"/>
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-javafx-${bundle.platform}"/>
 
         <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-windows.exe">
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/>            
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>	                
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
+            <component uid="nb-javafx" version="${javafx.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="javafx"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.javafx.resource}"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+
+    <target name="generate-javatoolsbundle-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"               version="${nb.full.version}"/>
+            <component uid="nb-javase"             version="${nb.full.version}"/>
+            <component uid="nb-webcommon"          version="${nb.full.version}"/>
+            <component uid="nb-javaee"             version="${nb.full.version}"/>
+            <component uid="nb-soa"                version="${nb.full.version}"/>
+            <component uid="nb-portalpack"         version="2.0.1.0.${portalpack.build.number}"/>            
+            <component uid="sjsas"                 version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/>            
+            <component uid="openesb"               version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>	                
+            <component uid="sjsam"                 version="5.0.6.${sjsas.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples"     version="1.0.${javaeesdk-samples.update.number}.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints"  version="1.0.${javaeesdk-blueprints.update.number}.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+	    <component uid="javaeesdk-firstcup"    version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
 	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <component uid="portletcontainer"      version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
+	    <component uid="wsrp"                  version="${wsrp.macro.number}.${wsrp.micro.number}.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="java.tools"/>            
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/> 
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>            
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/> 
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>            
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/> 
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/> 
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
-        </create-bundle>
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-soa" version="${nb.full.version}"/>
-            <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>            
-            <component uid="sjsas" version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/>             
-            <component uid="openesb" version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
-            <component uid="sjsam" version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
-	    <component uid="javaeesdk-firstcup" version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
-	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
-	    <component uid="portletcontainer" version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp" version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="java.tools"/>                        
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
-        </create-bundle>
-        <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-x86.dmg"/>
-            <param name="dmg.name" value="${jtb.dmg.name}"/>
-        </antcall>
-        <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/${jtb.bundles.prefix}-macosx-ppc.dmg"/>
-            <param name="dmg.name" value="${jtb.dmg.name}"/>
-        </antcall>       
 
-        <delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${jtb.bundles.prefix}-macosx*zip"/>
-            </fileset>
-        </delete>
+	<antcall target="convert-javatoolsbundle"/>	
+    </target>
+
+    <target name="convert-javatoolsbundle" depends="convert-zip-to-dmg"/>	
+
+    <target name="generate-javatoolsbundle-bundles" depends="init-jtb-bundles" if="do.build.jtb">
+	<!-- Java Tools Bundle installer -->
+        <set property="jtb.bundles.prefix" value="java-tools-bundle-update6"/>
+        <set property="bundle.dmg.name"    value="Java EE 5 Tools Bundle Update 6"/>
+
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="windows"/>
+               <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="linux"/>
+               <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="solaris-x86"/>
+               <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="solaris-sparc"/>
+               <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="macosx-x86"/>
+               <param name="bundle.extension" value="zip"/>
+        </antcall>
+	<antcall target="generate-javatoolsbundle-bundle">
+               <param name="bundle.platform"  value="macosx-ppc"/>
+               <param name="bundle.extension" value="zip"/>
+        </antcall>
     </target>
 
     <target name="init-mysql-bundles" if="do.build.mysql">
@@ -2423,111 +1721,41 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
+    <target name="generate-mysql-bundle">
+	<create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-${bundle.platform}.${bundle.extension}">
+            <component uid="nb-base"         version="${nb.full.version}"/>
+            <component uid="nb-javase"       version="${nb.full.version}"/>
+            <component uid="nb-webcommon"    version="${nb.full.version}"/>
+            <component uid="nb-javaee"       version="${nb.full.version}"/>
+            <component uid="nb-ruby"         version="${nb.full.version}"/>
+            <component uid="glassfish"       version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="mysql"           version="5.0.67.0.0"/>
+            <component uid="mysql-connector" version="5.1.6.0.0"/>
+	    <bundleProperty name="${welcome.type}" value="mysql"/>
+            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
+        </create-bundle>
+    </target>
+
 
     <target name="generate-mysql-bundles" depends="init-mysql-bundles" if="do.build.mysql">
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-windows.exe">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-linux.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-x86.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris-sparc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-solaris-sparc.sh">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-        <!--
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-x86" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-	<create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx-ppc" 
-                       target="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="nb-ruby" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="mysql" version="5.0.51.0.0"/>
-            <component uid="mysql-connector" version="5.1.6.0.0"/>
-	    <bundleProperty name="${welcome.type}" value="mysql"/>
-            <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.mysql.resource}"/>
-        </create-bundle>
-        <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-x86.dmg"/>
-            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
+	<antcall target="generate-mysql-bundle">
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
         </antcall>
-
-        <antcall target="zip-to-dmg">
-            <param name="zip.file"  value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.zip"/>
-            <param name="dmg.file" value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mysql-macosx-ppc.dmg"/>
-            <param name="dmg.name" value="NetBeans 6.0.1 and MySQL 5.0"/>
-        </antcall>       
-
-        <delete>
-            <fileset dir="${nb.bundles.output.dir}">
-		<include name="${nb.bundle.files.prefix}-mysql-macosx*zip"/>
-            </fileset>
-        </delete>
-	-->
+	<antcall target="generate-mysql-bundle">
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-mysql-bundle">
+	    <param name="bundle.platform"  value="solaris-x86"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+	<antcall target="generate-mysql-bundle">
+	    <param name="bundle.platform"  value="solaris-sparc"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
     </target>
 
     <target name="init-bundled-jvms" if="do.build.jdk">
@@ -2555,7 +1783,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-jdk5-bundles" if="do.build.jdk5">
 	<!-- JavaSE + JDK5 bundles -->
-	<antcall target="generate-jdk-bundles-dep">
+	<antcall target="generate-jdk-bundle-single">
 	    <param name="jdk.bundle.files.prefix"     value="jdk-1_5_0_16"/>
 	    <param name="jdk.full.version"            value="1.5.0.16.2"/>
       	    <param name="bundled.jvm.file.prefix"     value="jre-1_5_0_15"/>
@@ -2565,9 +1793,9 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-jdk6-bundles" if="do.build.jdk6">
         <!-- JavaSE + JDK6 bundles -->
-	<antcall target="generate-jdk-bundles-dep">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-6u7"/>
-	    <param name="jdk.full.version"            value="1.6.0.7.6"/>
+	<antcall target="generate-jdk-bundle-single">
+	    <param name="jdk.bundle.files.prefix"     value="jdk-6u10"/>
+	    <param name="jdk.full.version"            value="1.6.0.10.33"/>
             <param name="bundled.jvm.file.prefix"     value="jre-6u7"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk6.resource}"/>
 	</antcall>
@@ -2586,7 +1814,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
     </target>
 
-    <target name="generate-jdk-bundles-dep">
+    <target name="generate-jdk-bundle-single">
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
 		<param name="bundle.extension"		value=".exe"/>
@@ -2610,161 +1838,6 @@ jarsigner.storepass=${jarsigner.storepass}
 	</antcall>
     </target>
 
-
-
-    <target name="prepare-output-dir">
-	<delete dir="${output.dir}"/>
-        
-        <mkdir dir="${output.dir}"/>
-        <mkdir dir="${nb.bundles.output.dir}"/>
-        <mkdir dir="${output.dir}/components"/>        
-    </target>
-
-    <target name="export-temp-registry">
-	<export-registry 
-            root="${output.dir}/registry-temp" 
-            destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
-    </target>
-
-    <target name="prepare-web-page" if="do.build.netbeans">
-	<antcall target="prepare-netbeans-web-page"/>
-    </target>
-
-    <target name="prepare-netbeans-web-page" depends="init-web-page,init-web-page-ml,build-web-page,release-web-page"/>
-
-    <target name="init-web-page">
-	<property name="web.page.dir" value="${nbi.all.dir}/webtemp"/>
-	<mkdir dir="${web.page.dir}"/>
-	<mkdir dir="${web.page.dir}/img"/>
-        <mkdir dir="${web.page.dir}/js"/>
-        <mkdir dir="${web.page.dir}/css"/>
-
-	<copy todir="${web.page.dir}">
-            <fileset dir="${nbi.all.dir}/installer/infra/build/web">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-	<set property="locales" value=""/>
-    </target>
-
-   <target name="init-web-page-ml" if="ml.build">
-	<condition property="nb.locales.notzero.length">
- 	     <not>
- 	     	<equals arg1="${nb.locales}" arg2=""/>
- 	     </not>
-        </condition>
- 
-
- 	<if property="nb.locales.notzero.length"> 
- 		<set property="locales" value=",${nb.locales}"/>
- 	</if>
-
-	<copy todir="${web.page.dir}" failonerror="false">
-            <fileset dir="${nbi.all.dir}/translatedfiles/src/installer/infra/build/web">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>	
-    </target>
-
-    <target name="release-web-page">
-	<copy todir="${output.dir}">
-            <fileset dir="${web.page.dir}">
-                <include name="**/*.*"/>
-		<exclude name="**/*.properties"/>
-		<exclude name="**/*.list"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="build-web-page">
-        <!-- For each locale -->
-	<echo message="Locales: [${locales}]"/>
-        <set property="languages.js.file" value="${web.page.dir}/js/languages.js"/>
-        <echo file="${languages.js.file}"/>
-
-	<for-each list="${locales}" separator="," property="locale">
-	    <antcall target="prepare-web-page-locale">
-                <param name="locale.name" value="${locale}"/>
-		<param name="languages.js" value="${languages.js.file}"/>
-	    </antcall>	    
-	</for-each>
-    </target>
-
-    <target name="init-web-page-locale">	
-	<echo message="Locale : ${locale.name}"/>
-
-	<set property="locale.suffix" value="_${locale.name}"/>
-        <if property="locale.name" value="">
-	    <set property="locale.suffix" value=""/>
-        </if>
-	<available file="${web.page.dir}/language${locale.suffix}.properties" property="locale.file.present"/>
-        <condition property="webpage.locale.present">
-            <and>
-                <available file="${web.page.dir}/js/common_strings${locale.suffix}.js"/>
-                <available file="${web.page.dir}/js/download_strings${locale.suffix}.js"/>
-                <available file="${web.page.dir}/js/start_strings${locale.suffix}.js"/>
-            </and>
-        </condition>
-        <condition property="locale.present">
-            <or>
-                <isset property="locale.file.present"/>
-                <isset property="webpage.locale.present"/>
-            </or>
-        </condition>
-    </target>
-
-    <target name="generate-components-js-locale">
-        <generate-components-js
-            root="${output.dir}/registry-temp" 
-            locale="${locale.name}"
-            bundlesList="${web.page.dir}/bundles.list"
-            file="${web.page.dir}/js/components${locale.suffix}.js"/>
-    </target>
-
-    <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language,generate-components-js-locale"/>	
-
-    <target name="web-page-replace-tokens" if="webpage.locale.present">
-	<property file="${web.page.dir}/replace.properties"/>
-	
-	<for-each from="1" to="${sources.params.length}" property="i">
-            <set property="current.token" 
-                 source="sources.params.${i}.token"/>
-            <set property="current.value" 
-                 source="sources.params.${i}.value"/>
-            
-            <replace dir="${web.page.dir}" 
-                     encoding="utf-8"
-                     token="${current.token}" 
-                     value="${current.value}">
-		     <include name="js/build_info.js"/>
-	    </replace>
-        </for-each>                
-    </target>
-
-    <target name="web-page-add-language" if="locale.present">
-	<if property="locale.file.present">
-            <property file="${web.page.dir}/language${locale.suffix}.properties"/>
-	    <echo encoding="utf-8" file="${languages.js}.temp">LANGUAGE_NAMES.push("${language.name}");
-LANGUAGE_IDS.push("${language.id}");
-</echo>
-	</if>
-        <set property="suffix.to.use" value=""/>
-
-        <if property="webpage.locale.present">
-	     <echo encoding="utf-8" file="${languages.js}.temp" append="true">LANGUAGE_SUFFIXES.push("${locale.name}");
-LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
-</echo>
-        </if>
-
-	<loadfile encoding="utf-8" srcfile="${languages.js}.temp" property="jstmpfile">
-	  <filterchain>
-	    <escapeunicode/>
-	  </filterchain>
-	</loadfile>
-	<echo file="${languages.js}" message="${jstmpfile}" append="true"/>
-	<delete file="${languages.js}.temp"/>
-    </target>
 
     <target name="zip-to-tgz">
 	<set property="tar.tmpdir"
@@ -2790,14 +1863,14 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
     </target>
     <target name="zip-to-dmg"> 
 	<antcall target="zip-to-tgz">
-            <param name="input.file"  value="${zip.file}"/>
-            <param name="output.file" value="${zip.file}.tgz"/>
+            <param name="input.file"  value="${input.file}"/>
+            <param name="output.file" value="${input.file}.tgz"/>
         </antcall>
 	<antcall target="tgz-to-dmg">
-            <param name="tgz.file"  value="${zip.file}.tgz"/>
-            <param name="dmg.file" value="${dmg.file}"/>
+            <param name="input.file"  value="${input.file}.tgz"/>
+            <param name="output.file" value="${output.file}"/>
         </antcall>
-	<delete file="${zip.file}.tgz"/>
+	<delete file="${input.file}.tgz"/>
     </target>
 
     <target name="tgz-to-dmg">        
@@ -2815,13 +1888,13 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
                  passphrase="${makedmg.ssh.keypass}"/>
 
 	<echo message=""/>
-	<echo message="Copying file ${tgz.file} to the MacOS system"/>
+	<echo message="Copying file ${input.file} to the MacOS system"/>
 	<scp keyfile="${makedmg.ssh.keyfile}"
              passphrase="${makedmg.ssh.keypass}"
              verbose="true"
              trust="true"
              remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/src/temp.tgz"
-	     file="${tgz.file}"/>
+	     file="${input.file}"/>
 
 	<echo message=""/>
 	<echo message="Untar archive to temporary directory"/>
@@ -2854,7 +1927,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
              passphrase="${makedmg.ssh.keypass}"
              verbose="true"
              trust="true"
-             localTofile="${dmg.file}"
+             localTofile="${output.file}"
 	     file="${makedmg.remote.user}@${makedmg.remote.host}:${temp.build.directory}/dmg/image.dmg"/>
 
 	<echo message=""/>

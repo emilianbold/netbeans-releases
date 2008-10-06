@@ -42,6 +42,10 @@
 package org.openide.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -49,6 +53,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.actions.CookieAction;
 
 /** Save a single object.
@@ -76,20 +81,39 @@ public class SaveAction extends CookieAction {
         // avoid NPE if disabled assertions
         if (sc == null) return ;
 
-        try {
-            sc.save();
-            StatusDisplayer.getDefault().setStatusText(
-                NbBundle.getMessage(SaveAction.class, "MSG_saved", getSaveMessage(activatedNodes[0]))
-            );
-        } catch (IOException e) {
-            Exceptions.attachLocalizedMessage(e,
-                                              NbBundle.getMessage(SaveAction.class,
-                                                                  "EXC_notsaved",
-                                                                  getSaveMessage(activatedNodes[0])));
-            Exceptions.printStackTrace(e);
+        UserQuestionException userEx = null;
+        for (;;) {
+            try {
+                if (userEx == null) {
+                    sc.save();
+                } else {
+                    userEx.confirmed();
+                }
+                StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(SaveAction.class, "MSG_saved", getSaveMessage(activatedNodes[0]))
+                );
+            } catch (UserQuestionException ex) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                        NotifyDescriptor.YES_NO_OPTION);
+                Object res = DialogDisplayer.getDefault().notify(nd);
+
+                if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                    userEx = ex;
+                    continue;
+                }
+            } catch (IOException e) {
+                Exceptions.attachLocalizedMessage(e,
+                                                  NbBundle.getMessage(SaveAction.class,
+                                                                      "EXC_notsaved",
+                                                                      getSaveMessage(activatedNodes[0]),
+                                                                      e.getLocalizedMessage ()));
+                Logger.getLogger (getClass ().getName ()).log (Level.SEVERE, null, e);
+            }
+            break;
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -139,6 +163,7 @@ public class SaveAction extends CookieAction {
         return new HelpCtx(SaveAction.class);
     }
 
+    @Override
     protected String iconResource() {
         return "org/openide/resources/actions/save.png"; // NOI18N
     }

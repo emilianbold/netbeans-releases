@@ -54,13 +54,12 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.Vector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
@@ -131,8 +130,25 @@ public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
         try {
             ServerInstance    inst = ServerRegistry.getInstance().getServerInstance(Util._URL);
             //Project    project = (Project)Util.openProject(new File(Util.WEB_PROJECT_PATH));
-            ResourceConfigData dsdata = new ResourceConfigData();
             ResourceConfigData cpdata = new ResourceConfigData();
+            //connection pool setting
+            cpdata.setProperties(new Vector());
+            cpdata.addProperty(__DatabaseVendor, "derby_net");
+            cpdata.addProperty(__User, "app");
+            cpdata.addProperty(__Password,"app");
+            cpdata.addProperty(__ServerName,"localhost");
+            cpdata.addProperty(__DerbyPortNumber,"1527");
+            cpdata.addProperty(__DatabaseName,"sample");
+            cpdata.setString(__Name, CONNECTION_POOL_NAME);
+            cpdata.setString(__ResType, "javax.sql.DataSource");
+            cpdata.setString(__DatasourceClassname, "org.apache.derby.jdbc.ClientDataSource");
+            cpdata.setString(__SteadyPoolSize, "8");
+            cpdata.setString(__MaxPoolSize, "32");
+            cpdata.setString(__MaxWaitTimeInMillis, "60000");
+            cpdata.setString(__PoolResizeQuantity, "2");
+            cpdata.setString(__IdleTimeoutInSeconds, "300");
+
+            ResourceConfigData dsdata = new ResourceConfigData();
             //datasource settings
             dsdata.setString(__JndiName,DATA_RESOURCE_NAME);
             dsdata.setString(__Enabled, "true");
@@ -144,6 +160,7 @@ public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             dsdata.setTargetFileObject(falseProject);
+            cpdata.setTargetFileObject(falseProject);
             ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);

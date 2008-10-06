@@ -53,9 +53,11 @@ import javax.swing.JLabel;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.io.IOUtils;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.DesignListener;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -116,7 +118,7 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
         IOUtils.runInAWTNoBlocking(new Runnable() {
             public void run() {
                 if (folderWrapperTree.isLocked()) {
-                    throw new IllegalStateException("Access to the Navigator is locked"); //NOI18N
+                    Debug.warning("Access to the Navigator is locked"); //NOI18N
                 }
                 folderWrapperTree.buildTree(event);
                 ui.setRootNode(folderWrapperTree.getRootWrapperFolder().getNode());
@@ -125,10 +127,10 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
     }
 
     private void notifyUISelectionChanged() {
-        IOUtils.runInAWTNoBlocking(new Runnable() {
+        final Runnable runnable = new Runnable() {
             public void run() {
                 if (folderWrapperTree.isLocked()) {
-                    throw new IllegalStateException("Access to the Navigator is locked"); //NOI18N
+                    Debug.warning("Access to the Navigator is locked"); //NOI18N
                 }
                 if (document == null || document.getListenerManager() == null) {
                     return;
@@ -148,6 +150,11 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
                 if (folderWrapperTree.getRootWrapperFolder().getNode() == null) {
                     ui.setRootNode(Node.EMPTY);
                 }
+            }
+        };
+        IOUtils.runInAWTNoBlocking( new Runnable(){
+            public void run() {
+                document.getTransactionManager().readAccess(runnable);
             }
         });
     }
@@ -171,7 +178,12 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
                         return;
                     JComponent panel = InspectorPanel.getInstance().getComponent();
                     panel.removeAll();
-                    panel.add(ui, BorderLayout.CENTER);
+                    if (ui != null) {
+                        //Component was closed while still initializing
+                        panel.add(ui, BorderLayout.CENTER);
+                    } else {
+                        panel.add (emptyPanel, BorderLayout.CENTER);
+                    }
                     panel.revalidate();
                     panel.repaint();
                 }
@@ -193,5 +205,25 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
             notifyUISelectionChanged();
         }
         InspectorRegistry.getInstance(document).cleanUpRegistry();
+        this.ui.getExplorerManager();
     }
+    
+    ExplorerManager getUIExplorerManager() {
+        if (ui != null) {
+            return ui.getExplorerManager();
+        }
+        return null;
+    }
+
+    public static ExplorerManager getExplorerManager(DataObjectContext context) {
+       for (DataObjectContext context_ : INSTANCES.keySet()) {
+           if (context_.getDataObject() == context.getDataObject()) {
+               return INSTANCES.get(context_).getUIExplorerManager();
+           } 
+       }
+       
+       return null;
+    }
+    
+    
 }

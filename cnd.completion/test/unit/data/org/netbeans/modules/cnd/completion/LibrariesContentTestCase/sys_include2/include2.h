@@ -23,3 +23,7 @@ private:
     static int f6() {}
 
 };
+
+namespace common {
+    int decl_from_sys2;
+}

@@ -153,7 +153,6 @@ public final class MidpDocumentSupport {
     }
     
     public static DesignComponent updateEventHandlerWithNew(DesignComponent eventSource, DesignComponent newEventHandler) {
-        //        System.out.println(eventSource + " " + newEventHandler);
         assert newEventHandler == null  ||  newEventHandler.getDocument().getDescriptorRegistry().isInHierarchy(EventHandlerCD.TYPEID, newEventHandler.getType());
         DesignComponent oldEventHandler = eventSource.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
         if (oldEventHandler == newEventHandler)

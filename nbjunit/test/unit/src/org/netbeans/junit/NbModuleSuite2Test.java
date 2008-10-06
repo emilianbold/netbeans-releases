@@ -44,6 +44,8 @@ import test.pkg.not.in.junit.NbModuleSuiteT;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import org.netbeans.junit.NbModuleSuite.Configuration;
+import test.pkg.not.in.junit.NbModuleSuiteMeta;
 
 /**
  *
@@ -72,6 +74,15 @@ public class NbModuleSuite2Test extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    
+    public void testServices() throws Exception{
+        Configuration conf = NbModuleSuite.createConfiguration(NbModuleSuiteMeta.class).gui(false);
+        Test test = NbModuleSuite.create(conf);
+        test.run(new TestResult());
+        assertNotNull("The test was running", System.getProperty("meta"));
+        assertEquals("result" + System.getProperty("meta"), "ok", System.getProperty("meta"));
     }
 
     public void testRun() {

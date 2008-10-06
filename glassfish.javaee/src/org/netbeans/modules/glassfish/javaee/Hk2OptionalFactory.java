@@ -39,8 +39,11 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,18 +52,23 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.javaee.db.Hk2DatasourceManager;
 import org.netbeans.modules.glassfish.javaee.ide.FastDeploy;
+import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.AntDeploymentProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -134,6 +142,17 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             Logger.getLogger("glassfish-javaee").log(Level.FINER, "caller passed invalid param", cce); // NOI18N
         }
         return retVal;
+    }
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        ServerInstanceDescriptor result = null;
+        if(dm instanceof Hk2DeploymentManager) {
+            result = new Hk2ServerInstanceDescriptor((Hk2DeploymentManager) dm);
+        } else {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Invalid deployment manager: " + dm); // NOI18N
+        }
+        return result;
     }
 
     private static class J2eeInstantiatingIterator implements InstantiatingIterator {
@@ -211,5 +230,45 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             delegate.initialize(wizard);
         }
         
+    }
+
+
+    @Override
+    public void finishServerInitialization() throws ServerInitializationException {
+        try {
+            // remove any invalid server definitions...
+            String[] urls = InstanceProperties.getInstanceList();
+            if (null != urls) {
+                Hk2DeploymentFactory hk2df = new Hk2DeploymentFactory();
+                List<String> needToRemove = new ArrayList<String>();
+                for (String url : urls) {
+                    if (hk2df.handlesURI(url)) {
+                        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+                        String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+                        String domainDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+
+                                File.separator+ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+                        File instDir = new File(installDirName);
+                        File domainDir = new File(domainDirName);
+                        // TODO -- more complete test here...
+                        if (!instDir.exists() || !instDir.isDirectory() || 
+                                !domainDir.exists() || !domainDir.isDirectory() ||
+                                !domainDir.canWrite()) {
+                            needToRemove.add(url);
+                        }
+                    }
+                }
+                for (String url : needToRemove) {
+                    InstanceProperties.removeInstance(url);
+                }
+            }
+            //
+            final boolean needToRegisterDefaultServer =
+                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+            if (needToRegisterDefaultServer) {
+                ServerUtilities.getServerProvider();
+            }
+        } catch (Exception ex) {
+            throw new ServerInitializationException("failed to init default instance", ex);
+        }
     }
 }

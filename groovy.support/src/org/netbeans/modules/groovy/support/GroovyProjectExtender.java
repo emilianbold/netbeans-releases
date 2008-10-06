@@ -59,6 +59,9 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
+import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -71,30 +74,33 @@ import org.openide.util.MutexException;
  * Support for extending project with Groovy support
  * 
  * @todo now supports only Java SE projects
- * @todo do we want also 'disable' functionality?
  * 
  * @author Martin Adamek
  */
-public class GroovyProjectExtender {
+public class GroovyProjectExtender implements GroovyFeature {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
     private static final String GROOVY_BUILD_XML = "org/netbeans/modules/groovy/support/resources/groovy-build.xml"; // NOI18N
     private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
+    private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
     
     private final Project project;
+    private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
     private GroovyCustomizerPanel panel;
     
     GroovyProjectExtender(Project project) {
         this.project = project;
     }
 
+    public GroovyCustomizerPanel createPanel() {
+        panel = new GroovyCustomizerPanel(this);
+        return panel;
+    }
+
     public GroovyCustomizerPanel getPanel() {
-        if (panel == null) {
-            panel = new GroovyCustomizerPanel(this);
-        }
         return panel;
     }
 
@@ -105,7 +111,19 @@ public class GroovyProjectExtender {
      * @return true if all mentioned operations were succesfull
      */
     public boolean enableGroovy() {
-        return addClasspath() && addExcludes() && addBuildScript();
+        boolean result = addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
+        if (result) {
+            gsfClassPath = registerGsfClassPath(project);
+        }
+        return result;
+    }
+
+    public boolean disableGroovy() {
+        boolean result = removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
+        if (result) {
+            unregisterGsfClassPath();
+        }
+        return result;
     }
 
     /**
@@ -116,6 +134,39 @@ public class GroovyProjectExtender {
     public boolean isGroovyEnabled() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
+    }
+
+    static org.netbeans.modules.gsfpath.api.classpath.ClassPath registerGsfClassPath(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (groups.length > 0) {
+            FileObject[] roots = new FileObject[groups.length];
+            for (int i = 0; i < groups.length; i++) {
+                roots[i] = groups[i].getRootFolder();
+            }
+            org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath = ClassPathSupport.createClassPath(roots);
+            GlobalPathRegistry.getDefault().register(
+                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
+                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
+            return gsfClassPath;
+        }
+        return null;
+    }
+
+    private void unregisterGsfClassPath() {
+        if (gsfClassPath != null) {
+            GlobalPathRegistry.getDefault().unregister(
+                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
+                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
+            gsfClassPath = null;
+        }
+    }
+
+    static void unregisterGsfClassPath(Project project) {
+        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
+        if (extender != null) {
+            extender.unregisterGsfClassPath();
+        }
     }
 
     /**
@@ -135,7 +186,29 @@ public class GroovyProjectExtender {
                 Exceptions.printStackTrace(ex);
             } catch (UnsupportedOperationException ex) {
                 Exceptions.printStackTrace(ex);
+            }
         }
+        return false;
+    }
+
+    /**
+     * Removes groovy-all library from classpath
+     */
+    private boolean removeClasspath() {
+        Library groovyAllLib = LibraryManager.getDefault().getLibrary("groovy-all"); // NOI18N
+        if (groovyAllLib != null) {
+            try {
+                Sources sources = ProjectUtils.getSources(project);
+                SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                for (SourceGroup sourceGroup : sourceGroups) {
+                    ProjectClassPathModifier.removeLibraries(new Library[]{groovyAllLib}, sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                }
+                return true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (UnsupportedOperationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return false;
     }
@@ -149,6 +222,25 @@ public class GroovyProjectExtender {
             String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
             if (!exclude.contains(EXCLUSION_PATTERN)) {
                 props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude + "," + EXCLUSION_PATTERN); // NOI18N
+                storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            }
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    /**
+     * Removes *.groovy from excludes
+     */
+    private boolean removeExcludes() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            String exclude = props.getProperty(J2SE_EXCLUDE_PROPERTY);
+            if (exclude.contains("," + EXCLUSION_PATTERN)) {
+                exclude = exclude.replace("," + EXCLUSION_PATTERN, "");
+                props.setProperty(J2SE_EXCLUDE_PROPERTY, exclude);
                 storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
             }
             return true;
@@ -182,6 +274,65 @@ public class GroovyProjectExtender {
                 // extension is already registered
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean removeBuildScript() {
+        AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        List<String> extensibleTargets = extender.getExtensibleTargets();
+        if (extender != null && extensibleTargets.contains(EXTENSIBLE_TARGET_NAME)) {
+            AntBuildExtender.Extension extension = extender.getExtension(GROOVY_EXTENSION_ID);
+            if (extension != null) {
+                FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+                try {
+                    extension.removeDependency(EXTENSIBLE_TARGET_NAME, "-groovy-init-macrodef-javac"); // NOI18N
+                    extender.removeExtension(GROOVY_EXTENSION_ID);
+                    if (destDirFO != null) {
+                        FileObject fileToRemove = destDirFO.getFileObject("groovy-build.xml"); // NOI18N
+                        if (fileToRemove != null) {
+                            fileToRemove.delete();
+                        }
+                    }
+                    ProjectManager.getDefault().saveProject(project);
+                    return true;
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            } else {
+                // extension is not registered
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Disables compile on save
+     */
+    private boolean addDisableCompileOnSaveProperty() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            props.put(J2SE_DISABLE_COMPILE_ON_SAVE, "true");
+            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    /**
+     * Enabled compile on save
+     */
+    private boolean removeDisableCompileOnSaveProperty() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            props.remove(J2SE_DISABLE_COMPILE_ON_SAVE);
+            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return false;
     }

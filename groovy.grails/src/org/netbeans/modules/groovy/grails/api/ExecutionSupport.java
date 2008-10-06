@@ -119,12 +119,8 @@ public final class ExecutionSupport {
                     props.setProperty("server.port", port); // NOI18N
                 }
 
-                // FIXME fix this hack
-                String argument = Utilities.isWindows() ? " REM NB:" +  // NOI18N
-                            config.getProject().getProjectDirectory().getName() : "";
-
                 GrailsRuntime.CommandDescriptor descriptor = new GrailsRuntime.CommandDescriptor(
-                        "run-app", directory, config.getEnvironment(), new String[] {argument}, props);
+                        "run-app", directory, config.getEnvironment(), new String[] {}, props);
 
                 return runtime.createCommand(descriptor).call();
             }

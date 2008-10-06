@@ -62,7 +62,31 @@ public class SyntaxTreeTest extends TestBase {
     public void testTrivialCase() throws Exception {
         testSyntaxTree("trivial.html");
     }
+
+    public void testEmptyTags() throws Exception{
+        testSyntaxTree("emptyTags.html");
+    }
+
+    public void testList() throws Exception{
+        testSyntaxTree("list.html");
+    }
+
+    public void testTable() throws Exception{
+        testSyntaxTree("table.html");
+    }
+
+    public void testTagCrossing() throws Exception{
+        testSyntaxTree("tagCrossing.html");
+    }
+
+    public void testMissingEndTag() throws Exception{
+        testSyntaxTree("missingEndTag.html");
+    }
     
+    public void testIssue145821() throws Exception{
+        testSyntaxTree("issue145821.html");
+    }
+
     public void testIssue127786() throws Exception {
         testSyntaxTree("issue127786.html");
     }

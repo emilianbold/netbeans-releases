@@ -77,8 +77,7 @@ public class PasteActionTest extends JellyTestCase {
         suite.addTest(new PasteActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(PasteActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(PasteActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

@@ -52,6 +52,8 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
@@ -203,4 +205,24 @@ public abstract class IncrementalDeployment {
     public ProgressObject deployOnSave(TargetModuleID module, DeploymentChangeDescriptor desc) {
         throw new UnsupportedOperationException("Deploy on save not supported");
     }
+
+    public static IncrementalDeployment getIncrementalDeploymentForModule(
+            IncrementalDeployment incremental, J2eeModule deployable) throws IOException {
+
+        // defend against incomplete J2eeModule objects.
+        IncrementalDeployment retVal = incremental;
+        if (null != retVal && null == deployable.getContentDirectory()) {
+            retVal = null;
+        }
+        if (null != retVal && deployable instanceof J2eeApplication) {
+            // make sure all the sub modules will support directory deployment, too
+            J2eeModule[] childModules = ((J2eeApplication) deployable).getModules();
+            for (int i = 0; i < childModules.length; i++) {
+                if (null == childModules[i].getContentDirectory()) {
+                    retVal = null;
+                }
+            }
+        }
+        return retVal;
+    }    
 }

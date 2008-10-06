@@ -68,11 +68,18 @@ public class MultiDataObjectTest extends NbTestCase {
     public MultiDataObjectTest (String name) {
         super (name);
     }
-    
+
+    @Override
     protected Level logLevel() {
         return Level.INFO;
     }
-    
+
+    @Override
+    protected int timeOut() {
+        return 45000;
+    }
+
+    @Override
     public void setUp() throws Exception {
         clearWorkDir();
         
@@ -171,96 +178,6 @@ public class MultiDataObjectTest extends NbTestCase {
         }
     }
     
-    public void testConsistencyWithContinuousQueryingForDeletedFiles() throws Exception {
-        err.log(" getting children of to");
-        DataObject[] to1 = to.getChildren();
-        err.log(" getting children of from");
-        DataObject[] from1 = from.getChildren();
-        
-        class Queri extends Thread 
-        implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
-            public boolean stop;
-            private List deleted = Collections.synchronizedList(new ArrayList());
-            public Exception problem;
-            
-            public Queri() {
-                super("Query background thread");
-                setPriority(MAX_PRIORITY);
-            }
-
-            public void fileFolderCreated(FileEvent fe) {
-            }
-
-            public void fileDataCreated(FileEvent fe) {
-            }
-
-            public void fileChanged(FileEvent fe) {
-            }
-
-            public void fileDeleted(FileEvent fe) {
-                deleted.add(fe.getFile());
-            }
-
-            public void fileRenamed(FileRenameEvent fe) {
-            }
-
-            public void fileAttributeChanged(FileAttributeEvent fe) {
-            }
-            
-            public void run () {
-                while(!stop) {
-                    FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
-                    DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
-                    err.log("Next round");
-                    for (int i = 0; i < arr.length; i++) {
-                        try {
-                            err.log("Checking " + arr[i]);
-                            DataObject x = loader.findDataObject(arr[i], this);
-                            err.log("  has dobj: " + x);
-                        } catch (IOException ex) {
-                            if (problem == null) {
-                                problem = ex;
-                            }
-                        }
-                    }
-                }
-            }
-
-            public void markRecognized(FileObject fo) {
-            }
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                if ("afterMove".equals(evt.getPropertyName())) {
-                    Thread.yield();
-                }
-            }
-        }
-        
-        Queri que = new Queri();
-        
-        to.getPrimaryFile().addFileChangeListener(que);
-        from.getPrimaryFile().addFileChangeListener(que);
-        
-        que.start();
-        try {
-            for (int i = 0; i < 10; i++) {
-                err.log(i + " moving the object");
-                one.move(to);
-                err.log(i + " moving back");
-                one.move(from);
-                err.log(i + " end of cycle");
-            }
-        } finally {
-            que.stop = true;
-        }
-        
-        que.join();
-        if (que.problem != null) {
-            throw que.problem;
-        }
-        
-        assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
-    }
 
     public void testAdditionsToCookieSetAreVisibleInLookup() throws Exception {
         assertTrue(this.one instanceof SimpleObject);
@@ -340,6 +257,7 @@ public class MultiDataObjectTest extends NbTestCase {
             super(mo, fo);
         }
 
+        @Override
         public FileObject move(FileObject f, String suffix) throws IOException {
             FileObject retValue;
             retValue = super.move(f, suffix);

@@ -42,7 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-
     <folder name="Menu">
         <folder name="Tools">
             <file name="VariablesCustomizerAction.instance">
@@ -51,5 +50,31 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-project-ant-ProjectXMLCatalogReader.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="ProjectXMLCatalog">
+        <folder name="ant-project-libraries">
+            <file name="1.xsd" url="../ant-project-libraries-1.xsd"/>
+        </folder>
+        <folder name="ant-project-references">
+            <file name="1.xsd" url="../ant-project-references.xsd"/>
+            <file name="2.xsd" url="../ant-project-references2.xsd"/>
+        </folder>
+        <folder name="project">
+            <file name="1.xsd" url="../project.xsd"/>
+        </folder>
+        <folder name="project-private">
+            <file name="1.xsd" url="../project-private.xsd"/>
+        </folder>
+        <folder name="ant-build-extender">
+            <file name="1.xsd" url="../extender1.xsd"/>
+        </folder>
+    </folder>
 </filesystem>

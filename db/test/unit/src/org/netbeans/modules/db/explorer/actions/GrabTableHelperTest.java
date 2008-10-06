@@ -36,13 +36,12 @@ import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.util.DBTestBase;
-import org.netbeans.modules.db.util.InfoHelper;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  * @author David Van Couvering
  */
-public class GrabTableHelperTest extends DBTestBase {
+public class GrabTableHelperTest extends DDLTestBase {
 
     public GrabTableHelperTest(String name) {
         super(name);
@@ -50,7 +49,6 @@ public class GrabTableHelperTest extends DBTestBase {
     
     public void testGrabTable() throws Exception {
         File file = null;
-        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, conn);
         
         try {
             String tablename = "grabtable";
@@ -76,7 +74,7 @@ public class GrabTableHelperTest extends DBTestBase {
             // the casing of identifiers.   This is because we still
             // quote existing (versus) new identifiers, so we need to
             // make sure they are quoted correctly.
-            tablename = fixIdentifier(tablename);
+            String fixedName = fixIdentifier(tablename);
             col1 = fixIdentifier(col1);
             col2 = fixIdentifier(col2);
             pkName = fixIdentifier(pkName);
@@ -84,9 +82,10 @@ public class GrabTableHelperTest extends DBTestBase {
             // Initialize the table information in the format required
             // by the helper.  This is done by creating a DatabaseNodeInfo
             // for the table
-            DatabaseNodeInfo tableInfo = infoHelper.getTableInfo(tablename);
+            DatabaseNodeInfo tableInfo = getTableNodeInfo(tablename);
+            assertNotNull(tableInfo);
 
-            new GrabTableHelper().execute(spec, tablename, 
+            new GrabTableHelper().execute(getSpecification(), fixedName,
                     tableInfo.getChildren().elements(), file);
             
             assertTrue(file.exists());
@@ -96,10 +95,10 @@ public class GrabTableHelperTest extends DBTestBase {
             ObjectInputStream istream = new ObjectInputStream(fstream);
             CreateTable cmd = (CreateTable)istream.readObject();
             istream.close();
-            cmd.setSpecification(spec);
-            cmd.setObjectOwner(SCHEMA);
+            cmd.setSpecification(getSpecification());
+            cmd.setObjectOwner(getSchema());
             
-            assertEquals(tablename, cmd.getObjectName());
+            assertEquals(fixedName, cmd.getObjectName());
             
             Vector cols = cmd.getColumns();
             assertTrue(cols.size() == 3);
@@ -127,8 +126,7 @@ public class GrabTableHelperTest extends DBTestBase {
             cmd.execute();
             
             assertFalse(cmd.wasException());
-            
-            dropTable(tablename);
+            assertTrue(tableExists(fixedName));
         } finally {        
             if ( file != null && file.exists()) {
                 file.delete();

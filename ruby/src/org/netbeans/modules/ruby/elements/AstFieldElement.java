@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;

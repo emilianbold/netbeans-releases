@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -56,18 +57,23 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -146,23 +152,32 @@ public class DefaultProjectActionHandler implements ActionListener {
         private NativeExecutor projectExecutor = null;
         private StopAction sa = null;
         private RerunAction ra = null;
+        List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
         private final Object lock = new Object();
         
         private String getTabName(ProjectActionEvent[] paes) {
-            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();
-            String name = projectName + " ("; // NOI18N
+            String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
+            StringBuilder name = new StringBuilder(projectName);
+            name.append(" ("); // NOI18N
             for (int i = 0; i < paes.length; i++) {
                 if (i >= 2) {
-                    name += "..."; // NOI18N
+                    name.append("..."); // NOI18N
                     break;
                 }
-                name += paes[i].getActionName();
+                name.append( paes[i].getActionName() );
                 if (i < paes.length-1)
-                    name += ", "; // NOI18N
+                    name.append( ", " ); // NOI18N
             }
-            name += ")"; // NOI18N
-            return name;
+            name.append( ")" ); // NOI18N
+            if (paes.length > 0) {
+                MakeConfiguration conf = (MakeConfiguration) paes[0].getConfiguration();
+                if (!conf.getDevelopmentHost().isLocalhost()) {
+                    String hkey = conf.getDevelopmentHost().getName();
+                    name.append(" - ").append(hkey); //NOI18N
+                }
+            }
+            return name.toString();
         }
         
         private InputOutput getTab() {
@@ -198,12 +213,17 @@ public class DefaultProjectActionHandler implements ActionListener {
         private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
+            List<Action> list = new ArrayList<Action>();
+            list.add(sa);
+            list.add(ra);
+            additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            list.addAll(additional);
             InputOutput tab;
             if (reuse) {
                 tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
                 tab.closeInputOutput(); // Close it...
             }
-            tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
+            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -308,23 +328,27 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-                String key = conf.getDevelopmentHost().getDisplayName();
+                String key = conf.getDevelopmentHost().getName();
                 
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
                     String basedir = pae.getProfile().getBaseDir();
-                    if (!HostInfoProvider.getDefault().getMapper(key).isRemote(basedir)) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
-                        progressHandle.finish();
-                        return;
+                    PathMap mapper = HostInfoProvider.getDefault().getMapper(key);
+                    if (!mapper.isRemote(basedir, true)) {
+//                        mapper.showUI();
+//                        if (!mapper.isRemote(basedir)) {
+//                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+//                                    NbBundle.getMessage(DefaultProjectActionHandler.class, "Err_CannotRunLocalProjectRemotely")));
+                            progressHandle.finish();
+                            return;
+//                        }
                     }
                     //CompilerSetManager rcsm = CompilerSetManager.getDefault(key);
                 }
                 
-                //TODO: move to util class
-                PlatformInfo pi = new PlatformInfo(conf.getDevelopmentHost().getName(), conf.getPlatform().getValue());
-                
+                PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
+
+                boolean unbuffer = false;
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
                     if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) { 
@@ -336,14 +360,24 @@ public class DefaultProjectActionHandler implements ActionListener {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errmsg));
                         conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
                     }
-                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW 
-                            || conf.getDevelopmentHost().isLocalhost()) { //TODO: only output window for remote for now
-                        args = pae.getProfile().getArgsFlat();
-                        exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                    if (!conf.getDevelopmentHost().isLocalhost()) {
+                        //TODO: only output window for remote for now
+                        conType = RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
+                    }
+                    if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                        if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
+                            // we need to run the application under cmd on windows
+                            exe = "cmd.exe"; // NOI18N
+                            args = "/c " + IpeUtils.quoteIfNecessary(pae.getExecutable()) + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                        } else {
+                            exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                            args = pae.getProfile().getArgsFlat();
+                        }
+                        unbuffer = true;
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
-                            conType = pae.getProfile().getDefaultConsoleType();
+                            conType = RunProfile.getDefaultConsoleType();
                         }
                         if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
                             try {
@@ -378,12 +412,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                     CompilerSet cs = conf.getCompilerSet().getCompilerSet();
                     if (cs != null) {
                         String csdirs = cs.getDirectory();
-                        if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                        String commands = cs.getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                        if (commands != null && commands.length()>0) {
                             // Also add msys to path. Thet's where sh, mkdir, ... are.
-                            String msysBase = CppUtils.getMSysBase();
-                            if (msysBase != null && msysBase.length() > 0) {
-                                csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
-                            }
+                            csdirs = csdirs + pi.pathSeparator() + commands;
                         }
                         boolean gotpath = false;
                         String pathname = pi.getPathName() + '=';
@@ -404,12 +436,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                 } else { // Build or Clean
                     String[] env1 = new String[env.length + 1];
                     String csdirs = conf.getCompilerSet().getCompilerSet().getDirectory();
-                    if (conf.getCompilerSet().getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+                    String commands = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getCommandFolder(conf.getPlatform().getValue());
+                    if (commands != null && commands.length()>0) {
                         // Also add msys to path. Thet's where sh, mkdir, ... are.
-                        String msysBase = CppUtils.getMSysBase();
-                        if (msysBase != null && msysBase.length() > 0) {
-                            csdirs = csdirs + pi.pathSeparator() + msysBase + pi.separator() + "bin"; // NOI18N
-                        }
+                        csdirs = csdirs + pi.pathSeparator() + commands;
                     }
                     boolean gotpath = false;
                     String pathname = pi.getPathName() + '=';
@@ -435,7 +465,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                         pae.getTabName(),
                         pae.getActionName(),
                         pae.getID() == ProjectActionEvent.BUILD,
-                        showInput);
+                        showInput,
+                        unbuffer);
                 projectExecutor.addExecutionListener(this);
                 if (rcfile != null) {
                     projectExecutor.setExitValueOverride(rcfile);
@@ -470,15 +501,26 @@ public class DefaultProjectActionHandler implements ActionListener {
         }
         
         public void executionStarted() {
-            // Nothing
+            if (additional != null) {
+                for(BuildAction action : additional){
+                    action.setStep(currentAction);
+                    action.executionStarted();
+                }
+            }
         }
         
         public void executionFinished(int rc) {
+            if (additional != null) {
+                for(Action action : additional){
+                    ((ExecutionListener)action).executionFinished(rc);
+                }
+            }
             if (paes[currentAction].getID() == ProjectActionEvent.BUILD || paes[currentAction].getID() == ProjectActionEvent.CLEAN) {
                 // Refresh all files
                 try {
                     FileObject projectFileObject = paes[currentAction].getProject().getProjectDirectory();
                     projectFileObject.getFileSystem().refresh(false);
+                    MakeLogicalViewProvider.refreshBrokenItems(paes[currentAction].getProject());
                 } catch (Exception e) {
                 }
             }
@@ -518,7 +560,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         executable = FilePathAdaptor.normalize(executable);
                         makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                         // Mark the project 'modified'
-                        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class );
+                        ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                         if (pdp != null)
                             pdp.getConfigurationDescriptor().setModified();
                         // Set executable in pae
@@ -544,19 +586,45 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
             }
             if (IpeUtils.isPathAbsolute(executable)) {
+                Configuration conf = pae.getConfiguration();
+                boolean ok = true;
+                
+                if (conf instanceof MakeConfiguration && !((MakeConfiguration) conf).getDevelopmentHost().isLocalhost()) {
+                    ok = verifyRemoteExecutable(((MakeConfiguration) conf).getDevelopmentHost().getName(), executable);
+                } else {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
-                File file = new File(executable);
-                    if (!file.exists())
-                    file = new File(executable + ".exe"); // NOI18N
+                    File file = new File(executable);
+                    if (!file.exists()) {
+                        file = new File(executable + ".exe"); // NOI18N
+                    }
                     if (!file.exists() || file.isDirectory()) {
-                        String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                        return false;
+                        ok = false;
                     }
                 }
+                if (!ok) {
+                    String errormsg = getString("EXECUTABLE_DOESNT_EXISTS", pae.getExecutable()); // NOI18N
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                    return false;
+                }
+            }
             return true;
         }
+    }
+    
+    /**
+     * Verify a remote executable exists, is executable, and is not a directory.
+     * 
+     * @param hkey The remote host
+     * @param executable The file to remotely check
+     * @return true if executable exists and is an executable, otherwise false
+     */
+    private boolean verifyRemoteExecutable(String hkey, String executable) {
+        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
+        if (cmd != null) {
+            return cmd.run(hkey, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+        }
+        return false;
     }
 
     private static final class StopAction extends AbstractAction {

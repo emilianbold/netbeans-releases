@@ -207,11 +207,9 @@ public class Breakpoint extends BaseMessageChildElement{
                 builder.append(state.toString());
             }
 
-            if (isTemporary) {
-                builder.append(SPACE);
-                builder.append(TEMP_ARG);
-                builder.append(1);
-            }
+            builder.append(SPACE);
+            builder.append(TEMP_ARG);
+            builder.append(isTemporary ? 1 : 0);
 
             if (fileURI != null) {
                 builder.append(SPACE);

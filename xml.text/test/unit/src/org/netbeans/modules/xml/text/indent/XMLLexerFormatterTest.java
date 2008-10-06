@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.xml.text.indent;
 
+import org.netbeans.modules.xml.text.AbstractTestCase;
 import junit.framework.*;
 import org.netbeans.editor.BaseDocument;
 
@@ -57,6 +58,9 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormat"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
         suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatPerformance"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection1"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection2"));
         return suite;
     }
     
@@ -65,34 +69,72 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
      * with a document that represents expected outcome.
      */
     public void testFormat() throws Exception {
-        BaseDocument inputDoc = getDocument("input.xml");
+        BaseDocument inputDoc = getDocument("indent/input.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("output.xml");        
+        BaseDocument outputDoc = getDocument("indent/output.xml");        
         assert(compare(formattedDoc, outputDoc));
     }
     
     public void testFormatSubsection() throws Exception {
-        BaseDocument inputDoc = getDocument("input_sub.xml");
+        BaseDocument inputDoc = getDocument("indent/input_sub.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 72, 97);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("output_sub.xml");        
+        BaseDocument outputDoc = getDocument("indent/output_sub.xml");        
         assert(compare(formattedDoc, outputDoc));
     }
     
     //for bug 139160
     public void testFormatForTab() throws Exception {
-        BaseDocument inputDoc = getDocument("input2.xsd");
+        BaseDocument inputDoc = getDocument("indent/input2.xsd");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
-        BaseDocument outputDoc = getDocument("output2.xsd");        
+        BaseDocument outputDoc = getDocument("indent/output2.xsd");        
         assert(compare(formattedDoc, outputDoc));
     }
     
+      
+    public void testFormatPerformance() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/1998stats.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        long t1 = System.currentTimeMillis();
+        formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        long t2 = System.currentTimeMillis();
+        System.out.println("Time taken to format NFL XML in ms:: " + (t2-t1) );
+        
+        //try OTA Schema
+        inputDoc = getDocument("indent/1998stats.xml");
+        //format the inputDoc
+        formatter = new XMLLexerFormatter(null);
+        t1 = System.currentTimeMillis();
+        formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        t2 = System.currentTimeMillis();
+        System.out.println("Time taken to format OTA Schema in ms:: " + (t2-t1) );
+    }
+    public void testFormatSubsection1() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_sub1.xml");
+        //format a subsection of the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 39, 68);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_sub1.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
+    public void testFormatSubsection2() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
+        //format a subsection of the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 68, 83);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_sub2.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
 }

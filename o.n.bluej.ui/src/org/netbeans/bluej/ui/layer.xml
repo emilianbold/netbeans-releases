@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Window">
+            <file name="org-netbeans-bluej-ui-BlueJViewAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.bluej.ui.BlueJViewAction"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="Window">
+            <file name="org-netbeans-bluej-ui-BlueJViewAction.shadow">
+                <attr name="position" intvalue="1111"/>                
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-bluej-ui-BlueJViewAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- clashes with cnd stuff
+    folder name="Shortcuts">
+        <file name="D-9.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-bluej-ui-BlueJViewAction.instance"/>
+        </file>
+    </folder-->
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="BluejViewTopComponent.settings" url="BluejViewTopComponentSettings.xml"/>
+        </folder>
+        <folder name="Modes">
+            <folder name="explorer">
+                <file name="BluejViewTopComponent.wstcref" url="BluejViewTopComponentWstcref.xml">
+                    <attr name="position" intvalue="701" />
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

@@ -59,6 +59,15 @@ import org.openide.util.Utilities;
 public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
+    public static RuntimeException launderThrowable(Throwable t) {
+        if (t instanceof RuntimeException)
+            return (RuntimeException)t;
+        else if (t instanceof Error)
+            throw (Error)t;
+        else
+            throw new IllegalStateException("Unexpected checked exception", t);
+    }
+
     public static void displayError(String msg, Exception ex) {
         LOGGER.log(Level.INFO, msg, ex);
         
@@ -150,6 +159,15 @@ public class Utils {
         Object result = DialogDisplayer.getDefault().notify(ndesc);
 
         return ( result == NotifyDescriptor.OK_OPTION );
+    }
+
+    public static boolean displayYesNoDialog(String message) {
+        NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
+                message, NotifyDescriptor.YES_NO_OPTION);
+
+        Object result = DialogDisplayer.getDefault().notify(ndesc);
+
+        return ( result == NotifyDescriptor.YES_OPTION );
     }
     
     public static void displayErrorMessage(String message) {

@@ -79,7 +79,7 @@ public final class HibernateRevengCompletionManager {
             "sequence-identity", NbBundle.getMessage(HibernateRevengCompletionManager.class, "SEQUENCE_IDENTITY_GENERATOR_DESC") // NOI18N
          // NOI18N
          // NOI18N
-         // NOI18N
+         // NOI18N 
         };
 
         // Completion items for Hibernate type

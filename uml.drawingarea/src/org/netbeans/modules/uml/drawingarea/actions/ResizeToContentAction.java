@@ -40,8 +40,6 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
@@ -51,16 +49,17 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.Container;
+import org.netbeans.modules.uml.drawingarea.widgets.ResizeToContentMarker;
 
 /**
  *
  * 
  */
-public class ResizeToContentAction extends NodeAction
+public class ResizeToContentAction extends SceneNodeAction
 {
     private DesignerScene scene;
     
@@ -78,39 +77,66 @@ public class ResizeToContentAction extends NodeAction
         {
             return;
         }
-        Set selectedObjs = scene.getSelectedObjects();
-
-        ContextPaletteManager manager = scene.getContextPaletteManager();
-        if(manager != null)
-        {
-            manager.cancelPalette();
-        }
-        
-        for(Object selected: selectedObjs) 
-        {
-            if (selected instanceof IPresentationElement)
+        //separate from event dispatch thread
+            new Thread()
             {
-                IPresentationElement selectedPE = (IPresentationElement) selected;
-                Widget w = scene.findWidget(selectedPE);
-                Util.resizeNodeToContents(w);
-            }
-        }
-        scene.validate();
-        
-        if(manager != null)
-        {
-            manager.selectionChanged(null);
-        }
-        
+            @Override
+                public void run() {
+                    Set selectedObjs = scene.getSelectedObjects();
+
+                    ContextPaletteManager manager = scene.getContextPaletteManager();
+                    if(manager != null)
+                    {
+                        manager.cancelPalette();
+                    }
+
+                    for(Object selected: selectedObjs) 
+                    {
+                        if (selected instanceof IPresentationElement)
+                        {
+                            IPresentationElement selectedPE = (IPresentationElement) selected;
+                            Widget w = scene.findWidget(selectedPE);
+                            Util.resizeNodeToContents(w);
+                        }
+                    }
+                    scene.validate();
+
+                    if(manager != null)
+                    {
+                        manager.selectionChanged(null);
+                    }
+                }
+            }.start();
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes)
     {
         boolean retVal = false;
-        Set selectedObjs = scene.getSelectedObjects();
-        if (selectedObjs.size() > 0) 
+        
+        if(super.enable(activatedNodes) == true)
         {
-            return true;
+            Set selectedObjs = scene.getSelectedObjects();
+            if (selectedObjs.size() > 0) 
+            {
+                for (Object object: selectedObjs)
+                {
+                    Widget widget = scene.findWidget(object);
+                    if (!(widget instanceof UMLNodeWidget))
+                    {
+                        return false;
+                    }
+                    if (widget instanceof Container || !((UMLNodeWidget)widget).isResizable())
+                    {
+                        return false;
+                    }
+                    if (widget instanceof ResizeToContentMarker)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
         return retVal;
     }
@@ -125,6 +151,8 @@ public class ResizeToContentAction extends NodeAction
         return null;
     }
 
-    
-
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

@@ -39,12 +39,23 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
+import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -57,11 +68,11 @@ public class CopyFilesVisual extends JPanel {
     final LocalServerController localServerController;
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public CopyFilesVisual(SourcesFolderNameProvider sourcesFolderNameProvider, LocalServer... defaultLocalServers) {
+    public CopyFilesVisual(SourcesFolderProvider sourcesFolderProvider, LocalServer... defaultLocalServers) {
         initComponents();
 
-        localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, sourcesFolderNameProvider,
-                NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
+        localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, sourcesFolderProvider,
+                new BrowseCopyFiles(), NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
         // set default, disabled state
         localServerController.setEnabled(false);
 
@@ -131,53 +142,79 @@ public class CopyFilesVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        copyFilesCheckBox = new javax.swing.JCheckBox();
-        localServerLabel = new javax.swing.JLabel();
-        copyFilesComboBox = new javax.swing.JComboBox();
-        copyFilesButton = new javax.swing.JButton();
+        copyFilesCheckBox = new JCheckBox();
+        localServerLabel = new JLabel();
+        copyFilesComboBox = new JComboBox();
+        copyFilesButton = new JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(copyFilesCheckBox, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
+        setFocusTraversalPolicy(null);
 
-        org.openide.awt.Mnemonics.setLocalizedText(localServerLabel, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
+
+        Mnemonics.setLocalizedText(copyFilesCheckBox, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
+        localServerLabel.setLabelFor(copyFilesComboBox);
+        Mnemonics.setLocalizedText(localServerLabel, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFileToFolder")); // NOI18N
         localServerLabel.setEnabled(false);
 
         copyFilesComboBox.setEditable(true);
         copyFilesComboBox.setEnabled(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(copyFilesButton, org.openide.util.NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
+        Mnemonics.setLocalizedText(copyFilesButton, NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
         copyFilesButton.setEnabled(false);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(copyFilesCheckBox)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(localServerLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(copyFilesComboBox, 0, 168, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(copyFilesButton))
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(copyFilesCheckBox)
                 .add(9, 9, 9)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(copyFilesButton)
-                    .add(copyFilesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(localServerLabel)))
+        
         );
+
+        copyFilesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        localServerLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.localServerLabel.AccessibleContext.accessibleName")); // NOI18N
+        localServerLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.localServerLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        copyFilesComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesComboBox.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        copyFilesButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesButton.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesButton.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton copyFilesButton;
-    private javax.swing.JCheckBox copyFilesCheckBox;
-    private javax.swing.JComboBox copyFilesComboBox;
-    private javax.swing.JLabel localServerLabel;
+    private JButton copyFilesButton;
+    private JCheckBox copyFilesCheckBox;
+    private JComboBox copyFilesComboBox;
+    private JLabel localServerLabel;
     // End of variables declaration//GEN-END:variables
 
+
+    private static class BrowseCopyFiles implements LocalServerController.BrowseHandler {
+        public File getCurrentDirectory() {
+            return LastUsedFolders.getCopyFiles();
+        }
+        public void locationChanged(File location) {
+            LastUsedFolders.setCopyFiles(location);
+        }
+    }
 }

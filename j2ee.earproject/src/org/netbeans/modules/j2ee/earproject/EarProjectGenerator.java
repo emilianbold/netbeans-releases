@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -67,6 +66,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -222,9 +222,7 @@ public final class EarProjectGenerator {
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-        }
+        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
      }
     
     private AntProjectHelper doImportProject(final File srcPrjDir,
@@ -370,6 +368,14 @@ public final class EarProjectGenerator {
             final String platformName, final FileObject subprojectRoot)
             throws IllegalArgumentException, IOException {
         
+        // #87604 & #143772 - check first whether the module is not already a project
+        Project existingProject = getExistingJ2EEModuleProject(subprojectRoot);
+        if (existingProject != null) {
+            EarProjectProperties.addJ2eeSubprojects(p, new Project[] { existingProject });
+            return existingProject;
+        }
+        
+        // module is not a project
         FileObject javaRoot = getJavaRoot(subprojectRoot);
         File srcFolders[] = getSourceFolders(javaRoot);
         File subProjDir = FileUtil.normalizeFile(
@@ -397,6 +403,15 @@ public final class EarProjectGenerator {
         return subProject;
     }
     
+    // get existing project but only java ee module
+    private Project getExistingJ2EEModuleProject(final FileObject projectDirectory) throws IOException {
+        Project project = ProjectManager.getDefault().findProject(projectDirectory);
+        if (EarProjectUtil.isJavaEEModule(project)) {
+            return project;
+        }
+        return null;
+    }
+
     private AntProjectHelper addAppClientModule(final FileObject javaRoot, final FileObject subprojectRoot, final File subProjDir, final String platformName) throws IOException {
         FileObject docBaseFO = FileUtil.createFolder(subprojectRoot, DEFAULT_DOC_BASE_FOLDER);
         File docBase = FileUtil.toFile(docBaseFO);
@@ -546,7 +561,7 @@ public final class EarProjectGenerator {
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
         Element minant = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
-        minant.appendChild(doc.createTextNode("1.6")); // NOI18N
+        minant.appendChild(doc.createTextNode("1.6.5")); // NOI18N
         data.appendChild(minant);
         
         Element wmLibs = doc.createElementNS(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, EarProjectProperties.TAG_WEB_MODULE_LIBRARIES); //NOI18N
@@ -572,7 +587,14 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        ep.setProperty(EarProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N 
+        boolean deployOnSaveEnabled = false;
+        try {
+            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
+                    .isDeployOnSaveSupported();
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        ep.setProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
 
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));

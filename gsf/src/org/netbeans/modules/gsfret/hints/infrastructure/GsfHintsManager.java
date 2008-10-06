@@ -73,6 +73,7 @@ import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 import org.netbeans.modules.gsf.api.Rule.SelectionRule;
 import org.netbeans.modules.gsf.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -82,7 +83,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -95,7 +95,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
 
         this.id = language.getMimeType().replace('/', '_') + '_';
         
-        // XXX Start listening on the rules forder. To handle module set changes.
+        // XXX Start listening on the rules folder, to handle module set changes.
         initErrors();
         initHints();
         initSuggestions();
@@ -517,35 +517,66 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
     
     public final void refreshHints(RuleContext context) {
+        List<ErrorDescription> result = getHints(this, context);
+        HintsController.setErrors(context.compilationInfo.getFileObject(),
+                context.caretOffset == -1 ? HintsTask.class.getName() : SuggestionsTask.class.getName(), result);
+    }
+    
+    private static final List<ErrorDescription> getHints(GsfHintsManager hintsManager, RuleContext context) {
         int caretPos = context.caretOffset;
+        HintsProvider provider = hintsManager.provider;
 
         // Force a refresh
         // HACK ALERT!
         List<Hint> descriptions = new ArrayList<Hint>();
-        CompilationInfo info = context.compilationInfo;
         if (caretPos == -1) {
-            provider.computeHints(this, context, descriptions);
+            provider.computeHints(hintsManager, context, descriptions);
             List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
             for (Hint desc : descriptions) {
                 boolean allowDisable = true;                
-                ErrorDescription errorDesc = createDescription(desc, context, allowDisable);
+                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable);
                 result.add(errorDesc);
             }
-            HintsController.setErrors(info.getFileObject(), 
-                    "org.netbeans.modules.gsfret.hints.infrastructure.HintsTask", result);
+
+            return result;
         } else {
-            provider.computeSuggestions(this, context, descriptions, caretPos);
+            provider.computeSuggestions(hintsManager, context, descriptions, caretPos);
             List<ErrorDescription> result = new ArrayList<ErrorDescription>(descriptions.size());
             for (Hint desc : descriptions) {
                 boolean allowDisable = true;                
-                ErrorDescription errorDesc = createDescription(desc, context, allowDisable);
+                ErrorDescription errorDesc = hintsManager.createDescription(desc, context, allowDisable);
                 result.add(errorDesc);
             }
-            HintsController.setErrors(info.getFileObject(), 
-                    "org.netbeans.modules.gsfret.hints.infrastructure.SuggestionsTask", result);
+
+            return result;
         }
         // TODO - compute errors as well
     }
+
+
+    static final void refreshHints(CompilationController controller) {
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        Set<String> mimeTypes = controller.getEmbeddedMimeTypes();
+        for (String mime : mimeTypes) {
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mime);
+            if (language == null) {
+                continue;
+            }
+
+            HintsProvider provider = language.getHintsProvider();
+            if (provider == null) {
+                continue;
+            }
+
+            GsfHintsManager hintsManager = language.getHintsManager();
+            RuleContext context = hintsManager.createRuleContext(controller, language, -1, -1, -1);
+            List<ErrorDescription> hints = getHints(hintsManager, context);
+            result.addAll(hints);
+        }
+        HintsController.setErrors(controller.getFileObject(),
+                HintsTask.class.getName(), result);
+    }
+
     
     public RuleContext createRuleContext(CompilationInfo info, Language language, int caretOffset, int selectionStart, int selectionEnd) {
         RuleContext context = provider.createRuleContext();
@@ -593,6 +624,11 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         
         isTest = true;
      }
+
+    @Override
+    public Preferences getPreferences(UserConfigurableRule rule) {
+        return HintsSettings.getPreferences(this, rule, null);
+    }
     
     public static class HintsManagerFactory extends HintsProvider.Factory {
         public HintsManagerFactory() {

@@ -69,14 +69,18 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
         AstPath path = getPathUnderCaret(info, caretOffset);
 
-        final ASTNode closest = path.leaf();
+        if (path != null) {
+            final ASTNode closest = path.leaf();
 
-        if(closest instanceof Variable){
-            return true;
-        } else {
-            explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
-            return false;
+            if (closest instanceof Variable) {
+                return true;
+            } else {
+                explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
+                return false;
+            }
         }
+
+        return false;
     }
 
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {
@@ -86,7 +90,7 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
         Set<OffsetRange> regions = new HashSet<OffsetRange>();
 
-        markOccurences(path, regions, (BaseDocument) info.getDocument());
+        markOccurences(path, regions, (BaseDocument) info.getDocument(), caretOffset);
 
         return regions;
     }
@@ -110,11 +114,11 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
     }
 
-    private static void markOccurences(AstPath path, Set<OffsetRange> regions, BaseDocument document) {
+    private static void markOccurences(AstPath path, Set<OffsetRange> regions, BaseDocument document, int cursorOffset) {
         ASTNode root = path.root();
         assert root instanceof ModuleNode;
         ModuleNode moduleNode = (ModuleNode) root;
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
             OffsetRange range = AstUtilities.getRange(astNode, document);

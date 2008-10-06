@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -148,9 +149,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getPreprocessorOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption("-D") + " ") ; // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " ") ; // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOption("-D") + " "); // NOI18N
+            options.append(master.getPreprocessorConfiguration().getOption(getUserMacroFlag()) + " "); // NOI18N
             if (master.getInheritPreprocessor().getValue())
                 master = (CCompilerConfiguration)master.getMaster();
             else
@@ -161,9 +162,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     
     public String getIncludeDirectoriesOptions() {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption("-I") + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().getOption("-I") + " "); // NOI18N
+            options.append(master.getIncludeDirectories().getOption(getUserIncludeFlag()) + " "); // NOI18N
             if (master.getInheritIncludes().getValue())
                 master = (CCompilerConfiguration)master.getMaster();
             else
@@ -171,17 +172,37 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         }
         return options.toString();
     } 
+
+    protected CompilerDescriptor getCompilerDescription(){
+        return null;
+    }
     
+    protected String getUserIncludeFlag(){
+        // TODO get from compiler descriptor.
+        if (false) {
+            return getCompilerDescription().getUserIncludeFlag();
+        }
+        return "-I"; // NOI18N
+    }
+
+    protected String getUserMacroFlag(){
+        // TODO get from compiler descriptor.
+        if (false) {
+            return getCompilerDescription().getUserMacroFlag();
+        }
+        return "-D"; // NOI18N
+    }
+
     // Sheet
     public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+        BasicCompiler cCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {
             sheet.put(getBasicSet());
-            if (compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
+            if (compilerSet != null && compilerSet.isSunCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));
@@ -197,7 +218,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             set4.setName("Tool"); // NOI18N
             set4.setDisplayName(getString("ToolTxt1"));
             set4.setShortDescription(getString("ToolHint1"));
-            set4.put(new StringNodeProp(getTool(), cCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+            if (cCompiler != null) {
+                set4.put(new StringNodeProp(getTool(), cCompiler.getName(), false, "Tool", getString("ToolTxt2"), getString("ToolHint2"))); // NOI18N
+            }
             sheet.put(set4);
             
             String[] texts = new String[] {getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"), getString("AdditionalOptionsTxt2"), getString("AllOptionsTxt")};
@@ -206,7 +229,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             set2.setName("CommandLine"); // NOI18N
             set2.setDisplayName(getString("CommandLineTxt"));
             set2.setShortDescription(getString("CommandLineHint"));
-            set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, cCompiler, null, texts));
+            if (cCompiler != null) {
+                set2.put(new OptionsNodeProp(getCommandLineConfiguration(), null, this, cCompiler, null, texts));
+            }
             sheet.put(set2);
         
         }

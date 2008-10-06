@@ -95,6 +95,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -283,14 +284,14 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         public Image getIcon(int type) {
             Image original = super.getIcon( type );
             return broken || brokenServerAction.isEnabled()
-            ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
+            ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
             : original;
         }
         
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
             return broken || brokenServerAction.isEnabled()
-            ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
+            ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
             : original;
         }
         
@@ -310,15 +311,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             
-            boolean cos = Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DEPLOY_ON_SAVE));
             actions.add(null);
-            if (!cos) {
-                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ));
-            }
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ));
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ));
-            if (!cos) {
-                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ));
-            }
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ));
 //            actions.addAll(Arrays.asList(new Action[] {
 //                null,
 //                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N

@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Arrays;
 import java.util.List;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 
 /**

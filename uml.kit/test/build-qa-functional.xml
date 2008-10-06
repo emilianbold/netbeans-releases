@@ -51,21 +51,21 @@ made subject to such option by the copyright holder.
         <fileset dir="${uml.modules.dir}">
             <include name="**/org-netbeans-modules-uml*.jar"/>
         </fileset>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-core.jar"/>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-core-windows.jar"/>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-api-visual.jar"/>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-swing-tabcontrol.jar"/>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-netbeans-api-visual.jar"/>
-        <pathelement location="${netbeans.dest.dir}/uml5/modules/org-netbeans-modules-uml-drawingarea.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-core.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-core-windows.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-swing-tabcontrol.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
+        <pathelement location="${netbeans.dest.dir}/uml6/modules/org-netbeans-modules-uml-drawingarea.jar"/>
         <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
         <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-java-j2seproject.jar"/> 
         <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-project-ant.jar"/> 
-        <pathelement location="${netbeans.dest.dir}/ide9/modules/org-netbeans-modules-projectapi.jar"/> 
-        <pathelement location="${netbeans.dest.dir}/platform8/lib/org-openide-util.jar"/>
-        <pathelement location="${netbeans.dest.dir}/platform8/modules/org-openide-nodes.jar"/>            
+        <pathelement location="${netbeans.dest.dir}/ide10/modules/org-netbeans-modules-projectapi.jar"/> 
+        <pathelement location="${netbeans.dest.dir}/platform9/lib/org-openide-util.jar"/>
+        <pathelement location="${netbeans.dest.dir}/platform9/modules/org-openide-nodes.jar"/>            
         
     </path>    
     <path id="run.extra">

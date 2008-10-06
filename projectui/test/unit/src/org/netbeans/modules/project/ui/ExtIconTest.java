@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.net.URL;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -61,7 +64,10 @@ public class ExtIconTest extends TestCase {
         ExtIcon ext = new ExtIcon();
         URL res = getClass().getClassLoader().getResource("org/netbeans/modules/project/ui/module.gif");
         assertNotNull(res);
-        ImageIcon icon = new ImageIcon(res);
+        //#138000
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/project/ui/module.gif");
+        img = ImageUtilities.addToolTipToImage(img, "XXX");
+        Icon icon = ImageUtilities.image2Icon(img);
         ext.setIcon(icon);
         try {
             byte[] bytes1 = ext.getBytes();

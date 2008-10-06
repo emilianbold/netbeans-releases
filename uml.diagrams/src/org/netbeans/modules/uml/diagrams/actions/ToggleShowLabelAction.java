@@ -42,6 +42,7 @@ import javax.swing.Action;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.nodes.Node;
@@ -54,7 +55,7 @@ import org.openide.util.actions.CookieAction;
  *
  * @author thuy
  */
-public final class ToggleShowLabelAction extends CookieAction
+public final class ToggleShowLabelAction extends SceneCookieAction
 {
     private DesignerScene scene;
     private IPresentationElement pe;

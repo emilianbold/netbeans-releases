@@ -59,16 +59,17 @@
       Overrides the '-pre-package' target in product.xml.
     -->
     <target name="-pre-package">
+	<set property="tomcat.sub.dir" value="apache-tomcat-${tomcat.version}"/>
         <move todir="${data.directory}">
-            <fileset dir="${data.directory}/apache-tomcat-6.0.16">
+            <fileset dir="${data.directory}/${tomcat.sub.dir}">
                 <include name="**/*"/>
             </fileset>
         </move>
         
         <delete includeemptydirs="true">
             <fileset dir="${data.directory}">
-                <include name="apache-tomcat-6.0.16"/>
-                <include name="apache-tomcat-6.0.16/**"/>
+                <include name="${tomcat.sub.dir}"/>
+                <include name="${tomcat.sub.dir}/**"/>
             </fileset>
         </delete>
 

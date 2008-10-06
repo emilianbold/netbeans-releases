@@ -109,8 +109,8 @@ public interface Repository {
      * Opens repository unit
      * @param unitName the unique identifier of the unit to open
      */
-    void openUnit(String unitName);
-    
+
+    void openUnit(int unitId, String unitName);
     /**
      * Close Repository Unit, e.g. Project for IDE
      * @param unitName the name of unit

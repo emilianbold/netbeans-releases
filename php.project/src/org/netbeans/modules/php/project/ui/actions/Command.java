@@ -54,17 +54,16 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -105,42 +104,49 @@ public abstract class Command {
     }
 
     //Helper|Utility methods for subclasses
-    protected final void showURLForContext(Lookup context) throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForContext(context));
+    protected final void showURL(final URL url) throws MalformedURLException {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 
     protected final void showURLForProjectFile() throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile());
+        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForProjectFile(true));
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        showURLForDebugContext(null);
+        showURLForDebug(getURLForDebug(null, true));
     }
 
-    protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
+    protected final URL getURLForDebug(Lookup context, boolean useWebRoot) throws MalformedURLException {
+        DebugInfo debugInfo = getDebugInfo();
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = debugInfo.debugServer ? urlForDebugContext(context, useWebRoot) : urlForContext(context, useWebRoot);
+        } else {
+            debugUrl = debugInfo.debugServer ? urlForDebugProjectFile(useWebRoot) : urlForProjectFile(useWebRoot);
+        }
+        return debugUrl;
+    }
+
+    private DebugInfo getDebugInfo() {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
-        
+
         if (!WebClientToolsSessionStarterService.isAvailable()) {
             debugServer = true;
             debugClient = false;
         }
-        
         assert debugServer || debugClient;
-        
-        URL debugUrl;
-        if (context != null) {
-            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
-        } else {
-            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
-        }
-        
-        if (debugClient) {
+        return new DebugInfo(debugClient, debugServer);
+    }
+
+    protected final void showURLForDebug(URL debugUrl) throws MalformedURLException {
+        assert debugUrl != null;
+        if (getDebugInfo().debugClient) {
             try {
                 launchJavaScriptDebugger(debugUrl);
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
-            }            
+            }
         } else {
             HtmlBrowser.URLDisplayer.getDefault().showURL(debugUrl);
         }
@@ -152,10 +158,10 @@ public abstract class Command {
             if (mapperFactory != null) {
                 URI appContext = getBaseURL().toURI();
                 FileObject[] srcRoots = Utils.getSourceObjects(getProject());
-                
-                JSToNbJSLocationMapper forwardMapper = 
+
+                JSToNbJSLocationMapper forwardMapper =
                         mapperFactory.getJSToNbJSLocationMapper(srcRoots, appContext, null);
-                NbJSToJSLocationMapper reverseMapper = 
+                NbJSToJSLocationMapper reverseMapper =
                         mapperFactory.getNbJSToJSLocationMapper(srcRoots, appContext, null);
                 debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
             } else {
@@ -163,14 +169,14 @@ public abstract class Command {
             }
 
             URI clientUrl = url.toURI();
-                        
+
             HtmlBrowser.Factory browser = null;
             if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
                 browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
             } else {
                 browser = WebClientToolsProjectUtils.getFirefoxBrowser();
             }
-            
+
             if (browser == null) {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             } else {
@@ -180,15 +186,11 @@ public abstract class Command {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        
-    }
-    
-    protected final String getProperty(String propertyName) {
-        return getPropertyEvaluator().getProperty(propertyName);
+
     }
 
     protected final URL getBaseURL() throws MalformedURLException {
-        String baseURLPath = getProperty(PhpProjectProperties.URL);
+        String baseURLPath = ProjectPropertiesSupport.getUrl(project);
         if (baseURLPath == null) {
             throw new MalformedURLException();
         }
@@ -209,88 +211,99 @@ public abstract class Command {
         }
     }
 
-    protected final URL urlForDebugProjectFile() throws MalformedURLException {
-        return appendQuery(urlForProjectFile(), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    protected final URL urlForDebugProjectFile(boolean useWebRoot) throws MalformedURLException {
+        return appendQuery(urlForProjectFile(useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 
-    protected final URL urlForDebugContext(Lookup context) throws MalformedURLException {
-        return appendQuery(urlForContext(context), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+    protected final URL urlForDebugContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
+        return appendQuery(urlForContext(context, useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
     }
 
-    protected final URL urlForProjectFile() throws MalformedURLException {
-        String relativePath = relativePathForProject();
+    protected final URL urlForProjectFile(boolean useWebRoot) throws MalformedURLException {
+        String relativePath = relativePathForProject(useWebRoot);
         if (relativePath == null) {
             //TODO makes sense just in case if listing is enabled | maybe user message
             relativePath = ""; //NOI18N
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
-    protected final URL urlForContext(Lookup context) throws MalformedURLException {
-        String relativePath = relativePathForConext(context);
+    protected final URL urlForContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
+        String relativePath = relativePathForContext(context, useWebRoot);
         if (relativePath == null) {
             throw new MalformedURLException();
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     //or null
-    protected final String relativePathForConext(Lookup context) {
-        return getCommandUtils().getRelativeSrcPath(fileForContext(context));
-    }
-
-    //or null
-    protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeSrcPath(fileForProject());
-    }
-
-    //or null
-    protected final FileObject fileForProject() {
-        FileObject retval = null;
-        String nameOfIndexFile = getProperty(PhpProjectProperties.INDEX_FILE);
-        FileObject[] srcRoots = Utils.getSourceObjects(getProject());
-        for (FileObject fileObject : srcRoots) {
-            retval = fileObject.getFileObject(nameOfIndexFile);
-            if (retval != null) {
-                break;
-            }
+    protected final String relativePathForContext(Lookup context, boolean useWebRoot) {
+        FileObject fileForContext = fileForContext(context);
+        if (useWebRoot) {
+            return getCommandUtils().getRelativeWebRootPath(fileForContext);
         }
-        return retval;
+        return getCommandUtils().getRelativeSrcPath(fileForContext);
     }
 
-    protected boolean useInterpreter() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
+    //or null
+    protected final String relativePathForProject(boolean useWebRoot) {
+        FileObject fileForProject = fileForProject(useWebRoot);
+        if (useWebRoot) {
+            return getCommandUtils().getRelativeWebRootPath(fileForProject);
+        }
+        return getCommandUtils().getRelativeSrcPath(fileForProject);
     }
 
-    protected String getPhpInterpreter() {
-        String retval = PhpOptions.getInstance().getPhpInterpreter();
-        return (retval != null && retval.length() >  0) ? retval.trim() : null;
+    //or null
+    protected final FileObject fileForProject(boolean useWebRoot) {
+        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (useWebRoot) {
+            return ProjectPropertiesSupport.getWebRootDirectory(project).getFileObject(nameOfIndexFile);
+        }
+        return ProjectPropertiesSupport.getSourcesDirectory(project).getFileObject(nameOfIndexFile);
+    }
+
+    /** eventually show the customizer */
+    protected boolean isRunConfigurationValid() {
+        return ProjectPropertiesSupport.isActiveConfigValid(project, true);
+    }
+
+    protected boolean isScriptSelected() {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
     protected boolean isRemoteConfigSelected() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
+    }
+
+    protected boolean isPhpFileSelected(FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        return CommandUtils.isPhpFile(file);
     }
 
     protected String getRemoteConfigurationName() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+        return ProjectPropertiesSupport.getRemoteConnection(project);
     }
 
     protected String getRemoteDirectory() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+        return ProjectPropertiesSupport.getRemoteDirectory(project);
     }
 
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context);
+        boolean scriptSelected = isScriptSelected();
+        FileObject[] files = utils.phpFilesForContext(context, scriptSelected);
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes();
+            files = utils.phpFilesForSelectedNodes(scriptSelected);
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -324,7 +337,6 @@ public abstract class Command {
         return new BufferedReader(new InputStreamReader(is, encoding));
     }
 
-    // XXX buffered writer causes that only the last line is red (for errors)
     protected final BufferedWriter outputTabWriter(File scriptFile, boolean error, boolean clearOutput) {
         String outputTitle = getOutputTabTitle(scriptFile);
         OutputWriter outputWriter = getOutputWriter(outputTitle, error, clearOutput);
@@ -358,7 +370,7 @@ public abstract class Command {
         } finally {
             reader.close();
             for (BufferedWriter writer : writers) {
-                writer.flush();                
+                writer.flush();
                 writer.close();
             }
         }
@@ -368,7 +380,34 @@ public abstract class Command {
         String convert(String text);
     }
 
-    private PropertyEvaluator getPropertyEvaluator() {
-        return getProject().getEvaluator();
+    protected void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
+        if (!isRemoteConfigSelected()) {
+            return;
+        }
+        UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
+        if (!uploadCommand.isActionEnabled(null)) {
+            return;
+        }
+
+        PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(getProject());
+        assert uploadFiles != null;
+
+        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
+            uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
+        }
+    }
+
+    private static class DebugInfo {
+        final boolean debugClient;
+        final boolean debugServer;
+
+        public DebugInfo(boolean debugClient, boolean debugServer) {
+            this.debugClient = debugClient;
+            this.debugServer = debugServer;
+        }
     }
 }

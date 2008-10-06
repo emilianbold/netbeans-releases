@@ -39,11 +39,16 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.CardLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.ui.SourcesFolderNameProvider;
+import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,7 +58,7 @@ public class RunConfigurationPanelVisual extends JPanel {
     private static final long serialVersionUID = -2998474632476302L;
     private final RunAsPanel.InsidePanel[] insidePanels;
 
-    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderNameProvider sourcesFolderNameProvider,
+    public RunConfigurationPanelVisual(RunConfigurationPanel wizardPanel, SourcesFolderProvider sourcesFolderProvider,
             ConfigManager configManager, RunAsPanel.InsidePanel[] insidePanels) {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfiguration"));
@@ -73,43 +78,54 @@ public class RunConfigurationPanelVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        infoLabel1 = new javax.swing.JLabel();
-        infoLabel2 = new javax.swing.JLabel();
+
+
+        infoLabel1 = new JLabel();
+        infoLabel2 = new JLabel();
         runAsPanel = new RunAsPanel(insidePanels);
+        Mnemonics.setLocalizedText(infoLabel1, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1"));
+        Mnemonics.setLocalizedText(infoLabel2, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2"));
+        runAsPanel.setLayout(new CardLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel1, org.openide.util.NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel2, org.openide.util.NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2")); // NOI18N
-
-        runAsPanel.setLayout(new java.awt.CardLayout());
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(infoLabel1)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(infoLabel2)
                 .addContainerGap())
-            .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .add(runAsPanel, GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(infoLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(infoLabel2)
                 .add(18, 18, 18)
-                .add(runAsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                .add(runAsPanel, GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+        
         );
+
+        infoLabel1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel1.AccessibleContext.accessibleName")); // NOI18N
+        infoLabel1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        infoLabel2.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel2.AccessibleContext.accessibleName")); // NOI18N
+        infoLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel2.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.runAsPanel.AccessibleContext.accessibleName")); // NOI18N
+        runAsPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.runAsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel infoLabel1;
-    private javax.swing.JLabel infoLabel2;
-    private javax.swing.JPanel runAsPanel;
+    private JLabel infoLabel1;
+    private JLabel infoLabel2;
+    private JPanel runAsPanel;
     // End of variables declaration//GEN-END:variables
 }

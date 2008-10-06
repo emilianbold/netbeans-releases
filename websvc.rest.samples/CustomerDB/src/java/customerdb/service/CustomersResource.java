@@ -46,14 +46,16 @@ import java.util.Collection;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import customerdb.DiscountCode;
 import customerdb.converter.CustomersConverter;
 import customerdb.converter.CustomerConverter;
@@ -61,25 +63,18 @@ import customerdb.converter.CustomerConverter;
 
 /**
  *
- * @author __USER__
+ * @author PeterLiu
  */
 
 @Path("/customers/")
 public class CustomersResource {
     @Context
-    private UriInfo context;
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
     
     /** Creates a new instance of CustomersResource */
     public CustomersResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public CustomersResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -88,7 +83,7 @@ public class CustomersResource {
      * @return an instance of CustomersConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public CustomersConverter get(@QueryParam("start")
     @DefaultValue("0")
     int start, @QueryParam("max")
@@ -99,7 +94,7 @@ public class CustomersResource {
     @DefaultValue("SELECT e FROM Customer e")
     String query) {
         try {
-            return new CustomersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new CustomersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -112,15 +107,16 @@ public class CustomersResource {
      * @return an instance of CustomerConverter
      */
     @POST
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response post(CustomerConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Customer entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            Customer entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -134,7 +130,9 @@ public class CustomersResource {
     @Path("{customerId}/")
     public CustomerResource getCustomerResource(@PathParam("customerId")
     Integer id) {
-        return new CustomerResource(id, context);
+        CustomerResource resource = resourceContext.getResource(CustomerResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -143,7 +141,8 @@ public class CustomersResource {
      * @return a collection of Customer instances
      */
     protected Collection<Customer> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -152,7 +151,8 @@ public class CustomersResource {
      * @param entity the entity to persist
      */
     protected void createEntity(Customer entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
         DiscountCode discountCode = entity.getDiscountCode();
         if (discountCode != null) {
             discountCode.getCustomerCollection().add(entity);

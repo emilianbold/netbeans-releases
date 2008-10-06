@@ -41,54 +41,35 @@
 
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
-import java.awt.event.ActionEvent;
-import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.openide.util.HelpCtx;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
 
-public class BatchBuildAction extends CallableSystemAction {
-    public String getName() {
-        return getString("BatchBuildActionName"); // NOI18N
-    }
+public class BatchBuildAction {
+    protected static String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
     
-    @Override
-    public void actionPerformed(ActionEvent ev) {
-        performAction();
+    public static Action MainBatchBuildAction() {
+        return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
     }
-    
-    @Override
-    public boolean isEnabled() {
+}
+
+class BatchBuildActionPerformer implements ProjectActionPerformer {
+
+    public boolean enable(Project project) {
         boolean ret = false;
-        Project mainProject = OpenProjects.getDefault().getMainProject();
-        if (mainProject != null)
-            ret = mainProject.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
+        if (project != null)
+            ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
         return ret;
     }
-    
-    public void performAction() {
-        Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, getString("BatchBuildActionName"), null);
+
+    public void perform(Project project) {
+        Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
         JButton jButton = new JButton(action);
         jButton.doClick();
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
-    /** Look up i18n strings here */
-    private static ResourceBundle bundle;
-    private static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(BatchBuildAction.class);
-        }
-        return bundle.getString(s);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -275,6 +275,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 || prefSize.height > screenBounds.height- 100
                 ) {
                 currentScrollPane = new JScrollPane() {
+                    @Override
                     public Dimension getPreferredSize() {
                         Dimension sz = new Dimension(super.getPreferredSize());
                         if (sz.width > screenBounds.width - 100) {
@@ -335,6 +336,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     }
     
     private final HackTypeAhead hack = new HackTypeAhead();
+    @Override
     public void addNotify() {
         super.addNotify();
         initializePresenter();
@@ -342,6 +344,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         hack.activate();
     }
 
+    @Override
     public void removeNotify() {
         super.removeNotify();
         uninitializePresenter();
@@ -380,6 +383,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             new Object[0], // options
             null // value
             ) {
+                @Override
                 public int getMaxCharactersPerLineCount() {
                     return 100;
                 }
@@ -1065,6 +1069,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                     pressedOption = NotifyDescriptor.CLOSED_OPTION;
                 } else {
                     MenuSelectionManager.defaultManager().clearSelectedPath();
+                    return ;
                 }
             } else {
                 // handle buttons
@@ -1169,6 +1174,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         }
     }
     
+    @Override
     public javax.accessibility.AccessibleContext getAccessibleContext() {
         if (accessibleContext == null) {
             accessibleContext = new AccessibleNbPresenter();
@@ -1194,6 +1200,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
 
     private class AccessibleNbPresenter extends AccessibleJDialog {
         AccessibleNbPresenter() {}
+        @Override
         public String getAccessibleName() {
             if (accessibleName != null) {
                 return accessibleName;
@@ -1206,6 +1213,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                 }
             }
         }
+        @Override
         public String getAccessibleDescription() {
             if (accessibleDescription != null) {
                 return accessibleDescription;

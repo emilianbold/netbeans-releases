@@ -40,11 +40,13 @@
  */
 package org.netbeans.modules.uml.drawingarea;
 
+import org.netbeans.api.visual.print.ScenePrinter;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.project.ui.cookies.DocumentationCookie;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelElementNode;
+import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -58,8 +60,7 @@ import org.openide.util.lookup.InstanceContent;
 public class DiagramModelElementNode extends UMLModelElementNode
 {
 
-    // TODO: Add Print Cookie
-//        private DiagramPrintCookie printCookie;
+    private DiagramPrintCookie printCookie;
     private DataObject dataObject = null;
     private InstanceContent lookupContent = null;
     private DesignerScene scene = null;
@@ -79,21 +80,23 @@ public class DiagramModelElementNode extends UMLModelElementNode
 
         lookupContent = lookup;
         addPrintCookie();
-        lookupContent.add(new DocumentationCookie() {
+        if (lookupContent != null)
+        {
+            lookupContent.add(new DocumentationCookie() {
 
-            public String getDocumentation()
-            {
-                return pe == null? "" : pe.getDocumentation();
-            }
+                public String getDocumentation()
+                {
+                    return pe == null? "" : pe.getDocumentation();
+                }
 
-            public void setDocumentation(String val)
-            {
-                if (pe != null)
-                    pe.setDocumentation(val);
-            }
-        });
-
-        if (dObj.isModified() == true)
+                public void setDocumentation(String val)
+                {
+                    if (pe != null)
+                        pe.setDocumentation(val);
+                }
+            });
+        }
+        if ((dObj != null) && (dObj.isModified() == true))
         {
             addSaveCookie();
         } 
@@ -136,20 +139,20 @@ public class DiagramModelElementNode extends UMLModelElementNode
         }
     }
 
-//        public DiagramPrintCookie getDiagramPrintCookie()
-//        {
-//            if (printCookie == null)
-//                printCookie = new DiagramPrintCookie();
-//
-//            return printCookie;
-//        }
+    public DiagramPrintCookie getDiagramPrintCookie()
+    {
+        if (printCookie == null)
+            printCookie = new DiagramPrintCookie();
+
+        return printCookie;
+    }
 //
     public void addPrintCookie()
     {
-//            if (getLookup().lookup(DiagramPrintCookie.class) == null)
-//            {
-//                lookupContent.add(getDiagramPrintCookie());
-//            }
+        if (getLookup().lookup(DiagramPrintCookie.class) == null)
+        {
+            lookupContent.add(getDiagramPrintCookie());
+        }
     }
 
 //
@@ -195,4 +198,13 @@ public class DiagramModelElementNode extends UMLModelElementNode
         }
     }
     
+    private class DiagramPrintCookie implements PrintCookie
+    {
+
+        public void print()
+        {
+            ScenePrinter.print(scene);
+        }
+        
+    }
 }

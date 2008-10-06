@@ -1,0 +1,3 @@
+org.netbeans.modules.websvc.saas.codegen.php.RestClientPhpCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.php.SoapClientPhpCodeGenerator
+org.netbeans.modules.websvc.saas.codegen.php.CustomClientPhpCodeGenerator

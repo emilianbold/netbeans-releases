@@ -1,13 +1,14 @@
 # platform cluster first
-platform8
+platform9
 # application cluster second
-nb6.1
+nb6.5
 # and now the rest
-ide9
+ide10
 java2
 xml2
 apisupport1
 webcommon1
+websvccommon1
 enterprise5
 mobility8
 profiler3
@@ -17,8 +18,9 @@ php1
 visualweb2
 soa2
 identity2
-uml5
+uml6
 harness
 cnd2
 groovy1
 extra
+javafx2

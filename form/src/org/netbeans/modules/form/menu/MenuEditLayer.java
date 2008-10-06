@@ -533,6 +533,8 @@ public class MenuEditLayer extends JPanel {
     }
     
     private void unconfigureMenu(final JMenu menu) {
+        if (hackedPopupFactory == null) return; // Issue 145981
+
         // restore the UI
         menu.getPopupMenu().setUI(menuPopupUIMap.get(menu));
         
@@ -1098,7 +1100,14 @@ public class MenuEditLayer extends JPanel {
                 payloadParentRad.remove(payloadRad);
                 formDesigner.getFormModel().fireComponentRemoved(payloadRad, payloadParentRad, index, false);
             }
-
+            
+            // only Menu component can be added into MenuBar, 
+            // reset parent for the other components (issue #143248 fix)
+            if (payloadRad != null 
+                    && !javax.swing.JMenu.class.isAssignableFrom(payloadRad.getBeanClass()) 
+                    && target instanceof JMenu && targetParent instanceof JMenuBar) {
+                targetParent = null;
+            }
                 
             //if dragged component into a toplevel menu
             if(targetParent == null && target instanceof JMenu && target.getParent() instanceof JMenuBar) {

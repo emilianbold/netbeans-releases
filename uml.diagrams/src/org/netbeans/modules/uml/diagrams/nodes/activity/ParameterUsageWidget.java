@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IParameterUsageNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.MultilineEditableCompartmentWidget;
@@ -61,11 +60,12 @@ import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
  */
 public class ParameterUsageWidget extends ActivityNodeWidget
 {
-    public static final int MIN_NODE_WIDTH =  50;
+    public static final int MIN_NODE_WIDTH =  80;
     public static final int MIN_NODE_HEIGHT = 40;
     public ParameterUsageWidget(Scene scene)
     {
         super(scene, true, false);
+        setMinimumSize(new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
     }
 
     @Override
@@ -78,10 +78,8 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             
             //create main view 
             MainViewWidget mainView = new MainViewWidget(scene,
-                                                                 getWidgetID(),
-                                                                 bundle.getString("LBL_body"));
-           mainView.setMinimumSize(new Dimension(
-                                      MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
+                                                                 getResourcePath(),
+                                                                 bundle.getString("LBL_body"));        
             mainView.setLayout(
                     LayoutFactory.createVerticalFlowLayout(
                     LayoutFactory.SerialAlignment.JUSTIFY, 2));
@@ -95,36 +93,36 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             mainView.addChild(this.createStereoTypeWidget(), 10);
             enableStereoTypeWidget(element);
 
-            Widget editorPanel = new Widget(scene);
-            editorPanel.setLayout(
-                    LayoutFactory.createHorizontalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 0));
-
             // create multiline editable widget
-            nameWidget = new MultilineEditableCompartmentWidget(scene, "", null,
-                                                                 mainView,
-                                                                 getWidgetID()+".name",
+            nameWidget = new MultilineEditableCompartmentWidget(scene,
+                                                                 getResourcePath(),                                                                 
                                                                  bundle.getString("LBL_text"));
             nameWidget.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5)); 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
             String labelStr = element.getNameWithAlias();
             nameWidget.setLabel(labelStr != null && labelStr.trim().length() > 0 ? labelStr : "");
-            editorPanel.addChild(nameWidget, 90);
-            mainView.addChild(editorPanel, 80);
-            
+            mainView.addChild(nameWidget, 80);
             //taggedvalue widget
             mainView.addChild(createTaggedValueWidget(), 10);
             enableTaggedValueWidget(element);
             
             setCurrentView(mainView);
         }
+        super.initializeNode(presentation);
     }
 
+    @Override
+    public Dimension getDefaultMinimumSize()
+    {
+        return new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT);
+    }
+    
+    
     public String getWidgetID()
     {
         return UMLWidgetIDString.PARAMUSAGEWIDGET.toString();
     }
-    
+       
     private class MainViewWidget extends CustomizableWidget
     {
 

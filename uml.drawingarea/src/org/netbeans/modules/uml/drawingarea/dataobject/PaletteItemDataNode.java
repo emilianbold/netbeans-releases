@@ -50,6 +50,7 @@ import java.net.URL;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -101,7 +102,7 @@ public class PaletteItemDataNode extends DataNode
     @Override
     public Transferable clipboardCut() throws IOException
     {
-        ExTransferable t = ExTransferable.create (super.clipboardCopy ());
+        ExTransferable t = ExTransferable.create (super.clipboardCut ());
         
         ExTransferable.Single item = new ExTransferable.Single(PaletteItem.FLAVOR)
         {
@@ -182,7 +183,7 @@ public class PaletteItemDataNode extends DataNode
                 icon32 = getExplicitIcon(type);
                 if (icon32 == null)
                 {
-                    icon32 = Utilities.loadImage("org/netbeans/modules/uml/drawingarea/resources/unknown32.gif"); // NOI18N
+                    icon32 = ImageUtilities.loadImage("org/netbeans/modules/uml/drawingarea/resources/unknown32.gif"); // NOI18N
                 }
             }
             return icon32;
@@ -195,7 +196,7 @@ public class PaletteItemDataNode extends DataNode
                 icon16 = getExplicitIcon(type);
                 if (icon16 == null)
                 {
-                    icon16 = Utilities.loadImage("org/netbeans/modules/uml/drawingarea/resources/unknown.gif"); // NOI18N
+                    icon16 = ImageUtilities.loadImage("org/netbeans/modules/uml/drawingarea/resources/unknown.gif"); // NOI18N
                 }
             }
             return icon16;

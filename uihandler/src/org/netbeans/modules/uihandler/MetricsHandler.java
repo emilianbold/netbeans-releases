@@ -56,6 +56,9 @@ public class MetricsHandler extends Handler {
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush Metrics Logs"); // NOI18N
     private static boolean flushOnRecord;
+    static final int MAX_LOGS = 400;
+    /** Maximum allowed size of backup log file 10MB */
+    static final long MAX_LOGS_SIZE = 10L * 1024L * 1024L;
     
     public MetricsHandler() {
         setLevel(Level.FINEST);
@@ -73,7 +76,7 @@ public class MetricsHandler extends Handler {
         WriteOut wo = new WriteOut();
         wo.r = record;
         lastRecord = FLUSH.post(wo);
-        
+
         if (flushOnRecord) {
             waitFlushed();
         }
@@ -85,6 +88,10 @@ public class MetricsHandler extends Handler {
     
     static final void flushImmediatelly() {
         flushOnRecord = true;
+    }
+
+    static final void setFlushOnRecord (boolean flushOnRecord) {
+        MetricsHandler.flushOnRecord = flushOnRecord;
     }
     
     static final void waitFlushed() {

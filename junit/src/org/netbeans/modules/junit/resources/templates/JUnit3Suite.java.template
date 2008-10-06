@@ -20,7 +20,7 @@ public class ${name} extends TestCase {
     
     public ${name}(String testName) {
         super(testName);
-    }            
+    }
 
     <#-- classNames:  "FooA,FooB" -->
     <#-- classes:     "FooA.class,FooB.class" -->

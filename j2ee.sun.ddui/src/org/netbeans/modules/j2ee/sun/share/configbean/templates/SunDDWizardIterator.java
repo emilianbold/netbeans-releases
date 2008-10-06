@@ -50,7 +50,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -59,9 +58,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.glassfish.eecommon.api.XmlFileCreator;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
 
@@ -118,11 +116,8 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         
         File configDir = wizardPanel.getSelectedLocation();
         FileObject configFolder = FileUtil.createFolder(configDir);
-        Project project = wizardPanel.getProject();
         String sunDDFileName = wizardPanel.getFileName();
 
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
         if(configFolder != null) {
             String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFileName; // NOI18N
             FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
@@ -133,8 +128,8 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
                 fs.runAtomicAction(creator);
                 FileObject sunDDFO = creator.getResult();
                 if(sunDDFO != null) {
-                    SunONEDeploymentConfiguration config = 
-                            SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(sunDDFO));
+                    GlassfishConfiguration config =
+                            GlassfishConfiguration.getConfiguration(FileUtil.toFile(sunDDFO));
                     if(config != null) {
                         // Set version of target configuration file we just saved to maximum supported version.
                         config.setAppServerVersion(config.getMaxASVersion());
@@ -164,31 +159,6 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
             DialogDisplayer.getDefault().notify(nd);
         }
         return result;
-    }
-    
-    public static class XmlFileCreator implements FileSystem.AtomicAction {
-        
-        private final FileObject source;
-        private final FileObject destFolder;
-        private final String name;
-        private final String ext;
-        private FileObject result;
-        
-        public XmlFileCreator(final FileObject source, final FileObject destFolder, final String name, final String ext) {
-            this.source = source;
-            this.destFolder = destFolder;
-            this.name = name;
-            this.ext = ext;
-            this.result = null;
-        }
-        
-        public void run() throws IOException {
-            result = FileUtil.copyFile(source, destFolder, name, ext);
-        }
-        
-        public FileObject getResult() {
-            return result;
-        }
     }
     
     public void initialize(WizardDescriptor wizard) {

@@ -46,6 +46,24 @@ made subject to such option by the copyright holder.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="Line.show">
+        <api name="text"/>
+        <summary>Improve Line.show</summary>
+        <version major="6" minor="21"/>
+        <date day="7" month="7" year="2008"/>
+        <author login="mslama"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            Improve Line.show to have better control over its open/visibility behavior. Previous version of Line.show
+            mixes open and visibility behavior into one parameter. New version separates this into 2 parameters. It is
+            possible to use any combination of these 2 parameters without need to add new constants for previous version.
+            2 enum types ShowOpenType and ShowVisibilityType are added.
+            </p>
+        </description>
+        <class package="org.openide.text" name="Line"/>
+        <issue number="138146"/>
+    </change>
     <change id="beforeSaveRunnable">
         <api name="text"/>
         <summary>"beforeSaveRunnable" document property</summary>

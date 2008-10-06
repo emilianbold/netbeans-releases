@@ -44,7 +44,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.*;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
@@ -126,29 +125,29 @@ import org.openide.text.Line;
 public class ActionManager {
     
     private static Map<Project,ActionManager> ams;
-    private static Map<ActionManager, Project> reverseams;
     
-    private static ActionManager emptyActionManager = new ActionManager(null);
+    private static ActionManager emptyActionManager = new ActionManager(null, null);
 
-    public static synchronized ActionManager getActionManager(FileObject fileInProject) {
+    public static ActionManager getActionManager(FileObject fileInProject) {
         if(ams == null) {
-            ams = new HashMap<Project,ActionManager>();
-            reverseams = new HashMap<ActionManager,Project>();
+            ams = Collections.synchronizedMap(new HashMap<Project,ActionManager>());
         }
         Project proj = getProject(fileInProject);
         ActionManager am = ams.get(proj);
         if(am == null && AppFrameworkSupport.isFrameworkEnabledProject(fileInProject)) {
-            ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
-            FileObject root = cp.findOwnerRoot(fileInProject);
-            am = new ActionManager(root);
-            ams.put(proj,am); // PENDING never removed, this is memory leak!!!
-            reverseams.put(am,proj);
-            am = ams.get(proj);
+            synchronized(ActionManager.class) {
+                if (ams.get(proj) == null) {
+                    ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+                    FileObject root = cp.findOwnerRoot(fileInProject);
+                    am = new ActionManager(proj, root);
+                    ams.put(proj,am);
+                }
+            }
         }
         return am;
     }
     
-    public static synchronized ActionManager getActionManager(Project project) {
+    public static ActionManager getActionManager(Project project) {
         Sources srcs = project.getLookup().lookup(Sources.class);
         if(srcs == null) return null;
         SourceGroup groups[] = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -172,7 +171,6 @@ public class ActionManager {
             ActionManager am = ams.get(p);
             am.rescanTimer.stop();
             ams.remove(p);
-            reverseams.remove(am);
         }
     }
     
@@ -236,9 +234,11 @@ public class ActionManager {
     private List<ActionChangedListener> acls;
     // the root object of this ActionManager's project
     private FileObject root;
+    // the ActionManager's project
+    private Project project;
     
     public Project getProject() {
-        return reverseams.get(this);
+        return project;
     }
     
     public FileObject getApplicationClassFile() {
@@ -247,7 +247,8 @@ public class ActionManager {
     }
     
     /** Creates a new instance of ActionManager */
-    private ActionManager(FileObject root) {
+    private ActionManager(Project project, FileObject root) {
+        this.project = project;
         this.root = root;
         actionList = new ArrayList<ProxyAction>();
         pcls = new ArrayList<PropertyChangeListener>();
@@ -783,6 +784,9 @@ public class ActionManager {
                 RADProperty prop = comp.getBeanProperty("action");//NOI18N
                 if(prop != null) {
                     try {
+                        if (!(prop.getValue() instanceof ProxyAction)) {
+                            continue; // Hack to fix issue 112040
+                        }
                         //set to null then to the proxy to force an update
                         prop.setValue(null);
                         prop.setValue(action);

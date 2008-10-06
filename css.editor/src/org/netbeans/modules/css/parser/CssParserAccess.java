@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,7 +54,8 @@ import org.netbeans.modules.gsf.spi.DefaultError;
 public class CssParserAccess {
 
     private static final String PREFIX = "GENERATED_";
-    private static final String ERROR_MESSAGE_PREFIX = "Unexpected symbol(s) found: ";
+    private static final String ERROR_MESSAGE_PREFIX = NbBundle.getMessage(CssParserAccess.class, "unexpected_symbols");
+    
     private static CssParserAccess DEFAULT = newInstance();
 
     public static CssParserAccess newInstance() {

@@ -1,0 +1,5 @@
+Code completion result for source line:
+Scan|          // java.util.Scanner
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      Scanner                                    null

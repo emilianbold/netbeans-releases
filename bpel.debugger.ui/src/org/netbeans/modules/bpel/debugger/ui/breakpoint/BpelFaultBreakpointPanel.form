@@ -35,9 +35,6 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="MN_L_Fault_Breakpoint_Process_Namespace" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tfProcessNamespace"/>
             </Property>
@@ -50,6 +47,9 @@
               <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="ACSD_L_Fault_Breakpoint_Process_Namespace" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="0" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="3" insetsBottom="3" insetsRight="3" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -58,9 +58,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel3">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="MN_L_Fault_Breakpoint_Process_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tfProcessName"/>
             </Property>
@@ -73,6 +70,9 @@
               <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="ACSD_L_Fault_Breakpoint_Process_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="3" insetsBottom="3" insetsRight="3" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -115,9 +115,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel4">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="MN_L_Fault_Breakpoint_Fault_Namespace" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tfFaultNamespace"/>
             </Property>
@@ -130,6 +127,9 @@
               <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="ACSD_L_Fault_Breakpoint_Fault_Namespace" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="3" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="3" insetsBottom="3" insetsRight="3" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -155,9 +155,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel5">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="MN_L_Fault_Breakpoint_Fault_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tfFaultName"/>
             </Property>
@@ -170,6 +167,9 @@
               <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="ACSD_L_Fault_Breakpoint_Fault_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="4" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="3" insetsBottom="3" insetsRight="3" anchor="17" weightX="0.0" weightY="0.0"/>
@@ -195,9 +195,6 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="cbAllFaults">
           <Properties>
-            <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="MN_CB_Fault_Breakpoint_All_Faults" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle.properties" key="CB_Fault_Breakpoint_All_Faults" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
@@ -213,6 +210,9 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbAllFaultsActionPerformed"/>
           </Events>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
               <GridBagConstraints gridX="0" gridY="2" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="3" insetsLeft="3" insetsBottom="3" insetsRight="3" anchor="17" weightX="0.0" weightY="0.0"/>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -321,6 +321,7 @@ public class ImageViewer extends CloneableTopComponent {
     private JToolBar createToolBar() {
         // Definition of toolbar.
         JToolBar toolBar = new JToolBar();
+        toolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); //NOI18N
         toolBar.setFloatable (false);
         toolBar.setName (NbBundle.getBundle(ImageViewer.class).getString("ACSN_Toolbar"));
         toolBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACSD_Toolbar"));
@@ -331,7 +332,6 @@ public class ImageViewer extends CloneableTopComponent {
             outButton.setText("");
         toolBar.add(outButton);       
         toolbarButtons.add(outButton);
-        toolBar.addSeparator(new Dimension(2,2));
             JButton inButton = new JButton(SystemAction.get(ZoomInAction.class));
             inButton.setToolTipText (NbBundle.getBundle(ImageViewer.class).getString("LBL_ZoomIn"));
             inButton.setMnemonic(NbBundle.getBundle(ImageViewer.class).getString("ACS_In_BTN_Mnem").charAt(0));
@@ -339,39 +339,39 @@ public class ImageViewer extends CloneableTopComponent {
             inButton.setText("");
         toolBar.add(inButton);
         toolbarButtons.add(inButton);
-        toolBar.addSeparator(new Dimension(11,2));
+        toolBar.addSeparator(new Dimension(11, 0));
         
         JButton button;
         
         toolBar.add(button = getZoomButton(1,1));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(11,2));
+        toolBar.addSeparator(new Dimension(11, 0));
         toolBar.add(button = getZoomButton(1,3));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(button = getZoomButton(1,5));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(button = getZoomButton(1,7));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(11,2));
+        toolBar.addSeparator(new Dimension(11, 0));
         toolBar.add(button = getZoomButton(3,1));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(button = getZoomButton(5,1));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(2,2));
         toolBar.add(button = getZoomButton(7,1));
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(11,2));
+        toolBar.addSeparator(new Dimension(11, 0));
 //        SystemAction sa = SystemAction.get(CustomZoomAction.class);
 //        sa.putValue (Action.SHORT_DESCRIPTION, NbBundle.getBundle(ImageViewer.class).getString("LBL_CustomZoom"));
         toolBar.add (button = getZoomButton ());
         toolbarButtons.add(button);
-        toolBar.addSeparator(new Dimension(11,2));
+        toolBar.addSeparator(new Dimension(11, 0));
         toolBar.add(button = getGridButton());
         toolbarButtons.add(button);
-        
+
+        for (Iterator it = toolbarButtons.iterator(); it.hasNext(); ) {
+            ((JButton) it.next()).setFocusable(false);
+        }
+
         return toolBar;
     }
     
@@ -592,7 +592,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Overrides superclass method. Gets <code>Icon</code>. */
     public Image getIcon () {
-        return Utilities.loadImage("org/netbeans/modules/image/imageObject.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/image/imageObject.png"); // NOI18N
     }
     
     /** Draws zoom in scaled image. */

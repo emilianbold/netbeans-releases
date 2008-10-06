@@ -102,12 +102,37 @@ NetBeans.Constants = {
     get WebProgressListenerIF() { return Components.interfaces.nsIWebProgressListener; },
 
     get WebNavigationIF() { return Components.interfaces.nsIWebNavigation; },
-    
+
+    get DOMWindowIF() { return Components.interfaces.nsIDOMWindow;},
+
+    //Net Monitor Http Request
     get HttpChannelIF() { return Components.interfaces.nsIHttpChannel;},
     
-    get DOMWindowIF() { return Components.interfaces.nsIDOMWindow;},
+    get XMLHttpRequestIF() { return Components.interfaces.nsIXMLHttpRequest;},
+
+    get SeakableStreamIF() { return Components.interfaces.nsISeekableStream;},
+
+    get WebPageDescriptorIF() { return Components.interfaces.nsIWebPageDescriptor; },
+
+    get SHEntryIF() { return Components.interfaces.nsISHEntry; },
+
+    get UploadChannelIF() { return Components.interfaces.nsIUploadChannel;},
     
     get InterfaceRequestorIF() { return Components.interfaces.nsIInterfaceRequestor;},
+
+    get ScriptableUnicodeConverterServiceCID() { return '@mozilla.org/intl/scriptableunicodeconverter'; },
+
+    get ScriptableUnicodeConverterIF() { return Components.interfaces.nsIScriptableUnicodeConverter;},
+    
+    get BinaryInputStreamCID() { return '@mozilla.org/binaryinputstream;1'; },
+
+    get BinaryInputStreamIF() { return Components.interfaces.nsIBinaryInputStream;},
+    
+    get CacheServiceIF() { return Components.interfaces.nsICacheService;},
+
+    get CacheIF() { return Components.interfaces.nsICache;},
+
+    get CacheServiceCID() { return "@mozilla.org/network/cache-service;1"; },
 
     // Windows
     get WindowWatcherServiceCID() { return '@mozilla.org/embedcomp/window-watcher;1'; },
@@ -166,7 +191,12 @@ NetBeans.Constants = {
     get ServerSocketListenerIF() { return Components.interfaces.nsIServerSocketListener; },
 
     get CachingChannelIF() { return Components.interfaces.nsICachingChannel; },
+    
+    // Convertor
+    get ScriptableUnicodeConverterCID() { return '@mozilla.org/intl/scriptableunicodeconverter'; },
 
+    get ScriptableUnicodeConverterIF() { return Components.interfaces.nsIScriptableUnicodeConverter; },
+    
     // JavaScript debugger
     get jsdIDebuggerServiceCID() { return '@mozilla.org/js/jsd/debugger-service;1'; },
 

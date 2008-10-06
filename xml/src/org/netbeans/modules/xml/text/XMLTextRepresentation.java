@@ -47,12 +47,10 @@ import javax.swing.JEditorPane;
 import javax.swing.JViewport;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.modules.xml.util.Util;
 import org.openide.*;
-import org.openide.text.*;
-import org.openide.nodes.*;
 import org.openide.cookies.*;
 
-import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.sync.*;
 
 /**

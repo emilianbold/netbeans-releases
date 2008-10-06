@@ -44,6 +44,7 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.openide.awt.Actions;
@@ -51,13 +52,12 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author psb
  */
-public class ToggleShowMessageNumbers extends NodeAction
+public class ToggleShowMessageNumbers extends SceneNodeAction
 {
     private WidgetContext context = null;
     private DesignerScene scene;
@@ -86,7 +86,7 @@ public class ToggleShowMessageNumbers extends NodeAction
     {
         boolean retVal = false;
         
-        if(activatedNodes.length == 1)
+        if(super.enable(activatedNodes) == true && activatedNodes.length == 1)
         {
             scene = activatedNodes[0].getLookup().lookup(DesignerScene.class);
             

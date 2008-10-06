@@ -324,14 +324,22 @@ made subject to such option by the copyright holder.
             <istrue value="${jnlp.sign.jars}"/>
         </condition>
         
-        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false"/>
+        <condition property="app.icon.safe" value="${app.icon}" else=".png">
+            <isset property="app.icon" />
+        </condition>
+        <pathconvert property="app.icon.ext">
+            <path path="${app.icon.safe}"/>
+            <mapper type="regexp" from="^(.*)\.(.*)$$" to="\2"/>
+        </pathconvert>
+        
+        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.${app.icon.ext}" failonerror="false"/>
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
                 <replacestring from="&lt;!--$${jnlp.resources}--&gt;" to="${jnlp.resources}"/>
                 <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
-                <replacestring from="$${app.icon}" to="master.png"/>
+                <replacestring from="$${app.icon}" to="master.${app.icon.ext}"/>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
                 <replacestring from="$${netbeans.jnlp.fixPolicy}" to="${netbeans.jnlp.fixPolicy}"/>
             </filterchain>
@@ -345,7 +353,7 @@ made subject to such option by the copyright holder.
                 <replacestring from="$${jnlp.branding.jars}" to="${jnlp.branding.jars}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
-                <replacestring from="$${app.icon}" to="master.png"/>
+                <replacestring from="$${app.icon}" to="master.${app.icon.ext}"/>
                 <replacestring from="$${jnlp.permissions}" to="${jnlp.permissions}"/>
             </filterchain>
         </copy>

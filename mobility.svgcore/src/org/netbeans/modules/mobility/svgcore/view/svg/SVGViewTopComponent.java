@@ -50,6 +50,7 @@ import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -131,13 +132,12 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteItemDataObject;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGToggleAction;
+import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.FilterNode;
-import org.openide.text.ActiveEditorDrop;
-import org.openide.text.CloneableEditor;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -347,6 +347,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         m_svgDataObject = dObj;
         initialize();
     }
+    
+    Action[] getImageContextActions(){
+        return new Action[]{ zoomToFitAction , scaleToggleButton.getAction()};
+    }
 
     private SceneManager getSceneManager() {
         return m_svgDataObject.getSceneManager();
@@ -375,7 +379,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         nameChangeL = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) || DataObject.PROP_NAME.equals(evt.getPropertyName())) {
+                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) 
+                        || DataObject.PROP_NAME.equals(evt.getPropertyName())
+                        || DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) 
+                {
                     updateName();
                 }
 
@@ -590,9 +597,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         // update name
         String name = m_svgDataObject.getNodeDelegate().getDisplayName();
         setName(name);
-        // update tooltip
-        FileObject fo = m_svgDataObject.getPrimaryFile();
-        setToolTipText(FileUtil.getFileDisplayName(fo));
+        // update display name and tooltip
+        XmlMultiViewEditorSupport edSup = m_svgDataObject.getCookie(
+                XmlMultiViewEditorSupport.class);
+        if (edSup != null){
+            edSup.updateDisplayName();
+        }
     }
 
     private void addButtonsForActions(JToolBar toolbar, Action[] toolbarActions, GridBagConstraints constrains) {
@@ -904,6 +914,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
     protected synchronized void updateImage() {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread"; //NOI18N
+        
+        disableImageContext();
+        
         getSceneManager().saveSelection();
 
         if (parsingTask != null) {
@@ -914,6 +927,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             parsingTask.start();
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    void enableImageContext(){
+        for ( Action action : getImageContextActions() ){
+            action.setEnabled( true );
         }
     }
 
@@ -980,7 +999,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         //updateSelection(actualSelection);
         repaintAll();
     }
-
+    
+    private void disableImageContext(){
+        for ( Action action : getImageContextActions() ){
+            action.setEnabled( false );
+        }
+    }
+    
     private void doDrag(DropTargetDragEvent dtde) {
         if ( getDroppedDataObject( dtde) != null) {
             dtde.acceptDrag( DnDConstants.ACTION_COPY_OR_MOVE);
@@ -989,12 +1014,24 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
+    private float[] getSVGPoint( DropTargetDropEvent dtde) {
+        Point onTopComponent = dtde.getLocation();
+        Point imageZero = getScreenManager().getAnimatorView().getLocation();
+        float zoom = getScreenManager().getZoomRatio();
+        
+        float x = (float)(onTopComponent.getX() - imageZero.getX()) / zoom;
+        float y = (float)(onTopComponent.getY() - imageZero.getY()) / zoom;
+        
+        return new float[]{x, y};
+    }
+    
     private void doDrop( DropTargetDropEvent dtde) {
+        float[] point = getSVGPoint(dtde);
         DataObject dObj;
         if ( (dObj=getDroppedDataObject(dtde)) != null) {
             dtde.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
             try {
-                if ( dropDataObject(dObj)) {
+                if ( dropDataObject(dObj, point)) {
                     dtde.dropComplete(true);
                 }
             } catch( Exception e) {
@@ -1006,23 +1043,32 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
     
-    public boolean dropDataObject( DataObject dObj) throws IOException, SAXException, DocumentModelException, BadLocationException {
+    /**
+     * drops data object into specified position.
+     * @param dObj DataObject top drop
+     * @param point svg coordinates of point wher to drop DataObject. 
+     * Coordinates are expected in {x,y} format.
+     * @return if drop was performed successfully
+     * @throws java.io.IOException
+     * @throws org.xml.sax.SAXException
+     * @throws org.netbeans.modules.editor.structure.api.DocumentModelException
+     * @throws javax.swing.text.BadLocationException
+     */
+    public boolean dropDataObject( DataObject dObj, float[] point) 
+            throws IOException, SAXException, DocumentModelException, BadLocationException 
+    {
         if ( dObj instanceof XMLDataObject) {
             Document doc = ((XMLDataObject) dObj).getDocument();
 
             SVGComponentDrop dropSupport = getAEDClass(doc);
             if (dropSupport != null){
-                dropSupport.handleTransfer(m_svgDataObject);
-                return true;
+                return dropSupport.handleTransfer(m_svgDataObject, point);
             } 
             
-            NodeList bodyTags = doc.getElementsByTagName("body"); //NOI18N
-            if ( bodyTags.getLength() > 0) {
-                String body = bodyTags.item(0).getTextContent();
-                SceneManager.log(Level.INFO, "Dropping text: \"" + body + "\""); //NOI18N
-                String id = m_svgDataObject.getModel().mergeImage(body, false);
-                getSceneManager().setSelection(id, true);
-                return true;
+            String snippet = getSnippetBody(doc);
+            if (snippet != null){
+                return SVGComponentDrop.getDefault(snippet)
+                        .handleTransfer(m_svgDataObject, point);
             }
             SceneManager.log(Level.SEVERE, "Nothing to drop, empty body and class!"); //NOI18N
             return true;
@@ -1034,6 +1080,16 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             return true;
         }
         return false;
+    }
+    
+    private String getSnippetBody(Document doc) {
+        String snippet = null;
+        NodeList bodyTags = doc.getElementsByTagName("body"); //NOI18N
+
+        if (bodyTags.getLength() > 0) {
+            snippet = bodyTags.item(0).getTextContent();
+        }
+        return snippet;
     }
     
     private SVGComponentDrop getAEDClass(Document doc){

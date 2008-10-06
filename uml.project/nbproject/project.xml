@@ -221,7 +221,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -239,6 +239,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.uml.integration</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.diagrams</friend>
                 <friend>org.netbeans.modules.uml.reporting</friend>
                 <friend>org.netbeans.modules.uml.samples</friend>
                 <package>org.netbeans.modules.uml.project</package>

@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.form.ResourcePanel;
 import org.netbeans.modules.form.ResourceService;
@@ -200,6 +201,7 @@ public class ResourceServiceImpl implements ResourceService {
         return dialog[0];
     }
 
+    private static boolean appframeworkUsedLogged = false;
     public void update(ResourceValue oldValue, ResourceValue newValue,
                        FileObject srcFile, String localeSuffix)
         throws IOException
@@ -221,6 +223,14 @@ public class ResourceServiceImpl implements ResourceService {
             DesignResourceMap resMap = ResourceUtils.getDesignResourceMap(newRes.getSourceFile(), true);
             resMap.setLocalization(localeSuffix);
             resMap.addResourceValue(newRes); // this also reads the value back
+        }
+
+        if (!appframeworkUsedLogged) {
+            Logger logger = Logger.getLogger("org.netbeans.ui.metrics.swingapp"); // NOI18N
+            LogRecord rec = new LogRecord(Level.INFO, "USG_FORM_APPFRAMEWORK_USED"); // NOI18N
+            rec.setLoggerName(logger.getName());
+            logger.log(rec);
+            appframeworkUsedLogged = true;
         }
     }
 

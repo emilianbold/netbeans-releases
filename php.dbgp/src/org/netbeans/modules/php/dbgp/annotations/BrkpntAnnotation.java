@@ -65,14 +65,14 @@ import org.openide.util.NbBundle;
 public class BrkpntAnnotation extends BreakpointAnnotation {
 
     public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint";     // NOI18N
-    
+
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
-    
+
     private Breakpoint breakpoint;
 
     public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
         this.breakpoint = breakpoint;
-        attach(annotatable);        
+        attach(annotatable);
     }
 
     /* (non-Javadoc)
@@ -97,11 +97,24 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 TokenSequence<TokenId> ts = th.tokenSequence();
                 boolean isValid = false;
                 ts.move(startOffset);
-                ts.moveNext();
-                for (; !isValid && ts.offset() < endOffset;) {
+                boolean moveNext = ts.moveNext();
+                for (; moveNext && !isValid && ts.offset() < endOffset;) {
                     TokenId id = ts.token().id();
-                    isValid = id != PHPTokenId.T_INLINE_HTML;
-                    ts.moveNext();
+                    if (id == PHPTokenId.PHPDOC_COMMENT
+                            || id == PHPTokenId.PHPDOC_COMMENT_END
+                            || id == PHPTokenId.PHPDOC_COMMENT_START
+                            || id == PHPTokenId.PHP_LINE_COMMENT
+                            || id == PHPTokenId.PHP_COMMENT_START
+                            || id == PHPTokenId.PHP_COMMENT_END
+                            || id == PHPTokenId.PHP_COMMENT                            
+                            ) {
+                        break;
+                    }
+
+                    isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                    if (!ts.moveNext()) {
+                        break;
+                    }
                 }
                 if (!isValid) {
                     lineBreakpoint.setInvalid(null);
@@ -110,7 +123,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 }
             }
         }
-        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ? 
+        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ?
             BREAKPOINT_ANNOTATION_TYPE+"_broken" : BREAKPOINT_ANNOTATION_TYPE;//NOI18N
     }
 

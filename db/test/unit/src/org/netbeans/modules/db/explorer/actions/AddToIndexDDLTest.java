@@ -29,13 +29,13 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.Types;
 import java.util.HashSet;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
  * @author David
  */
-public class AddToIndexDDLTest extends DBTestBase {
+public class AddToIndexDDLTest extends DDLTestBase {
 
     public AddToIndexDDLTest(String name) {
         super(name);
@@ -43,7 +43,7 @@ public class AddToIndexDDLTest extends DBTestBase {
     
     public void testAddToIndex() throws Exception {
         String tablename = "addToIndex";
-        String indexname = "index";
+        String indexname = "testindex";
         String col1name = "col1";
         String col2name = "col2";
         
@@ -53,7 +53,8 @@ public class AddToIndexDDLTest extends DBTestBase {
 
         addBasicColumn(tablename, col2name, Types.VARCHAR, 255);
 
-        AddToIndexDDL ddl = new AddToIndexDDL(spec, SCHEMA, fixIdentifier(tablename));
+        AddToIndexDDL ddl = new AddToIndexDDL(getSpecification(), getSchema(), fixIdentifier(tablename));
+
         
         HashSet cols = new HashSet();
         cols.add(fixIdentifier(col2name));

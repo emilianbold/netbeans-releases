@@ -42,8 +42,6 @@
 package org.netbeans.modules.viewmodel;
 
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.WeakHashMap;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -51,7 +49,6 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import org.netbeans.spi.viewmodel.Models;
 
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 
@@ -61,8 +58,6 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -183,7 +178,7 @@ public class TreeModelRoot implements ModelListener {
         return valuesEvaluator;
     }
 
-    public void destroy () {
+    public synchronized void destroy () {
         if (model != null) {
             model.removeModelListener (this);
             treeFeatures.destroy();
@@ -192,7 +187,11 @@ public class TreeModelRoot implements ModelListener {
         model = null;
         objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
     }
-    
+
+    public synchronized Models.CompoundModel getModel() {
+        return model;
+    }
+
     /**
      * Implements set of tree view features.
      */
@@ -272,14 +271,20 @@ public class TreeModelRoot implements ModelListener {
           * Called whenever an item in the tree has been expanded.
           */
         public void treeExpanded (TreeExpansionEvent event) {
-            model.nodeExpanded (initExpandCollapseNotify(event));
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                model.nodeExpanded (initExpandCollapseNotify(event));
+            }
         }
 
         /**
           * Called whenever an item in the tree has been collapsed.
           */
         public void treeCollapsed (TreeExpansionEvent event) {
-            model.nodeCollapsed (initExpandCollapseNotify(event));
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                model.nodeCollapsed (initExpandCollapseNotify(event));
+            }
         }
 
         private Object initExpandCollapseNotify(TreeExpansionEvent event) {
@@ -297,7 +302,10 @@ public class TreeModelRoot implements ModelListener {
                     actOn = ch;
                 }
             }
-            DefaultTreeExpansionManager.get(model).setChildrenToActOn(actOn);
+            Models.CompoundModel model = getModel();
+            if (model != null) {
+                DefaultTreeExpansionManager.get(model).setChildrenToActOn(actOn);
+            }
             return obj;
         }
 

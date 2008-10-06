@@ -56,9 +56,11 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
@@ -76,30 +78,47 @@ public class LabelResolverImpl extends CsmLabelResolver {
     @Override
     public Collection<CsmReference> getLabels(CsmFunctionDefinition referencedFunction, CharSequence label, LabelKind kind) {
         Context res = new Context(referencedFunction, label, kind);
-        for(CsmStatement stmt : referencedFunction.getBody().getStatements()){
-            switch (stmt.getKind()){
-                case LABEL:
-                    res.addLabelDefinition((CsmLabel) stmt);
-                    break;
-                case GOTO:
-                    res.addLabelReference((CsmGotoStatement) stmt);
-                    break;
-            }
-            if (CsmKindUtilities.isCompoundStatement(stmt)) {
-                processCompoundStatement((CsmCompoundStatement) stmt, res);
-            }
+        if(referencedFunction != null) {
+            processInnerStatements(referencedFunction.getBody(), res);
         }
         return res.collection;
     }
 
-    private void processCompoundStatement(CsmCompoundStatement compound, Context res){
-        for(CsmStatement stmt : compound.getStatements()){
-            switch (stmt.getKind()){
+    private void processInnerStatements(CsmStatement statement, Context res) {
+        if (statement != null) {
+            switch (statement.getKind()) {
                 case LABEL:
+                    res.addLabelDefinition((CsmLabel) statement);
+                    break;
                 case GOTO:
-            }
-            if (CsmKindUtilities.isCompoundStatement(stmt)) {
-                processCompoundStatement((CsmCompoundStatement) stmt,res);
+                    res.addLabelReference((CsmGotoStatement) statement);
+                    break;
+                case COMPOUND:
+                    for (CsmStatement stmt : ((CsmCompoundStatement) statement).getStatements()) {
+                        processInnerStatements(stmt, res);
+                    }
+                    break;
+                case WHILE:
+                case DO_WHILE:
+                case FOR:
+                    processInnerStatements(((CsmLoopStatement) statement).getBody(), res);
+                    break;
+                case IF:
+                    processInnerStatements(((CsmIfStatement) statement).getThen(), res);
+                    processInnerStatements(((CsmIfStatement) statement).getElse(), res);
+                    break;
+                case SWITCH:
+                    processInnerStatements(((CsmSwitchStatement) statement).getBody(), res);
+                case CASE:
+                case BREAK:
+                case DEFAULT:
+                case EXPRESSION:
+                case CONTINUE:
+                case RETURN:
+                case DECLARATION:
+                case TRY_CATCH:
+                case CATCH:
+                case THROW:
             }
         }
     }

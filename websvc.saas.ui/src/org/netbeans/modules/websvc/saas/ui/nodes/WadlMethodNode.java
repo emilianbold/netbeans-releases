@@ -42,17 +42,15 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -62,11 +60,6 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WadlMethodNode extends AbstractNode {
-    public static final String GET = "GET";
-    public static final String POST = "POST";
-    public static final String PUT = "PUT";
-    public static final String DELETE = "DELETE";
-    
     private WadlSaasMethod method;
     private Transferable transferable;
     
@@ -84,29 +77,7 @@ public class WadlMethodNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        if (method.getMethod() != null) {
-            return method.getMethod().getName();
-        }
-    
-        if (method.getWadlMethod().getId() != null) {
-            return method.getWadlMethod().getId();
-        }
-        String name = method.getWadlMethod().getName();
-        String displayName = name;
-        if (GET.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(
-                    method.getWadlMethod().getResponse().getRepresentationOrFault());
-            if (medias != null && medias.size() > 0) {
-                displayName += medias.toString();
-            }
-        } else if (PUT.equals(name) || POST.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypes(
-                    method.getWadlMethod().getRequest().getRepresentation());
-            if (medias != null && medias.size() > 0) {
-                displayName += medias;
-            }
-        }
-        return displayName;
+        return method.getDisplayName();
     }
     
     @Override
@@ -119,7 +90,7 @@ public class WadlMethodNode extends AbstractNode {
     }
     
     private static final java.awt.Image ICON =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
+            ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
     
     @Override
     public java.awt.Image getIcon(int type) {

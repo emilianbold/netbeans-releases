@@ -56,14 +56,40 @@ public final class PlatformConstants {
     
     public static final String OS_FAMILY_MACOSX = 
             "macosx";
+    
     public static final String OS_FAMILY_UNIX = 
             "unix";
+    
+    public static final String OS_FAMILY_FREEBSD = 
+            "freebsd";
+
+    public static final String OS_FAMILY_OPENBSD = 
+            "openbsd";
+    
+    public static final String OS_FAMILY_BSD = 
+            "bsd";
+
+    public static final String OS_FAMILY_AIX =
+            "aix";
+
+    public static final String OS_FAMILY_HPUX =
+            "hpux";
     
     public static final String HARDWARE_X86 = 
             "x86";
     
     public static final String HARDWARE_X64 = 
             "x64";
+
+    public static final String HARDWARE_IA64 = 
+            "ia64";
+
+    //this includes PA_RISC 1.0 and 1.1
+    public static final String HARDWARE_PA_RISC = 
+            "pa_risc"; 
+    
+    public static final String HARDWARE_PA_RISC20 = 
+            "pa_risc2.0";
     
     public static final String HARDWARE_SPARC = 
             "sparc";

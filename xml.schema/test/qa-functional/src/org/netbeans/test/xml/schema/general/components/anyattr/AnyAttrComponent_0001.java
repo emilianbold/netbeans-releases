@@ -41,51 +41,9 @@
 
 package org.netbeans.test.xml.schema.general.components.anyattr;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
-import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -94,17 +52,6 @@ import junit.framework.Test;
 
 public class AnyAttrComponent_0001 extends AnyAttrComponent {
     
-    static final String [] m_aTestMethods = {
-        "OpenSchema",
-        "CheckProperties",
-        "CheckingIDProperty",
-        //"CheckingMaxOccursProperty",
-        //"CheckingMinOccursProperty",
-        "CheckingProcess",
-        "CheckingNamespace",
-        "CheckSource"
-      };
-
     String sPathInTree = "Attribute Groups|AttributeGroup-0|anyAttribute";
 
     String[] asCorrectIDValues = { "qwerty", "asdfg" };
@@ -125,18 +72,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
     public AnyAttrComponent_0001(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(AnyAttrComponent_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new AnyAttrComponent_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -191,8 +126,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
       CheckingProperty( "ID", asCorrectIDValues, true );
       CheckingProperty( "ID", asIncorrectIDValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -204,8 +137,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
       CheckingProperty( "Max Occurs", asCorrectMxOValues, true );
       CheckingProperty( "Max Occurs", asIncorrectMxOValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -215,8 +146,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
 
       CheckingProperty( "Min Occurs", asCorrectMnOValues, true );
       CheckingProperty( "Min Occurs", asIncorrectMnOValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }
@@ -229,8 +158,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
       CheckingProperty( "Process Contents", asCorrectProcessValues, true );
       //CheckingProperty( "Process Contents", asIncorrectProcessValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -240,8 +167,6 @@ public class AnyAttrComponent_0001 extends AnyAttrComponent {
 
       CheckingProperty( "Namespace", asCorrectNamespaceValues, true );
       //CheckingProperty( "Process Contents", asIncorrectProcessValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }

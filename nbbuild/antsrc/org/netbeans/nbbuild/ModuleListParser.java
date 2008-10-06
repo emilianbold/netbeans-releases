@@ -500,18 +500,7 @@ final class ModuleListParser {
     /**
      * Find all modules in a binary build, possibly from cache.
      */
-    private static Map<String,Entry> scanBinaries(Map<String,String> properties, Project project) throws IOException {
-        String buildS = properties.get("netbeans.dest.dir");
-        File basedir = new File(properties.get("basedir"));
-        if (buildS == null) {
-            throw new IOException("No definition of netbeans.dest.dir in " + basedir);
-        }
-        // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
-        // Neither operation is likely to be needed, but just in case.
-        File build = FileUtils.getFileUtils().normalize(FileUtils.getFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
-        if (!build.isDirectory()) {
-            throw new IOException("No such netbeans.dest.dir: " + build);
-        }
+    private static Map<String,Entry> scanBinaries(Project project, File build) throws IOException {
         Map<String,Entry> entries = BINARY_SCAN_CACHE.get(build);
         if (entries == null) {
             if (project != null) {
@@ -690,13 +679,23 @@ final class ModuleListParser {
      */
     public ModuleListParser(Map<String,String> properties, int type, Project project) throws IOException {
         String nball = properties.get("nb_all");
+        String buildS = properties.get("netbeans.dest.dir");
+        File basedir = new File(properties.get("basedir"));
+        if (buildS == null) {
+            throw new IOException("No definition of netbeans.dest.dir in " + basedir);
+        }
+        // Resolve against basedir, and normalize ../ sequences and so on in case they are used.
+        // Neither operation is likely to be needed, but just in case.
+        File build = FileUtils.getFileUtils().normalize(FileUtils.getFileUtils().resolveFile(basedir, buildS).getAbsolutePath());
+        if (!build.isDirectory()) {
+            throw new IOException("No such netbeans.dest.dir: " + build);
+        }
         if (type != ParseProjectXml.TYPE_NB_ORG) {
             // External module.
-            File basedir = new File(properties.get("basedir"));
             if (nball != null && project != null) {
                 project.log("You must *not* declare <suite-component/> or <standalone/> for a netbeans.org module in " + basedir + "; fix project.xml to use the /2 schema", Project.MSG_WARN);
             }
-            entries = scanBinaries(properties, project);
+            entries = scanBinaries(project, build);
             if (type == ParseProjectXml.TYPE_SUITE) {
                 entries.putAll(scanSuiteSources(properties, project));
             } else {
@@ -709,15 +708,14 @@ final class ModuleListParser {
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File(properties.get("basedir")));
             }
-            // If scan.binaries property is set we scan binaries otherwise sources.
-            if (properties.get("scan.binaries") != null) {
-                entries = scanBinaries(properties, project);
-                // module itself has to be added because it doesn't have to be in binaries
+            if (!build.equals(new File(new File(nball, "nbbuild"), "netbeans"))) {
+                // Potentially orphaned module to be built against specific binaries, plus perhaps other source deps.
+                entries = scanBinaries(project, build);
+                // Add referenced module in case it does not appear otherwise.
                 Entry e = scanStandaloneSource(properties, project);
                 if (e != null) {
                     entries.put(e.getCnb(), e);
                 }
-                // to allow building of depend modules on top of binary
                 entries.putAll(scanNetBeansOrgSources(new File(nball), properties, project));
             } else {
                 entries = scanNetBeansOrgSources(new File(nball), properties, project);
@@ -827,6 +825,13 @@ final class ModuleListParser {
          */
         public File[] getClassPathExtensions() {
             return classPathExtensions;
+        }
+
+        /**
+         * @return the sourceLocation, may be null.
+         */
+        public File getSourceLocation() {
+            return sourceLocation;
         }
         
         /**

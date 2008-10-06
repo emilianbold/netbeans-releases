@@ -9,25 +9,27 @@ token #7 WHITESPACE \n\n
 token #8 PHP_PRINT print
 token #9 WHITESPACE  
 token #10 PHP_HEREDOC_TAG b<<<ENDOFHEREDOC\n
-token #11 PHP_CONSTANT_ENCAPSED_STRING This is a heredoc test.\n\nENDOFHEREDOC;
-token #12 PHP_CONSTANT_ENCAPSED_STRING \n
-token #13 WHITESPACE \n
-token #14 PHP_VARIABLE $x
-token #15 WHITESPACE  
-token #16 PHP_TOKEN =
-token #17 WHITESPACE  
-token #18 PHP_HEREDOC_TAG b<<<ENDOFHEREDOC\n
-token #19 PHP_CONSTANT_ENCAPSED_STRING This is another heredoc test.\n\nENDOFHEREDOC;
-token #20 PHP_CONSTANT_ENCAPSED_STRING \n
-token #21 WHITESPACE \n
-token #22 PHP_PRINT print
-token #23 WHITESPACE  
-token #24 PHP_CONSTANT_ENCAPSED_STRING "
-token #25 PHP_CURLY_OPEN {
-token #26 PHP_VARIABLE $x
-token #27 PHP_CURLY_CLOSE }
-token #28 PHP_CONSTANT_ENCAPSED_STRING "
-token #29 PHP_SEMICOLON ;
-token #30 WHITESPACE \n\n
-token #31 PHP_CLOSETAG ?>\n
-token #32 T_INLINE_HTML --EXPECT--\nThis is a heredoc test.\nThis is another heredoc test.\n
+token #11 PHP_CONSTANT_ENCAPSED_STRING This is a heredoc test.\n\n
+token #12 PHP_HEREDOC_TAG ENDOFHEREDOC
+token #13 PHP_SEMICOLON ;
+token #14 WHITESPACE \n\n
+token #15 PHP_VARIABLE $x
+token #16 WHITESPACE  
+token #17 PHP_TOKEN =
+token #18 WHITESPACE  
+token #19 PHP_HEREDOC_TAG b<<<ENDOFHEREDOC\n
+token #20 PHP_CONSTANT_ENCAPSED_STRING This is another heredoc test.\n\n
+token #21 PHP_HEREDOC_TAG ENDOFHEREDOC
+token #22 PHP_SEMICOLON ;
+token #23 WHITESPACE \n\n
+token #24 PHP_PRINT print
+token #25 WHITESPACE  
+token #26 PHP_CONSTANT_ENCAPSED_STRING "
+token #27 PHP_CURLY_OPEN {
+token #28 PHP_VARIABLE $x
+token #29 PHP_CURLY_CLOSE }
+token #30 PHP_CONSTANT_ENCAPSED_STRING "
+token #31 PHP_SEMICOLON ;
+token #32 WHITESPACE \n\n
+token #33 PHP_CLOSETAG ?>
+token #34 T_INLINE_HTML \n--EXPECT--\nThis is a heredoc test.\nThis is another heredoc test.\n

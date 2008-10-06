@@ -76,7 +76,7 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(encoder.encodeCharForTests((char) 0x01),
                 new byte[] {'\\', 'u', '0', '0', '0', '1'});
         compare(encoder.encodeCharForTests((char) 0x0b),
-                new byte[] {'\\', 'u', '0', '0', '0', 'b'});
+                new byte[] {'\\', 'u', '0', '0', '0', 'B'});
         compare(encoder.encodeCharForTests((char) 0x19),
                 new byte[] {'\\', 'u', '0', '0', '1', '9'});
         compare(encoder.encodeCharForTests((char) 0x20),
@@ -98,39 +98,39 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(encoder.encodeCharForTests((char) 0x7e),
                 new byte[] {'~'});
         compare(encoder.encodeCharForTests((char) 0x7f),
-                new byte[] {'\\', 'u', '0', '0', '7', 'f'});
+                new byte[] {'\\', 'u', '0', '0', '7', 'F'});
         compare(encoder.encodeCharForTests((char) 0x81),
                 new byte[] {'\\', 'u', '0', '0', '8', '1'});
         compare(encoder.encodeCharForTests((char) 0x89),
                 new byte[] {'\\', 'u', '0', '0', '8', '9'});
         compare(encoder.encodeCharForTests((char) 0x8f),
-                new byte[] {'\\', 'u', '0', '0', '8', 'f'});
+                new byte[] {'\\', 'u', '0', '0', '8', 'F'});
         compare(encoder.encodeCharForTests((char) 0x90),
                 new byte[] {'\\', 'u', '0', '0', '9', '0'});
         compare(encoder.encodeCharForTests((char) 0xa0),
-                new byte[] {'\\', 'u', '0', '0', 'a', '0'});
+                new byte[] {'\\', 'u', '0', '0', 'A', '0'});
         compare(encoder.encodeCharForTests((char) 0xad),
-                new byte[] {'\\', 'u', '0', '0', 'a', 'd'});
+                new byte[] {'\\', 'u', '0', '0', 'A', 'D'});
         compare(encoder.encodeCharForTests((char) 0xcb),
-                new byte[] {'\\', 'u', '0', '0', 'c', 'b'});
+                new byte[] {'\\', 'u', '0', '0', 'C', 'B'});
         compare(encoder.encodeCharForTests((char) 0xd6),
-                new byte[] {'\\', 'u', '0', '0', 'd', '6'});
+                new byte[] {'\\', 'u', '0', '0', 'D', '6'});
         compare(encoder.encodeCharForTests((char) 0xec),
-                new byte[] {'\\', 'u', '0', '0', 'e', 'c'});
+                new byte[] {'\\', 'u', '0', '0', 'E', 'C'});
         compare(encoder.encodeCharForTests((char) 0xf0),
-                new byte[] {'\\', 'u', '0', '0', 'f', '0'});
+                new byte[] {'\\', 'u', '0', '0', 'F', '0'});
         compare(encoder.encodeCharForTests((char) 0xfd),
-                new byte[] {'\\', 'u', '0', '0', 'f', 'd'});
+                new byte[] {'\\', 'u', '0', '0', 'F', 'D'});
         compare(encoder.encodeCharForTests((char) 0xfe),
-                new byte[] {'\\', 'u', '0', '0', 'f', 'e'});
+                new byte[] {'\\', 'u', '0', '0', 'F', 'E'});
         compare(encoder.encodeCharForTests((char) 0xff),
-                new byte[] {'\\', 'u', '0', '0', 'f', 'f'});
+                new byte[] {'\\', 'u', '0', '0', 'F', 'F'});
         compare(encoder.encodeCharForTests((char) 0x0100),
                 new byte[] {'\\', 'u', '0', '1', '0', '0'});
         compare(encoder.encodeCharForTests((char) 0x0101),
                 new byte[] {'\\', 'u', '0', '1', '0', '1'});
         compare(encoder.encodeCharForTests((char) 0x016e),
-                new byte[] {'\\', 'u', '0', '1', '6', 'e'});
+                new byte[] {'\\', 'u', '0', '1', '6', 'E'});
         compare(encoder.encodeCharForTests((char) 0x0777),
                 new byte[] {'\\', 'u', '0', '7', '7', '7'});
         compare(encoder.encodeCharForTests((char) 0x0778),
@@ -138,19 +138,19 @@ public class PropertiesEncodingTest extends NbTestCase {
         compare(encoder.encodeCharForTests((char) 0x0877),
                 new byte[] {'\\', 'u', '0', '8', '7', '7'});
         compare(encoder.encodeCharForTests((char) 0x0a46),
-                new byte[] {'\\', 'u', '0', 'a', '4', '6'});
+                new byte[] {'\\', 'u', '0', 'A', '4', '6'});
         compare(encoder.encodeCharForTests((char) 0x774d),
-                new byte[] {'\\', 'u', '7', '7', '4', 'd'});
+                new byte[] {'\\', 'u', '7', '7', '4', 'D'});
         compare(encoder.encodeCharForTests((char) 0x8000),
                 new byte[] {'\\', 'u', '8', '0', '0', '0'});
         compare(encoder.encodeCharForTests((char) 0x8800),
                 new byte[] {'\\', 'u', '8', '8', '0', '0'});
         compare(encoder.encodeCharForTests((char) 0xabcd),
-                new byte[] {'\\', 'u', 'a', 'b', 'c', 'd'});
+                new byte[] {'\\', 'u', 'A', 'B', 'C', 'D'});
         compare(encoder.encodeCharForTests((char) 0xfffe),
-                new byte[] {'\\', 'u', 'f', 'f', 'f', 'e'});
+                new byte[] {'\\', 'u', 'F', 'F', 'F', 'E'});
         compare(encoder.encodeCharForTests((char) 0xffff),
-                new byte[] {'\\', 'u', 'f', 'f', 'f', 'f'});
+                new byte[] {'\\', 'u', 'F', 'F', 'F', 'F'});
     }
     
     public void testEncodingOfString() throws CharacterCodingException {

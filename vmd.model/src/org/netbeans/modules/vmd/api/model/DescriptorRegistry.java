@@ -182,7 +182,7 @@ public final class DescriptorRegistry {
      * @return the component descriptor
      */
     public ComponentDescriptor getComponentDescriptor (TypeID componentType) {
-        assert isAccess ();
+        assert isAccess () : "No Mutex acess"; //NOI18N
         if (componentType == null)
             return null;
         return descriptors.get (componentType);

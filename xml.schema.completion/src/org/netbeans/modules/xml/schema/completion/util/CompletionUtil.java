@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.axi.AXIComponent;
 import org.netbeans.modules.xml.axi.AXIDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
@@ -71,6 +72,9 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.Co
 import org.netbeans.modules.xml.schema.model.Form;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -149,7 +153,7 @@ public class CompletionUtil {
      * the namespace was declared as xmlns:po, the prefix 'po' will be returned.
      * Returns null for declaration that contains no prefix.
      */
-    public static String getPrefixFromNamespaceDeclaration(String namespace) {
+    public static String getPrefixFromXMLNS(String namespace) {
         if(namespace == null) return null;
         return (namespace.indexOf(":") == -1) ?
             null : namespace.substring(namespace.indexOf(":")+1);
@@ -164,15 +168,11 @@ public class CompletionUtil {
     public static List<String> getPrefixesAgainstNamespace(
             CompletionContextImpl context, String namespace) {
         List<String> list = new ArrayList<String>();
-        List<DocRootAttribute> attributes = context.getDocRootAttributes();
-        for(int index=0; index<attributes.size(); index++) {
-            DocRootAttribute attr = attributes.get(index);
-            if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
-                continue;
-            if(attr.getValue().equals(namespace)) {
-                String prefix = getPrefixFromNamespaceDeclaration(attr.getName());
-                list.add(prefix);
-            }
+        
+        for(String key : context.getDeclaredNamespaces().keySet()) {
+            String ns = context.getDeclaredNamespaces().get(key);
+            if(ns.equals(namespace))
+                list.add(getPrefixFromXMLNS(key));
         }
         
         return list;
@@ -381,7 +381,8 @@ public class CompletionUtil {
     private static List<String> getPrefixes(CompletionContextImpl context, AXIComponent ae, CompletionModel cm) {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
-            if(!context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+            if(context.getDefaultNamespace() != null &&
+               !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
@@ -556,9 +557,13 @@ public class CompletionUtil {
                 }
                 if(t.id() == XMLTokenId.VALUE && lastNS != null) {
                     String value = t.text().toString();
-                    if(value.startsWith("'") || value.startsWith("\""))
+                    if(value.length() >= 2 && (value.startsWith("'") || value.startsWith("\"")))
                         value = value.substring(1, value.length()-1);
-                    map.put(value, CompletionUtil.getPrefixFromNamespaceDeclaration(lastNS));
+                    if(XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(value)) {
+                        lastNS = null;
+                        continue;
+                    }
+                    map.put(value, CompletionUtil.getPrefixFromXMLNS(lastNS));
                     lastNS = null;
                 }
             } //while loop            
@@ -619,6 +624,11 @@ public class CompletionUtil {
 //        }
 //    }
     
+    /**
+     * Checks to see if this document declares any DOCTYPE or not?
+     * If exists, it must appear before the first xml tag.
+     * @return true if found, else false.
+     */
     public static boolean isDTDBasedDocument(Document document) {
         ((AbstractDocument)document).readLock();
         try {
@@ -626,9 +636,11 @@ public class CompletionUtil {
             TokenSequence ts = th.tokenSequence();
             while(ts.moveNext()) {
                 Token token = ts.token();
-                if(token.id() == XMLTokenId.DECLARATION) {
+                //if an xml tag is found, we have come too far.
+                if(token.id() == XMLTokenId.TAG)
+                    return false;
+                if(token.id() == XMLTokenId.DECLARATION)
                     return true;
-                }
             }
         } finally {
             ((AbstractDocument)document).readUnlock();
@@ -649,6 +661,7 @@ public class CompletionUtil {
                 Token nextToken = ts.token();
                 if(nextToken.id() == XMLTokenId.TAG && nextToken.text().toString().equals(">")) {
                    offset = nextToken.offset(th);
+                   break;
                 }
             }
         } finally {
@@ -688,8 +701,10 @@ public class CompletionUtil {
                         }
                         if(t.id() == XMLTokenId.VALUE && lastAttrName != null) {
                             String value = t.text().toString();
-                            if(value.startsWith("'") || value.startsWith("\""))
-                                value = value.substring(1, value.length()-1);                        
+                            if(value == null || value.length() == 1)
+                                value = null;
+                            else if(value.startsWith("'") || value.startsWith("\""))
+                                value = value.substring(1, value.length()-1);
                             attributes.add(new DocRootAttribute(lastAttrName, value));
                             lastAttrName = null;
                         }
@@ -705,6 +720,42 @@ public class CompletionUtil {
         } finally {
             ((AbstractDocument)document).readUnlock();
         }        
+    }
+    
+    /**
+     * Can't provide completion for XML documents based on DTD
+     * and for those who do not declare namespaces in root tag.
+     */
+    public static boolean canProvideCompletion(BaseDocument doc) {
+        FileObject file = getPrimaryFile();
+        if(file == null)
+            return false;
+        
+        //for .xml documents        
+        if("xml".equals(file.getExt())) { //NOI18N
+            //if DTD based, no completion
+            if(CompletionUtil.isDTDBasedDocument(doc)) {
+                return false;
+            }
+            //if docroot doesn't declare ns, no completion
+            DocRoot root = CompletionUtil.getDocRoot(doc);
+            if(root != null && !root.declaresNamespace()) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    public static FileObject getPrimaryFile() {
+        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
+        if(activatedTC == null)
+            return null;
+        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
+        if(activeFile == null)
+            return null;
+        
+        return activeFile.getPrimaryFile();
     }
     
     public static class DocRoot {
@@ -759,7 +810,6 @@ public class CompletionUtil {
         public String toString() {
             return name+"="+value;
         }
-    }
-    
+    }    
     
 }

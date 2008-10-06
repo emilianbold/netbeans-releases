@@ -47,6 +47,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /** A single panel for a wizard - the GUI portion.
  *
@@ -271,9 +273,28 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_syncHttpProxiesActionPerformed
     
     private void enableHttpMonitorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableHttpMonitorActionPerformed
-        targetData.setHttpMonitorOn(""+enableHttpMonitor.isSelected());
-        msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_httpMonitorStatusChangedAtRestart"));
-        
+        boolean oldValue = !enableHttpMonitor.isSelected();
+        if (enableHttpMonitor.isSelected()) {
+            // open a message about the scary effects of HTTP monitoring
+            NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                    NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+            if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+                enableHttpMonitor.setSelected(false);
+            }
+        } else {
+            // open a message about the scary effects of HTTP monitoring
+            NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                    NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+            if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+                enableHttpMonitor.setSelected(true);
+            }
+        }
+        if (enableHttpMonitor.isSelected() != oldValue) {
+            targetData.setHttpMonitorOn("" + enableHttpMonitor.isSelected());
+            msgLabel.setText(NbBundle.getMessage(ConnectionTabVisualPanel.class, "Msg_httpMonitorStatusChangedAtRestart"));
+        }
     }//GEN-LAST:event_enableHttpMonitorActionPerformed
     
     private void passwordFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_passwordFieldKeyReleased

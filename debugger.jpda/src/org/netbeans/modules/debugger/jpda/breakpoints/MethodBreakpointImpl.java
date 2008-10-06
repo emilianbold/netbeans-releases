@@ -174,40 +174,27 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         return null;
     }
 
-    public boolean exec (Event event) {
-        if (event instanceof BreakpointEvent)
-            return perform (
-                event,
-                breakpoint.getCondition (),
-                ((BreakpointEvent) event).thread (),
-                ((LocatableEvent) event).location ().declaringType (),
-                null
-            );
+    private Value[] returnValuePtr;
+
+    public boolean processCondition(Event event) {
+        if (event instanceof BreakpointEvent) {
+            return processCondition(event, breakpoint.getCondition (),
+                    ((BreakpointEvent) event).thread (), null);
+        }
         if (event instanceof MethodEntryEvent) {
             String methodName = ((MethodEntryEvent) event).method().name();
             Set methodNames = (Set) event.request().getProperty("methodNames");
             if (methodNames == null || methodNames.contains(methodName)) {
-                ReferenceType refType = null;
-                if (((LocatableEvent) event).location() != null) {
-                    refType = ((LocatableEvent) event).location().declaringType();
-                }
-                return perform (
-                    event,
-                    breakpoint.getCondition (),
-                    ((MethodEntryEvent) event).thread (),
-                    refType,
-                    null
-                );
+                return processCondition(event, breakpoint.getCondition (),
+                        ((MethodEntryEvent) event).thread (), null);
+            } else {
+                return false;
             }
         }
         if (event instanceof MethodExitEvent) {
             String methodName = ((MethodExitEvent) event).method().name();
             Set methodNames = (Set) event.request().getProperty("methodNames");
             if (methodNames == null || methodNames.contains(methodName)) {
-                ReferenceType refType = null;
-                if (((LocatableEvent) event).location() != null) {
-                    refType = ((LocatableEvent) event).location().declaringType();
-                }
                 Value returnValue = null;
                 /* JDK 1.6.0 code */
                 if (IS_JDK_16) { // Retrieval of the return value
@@ -231,14 +218,58 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         }
                     }
                 }
-                return perform (
-                    event,
-                    breakpoint.getCondition (),
-                    ((MethodExitEvent) event).thread (),
-                    refType,
-                    returnValue
-                );
+                boolean success = processCondition(event, breakpoint.getCondition (),
+                            ((MethodExitEvent) event).thread (), returnValue);
+                if (success) {
+                    returnValuePtr = new Value[] { returnValue };
+                }
+                return success;
+            } else {
+                return false;
             }
+        } else {
+            return true; // Empty condition, always satisfied.
+        }
+    }
+
+    public boolean exec (Event event) {
+        if (event instanceof BreakpointEvent)
+            return perform (
+                event,
+                ((BreakpointEvent) event).thread (),
+                ((LocatableEvent) event).location ().declaringType (),
+                null
+            );
+        if (event instanceof MethodEntryEvent) {
+            ReferenceType refType = null;
+            if (((LocatableEvent) event).location() != null) {
+                refType = ((LocatableEvent) event).location().declaringType();
+            }
+            return perform (
+                event,
+                ((MethodEntryEvent) event).thread (),
+                refType,
+                null
+            );
+        }
+        if (event instanceof MethodExitEvent) {
+            ReferenceType refType = null;
+            if (((LocatableEvent) event).location() != null) {
+                refType = ((LocatableEvent) event).location().declaringType();
+            }
+            Value returnValue;
+            if (returnValuePtr != null) {
+                returnValue = returnValuePtr[0];
+                returnValuePtr = null;
+            } else {
+                returnValue = null;
+            }
+            return perform (
+                event,
+                ((MethodExitEvent) event).thread (),
+                refType,
+                returnValue
+            );
         }
         return super.exec (event);
     }

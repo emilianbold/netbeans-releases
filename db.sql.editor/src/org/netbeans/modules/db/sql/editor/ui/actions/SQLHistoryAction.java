@@ -40,17 +40,19 @@
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author test
+ * @author jbaker
  */
 public class SQLHistoryAction extends SQLExecutionBaseAction {
     private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
 
     protected String getIconBase() {
         return ICON_PATH;
@@ -60,17 +62,19 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
         return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");
     }
 
-    @Override
-    protected boolean enable(SQLExecution sqlExecution) {
-        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-        if (databaseDir == null) {    
-            return false;
+    protected void actionPerformed(SQLExecution sqlExecution) {
+        FileObject historyRoot = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        if (historyRoot == null || historyRoot.getChildren().length == 0) {    
+            notifyNoSQLExecuted();
         } else {
-            return true;
+            historyRoot.refresh(true);
+            sqlExecution.showHistory();
         }
     }
-
-    protected void actionPerformed(SQLExecution sqlExecution) {
-        sqlExecution.showHistory();
+    
+    private static void notifyNoSQLExecuted() {
+        String message = NbBundle.getMessage(SQLExecutionBaseAction.class, "LBL_NoSQLExecuted");
+        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
     }
 }

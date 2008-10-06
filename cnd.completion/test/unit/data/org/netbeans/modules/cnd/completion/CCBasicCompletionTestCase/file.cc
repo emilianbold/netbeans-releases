@@ -40,8 +40,9 @@ int main(int argc, char** argv) {
     printf("%d\n", *pointer);
     void* pExtra;
     A a;
-     // 
+     // code completion tests insert some code here
     for (int i = 0; i < 10; i++) {
+        int yyy = argc>0 ? static_cast<int>(pExtra) : *pointer;
     }
     return (0);
 }

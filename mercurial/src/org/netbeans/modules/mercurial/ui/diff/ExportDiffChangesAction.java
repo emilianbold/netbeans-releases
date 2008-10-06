@@ -105,8 +105,7 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     public boolean isEnabled () {
-        File[] files = getModifiedFiles(context, enabledForStatus);         
-        if(files.length < 1) {
+        if(HgUtils.getRootFile(context) == null) {
             return false;
         }  
         TopComponent activated = TopComponent.getRegistry().getActivated();

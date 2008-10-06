@@ -41,25 +41,30 @@
 
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Sheryl Su
  */
-public abstract class AbstractWidgetMoveAction extends SystemAction
+public abstract class AbstractWidgetMoveAction extends AbstractAction
 {
-
-    public AbstractWidgetMoveAction(String tooltip)
+    private DesignerScene scene = null;
+    
+    public AbstractWidgetMoveAction(String tooltip, DesignerScene scene, String icon)
     {
         putValue(Action.SHORT_DESCRIPTION, tooltip);
+        putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon(icon));
+        
+        this.scene = scene;
     }
 
     public String getName()
@@ -69,16 +74,19 @@ public abstract class AbstractWidgetMoveAction extends SystemAction
     
     public boolean isEnabled() 
     {
-        return true;
+        return scene.isReadOnly() == false;
     }
     
     protected Widget getWidget()
     {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        IPresentationElement pe = nodes[0].getLookup().lookup(IPresentationElement.class);
-        DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
-        if (scene != null)
-            return scene.findWidget(pe);
+        if((nodes != null) && (nodes.length > 0))
+        {
+            IPresentationElement pe = nodes[0].getLookup().lookup(IPresentationElement.class);
+            DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
+            if (scene != null)
+                return scene.findWidget(pe);
+        }
         return null;
     }
 

@@ -60,6 +60,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
+    @Override
+    protected void assertDocumentText(String msg, String expectedText) {
+        super.assertDocumentText(msg, expectedText);
+        reformat();
+        super.assertDocumentText(msg+" (not stable)", expectedText);
+    }
+
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
@@ -140,7 +147,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 + "    int printf(int);\n"
                 + "};\n"
                 );
-        
     }
     
     // tests for regressions
@@ -4104,8 +4110,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("\'Multiline Alignment|Array Initializer\' checkbox works wrongly",
             "int array[10] = {1, 2, 3, 4,\n" +
-            "                 5, 6, 7, 8, 9\n" +
-            "};\n"
+            "                 5, 6, 7, 8, 9};\n"
             );
     }
 
@@ -4230,8 +4235,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = { 1, (1 + 2), (2 + 3) };\n" +
                 "int b[] = { 1, (1 + 2), (2 + 3) };\n" +
-                "int c[] = { 1, (1 + 2), (2 + 3)\n" +
-                "};\n"
+                "int c[] = { 1, (1 + 2), (2 + 3) };\n"
                 );
     }
 
@@ -4247,8 +4251,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting array init",
                 "int a[] = {1, (1 + 2), (2 + 3)};\n" +
                 "int b[] = {1, (1 + 2), (2 + 3)};\n" +
-                "int c[] = {1, (1 + 2), (2 + 3)\n" +
-                "};\n"
+                "int c[] = {1, (1 + 2), (2 + 3)};\n"
                 );
     }
 
@@ -4601,7 +4604,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Wrong type cast fotmatting",
+        assertDocumentText("Wrong type cast formatting",
                 "int i = ( int ) 'a';\n"+
                 "\n" +
                 "void *\n" +
@@ -4613,5 +4616,234 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testReformatMultiLineAndSpacing() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinMethodDeclParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinMethodCallParens, true);
+        setLoadDocumentText(
+                  "void m(int a,\n"
+                + "int b) {\n"
+                + "    printf(a, \n"
+                + "    \"haf\");\n"
+                + "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                  "void m( int a,\n" 
+                + "        int b ) {\n"
+                + "    printf( a,\n"
+                + "            \"haf\" );\n"
+                + "}\n"
+                );
+    }
     
+    public void testQtExtension() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Wrong QT formatting",
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+    }
+
+    public void testExpandToTab() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 4);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        for(int i = 0; i < 2; i++){
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "\tstruct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n");
+        }
+    }
+
+    public void testExpandToTab2() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 8);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "    struct pcihp_slotinfo {\n" +
+                "\tchar *name;\n" +
+                "    } slotinfo[10];\n" +
+                "} pcihp_t;\n");
+    }
+
+    public void testIZ145529() {
+        setLoadDocumentText(
+                "class Base {\n" +
+                "\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect empty class formatting",
+                "class Base {\n" +
+                "};\n"
+                );
+    }
+
+    public void testReformatConstructorInitializer3() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.constructorListContinuationIndent, 6);
+        setLoadDocumentText(
+            "class ClipCost {\n" +
+            "public:\n" +
+            "    ClipCost(OmFrameRate rate = omFrmRateInvalid)\n" +
+            "      : m_type(Threshold::play1xThresh),\n" +
+            "        m_ticksPerPane(getTicksPerPane(rate)),\n" +
+            "        m_frameStart(0),\n" +
+            "        m_thisFrame(~0)\n" +
+            "    {\n" +
+            "        // indentation should be like this\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "\n" +
+            "          // ide insists (strongly) on this indentation\n" +
+            "          for (uint i = 0; i < nCosts; i++)\n" +
+            "              init(i);\n" +
+            "    }\n" +
+            "}\n");
+        reformat();
+        assertDocumentText("Incorrect reformatting of constructor initializer",
+            "class ClipCost\n" +
+            "{\n" +
+            "public:\n" +
+            "\n" +
+            "    ClipCost(OmFrameRate rate = omFrmRateInvalid)\n" +
+            "          : m_type(Threshold::play1xThresh),\n" +
+            "          m_ticksPerPane(getTicksPerPane(rate)),\n" +
+            "          m_frameStart(0),\n" +
+            "          m_thisFrame(~0)\n" +
+            "    {\n" +
+            "        // indentation should be like this\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "\n" +
+            "        // ide insists (strongly) on this indentation\n" +
+            "        for (uint i = 0; i < nCosts; i++)\n" +
+            "            init(i);\n" +
+            "    }\n" +
+            "}\n");
+    }
+
+    public void testIZ144976() {
+        setLoadDocumentText(
+                "int Ar[] ={\n" +
+                "1, 2, 3,\n" +
+                " 4, 5 };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {\n" +
+                "    1, 2, 3,\n" +
+                "    4, 5\n" +
+                "};\n"
+                );
+    }
+
+    public void testIZ144976_2() {
+        setLoadDocumentText(
+                "int Ar[] ={1, 2, 3,\n" +
+                " 4, 5 };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {1, 2, 3,\n" +
+                "    4, 5};\n"
+                );
+    }
+
+    public void testIZ144976_3() {
+        setLoadDocumentText(
+                "int Ar[] ={1, 2, 3,\n" +
+                "4, 5 \n" +
+                " };\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect arry init formatting",
+                "int Ar[] = {1, 2, 3,\n" +
+                "    4, 5};\n"
+                );
+    }
 }

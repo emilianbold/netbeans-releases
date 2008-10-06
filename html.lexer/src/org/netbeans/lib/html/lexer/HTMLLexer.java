@@ -42,6 +42,7 @@
 package org.netbeans.lib.html.lexer;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -170,7 +171,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
         
-    static Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
+    static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
         EVENT_HANDLER_NAMES.add("onload"); // NOI18N
@@ -228,11 +229,6 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     private final boolean isName( int character ) {
         return Character.isLetterOrDigit(character) ||
                 character == '-' || character == '_' || character == '.' || character == ':';
-        //        return( (ch >= 'a' && ch <= 'z') ||
-        //                (ch >= 'A' && ch <= 'Z') ||
-        //                (ch >= '0' && ch <= '9') ||
-        //                ch == '-' || ch == '_' || ch == '.' || ch == ':' );
-        
     }
     
     /**
@@ -246,21 +242,21 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     
     private final boolean isWS( int character ) {
         return Character.isWhitespace(character);
-        //        return ( ch == '\u0020' || ch == '\u0009' || ch == '\u000c'
-        //              || ch == '\u200b' || ch == '\n' || ch == '\r' );
     }
 
-    private boolean isJavaScriptArgument(LexerInput input) {
-        CharSequence name = input.readText();
-        if (name.charAt(0) == 'o') {
-            if (EVENT_HANDLER_NAMES.contains(name.toString())) {
-                return true;
+    private boolean isJavascriptEventHandlerName(CharSequence attributeName) {
+        if(attributeName.length() > 2) {
+            char firstChar = attributeName.charAt(0);
+            char secondChar = attributeName.charAt(1);
+            if((firstChar == 'o' || firstChar == 'O') &&
+                    (secondChar == 'n' || secondChar == 'N')) {
+                return EVENT_HANDLER_NAMES.contains(attributeName.toString().toLowerCase(Locale.ENGLISH));
             }
         }
         return false;
     }
     
-    private boolean followsCloseTag(String closeTagName) {
+    private boolean followsCloseTag(CharSequence closeTagName) {
         int actChar;
         int prev_read = input.readLength(); //remember the size of the read sequence //substract the first read character
         int read = 0;
@@ -280,7 +276,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 
                 input.backup(read); //put the lookahead text back to the buffer
 
-                if(closeTagName.equalsIgnoreCase(tagName.toString())) {
+                if(equals(closeTagName, tagName, true, true)) {
                     if(actChar == '>') {
                         return true;
                     }
@@ -364,7 +360,8 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                         case '!':
                             lexerState = ISA_SGML_ESCAPE;
                             break;
-                        default:                // Part of text, RELAXED
+                        default:               
+                            input.backup(1);
                             lexerState = ISI_TEXT;
                             break;
                     }
@@ -432,10 +429,11 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
                         //test if the tagname is SCRIPT
-                        if(SCRIPT.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                        
+                        if(equals(SCRIPT, input.readText(), true, true)) {
                             lexerEmbeddingState = ISI_SCRIPT;
                         }
-                        if(STYLE.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                        if(equals(STYLE, input.readText(), true, true)) {
                             lexerEmbeddingState = ISI_STYLE;
                         }
                         return token(HTMLTokenId.TAG_OPEN);
@@ -562,7 +560,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_ARG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        attributeName = input.readText().toString();
+                        attributeName = isJavascriptEventHandlerName(input.readText()) ? input.readText().toString() : null;
                         return token(HTMLTokenId.ARGUMENT);
                     }
                     break;
@@ -644,7 +642,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         input.backup(1);
-                        if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                        if (attributeName != null) {
                             attributeName = null;
                             return token(HTMLTokenId.VALUE_JAVASCRIPT);
                         }
@@ -657,7 +655,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     switch( actChar ) {
                         case '\'':
                             lexerState = ISP_TAG_X;
-                            if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                            if (attributeName != null) {
                                 attributeName = null;
                                 return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
@@ -686,7 +684,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     switch( actChar ) {
                         case '"':
                             lexerState = ISP_TAG_X;
-                            if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                            if (attributeName != null) {
                                 attributeName = null;
                                 return token(HTMLTokenId.VALUE_JAVASCRIPT);
                             }
@@ -766,14 +764,13 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                     break;
                     
                 case ISI_HTML_COMMENT_WS:       // DONE
-                    if( isWS( actChar ) ) break;  // Consume all WS
                     switch( actChar ) {
                         case '>':
                             lexerState = INIT;
                             return token(HTMLTokenId.BLOCK_COMMENT);
                         default:
                             lexerState = ISI_HTML_COMMENT;
-                            input.backup(1);
+                            input.backup(2); //backup everything except the first comma
                             break;
                     }
                     break;
@@ -797,7 +794,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                                 lexerState = INIT;
                                 return token(HTMLTokenId.DECLARATION);
                             }
-                        case '-':
+                        
+                    }
+                    break;
+                    
+                case ISI_SGML_DECL_WS:
+                    if(actChar == '-') {
                             if( input.readLength() == 1 ) {
                                 lexerState = ISA_SGML_DECL_DASH;
                                 break;
@@ -807,11 +809,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                                     return token(HTMLTokenId.DECLARATION);
                                 }
                             }
-                    }
-                    break;
-                    
-                case ISI_SGML_DECL_WS:
-                    if(!Character.isWhitespace(actChar)) {
+                    } else if(!Character.isWhitespace(actChar)) {
                         lexerState = ISI_SGML_DECL;
                         input.backup(1);
                         return token(HTMLTokenId.WS);
@@ -959,10 +957,10 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_TAG:
                 lexerState = ISP_TAG_X;
                 //test if the tagname is SCRIPT
-                if(SCRIPT.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                if(equals(SCRIPT, input.readText(), true, true)) {
                     lexerEmbeddingState = ISI_SCRIPT;
                 }
-                if(STYLE.equalsIgnoreCase(input.readText().toString())) { //NOI18N
+                if(equals(STYLE, input.readText(), true, true)) {
                     lexerEmbeddingState = ISI_STYLE;
                 }
                 return token(HTMLTokenId.TAG_OPEN);
@@ -990,13 +988,14 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
             case ISI_VAL:
             case ISI_VAL_QUOT:
             case ISI_VAL_DQUOT:
-                if (attributeName != null && EVENT_HANDLER_NAMES.contains(attributeName)) {
+                if (attributeName != null) {
                     return token(HTMLTokenId.VALUE_JAVASCRIPT);
                 }
                 return token(HTMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
+            case ISI_SGML_DECL_WS:  
                 return token(HTMLTokenId.DECLARATION);
                 
             case ISI_SGML_COMMENT:
@@ -1020,6 +1019,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 
         }
         
+        assert input.readLength() == 0 : "Returning null even if some chars still needs to be tokenized! " +
+            "lexer state=" + lexerState + "; " +
+            "lexer substate=" + lexerSubState + "; " + 
+            "lexer embedding state=" + lexerEmbeddingState + "; " +
+            "readtext='" + input.readText() + "'";
+   
         return null;
     }
     
@@ -1034,6 +1039,23 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
     }
     
     public void release() {
+    }
+    
+    /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() */
+    private boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
+        if (text1.length() != text2.length()) {
+            return false;
+        } else {
+            //compare content
+            for (int i = 0; i < text1.length(); i++) {
+                char ch1 = ignoreCase && !optimized ? Character.toLowerCase(text1.charAt(i)) : text1.charAt(i);
+                char ch2 = ignoreCase ? Character.toLowerCase(text2.charAt(i)) : text2.charAt(i);
+                if (ch1 != ch2) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
 }

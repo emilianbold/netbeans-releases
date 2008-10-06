@@ -62,7 +62,14 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class ActionNoBlockTest extends JellyTestCase {
-    
+
+    public static String[] tests = {
+        "testPerformMenu",
+        "testPerformPopupOnNodes",
+        "testPerformPopupOnComponent",
+        "testPerformAPI",
+        "testPerformShortcut"
+    };
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -82,12 +89,7 @@ public class ActionNoBlockTest extends JellyTestCase {
         suite.addTest(new ActionNoBlockTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(ActionNoBlockTest.class, 
-        "testPerformMenu",
-        "testPerformPopupOnNodes",
-        "testPerformPopupOnComponent",
-        "testPerformAPI",
-        "testPerformShortcut");
+        return createModuleTest(ActionNoBlockTest.class, tests);
     }
     
     public void setUp() throws IOException {

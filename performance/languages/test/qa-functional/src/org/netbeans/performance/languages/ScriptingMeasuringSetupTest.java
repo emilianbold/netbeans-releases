@@ -52,21 +52,10 @@ import org.netbeans.performance.languages.setup.ScriptingSetup;
 public class ScriptingMeasuringSetupTest extends NbTestSuite {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
+        System.setProperty("suitename", ScriptingMeasuringSetupTest.class.getCanonicalName());
+
         suite.addTest(NbModuleSuite.create(ScriptingSetup.class, ".*", ".*"));
-/*        
-        suite.addTest(new ScriptingSetup("closeMemoryToolbar"));
-        
-        suite.addTest(new ScriptingSetup("closeWelcome"));
-        
-        // server is registered from command line
-        //suite.addTest(new WebSetupTest("setupAppServer"));
-        
-        suite.addTest(new ScriptingSetup("OpenRubyProject"));
-        suite.addTest(new ScriptingSetup("OpenRailsProject"));
-        suite.addTest(new ScriptingSetup("OpenScriptingProject"));
-        
-        suite.addTest(new ScriptingSetup("closeAllDocuments"));        
-*/ 
+
         return suite;
     }
 }

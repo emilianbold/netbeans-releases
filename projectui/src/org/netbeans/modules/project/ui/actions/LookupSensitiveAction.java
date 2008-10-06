@@ -58,6 +58,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -67,8 +68,8 @@ import org.openide.windows.TopComponent;
 /** Action sensitive to current project
  * @author Petr Hrebejk
  */
-public abstract class LookupSensitiveAction extends BasicAction implements LookupListener, Presenter.Popup, Presenter.Menu {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
+abstract class LookupSensitiveAction extends BasicAction implements Runnable, LookupListener, Presenter.Popup, Presenter.Menu {
+    static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions"); // NOI18N
     private static Logger LOG = Logger.getLogger(LookupSensitiveAction.class.getName());
 
     private Lookup lookup;
@@ -208,8 +209,12 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
             needsRefresh = true;
         }
         else {
-            doRefresh();
+            Mutex.EVENT.readAccess(this);
         }
+    }
+
+    public void run() {
+        doRefresh();
     }
 
     // Implementation of Presenter.Menu and Presenter.Popup --------------------
@@ -221,7 +226,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     public JMenuItem getPopupPresenter () {
         return new DynamicMenuItem(this, true);
     }
-    
+
     private class DynamicMenuItem extends JMenuItem implements DynamicMenuContent {
         
         private AbstractAction action;
@@ -230,6 +235,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         public DynamicMenuItem(AbstractAction action, boolean popup) {
             this.action = action;
             this.popup = popup;
+            org.openide.awt.Actions.connect(this, action, popup);
         }
         
         public JComponent[] getMenuPresenters() {
@@ -248,7 +254,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
      * #120721: do not want to use Utilities.actionsGlobalContext since that does not survive focus change,
      * and we would like to mimic the selection tracking behavior of Hacks.keepCurrentProjectNameUpdated.
      */
-    private static final class LastActivatedWindowLookup extends ProxyLookup implements PropertyChangeListener {
+    static final class LastActivatedWindowLookup extends ProxyLookup implements PropertyChangeListener {
 
         static final Lookup INSTANCE = new LastActivatedWindowLookup();
 

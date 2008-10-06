@@ -50,7 +50,6 @@ import javax.swing.KeyStroke;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
-import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
@@ -120,7 +119,7 @@ public class Utilities {
     public static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
     public static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title");
 //    public static String debuggerConsoleTitle = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_DebuggerConsole_Title");
-    public static String debuggerConsoleTitle = "Debugger Console ";
+    public static String debuggerConsoleTitle = "Debugger Console";
 
 
 //    public static String runningStatusBarText = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_running");
@@ -303,7 +302,7 @@ public class Utilities {
         eo.setCaretPosition(line, column);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(1000l);
+        new EventTool().waitNoEvent(500);
         return dialog;
     }
 
@@ -313,7 +312,7 @@ public class Utilities {
         setCaret(eo, line);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(1000l);
+        new EventTool().waitNoEvent(500);
         return dialog;
     }
 
@@ -409,11 +408,11 @@ public class Utilities {
         return new OutputTabOperator(debuggerConsoleTitle).getLineCount();
     }
 
-    public static int waitDebuggerConsole(final String text, final int status) {
+/*    public static int waitDebuggerConsole(final String text, final int status) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
         JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '" + text + "' from line " + status);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 30000l);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 30000);
         try {
             op.waitState(cch);
         } catch (TimeoutExpiredException ex) {
@@ -423,7 +422,7 @@ public class Utilities {
         }
         JemmyProperties.getCurrentOutput().printLine("Found text in debugger console '" + text + "' at line " + cch.getLastIndex());
         return cch.getLastIndex();
-    }
+    }*/
 
     public static boolean checkConsoleForText(String text, int startLine) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
@@ -433,6 +432,17 @@ public class Utilities {
             }
         }
         return false;
+    }
+
+    public static int checkConsoleForNumberOfOccurrences(String text, int startLine) {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        int number = 0;
+        for (int i = startLine; i < op.getLineCount(); i++) {
+            if (op.getLine(i).startsWith(text)) {
+                number++;
+            }
+        }
+        return number;
     }
 
     public static void captureScreen(JellyTestCase testCase) {

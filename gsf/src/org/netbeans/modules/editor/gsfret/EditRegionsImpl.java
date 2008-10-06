@@ -36,10 +36,8 @@ import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 
 
@@ -68,22 +66,7 @@ public class EditRegionsImpl extends EditRegions {
         }
 
         // Update caret listener
-        DataObject dobj;
-
-        try {
-            dobj = DataObject.find(fo);
-        }
-        catch (DataObjectNotFoundException ex){
-            return;
-        }
-
-        EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
-
-        if (editorCookie == null) {
-            return;
-        }
-
-        JEditorPane[] panes = editorCookie.getOpenedPanes();
+        JEditorPane[] panes = DataLoadersBridge.getDefault().getOpenedPanes(fo);
 
         if ((panes == null) || (panes.length == 0)) {
             return;

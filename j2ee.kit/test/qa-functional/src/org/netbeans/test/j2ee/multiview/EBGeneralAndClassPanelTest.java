@@ -45,10 +45,8 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.api.project.Project;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -66,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.netbeans.test.j2ee.lib.ContentComparator;
 
 /**
  *
@@ -184,7 +183,8 @@ public class EBGeneralAndClassPanelTest extends J2eeTestCase {
         Utils utils = new Utils(this);
         utils.checkInXML(ddObj, "<reentrant>true</reentrant>");
         utils.save(ddObj);
-        assertFile(FileUtil.toFile(ddFo),getGoldenFile("testChangeReentrant_ejb-jar.xml"), new File(getWorkDir(), "testChangeReentrant.diff")); //check file on disc
+        if (ContentComparator.equalsXML(FileUtil.toFile(ddFo), getGoldenFile("testChangeReentrant_ejb-jar.xml")) == false)
+            assertFile(FileUtil.toFile(ddFo),getGoldenFile("testChangeReentrant_ejb-jar.xml"), new File(getWorkDir(), "testChangeReentrant.diff")); //check file on disc
     }
     
     public void testChangePKMultiple() throws Exception{

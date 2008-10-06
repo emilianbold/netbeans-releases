@@ -79,6 +79,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -96,9 +97,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
 
     /** EditorUI which part this gutter is */
     private EditorUI editorUI;
-    
-    /** Document to which this gutter is attached*/
-    private BaseDocument document;
     
     /** Annotations manager responsible for annotations for this line */
     private Annotations annos;
@@ -202,8 +200,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         super();
         this.editorUI = editorUI;
         init = false;
-        document = editorUI.getDocument();
-        annos = document.getAnnotations();
+        annos = editorUI.getDocument().getAnnotations();
         
         // Annotations class is model for this view, so the listener on changes in
         // Annotations must be added here
@@ -218,6 +215,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         foldHierarchy.addFoldHierarchyListener(glyphGutterFoldHierarchyListener);
         editorUIListener = new EditorUIListener();
         editorUI.addPropertyChangeListener(editorUIListener);
+        editorUI.getComponent().addPropertyChangeListener(editorUIListener);
         setOpaque (true);
         
         String mimeType = org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editorUI.getComponent());
@@ -248,7 +246,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (editorUI == null)
             return ;
 
-        gutterButton = org.openide.util.Utilities.loadImage("org/netbeans/editor/resources/glyphbutton.gif");
+        gutterButton = ImageUtilities.loadImage("org/netbeans/editor/resources/glyphbutton.gif");
 
         setToolTipText ("");
         getAccessibleContext().setAccessibleName(NbBundle.getBundle(BaseKit.class).getString("ACSN_Glyph_Gutter")); // NOI18N
@@ -345,6 +343,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     protected int getLineCount() {
         int lineCnt;
         try {
+            BaseDocument document = editorUI != null ? editorUI.getDocument() : null;
             if (document != null) {
                 document.readLock();
                 try {
@@ -589,13 +588,6 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         // reset cache if there was some change
         cachedCountOfAnnos = -1;
         
-        int lineCnt;
-        try {
-            lineCnt = Utilities.getLineOffset(document, document.getLength()) + 1;
-        } catch (BadLocationException e) {
-            lineCnt = 1;
-        }
-
         // This method is called from the same thread as doc.insertString/remove() is done.
         // Ensure the following runs in EDT.
         Utilities.runInEventDispatchThread(new Runnable() {
@@ -690,6 +682,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         if (editorUI != null) {
             try{
                 JTextComponent component = editorUI.getComponent();
+                BaseDocument document = editorUI.getDocument();
                 BaseTextUI textUI = (BaseTextUI)component.getUI();
                 int clickOffset = textUI.viewToModel(component, new Point(0, e.getY()));
                 line = Utilities.getLineOffset(document, clickOffset);
@@ -728,6 +721,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                             int currentLine = -1;
                             int line = getLineFromMouseEvent(e);
                             if (line == -1) return;
+                            BaseDocument document = editorUI.getDocument();
                             try {
                                 currentLine = Utilities.getLineOffset(document, editorUI.getComponent().getCaret().getDot());
                             } catch (BadLocationException ex) {
@@ -756,10 +750,12 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             if (e.isPopupTrigger()) {
                 int line = getLineFromMouseEvent(e);
                 int offset;
-                if (annos.getActiveAnnotation(line) != null)
+                if (annos.getActiveAnnotation(line) != null) {
                     offset = annos.getActiveAnnotation(line).getOffset();
-                else
+                } else {
+                    BaseDocument document = editorUI.getDocument();
                     offset = Utilities.getRowStartFromLineOffset(document, line);
+                }
                 if (editorUI.getComponent().getCaret().getDot() != offset)
                     JumpList.checkAddEntry();
                 editorUI.getComponent().getCaret().setDot(offset);
@@ -886,26 +882,36 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
     /** Listening to EditorUI to properly deinstall attached listeners */
     class EditorUIListener implements PropertyChangeListener{
         public void propertyChange (PropertyChangeEvent evt) {
-            if (evt!=null && EditorUI.COMPONENT_PROPERTY.equals(evt.getPropertyName())) {
-                if (evt.getNewValue() == null){
-                    // component deinstalled, lets uninstall all isteners
-                    editorUI.removePropertyChangeListener(editorUIListener);
+            if (evt.getSource() instanceof EditorUI) {
+                if (evt.getPropertyName() == null || EditorUI.COMPONENT_PROPERTY.equals(evt.getPropertyName())) {
+                    if (evt.getNewValue() == null){
+                        // component deinstalled, lets uninstall all listeners
+                        editorUI.removePropertyChangeListener(this);
+                        if (evt.getOldValue() instanceof JTextComponent) {
+                            ((JTextComponent) evt.getOldValue()).removePropertyChangeListener(this);
+                        }
+                        annos.removeAnnotationsListener(GlyphGutter.this);
+                        foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
+                        if (gutterMouseListener!=null){
+                            removeMouseListener(gutterMouseListener);
+                            removeMouseMotionListener(gutterMouseListener);
+                        }
+                        if (annoTypesListener !=null){
+                            AnnotationTypes.getTypes().removePropertyChangeListener(annoTypesListener);
+                        }
+                        foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
+                        foldHierarchy = null;
+                        editorUI = null;
+                        annos = null;
+                    }
+                }
+            } else if (evt.getSource() instanceof JTextComponent) {
+                if (evt.getPropertyName() == null || "document".equals(evt.getPropertyName())) { //NOI18N
                     annos.removeAnnotationsListener(GlyphGutter.this);
-                    foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
-                    if (gutterMouseListener!=null){
-                        removeMouseListener(gutterMouseListener);
-                        removeMouseMotionListener(gutterMouseListener);
-                    }
-                    if (annoTypesListener !=null){
-                        AnnotationTypes.getTypes().removePropertyChangeListener(annoTypesListener);
-                    }
-                    foldHierarchy.removeFoldHierarchyListener(glyphGutterFoldHierarchyListener);
-                    foldHierarchy = null;
-                    // Release document reference
-                    document = null;
-                    editorUI.removePropertyChangeListener(this);
-                    editorUI = null;
-                    annos = null;
+                    annos = editorUI.getDocument().getAnnotations();
+                    annos.addAnnotationsListener(GlyphGutter.this);
+
+                    update();
                 }
             }
         }

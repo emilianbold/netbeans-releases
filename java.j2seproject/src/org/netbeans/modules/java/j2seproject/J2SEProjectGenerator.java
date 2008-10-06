@@ -48,7 +48,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -206,6 +206,7 @@ public class J2SEProjectGenerator {
                         }
                         ProjectManager.getDefault().saveProject (p);
                         copyRequiredLibraries(h[0], refHelper);
+                        ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                         return null;
                     }
                 });
@@ -259,7 +260,11 @@ public class J2SEProjectGenerator {
         });
         ep.setProperty("debug.classpath", new String[] { // NOI18N
             "${run.classpath}", // NOI18N
-        });        
+        });
+        ep.setComment("debug.classpath", new String[] { // NOI18N
+            "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_debug.transport"),
+            "#debug.transport=dt_socket"
+        }, false);
         ep.setProperty("jar.compress", "false"); // NOI18N
         if (!isLibrary) {
             ep.setProperty("main.class", mainClass == null ? "" : mainClass); // NOI18N
@@ -322,9 +327,7 @@ public class J2SEProjectGenerator {
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
-        ep.setProperty(J2SEProjectProperties.QUICK_RUN, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.QUICK_RUN_SINGLE, "true"); // NOI18N
-        ep.setProperty(J2SEProjectProperties.QUICK_TEST_SINGLE, "true"); // NOI18N
+        ep.setProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE, "false"); // NOI18N
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }
@@ -333,13 +336,16 @@ public class J2SEProjectGenerator {
         if (!h.isSharableProject()) {
             return; 
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null 
+                && LibraryManager.getDefault().getLibrary("junit") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null
+                && LibraryManager.getDefault().getLibrary("junit_4") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null
+                && LibraryManager.getDefault().getLibrary("CopyLibs") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
         }
     }

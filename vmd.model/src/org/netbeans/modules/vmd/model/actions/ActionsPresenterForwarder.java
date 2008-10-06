@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -94,7 +95,11 @@ public abstract class ActionsPresenterForwarder extends ActionsPresenter {
         //Action[] allActions = ActionsSupport.createActionsArray(targetComponent.get());
         
         List<Action> filteredActions = null;
-        Collection<? extends ActionsPresenter> presenters = getTargetComponent().getPresenters(ActionsPresenter.class);
+        // Fix for IZ#143558 - NullPointerException at org.netbeans.modules.vmd.model.actions.ActionsPresenterForwarder.getActions
+        if ( targetComponent.get() == null ){
+            return Collections.emptyList();
+        }
+        Collection<? extends ActionsPresenter> presenters = targetComponent.get().getPresenters(ActionsPresenter.class);
         for (ActionsPresenter presenter : presenters ) {
             List<Action> pa = presenter.getActions();
             for (Action action : pa) {

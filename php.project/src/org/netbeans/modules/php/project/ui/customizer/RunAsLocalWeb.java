@@ -38,23 +38,35 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5348981723432331L;
+    private static final long serialVersionUID = -53489817846332331L;
+    private final PhpProjectProperties properties;
     private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
@@ -62,15 +74,13 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private final String displayName;
     final Category category;
 
-    public RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category) {
-        this(project, manager, category, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb"));
-    }
-
-    private RunAsLocalWeb(PhpProject project, ConfigManager manager, Category category, String displayName) {
+    public RunAsLocalWeb(PhpProjectProperties properties, ConfigManager manager, Category category) {
         super(manager);
-        this.project = project;
+        this.properties = properties;
         this.category = category;
-        this.displayName = displayName;
+        project = properties.getProject();
+        displayName = NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ConfigLocalWeb");
+
         initComponents();
         this.labels = new JLabel[] {
             urlLabel,
@@ -127,11 +137,17 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     protected void validateFields() {
         String url = urlTextField.getText();
+        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, null, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         category.setErrorMessage(err);
-        category.setValid(err == null);
+        // #148957 always allow to save customizer
+        category.setValid(true);
+    }
+
+    private FileObject getWebRoot() {
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
     private class FieldUpdater extends TextFieldUpdater {
@@ -167,109 +183,135 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        runAsLabel = new javax.swing.JLabel();
-        runAsCombo = new javax.swing.JComboBox();
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        indexFileBrowseButton = new javax.swing.JButton();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
-        hintLabel = new javax.swing.JTextArea();
+        runAsLabel = new JLabel();
+        runAsCombo = new JComboBox();
+        urlLabel = new JLabel();
+        urlTextField = new JTextField();
+        indexFileLabel = new JLabel();
+        indexFileTextField = new JTextField();
+        indexFileBrowseButton = new JButton();
+        argsLabel = new JLabel();
+        argsTextField = new JTextField();
+        hintLabel = new JTextArea();
+
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
+        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
         urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
         indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
 
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
         indexFileTextField.setEditable(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
-        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse"));
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
 
+        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
         hintLabel.setRows(2);
         hintLabel.setWrapStyleWord(true);
         hintLabel.setBorder(null);
+        hintLabel.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
         hintLabel.setEnabled(false);
         hintLabel.setOpaque(false);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(runAsLabel)
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(argsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(argsLabel)
                     .add(urlLabel)
-                    .add(indexFileLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, hintLabel, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(indexFileLabel)
+                    .add(runAsLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(GroupLayout.TRAILING, hintLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(GroupLayout.TRAILING, argsTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(indexFileBrowseButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
+                    .add(GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
+                    .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
                 .add(0, 0, 0))
+        
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(runAsLabel)
-                    .add(runAsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(runAsLabel))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(urlLabel)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(urlTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.CENTER)
                     .add(indexFileBrowseButton)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.CENTER)
                     .add(argsLabel)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(hintLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(hintLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+        
         );
+
+        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleName")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleName")); // NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleName")); // NOI18N
+        urlTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.urlTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleName")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleName")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.argsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleName")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.hintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void indexFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseSourceFile(project, indexFileTextField);
+        Utils.browseFolderFile(getWebRoot(), indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JTextArea hintLabel;
-    private javax.swing.JButton indexFileBrowseButton;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
-    private javax.swing.JComboBox runAsCombo;
-    private javax.swing.JLabel runAsLabel;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
+    private JLabel argsLabel;
+    private JTextField argsTextField;
+    private JTextArea hintLabel;
+    private JButton indexFileBrowseButton;
+    private JLabel indexFileLabel;
+    private JTextField indexFileTextField;
+    private JComboBox runAsCombo;
+    private JLabel runAsLabel;
+    private JLabel urlLabel;
+    private JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
 }

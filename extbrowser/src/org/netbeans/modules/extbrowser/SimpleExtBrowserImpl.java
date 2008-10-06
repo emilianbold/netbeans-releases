@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -86,6 +87,7 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
         } catch (URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
+            logInfo(ex);
             org.openide.DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(SimpleExtBrowserImpl.class, "EXC_Invalid_Processor"), 
@@ -95,4 +97,8 @@ public class SimpleExtBrowserImpl extends ExtBrowserImpl {
         }
     }
 
+    private static void logInfo(Exception ex) {
+        Logger logger = Logger.getLogger(SimpleExtBrowserImpl.class.getName());
+        logger.log(Level.INFO, null, ex);
+    }
 }

@@ -135,8 +135,9 @@ public class ProjectsViewSubMenus extends PerformanceTestCase {
     
     @Override
     public void close() {
-        testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+
+        mio.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        mio.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
     
     @Override

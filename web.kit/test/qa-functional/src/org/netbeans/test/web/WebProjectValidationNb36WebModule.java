@@ -49,7 +49,6 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.NewProjectAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.*;
@@ -76,21 +75,13 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
     public WebProjectValidationNb36WebModule() {
         super();
     }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new MyModuleValidation("testT2"));
-    }
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidationNb36WebModule.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.TOMCAT, conf, 
               "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", 
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", 
               "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testFinish");
@@ -106,11 +97,12 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
      * - wait until scanning of java files is finished
      * - check index.jsp is opened
      */
+    @Override
     public void testNewWebProject() throws IOException {
         installJemmyQueue();
         new NewProjectAction().perform();
         NewProjectWizardOperator projectWizard = new NewProjectWizardOperator();
-        projectWizard.selectCategory("Web");
+        projectWizard.selectCategory("Java Web"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Web Application with Existing Sources");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator
@@ -118,7 +110,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         nameStep.txtLocation().setText(getDataDir().getAbsolutePath()+
                 File.separator+PROJECT_NAME);
         nameStep.txtProjectName().setText(PROJECT_NAME);
-        nameStep.txtProjectFolder().setText(System.getProperty("xtest.data")+
+        nameStep.txtProjectFolder().setText(getWorkDirPath()+
                 File.separator+PROJECT_NAME+"Prj");
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
@@ -133,18 +125,10 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         sleep(5000);
         // wait for project creation
         ProjectSupport.waitScanFinished();
-        //new EditorWindowOperator().getEditor("index.jsp");
-        // HACK
-        Node prjNode = ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME);
-        new Node(prjNode,"Configuration Files|web.xml");
-        new Node(prjNode,"Web Pages|META-INF|context.xml");
-        new Node(new SourcePackagesNode(PROJECT_NAME),
-                "<default package>|dummy");
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-        //compareDD();
+        verifyWebPagesNode("META-INF|context.xml");
+        verifyProjectNode("Configuration Files|web.xml");
     }
-    
+
     /** Test new JSP wizard.
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target
@@ -153,13 +137,9 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
      * - finish the wizard
      * - check file is open in editor and close all opened documents
      */
+    @Override
     public void testNewJSP() throws IOException {
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
         WizardOperator newFileWizard = new WizardOperator("New File");
         new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
         new Node(new JTreeOperator(newFileWizard), "Web").select();
@@ -181,16 +161,10 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         //compareReferenceFiles();
         //compareDD();
     }
+
+    @Override
      public void testCreateTLD() {
-        //HACK
-        new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "WEB-INF").expand();
-        
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
         WizardOperator newFileWizard = new WizardOperator("New File");
         new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
         new Node(new JTreeOperator(newFileWizard), "Web").select();
@@ -210,7 +184,8 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         //compareReferenceFiles();
     }
    
-        public void testNewServlet() throws IOException {
+    @Override
+    public void testNewServlet() throws IOException {
         // create a new package
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
@@ -249,9 +224,6 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
                     " Following line is missing in the web.xml:\n"+content[i],
                     xmlText.indexOf(content[i]) != -1);
         }
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        //compareReferenceFiles();
-        //compareDD();
     }
 
     

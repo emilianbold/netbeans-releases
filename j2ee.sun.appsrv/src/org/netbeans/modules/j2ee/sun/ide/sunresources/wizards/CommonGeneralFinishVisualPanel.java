@@ -175,8 +175,7 @@ public class CommonGeneralFinishVisualPanel extends javax.swing.JPanel implement
         for (int k = 0; k < size; k++) {
             fields[i] = flds[k];
             JLabel jLabel = new JLabel();
-            jLabel.setText(bundle.getString("LBL_" + fields[i].getName()));  //NOI18N
-            jLabel.setDisplayedMnemonic(bundle.getString("LBL_" + fields[i].getName() + "_Mnemonic").charAt(0)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel, bundle.getString("LBL_" + fields[i].getName())); //NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = k;

@@ -81,6 +81,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -115,10 +116,16 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private int caretOffset;
     private List<CompletionItem> items;
     private boolean hasAdditionalItems;
+    private JTextComponent component;
     
 
     public JavadocCompletionQuery(int queryType) {
         this.queryType = queryType;
+    }
+
+    @Override
+    protected void prepareQuery(JTextComponent component) {
+        this.component = component;
     }
 
     @Override
@@ -135,15 +142,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     }
     
     private void queryImpl(CompletionResultSet resultSet, Document doc, int caretOffset) throws InterruptedException, ExecutionException {
-        if (!JavadocCompletionUtils.isJavadocContext(doc, caretOffset)) {
-            return;
-        }
-        
         JavadocContext jdctx = new JavadocContext();
         items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
         Future<Void> f = runInJavac(JavaSource.forDocument(doc), jdctx);
         if (f != null && !f.isDone()) {
+            setCompletionHack(false);
             resultSet.setWaitText(NbBundle.getMessage(JavadocCompletionProvider.class, "scanning-in-progress")); 
             f.get();
         }
@@ -163,6 +167,16 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             resultSet.setAnchorOffset(jdctx.anchorOffset);
         }
     }
+
+    /** #145615: this helps to work around the issue with stuck
+     * {@code JavaSource.runWhenScanFinished}
+     * It is copied from {@code JavaCompletionQuery}.
+     */
+    private void setCompletionHack(boolean flag) {
+        if (component != null) {
+            component.putClientProperty("completion-active", flag); //NOI18N
+        }
+    }
     
     private Future<Void> runInJavac(JavaSource js, final JavadocContext jdctx) {
         try {
@@ -173,8 +187,15 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             return js.runWhenScanFinished(new Task<CompilationController>() {
 
                 public void run(CompilationController javac) throws Exception {
-                    javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     if (isTaskCancelled()) {
+                        return;
+                    }
+                    if (!JavadocCompletionUtils.isJavadocContext(javac.getTokenHierarchy(), caretOffset)) {
+                        return;
+                    }
+                    setCompletionHack(true);
+                    JavaSource.Phase toPhase = javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    if (toPhase != JavaSource.Phase.ELEMENTS_RESOLVED) {
                         return;
                     }
                     try {
@@ -184,6 +205,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         }
                     } finally {
                         jdctx.javac = null;
+                        if (component != null) {
+                            setCompletionHack(false);
+                        }
                     }
                 }
             }, true);

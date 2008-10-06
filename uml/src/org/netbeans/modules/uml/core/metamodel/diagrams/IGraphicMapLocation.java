@@ -50,33 +50,18 @@ public interface IGraphicMapLocation
 	*/
 	public String getElementXMIID();
 
-	/**
-	 * The XMIID of the IElement at this location.
-	*/
-	public void setElementXMIID( String value );
 
 	/**
 	 * The name of this item.
 	*/
 	public String getName();
 
-	/**
-	 * The name of this item.
-	*/
-	public void setName( String value );
 
 	/**
 	 * The element type of this item.
 	*/
 	public String getElementType();
 
-	/**
-	 * The element type of this item.
-	*/
-	public void setElementType( String value );
 	
-	public IElement getElement();
-	
-	public void setElement(IElement e);
-
+	public IElement getElement();	
 }

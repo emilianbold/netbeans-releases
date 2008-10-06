@@ -40,13 +40,19 @@
 package org.netbeans.modules.db.mysql.util;
 
 import org.netbeans.modules.db.mysql.impl.MySQLOptions;
-import org.netbeans.modules.db.mysql.*;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -56,12 +62,19 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author David
  */
 public class DatabaseUtils {
+    // Separate request processor for opening connections so that we are safe
+    // to wait for it to complete.  If we use the default request processor it's
+    // possible waiting will fail with an InterruptedException if the calling thread
+    // is also the default request processor.
+    private static final RequestProcessor PROCESSOR = new RequestProcessor();
+
     // MySQL's SQL State for a communication error.  
     public static final String SQLSTATE_COMM_ERROR = "08S01";
     // The SQL State prefix (class) used for client-side exceptions
@@ -72,7 +85,7 @@ public class DatabaseUtils {
     
     // A cache of the driver class so we don't have to load it each time
     private static Driver driver;
-    
+
     /**
      * An enumeration indicating the status after attempting to connect to the
      * server
@@ -163,7 +176,63 @@ public class DatabaseUtils {
         
         return conn;
     }
-    
+
+    public static Connection connect(final String url, String user, String password, long timeToWait)
+            throws DatabaseException, TimeoutException {
+        final Driver theDriver = getDriver();
+
+        final Properties props = new Properties();
+        props.put("user", user);
+
+        if (password != null) {
+            props.put("password", password);
+        }
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<Connection> future = executor.submit(new Callable<Connection>() {
+            public Connection call() throws Exception {
+                props.put("connectTimeout", MySQLOptions.getDefault().getConnectTimeout());
+
+                try {
+                    return theDriver.connect(url, props);
+                } catch (SQLException sqle) {
+                    if (DatabaseUtils.isCommunicationsException(sqle)) {
+                        // On a communications failure (e.g. the server's not running)
+                        // the message horribly includes the entire stack trace of the
+                        // exception chain.  We don't want to display this to our users,
+                        // so let's provide our own message...
+                        //
+                        // If other MySQL exceptions exhibit this behavior we'll have to
+                        // address this in a more general way...
+                        String msg = Utils.getMessage("ERR_MySQLCommunicationFailure");
+
+                        DatabaseException dbe = new DatabaseException(msg);
+                        dbe.initCause(sqle);
+                        throw dbe;
+                    } else {
+                        throw new DatabaseException(sqle);
+                    }
+                }
+            }
+        });
+
+        try {
+            return future.get(timeToWait, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new DatabaseException(ie);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof DatabaseException) {
+                throw new DatabaseException(e.getCause());
+            } else {
+                throw Utils.launderThrowable(e.getCause());
+            }
+        } catch (TimeoutException te) {
+            future.cancel(true);
+            throw new TimeoutException(NbBundle.getMessage(DatabaseUtils.class, "MSG_ConnectTimedOut"));
+        }
+    }
+
     /** 
      * Open a JDBC connection directly from the MySQL driver
      * 
@@ -172,36 +241,8 @@ public class DatabaseUtils {
      * @throws DatabaseException if there were issues getting the MySQL driver
      */
     public static Connection connect(String url, String user, String password)
-            throws DatabaseException {
-        Driver theDriver = getDriver();
-        Properties props = new Properties();
-        props.put("user", user == null ? "" : user);                
-        props.put("password", password == null ? "" : password);
-        
-        props.put("connectTimeout", 
-                MySQLOptions.getDefault().getConnectTimeout()); 
-        
-        try {
-            return theDriver.connect(url, props);
-        } catch ( SQLException sqle ) {
-            if ( DatabaseUtils.SQLSTATE_COMM_ERROR.equals(sqle.getSQLState())) {
-                // On a communications failure (e.g. the server's not running)
-                // the message horribly includes the entire stack trace of the
-                // exception chain.  We don't want to display this to our users,
-                // so let's provide our own message...
-                //
-                // If other MySQL exceptions exhibit this behavior we'll have to
-                // address this in a more general way...
-                String msg = Utils.getMessage(
-                        "ERR_MySQLCommunicationFailure");
-
-                DatabaseException dbe = new DatabaseException(msg);
-                dbe.initCause(sqle);
-                throw dbe;
-            } else {
-                throw new DatabaseException(sqle);
-            }
-        }
+            throws DatabaseException, TimeoutException {
+        return connect(url, user, password, 5000);
     }
 
     /**
@@ -305,6 +346,19 @@ public class DatabaseUtils {
             return false;
         }
     }
+
+    public static boolean isCommunicationsException(DatabaseException dbe) {
+        if (dbe.getCause() == null || !(dbe.getCause() instanceof SQLException)) {
+            return false;
+        }
+
+        return isCommunicationsException((SQLException)dbe.getCause());
+    }
+
+    public static boolean isCommunicationsException(SQLException sqle) {
+        // Using string so we don't have to depend directly on MySQL JDBC driver
+        return sqle.getClass().getName().equals("com.mysql.jdbc.CommunicationsException"); // NOI18n
+    }
     
     public static boolean isServerException(SQLException e) {
         //
@@ -331,41 +385,6 @@ public class DatabaseUtils {
 
         return true;
     }
-    
-    public static ConnectStatus testConnection(String url, String user, 
-            String password) {
-        Connection conn;
-        try {
-            conn = connect(url, user, password);
-        } catch ( DatabaseException e ) {
-            if ( e.getCause() instanceof SQLException ) {
-                LOGGER.log(Level.FINE, null, e);
-                if ( DatabaseUtils.isServerException(
-                        (SQLException)e.getCause()) ) {
-                    return ConnectStatus.SERVER_RUNNING;
-                } else {
-                    return ConnectStatus.NO_SERVER;
-                }
-            } else {
-                Exceptions.printStackTrace(e);
-                return ConnectStatus.NO_SERVER;
-            }
-        }
-
-        // Issue 127994 - driver sometimes silently returns null (??)
-        if ( conn == null ) {
-            return ConnectStatus.NO_SERVER;
-        }
-
-        try { 
-            conn.close();
-        } catch (SQLException sqle) {
-            LOGGER.log(Level.FINE, null, sqle);
-        }
-
-        return ConnectStatus.CONNECT_SUCCEEDED;            
-    }
-
     
     public static class URLParser {
         private static final String MYSQL_PROTOCOL = "jdbc:mysql://";
@@ -395,8 +414,8 @@ public class DatabaseUtils {
             if ( port == null ) {
                 if ( url.indexOf(":") >= 0 ) {
                     port = url.split(":")[1];
-                    if ( url.indexOf("/") >= 0) {
-                        port = url.split("/")[0];
+                    if ( port.indexOf("/") >= 0) {
+                        port = port.split("/")[0];
                     }
                 } else {
                    port = "";

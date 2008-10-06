@@ -5,11 +5,11 @@
  -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="lastupdated" content="3Jul07">
 <!-- p2 -->
 
 <title>Packaging a Resource in a WAR File</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
@@ -64,6 +64,9 @@
     <li>Click OK to close the Project Properties dialog box.
     When you build the project, the IDE packages your resource
     in the project's WAR file and includes it in the <tt>build/web</tt> folder.
+    <ul class="note">
+    <li><b>Note: </b> The Compile on Save feature builds your project whenever you save the project. You can disable this feature in the Compiling page of the Project Properties dialog box.</li>
+  </ul>
 <p>After adding a resource to a WAR file, you may need to do some post-processing.
 For example, when you add a servlet you must manually register it
 in the web application's <tt>web.xml</tt> file (the web

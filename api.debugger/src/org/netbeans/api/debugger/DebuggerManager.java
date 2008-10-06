@@ -53,6 +53,7 @@ import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -278,8 +279,8 @@ public final class DebuggerManager implements ContextProvider {
         //S ystem.out.println("@StartDebugging info: " + info);
         
         // init sessions
-        ArrayList sessionProviders = new ArrayList ();
-        ArrayList engines = new ArrayList ();
+        List sessionProviders = new ArrayList();
+        List<DebuggerEngine> engines = new ArrayList<DebuggerEngine>();
         Lookup l = info.getLookup ();
         Lookup l2 = info.getLookup ();
         synchronized (l) {
@@ -375,7 +376,7 @@ public final class DebuggerManager implements ContextProvider {
             if (Thread.interrupted()) {
                 break;
             }
-            Task task = ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction
+            Task task = engines.get(i).getActionsManager ().postAction
                 (ActionsManager.ACTION_START);
             if (task instanceof Cancellable) {
                 try {
@@ -394,18 +395,20 @@ public final class DebuggerManager implements ContextProvider {
         if (i < k) { // It was canceled
             int n = i + 1;
             for (i = 0; i < k; i++) {
-                ActionsManager am = ((DebuggerEngine) engines.get (i)).getActionsManager();
+                ActionsManager am = engines.get(i).getActionsManager();
                 if (i < (n - 1)) am.postAction(ActionsManager.ACTION_KILL); // kill the started engines
                 am.destroy();
             }
             return new DebuggerEngine[] {};
         }
         
-        if (sessionToStart != null)
+        if (sessionToStart != null) {
+            GestureSubmitter.logDebugStart(sessionToStart, engines);
             setCurrentSession (sessionToStart);
+        }
         
         DebuggerEngine[] des = new DebuggerEngine [engines.size ()];
-        return (DebuggerEngine[]) engines.toArray (des);
+        return engines.toArray (des);
     }
 
     /**
@@ -666,12 +669,22 @@ public final class DebuggerManager implements ContextProvider {
             this, name, o, n
         );
         int i, k = l.size ();
-        for (i = 0; i < k; i++)
-            ((DebuggerManagerListener)l.elementAt (i)).propertyChange (ev);
+        for (i = 0; i < k; i++) {
+            try {
+                ((DebuggerManagerListener)l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         if (l1 != null) {
             k = l1.size ();
-            for (i = 0; i < k; i++)
-                ((DebuggerManagerListener)l1.elementAt (i)).propertyChange (ev);
+            for (i = 0; i < k; i++) {
+                try {
+                    ((DebuggerManagerListener)l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 
@@ -753,8 +766,12 @@ public final class DebuggerManager implements ContextProvider {
         for (i = 0; i < k; i++) {
             DebuggerManagerListener dl = (DebuggerManagerListener) l.elementAt (i);
             if (dl != originatingListener) {
-                dl.breakpointAdded (breakpoint);
-                dl.propertyChange (ev);
+                try {
+                    dl.breakpointAdded (breakpoint);
+                    dl.propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
         
@@ -770,8 +787,12 @@ public final class DebuggerManager implements ContextProvider {
             for (i = 0; i < k; i++) {
                 DebuggerManagerListener dl = (DebuggerManagerListener) l1.elementAt (i);
                 if (dl != originatingListener) {
-                    dl.breakpointAdded (breakpoint);
-                    dl.propertyChange (ev);
+                    try {
+                        dl.breakpointAdded (breakpoint);
+                        dl.propertyChange (ev);
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -804,8 +825,12 @@ public final class DebuggerManager implements ContextProvider {
             if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
                 continue;
             }
-            ml.breakpointRemoved(breakpoint);
-            ml.propertyChange (ev);
+            try {
+                ml.breakpointRemoved(breakpoint);
+                ml.propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         Vector l1;
@@ -824,8 +849,12 @@ public final class DebuggerManager implements ContextProvider {
                 if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
                     continue;
                 }
-                ml.breakpointRemoved(breakpoint);
-                ml.propertyChange (ev);
+                try {
+                    ml.breakpointRemoved(breakpoint);
+                    ml.propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -998,9 +1027,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).watchAdded 
-                (watch);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).watchAdded (watch);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         Vector l1;
@@ -1013,9 +1045,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).watchAdded 
-                    (watch);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).watchAdded (watch);
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1039,10 +1074,13 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).watchRemoved 
-                (watch);
-            // TODO: fix nonsense double firing
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).watchRemoved (watch);
+                // TODO: fix nonsense double firing
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         Vector l1;
@@ -1055,10 +1093,13 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved 
-                    (watch);
-                // TODO: fix nonsense double firing
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved (watch);
+                    // TODO: fix nonsense double firing
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1077,8 +1118,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         Vector l1;
@@ -1091,8 +1136,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).initWatches ();
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1120,9 +1169,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).sessionAdded 
-                (session);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).sessionAdded(session);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         Vector l1;
@@ -1135,9 +1187,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).sessionAdded
-                    (session);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).sessionAdded(session);
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1165,9 +1220,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).sessionRemoved 
-                (session);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).sessionRemoved(session);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         Vector l1;
@@ -1180,9 +1238,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).sessionRemoved 
-                    (session);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).sessionRemoved(session);
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1210,9 +1271,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).engineAdded 
-                (engine);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).engineAdded(engine);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         Vector l1;
@@ -1225,9 +1289,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).engineAdded
-                    (engine);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).engineAdded(engine);
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
@@ -1255,9 +1322,12 @@ public final class DebuggerManager implements ContextProvider {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).engineRemoved 
-                (engine);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).engineRemoved(engine);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         Vector l1;
@@ -1270,9 +1340,12 @@ public final class DebuggerManager implements ContextProvider {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).engineRemoved 
-                    (engine);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).engineRemoved(engine);
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }

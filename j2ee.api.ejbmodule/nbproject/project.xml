@@ -165,7 +165,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -197,6 +197,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ejbrefactoring</friend>
                 <friend>org.netbeans.modules.j2ee.ejbverification</friend>
                 <friend>org.netbeans.modules.j2ee.performancetests</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>

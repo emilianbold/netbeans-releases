@@ -40,6 +40,7 @@
  */
 package org.netbeans.swing.outline;
 
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.table.TableModel;
@@ -216,6 +217,15 @@ public class DefaultOutlineModel implements OutlineModel {
         } else {
             return tableModel.getColumnName(columnIndex-1);
         }
+    }
+    
+    /**
+     * Change the label of the 'tree' column.
+     * @param label New label for tree column.
+     */
+    public void setNodesColumnLabel( String label ) {
+        this.nodesColumnLabel = label;
+        broadcaster.fireTableChange( new TableModelEvent( this, -1, -1, 0, TableModelEvent.HEADER_ROW ) );
     }
     
     public final int getIndexOfChild(Object parent, Object child) {

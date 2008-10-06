@@ -8,6 +8,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -201,10 +202,11 @@
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
             <LineBorder>
-              <Color PropertyName="color" blue="e5" green="cf" id="SplitPane.shadow" palette="3" red="b8" type="palette"/>
+              <Connection PropertyName="color" code="getBorderColor()" type="code"/>
             </LineBorder>
           </Border>
         </Property>
+        <Property name="focusable" type="boolean" value="false"/>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[1, 1]"/>
         </Property>
@@ -221,6 +223,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
     <Container class="javax.swing.JScrollPane" name="hierarchyPane">
+      <Properties>
+        <Property name="focusable" type="boolean" value="false"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MyBeanTreeView()"/>
       </AuxValues>

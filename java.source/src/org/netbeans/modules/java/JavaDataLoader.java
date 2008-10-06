@@ -59,7 +59,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.UniFileLoader;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
 *
 * @author Petr Hamernik
 */
-public final class JavaDataLoader extends MultiFileLoader {
+public final class JavaDataLoader extends UniFileLoader {
     
     public static final String JAVA_MIME_TYPE = "text/x-java";  //NOI18N
     
@@ -146,21 +146,7 @@ public final class JavaDataLoader extends MultiFileLoader {
             return new FileEntry(obj, primaryFile);
         }
     }
-
-    /** Create a secondary file entry.
-    * By default, {@link FileEntry.Numb} is used for the class files; subclasses wishing to have useful
-    * secondary files should override this for those files, typically to {@link FileEntry}.
-    *
-    * @param secondaryFile secondary file to create entry for
-    * @return the entry
-    */
-    protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
-        //The JavaDataObject itself has no secondary entries, but its subclasses have.
-        //So we have to keep it as MultiFileLoader
-        ErrorManager.getDefault().log ("Subclass of JavaDataLoader ("+this.getClass().getName()
-                +") has secondary entries but does not override createSecondaryEntries (MultidataObject, FileObject) method."); // NOI18N
-        return new FileEntry.Numb(obj, secondaryFile);
-    }   
+       
     
     /** Create the map of replaceable strings which is used
     * in the <code>JavaFileEntry</code>. This method may be extended in subclasses
@@ -278,27 +264,6 @@ public final class JavaDataLoader extends MultiFileLoader {
         }
         
         @Override
-        public FileObject copy(FileObject f, String suffix) throws IOException {
-            final FileObject origFile = getFile();
-            String origName = origFile.getName();
-            FileObject fo = super.copy(f, suffix);
-            final ClassPath cpOrig = ClassPath.getClassPath(origFile,ClassPath.SOURCE);
-            final ClassPath cpNew = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-            if (cpOrig != null && cpNew != null) {                
-                final String pkgNameOrig = cpOrig.getResourceName(origFile.getParent(), '.', false);
-                final String pkgNameNew = cpNew.getResourceName(f,'.',false); 
-                final String newName = fo.getName();
-                if (!pkgNameNew.equals(pkgNameOrig) || !newName.equals(origName)) {
-                    JavaDataObject.renameFO(fo, pkgNameNew, newName, origName);
-                    // unfortunately JavaDataObject.renameFO creates JavaDataObject but it is too soon
-                    // in this stage. Loaders reusing this FileEntry will create further files.
-                    destroyDataObject(fo);
-                }                    
-            }
-            return fo;
-        }
-        
-        @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
             Logger.getLogger(JavaDataLoader.class.getName()).warning(
                     "Please replace template " + this.getFile().toString() + //NOI18N
@@ -332,7 +297,6 @@ public final class JavaDataLoader extends MultiFileLoader {
         
         private void destroyDataObject(FileObject fo) throws IOException {
             DataObject dobj = DataObject.find(fo);
-            DataObject orig = this.getDataObject();
             try {
                 dobj.setValid(false);
             } catch (PropertyVetoException ex) {

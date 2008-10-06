@@ -42,13 +42,13 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -75,7 +75,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
@@ -90,15 +89,22 @@ import org.openide.util.Exceptions;
  * @author Jan Lahoda
  */
 public class Utilities {
+    private static final String DEFAULT_NAME = "name";
 
     public Utilities() {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
-        String name = getName((ExpressionTree) tp.getLeaf());
+        ExpressionTree et = (ExpressionTree) tp.getLeaf();
+        String name = getName(et);
         
         if (name == null) {
-            return "name";
+            if(et instanceof LiteralTree) {
+                Object guess = ((LiteralTree) et).getValue();
+                if (guess != null && guess instanceof String)
+                    return guessLiteralName((String) guess);
+            } 
+            return DEFAULT_NAME;
         }
         
         Scope s = info.getTrees().getScope(tp);
@@ -121,6 +127,31 @@ public class Utilities {
         }
         
         return proposedName;
+    }
+
+    private static String guessLiteralName(String str) {
+        StringBuffer sb = new StringBuffer();
+        if(str.length() == 0)
+            return DEFAULT_NAME;
+        char first = str.charAt(0);
+        if(Character.isJavaIdentifierStart(str.charAt(0)))
+            sb.append(first);
+
+        for (int i = 1; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if(ch == ' ') {
+                sb.append('_');
+                continue;
+            }
+            if (Character.isJavaIdentifierPart(ch))
+                sb.append(ch);
+            if (i > 40)
+                break;
+        }
+        if (sb.length() == 0)
+            return DEFAULT_NAME;
+        else
+            return sb.toString();
     }
     
     public static String getName(TypeMirror tm) {
@@ -344,5 +375,27 @@ public class Utilities {
         }
         
         return to;
+    }
+
+    /**
+     * Convert typemirror of an anonymous class to supertype/iface
+     * 
+     * @return typemirror of supertype/iface, initial tm if not anonymous
+     */
+    public static TypeMirror convertIfAnonymous(TypeMirror tm) {
+        //anonymous class?
+        Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+        if (tm instanceof DeclaredType) {
+            Element el = ((DeclaredType) tm).asElement();
+            if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+                List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
+                if (interfaces.isEmpty()) {
+                    tm = ((TypeElement) el).getSuperclass();
+                } else {
+                    tm = interfaces.get(0);
+                }
+            }
+        }
+        return tm;
     }
 }

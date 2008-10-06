@@ -45,6 +45,7 @@ import java.util.Collection;
 import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -53,28 +54,36 @@ import org.openide.util.Lookup;
  * @author nam
  */
 public abstract class SaasClientCodeGenerationManager {
-    
+
     public static Collection<? extends SaasClientCodeGenerationProvider> providers = null;
-    
+
     public static boolean canAccept(SaasMethod m, Document doc) {
         return lookup(m, doc) != null;
     }
-    
-    public static SaasClientCodeGenerationProvider lookup(SaasMethod m, Document doc) {
-        if(providers == null)
-            providers = Lookup.getDefault().lookupAll(SaasClientCodeGenerationProvider.class);
-        for(SaasClientCodeGenerationProvider provider:providers) {
-            if(provider.canAccept(m, doc)) {
-                try {
-                    provider.init(m, doc);
-                    return provider;
-                } catch (IOException ex) {
-                    break;
-                }
 
+    public static SaasClientCodeGenerationProvider lookup(SaasMethod m, Document doc) {
+        if (providers == null) {
+            providers = Lookup.getDefault().lookupAll(SaasClientCodeGenerationProvider.class);
+        }
+        SaasClientCodeGenerationProvider theProvider = null;
+        for (SaasClientCodeGenerationProvider provider : providers) {
+            if (provider.canAccept(m, doc)) {
+                if (theProvider == null) {
+                    theProvider = provider;
+                } else if (provider.getPrecedence() > theProvider.getPrecedence()) {
+                    theProvider = provider;
+                }
+            }
+        }
+        
+        if (theProvider != null) {
+            try {
+                theProvider.init(m, doc);
+                return theProvider;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return null;
     }
-
 }

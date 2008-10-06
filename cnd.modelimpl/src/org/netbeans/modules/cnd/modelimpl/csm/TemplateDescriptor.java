@@ -57,18 +57,30 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 public final class TemplateDescriptor {
     private final List<CsmTemplateParameter>templateParams;
     private final CharSequence templateSuffix;
+    private final int inheritedTemplateParametersNumber;
 
     public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix) {
         this.templateParams = templateParams;
         this.templateSuffix = templateSuffix;
+        inheritedTemplateParametersNumber = 0;
     }
 
+    public TemplateDescriptor(List<CsmTemplateParameter> templateParams, CharSequence templateSuffix, int inheritedTemplateParametersNumber) {
+        this.templateParams = templateParams;
+        this.templateSuffix = templateSuffix;
+        this.inheritedTemplateParametersNumber = inheritedTemplateParametersNumber;
+    }
+    
     public List<CsmTemplateParameter> getTemplateParameters() {
 	return (templateParams != null) ? templateParams : Collections.<CsmTemplateParameter>emptyList();
     }
-
+    
     public CharSequence getTemplateSuffix() {
         return templateSuffix;
+    }
+    
+    public int getInheritedTemplateParametersNumber() {
+        return inheritedTemplateParametersNumber;
     }
 
     public static TemplateDescriptor createIfNeeded(AST ast, CsmFile file, CsmScope scope) {
@@ -79,7 +91,7 @@ public final class TemplateDescriptor {
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
                     return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
             }
         }
         return null;

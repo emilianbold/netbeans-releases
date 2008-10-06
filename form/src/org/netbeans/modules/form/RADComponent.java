@@ -43,6 +43,7 @@ package org.netbeans.modules.form;
 
 import java.awt.EventQueue;
 import java.beans.*;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
@@ -51,6 +52,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.RADProperty.FakePropertyDescriptor;
 
 import org.openide.*;
@@ -60,6 +62,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
 import org.netbeans.modules.form.codestructure.*;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -253,10 +256,11 @@ public class RADComponent {
     void setInModel(boolean in) {
         if (inModel != in) {
             inModel = in;
-            formModel.updateMapping(this, in);
             if (in) {
                 createCodeExpression();
+                formModel.updateMapping(this, true);
             } else {
+                formModel.updateMapping(this, false);
                 releaseCodeExpression();
                 setNodeReference(null);
             }
@@ -358,10 +362,44 @@ public class RADComponent {
         return false;
     }
 
+    Object createDefaultDeserializedInstance() throws Exception {
+        FileObject formFile = FormEditor.getFormDataObject(getFormModel()).getFormFile();
+        String serFile = (String)getAuxValue(JavaCodeGenerator.AUX_SERIALIZE_TO);
+        if (serFile == null) {
+            serFile = formFile.getName() + "_" + getName(); // NOI18N
+        }
+
+        ClassPath sourcePath = ClassPath.getClassPath(formFile, ClassPath.SOURCE);
+        String serName = sourcePath.getResourceName(formFile.getParent());
+        if (!"".equals(serName)) { // NOI18N
+            serName += "."; // NOI18N
+        }
+        serName += serFile;
+
+        Object instance = null;
+        try {
+            instance = Beans.instantiate(sourcePath.getClassLoader(true), serName);
+        } catch (ClassNotFoundException cnfe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, cnfe);
+            ClassPath executionPath = ClassPath.getClassPath(formFile, ClassPath.EXECUTE);
+            try {
+                instance = Beans.instantiate(executionPath.getClassLoader(true), serName);
+            } catch (ClassNotFoundException cnfex) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, cnfex);
+                instance = createBeanInstance();
+            }
+        }
+        return instance;
+    }
+
     public Object cloneBeanInstance(Collection<RADProperty> relativeProperties) {
         Object clone;
         try {
-            clone = createBeanInstance();
+            if (JavaCodeGenerator.VALUE_SERIALIZE.equals(getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION))) {
+                clone = createDefaultDeserializedInstance();
+            } else {
+                clone = createBeanInstance();
+            }
         }
         catch (Exception ex) { // ignore, this should not fail
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
@@ -535,12 +573,18 @@ public class RADComponent {
                         + handlerName.substring(idx + oldComponentName.length())
                     );
                     formEvents.renameEventHandler(handlerName, newHandlerName);
+                    EventProperty prop = (EventProperty)events[i].getComponent().getPropertyByName(events[i].getId());
+                    if (prop != null) {
+                        prop.resetSelectedEventHandler(handlerName);
+                    }
+                    renamed = true;
                 }
             }
         }
 
-        if (renamed && getNodeReference() != null)
-            getNodeReference().fireComponentPropertySetsChange();
+        if (renamed && getNodeReference() != null) {
+            getNodeReference().fireComponentPropertiesChange();
+        }
     }
 
     /** Allows to add an auxiliary <name, value> pair, which is persistent
@@ -1371,6 +1415,54 @@ public class RADComponent {
 
 	// prop.addPropertyChangeListener(getPropertyListener());
 	nameToProperty.put(desc.getName(), prop);
+        
+        // setting javax.swing.Action property should not overwrite
+        // manually entered prop values (text, tooltip, etc.)
+        if ("action".equals(prop.getName()) && // NOI18N 
+                AbstractButton.class.isAssignableFrom(beanClass)) {
+            prop.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
+                        // Another event will come later, now it is too soon
+                        // to re-set the properties. The change in action property
+                        // will be fired later and would clear the re-set properties.
+                        return;
+                    }
+                    try {
+                        // prop names copied from AbstractButton.configurePropertiesFromAction()
+                        // method from JDK5
+                        String[] propNames = {"mnemonic", "text", "toolTipText", // NOI18N
+                            "icon", "actionCommand", "enabled"}; // NOI18N
+                        for (String propName : propNames) {
+                            FormProperty property = (FormProperty) getPropertyByName(propName);
+
+                            if (property != null) {
+                                boolean exChangeMonitoring = property.isExternalChangeMonitoring();
+                                property.setExternalChangeMonitoring(false);
+
+                                if (property.isChanged()) {
+                                    Object origValue = property.getValue();
+
+                                    if (!propName.equals("text") || // NOI18N
+                                            !getName().equals(property.getRealValue())) {
+                                        property.setExternalChangeMonitoring(exChangeMonitoring);
+                                        property.setValue(origValue);
+                                    } else {
+                                        property.setExternalChangeMonitoring(exChangeMonitoring);
+                                    }
+                                } else {
+                                    // no changes, just set monitor back
+                                    property.setExternalChangeMonitoring(exChangeMonitoring);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        }
 
         return prop;
     }

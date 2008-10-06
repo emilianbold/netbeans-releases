@@ -76,6 +76,7 @@ public class ProjectActionTest extends NbTestCase {
     private TestSupport.TestProject project1;
     private TestSupport.TestProject project2;
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
@@ -101,11 +102,12 @@ public class ProjectActionTest extends NbTestCase {
         project2 = (TestSupport.TestProject)ProjectManager.getDefault().findProject( p2 );                
     }
     
+    @Override
     public boolean runInEQ () {
         return true;
     }
     
-    public void testCommandEnablement() {
+    public void testCommandEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         ProjectAction action = new ProjectAction( "COMMAND", "TestProjectAction", null, lookup );
         
@@ -122,7 +124,7 @@ public class ProjectActionTest extends NbTestCase {
         
     }
     
-    public void testProviderEnablement() {
+    public void testProviderEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestActionPerformer tap = new TestActionPerformer();
         ProjectAction action = new ProjectAction( tap, "TestProjectAction", null,lookup );

@@ -46,7 +46,7 @@ public class SystemApplication {
     private String location;
     private String friendlyName;
     private String command;
-    private boolean useByDefault;
+    private Boolean useByDefault;
     private boolean addOpenWithList;
     
     public SystemApplication(String location) {
@@ -85,8 +85,12 @@ public class SystemApplication {
     public void setCommand(String command) {
         this.command = command;
     }
-
-    public void setByDefault(boolean useByDefault) {
+    /**
+     * @param useByDefault If it is <code>true</code>, then the current app would be set as default.<br>
+     * If it is <code>false</code>, then the current app would not be set as default.<br>
+     * If it is <code>null</code>, then the current app would be set as default only if there is no default app set for the particular extension yet.
+     */
+    public void setByDefault(Boolean useByDefault) {
         this.useByDefault = useByDefault;
     }
     
@@ -94,7 +98,7 @@ public class SystemApplication {
         this.addOpenWithList = addOpenWithList;
     }
 
-    public boolean isUseByDefault() {
+    public Boolean isUseByDefault() {
         return useByDefault;
     }
 

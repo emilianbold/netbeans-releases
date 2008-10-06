@@ -107,7 +107,9 @@ public class AddDomainWizardIterator implements
     final static String ADMIN_JMX_PORT = "admin_jmx_port";                      //NOI18N
     final static String SIP_PORT = "sip_port";                                  //NOI18N
     final static String SIP_SSL_PORT = "sip_ssl_port";                          //NOI18N
-    final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;        // NOI18N
+    final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    final static String PROP_WARNING_MESSAGE = WizardDescriptor.PROP_WARNING_MESSAGE;
+    final static String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
     final static String TYPE = "type";                                          //NOI18N
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
 
@@ -391,7 +393,7 @@ public class AddDomainWizardIterator implements
         if (wizard.getProperty(TYPE) != REMOTE) {
             RegisterPointbase.getDefault().register((File) wizard.getProperty(PLATFORM_LOCATION));
             instanceProperties.setProperty(DeploymentManagerProperties.HTTP_MONITOR_ATTR,
-                Boolean.TRUE.toString());            
+                Boolean.FALSE.toString());            
         }
         RunTimeDDCatalog.getRunTimeDDCatalog().refresh();
         wizard.putProperty(USER_NAME,BLANK);
@@ -579,7 +581,7 @@ public class AddDomainWizardIterator implements
             p.destroy();
             File domainDir = new File(dirname);
             if (domainDir.exists()) {
-                FileObject fo = FileUtil.toFileObject(domainDir);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(domainDir));
                 try {
                     fo.delete();
                 } catch (IOException ex) {

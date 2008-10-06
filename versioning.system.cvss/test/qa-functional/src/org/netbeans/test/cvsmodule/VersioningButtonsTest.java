@@ -214,7 +214,7 @@ public class VersioningButtonsTest extends JellyTestCase {
         table = vo.tabFiles();
         //System.out.println(""+table);
         oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         assertEquals("Table should be empty", 1, table.getRowCount());
         assertEquals("File should be [Remotely Modified]", "Remotely Modified", table.getValueAt(0, 1).toString());
         cvss.stop();
@@ -233,7 +233,7 @@ public class VersioningButtonsTest extends JellyTestCase {
         //vo = VersioningOperator.invoke();
         vo.refresh();
         oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         table = vo.tabFiles();
         assertEquals("Table should be empty", 0, table.getRowCount());
         cvss.stop();
@@ -250,12 +250,12 @@ public class VersioningButtonsTest extends JellyTestCase {
         //vo = VersioningOperator.invoke();
         vo.update();
         oto.waitText("Updating Sources finished");
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         cvss.stop();
         
         //push commit button
         vo.commit();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         
         NbDialogOperator dialog = new NbDialogOperator("Comm");
         JButtonOperator btnOk = new JButtonOperator(dialog, "OK");

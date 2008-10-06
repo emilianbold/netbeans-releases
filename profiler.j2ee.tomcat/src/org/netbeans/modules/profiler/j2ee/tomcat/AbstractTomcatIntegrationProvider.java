@@ -47,7 +47,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
-import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.netbeans.modules.profiler.attach.providers.IDESettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.SettingsPersistor;
 import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;

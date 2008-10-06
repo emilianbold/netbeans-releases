@@ -7,12 +7,12 @@ package org.netbeans.modules.xml.schema.actions;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
 import org.netbeans.modules.xml.schema.wizard.SampleXMLGeneratorWizardIterator;
+import org.netbeans.modules.xml.wizard.SchemaParser;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.netbeans.modules.xml.wizard.Util;
 import org.openide.NotifyDescriptor;
 
 public final class GenerateXMLAction extends CookieAction {
@@ -31,7 +31,7 @@ public final class GenerateXMLAction extends CookieAction {
          if(sdo == null)
              return;
          
-         if(Util.getRootElements(sdo.getPrimaryFile()).roots.size() == 0) {
+         if(SchemaParser.getRootElements(sdo.getPrimaryFile()).roots.size() == 0) {
              //no root elements; cannot generate XML
             NotifyDescriptor desc = new NotifyDescriptor.Message
                                     (NbBundle.getMessage(GenerateXMLAction.class, "MSG_cannot_generate_XML_file"), NotifyDescriptor.ERROR_MESSAGE);

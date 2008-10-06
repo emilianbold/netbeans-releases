@@ -67,12 +67,14 @@ class Commandline {
      * Creates a new cleartool shell process.
      */
     Commandline() {
-        // XXX add path heuristics for mac, bubuntu & co.
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";
         } else {
-            executable = executable + "/svn";
+            File f = new File(executable);
+            if(f.isDirectory()) {
+                executable = executable + "/svn";
+            } 
         }                      
     }
 

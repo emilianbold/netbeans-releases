@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyProject.html"/>
                 <!-- Add templates for the UML project -->
                 <!-- Platform Independent Model Wizard -->
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="860"/>
                 <file name="emptyUMLAnalysis.xml">
                     <attr boolvalue="true" name="template"/>                    
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator"/>
@@ -166,6 +166,7 @@ made subject to such option by the copyright holder.
             <folder name="x-etd">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-project-UMLProjectDataObject$Loader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.resources.Bundle"/>
                         <attr name="position" intvalue="98839"/>
                     </file>
                 </folder>

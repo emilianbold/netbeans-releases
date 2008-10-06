@@ -72,7 +72,7 @@ public class CustomizerRootNodeProvider {
         ArrayList<CustomizerNode> ret = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = getCustomizerNodes();
         for (CustomizerNode n : nodes) {
-            if (n.advanced == advanced) {
+            if (n != null && n.advanced == advanced) {
                 ret.add(n);
             }
         }
@@ -93,7 +93,7 @@ public class CustomizerRootNodeProvider {
     public CustomizerNode getCustomizerNode(String id) {
         List<CustomizerNode> nodes = getCustomizerNodes();
         for (CustomizerNode n : nodes) {
-            if (n.name.equals(id)) {
+            if (n != null && n.name.equals(id)) {
                 return n;
             }
         }
@@ -104,7 +104,7 @@ public class CustomizerRootNodeProvider {
         ArrayList<CustomizerNode> list = new ArrayList<CustomizerNode>();
         List<CustomizerNode> nodes = getCustomizerNodes();
         for (CustomizerNode n : nodes) {
-            if (n.name.equals(id)) {
+            if (n != null && n.name.equals(id)) {
                 list.add(n);
             }
         }

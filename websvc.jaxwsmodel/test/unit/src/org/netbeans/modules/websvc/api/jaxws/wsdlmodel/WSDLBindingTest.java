@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 
 /**
  *
@@ -132,15 +134,15 @@ public class WSDLBindingTest extends NbTestCase {
                 portNames.add(port.getName());
                 portJavaNames.add(port.getJavaName());
                 portGetters.add(port.getPortGetter());
-                List<WsdlOperation> operations = port.getOperations();
-                for (Iterator<WsdlOperation> it2 = operations.iterator(); it2.hasNext();) {
-                    WsdlOperation op = it2.next();
+                List<WSOperation> operations = port.getOperations();
+                for (Iterator<WSOperation> it2 = operations.iterator(); it2.hasNext();) {
+                    WSOperation op = it2.next();
                     opNames.add(op.getName());
                     opJavaNames.add(op.getJavaName());
                     opTypes.add(op.getReturnTypeName());
-                    List<WsdlParameter> parameters = op.getParameters();
-                    for (Iterator<WsdlParameter> it3 = parameters.iterator(); it3.hasNext();) {
-                        WsdlParameter param = it3.next();
+                    List<WSParameter> parameters = op.getParameters();
+                    for (Iterator<WSParameter> it3 = parameters.iterator(); it3.hasNext();) {
+                        WSParameter param = it3.next();
                         paramNames.add(param.getName());
                         paramTypes.add(param.getTypeName());
                     }

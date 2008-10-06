@@ -145,7 +145,7 @@ public class ToolTipAnnotation extends Annotation
             return null;
         }
         if ( result != null ){
-            return result;
+            return (result.trim().length()==0) ? null : result;
         }
         boolean notFirst = false;
         StringBuilder builder = new StringBuilder(LEFT_BRACKET);
@@ -173,6 +173,7 @@ public class ToolTipAnnotation extends Annotation
         EditorCookie editorCookie = (EditorCookie)dataObject.
             getCookie(EditorCookie.class);
         StyledDocument document = editorCookie.getDocument();
+        if (document == null) {return;}
         final int offset = NbDocument.findLineOffset(document, 
                 part.getLine().getLineNumber()) + part.getColumn();
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();

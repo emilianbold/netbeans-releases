@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import javax.swing.JButton;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
@@ -117,12 +118,13 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
         
         dialogDescriptor.setOptions(new Object[] { permanentlyButton, temporarilyButton, rejectButton }); 
+        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.subversion.serverCertificateVerification"));
 
         showDialog(dialogDescriptor);
 
-        if(dialogDescriptor.getValue()!=permanentlyButton) {
+        if(dialogDescriptor.getValue() == permanentlyButton) {
             return ISVNPromptUserPassword.AcceptPermanently;
-        } else if(dialogDescriptor.getValue()!=temporarilyButton) {                
+        } else if(dialogDescriptor.getValue() == temporarilyButton) {
             return ISVNPromptUserPassword.AcceptTemporary;
         } else {
             return ISVNPromptUserPassword.Reject;
@@ -179,7 +181,6 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);     
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
@@ -206,6 +207,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
             //adapter.setUsername(username);
             //adapter.setPassword(password);
+            if(rc.getSavePassword()) {
+                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+            }
         }                
     }
 

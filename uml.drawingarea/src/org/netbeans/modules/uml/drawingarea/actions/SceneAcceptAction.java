@@ -58,7 +58,6 @@ import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.StateMachine;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -120,11 +119,10 @@ public class SceneAcceptAction extends WidgetAction.Adapter
                     IPresentationElement element = createModelElement(paletteItem,scene);
                     addWidget(event.getPoint(), scene, paletteItem, element);
 
-                    scene.setSelectedObjects(Collections.singleton(element));
+                    scene.userSelectionSuggested(Collections.singleton(element), false);
                     scene.setFocusedObject(element);
 
                     retVal = WidgetAction.State.CONSUMED;
-//                    scene.setActiveTool(DesignerTools.SELECT);
 
                 }
             }
@@ -168,9 +166,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         
         return retVal;
     }
-    
-    
-    
+
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
     {
         ConnectorState retVal = ConnectorState.REJECT;
@@ -207,9 +203,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         DiagramEngine engine=scene.getEngine();
         
         try
-        {
-            DataObject data = findDataObject(transferable);
-            
+        {            
             ArrayList < IPresentationElement > presentations = 
                     new ArrayList < IPresentationElement >();
             
@@ -254,7 +248,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
 
             if (!presentations.isEmpty())
             {
-                scene.setSelectedObjects(new HashSet(presentations));
+                scene.userSelectionSuggested(new HashSet(presentations), false);
                 
                 if(presentations.size() == 1)
                 {
@@ -282,7 +276,6 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             if(curFlavor.getMimeType().startsWith("application/x-java-openide-dataobjectdnd") == true)
             {
                 retVal = (DataObject)transferable.getTransferData(curFlavor);
-//                break;
             }
         }
         
@@ -306,26 +299,20 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         return item.createModelElement(getNamespace());
     }
     
-//    protected String getDefaultViewName(Transferable transferable)
-//        throws UnsupportedFlavorException, IOException 
-//    {
-//        String retVal = "";
-//        
-//        PaletteItem item = (PaletteItem) transferable.getTransferData(PaletteItem.FLAVOR);
-//        if (item != null)
-//        {
-//            retVal = item.getDefaultViewName();
-//        }
-//
-//        
-//        return retVal;
-//    }
     
     protected INamespace getNamespace()
     {
         return sceneNamespace;
     }
 
+    public void addWidget(Point point, 
+                           DesignerScene scene,
+                           IPresentationElement presentation) 
+                           throws UnsupportedFlavorException, IOException 
+    {
+            addWidget(point, scene, this.paletteItem, presentation);
+    }
+    
     private void addWidget(Point point, 
                            DesignerScene scene,
                            PaletteItem item, 
@@ -334,7 +321,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
     {
         DiagramEngine engine = scene.getEngine();
         
-        if(presentation != null)
+        if (presentation != null)
         {
             Widget newWidget = engine.addWidget(presentation, point);
             Lookup lookup = newWidget.getLookup();
@@ -342,7 +329,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             if (manager != null)
             {
                 String viewName = "";
-                if(item != null)
+                if (item != null)
                 {
                     viewName = item.getDefaultViewName();
                 }
@@ -367,6 +354,16 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         }
     }
 
+    public IPresentationElement createModelElement (DesignerScene scene)
+    {
+         IPresentationElement presentation = null;
+        if ( this.paletteItem !=  null)
+        {
+            presentation = createModelElement(this.paletteItem, scene);
+        }
+         return presentation;
+    }
+    
     private IPresentationElement createModelElement(PaletteItem item,DesignerScene scene)
     {
         INamedElement element = item.createModelElement(getNamespace());
@@ -408,7 +405,6 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         if (paletteItem != null)
         {
             IPresentationElement presentation = Util.createNodePresentationElement();
-//            IElement element = paletteItem.createModelElement(null);
             presentation.addSubject(element);
             DesignerScene scene = (DesignerScene) widget.getScene();
             scene.setBackgroundWidget(presentation, point, paletteItem.getDefaultViewName());
@@ -456,6 +452,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         return moved(widget, event.getPoint());
     }
     
+    @Override
     public State drop(Widget widget, WidgetDropTargetDropEvent event)
     {
         State ret = State.REJECTED;
@@ -471,7 +468,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             {
                 addWidget(event.getPoint(), scene, paletteItem, pe);
 
-                scene.setSelectedObjects(Collections.singleton(pe));
+                scene.userSelectionSuggested(Collections.singleton(pe), false);
                 scene.setFocusedObject(pe);
 
                 ret = State.CONSUMED;
@@ -481,7 +478,6 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             {
                 clearPalette(scene);
                 scene.removeBackgroundWidget();
-                return ret;
             }
         }
         return ret;

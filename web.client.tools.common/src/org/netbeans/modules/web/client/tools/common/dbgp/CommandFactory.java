@@ -60,14 +60,6 @@ public class CommandFactory {
         return new Extension.OpenURICommand(proxy.getTransactionId(), uri.toASCIIString());
     }
     
-    public Extension.SourceGetCommand sourceGetCommand() {
-        return new Extension.SourceGetCommand(proxy.getTransactionId());
-    }    
-    
-    public Extension.WindowGetCommand windowGetCommand() {
-        return new Extension.WindowGetCommand(proxy.getTransactionId());
-    }        
-    
     public Breakpoint.LineBreakpointSetCommand lineBreakpointSetCommand(URI uri, int line) {
         return new Breakpoint.LineBreakpointSetCommand(proxy.getTransactionId(), uri.toASCIIString(), line);
     }
@@ -136,8 +128,8 @@ public class CommandFactory {
         return new Property.PropertyGetCommand(proxy.getTransactionId(), name, stackDepth);
     }
             
-    public Property.PropertySetCommand propertySetCommand(String name, int stackDepth) {
-        return new Property.PropertySetCommand(proxy.getTransactionId(), name, stackDepth);
+    public Property.PropertySetCommand propertySetCommand(String name, String value, int stackDepth) {
+        return new Property.PropertySetCommand(proxy.getTransactionId(), name, value, stackDepth);
     }
     
     public Property.PropertyValueCommand propertyValueCommand(String name, int stackDepth) {
@@ -168,8 +160,8 @@ public class CommandFactory {
         return new Context.ContextNamesCommand(proxy.getTransactionId(), stackDepth);
     }
     
-    public Source.SourceCommand sourceCommand(URI uri) {
-        return new Source.SourceCommand(proxy.getTransactionId(), uri.toString());
+    public Source.SourceCommand sourceCommand(String uri) {
+        return new Source.SourceCommand(proxy.getTransactionId(), uri);
     }
     
     public Eval.EvalCommand evalCommand(String data, int stackDepth) {

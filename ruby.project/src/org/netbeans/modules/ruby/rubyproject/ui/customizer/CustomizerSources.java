@@ -57,6 +57,8 @@ import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,19 +82,20 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
         sourceSP.getViewport().setBackground( sourceRoots.getBackground() );
         testSP.getViewport().setBackground( testRoots.getBackground() );
         
-        sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
-        testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
+        sourceRoots.setModel( uiProperties.sourceRootsModel  );
+        testRoots.setModel( uiProperties.testRootsModel  );
         sourceRoots.getTableHeader().setReorderingAllowed(false);
         testRoots.getTableHeader().setReorderingAllowed(false);
-        
-        FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
-        File pf = FileUtil.toFile( projectFolder );
-        this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
+
+        RubyProject project = uiProperties.getRubyProject();
+        FileObject projectFolder = project.getProjectDirectory();
+        File pf = FileUtil.toFile(projectFolder);
+        this.projectLocation.setText(pf == null ? "" : pf.getPath());
         
         
         RubySourceRootsUi.EditMediator emSR = RubySourceRootsUi.registerEditMediator(
-            uiProperties.getProject(),
-            uiProperties.getProject().getSourceRoots(),
+            project,
+            project.getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
@@ -100,18 +103,18 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
             downSourceRoot);
         
         RubySourceRootsUi.EditMediator emTSR = RubySourceRootsUi.registerEditMediator(
-            uiProperties.getProject(),
-            uiProperties.getProject().getTestSourceRoots(),
+            project,
+            project.getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
             downTestRoot);
         
-        emSR.setRelatedEditMediator( emTSR );
-        emTSR.setRelatedEditMediator( emSR );
+        emSR.setRelatedEditMediator(emTSR);
+        emTSR.setRelatedEditMediator(emSR);
 
-        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
+        this.originalEncoding = project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
@@ -282,7 +285,7 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
                 .add(encodingLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(405, Short.MAX_VALUE))
+                .addContainerGap(427, Short.MAX_VALUE))
         );
         encodingPanelLayout.setVerticalGroup(
             encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -381,16 +384,13 @@ public class CustomizerSources extends JPanel implements HelpCtx.Provider {
             .add(layout.createSequentialGroup()
                 .add(prjFolderLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(sourceFolderLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .add(projectLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(testFolderLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, testSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
-                        .add(sourceSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, testSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                    .add(sourceSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, sourceFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, testFolderLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 516, Short.MAX_VALUE))
                 .add(9, 9, 9)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(addSourceRoot, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

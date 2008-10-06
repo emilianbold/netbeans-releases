@@ -61,8 +61,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
-import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
+import org.netbeans.modules.java.j2seplatform.api.J2SEPlatformCreator;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
@@ -70,12 +69,8 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
@@ -290,74 +285,16 @@ public final class ImportUtils {
             
             return null;
         }
+
+        JavaPlatform platform = J2SEPlatformCreator.createJ2SEPlatform(foForJDKDirectory);
         
-        JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        NewJ2SEPlatform platform = NewJ2SEPlatform.create(foForJDKDirectory);
-        platform.run();
-        
-        if (platform.isValid() && platform.findTool("javac")!= null) {//NOI18N
-            platform.setDisplayName(createPlatformDisplayName(platform));
-            platform.setAntName(createPlatformAntName(platform.getDisplayName(), installedPlatforms));
-            
-            FileObject platformsFolder = Repository.getDefault().getDefaultFileSystem().findResource(
-                    "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
-            assert platformsFolder != null;
-            
-            DataObject dobj = PlatformConvertor.create(platform,
-                    DataFolder.findFolder(platformsFolder), platform.getAntName());
-            
-            retVal = (JavaPlatform) dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
-            
-            // update installed platform - probably some trick
+        if (platform.findTool("javac")!= null) {//NOI18N
+            retVal = platform;
+            // update installed platform - probably some trick (XXX still necessary? -jglick)
             JavaPlatformManager.getDefault().getInstalledPlatforms();
         }
         
         return retVal;
-    }
-    
-    private String createPlatformDisplayName(JavaPlatform plat) {
-        Map m = plat.getSystemProperties();
-        String vmName = (String)m.get("java.vm.name"); // NOI18N
-        String vmVersion = (String)m.get("java.vm.version"); // NOI18N
-        StringBuffer displayName = new StringBuffer();
-        if (vmName != null)
-            displayName.append(vmName);
-        if (vmVersion != null) {
-            if (displayName.length()>0) {
-                displayName.append(" ");
-            }
-            displayName.append(vmVersion);
-        }
-        return displayName.toString();
-    }
-    
-    private String createPlatformAntName(String displayName, JavaPlatform[] installedPlatforms) {
-        assert displayName != null && displayName.length() > 0;
-        String antName = PropertyUtils.getUsablePropertyName(displayName);
-        if (platformExists(antName,installedPlatforms)) {
-            String baseName = antName;
-            int index = 1;
-            antName = baseName + Integer.toString(index);
-            while (platformExists(antName,installedPlatforms)) {
-                index ++;
-                antName = baseName + Integer.toString(index);
-            }
-        }
-        return antName;
-    }
-    
-    /**
-     * Checks if the platform of given antName is already installed
-     */
-    private boolean platformExists(String antName, JavaPlatform[] installedPlatforms) {
-        assert antName != null && antName.length() > 0;
-        for (int i=0; i< installedPlatforms.length; i++) {
-            String otherName = (String) installedPlatforms[i].getProperties().get("platform.ant.name");  //NOI18N
-            if (antName.equals(otherName)) {
-                return true;
-            }
-        }
-        return false;
     }
     
     private boolean isRepresentationOfPlatform(final JavaPlatform platform,

@@ -83,7 +83,7 @@ final class ChildrenArray extends NodeAdapter {
     protected void finalize() {
         entrySupport.finalizedChildrenArray(ref);
     }
-    
+        
     /** Now points to me */
     final void pointedBy(Reference<ChildrenArray> ref) {
         this.ref = ref;
@@ -153,7 +153,7 @@ final class ChildrenArray extends NodeAdapter {
     public synchronized Collection<Node> nodesFor(Info info) {
         final boolean IS_LOG = LOG_NODES_FOR.isLoggable(Level.FINE);
         if (IS_LOG) {
-            LOG_NODES_FOR.fine("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOG_NODES_FOR.finer("nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         if (map == null) {
             map = new WeakHashMap<Info, Collection<Node>>(7);
@@ -161,7 +161,7 @@ final class ChildrenArray extends NodeAdapter {
         Collection<Node> nodes = map.get(info);
 
         if (IS_LOG) {
-            LOG_NODES_FOR.fine("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
+            LOG_NODES_FOR.finer("  map size=" + map.size() + ", nodes=" + nodes); // NOI18N
         }
 
         if (nodes == null) {
@@ -169,12 +169,12 @@ final class ChildrenArray extends NodeAdapter {
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {
-                LOG_NODES_FOR.fine("  created nodes=" + nodes); // NOI18N
+                LOG_NODES_FOR.finer("  created nodes=" + nodes); // NOI18N
             }
         }
 
         if (IS_LOG) {
-            LOG_NODES_FOR.fine("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
+            LOG_NODES_FOR.finer("  leaving nodesFor(" +logInfo(info) + ") on " + Thread.currentThread()); // NOI18N
         }
         return nodes;
     }

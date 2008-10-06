@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.xml.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.xml.services.UserCatalog;
-import org.openide.util.Lookup;
+import org.netbeans.modules.xml.util.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -56,7 +59,7 @@ import org.xml.sax.helpers.*;
  * @author  Petr Kuzel
  * @see     SchemaInfo
  */
-final class SchemaParser extends DefaultHandler {
+public final class SchemaParser extends DefaultHandler {
 
     private SchemaInfo info =  new SchemaInfo();
 
@@ -149,4 +152,21 @@ final class SchemaParser extends DefaultHandler {
          */
         public String namespace;
     }
+    
+    public static String getNamespace(FileObject fobj) {
+        SchemaParser parser = new SchemaParser();
+        File file = FileUtil.toFile(fobj);
+        SchemaParser.SchemaInfo info = parser.parse(file.toURI().toString());            
+        if (info == null) return null;        
+        return info.namespace;        
+    }
+
+    public static SchemaParser.SchemaInfo getRootElements(FileObject fobj) {
+        SchemaParser parser = new SchemaParser();
+        File file = FileUtil.toFile(fobj);
+        SchemaParser.SchemaInfo info = parser.parse(file.toURI().toString());            
+        if (info == null) return null;
+        else return info;        
+    }
+    
 }

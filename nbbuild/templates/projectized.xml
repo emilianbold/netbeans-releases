@@ -71,6 +71,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     </target>
 
     <target name="build-init" depends="basic-init,jdk-5-check">
+        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir=".">
+                <include name="external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
         <property name="public.package.jar.dir" location="${nb_all}/nbbuild/build/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
@@ -294,8 +300,11 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <fileset dir="${nb_all}/apisupport.harness/external">
-                    <include name="jsearch*.jar"/>
+                <fileset dir="${nb_all}">
+                    <include name="apisupport.harness/external/jsearch*.jar"/>
+                </fileset>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="harness/jsearch*.jar"/>
                 </fileset>
             </classpath>
             <include name="**/*.html"/>
@@ -368,17 +377,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
     
     <target name="jar-ml" depends="build-init,check-run-mlbuild,pre-jar-ml" if="run.ml.build">
         <mkdir dir="${build.classes.dir.ml}"/>
-        <copy todir="${build.classes.dir.ml}">
-            <!-- #58298: strip comments to save some space -->
-            <fileset dir="${translated.src.dir}" includes="**/*.properties"/>
-            <filterchain>
-                <tokenfilter>
-                    <!-- #61965: preserve #NOI18N and similar comments -->
-                    <filetokenizer/>
-                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
-                </tokenfilter>
-            </filterchain>
-        </copy>
         <copy todir="${build.classes.dir.ml}">
             <fileset dir="${translated.src.dir}" excludes="**/*.properties"/>
         </copy>
@@ -603,7 +601,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
         <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
-            <exportedapi/>
+            <or>
+                <exportedapi/>
+                <not><isset property="nbm.domain"/></not>
+            </or>
         </condition>
         <property name="sigtest.mail" value="cvs@${nbm.domain}.netbeans.org"/>
 
@@ -612,12 +613,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="gen-sigtest" depends="-sigtest-init">
         <property name="sigtest.gen.fail.on.error" value="${sigtest.fail.on.error}"/>
+        <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
                  version="${mf.OpenIDE-Module-Specification-Version}"
                  action="generate"
                  packages="${sigtest.public.packages}"
+                 report="${sigtest.output.dir}/generate-${code.name.base.dashes}.xml"
                  failonerror="${sigtest.gen.fail.on.error}"
         />
     </target>

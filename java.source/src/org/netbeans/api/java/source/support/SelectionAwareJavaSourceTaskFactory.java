@@ -40,6 +40,8 @@
  */
 package org.netbeans.api.java.source.support;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +107,7 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
         return files;
     }
 
-    private Map<JTextComponent, ComponentListener> component2Listener = new HashMap<JTextComponent, SelectionAwareJavaSourceTaskFactory.ComponentListener>();
+    private Map<JTextComponent, ComponentListener> component2Listener = new WeakHashMap<JTextComponent, SelectionAwareJavaSourceTaskFactory.ComponentListener>();
     private static Map<FileObject, Integer> file2SelectionStartPosition = new WeakHashMap<FileObject, Integer>();
     private static Map<FileObject, Integer> file2SelectionEndPosition = new WeakHashMap<FileObject, Integer>();
     
@@ -166,14 +168,18 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
     
     private class ComponentListener implements CaretListener {
         
-        private JTextComponent component;
+        private Reference<JTextComponent> componentRef;
         private final RequestProcessor.Task rescheduleTask;
         
         public ComponentListener(final JTextComponent component) {
-            this.component = component;
+            this.componentRef = new WeakReference<JTextComponent>(component);
             rescheduleTask = WORKER.create(new Runnable() {
                 public void run() {
-                    FileObject file = OpenedEditors.getFileObject(ComponentListener.this.component);
+                    JTextComponent component = componentRef == null ? null : componentRef.get();
+                    if (component == null) {
+                        return;
+                    }
+                    FileObject file = OpenedEditors.getFileObject(component);
                     
                     if (file != null) {
                         reschedule(file);
@@ -183,6 +189,10 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
         }
         
         public void caretUpdate(CaretEvent e) {
+            JTextComponent component = componentRef == null ? null : componentRef.get();
+            if (component == null) {
+                return;
+            }
             FileObject file = OpenedEditors.getFileObject(component);
             
             if (file != null) {

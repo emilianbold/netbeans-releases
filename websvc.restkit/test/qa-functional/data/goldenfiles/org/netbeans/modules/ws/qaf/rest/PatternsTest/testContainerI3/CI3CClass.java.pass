@@ -1,9 +1,5 @@
 /*
- *  CI3CClass
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,9 +10,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.POST;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -28,7 +24,7 @@ import javax.ws.rs.ConsumeMime;
 public class CI3CClass {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of CI3CClass */
     public CI3CClass() {
     }
@@ -38,7 +34,7 @@ public class CI3CClass {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("text/html")
+    @Produces("text/html")
     public String getHtml() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -50,8 +46,8 @@ public class CI3CClass {
      * @return an HTTP response with content of the created resource
      */
     @POST
-    @ConsumeMime("text/html")
-    @ProduceMime("text/html")
+    @Consumes("text/html")
+    @Produces("text/html")
     public Response postHtml(String content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();

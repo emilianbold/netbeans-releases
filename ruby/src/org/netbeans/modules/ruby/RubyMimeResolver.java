@@ -58,11 +58,12 @@ public class RubyMimeResolver extends MIMEResolver {
      * that cannot reference this value directly.
      */
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // application/x-ruby is also used a fair bit.
-    
+
     /** Number of bytes to sniff from the file headers */
     static final int HEADER_LENGTH = 80;
     
     public RubyMimeResolver() {
+        super(RUBY_MIME_TYPE);
     }
     
     public String findMIMEType(FileObject fo) {

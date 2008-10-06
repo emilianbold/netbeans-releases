@@ -73,8 +73,10 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -85,6 +87,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
@@ -172,7 +175,7 @@ public class TraceXRef extends TraceModel {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
-                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL);
+                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL, null);
                 if (super.isShowTime()) {
                     time = System.currentTimeMillis() - time;
                 }            
@@ -264,7 +267,7 @@ public class TraceXRef extends TraceModel {
             }
             analyzeFile(file, params, bag, printOut, printErr, canceled);
             if (canceled.get()) {
-                printOut.println("Cancelled");
+                printOut.println("Cancelled"); // NOI18N
                 break;
             }            
         }
@@ -343,7 +346,7 @@ public class TraceXRef extends TraceModel {
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         } else {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled), params.interestedReferences);            
+            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
         out.println(file.getAbsolutePath() + " took " + time + "ms"); // NOI18N
@@ -369,20 +372,24 @@ public class TraceXRef extends TraceModel {
         private final XRefResultSet bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
-        public LWVisitor(XRefResultSet bag, OutputWriter printErr, AtomicBoolean canceled) {
+        private final boolean reportUnresolved;
+
+        public LWVisitor(XRefResultSet bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
+            this.reportUnresolved = reportUnresolved;
         }
         
-        public void visit(CsmReference ref) {
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
             if (canceled.get()) {
                 return;
             }
-            XRefResultSet.ContextEntry entry = createLightWeightEntry(ref, printErr);
+            XRefResultSet.ContextEntry entry = createLightWeightEntry(context, printErr, reportUnresolved);
             if (entry != null) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
-                if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
+                if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED) {
                     CharSequence text = ref.getText();
                     UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
                     if (unres == null) {
@@ -407,7 +414,8 @@ public class TraceXRef extends TraceModel {
             CsmFileReferences.getDefault().accept(
                     scope, 
                     new CsmFileReferences.Visitor() {
-                        public void visit(CsmReference ref) {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
@@ -429,20 +437,37 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReference ref, OutputWriter printErr) {
+    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReferenceContext context, OutputWriter printErr, boolean reportUnresolved) {
         XRefResultSet.ContextEntry entry;
+        CsmReference ref = context.getReference();
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
+            String kind = "UNRESOVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
-            try {
-                printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true); // NOI18N
-            } catch (IOException ioe) {
-                // skip it
+            boolean important = true;
+            if (CsmFileReferences.isAfterUnresolved(context)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_AFTER_UNRESOLVED;
+                kind = "UNRESOLVED_AFTER_UNRESOLVED"; //NOI18N
+                important = false;
+            } else if (CsmFileReferences.isTemplateBased(context)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_TEMPLATE_BASED;
+                kind = "UNRESOLVED_TEMPLATE_BASED"; //NOI18N
+                important = false;
+            } else if (CsmFileReferences.isMacroBased(context)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED;
+                kind = "UNRESOLVED_MACRO_BASED"; //NOI18N
+            }
+            if (reportUnresolved) {
+                try {
+                    printErr.println(kind + ":" + ref, new RefLink(ref), important); // NOI18N
+                } catch (IOException ioe) {
+                    // skip it
+                }
             }
         } else {
             entry = XRefResultSet.ContextEntry.RESOLVED;
         }
-        return entry;        
+        return entry;
     }    
 
     private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, StatisticsParameters params, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, 
@@ -752,29 +777,40 @@ public class TraceXRef extends TraceModel {
         Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
         int numProjectProints = 0;
         int numUnresolvedPoints = 0;
+        int numMacroBasedUnresolvedPoints = 0;
+        int numTemplateBasedUnresolvedPoints = 0;
         for (XRefResultSet.ContextScope scope : sortedContextScopes) {
             Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
             numProjectProints += entries.size();
             for (ContextEntry contextEntry : entries) {
                 if (contextEntry == ContextEntry.UNRESOLVED) {
                     numUnresolvedPoints++;
+                } else if (contextEntry == ContextEntry.UNRESOLVED_MACRO_BASED) {
+                    numMacroBasedUnresolvedPoints++;
+                } else if (contextEntry == ContextEntry.UNRESOLVED_TEMPLATE_BASED) {
+                    numTemplateBasedUnresolvedPoints++;
                 }
             }
         }
-        double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * numUnresolvedPoints) / ((double) numProjectProints);
-        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) of %d checkpoints", numUnresolvedPoints, unresolvedRatio, numProjectProints);
+        int allUnresolvedPoints = numUnresolvedPoints + numMacroBasedUnresolvedPoints;
+        double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * allUnresolvedPoints) / ((double) numProjectProints);
+        double unresolvedMacroBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numMacroBasedUnresolvedPoints) / ((double) numProjectProints);
+        double unresolvedTemplateBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numTemplateBasedUnresolvedPoints) / ((double) numProjectProints);
+        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) where MacroBased %d (%.2f%%) of %d checkpoints [TemplateBased warnings %d (%.2f%%)]", // NOI18N
+                allUnresolvedPoints, unresolvedRatio, numMacroBasedUnresolvedPoints, unresolvedMacroBasedRatio, 
+                numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio); // NOI18N
         printOut.println(unresolvedStatistics);
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
-            if (numUnresolvedPoints > 0) {
+            if (allUnresolvedPoints > 0) {
                 Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
                     public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
                         return o2.getNrUnnamed() - o1.getNrUnnamed();
                     }
                 });
                 for (UnresolvedEntry unresolvedEntry : unresolvedEntries) {
-                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) numUnresolvedPoints);
-                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio);
+                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) allUnresolvedPoints);
+                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio); // NOI18N
                     try {
                         printErr.println(msg, unresolvedEntry.getLink(), false);
                     } catch (IOException ex) {
@@ -1050,10 +1086,16 @@ public class TraceXRef extends TraceModel {
     public static final class StatisticsParameters {
         public final Set<CsmReferenceKind> interestedReferences;
         public final boolean analyzeSmartAlgorith;
+        public final boolean reportUnresolved;
         
         public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith) {
+            this(kinds, analyzeSmartAlgorith, true);
+        }
+
+        public StatisticsParameters(Set<CsmReferenceKind> kinds, boolean analyzeSmartAlgorith, boolean reportUnresolved) {
             this.analyzeSmartAlgorith = analyzeSmartAlgorith;
             this.interestedReferences = kinds;
+            this.reportUnresolved = reportUnresolved;
         }
     }
     
@@ -1088,16 +1130,21 @@ public class TraceXRef extends TraceModel {
     }
     
     private final static class RefLink implements OutputListener {
-        private final CsmReference ref;
+        private final CsmUID<CsmFile> fileUID;
+        private final int offset;
         RefLink(CsmReference ref) {
-            this.ref = ref;
+            this.fileUID = ref.getContainingFile().getUID();
+            this.offset = ref.getStartOffset();
         }
         
         public void outputLineSelected(OutputEvent ev) {
         }
 
         public void outputLineAction(OutputEvent ev) {
-            CsmUtilities.openSource(ref);
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                CsmUtilities.openSource(new OffsetableBase(file, offset, offset));
+            }
         }
 
         public void outputLineCleared(OutputEvent ev) {

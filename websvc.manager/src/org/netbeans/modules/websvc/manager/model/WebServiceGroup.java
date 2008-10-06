@@ -178,7 +178,7 @@ public class WebServiceGroup {
      * - David Botterill 9/30/2004
      */
     private void modelDirty() {
-        WebServiceListModel.setDirty(true);
+        WebServiceListModel.getInstance().setDirty(true);
     }
     
     @Override

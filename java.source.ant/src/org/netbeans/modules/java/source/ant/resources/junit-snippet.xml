@@ -40,15 +40,44 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="changeme" default="execute" basedir=".">
-    <target name="execute">
-        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-        <junit showoutput="true" fork="true">
-            <test name="${classname}" />
-            <classpath path="${classpath-translated}" />
-            <jvmarg value="-ea"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
+<project name="{0} (test)" default="test" basedir=".">
+    <target name="-check-run-test-single-method-supported" if="methodname">
+        <available property="run.test.single.method.supported"
+                   classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultParser"/>
+        <fail unless="run.test.single.method.supported">Execution of a single test method is not supported by this version of Ant.</fail>
     </target>
+    <target name="-prepare-execution">
+        <macrodef name="junit-template">
+            <element name="test-spec" implicit="yes"/>
+            <sequential>
+                <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+                <property name="run.jvmargs" value="" />
+                <property name="work.dir" value="${basedir}"/>
+                <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}">
+                    <test-spec/>
+                    <classpath path="${classpath-translated}" />
+                    <jvmarg value="-ea"/>
+                    <jvmarg line="${run.jvmargs}"/>
+                    <formatter type="brief" usefile="false"/>
+                    <formatter type="xml"/>
+                    <syspropertyset>
+                        <propertyref prefix="test-sys-prop."/>
+                        <mapper from="test-sys-prop.*" to="*" type="glob"/>
+                    </syspropertyset>
+                </junit>
+            </sequential>
+        </macrodef>
+        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
+    </target>
+    <target name="-test-class" depends="-prepare-execution" unless="methodname">
+        <junit-template>
+            <test name="${classname}"/>
+        </junit-template>
+    </target>
+    <target name="-test-method" depends="-check-run-test-single-method-supported,-prepare-execution" if="methodname">
+        <junit-template>
+            <test name="${classname}" methods="${methodname}"/>
+        </junit-template>
+    </target>
+    <target name="test" depends="-test-class,-test-method"/>
 </project>

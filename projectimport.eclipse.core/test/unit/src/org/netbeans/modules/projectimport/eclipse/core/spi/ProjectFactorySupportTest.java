@@ -46,8 +46,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
@@ -60,6 +62,9 @@ import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterTestCase;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.test.MockLookup;
 
 public class ProjectFactorySupportTest extends NbTestCase {
     
@@ -71,6 +76,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem())); // otherwise have problems parsing copylibstask lib definition
     }
 
     private static EclipseProject getTestableProject(int version, File proj) throws IOException {
@@ -154,7 +160,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                         "sourcepath", "/a-folder/lib/bsh-sources.zip",
                         "javadoc_location", "jar:file:/a-folder/lib/bsh-javadoc.jar!/doc/api"),
             });
+        } else if (version == 5) {
+            classpath = Arrays.asList(new DotClassPathEntry[]{
+                EclipseProjectTestUtils.createDotClassPathEntry(
+                        "kind", "con",
+                        "path", "org.eclipse.jdt.junit.JUNIT_CONTAINER/3"),
+            });
         }
+
         List<DotClassPathEntry> sources = Arrays.asList(new DotClassPathEntry[]{
             EclipseProjectTestUtils.createDotClassPathEntry(
                     "kind", "src",
@@ -169,6 +182,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         File f = new File(proj, "eclipse");
         f.mkdir();
         new File(f,"src").mkdir();
+        new File(f,"test").mkdir();
         return EclipseProjectTestUtils.createEclipseProject(f, dcp, w, name);
     }
     
@@ -203,6 +217,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -232,6 +254,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         assertEquals(
@@ -317,6 +347,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         List<String> importProblems = new ArrayList<String>();
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(model.getEclipseSourceRootsAsFileArray()[0].toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(helper, p.getReferenceHelper(), model, importProblems);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // required project "JavaLibrary1" is not available and therefore should not be
@@ -365,6 +403,14 @@ public class ProjectFactorySupportTest extends NbTestCase {
                 mdl_d.getEclipseTestSourceRootsAsFileArray(), null, null, null);
         List<String> problems = new ArrayList<String>();
         J2SEProject j2seprj_d = (J2SEProject) ProjectManager.getDefault().findProject(aph_d.getProjectDirectory());
+        
+        //
+        // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
+        // 
+        // Looks like J2SEProject registers its external source roots asynchronously and sometimes 
+        // it is too late and above problem happens. Mark external source roots explicitly here:
+        FileOwnerQuery.markExternalOwner(mdl_d.getEclipseSourceRootsAsFileArray()[0].toURI(), j2seprj_d, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        
         ProjectFactorySupport.updateProjectClassPath(aph_d, j2seprj_d.getReferenceHelper(), mdl_d, problems);
         assertEquals(Collections.emptyList(), problems);
         assertEquals("${reference.c.jar}:${reference.b.jar}", aph_d.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).get("javac.classpath"));
@@ -375,7 +421,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         repo.mkdir();
         File w = new File(getWorkDir(), "workspace");
         w.mkdir();
-        System.err.println("repo="+repo.getPath());
         Workspace workspace = EclipseProjectTestUtils.createWorkspace(w, new Workspace.Variable("REPO", repo.getPath()));
         File f = new File(getWorkDir(), "a-project");
         f.mkdir();
@@ -386,7 +431,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         DotClassPathEntry e = eclipse.getClassPathEntries().get(0);
         assertEquals(f.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());
         assertEquals(f.getAbsolutePath()+"/lib/bsh-sources.zip", e.getProperty("sourcepath"));
-        assertEquals(f.getAbsolutePath()+"/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
+        assertEquals(f.getAbsolutePath()+"/lib/bsh-javadoc.jar!/doc/api/", e.getProperty("javadoc_location"));
         
         e = eclipse.getClassPathEntries().get(1);
         assertEquals(repo.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());
@@ -396,7 +441,27 @@ public class ProjectFactorySupportTest extends NbTestCase {
         e = eclipse.getClassPathEntries().get(2);
         assertEquals("/a-folder/lib/bsh.jar", e.getAbsolutePath());
         assertEquals("/a-folder/lib/bsh-sources.zip", e.getProperty("sourcepath"));
-        assertEquals("/a-folder/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
+        assertEquals("/a-folder/lib/bsh-javadoc.jar!/doc/api/", e.getProperty("javadoc_location"));
+    }
+    
+    public void testAreSourceRootsOwned() throws IOException {
+        EclipseProject eclipse = getTestableProject(5, getWorkDir());
+        File prj = new File(getWorkDirPath(), "nb");
+
+        ProjectImportModel model = new ProjectImportModel(eclipse, new File(prj, "test"),
+                JavaPlatform.getDefault(), Collections.<Project>emptyList());
+        final AntProjectHelper helper = J2SEProjectGenerator.createProject(
+                new File(prj, "test"), "test", model.getEclipseSourceRootsAsFileArray(), 
+                model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
+        J2SEProject p = (J2SEProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+
+        // #147126: force recalc of source groups; otherwise project may not have claimed ownership of external roots.
+        ProjectUtils.getSources(ProjectManager.getDefault().findProject(helper.getProjectDirectory())).getSourceGroups("irrelevant"); // NOI18N
+        
+        List<String> importProblems = new ArrayList<String>();
+        boolean res  = ProjectFactorySupport.areSourceRootsOwned(model, new File(prj, "new-project"), importProblems);
+        assertTrue(res);
+        assertEquals(1, importProblems.size());
     }
     
 }

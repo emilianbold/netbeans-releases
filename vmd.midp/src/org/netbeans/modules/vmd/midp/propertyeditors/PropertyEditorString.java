@@ -43,11 +43,8 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -120,7 +117,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         initComponents();
 
         if (databinding) {
-            Map<PropertyEditorElement, Integer> elements = new HashMap<PropertyEditorElement, Integer>(2);
+            LinkedHashMap<PropertyEditorElement, Integer> elements = new LinkedHashMap<PropertyEditorElement, Integer>(2);
             databindingElement = new DatabindingElement(this);
             elements.put(this, null);
             elements.put(databindingElement, new Integer(-1));
@@ -228,9 +225,28 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         return new PropertyEditorString(comment, DEPENDENCE_NONE, null, label, false);
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        parentTypeID = null;
+        if (databindingElement != null) {
+            databindingElement.clean(component);
+            databindingElement = null;
+        }
+    }
+
     private void initComponents() {
         radioButton = new JRadioButton();
+
         Mnemonics.setLocalizedText(radioButton, label);
+
+        radioButton.getAccessibleContext().setAccessibleName(radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(radioButton.getText());
+
         customEditor = new CustomEditor(comment);
     }
 
@@ -260,7 +276,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This element should be selected by default
      */
     public boolean isInitiallySelected() {
-        return true;
+        return databindingElement == null;
     }
 
     /*
@@ -275,11 +291,14 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      */
     @Override
     public String getAsText() {
+        if (component == null || getPropertyNames() == null) {
+            return null;
+        }
         String databinding = MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0));
         if (databinding != null) {
             return databinding;
         }
-        
+
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
@@ -288,7 +307,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         PropertyValue value = (PropertyValue) super.getValue();
         return (String) value.getPrimitiveValue();
     }
-    
+
     /*
      * Sets PropertyValue according to given text. This method invoked when user
      * sets new value in the inplace editor.
@@ -322,7 +341,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
         return super.canEditAsText();
     }
-    
+
     @Override
     public boolean supportsCustomEditor() {
         if (!isWriteableByParentType()) {
@@ -336,15 +355,15 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This method updates state of custom property editor.
      */
     public void updateState(PropertyValue value) {
-        
+
         final DesignComponent c = component.get();
-        if (databindingElement != null) { 
+        if (databindingElement != null) {
             databindingElement.updateDesignComponent(c);
         }
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
         } else if (MidpDatabindingSupport.getDatabaindingAsText(component.get(), getPropertyNames().get(0)) != null) {
-           ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
+            ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).updateComponent(c);
         } else {
             customEditor.setText((String) value.getPrimitiveValue());
         }
@@ -352,6 +371,32 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             radioButton.setSelected(true);
             radioButton.requestFocus();
         }
+    }
+
+    @Override
+    public boolean executeInsideWriteTransaction() {
+        if (component == null || component.get() == null) {
+            return true;
+        }
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
+            return false;
+        }
+        return super.isExecuteInsideWriteTransactionUsed();
+    }
+
+    @Override
+    public boolean isExecuteInsideWriteTransactionUsed() {
+        if (component == null || component.get() == null) {
+            return false;
+        }
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
+            return true;
+        }
+        return super.isExecuteInsideWriteTransactionUsed();
     }
 
     private void saveValue(String text) {
@@ -442,6 +487,15 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             initComponents();
         }
 
+        void cleanUp() {
+            if (editorPane != null && editorPane.getDocument() != null) {
+                editorPane.getDocument().removeDocumentListener(this);
+            }
+            editorPane = null;
+            panel.removeAll();
+            panel = null;
+        }
+
         private void initComponents() {
             panel = new JPanel(new GridBagLayout());
 
@@ -454,6 +508,13 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             } else {
                 textComponent = editorPane = new JTextField();
             }
+
+            JLabel tempLabel = new JLabel();
+            Mnemonics.setLocalizedText(tempLabel, label);
+            editorPane.getAccessibleContext().setAccessibleName(tempLabel.getText());
+            editorPane.getAccessibleContext().setAccessibleDescription(tempLabel.getText());
+            tempLabel = null;
+
             editorPane.getDocument().addDocumentListener(this);
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -507,6 +568,4 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         public void changedUpdate(DocumentEvent e) {
         }
     }
-
-    
 }

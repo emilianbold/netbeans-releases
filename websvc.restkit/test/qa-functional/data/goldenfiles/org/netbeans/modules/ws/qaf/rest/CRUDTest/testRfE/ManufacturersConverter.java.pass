@@ -1,9 +1,5 @@
 /*
- *  ManufacturersConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -18,7 +14,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import java.util.ArrayList;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
 
-
 /**
  *
  * @author lukas
@@ -30,7 +25,7 @@ public class ManufacturersConverter {
     private Collection<ManufacturerConverter> items;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of ManufacturersConverter */
     public ManufacturersConverter() {
     }
@@ -46,6 +41,7 @@ public class ManufacturersConverter {
         this.entities = entities;
         this.uri = uri;
         this.expandLevel = expandLevel;
+        getManufacturer();
     }
 
     /**
@@ -95,7 +91,7 @@ public class ManufacturersConverter {
         entities = new ArrayList<Manufacturer>();
         if (items != null) {
             for (ManufacturerConverter item : items) {
-                entities.add(item.resolveEntity());
+                entities.add(item.getEntity());
             }
         }
         return entities;

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,28 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.editor;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Token;
@@ -67,22 +92,24 @@ import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-
+import org.netbeans.api.java.source.ui.ElementOpen;
+    
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
 public class GroovyDeclarationFinder implements DeclarationFinder{
 
     private final Logger LOG = Logger.getLogger(GroovyDeclarationFinder.class.getName());
     Token<? extends GroovyTokenId> tok;
-    
+
     Document lastDoc = null;
     int lastOffset = -1;
     OffsetRange lastRange = OffsetRange.NONE;
-    
+
     public GroovyDeclarationFinder() {
-        // LOG.setLevel(Level.FINEST);
+        LOG.setLevel(Level.OFF);
     }
 
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
@@ -208,10 +235,24 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 String type = call.getType();
                 String lhs = call.getLhs();
 
+                MethodCallExpression methodCall = (MethodCallExpression) parent;
+                Expression objectExpression = methodCall.getObjectExpression();
+                if (objectExpression instanceof VariableExpression) {
+                    VariableExpression variableExpression = (VariableExpression) objectExpression;
+                    String typeName = variableExpression.getType().getName();
+
+                    // try to find it in Java
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                    DeclarationLocation location = findJavaMethod(cpInfo, typeName, methodCall);
+                    if (location != DeclarationLocation.NONE) {
+                        return location;
+                    }
+                }
+
                 if ((type == null) && (lhs != null) && (closest != null) && call.isSimpleIdentifier()) {
                     assert root instanceof ModuleNode;
                     ModuleNode moduleNode = (ModuleNode) root;
-                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, doc, lexOffset);
                     scopeVisitor.collect();
                 }
                 if (type == null) {
@@ -223,21 +264,194 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     return findMethod(name, fqn, type, call, info, astOffset, lexOffset, path, closest, index);
                 }
 
-            }
+            } else if (closest instanceof VariableExpression) {
+                VariableExpression variableExpression = (VariableExpression) closest;
+                ASTNode scope = AstUtilities.getScope(path, variableExpression);
+                if (scope != null) {
+                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName(), path, doc, lexOffset);
+                    if (variable != null) {
+                        // I am using getRange and not getOffset, because getRange is adding 'def_' to offset of field
+                        int offset = AstUtilities.getRange(variable, doc).getStart();
+                        return new DeclarationLocation(info.getFileObject(), offset);
+                    }
+                }
+            } else if (closest instanceof ConstantExpression && parent instanceof PropertyExpression) {
+                PropertyExpression propertyExpression = (PropertyExpression) parent;
+                Expression objectExpression = propertyExpression.getObjectExpression();
+                Expression property = propertyExpression.getProperty();
+                if (objectExpression instanceof VariableExpression && property instanceof ConstantExpression) {
+                    VariableExpression variableExpression = (VariableExpression) objectExpression;
+                    if ("this".equals(variableExpression.getName())) {
+                        ASTNode scope = AstUtilities.getOwningClass(path);
+                        if (scope == null) {
+                            // we are in script?
+                            scope = (ModuleNode) path.root();
+                        }
+                        ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText(), path, doc, lexOffset);
+                        if (variable != null) {
+                            int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
+                            return new DeclarationLocation(info.getFileObject(), offset);
+                        }
+                    } else {
+                        // find variable type
+                        ClassNode type = variableExpression.getType();
+                        String typeName = type.getName();
+                        String fieldName = ((ConstantExpression) closest).getText();
 
-            // Look at the parse tree; find the closest node and jump based on the context
-//            if (closest instanceof FieldNode) {
-//                String name = ((FieldNode)closest).getName();
-//                ASTNode method = AstUtilities.findLocalScope(closest, path);
-//
-//                return fix(findLocal(info, method, name), info);
-//            }
+                        // try to find it in Java
+                        final ClasspathInfo cpInfo = ClasspathInfo.create(info.getFileObject());
+                        DeclarationLocation location = findJavaField(cpInfo, typeName, fieldName);
+                        if (location != DeclarationLocation.NONE) {
+                            return location;
+                        }
+
+                        // TODO try to find it in Groovy
+                    }
+                }
+            } else if (closest instanceof DeclarationExpression ||
+                closest instanceof ConstructorCallExpression ||
+                closest instanceof ClassExpression || 
+                closest instanceof FieldNode) {
+
+                String fqName = getFqNameForNode(closest);
+                
+                LOG.log(Level.FINEST, "Looking for type: {0}", fqName); // NOI18N
+                
+                if (doc != null && range != null) {
+                    String text = doc.getText(range.getStart(), range.getLength());
+
+                    Set<IndexedClass> classes =
+                        index.getClasses(text, NameKind.EXACT_NAME, true, false, false);
+
+                    for (IndexedClass indexedClass : classes) {
+                        ASTNode node = AstUtilities.getForeignNode(indexedClass);
+                        if (node != null) {
+                            OffsetRange defRange = null;
+                            try {
+                                defRange = AstUtilities.getRange(node, (BaseDocument) indexedClass.getDocument());
+                            } catch (IOException ex) {
+                                LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
+                            }
+                            if (defRange != null) {
+                                LOG.log(Level.FINEST, "Found decl. for : {0}", text); // NOI18N
+                                LOG.log(Level.FINEST, "Foreign Node    : {0}", node); // NOI18N
+                                LOG.log(Level.FINEST, "Range start     : {0}", defRange.getStart()); // NOI18N
+                                
+                                return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
+                            }
+                        }
+                    }
+
+                    // so - we haven't found this class using the groovy index, 
+                    // then we have to search it as a pure java type.
+                    
+                    // simple sanity-check that the literal string in the source document
+                    // matches the last part of the full-qualified name of the type.
+                    // e.g. "String" means "java.lang.String"
+                    
+                    if(!NbUtilities.stripPackage(fqName).equals(text)){
+                        LOG.log(Level.FINEST, "fqName != text");
+                        return DeclarationLocation.NONE;
+                    }
+                    
+                    FileObject fileObject = info.getFileObject();
+                    
+                    if (fileObject != null) {
+                        final ClasspathInfo cpi = ClasspathInfo.create(fileObject);
+
+                        if (cpi != null) {
+                            JavaSource javaSource = JavaSource.create(cpi);
+
+                            if (javaSource != null) {
+                                
+                                try {
+                                    javaSource.runUserActionTask(new SourceLocator(fqName, cpi), false);
+                                } catch (IOException ex) {
+                                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                                    return null;
+                                }
+
+                            } else {
+                                LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
+                            }
+                        } else {
+                            LOG.log(Level.FINEST, "classpathinfo == null"); // NOI18N
+                        }
+                    } else {
+                        LOG.log(Level.FINEST, "fileObject == null"); // NOI18N
+                    }
+
+                    return DeclarationLocation.NONE;
+                    
+                }
+
+            }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
         return DeclarationLocation.NONE;
     }
+    
+    
+    private String getFqNameForNode(ASTNode node) {
+        if (node instanceof DeclarationExpression) {
+            return ((BinaryExpression) node).getLeftExpression().getType().getName();
+        } else if (node instanceof Expression) {
+            return ((Expression) node).getType().getName();
+        } else if (node instanceof FieldNode) {
+            return ((FieldNode) node).getType().getName();
+        }
 
+        return "";
+    }
+
+    /**
+     * Locates and opens in Editor the Java Element given as Full-Qualified name in fqName.
+     */
+    private class SourceLocator implements Task<CompilationController> {
+        
+        String fqName;
+        ClasspathInfo cpi;
+
+        public SourceLocator(String fqName, ClasspathInfo cpi) {
+            this.fqName = fqName;
+            this.cpi = cpi;
+        }
+
+        public void run(CompilationController info) throws Exception {
+            
+            Elements elements = info.getElements();
+
+            if (elements != null) {
+                final javax.lang.model.element.TypeElement typeElement = elements.getTypeElement(fqName);
+
+                if (typeElement != null) {
+
+                    if (!SwingUtilities.isEventDispatchThread()) {
+
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                ElementOpen.open(cpi, typeElement);
+                            }
+                        });
+
+                    } else {
+                        ElementOpen.open(cpi, typeElement);
+                    }
+
+                } else {
+                    LOG.log(Level.FINEST, "typeElement == null"); // NOI18N
+                }
+            } else {
+                LOG.log(Level.FINEST, "elements == null"); // NOI18N
+            }
+            
+        }
+    }
+    
+    
+    
     private OffsetRange getReferenceSpan(TokenSequence<?> ts, TokenHierarchy<Document> th, int lexOffset) {
         Token<?> token = ts.token();
         TokenId id = token.id();
@@ -460,6 +674,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         BaseDocument doc, int astOffset, int lexOffset, AstPath path, ASTNode callNode, GroovyIndex index) {
 
         Set<IndexedMethod> candidates = new HashSet<IndexedMethod>();
+
+        if(path == null) {
+            return null;
+        }
+
         ASTNode parent = path.leafParent();
 
         if (callNode instanceof ConstantExpression && parent instanceof MethodCallExpression) {
@@ -478,7 +697,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             }
             if (fqn != null) {
                 for (IndexedMethod method : methods) {
-                    if (fqn.equals(method.getClz())) {
+                    if (fqn.equals(method.getIn())) {
                         candidates.add(method);
                     }
                 }
@@ -501,6 +720,88 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         }
 
         return location;
+    }
+
+    private static DeclarationLocation findJavaField(ClasspathInfo cpInfo, final String fqn, final String fieldName) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        final int[] offset = new int[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (VariableElement variable : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
+                            if (variable.getSimpleName().contentEquals(fieldName)) {
+                                handles[0] = ElementHandle.create(variable);
+                            }
+                        }
+                    }
+                }
+            }, true);
+            if (handles[0] != null) {
+                FileObject fileObject = SourceUtils.getFile(handles[0], cpInfo);
+                if (fileObject != null) {
+                    javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            Element element = handles[0].resolve(controller);
+                            Trees trees = controller.getTrees();
+                            Tree tree = trees.getTree(element);
+                            SourcePositions sourcePositions = trees.getSourcePositions();
+                            offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
+                        }
+                    }, true);
+                    return new DeclarationLocation(fileObject, offset[0]);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DeclarationLocation.NONE;
+    }
+
+    private static DeclarationLocation findJavaMethod(ClasspathInfo cpInfo, final String fqn, final MethodCallExpression methodCall) {
+        final ElementHandle[] handles = new ElementHandle[1];
+        final int[] offset = new int[1];
+        JavaSource javaSource = JavaSource.create(cpInfo);
+        try {
+            javaSource.runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = controller.getElements().getTypeElement(fqn);
+                    if (typeElement != null) {
+                        for (ExecutableElement javaMethod : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                            if (Methods.isSameMethod(javaMethod, methodCall)) {
+                                handles[0] = ElementHandle.create(javaMethod);
+                            }
+                        }
+                    }
+                }
+            }, true);
+            if (handles[0] != null) {
+                FileObject fileObject = SourceUtils.getFile(handles[0], cpInfo);
+                if (fileObject != null) {
+                    javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            Element element = handles[0].resolve(controller);
+                            Trees trees = controller.getTrees();
+                            Tree tree = trees.getTree(element);
+                            SourcePositions sourcePositions = trees.getSourcePositions();
+                            offset[0] = (int) sourcePositions.getStartPosition(controller.getCompilationUnit(), tree);
+                        }
+                    }, true);
+                    return new DeclarationLocation(fileObject, offset[0]);
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return DeclarationLocation.NONE;
     }
 
 }

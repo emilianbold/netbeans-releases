@@ -15,6 +15,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -32,7 +33,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jTabbedPane1" pref="215" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="213" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -48,6 +49,14 @@
           <Dimension value="[0, 0]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingPane" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingPane" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
@@ -75,23 +84,33 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="jLabelWarning" pref="328" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel2" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel1" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
-                          <Component id="jLabel3" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jLabel2" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jLabel3" linkSize="1" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabelReadOnly" alignment="1" pref="234" max="32767" attributes="0"/>
-                          <Component id="jComboBoxIndexNames" alignment="0" pref="234" max="32767" attributes="1"/>
-                          <Component id="jTextFieldExpressionRead" alignment="0" pref="234" max="32767" attributes="3"/>
-                          <Component id="jComboBoxDatasets" alignment="0" pref="234" max="32767" attributes="3"/>
+                          <Group type="102" attributes="0">
+                              <Component id="jLabelReadOnly" pref="90" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" pref="170" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="jComboBoxDatasets" alignment="0" pref="246" max="32767" attributes="3"/>
+                                  <Component id="jComboBoxIndexNames" alignment="0" pref="246" max="32767" attributes="1"/>
+                                  <Component id="jTextFieldExpressionRead" alignment="0" pref="246" max="32767" attributes="3"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jLabelWarning" alignment="0" pref="322" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
@@ -101,6 +120,11 @@
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jComboBoxDatasets" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jComboBoxIndexNames" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -108,15 +132,10 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jComboBoxIndexNames" alignment="3" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabelReadOnly" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="47" max="32767" attributes="0"/>
                       <Component id="jLabelWarning" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -146,6 +165,14 @@
                   <StringArray count="0"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingDataSets" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingDataSets" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JTextField" name="jTextFieldExpressionRead">
               <Properties>
@@ -154,6 +181,14 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingELRead" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingELRead" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel4">
               <Properties>
@@ -185,7 +220,16 @@
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                   <StringArray count="0"/>
                 </Property>
+                <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingIndex" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingIndex" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </AccessibilityProperties>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
@@ -243,20 +287,23 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="262" max="-2" attributes="0"/>
-                                  <Component id="jLabel8" max="32767" attributes="0"/>
+                                  <Component id="jLabel8" pref="9" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jCheckBox1" alignment="0" pref="232" max="32767" attributes="0"/>
-                                      <Component id="jTextFieldExpressionWrite" alignment="0" pref="232" max="32767" attributes="2"/>
-                                      <Component id="jComboBoxCommandUpdate" alignment="0" pref="232" max="32767" attributes="2"/>
+                                      <Component id="jCheckBox1" alignment="0" pref="247" max="32767" attributes="0"/>
+                                      <Component id="jTextFieldExpressionWrite" alignment="0" pref="247" max="32767" attributes="2"/>
+                                      <Component id="jComboBoxCommandUpdate" alignment="0" pref="247" max="32767" attributes="2"/>
                                   </Group>
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
-                      <Component id="jLabelWarning2" alignment="0" pref="331" max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabelWarning2" pref="328" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -275,7 +322,7 @@
                           <Component id="jLabel8" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="31" max="32767" attributes="0"/>
+                          <EmptySpace pref="68" max="32767" attributes="0"/>
                           <Component id="jLabelWarning2" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -302,6 +349,14 @@
                       <StringArray count="0"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingCommand" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingCommand" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="jTextFieldExpressionWrite">
                   <Properties>
@@ -310,6 +365,14 @@
                     </Property>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingELWrite" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingELWrite" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel9">
                   <Properties>
@@ -363,12 +426,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jPanel3" alignment="0" pref="334" max="32767" attributes="1"/>
+                  <Component id="jPanel3" alignment="0" pref="350" max="32767" attributes="1"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jPanel3" alignment="0" pref="169" max="32767" attributes="0"/>
+                  <Component id="jPanel3" alignment="0" pref="186" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
@@ -394,15 +457,20 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="jLabel6" linkSize="5" max="32767" attributes="1"/>
-                              <Component id="jLabel7" linkSize="5" alignment="0" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jComboBoxCommandsIndexablePrevious" pref="232" max="32767" attributes="1"/>
-                              <Component id="jComboBoxIndexableNext" pref="232" max="32767" attributes="1"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="jLabelWarning1" alignment="1" pref="328" max="32767" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="jLabel6" linkSize="5" max="32767" attributes="1"/>
+                                      <Component id="jLabel7" linkSize="5" alignment="0" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jComboBoxCommandsIndexablePrevious" pref="248" max="32767" attributes="1"/>
+                                      <Component id="jComboBoxIndexableNext" pref="248" max="32767" attributes="1"/>
+                                  </Group>
+                              </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -420,7 +488,8 @@
                               <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jComboBoxCommandsIndexablePrevious" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="79" max="32767" attributes="0"/>
+                          <EmptySpace pref="87" max="32767" attributes="0"/>
+                          <Component id="jLabelWarning1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -443,6 +512,14 @@
                     </Property>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingNext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingNext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel7">
                   <Properties>
@@ -457,6 +534,25 @@
                       <StringArray count="0"/>
                     </Property>
                     <Property name="enabled" type="boolean" value="false"/>
+                  </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCN_DatabindingPrevious" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="ASCD_DatabindingPrevious" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                  </AccessibilityProperties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabelWarning1">
+                  <Properties>
+                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="0" green="0" red="ff" type="rgb"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/Bundle.properties" key="DatabindingElementUI.jLabelWarning1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                    </Property>
+                    <Property name="verticalAlignment" type="int" value="3"/>
                   </Properties>
                 </Component>
               </SubComponents>

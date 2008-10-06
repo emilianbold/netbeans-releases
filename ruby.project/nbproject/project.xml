@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.99.5</specification-version>
+                        <specification-version>0.111</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -30,15 +30,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.8</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -72,8 +63,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -92,6 +83,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.options.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -135,7 +135,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.29</specification-version>
+                        <specification-version>0.51</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -400,6 +400,7 @@
                 <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.spi</package>
                 <package>org.netbeans.modules.ruby.rubyproject.ui</package>
+                <package>org.netbeans.modules.ruby.rubyproject.ui.customizer</package>
             </friend-packages>
         </data>
     </configuration>

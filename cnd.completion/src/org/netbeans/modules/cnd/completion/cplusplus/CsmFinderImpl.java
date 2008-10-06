@@ -52,14 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import java.util.Queue;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -70,6 +63,9 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
@@ -81,60 +77,49 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
  * @author Vladimir Voskresensky
  * based on MDRFinder
  */
-public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
+public class CsmFinderImpl implements CsmFinder {
 
     private boolean caseSensitive = false;
     
     private FileObject fo;
     private CsmFile csmFile;
     
-    private Class kitClass;
+    private String mimeType;
 
     // ..........................................................................
     
-    public CsmFinderImpl(FileObject fo, Class kitClass){
-        this();
+    public CsmFinderImpl(FileObject fo, String mimeType){
         this.fo = fo;
-        this.kitClass = kitClass;
-        caseSensitive = getCaseSensitive();
-        Settings.addSettingsChangeListener(this);        
+        this.mimeType = mimeType;
+        caseSensitive = _getCaseSensitive();
     }
         
-    public CsmFinderImpl(CsmFile csmFile, Class kitClass){
-        this();
+    public CsmFinderImpl(CsmFile csmFile, String mimeType){
         this.csmFile = csmFile;
-        this.kitClass = kitClass;
-        caseSensitive = getCaseSensitive();
-        Settings.addSettingsChangeListener(this);        
+        this.mimeType = mimeType;
+        caseSensitive = _getCaseSensitive();
     }
-    
-    public CsmFinderImpl(){
-        super();
+
+    public CsmFinderImpl(CsmFile csmFile, String mimeType, boolean caseSensitive){
+        this.csmFile = csmFile;
+        this.mimeType = mimeType;
+        this.caseSensitive = caseSensitive;
     }
 
     public CsmFile getCsmFile() {
         return this.csmFile;
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (evt == null || kitClass != evt.getKitClass()) return;
-        
-        if (ExtSettingsNames.COMPLETION_CASE_SENSITIVE.equals((evt.getSettingName()))){
-            caseSensitive = getCaseSensitive();
-        }
-    }
-    
-    
     private boolean getCaseSensitive() {
-        return SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-            ExtSettingsDefaults.defaultCompletionCaseSensitive);
+        return caseSensitive;
+    }
+
+    private boolean _getCaseSensitive() {
+        return CsmCompletionUtils.isCaseSensitive(mimeType);
     }
     
     private boolean getNaturalSort() {
-        return SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_NATURAL_SORT,
-            ExtSettingsDefaults.defaultCompletionNaturalSort);
+        return CsmCompletionUtils.isNaturalSort(mimeType);
     }
     
     private CsmNamespace resolveNamespace(String namespaceName, boolean caseSensitive) {
@@ -189,9 +174,8 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
 
     public CsmClassifier getExactClassifier(String classFullName) {
         // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
-        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
-//        Type cls = JavaModel.getDefaultExtent().getType().resolve(classFullName);
-//        if (cls instanceof UnresolvedClass)
+//        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
+        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, true);
         return cls;
     }
     
@@ -270,74 +254,30 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         List ret = new ArrayList();
 
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+        HashSet<CsmNamespace> vasitedNamespaces = new HashSet<CsmNamespace>();
 
         if (csmFile != null && csmFile.getProject() != null) {
             CsmProject prj = csmFile.getProject();
-            CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
-            Collection classes = contResolver.getNamespaceClassesEnums(ns, name, exactMatch, searchNested);
-            if (classes != null) {
-                ret.addAll(classes);
-                if (searchFirst && ret.size()>0) {
-                    return ret;
-                }
+            CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;   
+            if (checkStopAfterAppendAllNamespaceElements(ns, name, exactMatch, searchNested, searchFirst, true, csmFile, contResolver, ret, false, new HashSet<CharSequence>(), vasitedNamespaces)) {
+                return ret;
             }
-            classes = contResolver.getNamespaceEnumerators(ns, name, exactMatch, searchNested);
-            if (classes != null) {
-                ret.addAll(classes);
-                if (searchFirst && ret.size()>0) {
-                    return ret;
-                }
-            }
-            classes = contResolver.getNamespaceVariables(ns, name, exactMatch, searchNested);
-            if (classes != null) {
-                ret.addAll(classes);
-                if (searchFirst && ret.size()>0) {
-                    return ret;
-                }
-            }
-            classes = contResolver.getNamespaceFunctions(ns, name, exactMatch, searchNested);
-            if (classes != null) {
-                ret.addAll(classes);
-                if (searchFirst && ret.size()>0) {
-                    return ret;
-                }
-            }
-            if (prj.getGlobalNamespace() != ns) {
-                classes =  contResolver.getLibClassesEnums(name, exactMatch);
-                if (classes != null) {
-                    ret.addAll(classes);
-                    if (searchFirst && ret.size()>0) {
-                        return ret;
-                    }
-                }
-            } else {
+            if (!prj.isArtificial()) {
                 HashSet<CharSequence> set = new HashSet<CharSequence>();
                 for(Object o : ret){
                     if (CsmKindUtilities.isQualified((CsmObject) o)) {
                         set.add(((CsmQualifiedNamedElement)o).getQualifiedName());
                     }
                 }
-                if (!ns.getProject().isArtificial()) {
-                    for (CsmProject lib : prj.getLibraries()) {
-                        CsmNamespace n = lib.getGlobalNamespace();
-                        classes = contResolver.getNamespaceClassesEnums(n, name, exactMatch, searchNested);
-                        merge(set, ret, classes);
-                        if (searchFirst && ret.size()>0) {
-                            return ret;
-                        }
-                        classes = contResolver.getNamespaceEnumerators(n, name, exactMatch, searchNested);
-                        merge(set, ret, classes);
-                        if (searchFirst && ret.size()>0) {
-                            return ret;
-                        }
-                        classes = contResolver.getNamespaceVariables(n, name, exactMatch, searchNested);
-                        merge(set, ret, classes);
-                        if (searchFirst && ret.size()>0) {
-                            return ret;
-                        }
-                        classes = contResolver.getNamespaceFunctions(n, name, exactMatch, searchNested);
-                        merge(set, ret, classes);
-                        if (searchFirst && ret.size()>0) {
+                for (CsmProject lib : prj.getLibraries()) {
+                    CsmNamespace libNmsp;
+                    if (ns.isGlobal()) {
+                        libNmsp = lib.getGlobalNamespace();
+                    } else {
+                        libNmsp = lib.findNamespace(ns.getQualifiedName());
+                    }
+                    if (libNmsp != null) {
+                        if (checkStopAfterAppendAllNamespaceElements(libNmsp, name, exactMatch, searchNested, searchFirst, false, null, contResolver, ret, true, set, vasitedNamespaces)) {
                             return ret;
                         }
                     }
@@ -346,8 +286,97 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         }
         return ret;
     }
+    
+    private boolean checkStopAfterAppendAllNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested, boolean searchFirst,
+                                    boolean needFileLocal, CsmFile file,
+                                        CsmProjectContentResolver contResolver, List ret, 
+                                        boolean merge, Set<CharSequence> set, HashSet<CsmNamespace> vasitedNamespaces) {
+        if(vasitedNamespaces.contains(nmsp)) {
+            return false;
+        }
+        vasitedNamespaces.add(nmsp);
+        
+        Collection elements = contResolver.getNamespaceClassesEnums(nmsp, name, exactMatch, searchNested);
+        if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            return true;
+        }
+        elements = contResolver.getNamespaceEnumerators(nmsp, name, exactMatch, searchNested);
+        if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            return true;
+        }
+        elements = contResolver.getNamespaceVariables(nmsp, name, exactMatch, searchNested);
+        if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            return true;
+        }
+        elements = contResolver.getNamespaceFunctions(nmsp, name, exactMatch, searchNested);
+        if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            return true;
+        }
+        if (needFileLocal) {
+            assert file != null : "file must be passed if needFileLocal is true";
+            elements = contResolver.getFileLocalNamespaceVariables(nmsp, file, name, exactMatch);
+            if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+                return true;
+            }
+            elements = contResolver.getFileLocalNamespaceFunctions(nmsp, file, name, exactMatch);
+            if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+                return true;
+            }            
+        }        
+        for (CsmNamespace ns: CsmUsingResolver.extractNamespaces(CsmUsingResolver.getDefault().findUsingDirectives(nmsp))) {            
+            if (checkStopAfterAppendAllNamespaceElements(ns, name, exactMatch, searchNested, searchFirst, needFileLocal, file, contResolver, ret, merge, set, vasitedNamespaces)) {
+                return true;
+            }
+        }        
+        return false;
+    }
+    
+    private boolean checkStopAfterAppendElements(List ret, Collection elements, Set<CharSequence> set, boolean merge, boolean searchFirst) {
+        if (merge) {
+            merge(set, ret, elements);
+        } else {
+            ret.addAll(elements);
+        }
+        if (searchFirst && ret.size()>0) {
+            return true;
+        }        
+        return false;
+    }
+//    /** Finds static elements (variables, functions) by name and position
+//    * @param nmsp namespace where the elements should be searched for. It can be null
+//    * @param offset - offset in current file.
+//    * @param begining of the name of the element. The namespace name must be omitted.
+//    * @param exactMatch whether the given name is the exact requested name
+//    *   of the element or not.
+//    * @return list of the matching elements
+//    */
+//    public List findStaticNamespaceElements(CsmNamespace nmsp, int offset, String name, boolean exactMatch, boolean searchNested, boolean searchFirst) {
+//        List ret = new ArrayList();
+//
+//        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+//
+//        if (csmFile != null && csmFile.getProject() != null) {
+//            CsmProject prj = csmFile.getProject();
+//            CsmNamespace ns = nmsp == null ? prj.getGlobalNamespace() : nmsp;
+//            Collection items = contResolver.getFileLocalNamespaceVariables(ns, csmFile, offset, name, exactMatch);
+//            if (items != null) {
+//                ret.addAll(items);
+//                if (searchFirst && ret.size()>0) {
+//                    return ret;
+//                }
+//            }
+//            items = contResolver.getFileLocalNamespaceFunctions(ns, csmFile, offset, name, exactMatch);
+//            if (items != null) {
+//                ret.addAll(items);
+//                if (searchFirst && ret.size()>0) {
+//                    return ret;
+//                }
+//            }
+//        }
+//        return ret;
+//    }
 
-    private void merge(HashSet<CharSequence> set, List ret, Collection classes) {
+    private void merge(Set<CharSequence> set, List ret, Collection classes) {
         if (classes != null) {
             for (Object o : classes) {
                 if (CsmKindUtilities.isQualified((CsmObject) o)) {
@@ -840,5 +869,17 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
             }
         }
         return out;
+    }
+
+    public List<CsmClass> findBaseClasses(CsmOffsetableDeclaration contextDeclaration, CsmClassifier c, String name, boolean exactMatch, boolean sort) {
+        c = CsmBaseUtilities.getOriginalClassifier(c);
+        if (CsmKindUtilities.isClass(c)) {
+            CsmClass clazz = (CsmClass)c;
+            CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
+            List<CsmClass> classClassifiers = contResolver.getBaseClasses(clazz, contextDeclaration, name, exactMatch);
+            return classClassifiers;
+        } else {
+            return new ArrayList<CsmClass>();
+        }
     }
 }

@@ -60,11 +60,11 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.bookmarks.BookmarksApiPackageAccessor;
 import org.netbeans.lib.editor.bookmarks.api.Bookmark;
 import org.netbeans.lib.editor.bookmarks.api.BookmarkList;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -91,7 +91,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
     public ToggleBookmarkAction(JTextComponent component) {
         super(
             NbBundle.getMessage(ToggleBookmarkAction.class, ACTION_NAME), 
-            new ImageIcon(Utilities.loadImage(ACTION_ICON))
+            new ImageIcon(ImageUtilities.loadImage(ACTION_ICON))
         );
         putValue(SHORT_DESCRIPTION, getValue(NAME));
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -209,7 +209,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
             BookmarkList newBookmarks = BookmarkList.get(component.getDocument());
             if (newBookmarks != bookmarks) {
                 if (bookmarksListener != null) {
-                    BookmarksApiPackageAccessor.get().removeBookmarkListPcl(bookmarks, bookmarksListener);
+                    bookmarks.removePropertyChangeListener (bookmarksListener);
                     bookmarksListener = null;
                 }
 
@@ -217,7 +217,7 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
 
                 if (bookmarks != null) {
                     bookmarksListener = WeakListeners.propertyChange(this, bookmarks);
-                    BookmarksApiPackageAccessor.get().addBookmarkListPcl(bookmarks, bookmarksListener);
+                    bookmarks.addPropertyChangeListener (bookmarksListener);
                 }
             }
             

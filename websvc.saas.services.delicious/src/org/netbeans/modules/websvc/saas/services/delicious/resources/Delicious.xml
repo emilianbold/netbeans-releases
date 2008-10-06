@@ -47,7 +47,7 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://del.icio.us/help/api/"
+               api-doc="http://delicious.com/help/api"
                url="org/netbeans/modules/websvc/saas/services/delicious/resources/DeliciousWadl.xml">
    
     <description>Bookmarking Service</description>

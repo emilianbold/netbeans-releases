@@ -5,7 +5,7 @@
 <%--CC
 <tab|
 ...
-<table></table>
+<table>
 --%>
 
 <%-- completion for HTML values --%>
@@ -31,7 +31,7 @@
 
 <%-- completion for body HTML endtag --%>
 <%--CC
-<body>|
+<body></|
 ...
 <body></body>
 --%>

@@ -308,6 +308,11 @@ public class JPAGenTest extends SourceTestSupport{
         public String getTableName() {
             return tableName;
         }
+
+        @Override
+        public boolean isAutoIncrement() {
+            return false;
+        }
     }
     
     private static final class GenerateTablesImpl implements GeneratedTables {

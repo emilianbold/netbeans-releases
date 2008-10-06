@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
@@ -54,12 +55,16 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
+import org.netbeans.modules.cnd.loaders.ExeObject;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
+import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
+import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -260,19 +265,25 @@ public class IpeUtils {
         }
         return newPath;
     }
-    
-    
+
+
     /**
      *  Compute an array of the individual path elements of a pathname.
      */
-    static private final Object[] getPathNameArray(String path) {
-        ArrayList l;
-        int pos = 1;			    // start of a path name component
+    /*package*/ static final String[] getPathNameArray(String path) {
+        ArrayList<String> l;
+        int pos = 0;			    // start of a path name component
         int next;			    // position of next '/' in path
-        
+
+        if (0 < path.length() && (path.charAt(0) == '/' || path.charAt(0) == '\\')) {
+            // skip the first slash, because we don't want
+            // an empty path element in the resulting array
+            pos = 1;
+        }
+
         l = new ArrayList();
         if (isPathAbsolute(path)) {
-            while (pos > 0) {
+            while (pos >= 0) {
                 next = path.indexOf('/', pos);
                 if (next < 0)
                     next = path.indexOf('\\', pos);
@@ -285,10 +296,10 @@ public class IpeUtils {
                 }
             }
         }
-        
-        return l.toArray();
+
+        return l.toArray(new String[l.size()]);
     }
-    
+
     /**
      * Expand '~' and env variables in path.
      * Also strips off leading and trailing white space.
@@ -738,7 +749,7 @@ public class IpeUtils {
         if (s.indexOf('"') < 0)
             return s;
         else {
-            //return s.replace(" ", "\\ "); // NOI8N JDK1.5
+            //return s.replace(" ", "\\ "); // NOI18N JDK1.5
             return s.replaceAll("\"", "\\\\\""); // NOI18N
         }
     }
@@ -755,6 +766,9 @@ public class IpeUtils {
 		string.charAt(i) == '-' ||
 		string.charAt(i) == '.' ||
 		string.charAt(i) == '/' ||
+		string.charAt(i) == '$' ||
+		string.charAt(i) == '{' ||
+		string.charAt(i) == '}' ||
 		string.charAt(i) == '\\') {
             }
             else {
@@ -826,7 +840,7 @@ public class IpeUtils {
             if (i > 0)
                 newName = name + "_" + i; // NOI18N
             newPath = folder + "/" + newName; // NOI18N
-            if (ext.length() > 0)
+            if (ext != null && ext.length() > 0)
                 newPath = newPath + "." + ext; // NOI18N
             if (!new File(newPath).exists()) {
                 break;
@@ -880,6 +894,50 @@ public class IpeUtils {
             }
         }
         return false;
+    }
+    
+    
+    /*
+     * Return true if file is an executable
+     */
+    public static boolean isExecutable(File file) {
+        FileObject fo = null;
+        
+        if (file.getName().endsWith(".exe")) { //NOI18N
+            return true;
+        }
+        
+        try {
+            fo = FileUtil.toFileObject(file.getCanonicalFile());
+        } catch (IOException e) {
+            return false;
+        }
+        
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+            if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    public static String expandMacro(String string, String macro, String value) {
+        // Substitute macro
+        int i = string.indexOf((macro));
+        if (i == 0) {
+            string = value + string.substring(macro.length());
+        }
+        else if (i > 0) {
+            string = string.substring(0, i) + value + string.substring(i + macro.length());
+        }
+        return string;
     }
 }
 

@@ -223,30 +223,33 @@ final class CallHierarchyTasks {
 
                 TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
                 
-                // XXX validate source
-                
-                ClasspathInfo cpInfo;
-                if (searchAll) {
-                    cpInfo = RetoucheUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
+                // validate source
+                if (RetoucheUtils.getElementHandle(sourceToQuery) == null) {
+                    elmDesc.setBroken();
                 } else {
-                    cpInfo = RetoucheUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
-                }
-                
-                Set<FileObject> relevantFiles = null;
-                if (!isCanceled()) {
-                    relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                            sourceToQuery, cpInfo, false, false, false, true);
-                }
-                try {
-                    if (!isCanceled()) {
-                        processFiles(relevantFiles, this, null);
+                    ClasspathInfo cpInfo;
+                    if (searchAll) {
+                        cpInfo = RetoucheUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
+                    } else {
+                        cpInfo = RetoucheUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
                     }
-                    elmDesc.setReferences(result);
+
+                    Set<FileObject> relevantFiles = null;
+                    if (!isCanceled()) {
+                        relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
+                                sourceToQuery, cpInfo, false, false, false, true);
+                    }
+                    try {
+                        if (!isCanceled()) {
+                            processFiles(relevantFiles, this, null);
+                        }
+                    } catch (Exception ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     elmDesc.setCanceled(isCanceled());
-                    resultHandler.run();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 }
+                elmDesc.setReferences(result);
+                resultHandler.run();
             } finally {
                 synchronized(LOCK) {
                     CURR_TASK = null;

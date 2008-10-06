@@ -51,12 +51,13 @@ import org.openide.util.NbBundle;
  */
 public class MasterPasswordInputDialog extends NotifyDescriptor {
 
-
     /**
      * The text field used to enter the input.
      */
     protected MasterPasswordInputPanel panel=new MasterPasswordInputPanel();
-    static protected final String title =NbBundle.getMessage(MasterPasswordInputDialog.class, "MasterPasswordInputDialog_title");
+    static protected final String title =
+            NbBundle.getMessage(MasterPasswordInputDialog.class, "MasterPasswordInputDialog_title");
+    
     /** Construct dialog with the specified title and label text.
      * @param text label text
      * @param title title of the dialog
@@ -66,8 +67,6 @@ public class MasterPasswordInputDialog extends NotifyDescriptor {
         super.setMessage(panel);
     }
     
-    
-    
     /**
      * Get the text which the user typed into the input line.
      * @return the text entered by the user
@@ -75,6 +74,5 @@ public class MasterPasswordInputDialog extends NotifyDescriptor {
     public String getInputText() {
         return panel.getMasterPassword();
     }
-    
     
 }

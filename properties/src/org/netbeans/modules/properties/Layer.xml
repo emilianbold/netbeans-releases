@@ -61,7 +61,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-properties">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-properties-PropertiesDataLoader.instance"/>
+                    <file name="org-netbeans-modules-properties-PropertiesDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <!--

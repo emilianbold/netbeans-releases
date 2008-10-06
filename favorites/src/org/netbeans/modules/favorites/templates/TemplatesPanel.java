@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,13 +47,17 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.actions.CopyAction;
@@ -75,6 +79,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -92,8 +97,6 @@ import org.openide.windows.TopComponent;
 public class TemplatesPanel extends TopComponent implements ExplorerManager.Provider {
     private ExplorerManager manager;
     private TemplateTreeView view;
-    private JTree tree;
-    static private Set newlyCreatedFolders;
     
     static private FileObject templatesRoot;
     
@@ -175,10 +178,32 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     static Node getTemplateRootNode () {
         DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
+        try {
+            df.setOrder (orderFolders (df.getChildren ()));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace (ex);
+        }
         return new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
     }
     
-    static private final class TemplateFilter implements DataFilter {
+    private static DataObject [] orderFolders (DataObject [] original) {
+        SortedSet<DataObject> sorted = new TreeSet<DataObject> (new Comparator<DataObject> () {
+            public int compare (DataObject o1, DataObject o2) {
+                int res = o1.getNodeDelegate ().getDisplayName ().compareTo (o2.getNodeDelegate ().getDisplayName ());
+                // compare primary files if display names are equals
+                if (res == 0 && o1 != o2) {
+                    res = o1.getPrimaryFile ().getPath ().compareTo (o2.getPrimaryFile ().getPath ());
+                }
+                return res;
+            }
+        });
+        for (DataObject o : original) {
+            sorted.add (o);
+        }
+        return sorted.toArray (new DataObject [0]);
+    }
+    
+    private static final class TemplateFilter implements DataFilter {
         public boolean acceptDataObject (DataObject obj) {
             return acceptTemplate (obj);
         }
@@ -396,9 +421,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             manager.setSelectedNodes (new Node [] { newSubfolder });
             view.invokeInplaceEditing ();
         } catch (PropertyVetoException pve) {
-            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
+            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);//GEN-LAST:event_newFolderButtonActionPerformed
         }
-//GEN-LAST:event_newFolderButtonActionPerformed
+                                               
     }                                               
     
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
@@ -408,24 +433,24 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 nodes[i].destroy();
             }
             catch (IOException ioe) {
-                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);//GEN-LAST:event_deleteButtonActionPerformed
             }
-        }//GEN-LAST:event_deleteButtonActionPerformed
+        }                                            
     }                                            
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        createDuplicateFromNode (nodes [0]);
-//GEN-LAST:event_duplicateButtonActionPerformed
+        createDuplicateFromNode (nodes [0]);//GEN-LAST:event_duplicateButtonActionPerformed
+                                               
     }                                               
     
     private void renameButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
-        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        view.invokeInplaceEditing ();//GEN-LAST:event_renameButtonActionPerformed
+        assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);//GEN-LAST:event_renameButtonActionPerformed
+        view.invokeInplaceEditing ();                                            
     }                                            
     
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -476,7 +501,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             this (n, new DataFolderFilterChildren (n), new InstanceContent ());
         }
         
-        public TemplateNode (Node n, org.openide.nodes.Children ch) { 
+        private TemplateNode (Node n, org.openide.nodes.Children ch) { 
             this (n, ch, new InstanceContent ());
         }
         
@@ -505,14 +530,28 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             
             content.add (this);
         }
+        @Override
         public Action [] getActions (boolean context) {
             return isLeaf () ? ACTIONS_ON_LEAF : ACTIONS_ON_FOLDER;
         }
         
+        @Override
         public Action getPreferredAction () {
             return null;
         }
-        
+
+        @Override
+        public void setName(String name) {
+            // #140308 - get attributtes before rename and set them for renamed FileObject
+            FileObject fo = this.getLookup().lookup(FileObject.class);
+            final HashMap<String, Object> attributes = getAttributes(fo);
+            super.setName(name);
+            try {
+                setAttributes (fo, attributes);
+            } catch (IOException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
+            }
+        }
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -520,8 +559,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             super (n);
         }
         
+        @Override
         protected Node[] createNodes(Node key) {
-            Node n = (Node) key;
             Node [] orig = super.createNodes (key);
             Node [] filtered = new Node [orig.length];
             for (int i = 0; i < orig.length; i++) {
@@ -538,7 +577,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     static private DataObject getDOFromNode (Node n) {
-        DataObject dobj = (DataObject) n.getLookup ().lookup (DataObject.class);
+        DataObject dobj = n.getLookup ().lookup (DataObject.class);
         assert dobj != null : "DataObject for node " + n;
         return dobj;
     }
@@ -549,12 +588,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             folder = DataFolder.findFolder (getTemplatesRoot ());
         } else {
             // try if has a data folder (alert: leaf node can be a empty folder)
-            folder = (DataFolder) nodes [0].getLookup ().lookup (DataFolder.class);
+            folder = nodes[0].getLookup ().lookup (DataFolder.class);
             
             // if not this node then try its parent
             if (folder == null && nodes [0].isLeaf ()) {
                 Node parent = nodes [0].getParentNode ();
-                folder = (DataFolder) parent.getLookup ().lookup (DataFolder.class);
+                folder = parent.getLookup ().lookup (DataFolder.class);
             }
         }
         return folder;
@@ -594,7 +633,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         if (JFileChooser.APPROVE_OPTION == result) {
             File f = chooser.getSelectedFile ();
             assert f != null;
-            DataObject newDO = createTemplateFromFile (f, getTargetFolder (nodes));
+            createTemplateFromFile (f, getTargetFolder (nodes));
         }    
     }
     
@@ -621,13 +660,41 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     static DataObject createDuplicateFromNode (Node n) {
         DataObject source = getDOFromNode (n);
         try {
-            return source.copy (source.getFolder ());
+            DataObject target = source.copy(source.getFolder());
+            FileObject srcFo = source.getPrimaryFile();
+            FileObject targetFo = target.getPrimaryFile();
+            setAttributes(targetFo, getAttributes(srcFo));
+            return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
         }
         return null;
     }
     
+    /** Returns map of attributes for given FileObject. */
+    private static HashMap<String, Object> getAttributes(FileObject fo) {
+        HashMap<String, Object> attributes = new HashMap<String, Object>();
+        Enumeration<String> attributeNames = fo.getAttributes();
+        while(attributeNames.hasMoreElements()) {
+            String attrName = attributeNames.nextElement();
+            if (attrName == null) {
+                continue;
+            }
+            Object attrValue = fo.getAttribute(attrName);
+            if (attrValue != null) {
+                attributes.put(attrName, attrValue);
+            }
+        }
+        return attributes;
+    }
+
+    /** Sets attributes for given FileObject. */
+    private static void setAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
+        for (Entry<String, Object> entry : attributes.entrySet()) {
+            fo.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
             templatesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates"); // NOI18N
@@ -656,12 +723,14 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private int getNodePosition (Node n) {
         Index supp = getIndexSupport (n);
 
-        DataFolder df = (DataFolder) n.getParentNode ().getLookup ().lookup (DataFolder.class);
+        DataFolder df = n.getParentNode ().getLookup ().lookup (DataFolder.class);
         df.getNodeDelegate ().getChildren ().getNodes (true);
 
         int pos = supp.indexOf (n);          
-        
-        assert pos != -1 : "Node " + n + " has position " + pos + " in children " + Arrays.asList (n.getParentNode ().getChildren ().getNodes ());
+
+        // #141851: getNodes()/getNodePosition() is not called under Children.MUTEX 
+        // therefore it is not guaranteed that node will be found (node could be deleted meanwhile)
+        // assert pos != -1 : "Node " + n + " has position " + pos + " in children " + Arrays.asList (n.getParentNode ().getChildren ().getNodes ());
 
         return pos;
     }
@@ -670,7 +739,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         Node parent = n.getParentNode ();
         assert parent != null : "Node " + n + " has a parent.";
 
-        Index index = (Index) parent.getLookup ().lookup (Index.class);
+        Index index = parent.getLookup ().lookup (Index.class);
         assert index != null : "Node " + parent + " has Index cookie.";
         
         return index;
@@ -730,6 +799,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return null;
         }
         
+        @Override
         protected boolean asynchronous () {
             return true;
         }
@@ -752,6 +822,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return null;
         }
         
+        @Override
         protected boolean asynchronous () {
             return true;
         }

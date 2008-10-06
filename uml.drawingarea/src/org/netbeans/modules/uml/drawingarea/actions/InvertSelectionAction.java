@@ -88,7 +88,7 @@ public class InvertSelectionAction extends NodeAction
                     tobeSelected.add(o);
             }
         }
-        scene.setSelectedObjects(tobeSelected);
+        scene.userSelectionSuggested(tobeSelected, false);
     }
 
     protected boolean enable(Node[] activatedNodes)
@@ -104,5 +104,11 @@ public class InvertSelectionAction extends NodeAction
     public HelpCtx getHelpCtx()
     {
         return null;
+    }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
     }
 }

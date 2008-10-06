@@ -42,7 +42,8 @@ package org.netbeans.test.j2ee.addmethod;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -53,7 +54,7 @@ import org.netbeans.test.j2ee.lib.Utils;
  *
  * @author lm97939
  */
-public abstract class AddMethodBase extends J2eeProjectsTest {
+public abstract class AddMethodBase extends J2eeTestCase {
 
     protected String beanName;
     protected String editorPopup;

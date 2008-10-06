@@ -97,13 +97,32 @@ public class OptionsDisplayerImpl {
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
         // 91106 - listen to default FS changes to update Advanced Options button
-        Repository.getDefault().getDefaultFileSystem().getRoot().addFileChangeListener(new AdvancedOptionsListener());
+        Repository.getDefault().getDefaultFileSystem().addFileChangeListener(new AdvancedOptionsListener());
     }
     
     public boolean isOpen() {
         return dialog != null;
     }
-        
+
+    /** Selects requested category or subcategory in opened Options dialog.
+     * It is used in QuickSearchprovider.
+     * @param path path of category and subcategories to be selected. Path is
+     * composed from registration names divided by slash. See {OptionsDisplayer#open}.
+     */
+    static void selectCategory(String path) {
+        DialogDescriptor descriptor = null;
+        synchronized (lookupListener) {
+            descriptor = (DialogDescriptor) descriptorRef.get();
+        }
+        if (descriptor != null) {
+            OptionsPanel optionsPanel = (OptionsPanel) descriptor.getMessage();
+            String categoryId = path.indexOf('/') == -1 ? path : path.substring(0, path.indexOf('/'));
+            String subpath = path.indexOf('/') == -1 ? null : path.substring(path.indexOf('/') + 1);
+            optionsPanel.initCurrentCategory(categoryId, subpath);
+        }
+        dialog.toFront();
+    }
+
     public void showOptionsDialog (String categoryID, String subpath) {
         if (isOpen()) {
             // dialog already opened
@@ -117,7 +136,7 @@ public class OptionsDisplayerImpl {
         synchronized(lookupListener) {
             descriptor = (DialogDescriptor)descriptorRef.get ();
         }
-        
+
         OptionsPanel optionsPanel = null;
         if (descriptor == null) {
             optionsPanel = categoryID == null ? new OptionsPanel () : new OptionsPanel(categoryID);            

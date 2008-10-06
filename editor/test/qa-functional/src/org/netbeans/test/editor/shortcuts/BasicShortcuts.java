@@ -84,6 +84,12 @@ public class BasicShortcuts extends EditorTestCase {
         }
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+    }
+
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(BasicShortcuts.class).enableModules(".*").clusters(".*"));

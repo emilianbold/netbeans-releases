@@ -28,12 +28,28 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     private GetProjectLocationStep parentStep;
 
     boolean valid(WizardDescriptor settings) {
-        if(projectNameTextField.getText().length() > 0
-                && (new File(projectLocationTextField.getText()).isDirectory())) {
-            return true;
+        if (projectNameTextField.getText().trim().length() == 0) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.EmptyProjectName"));
+            return false;
         }
 
-        return false;
+        if(!new File(projectLocationTextField.getText().trim()).isDirectory()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.LocationNotDirectory"));
+            return false;
+        }
+
+        if (new File(projectFolderTextField.getText().trim()).exists()) {
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                "GetProjectLocationPanel.FileAlreadyExists"));
+            return false;
+        }
+
+        return true;
     }
     
     void read (WizardDescriptor d) {
@@ -57,7 +73,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         }
         
         projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        projectFolderTextField.setText( projectLocation.getAbsolutePath() + File.separatorChar + projectNameTextField.getText() );        
+        projectFolderTextField.setText( projectLocation.getAbsolutePath() + File.separatorChar + projectNameTextField.getText().trim() );
         projectNameTextField.setText(newPrjName);
     }
     
@@ -68,8 +84,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
     void store( WizardDescriptor d ) {
         // d.putProperty( "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( "projectFolder", new File(projectFolderTextField.getText().trim()) ); // NOI18N
-        d.putProperty( "projectName", projectNameTextField.getText() ); // NOI18N
-        parentStep.fireChangeEvent();
+        d.putProperty( "projectName", projectNameTextField.getText().trim() ); // NOI18N
     }
     
     
@@ -85,6 +100,9 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         
         projectLocationTextField.getDocument().addDocumentListener( this );
         projectNameTextField.getDocument().addDocumentListener( this );
+
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
+        getAccessibleContext ().setAccessibleName (NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
         
     }
     
@@ -105,11 +123,17 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         browsLocationJButton = new javax.swing.JButton();
         setAsMainCheckBox = new javax.swing.JCheckBox();
 
-        projectNameLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.text")); // NOI18N
+        projectNameLabel.setDisplayedMnemonic('N');
+        projectNameLabel.setLabelFor(projectNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.text")); // NOI18N
 
-        projectLocationLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.text")); // NOI18N
+        projectLocationLabel.setDisplayedMnemonic('L');
+        projectLocationLabel.setLabelFor(projectLocationTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.text")); // NOI18N
 
-        projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderLabel.text")); // NOI18N
+        projectFolderLabel.setDisplayedMnemonic('F');
+        projectFolderLabel.setLabelFor(projectFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderLabel.text")); // NOI18N
 
         projectNameTextField.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.text")); // NOI18N
 
@@ -118,15 +142,17 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         projectFolderTextField.setEditable(false);
         projectFolderTextField.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.text")); // NOI18N
 
-        browsLocationJButton.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.text")); // NOI18N
+        browsLocationJButton.setMnemonic('o');
+        org.openide.awt.Mnemonics.setLocalizedText(browsLocationJButton, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.text")); // NOI18N
         browsLocationJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browsLocationJButtonActionPerformed(evt);
             }
         });
 
+        setAsMainCheckBox.setMnemonic('M');
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -146,8 +172,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                         .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browsLocationJButton))
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)))
+                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                    .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -168,6 +194,21 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
                 .add(setAsMainCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectLocationTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.projectFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browsLocationJButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.browsLocationJButton.AccessibleContext.accessibleDescription")); // NOI18N
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.setAsMainCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetProjectLocationPanel.class, "GetProjectLocationPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browsLocationJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browsLocationJButtonActionPerformed
@@ -175,7 +216,7 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogTitle(NbBundle.getMessage(GetProjectLocationPanel.class,"GetProjectLocationPanel.FileChooserTitle"));
             chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-            String path = projectLocationTextField.getText();
+            String path = projectLocationTextField.getText().trim();
             if (path.length() > 0) {
                 File f = new File (path);
                 if (f.exists ()) {
@@ -222,8 +263,8 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             // Change in the project name
         
-            String projectName = projectNameTextField.getText();
-            String projectFolder = projectLocationTextField.getText(); 
+            String projectName = projectNameTextField.getText().trim();
+            String projectFolder = projectLocationTextField.getText().trim();
              
             getProjectFolderTextField().setText( new File(projectFolder, projectName).getAbsolutePath() );
             

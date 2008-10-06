@@ -114,7 +114,6 @@ public class OutputLogger {
 
         rp.post(new Runnable() {
             public void run() {                
-                log.select();
                 OutputWriter out = log.getOut();
  
                 int lines = list.size();
@@ -146,11 +145,8 @@ public class OutputLogger {
      */
     public void output(final String msg){
         if( msg == null) return;
-
         rp.post(new Runnable() {
             public void run() {                
-                log.select();
-
                 log.getOut().println(msg);
                 log.getOut().flush();
             }
@@ -168,7 +164,6 @@ public class OutputLogger {
 
         rp.post(new Runnable() {
             public void run() {                
-                log.select();
                 log.getErr().println(msg);
                 log.getErr().flush();
             }
@@ -186,7 +181,6 @@ public class OutputLogger {
          
         rp.post(new Runnable() {
             public void run() {                
-                log.select();
                 try {
                     OutputWriter out = log.getOut();
 
@@ -219,7 +213,6 @@ public class OutputLogger {
     public void clearOutput(){
         rp.post(new Runnable() {
             public void run() {                
-                log.select();
                 OutputWriter out = log.getOut();
          
                 try {

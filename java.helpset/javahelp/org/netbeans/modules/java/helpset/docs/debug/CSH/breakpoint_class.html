@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+* Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
 <html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Breakpoint Dialog Box: Class</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
@@ -19,7 +19,7 @@
         <p>You can set class breakpoint properties when you set a new breakpoint or when modifying an
         existing breakpoint.</p>
         <ul>
-            <li>To set a new class breakpoint, choose Run &gt; New Breakpoint 
+            <li>To set a new class breakpoint, choose Debug &gt; New Breakpoint 
             (Ctrl-Shift-F8) from the main menu, then select Class from the Breakpoint Type drop-down list.</li>
             <li>To customize an existing class breakpoint, right-click the class breakpoint in the
             Breakpoints window and choose Customize.</li>
@@ -35,9 +35,9 @@
             <li><b>Settings.</b>
             <ul>
                 <li><b>Class Name.</b> The name of the class file you want the 
-                debugger to stop on. You can use an asterisk (*) for the class name 
-                if you do not want to specify just one class. For example, 
-                if you specify <tt>java.lang</tt> as the package name and * for the class name, the 
+                debugger to stop on. You can use an asterisk (*) as a <b>suffix</b> 
+                to specify more than one class. For example, 
+                if you specify <tt>java.lang*</tt>, the 
                 breakpoint applies to any class from the package <tt>java.lang</tt>. 
                 You can then use the Exclude Classes condition to specify certain classes that
                 do not trigger the breakpoint.</li>
@@ -57,7 +57,11 @@
             <ul>
             <li><b>Exclude Classes.</b> When selected, enables you to specify classes to exclude. 
             Excluded classes do not trigger the breakpoint when they are loaded.
-            If not selected, the breakpoint is triggered by any classes matching the Class Name setting.</li>
+            If not selected, the breakpoint is triggered by any classes matching the Class Name setting.
+            You can use an asterisk (*) as a <b>suffix</b> to exclude more than one class. 
+            For example, specify <tt>java.lang*</tt> to exclude all classes from the package <tt>java.lang</tt>.
+            You can specify multiple patterns by separating the patterns with a comma or a space
+            (<tt>java.net.URLClassLoader*</tt>, <tt>java.lang.ClassLoader</tt>).</li>
             <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
             Choose a criteria in the drop-down list and then specify a numerical value.</li>
             </ul>

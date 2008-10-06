@@ -46,19 +46,12 @@
 package org.netbeans.modules.visualweb.dataconnectivity;
 
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
-import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
 import java.beans.Introspector;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.modules.derby.api.DerbyDatabases;
-import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DerbyWaiter;
-import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
 import org.openide.modules.ModuleInstall;
-import org.openide.windows.WindowManager;
 
 /**
  * Initialization code for dataconnectivity module.
@@ -71,6 +64,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
     private static String DATACONNECTIVITY_BEANINFO_PATH 
         = "org.netbeans.modules.visualweb.dataconnectivity.designtime"; // NOI18N
 
+    @Override
     public void restored() {
         // initialize settings for data source naming option
         DataconnectivitySettings.getInstance() ;
@@ -95,32 +89,11 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
         // Register the designtime directory for dataconnectivity in the search path
         if (!bisp.contains(DATACONNECTIVITY_BEANINFO_PATH)) {
             bisp = new ArrayList(bisp);
-            bisp.add(this.DATACONNECTIVITY_BEANINFO_PATH);
+            bisp.add(DATACONNECTIVITY_BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath((String[])bisp.toArray(new String[0]));
         }                                      
         
-        // database registration for sample databases and legacy projects
-        init();
-                
-       // Won't include other databases yet
-       // SampleDatabaseCreator.createAll("vir", "vir", "vir", "VIR", "modules/ext/vir.zip", true, "localhost", 1527);                
-    }
-       
-    // Wait for IDE to start before taking care of database registration
-    public static void init() {
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-            public void run() {
-                
-                // Dataconnectivity implementation to support Project migration of previous releases projects
-                // For previous release userdir migration, if no context file then settings haven't been migrated
-                File contextFile =  DatabaseSettingsImporter.getInstance().retrieveMigratedSettingsAtStartup();
-                if (contextFile != null) {
-                    new DerbyWaiter(contextFile.exists()); // waits for Derby drivers to be registered before migrating userdir settings
-                } else {
-                    // Create sample database and connections if needed
-                    new DerbyWaiter(false);
-                }                                                
-            }
-        }  );
-    }       
+        // Create sample database and connections if needed
+        new DerbyWaiter(false);  
+    }   
 }

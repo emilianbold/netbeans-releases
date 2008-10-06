@@ -45,10 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -81,132 +78,131 @@ public abstract class TestBase extends RubyTestBase {
 
     static {
         RubySession.TEST = true;
+        EditorUtil.showLines = false;
     }
+    private TestHandler testHandler;
+    private boolean verbose;
 
-    private enum Engine { CLASSIC, RDEBUG_IDE }
-    
     protected static boolean watchStepping = false;
-    private Stack<Engine> engines;
     private RubyPlatform platform;
+    private String jvmArgs;
+    
+    private String origGemHome;
+    private String origGemPath;
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
-        if (verbose) {
-            Util.LOGGER.setLevel(Level.ALL);
-            Util.LOGGER.addHandler(new TestHandler(getName()));
-            org.rubyforge.debugcommons.Util.LOGGER.setLevel(Level.ALL);
-            org.rubyforge.debugcommons.Util.LOGGER.addHandler(new TestHandler(getName()));
-        }
+        this.verbose = verbose;
     }
-    
+
     @Override
     protected void setUp() throws Exception {
+        if (verbose) {
+            testHandler = new TestHandler(getName());
+            Util.LOGGER.setLevel(Level.ALL);
+            Util.LOGGER.addHandler(testHandler);
+            org.rubyforge.debugcommons.Util.LOGGER.setLevel(Level.ALL);
+            org.rubyforge.debugcommons.Util.LOGGER.addHandler(testHandler);
+        }
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         touch(getWorkDir(), "config/Services/org-netbeans-modules-debugger-Settings.properties");
         super.setUp();
-        platform = RubyPlatformManager.addPlatform(TestBase.getFile("ruby.executable", true));
-        assertFalse("is native Ruby", platform.isJRuby());
-        assertTrue(platform.getInterpreter() + " has RubyGems installed", platform.hasRubyGemsInstalled());
+        File alternative = TestBase.getFile("ruby.executable", false);
+        if (alternative != null) {
+            platform = RubyPlatformManager.addPlatform(alternative);
+        } else {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        assertTrue(platform + " has RubyGems installed", platform.hasRubyGemsInstalled());
+        assertTrue(platform + " has fast debugger installed", platform.hasFastDebuggerInstalled());
         String problems = platform.getFastDebuggerProblemsInHTML();
         assertNull("fast debugger installed: " + problems, problems);
-        
-        engines = new Stack<Engine>();
-        engines.push(Engine.CLASSIC);
-        if (isRDebugExecutableCorrectlySet()) {
-            engines.push(Engine.RDEBUG_IDE);
-        }
+
         doCleanUp();
+        assertTrue("no breakpoints set", RubyBreakpointManager.getBreakpoints().length == 0);
+
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        origGemHome = jruby.getInfo().getGemHome();
+        origGemPath = jruby.getInfo().getGemPath();
     }
 
     @Override
     protected void tearDown() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        jruby.getInfo().setGemHome(origGemHome);
+        jruby.getInfo().setGemPath(origGemPath);
+
         super.tearDown();
-        doCleanUp();
+        if (verbose) {
+            Util.LOGGER.removeHandler(testHandler);
+            org.rubyforge.debugcommons.Util.LOGGER.removeHandler(testHandler);
+        }
     }
 
     private void doCleanUp() {
         for (RubyBreakpoint bp : RubyBreakpointManager.getBreakpoints()) {
-            DebuggerManager.getDebuggerManager().addBreakpoint(bp);
+            try {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(bp);
+            } catch (Throwable t) {
+                Exceptions.printStackTrace(t);
+            }
         }
         DebuggerManager.getDebuggerManager().finishAllSessions();
     }
-    
+
     protected TestBase(final String name) {
         this(name, false);
     }
-    
-    
+
+    public void setJVMArgs(String jvmArgs) {
+        this.jvmArgs = jvmArgs;
+    }
+
+
+    protected Process startDebugging(final String[] rubyCode, final int... breakpoints) throws RubyDebuggerException, IOException, InterruptedException {
+        File testF = createScript(rubyCode);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        for (int breakpoint : breakpoints) {
+            addBreakpoint(testFO, breakpoint);
+        }
+        return startDebugging(testF);
+    }
+
     protected Process startDebugging(final File f) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(f, true);
     }
-    
+
     protected Process startDebugging(final File toTest, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(toTest, true, platform);
     }
-    
+
     protected Process startDebugging(final File toTest, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
         return startDebugging(toTest, waitForSuspension, platform);
     }
-    
+
     private Process startDebugging(final File toTest, final boolean waitForSuspension, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform,
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
+        assertTrue(platform.hasFastDebuggerInstalled());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
+        if (this.jvmArgs != null) {
+            desc.jvmArguments(this.jvmArgs);
+        }
         RubySession session = RubyDebugger.startDebugging(desc);
+        session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
         Process process = session.getProxy().getDebugTarged().getProcess();
         if (waitForSuspension) {
             waitForSuspension();
         }
         return process;
     }
-    
+
     private void waitForSuspension() throws InterruptedException {
         RubySession session = Util.getCurrentSession();
         //        while (session.getFrames() == null || session.getFrames().length == 0) {
         while (!session.isSessionSuspended()) {
             Thread.sleep(300);
         }
-    }
-    
-    protected boolean switchToNextEngine() {
-        if (engines.isEmpty()) {
-            return false;
-        }
-        Engine engine = engines.pop();
-        switch (engine) {
-            case CLASSIC:
-                forceClassicDebugger(true);
-                break;
-            case RDEBUG_IDE:
-                forceClassicDebugger(false);
-                break;
-            default:
-                fail("Unknown engine type: " + engine);
-        }
-        return true;
-    }
-    
-    protected boolean tryToSwitchToRDebugIDE() {
-        assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
-        boolean available = isRDebugExecutableCorrectlySet();
-        if (available) {
-            forceClassicDebugger(false);
-        }
-        return available;
-    }
-    
-    protected void switchToJRuby() {
-        platform = RubyPlatformManager.getDefaultPlatform();
-    }
-
-    private File getRDebugExecutable() {
-        String rdebug = Util.findRDebugExecutable(platform);
-        return rdebug == null ? null : new File(rdebug);
-    }
-
-    private boolean isRDebugExecutableCorrectlySet() {
-        File rdebugExecutable = getRDebugExecutable();
-        return rdebugExecutable != null && rdebugExecutable.isFile();
     }
 
     /**
@@ -215,7 +211,7 @@ public abstract class TestBase extends RubyTestBase {
     protected File createScript(final String[] scriptContent) throws IOException {
         return createScript(scriptContent, "test.rb");
     }
-    
+
     /**
      * Creates script with the given name in the {@link #getWorkDir} with the
      * given content.
@@ -232,11 +228,11 @@ public abstract class TestBase extends RubyTestBase {
         }
         return FileUtil.toFile(script);
     }
-    
+
     protected static RubyLineBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
         return RubyBreakpointManager.addLineBreakpoint(createDummyLine(fo, line - 1));
     }
-    
+
     public static void doAction(final Object action) throws InterruptedException {
         if (watchStepping) {
             Thread.sleep(3000);
@@ -246,7 +242,7 @@ public abstract class TestBase extends RubyTestBase {
         ActionsManager actionManager = engine.getActionsManager();
         actionManager.doAction(action);
     }
-    
+
     protected void doContinue() throws InterruptedException {
         waitForEvents(Util.getCurrentSession().getProxy(), 1, new Runnable() {
             public void run() {
@@ -282,7 +278,7 @@ public abstract class TestBase extends RubyTestBase {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
             public void onDebugEvent(RubyDebugEvent e) {
-                Util.finest("Received event: " + e);
+                Util.finer("Received event: " + e);
                 events.countDown();
             }
         };
@@ -291,7 +287,7 @@ public abstract class TestBase extends RubyTestBase {
         events.await();
         proxy.removeRubyDebugEventListener(listener);
     }
-    
+
     @SuppressWarnings("deprecation")
     static Line createDummyLine(final FileObject fo, final int editorLineNum) {
         return new Line(Lookups.singleton(fo)) {
@@ -306,10 +302,6 @@ public abstract class TestBase extends RubyTestBase {
         };
     }
 
-    protected void forceClassicDebugger(boolean force) {
-        RubyDebugger.FORCE_CLASSIC = force;
-    }
-
     public static final class IFL extends InstalledFileLocator {
 
         public IFL() {}
@@ -320,41 +312,41 @@ public abstract class TestBase extends RubyTestBase {
                 File cd = new File(rubydebugDir, "classic-debug.rb");
                 assertTrue("classic-debug found in " + rubydebugDir, cd.isFile());
                 return cd;
-            } else if (relativePath.equals("jruby-1.1.2")) {
+            } else if (relativePath.equals("jruby-1.1.4")) {
                 return TestUtil.getXTestJRubyHome();
             } else {
                 return null;
             }
         }
     }
-    
+
     private static File resolveFile(final String property, final boolean mandatory) {
         String path = System.getProperty(property);
         assertTrue("must set " + property, !mandatory || (path != null));
         return path == null ? null : new File(path);
     }
-    
+
     static File getFile(final String property, boolean mandatory) {
         File file = resolveFile(property, mandatory);
         assertTrue(file + " is file", !mandatory || file.isFile());
         return file;
-        
+
     }
-    
+
     static File getDirectory(final String property, final boolean mandatory) {
         File directory = resolveFile(property, mandatory);
         assertTrue(directory + " is directory", !mandatory || directory.isDirectory());
         return directory;
     }
-    
+
     private static class TestHandler extends Handler {
-        
+
         private final String name;
-        
+
         TestHandler(final String name) {
             this.name = name;
         }
-        
+
         public void publish(LogRecord rec) {
             PrintStream os = rec.getLevel().intValue() >= Level.WARNING.intValue() ? System.err : System.out;
             os.println("[" + System.currentTimeMillis() + "::" + name + "::" + rec.getLevel().getName() + "]: " + rec.getMessage());
@@ -363,14 +355,14 @@ public abstract class TestBase extends RubyTestBase {
                 th.printStackTrace(os);
             }
         }
-        
+
         public void flush() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        
+
         public void close() throws SecurityException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-    
+
 }

@@ -118,7 +118,9 @@ final class CallHierarchyModel {
         }
         Call oroot = root;
         root = CallHierarchyTasks.resolveRoot(root.selection, type == HierarchyType.CALLER);
-        root.model = this;
+        if (root != null) {
+            root.model = this;
+        }
         support.firePropertyChange(PROP_ROOT, oroot, root);
     }
     

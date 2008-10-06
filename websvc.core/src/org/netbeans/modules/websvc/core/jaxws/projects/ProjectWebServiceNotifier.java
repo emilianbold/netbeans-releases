@@ -49,10 +49,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.WebServiceNotifier;
-import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -93,9 +93,9 @@ public class ProjectWebServiceNotifier implements WebServiceNotifier {
             if (serverInstance != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
-                    WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     if (wsStack != null) {
-                        return wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+                        return wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);

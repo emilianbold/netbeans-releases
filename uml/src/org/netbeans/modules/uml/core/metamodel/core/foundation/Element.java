@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.uml.core.metamodel.core.foundation;
 
+import java.util.ArrayList;
+import java.util.MissingResourceException;
 import org.netbeans.modules.uml.common.generics.ETPairT;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +51,6 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
-import org.netbeans.modules.uml.core.coreapplication.IPreferenceManager2;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchNameKeeper;
 import org.netbeans.modules.uml.core.eventframework.EventDispatchRetriever;
 import org.netbeans.modules.uml.core.eventframework.EventState;
@@ -62,7 +63,6 @@ import org.netbeans.modules.uml.core.metamodel.profiles.ProfileManager;
 import org.netbeans.modules.uml.core.metamodel.structure.IArtifact;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
-import org.netbeans.modules.uml.core.metamodel.structure.SourceFileArtifact;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.CollectionType;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
@@ -105,6 +105,33 @@ public class Element extends BaseElement implements IElement
    public String getExpandedElementType()
    {
       return getElementType();
+   }
+   
+   /**
+    * Retrieves a element type name that can be displayed to the user.  The 
+    * default implementation will try to turn the expanded element type into
+    * a name that can be displayed.
+    */
+   public String getDisplayElementType()
+   {
+       String retVal = getExpandedElementType();
+       try
+       {
+           retVal = NbBundle.getMessage(Element.class, retVal);
+       }
+       catch (MissingResourceException e)
+       {
+           // Since the goal of using a resource file is not to allow
+           // the model element name to be translated (they have
+           // been marked with NOI18N) but to put space in the element
+           // names that are really to words.  For example 
+           // CombinedFragment.  Therefore there will be some that
+           // are missing.  
+           //
+           // So simply use the model elements name.
+       }
+       
+       return retVal;
    }
 
    /**
@@ -629,6 +656,22 @@ public class Element extends BaseElement implements IElement
        }
        
        return retVal.toString();
+   }
+   
+   public List<String> getTaggedValuesAsList()
+   {
+       ETList < ITaggedValue > values = getTaggedValues();
+       List<String> retList = new ArrayList<String>();
+       
+       // create a list of Strings of "name=value" 
+       for(ITaggedValue value : values)
+       {
+           String newVal = value.getNameWithAlias();
+           newVal += ("=");
+           newVal += value.getDataValue();
+           retList.add(newVal);
+       }
+       return retList;
    }
    
    /**

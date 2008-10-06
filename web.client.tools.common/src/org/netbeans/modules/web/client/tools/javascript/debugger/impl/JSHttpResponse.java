@@ -50,20 +50,46 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessa
 public class JSHttpResponse implements JSHttpMessage {
 
     private final String id;
-    private final MethodType method;
     private final String timeStamp;
-    private final Map<String, String> urlParams;
     private final Map<String, String> headerData;
     private final String status;
+    private final String url;
+    private final String mimeType;
+    private final String responseText;
+    private final String category;
 
     public JSHttpResponse(HttpMessage message) {
-        id = message.getId();
-        method = JSFactory.getHttpMessageMethodType(message.getMethodType());
-        timeStamp = message.getTimeStamp();
-        urlParams = Collections.<String,String>unmodifiableMap(message.getUrlParams());
-        headerData = Collections.<String,String>unmodifiableMap(message.getHeader());
-        status = message.getChildValue("status");
+        assert message != null;
+
+        id           = message.getId();
+        timeStamp    = message.getTimeStamp();
+        headerData   = Collections.<String,String>unmodifiableMap(message.getHeader());
+        status       = message.getChildValue("status");
+        String tmpMimeType     = message.getChildValue("mimeType");
+        url          = message.getUrl();
+        responseText = message.getResponseText();
+        category     = message.getChildValue("category");
+        assert id        != null;
+        assert timeStamp != null;
+        if( tmpMimeType == null || tmpMimeType.equals("null")){
+            Log.getLogger().warning("JSHttpResponse - MIME type is null for url:" + url);
+            tmpMimeType = "text/html"; //Temporarily to make sure things don't break
+        }
+        mimeType = tmpMimeType;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getResponseText() {
+        return responseText;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
 
     public final static Type getType() {
         return Type.RESPONSE;
@@ -73,17 +99,17 @@ public class JSHttpResponse implements JSHttpMessage {
         return id;
     }
 
-    public Map getHeader() {
-        //Joelle: You should return an Unmodifiable HashMap or a copy of it.
-        return headerData;
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public Map<String,String> getHeader() {
+        return Collections.unmodifiableMap(headerData);
     }
 
     public String getTimeStamp() {
-        return timeStamp;
-    }
 
-    public MethodType getMethod() {
-        return method;
+        return timeStamp;
     }
 
     /**
@@ -93,10 +119,4 @@ public class JSHttpResponse implements JSHttpMessage {
         return status;
     }
 
-    /**
-     * @return the urlParams
-     */
-    public Map getUrlParams() {
-        return urlParams;
-    }
 }

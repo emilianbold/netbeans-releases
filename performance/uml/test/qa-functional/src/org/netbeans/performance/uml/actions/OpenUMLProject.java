@@ -113,7 +113,6 @@ public class OpenUMLProject extends PerformanceTestCase {
     public void close() {
         ProjectSupport.closeProject(projectName);
         new EventTool().waitNoEvent(2000);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
 
     }
 

@@ -40,10 +40,11 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
-import java.awt.Color;
-import java.awt.Paint;
+import java.util.HashMap;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
@@ -61,13 +62,18 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     private ResourceType[] customizableResTypes = new ResourceType[] {
         ResourceType.FONT,
         ResourceType.FOREGROUND }; 
+    private HashMap<String, Object> persistenceProperties = new HashMap();
 
     public UMLLabelWidget(Scene scene) {
         super(scene);
+        setForeground(null);
+        initAccessibleContext();
     }
     
     public UMLLabelWidget(Scene scene, String label) {
         super(scene, label);
+        setForeground(null);
+        initAccessibleContext();
     }
     
     public UMLLabelWidget(Scene scene, String propertyID, String displayName) {
@@ -85,11 +91,11 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     
      private void init(String propertyID, String displayName)
      {
-        setForeground((Color)null); 
-        setBackground((Paint)null);
+        setForeground(null);
         id = propertyID;
         ResourceValue.initResources(propertyID, this);
         this.displayName = displayName;
+        initAccessibleContext();
     }
      
     
@@ -122,7 +128,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         ResourceValue.initResources(id, this);
     }
     
-    public void refresh() {}
+    public void refresh(boolean resizetocontent) {}
 
     public String getDisplayName()
     {
@@ -142,6 +148,49 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     public void setCustomizableResourceTypes(ResourceType[] resTypes)
     {
         customizableResTypes = resTypes;
+    }
+
+    public HashMap<String, Object> getPersistenceProperties()
+    {
+        return persistenceProperties;
+    }
+
+    public void addPersistenceProperty(String key, Object value)
+    {
+        if (persistenceProperties != null && key != null && value != null)
+            persistenceProperties.put(key, value);
+    }
+
+
+    ///////////// 
+    // Accessible
+    /////////////       
+
+    private void initAccessibleContext() 
+    {
+        setAccessibleContext(new UMLLabelWidgetAccessibleContext(this));
+    }
+
+    public class UMLLabelWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLLabelWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        @Override
+        public AccessibleRole getAccessibleRole () {
+            return AccessibleRole.LABEL;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            if (getLabel() != null) 
+            {
+                return getLabel();
+            }
+            return getDisplayName();
+        }
     }
     
 }

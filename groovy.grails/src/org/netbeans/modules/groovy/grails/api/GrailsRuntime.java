@@ -43,13 +43,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -76,6 +77,10 @@ import org.openide.util.Utilities;
 // TODO more appropriate would be getDefault and forProject
 public final class GrailsRuntime {
 
+    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
+
+    private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
+
     static {
         GrailsInstance.Accessor.DEFAULT = new GrailsInstance.Accessor() {
 
@@ -84,9 +89,9 @@ public final class GrailsRuntime {
                 return runtime.getVersion();
             }
         };
-    }
 
-    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
+        Collections.addAll(GUARDED_COMMANDS, "run-app", "shell"); //NOI18N
+    }
 
     private static GrailsRuntime instance;
 
@@ -397,6 +402,13 @@ public final class GrailsRuntime {
             command.append(" ").append(descriptor.getName());
             command.append(" ").append(createCommandArguments(descriptor.getArguments()));
 
+            // FIXME fix this hack - needed for proper process tree kill
+            // see KillableProcess
+            if (Utilities.isWindows() && GUARDED_COMMANDS.contains(descriptor.getName())) {
+                command.append(" ").append("REM NB:" // NOI18N
+                        +  descriptor.getDirectory().getAbsolutePath());
+            }
+
             LOGGER.log(Level.FINEST, "Command is: {0}", command.toString());
 
             NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(
@@ -422,7 +434,7 @@ public final class GrailsRuntime {
 
             Process process = new KillableProcess(
                     grailsProcessDesc.exec(null, envp, true, descriptor.getDirectory()),
-                    descriptor.getDirectory());
+                    descriptor.getDirectory(), descriptor.getName());
 
             checkForServer(descriptor, process);
             return process;

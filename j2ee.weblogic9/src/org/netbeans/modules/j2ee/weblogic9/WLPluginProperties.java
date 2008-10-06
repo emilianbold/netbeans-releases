@@ -230,8 +230,11 @@ public class WLPluginProperties {
                     new FileInputStream(weblogicJar)));
             try {
                 Manifest manifest = jarInputStream.getManifest();
-                String implementationVersion = manifest.getMainAttributes()
-                        .getValue("Implementation-Version"); // NOI18N
+                String implementationVersion = null;
+                if (manifest != null) {
+                    implementationVersion = manifest.getMainAttributes()
+                            .getValue("Implementation-Version"); // NOI18N
+                }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
                     return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N

@@ -94,7 +94,7 @@ final class RemoveClassPathRootAction extends NodeAction {
     }
 
     protected void performAction(final Node[] activatedNodes) {
-        final Set changedProjectsSet = new HashSet();
+        final Set<Project> changedProjectsSet = new HashSet<Project>();
         
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
@@ -108,8 +108,7 @@ final class RemoveClassPathRootAction extends NodeAction {
                         changedProjectsSet.add(p);
                 }
                 
-                for (Iterator i = changedProjectsSet.iterator(); i.hasNext();) {
-                    Project p = (Project)i.next();
+                for (Project p : changedProjectsSet) {
                     try {
                         ProjectManager.getDefault().saveProject(p);
                     } catch (IOException e) {

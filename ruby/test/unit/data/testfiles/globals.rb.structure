@@ -1,0 +1,6 @@
+mylocal:VARIABLE:[]:ESCAPED{mylocal}:
+Foobyy:CLASS:[]:ESCAPED{Foobyy}:
+  hello:METHOD:[PUBLIC]:ESCAPED{hello}:
+$anotherglobal:GLOBAL:[]:ESCAPED{$anotherglobal}:
+$foo:GLOBAL:[]:ESCAPED{$foo}:
+$foobar:GLOBAL:[]:ESCAPED{$foobar}:

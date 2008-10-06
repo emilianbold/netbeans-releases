@@ -50,11 +50,16 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -129,6 +134,7 @@ public final class Log extends Handler {
                 return toString().subSequence(start, end);
             }
 
+            @Override
             public String toString() {
                 return os.toString();
             }
@@ -220,6 +226,17 @@ public final class Log extends Handler {
      */
     public static void assertInstances(String msg) {
         InstancesHandler.assertGC(msg);
+    }
+
+    /** Assert to verify that all properly named instances collected via {@link #enableInstances} 
+     * can disappear. Uses {@link NbTestCase#assertGC} on each of them.
+     *
+     * @param msg message to display in case of potential failure
+     * @param names list of names of instances to test for and verify that they disappear
+     * @since 1.53
+     */
+    public static void assertInstances(String msg, String... names) {
+        InstancesHandler.assertGC(msg, names);
     }
 
 
@@ -337,13 +354,12 @@ public final class Log extends Handler {
 
         return ex;
     }
-        
+
         
     private static class InstancesHandler extends Handler {
-        private static final Map<Object,String> instances = Collections.synchronizedMap(new WeakHashMap<Object,String>());
-        private static int cnt;
-        
-        
+        static final Map<Object,String> instances = Collections.synchronizedMap(new WeakHashMap<Object,String>());
+        static int cnt;
+
         private final String msg;
         
         public InstancesHandler(String msg, Level level) {
@@ -374,25 +390,29 @@ public final class Log extends Handler {
         public void close() throws SecurityException {
         }
         
-        public static void assertGC(String msg) {
-            if (cnt == 0) {
-                Assert.fail("No objects to track reported: " + cnt);
-            }
-            // start from scratch
-            cnt = 0;
-            
+        public static void assertGC(String msg, String... names) {
             AssertionFailedError t = null;
             
             List<Reference> refs = new ArrayList<Reference>();
             List<String> txts = new ArrayList<String>();
             int count = 0;
+            Set<String> nameSet = names == null || names.length == 0 ? null : new HashSet<String>(Arrays.asList(names));
             synchronized (instances) {
-                for (Map.Entry<Object, String> entry : instances.entrySet()) {
+                for (Iterator<Map.Entry<Object, String>> it = instances.entrySet().iterator(); it.hasNext();) {
+                    Entry<Object, String> entry = it.next();
+                    if (nameSet != null && !nameSet.contains(entry.getValue())) {
+                        continue;
+                    }
+
                     refs.add(new WeakReference<Object>(entry.getKey()));
                     txts.add(entry.getValue());
+                    it.remove();
                     count++;
                 }
-                instances.clear();
+            }
+
+            if (count == 0) {
+                Assert.fail("No instance of this type reported");
             }
             
             for (int i = 0; i < count; i++) {

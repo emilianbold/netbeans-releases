@@ -49,11 +49,19 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 
 
 @SuppressWarnings("unchecked")
 public class AstNodeAdapter implements ParserResult.AstTreeNode {
-    
+
+    private final Logger LOG = Logger.getLogger(AstNodeAdapter.class.getName());
     private static final boolean HIDE_NEWLINE_NODES = false;
     private final ASTNode node;
     private final AstNodeAdapter parent;
@@ -64,6 +72,8 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
         this.parent = parent;
         this.node = node;
         this.doc = doc;
+
+        LOG.setLevel(Level.OFF);
     }
 
     private void ensureChildrenInitialized() {
@@ -116,6 +126,7 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getIndex(TreeNode treeNode) {
+        LOG.log(Level.FINEST, "getIndex(), TreeNode : {0}", treeNode.toString()); // NOI18N
         ensureChildrenInitialized();
 
         for (int i = 0; i < children.length; i++) {
@@ -128,6 +139,7 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public boolean getAllowsChildren() {
+        LOG.log(Level.FINEST, "getAllowsChildren()"); // NOI18N
         ensureChildrenInitialized();
 
         return children.length > 0;
@@ -136,6 +148,10 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     public boolean isLeaf() {
         ensureChildrenInitialized();
 
+        LOG.log(Level.FINEST, "------------------------------------------------------"); // NOI18N
+        LOG.log(Level.FINEST, "isLeaf(), Name: {0}", node.getClass().getSimpleName()); // NOI18N
+        LOG.log(Level.FINEST, "isLeaf(), children: {0}", children.length); // NOI18N
+        LOG.log(Level.FINEST, "------------------------------------------------------"); // NOI18N
         return children.length == 0;
     }
 
@@ -145,23 +161,49 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
         return Enumerations.array(children);
     }
 
+
+    private String getArtifactName(ASTNode node){
+        if (node instanceof ClassNode){
+            return ((ClassNode)node).getName();
+        } else if (node instanceof MethodNode) {
+            return ((MethodNode)node).getName();
+        } else if (node instanceof VariableExpression) {
+            return ((VariableExpression)node).getName();
+        } else if (node instanceof ModuleNode) {
+            return ((ModuleNode)node).getDescription();
+        } else if (node instanceof ConstantExpression) {
+            return ((ConstantExpression)node).getText();
+        }
+
+        return "";
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("<html>");
         sb.append(node.getClass().getSimpleName());
+        sb.append("[");
+        sb.append(getArtifactName(node));
+        sb.append("]");
         sb.append(" (");
         sb.append(getStartOffset());
         sb.append("-");
         sb.append(getEndOffset());
         sb.append(") ");
-        sb.append("</html>");
 
+        
+        LOG.log(Level.FINEST, "toString() node: {0}", sb.toString()); // NOI18N
         return sb.toString();
     }
 
+    private void printLineNumbers() {
+        LOG.log(Level.FINEST, "Line   : {0}", node.getLineNumber()); // NOI18N
+        LOG.log(Level.FINEST, "Column : {0}", node.getColumnNumber()); // NOI18N
+    }
+
     public int getStartOffset() {
+        printLineNumbers();
         int line = node.getLineNumber();
         if (line < 1) {
             line = 1;
@@ -174,6 +216,7 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getEndOffset() {
+        printLineNumbers();
         int line = node.getLastLineNumber();
         if (line < 1) {
             line = 1;

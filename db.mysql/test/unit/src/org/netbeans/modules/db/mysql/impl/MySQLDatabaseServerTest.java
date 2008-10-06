@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -41,16 +41,12 @@ package org.netbeans.modules.db.mysql.impl;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.ResourceBundle;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.mysql.Database;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.DatabaseUser;
+import org.netbeans.modules.db.mysql.test.TestBase;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
@@ -60,66 +56,33 @@ import org.openide.util.Lookup;
  *
  * @author David
  */
-public class MySQLDatabaseServerTest extends NbTestCase {
-    private String host;
-    private String port;
-    private String user;
-    private String password;
-    
+public class MySQLDatabaseServerTest extends TestBase {
+
     private DatabaseServer server;
-    
+
     public MySQLDatabaseServerTest(String testName) {
-        super(testName); 
-    }     
-    
+        super(testName);
+    }
+
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
-        
+
         Lookup.getDefault().lookup(ModuleInfo.class);
-        
+
         // We need to set up netbeans.dirs so that the NBInst URLMapper correctly
         // finds the mysql jar file
         File jarFile = new File(JDBCDriverManager.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         File clusterDir = jarFile.getParentFile().getParentFile();
         System.setProperty("netbeans.dirs", clusterDir.getAbsolutePath());
-        
+
         getProperties();
 
         server = MySQLDatabaseServer.getDefault();
-        server.setUser(user);
-        server.setPassword(password);
-        server.setHost(host);
-        server.setPort(port);
-    }
-        
-    private void getProperties() {
-        host = System.getProperty("mysql.host", null);
-        port = System.getProperty("mysql.port", null);
-        user = System.getProperty("mysql.user", null);
-        password = System.getProperty("mysql.password", null);
-        
-        String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
-                "test-unit-sys-prop.mysql.host, test-unit-sys-prop.mysql.port, \n" +
-                "test-unitsys-prop.mysql.user, test-unit-sys-prop.mysql.password";
-        
-        if ( host == null ) {
-            fail("mysql.host was not set.  " + message);
-        }
-        if ( port == null ) {
-            fail("mysql.port was not set.  " + message);            
-        }
-        if ( user == null ) {
-            fail("mysql.user was not set.  " + message);
-        }
-        if ( password == null ) {
-            fail("mysql.password was not set. " + message);
-        }                        
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+        server.setUser(getUser());
+        server.setPassword(getPassword());
+        server.setHost(getHost());
+        server.setPort(getPort());
     }
 
     /**
@@ -137,31 +100,31 @@ public class MySQLDatabaseServerTest extends NbTestCase {
     public void testHost() throws Exception {
         testStringProperty("host", "localhost");
     }
-    
+
     private void testStringProperty(String propName, String defaultValue) throws Exception {
-        propName = propName.substring(0, 1).toUpperCase() + 
+        propName = propName.substring(0, 1).toUpperCase() +
                 propName.substring(1);
         String setter = "set" + propName;
         String getter = "get" + propName;
-        
+
         String value = "Testing " + propName;
-        
+
         Method setMethod = server.getClass().getMethod(setter, String.class);
         Method getMethod = server.getClass().getMethod(getter);
-        
+
         setMethod.invoke(server, value);
         String result = (String)getMethod.invoke(server);
-        
-        assertEquals(result, value); 
-        
+
+        assertEquals(result, value);
+
         if ( defaultValue != null ) {
             setMethod.invoke(server, (Object)null);
             result = (String)getMethod.invoke(server);
             assertEquals(defaultValue, result);
         }
-        
+
     }
-    
+
     private void testStringProperty(String propName) throws Exception {
         testStringProperty(propName, null);
     }
@@ -250,8 +213,10 @@ public class MySQLDatabaseServerTest extends NbTestCase {
         assertFalse(server.isConnected());
         server.reconnect();
         assertTrue(server.isConnected());
-        server.disconnect();
+        server.disconnectSync();
         assertFalse(server.isConnected());
+        server.reconnect();
+        assertTrue(server.isConnected());
     }
 
     /**
@@ -259,16 +224,15 @@ public class MySQLDatabaseServerTest extends NbTestCase {
      */
     public void testGetDisplayName() throws Exception {
         ResourceBundle bundle = Utils.getBundle();
-        String disconnectedString = bundle.getString("LBL_ServerNotConnectedDisplayName");
-        String connectedString = bundle.getString("LBL_ServerDisplayName");
-        
-        disconnectedString = disconnectedString.replace("{0}", this.host + ":" + this.port).replace("{1}", this.user);
+        String disconnectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
+                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Disconnected"));
 
-        connectedString = connectedString.replace("{0}", this.host + ":" + this.port).replace("{1}", this.user);
-        
-        server.disconnect();
+        String connectedString = MessageFormat.format(bundle.getString("LBL_ServerDisplayName"),
+                getHost() + ":" + getPort(), getUser(), bundle.getString("LBL_Connected"));
+
+        server.disconnectSync();
         assertEquals(disconnectedString, server.getDisplayName());
-        
+
         server.reconnect();
         assertEquals(connectedString, server.getDisplayName());
     }
@@ -279,7 +243,7 @@ public class MySQLDatabaseServerTest extends NbTestCase {
     public void testGetShortDescription() {
         ResourceBundle bundle = Utils.getBundle();
         String description = bundle.getString("LBL_ServerShortDescription");
-        description = description.replace("{0}", this.host + ":" + this.port).replace("{1}", this.user);
+        description = description.replace("{0}", getHost() + ":" + getPort()).replace("{1}", getUser());
         assertEquals(description, server.getShortDescription());
     }
 
@@ -305,30 +269,6 @@ public class MySQLDatabaseServerTest extends NbTestCase {
      * Test of getDatabases method, of class MySQLDatabaseServer.
      */
     public void testGetDatabases() throws Exception {
-    }
-
-    /**
-     * Test of reconnect method, of class MySQLDatabaseServer.
-     */
-    public void testReconnect() throws Exception {
-    }
-
-    /**
-     * Test of disconnect method, of class MySQLDatabaseServer.
-     */
-    public void testDisconnect() {
-    }
-
-    /**
-     * Test of reconnectAsync method, of class MySQLDatabaseServer.
-     */
-    public void testReconnectAsync_0args() {
-    }
-
-    /**
-     * Test of reconnectAsync method, of class MySQLDatabaseServer.
-     */
-    public void testReconnectAsync_boolean() {
     }
 
     /**

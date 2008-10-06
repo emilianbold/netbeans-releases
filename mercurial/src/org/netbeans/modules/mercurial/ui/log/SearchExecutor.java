@@ -73,8 +73,6 @@ class SearchExecutor implements Runnable {
     private Map<String, Set<File>>      workFiles;
     private Map<String,File>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
-    private boolean                     filterUsername;
-    private boolean                     filterMessage;
     
     private int                         completedSearches;
     private boolean                     searchCanceled;
@@ -83,17 +81,15 @@ class SearchExecutor implements Runnable {
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
         criteria = master.getCriteria();
-        filterUsername = criteria.getUsername() != null;
-        filterMessage = criteria.getCommitMessage() != null;
         
         pathToRoot = new HashMap<String, File>(); 
         if (searchingUrl()) {
-            String rootPath = Mercurial.getInstance().getTopmostManagedParent(master.getRoots()[0]).toString();
+            String rootPath = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]).toString();
             pathToRoot.put(rootPath, master.getRoots()[0]);
         } else {
              workFiles = new HashMap<String, Set<File>>();
             for (File file : master.getRoots()) {
-                String rootPath = Mercurial.getInstance().getTopmostManagedParent(file).toString();
+                String rootPath = Mercurial.getInstance().getRepositoryRoot(file).toString();
 
                 Set<File> set = workFiles.get(rootPath);
                 if (set == null) {
@@ -169,8 +165,10 @@ class SearchExecutor implements Runnable {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
-            if (filterUsername && logMessage.getAuthor().indexOf(criteria.getUsername()) == -1) continue;
-            if (filterMessage && logMessage.getMessage().indexOf(criteria.getCommitMessage()) == -1) continue;
+            String username = criteria.getUsername();
+            if (username != null && logMessage.getAuthor().indexOf(username) == -1) continue;
+            String msg = criteria.getCommitMessage();
+            if (msg != null && logMessage.getMessage().indexOf(msg) == -1) continue;
             RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl);
             for (RepositoryRevision.Event event : rev.getEvents()) {
                 if (event.getChangedPath().getAction() == 'A' && event.getChangedPath().getCopySrcPath() != null) {

@@ -93,9 +93,12 @@ public class DiagramNavigatorContent extends JPanel implements PropertyChangeLis
         String property = evt.getPropertyName();
         if(property.equals(TopComponent.Registry.PROP_ACTIVATED)) {
             TopComponent view = (TopComponent) evt.getNewValue();
-            Object ctrl = view.getLookup().lookup(DesignerScene.class);
-            if(ctrl instanceof DesignerScene) {
-                navigate(((DesignerScene)ctrl).getSatelliteView());
+            if(view!=null)//may be null on events like slide out of Project tree etc
+            {
+                Object ctrl = view.getLookup().lookup(DesignerScene.class);
+                if(ctrl instanceof DesignerScene) {
+                    navigate(((DesignerScene)ctrl).getSatelliteView());
+                }
             }
         }
     }

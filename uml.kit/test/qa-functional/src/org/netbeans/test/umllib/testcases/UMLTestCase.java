@@ -84,8 +84,8 @@ public class UMLTestCase extends JellyTestCase {
     /**
      *   XTEST_WORK_DIR - xtest work dir
      */
-    public static String XTEST_WORK_DIR = System.getProperty("xtest.workdir");
-    public static String XTEST_PROJECT_DIR = XTEST_WORK_DIR + "/sys/data/data";
+    public static String XTEST_WORK_DIR = System.getProperty("nbjunit.workdir");
+    public static String XTEST_PROJECT_DIR = XTEST_WORK_DIR ;//+ "/sys/data/data";
 
     
     

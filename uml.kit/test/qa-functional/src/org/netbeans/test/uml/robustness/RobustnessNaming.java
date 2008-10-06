@@ -70,7 +70,7 @@ public class RobustnessNaming extends UMLMultiTestSuite{
     private static String cpdName2 = "DComponent2";
     private static String cpdName3 = "DComponent3";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

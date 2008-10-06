@@ -73,6 +73,10 @@ public class MobilitySetup extends JellyTestCase {
         openProject("MobileApplicationSwitchConfiguration");
     }
     
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+    
     public void closeMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }

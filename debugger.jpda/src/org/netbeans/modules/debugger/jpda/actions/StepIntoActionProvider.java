@@ -40,33 +40,23 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.LocatableEvent;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.StepRequest;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
-import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 
 
 /**
@@ -76,33 +66,20 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-public class StepIntoActionProvider extends JPDADebuggerActionProvider 
-implements Executor, PropertyChangeListener {
+public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
-    
-    private static final Logger smartLogger = Logger.getLogger("org.netbeans.modules.debugger.jpda.smartstepping"); // NOI18N
-    private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
-        
-    private StepRequest stepRequest;
-    private String position;
-    private int depth;
-    private ContextProvider contextProvider;
-    private boolean smartSteppingStepOut;
-    private SingleThreadedStepWatch stepWatch;
+    public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
+
+    private StepIntoNextMethod stepInto;
+    private MethodChooser currentMethodChooser;
 
     public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
             (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
-        this.contextProvider = contextProvider;
-        getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
-        SourcePath ec = contextProvider.lookupFirst(null, SourcePath.class);
-        ec.addPropertyChangeListener (this);
-        Map properties = contextProvider.lookupFirst(null, Map.class);
-        if (properties != null)
-            smartSteppingStepOut = properties.containsKey (SS_STEP_OUT);
+        stepInto = new StepIntoNextMethod(contextProvider);
         setProviderToDisableOnLazyAction(this);
     }
 
@@ -116,14 +93,15 @@ implements Executor, PropertyChangeListener {
     }
     
     public void doAction (Object action) {
-        runAction();
+        runAction(action);
     }
     
-    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+    @Override
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction();
+                    runAction(action);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -131,37 +109,11 @@ implements Executor, PropertyChangeListener {
         });
     }
     
-    public void runAction() {
-        synchronized (getDebuggerImpl ().LOCK) {
-            smartLogger.finer("STEP INTO.");
-            JPDAThread t = getDebuggerImpl ().getCurrentThread ();
-            if (t == null || !t.isSuspended()) {
-                // Can not step when it's not suspended.
-                smartLogger.finer("Can not step into! Thread "+t+" not suspended!");
-                return ;
-            }
-            JPDAThread resumeThread = setStepRequest (StepRequest.STEP_INTO);
-            position = t.getClassName () + '.' +
-                       t.getMethodName () + ':' +
-                       t.getLineNumber (null);
-            depth = t.getStackDepth();
-            logger.fine("JDI Request (action step into): " + stepRequest);
-            if (stepRequest == null) return ;
-            try {
-                if (resumeThread == null) {
-                    getDebuggerImpl ().resume ();
-                } else {
-                    //resumeThread.resume();
-                    stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                    getDebuggerImpl().resumeCurrentThread();
-                }
-            } catch (VMDisconnectedException e) {
-                ErrorManager.getDefault().notify(ErrorManager.USER,
-                    ErrorManager.getDefault().annotate(e,
-                        NbBundle.getMessage(StepIntoActionProvider.class,
-                            "VMDisconnected")));
-            }
+    public void runAction(Object action) {
+        if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
+            return; // action performed
         }
+        stepInto.runAction();
     }
     
     protected void checkEnabled (int debuggerState) {
@@ -174,209 +126,63 @@ implements Executor, PropertyChangeListener {
             );
     }
     
-    public void propertyChange (PropertyChangeEvent ev) {
-        if (ev.getPropertyName () == SmartSteppingFilter.PROP_EXCLUSION_PATTERNS) {
-            if (ev.getOldValue () != null) {
-                // remove some patterns
-                smartLogger.finer("Exclusion patterns removed. Removing step requests.");
-                JPDAThreadImpl currentThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-                if (currentThread != null) {
-                    ThreadReference tr = currentThread.getThreadReference ();
-                    removeStepRequests (tr);
-                }
-            } else {
-                if (smartLogger.isLoggable(Level.FINER)) {
-                    if (stepRequest == null)
-                        smartLogger.finer("Exclusion patterns has been added");
-                    else
-                        smartLogger.finer("Add exclusion patterns: "+ev.getNewValue());
-                }
-                addPatternsToRequest ((String[]) 
-                    ((Set<String>) ev.getNewValue ()).toArray (
-                        new String [((Set) ev.getNewValue ()).size()]
-                    )
-                );
-            }
-        } else
-        if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
-            smartLogger.finer("Source roots changed");
-            JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl ().
-                getCurrentThread ();
-            if (jtr != null) {
-                ThreadReference tr = jtr.getThreadReference ();
-                removeStepRequests (tr);
-            }
-        } else {
-            super.propertyChange (ev);
-        }
-    }
-    
-    
-    // Executor ................................................................
-    
-    /**
-     * Executes all step actions and smart stepping. 
-     *
-     * Should be called from Operator only.
-     */
-    public boolean exec (Event event) {
-        if (stepWatch != null) {
-            stepWatch.done();
-            stepWatch = null;
-        }
-        JPDAThread resumeThread = null;
-        synchronized (getDebuggerImpl ().LOCK) {
-            if (stepRequest != null) {
-                stepRequest.disable ();
-            }
-            LocatableEvent le = (LocatableEvent) event;
-
-            ThreadReference tr = le.thread ();
-
-            try {
-                if (tr.frame(0).location().method().isSynthetic()) {
-                    //S ystem.out.println("In synthetic method -> STEP INTO again");
-                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
-                    return true;
-                }
-            } catch (IncompatibleThreadStateException e) {
-                //ErrorManager.getDefault().notify(e);
-                // This may happen while debugging a free form project 
-            }
-
-            JPDAThread t = getDebuggerImpl ().getThread (tr);
-            boolean stop = getCompoundSmartSteppingListener ().stopHere 
-                               (contextProvider, t, getSmartSteppingFilterImpl ());
-            if (stop) {
-                String stopPosition = t.getClassName () + '.' +
-                                      t.getMethodName () + ':' +
-                                      t.getLineNumber (null);
-                int stopDepth = t.getStackDepth();
-                if (position.equals(stopPosition) && depth == stopDepth) {
-                    // We are where we started!
-                    stop = false;
-                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
-                    return true;//resumeThread == null;
-                }
-            }
-            if (stop) {
-                removeStepRequests (le.thread ());
-            } else {
-                smartLogger.finer(" => do next step.");
-                if (smartSteppingStepOut) {
-                    resumeThread = setStepRequest (StepRequest.STEP_OUT);
-                } else if (stepRequest != null) {
-                    try {
-                        stepRequest.enable ();
-                    } catch (IllegalThreadStateException itsex) {
-                        // the thread named in the request has died.
-                        getDebuggerImpl ().getOperator ().unregister(stepRequest);
-                        stepRequest = null;
-                        return true;
-                    }
-                } else {
-                    resumeThread = setStepRequest (StepRequest.STEP_INTO);
-                }
-            }
-
-            if (smartLogger.isLoggable(Level.FINER))
-                if (stop) {
-                    smartLogger.finer("FINISH IN CLASS " +  
-                        t.getClassName () + " ********"
-                    );
-                }
-            return !stop;
-        }
-    }
-
-    public void removed(EventRequest eventRequest) {
-        if (stepWatch != null) {
-            stepWatch.done();
-            stepWatch = null;
-        }
-    }
-    
-    
-    private StepActionProvider stepActionProvider;
-
-    private StepActionProvider getStepActionProvider () {
-        if (stepActionProvider == null) {
-            List l = contextProvider.lookup (null, ActionsProvider.class);
-            int i, k = l.size ();
-            for (i = 0; i < k; i++)
-                if (l.get (i) instanceof StepActionProvider)
-                    stepActionProvider = (StepActionProvider) l.get (i);
-        }
-        return stepActionProvider;
-    }
-
     // other methods ...........................................................
     
-    protected void removeStepRequests (ThreadReference tr) {
-        super.removeStepRequests (tr);
-        stepRequest = null;
-        smartLogger.finer("removing all patterns, all step requests.");
-    }
-    
-    private JPDAThreadImpl setStepRequest (int step) {
-        JPDAThreadImpl thread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
-        ThreadReference tr = thread.getThreadReference ();
-        removeStepRequests (tr);
-        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-        if (vm == null) return null;
-        stepRequest = vm.eventRequestManager ().createStepRequest (
-            tr,
-            StepRequest.STEP_LINE,
-            step
-        );
-
-        getDebuggerImpl ().getOperator ().register (stepRequest, this);
-        int suspendPolicy = getDebuggerImpl().getSuspend();
-        stepRequest.setSuspendPolicy (suspendPolicy);
-        
-        if (smartLogger.isLoggable(Level.FINER)) {
-            smartLogger.finer("Set step request("+step+") and patterns: ");
+    public boolean doMethodSelection () {
+        synchronized (this) {
+            if (currentMethodChooser != null) {
+                currentMethodChooser.doStepIntoCurrentSelection();
+                return true;
+            }
         }
-        addPatternsToRequest (
-            getSmartSteppingFilterImpl ().getExclusionPatterns ()
-        );
+        final String[] methodPtr = new String[1];
+        final String[] urlPtr = new String[1];
+        final int[] linePtr = new int[1];
+        final int[] offsetPtr = new int[1];
         try {
-            stepRequest.enable ();
-        } catch (IllegalThreadStateException itsex) {
-            // the thread named in the request has died.
-            getDebuggerImpl ().getOperator ().unregister(stepRequest);
-            stepRequest = null;
-            return null;
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    EditorContext context = EditorContextBridge.getContext();
+                    methodPtr[0] = context.getSelectedMethodName ();
+                    linePtr[0] = context.getCurrentLineNumber();
+                    offsetPtr[0] = EditorContextBridge.getCurrentOffset();
+                    urlPtr[0] = context.getCurrentURL();
+                }
+            });
+        } catch (InvocationTargetException ex) {
+            return false;
+        } catch (InterruptedException ex) {
+            return false;
         }
-        if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            return thread;
+        final int methodLine = linePtr[0];
+        final int methodOffset = offsetPtr[0];
+        final String url = urlPtr[0];
+        if (methodLine < 0 || url == null || !url.endsWith (".java")) {
+            return false;
+        }
+        String className = debugger.getCurrentThread().getClassName();
+        VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) return false;
+        final List<ReferenceType> classes = vm.classesByName(className);
+        if (!classes.isEmpty()) {
+            MethodChooser chooser = new MethodChooser(debugger, url, classes.get(0), methodLine, methodOffset);
+            boolean success = chooser.run();
+            if (success && chooser.isInSelectMode()) {
+                synchronized (this) {
+                    currentMethodChooser = chooser;
+                    chooser.setReleaseListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            synchronized (this) {
+                                currentMethodChooser = null;
+                            }
+                        }
+                    });
+                }
+            }
+            return success;
         } else {
-            return null;
+            return false;
         }
     }
-
-    private SmartSteppingFilter smartSteppingFilter;
     
-    private SmartSteppingFilter getSmartSteppingFilterImpl () {
-        if (smartSteppingFilter == null)
-            smartSteppingFilter = contextProvider.lookupFirst(null, SmartSteppingFilter.class);
-        return smartSteppingFilter;
-    }
-
-    private CompoundSmartSteppingListener compoundSmartSteppingListener;
-    
-    private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
-        if (compoundSmartSteppingListener == null)
-            compoundSmartSteppingListener = contextProvider.lookupFirst(null, CompoundSmartSteppingListener.class);
-        return compoundSmartSteppingListener;
-    }
-
-    private void addPatternsToRequest (String[] patterns) {
-        if (stepRequest == null) return;
-        int i, k = patterns.length;
-        for (i = 0; i < k; i++) {
-            stepRequest.addClassExclusionFilter (patterns [i]);
-            smartLogger.finer("   add pattern: "+patterns[i]);
-        }
-    }
 }

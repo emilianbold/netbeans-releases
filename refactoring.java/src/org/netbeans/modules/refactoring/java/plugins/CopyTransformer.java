@@ -79,10 +79,22 @@ public class CopyTransformer extends RefactoringVisitor {
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree tree, Element p) {
         if (!workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            CompilationUnitTree cut = tree;
+            if (cut.getPackageName() != null && !"".equals(newPackage)) { // NOI18N
+                rewrite(cut.getPackageName(), make.Identifier(newPackage));
+            } else {
+                // in order to handle default package, we have to rewrite whole
+                // compilation unit:
+                cut = make.CompilationUnit(
+                        "".equals(newPackage) ? null : make.Identifier(newPackage), // NOI18N
+                        cut.getImports(),
+                        cut.getTypeDecls(),
+                        cut.getSourceFile()
+                );
+            }
             if (insertImport) {
-                Element el = workingCopy.getTrees().getElement(getCurrentPath());
-                Tree tree2 = make.insertCompUnitImport(tree, 0, make.Import(make.Identifier(oldPackage + ".*"), false)); // NOI18N
-                rewrite(tree, tree2);
+                Tree tree2 = make.insertCompUnitImport(cut, 0, make.Import(make.Identifier(oldPackage + ".*"), false)); // NOI18N
+                rewrite(cut, tree2);
             }
         }
         return super.visitCompilationUnit(tree, p);

@@ -115,19 +115,19 @@ public class Collaboration extends StructuredClassifier
 	 */
 	public String getExpandedElementType()
 	{
-		String retType = getElementType();
-		// if we have a collaboration with template parameters then we are
-		// assuming that it is a design pattern
-		ETList<IParameterableElement> parameters = super.getTemplateParameters();
-		if (parameters != null)
-		{
-			int count = parameters.size();
-			if (count > 0)
-			{
-				retType = "DesignPattern"; 
-			}
-		}
-		return retType;
+            String retType = getElementType();
+            // if we have a collaboration with template parameters then we are
+            // assuming that it is a design pattern
+            ETList<IParameterableElement> parameters = super.getTemplateParameters();
+            if (parameters != null)
+            {
+                int count = parameters.size();
+                if (count > 0)
+                {
+                    retType = "DesignPattern";
+                }
+            }
+            return retType;
 	}
 
 	/**

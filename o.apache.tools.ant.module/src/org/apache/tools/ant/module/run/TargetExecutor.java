@@ -113,6 +113,7 @@ public final class TargetExecutor implements Runnable {
     private List<String> targetNames;
     /** used for the tab etc. */
     private String displayName;
+    private String suggestedDisplayName;
 
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
@@ -127,8 +128,12 @@ public final class TargetExecutor implements Runnable {
     public synchronized void setProperties(Map<String,String> p) {
         properties = new HashMap<String,String>(p);
     }
+
+    void setDisplayName(String n) {
+        suggestedDisplayName = n;
+    }
     
-    static String getProcessDisplayName(AntProjectCookie pcookie, List<String> targetNames) {
+    private static String getProcessDisplayName(AntProjectCookie pcookie, List<String> targetNames) {
         Element projel = pcookie.getProjectElement();
         String projectName;
         if (projel != null) {
@@ -198,21 +203,27 @@ public final class TargetExecutor implements Runnable {
 
     private static final class RerunAction extends AbstractAction implements FileChangeListener {
 
-        private final AntProjectCookie pcookie;
-        private final List<String> targetNames;
-        private final int verbosity;
-        private final Map<String,String> properties;
+        private AntProjectCookie pcookie;
+        private List<String> targetNames;
+        //private int verbosity;
+        private Map<String,String> properties;
+        private String displayName;
 
         public RerunAction(TargetExecutor prototype) {
-            pcookie = prototype.pcookie;
-            targetNames = prototype.targetNames;
-            verbosity = prototype.verbosity;
-            properties = prototype.properties;
+            reinit(prototype);
             setEnabledEQ(this, false); // initially, until ready
             FileObject script = pcookie.getFileObject();
             if (script != null) {
                 script.addFileChangeListener(FileUtil.weakFileChangeListener(this, script));
             }
+        }
+
+        private void reinit(TargetExecutor prototype) {
+            pcookie = prototype.pcookie;
+            targetNames = prototype.targetNames;
+            //verbosity = prototype.verbosity;
+            properties = prototype.properties;
+            displayName = prototype.suggestedDisplayName;
         }
 
         @Override
@@ -231,8 +242,11 @@ public final class TargetExecutor implements Runnable {
             try {
                 TargetExecutor exec = new TargetExecutor(pcookie,
                         targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
-                exec.setVerbosity(verbosity);
+                //exec.setVerbosity(verbosity);
                 exec.setProperties(properties);
+                if (displayName != null) {
+                    exec.setDisplayName(displayName);
+                }
                 exec.execute();
             } catch (IOException x) {
                 Logger.getLogger(TargetExecutor.class.getName()).log(Level.INFO, null, x);
@@ -283,7 +297,7 @@ public final class TargetExecutor implements Runnable {
      * Actually start the process.
      */
     public ExecutorTask execute () throws IOException {
-        String dn = getProcessDisplayName(pcookie, targetNames);
+        String dn = suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames);
         if (activeDisplayNames.contains(dn)) {
             // Uniquify: "prj (targ) #2", "prj (targ) #3", etc.
             int i = 2;
@@ -413,8 +427,12 @@ public final class TargetExecutor implements Runnable {
             err.println(NbBundle.getMessage(TargetExecutor.class, "EXC_non_local_proj_file"));
             return;
         }
-        
-        LastTargetExecuted.record(buildFile, verbosity, targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null, properties);
+
+        // #139185: do not record verbosity level; always pick it up from Ant Settings.
+        LastTargetExecuted.record(buildFile, /*verbosity,*/
+                targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null,
+                properties,
+                suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames));
         
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
@@ -492,6 +510,7 @@ public final class TargetExecutor implements Runnable {
             sa.t = null;
             setEnabledEQ(sa, false);
             setEnabledEQ(ra, true);
+            ra.reinit(this);
             activeDisplayNames.remove(displayName);
         }
     }

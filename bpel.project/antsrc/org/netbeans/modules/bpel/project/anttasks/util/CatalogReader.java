@@ -42,6 +42,7 @@ package org.netbeans.modules.bpel.project.anttasks.util;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -49,6 +50,7 @@ import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.ResolvingXMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -64,7 +66,7 @@ public class CatalogReader {
     private File rootCatalog;
     private File currentCatalog;
     
-    private List<String> namespaces = new LinkedList<String>();
+    private List<String> systemIds = new LinkedList<String>();
     private List<String> locations = new LinkedList<String>();
     
     /**
@@ -72,7 +74,7 @@ public class CatalogReader {
      * @param catalogXML Location of Catalog XML
      * @throws Excepetion Exception during parsing the Catalog.xml file.
      */
-    public CatalogReader(String catalogXML) throws Exception {
+    public CatalogReader(String catalogXML) throws SAXException, IOException {
         final CatalogManager manager = new CatalogManager(null);
         manager.setUseStaticCatalog(false);
         manager.setPreferPublic(false);
@@ -91,8 +93,8 @@ public class CatalogReader {
         } while (nextCatalogs.size() > 0);
     }
     
-    public List<String> getNamespaces() {
-        return namespaces;
+    public List<String> getSystemIds() {
+        return systemIds;
     }
     
     public List<String> getLocations() {
@@ -117,16 +119,16 @@ public class CatalogReader {
                 final Attributes atts) {
             
             if (qName.equals(SYSTEM_CONST)) {
-                final String namespace = atts.getValue(SYSTEM_ID_CONST);
+                final String systemId = atts.getValue(SYSTEM_ID_CONST);
                 String location = atts.getValue(URI_CONST);
                 
-                if ((namespace != null) && !namespaces.contains(namespace)) {
+                if ((systemId != null) && !systemIds.contains(systemId)) {
                     if (currentCatalog != rootCatalog) {
                         location = Util.getRelativePath(rootCatalog.getParentFile(), 
                                 currentCatalog.getParentFile()) + "/" + location;
                     }
                     
-                    namespaces.add(namespace);
+                    systemIds.add(systemId);
                     locations.add(location.replace("\\", "/"));
                 }
             }

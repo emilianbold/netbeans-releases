@@ -344,8 +344,9 @@ Source root for a test type:
 {project.dir}/test/unit/src  - source root for unit test
 
 
-For example you have three modules with code name bases A,B,C. A depends on B, B
-depends on C. You want to add test dependencies to unit test type of module D:
+For example you have three modules with code name bases A,B,C. A has runtime
+dependency on B, B on C. You want to add test dependencies to unit test type
+of module D:
 
 Use case 1: Runtime dependency on module.
 
@@ -385,6 +386,8 @@ Use case 3: Compile and runtime dependency on a module its recursive runtime cla
 
 Runtime classpath is A + B + C + D.
 Compile classpath is A + B + C + D.
+Note one feature of recursive compile-time dependency: modules B and C are added
+to compile classpath as well, even if A has only runtime dependency on B and B on C.
 
 Use case 4: Compile and runtime dependency on a module, its recursive runtime classpath 
 and tests.
@@ -760,8 +763,10 @@ Defaults to just "-ea".
 
 test.config [since 6.5] - name of a test configuration to run, specifying a set
 of unit and/or functional tests which should be run by the 'test' target.
-Defaults to 'default'. ${test.config.NAME.includes} (default '**/*Test.class')
-specifies the includes list (format: classpath resources).
+Defaults to 'default'. ${test.config.NAME.includes} specifies the includes list
+(format: classpath resources). The standard value of ${test.config.NAME.includes}
+depends on NAME. In case of 'default', it includes every test ('**/*Test.class').
+In case of any other NAME the includes list is empty.
 ${test.config.NAME.excludes} (default '') specifies an excludes list.
 
 test.unit.cp.extra - any additional classpath you might need to compile your
@@ -835,7 +840,7 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   this property. Sample values with prebuilt binaries (good for testing):
 http://www.netbeans.org/download/5_0/jnlp/
 http://www.netbeans.org/download/6_0/jnlp/
-http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/
+http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   in JNLP mode even though they are not listed as Class-Path extensions of the
@@ -961,6 +966,9 @@ modules. Either way, available from context menu in Projects tab.
 
 test - run all unit tests for the module. Run -> Test... in the IDE.
 
+test-generate-html [since 6.5 M2] - can be used after test target to generate
+test reports in html.
+
 test-build - build unit tests for the module.
 
 test-init - define properties used for building and running unit tests.
@@ -992,7 +1000,8 @@ branding.token - optional token defining an application branding.
 
 enabled.clusters - comma-separated list of cluster names in the target platform
 (e.g. "platform6") which should be included in the application. Should be stored
-in platform.properties, not project.properties. Since 5.0u1.
+in platform.properties, not project.properties. Available since 5.0u1. Since 6.5,
+can elide version numbers from the end, e.g. just "platform" suffices.
 
 disabled.clusters - comma-separated list of cluster names in the target platform
 (e.g. "ide6") which should be completely excluded from the application.

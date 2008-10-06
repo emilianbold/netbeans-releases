@@ -143,7 +143,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.14</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -157,7 +157,6 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.uml.kit</friend>
-                <friend>org.netbeans.modules.uml.requirements</friend>
                 <package>org.netbeans.modules.uml.designpattern</package>
             </friend-packages>
         </data>

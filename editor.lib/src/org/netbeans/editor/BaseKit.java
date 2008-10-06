@@ -66,7 +66,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import java.io.CharArrayWriter;
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -94,6 +93,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
 * Editor kit implementation for base document
@@ -103,6 +103,13 @@ import org.openide.util.WeakListeners;
 */
 
 public class BaseKit extends DefaultEditorKit {
+
+    /**
+     * Flag indicating that the JTextComponent.paste() is in progress.
+     * Checked in BaseDocument.read() to ignore clearing of the regions
+     * for trailing-whitespace-removal.
+     */
+    static ThreadLocal<Boolean> IN_PASTE = new ThreadLocal<Boolean>();
 
     private static final Logger LOG = Logger.getLogger(BaseKit.class.getName());
     
@@ -708,7 +715,7 @@ public class BaseKit extends DefaultEditorKit {
         
         assert (SwingUtilities.isEventDispatchThread()) // expected in AWT only
             : "BaseKit.install() incorrectly called from non-AWT thread."; // NOI18N
-        
+
         BaseTextUI ui = createTextUI();
         c.setUI(ui);
 
@@ -1033,10 +1040,12 @@ public class BaseKit extends DefaultEditorKit {
         public DefaultKeyTypedAction() {
             super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
+            LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
 
         private static final boolean isMac = System.getProperty("mrj.version") != null; //NOI18N
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+
+        public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if ((target != null) && (evt != null)) {
 
                 // Check whether the modifiers are OK
@@ -1058,11 +1067,11 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
-                Caret caret = target.getCaret();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                EditorUI editorUI = Utilities.getEditorUI(target);
+                final Caret caret = target.getCaret();
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                final EditorUI editorUI = Utilities.getEditorUI(target);
                 // determine if typed char is valid
-                String cmd = evt.getActionCommand();
+                final String cmd = evt.getActionCommand();
                 if ((cmd != null) && (cmd.length() == 1)) {
                     //          Utilities.clearStatusText(target);
 
@@ -1072,58 +1081,66 @@ public class BaseKit extends DefaultEditorKit {
                         LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                     }
                     
-                    doc.atomicLock();
-                    DocumentUtilities.setTypingModification(doc, true);
-                    try {
-                        char ch = cmd.charAt(0);
-                        if ((ch >= 0x20) && (ch != 0x7F)) { // valid character
-                            editorUI.getWordMatch().clear(); // reset word matching
-                            Boolean overwriteMode = (Boolean)editorUI.getProperty(
-                                                        EditorUI.OVERWRITE_MODE_PROPERTY);
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
-                                if (doInsert) {
-                                    if (Utilities.isSelectionShowing(caret)) { // valid selection
-                                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
-                                        try {
-                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
-                                            replaceSelection(target, caret.getDot(), caret, cmd, ovr);
-                                        } finally {
-                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
-                                        }
-                                    } else { // no selection
-                                        int dotPos = caret.getDot();
-                                        if (overwriteMode != null && overwriteMode.booleanValue()
-                                                && dotPos < doc.getLength() && doc.getChars(dotPos, 1)[0] != '\n'
-                                           ) { // overwrite current char
-                                            doc.atomicLock();
-                                            try {
-                                              insertString(doc, dotPos, caret, cmd, true); 
-                                            } finally {
-                                              doc.atomicUnlock();
+                                char ch = cmd.charAt(0);
+                                if ((ch >= 0x20) && (ch != 0x7F)) { // valid character
+                                    LOG.fine("Processing command char: " + Integer.toHexString(ch)); //NOI18N
+
+                                    editorUI.getWordMatch().clear(); // reset word matching
+                                    Boolean overwriteMode = (Boolean)editorUI.getProperty(
+                                                                EditorUI.OVERWRITE_MODE_PROPERTY);
+                                    try {
+                                        boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
+                                        if (doInsert) {
+                                            if (Utilities.isSelectionShowing(caret)) { // valid selection
+                                                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                                try {
+                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                                    replaceSelection(target, caret.getDot(), caret, cmd, ovr);
+                                                } finally {
+                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                                }
+                                            } else { // no selection
+                                                int dotPos = caret.getDot();
+                                                if (overwriteMode != null && overwriteMode.booleanValue()
+                                                        && dotPos < doc.getLength() && doc.getChars(dotPos, 1)[0] != '\n'
+                                                   ) { // overwrite current char
+                                                    insertString(doc, dotPos, caret, cmd, true); 
+                                                } else { // insert mode
+                                                    insertString(doc, dotPos, caret, cmd, false);
+                                                }
                                             }
-                                        } else { // insert mode
-                                            doc.atomicLock();
-                                            try {
-                                              insertString(doc, dotPos, caret, cmd, false);
-                                            } finally {
-                                                doc.atomicUnlock();
-                                            }
                                         }
+                                    } catch (BadLocationException e) {
+                                        LOG.log(Level.FINE, null, e);
+                                        target.getToolkit().beep();
                                     }
+                                } else {
+                                    LOG.fine("Invalid command char: " + Integer.toHexString(ch)); //NOI18N
                                 }
-                            } catch (BadLocationException e) {
-                                target.getToolkit().beep();
+
+                                checkIndent(target, cmd);
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
-
-                        checkIndent(target, cmd);
-                    } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
-                        doc.atomicUnlock();
-                    }
+                    });
+                } else {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        StringBuilder sb = new StringBuilder();
+                        for(int i = 0; i < cmd.length(); i++) {
+                            String hex = Integer.toHexString(cmd.charAt(i));
+                            sb.append(hex);
+                            if (i + 1 < cmd.length()) {
+                                sb.append(" ");
+                            }
+                        }
+                        LOG.fine("Invalid command: '" + sb + "'"); //NOI18N
+                    }                    
                 }
-
             }
         }
 
@@ -1177,33 +1194,35 @@ public class BaseKit extends DefaultEditorKit {
             super(insertBreakAction, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
 
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                Formatter formatter = doc.getFormatter();
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                final Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
                 try {
-                    doc.atomicLock();
-                    DocumentUtilities.setTypingModification(doc, true);
-                    try {
-                        target.replaceSelection("");
-                        Caret caret = target.getCaret();
-                        Object cookie = beforeBreak(target, doc, caret);
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
+                            try {
+                                target.replaceSelection("");
+                                Caret caret = target.getCaret();
+                                Object cookie = beforeBreak(target, doc, caret);
 
-                        int dotPos = caret.getDot();
-                        int newDotPos = formatter.indentNewLine(doc, dotPos);
-                        caret.setDot(newDotPos);
+                                int dotPos = caret.getDot();
+                                int newDotPos = formatter.indentNewLine(doc, dotPos);
+                                caret.setDot(newDotPos);
 
-                        afterBreak(target, doc, caret, cookie);
-                    } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
-                        doc.atomicUnlock();
-                    }
+                                afterBreak(target, doc, caret, cookie);
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
+                            }
+                        }
+                    });
                 } finally {
                     formatter.indentUnlock();
                 }
@@ -1235,28 +1254,33 @@ public class BaseKit extends DefaultEditorKit {
 	  super(splitLineAction, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
 
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                Caret caret = target.getCaret();
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                final Caret caret = target.getCaret();
 
-                Formatter formatter = doc.getFormatter();
+                final Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
-                doc.atomicLock();
-                DocumentUtilities.setTypingModification(doc, true);
-                try{
-                    target.replaceSelection("");
-                    final int dotPos = caret.getDot();      // dot stays where it was
-                    formatter.indentNewLine(doc, dotPos);   // newline
-                    caret.setDot(dotPos);
+                try {
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
+                            try{
+                                target.replaceSelection("");
+                                final int dotPos = caret.getDot();      // dot stays where it was
+                                formatter.indentNewLine(doc, dotPos);   // newline
+                                caret.setDot(dotPos);
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
+                            }
+                        }
+                    });
                 } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                    doc.atomicUnlock();
                     formatter.indentUnlock();
                 }
             }
@@ -1273,81 +1297,83 @@ public class BaseKit extends DefaultEditorKit {
             super(insertTabAction, MAGIC_POSITION_RESET | ABBREV_RESET | WORD_MATCH_RESET);
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
 
-                Caret caret = target.getCaret();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.atomicLock();
-                DocumentUtilities.setTypingModification(doc, true);
-                try {
-                if (Utilities.isSelectionShowing(caret)) { // block selected
-                    try {
-                        doc.getFormatter().changeBlockIndent(doc,
-                                target.getSelectionStart(), target.getSelectionEnd(), +1);
-                    } catch (GuardedException e) {
-                        target.getToolkit().beep();
-                    } catch (BadLocationException e) {
-                        e.printStackTrace();
-                    }
-                } else { // no selected text
-                    int dotPos = caret.getDot();
-                    int caretCol;
-                    // find caret column
-                    try {
-                        caretCol = doc.getVisColFromPos(dotPos);
-                    } catch (BadLocationException e) {
-                        LOG.log(Level.WARNING, null, e);
-                        caretCol = 0;
-                    }
-
-                    try {
-                        // find indent of the first previous non-white row
-                        int upperCol = Utilities.getRowIndent(doc, dotPos, false);
-                        if (upperCol == -1) { // no prev line with  indent
-                            upperCol = 0;
-                        }
-                        // is there any char on this line before cursor?
-                        int indent = Utilities.getRowIndent(doc, dotPos);
-                        // test whether we should indent
-                        if (indent == -1) {
-                            if (upperCol > caretCol) { // upper indent is greater
-                                indent = upperCol;
-                            } else { // simulate insert tab by changing indent
-                                indent = Utilities.getNextTabColumn(doc, dotPos);
+                final Caret caret = target.getCaret();
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                        DocumentUtilities.setTypingModification(doc, true);
+                        Formatter.pushFormattingContextDocument(doc);
+                        try {
+                        if (Utilities.isSelectionShowing(caret)) { // block selected
+                            try {
+                                doc.getFormatter().changeBlockIndent(doc,
+                                        target.getSelectionStart(), target.getSelectionEnd(), +1);
+                            } catch (GuardedException e) {
+                                target.getToolkit().beep();
+                            } catch (BadLocationException e) {
+                                e.printStackTrace();
+                            }
+                        } else { // no selected text
+                            int dotPos = caret.getDot();
+                            int caretCol;
+                            // find caret column
+                            try {
+                                caretCol = doc.getVisColFromPos(dotPos);
+                            } catch (BadLocationException e) {
+                                LOG.log(Level.WARNING, null, e);
+                                caretCol = 0;
                             }
 
-                            // Fix of #32240 - #1 of 2
-                            int rowStart = Utilities.getRowStart(doc, dotPos);
+                            try {
+                                // find indent of the first previous non-white row
+                                int upperCol = Utilities.getRowIndent(doc, dotPos, false);
+                                if (upperCol == -1) { // no prev line with  indent
+                                    upperCol = 0;
+                                }
+                                // is there any char on this line before cursor?
+                                int indent = Utilities.getRowIndent(doc, dotPos);
+                                // test whether we should indent
+                                if (indent == -1) {
+                                    if (upperCol > caretCol) { // upper indent is greater
+                                        indent = upperCol;
+                                    } else { // simulate insert tab by changing indent
+                                        indent = Utilities.getNextTabColumn(doc, dotPos);
+                                    }
 
-                            doc.getFormatter().changeRowIndent(doc, dotPos, indent);
+                                    // Fix of #32240 - #1 of 2
+                                    int rowStart = Utilities.getRowStart(doc, dotPos);
 
-                            // Fix of #32240 - #2 of 2
-                            int newDotPos = doc.getOffsetFromVisCol(indent, rowStart);
-                            if (newDotPos >= 0) {
-                                caret.setDot(newDotPos);
+                                    doc.getFormatter().changeRowIndent(doc, dotPos, indent);
+
+                                    // Fix of #32240 - #2 of 2
+                                    int newDotPos = doc.getOffsetFromVisCol(indent, rowStart);
+                                    if (newDotPos >= 0) {
+                                        caret.setDot(newDotPos);
+                                    }
+
+                                } else { // already chars on the line
+                                    doc.getFormatter().insertTabString(doc, dotPos);
+
+                                }
+                            } catch (BadLocationException e) {
+                                // use the same pos
                             }
-                            
-                        } else { // already chars on the line
-                            doc.getFormatter().insertTabString(doc, dotPos);
-
                         }
-                    } catch (BadLocationException e) {
-                        // use the same pos
+                        } finally {
+                            Formatter.popFormattingContextDocument(doc);
+                            DocumentUtilities.setTypingModification(doc, false);
+                        }
                     }
-                }
-                } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                    doc.atomicUnlock();
-                }
+                });
             }
-
         }
-
     }
 
     /** Compound action that encapsulates several actions */
@@ -1482,42 +1508,43 @@ public class BaseKit extends DefaultEditorKit {
             this.nextChar = nextChar;
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
                     return;
                 }
 
-		BaseDocument doc = (BaseDocument)target.getDocument();
-		Caret caret = target.getCaret();
-		int dot = caret.getDot();
-		int mark = caret.getMark();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
+		final Caret caret = target.getCaret();
+		final int dot = caret.getDot();
+		final int mark = caret.getMark();
 
-                doc.atomicLock();
-                DocumentUtilities.setTypingModification(doc, true);
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                    DocumentUtilities.setTypingModification(doc, true);
 
-                try {
-                    if (dot != mark) { // remove selection
-                        doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
-                    } else {
-                        if (nextChar) { // remove next char
-                            char ch = doc.getChars(dot, 1)[0];
-                            doc.remove(dot, 1);
-                            charDeleted(doc, dot, caret, ch);
-                        } else { // remove previous char
-                            char ch = doc.getChars(dot-1, 1)[0];
-                            doc.remove(dot - 1, 1);
-                            charBackspaced(doc, dot-1, caret, ch);
+                    try {
+                        if (dot != mark) { // remove selection
+                            doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                        } else {
+                            if (nextChar) { // remove next char
+                                char ch = doc.getChars(dot, 1)[0];
+                                doc.remove(dot, 1);
+                                charDeleted(doc, dot, caret, ch);
+                            } else { // remove previous char
+                                char ch = doc.getChars(dot-1, 1)[0];
+                                doc.remove(dot - 1, 1);
+                                charBackspaced(doc, dot-1, caret, ch);
+                            }
                         }
+                    } catch (BadLocationException e) {
+                        target.getToolkit().beep();
+                    } finally {
+                        DocumentUtilities.setTypingModification(doc, false);
                     }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
-                } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                    doc.atomicUnlock();
-                }
-
+                    }
+                });
             }
         }
 
@@ -1583,7 +1610,7 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
         
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
@@ -1596,22 +1623,24 @@ public class BaseKit extends DefaultEditorKit {
                     LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                 }
                 
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.atomicLock();
-                DocumentUtilities.setTypingModification(doc, true);
-                try {
-                    // If there is no selection then pre-select a current line including newline
-                    if (!Utilities.isSelectionShowing(target)) {
-                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                                target.getCaretPosition());
-                        target.select(elem.getStartOffset(), elem.getEndOffset());
-                    }
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                    DocumentUtilities.setTypingModification(doc, true);
+                    try {
+                        // If there is no selection then pre-select a current line including newline
+                        if (!Utilities.isSelectionShowing(target)) {
+                            Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                    target.getCaretPosition());
+                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                        }
 
-                    target.cut();
-                } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                    doc.atomicUnlock();
-                }
+                        target.cut();
+                    } finally {
+                        DocumentUtilities.setTypingModification(doc, false);
+                    }
+                    }
+                });
             }
         }
     }
@@ -1637,13 +1666,19 @@ public class BaseKit extends DefaultEditorKit {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                // If there is no selection then pre-select a current line including newline
-                if (!Utilities.isSelectionShowing(target)) {
-                    Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                            target.getCaretPosition());
-                    target.select(elem.getStartOffset(), elem.getEndOffset());
+                try {
+                    // If there is no selection then pre-select a current line including newline
+                    if (!Utilities.isSelectionShowing(target)) {
+                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                target.getCaretPosition());
+                        if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
+                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                        }
+                    }
+                    target.copy();
+                } catch (BadLocationException ble) {
+                    LOG.log(Level.FINE, null, ble);
                 }
-                target.copy();
             }
         }
     }
@@ -1659,7 +1694,7 @@ public class BaseKit extends DefaultEditorKit {
             this.formatted = formated;
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
                     target.getToolkit().beep();
@@ -1667,7 +1702,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
                 
                 
-                BaseDocument doc = Utilities.getDocument(target);
+                final BaseDocument doc = Utilities.getDocument(target);
                 if (doc==null) return;
 
                 try {
@@ -1676,27 +1711,34 @@ public class BaseKit extends DefaultEditorKit {
                     LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                 }
 
-                Formatter formatter = doc.getFormatter();
+                final Formatter formatter = doc.getFormatter();
                 if (formatted) {
                     formatter.reformatLock();
                 }
                 try {
-                    doc.atomicLock();
-                    DocumentUtilities.setTypingModification(doc, true);
-                    try {
-                        Caret caret = target.getCaret();
-                        int startOffset = target.getSelectionStart();
-                        target.paste();
-                        int endOffset = caret.getDot();
-                        if (formatted) {
-                            formatter.reformat(doc, startOffset, endOffset);
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                        DocumentUtilities.setTypingModification(doc, true);
+                        try {
+                            Caret caret = target.getCaret();
+                            int startOffset = target.getSelectionStart();
+                            IN_PASTE.set(true);
+                            try {
+                                target.paste();
+                            } finally {
+                                IN_PASTE.set(false);
+                            }
+                            int endOffset = caret.getDot();
+                            if (formatted) {
+                                formatter.reformat(doc, startOffset, endOffset);
+                            }
+                        } catch (Exception e) {
+                            target.getToolkit().beep();
+                        } finally {
+                            DocumentUtilities.setTypingModification(doc, false);
                         }
-                    } catch (Exception e) {
-                        target.getToolkit().beep();
-                    } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
-                        doc.atomicUnlock();
-                    }
+                        }
+                    });
                 } finally {
                     if (formatted) {
                         formatter.reformatUnlock();
@@ -2469,25 +2511,27 @@ public class BaseKit extends DefaultEditorKit {
             super(selectLineAction);
         }
 
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                Caret caret = target.getCaret();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.atomicLock();
-                DocumentUtilities.setTypingModification(doc, true);
-                try {
-                    int dotPos = caret.getDot();
-                    int bolPos = Utilities.getRowStart(target, dotPos);
-                    int eolPos = Utilities.getRowEnd(target, dotPos);
-                    eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
-                    caret.setDot(bolPos);
-                    caret.moveDot(eolPos);
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
-                } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                    doc.atomicUnlock();
-                }
+                final Caret caret = target.getCaret();
+                final BaseDocument doc = (BaseDocument)target.getDocument();
+                doc.runAtomicAsUser (new Runnable () {
+                    public void run () {
+                        DocumentUtilities.setTypingModification(doc, true);
+                        try {
+                            int dotPos = caret.getDot();
+                            int bolPos = Utilities.getRowStart(target, dotPos);
+                            int eolPos = Utilities.getRowEnd(target, dotPos);
+                            eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                            caret.setDot(bolPos);
+                            caret.moveDot(eolPos);
+                        } catch (BadLocationException e) {
+                            target.getToolkit().beep();
+                        } finally {
+                            DocumentUtilities.setTypingModification(doc, false);
+                        }
+                    }
+                });
             }
         }
     }
@@ -2640,7 +2684,7 @@ public class BaseKit extends DefaultEditorKit {
         private final String mimeType;
         private final Lookup.Result<KeyBindingSettings> lookupResult;
         private final Preferences prefs;
-        private final Set<JTextComponent> components = new HashSet<JTextComponent>();
+        private final Set<JTextComponent> components = new WeakSet<JTextComponent>();
         
         public KeybindingsAndPreferencesTracker(String mimeType) {
             this.mimeType = mimeType;

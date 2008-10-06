@@ -42,6 +42,7 @@ package org.netbeans.modules.groovy.grails.server;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,8 +64,7 @@ public class ApplicationNode extends AbstractNode {
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
         setDisplayName(NbBundle.getMessage(
                 GrailsInstance.class, "ApplicationNode.displayName", info.getDisplayName(), config.getPort()));
-        setIconBaseWithExtension(
-                "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N
+        setIconBaseWithExtension(GrailsConstants.GRAILS_ICON_16x16);
 
         getCookieSet().add(new ProcessCookie() {
 

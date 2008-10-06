@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.netbeans.modules.jumpto.type.TypeProviderAccessor;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -142,7 +143,11 @@ public class GoToTypeWorker implements Runnable {
             }
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
-                items.addAll(ccItems);
+                TreeSet<TypeDescriptor> ts = new TreeSet<TypeDescriptor>(new TypeComparatorFO());
+                ts.addAll(ccItems);
+                ts.addAll(items);
+                items.clear();
+                items.addAll(ts); //eliminate duplicates
                 Collections.sort(items, new TypeComparator());
                 //panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;
@@ -165,6 +170,27 @@ public class GoToTypeWorker implements Runnable {
             if (cmpr != 0) {
                 return cmpr;
             }
+            return compareStrings(t1.getContextName(), t2.getContextName());
+        }
+    }
+
+    private class TypeComparatorFO implements Comparator<TypeDescriptor> {
+
+        public int compare(TypeDescriptor t1, TypeDescriptor t2) {
+            int cmpr = compareStrings(t1.getTypeName(), t2.getTypeName());
+            if (cmpr != 0) {
+                return cmpr;
+            }
+            cmpr = compareStrings(t1.getOuterName(), t2.getOuterName());
+            if (cmpr != 0) {
+                return cmpr;
+            }
+            //FileObject does not have to be available
+            //if t1 fo is not null and t2 not null => -1
+            //t1 fo null => no check
+            if((t1.getFileObject() != null) && !t1.getFileObject().equals(t2.getFileObject()))
+                return -1;
+
             return compareStrings(t1.getContextName(), t2.getContextName());
         }
     }

@@ -62,10 +62,10 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -86,7 +86,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenameAction extends BaseAction {
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
-        super("in-place-refactoring", ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
     }
 
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
@@ -106,9 +106,11 @@ public class InstantRenameAction extends BaseAction {
                 return;
             }
 
-            DataObject od =
-                (DataObject)target.getDocument().getProperty(Document.StreamDescriptionProperty);
-            Source js = Source.forFileObject(od.getPrimaryFile());
+            Source js = Source.forFileObject(DataLoadersBridge.getDefault().getFileObject(target));
+            if (js == null) {
+                return;
+            }
+
             final boolean[] wasResolved = new boolean[1];
             final String[] message = new String[1];
             final Set<OffsetRange>[] changePoints = new Set[1];
@@ -163,7 +165,7 @@ public class InstantRenameAction extends BaseAction {
                 if (changePoints[0] != null) {
                     doInstantRename(changePoints[0], target, caret, ident);
                 } else {
-                    doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
+                    doFullRename((EditorCookie)DataLoadersBridge.getDefault().getCookie(target,EditorCookie.class), DataLoadersBridge.getDefault().getNodeDelegate(target));
                 }
             } else {
                 if (message[0] == null) {

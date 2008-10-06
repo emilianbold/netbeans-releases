@@ -63,4 +63,7 @@ public class JSPrimitiveImpl extends JSValueImpl implements JSPrimitive {
         return getValue();
     }
 
+    public boolean set(String value) {
+        return getJSDebugger().setProperty(getCallStackFrame(), getFullName(), value);
+    }
 }

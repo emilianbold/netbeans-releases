@@ -1,0 +1,4 @@
+Code completion result for source line:
+echo "Hello $ts|";
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $tst                                     issue132294.php

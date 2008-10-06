@@ -1,9 +1,5 @@
 /*
- *  Singleton2Cl
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -15,8 +11,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -28,7 +24,7 @@ import javax.ws.rs.ConsumeMime;
 public class Singleton2Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton2Cl */
     public Singleton2Cl() {
     }
@@ -38,7 +34,7 @@ public class Singleton2Cl {
      * @return an instance of java.util.logging.Level
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Level getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -50,7 +46,7 @@ public class Singleton2Cl {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("text/plain")
+    @Consumes("text/plain")
     public void putText(Level content) {
     }
 }

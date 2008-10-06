@@ -49,7 +49,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion;
 
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
@@ -59,11 +58,11 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
  * @author Vladimir Voskresensky
  */
 public class TemplateInstantiationTestCase extends CompletionBaseTestCase {
-    
+
     public TemplateInstantiationTestCase(String testName) {
         super(testName, false);
     }
-    
+
     public void test1() throws Exception {
         super.performTest("instantiation.cc", 8, 12);
     }

@@ -59,16 +59,17 @@ import org.openide.util.Exceptions;
  */
 public class Call {
 
-    public static final Call LOCAL = new Call(null, null, false, false);
-    public static final Call NONE = new Call(null, null, false, false);
-    public static final Call UNKNOWN = new Call(null, null, false, false);
+    public static final Call LOCAL = new Call(null, null, false, false, 0);
+    public static final Call NONE = new Call(null, null, false, false, 0);
+    public static final Call UNKNOWN = new Call(null, null, false, false, 0);
     private final String type;
     private final String lhs;
     private final boolean isStatic;
     private final boolean methodExpected;
     private int prevCallParenPos = -1;
+    private int beginOffset;
 
-    public Call(String type, String lhs, boolean isStatic, boolean methodExpected) {
+    public Call(String type, String lhs, boolean isStatic, boolean methodExpected, int beginOffset) {
         super();
 
         this.type = type;
@@ -78,6 +79,11 @@ public class Call {
             lhs = type;
         }
         this.isStatic = isStatic;
+        this.beginOffset = beginOffset;
+    }
+
+    public int getBeginOffset() {
+        return beginOffset;
     }
 
     public String getType() {
@@ -148,7 +154,7 @@ public class Call {
      * This method will also try to be smart such that if you have a block or array
      * call, it will return the relevant classnames (e.g. for [1,2].x| it returns "Array").
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("fallthrough")
     @NonNull
     public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
@@ -286,12 +292,12 @@ public class Call {
                     //    return new Call("Array", null, false, methodExpected);
                     case STRING_LITERAL:
                     case STRING_END:
-                        return new Call("String", null, false, methodExpected); // NOI18N
+                        return new Call("String", null, false, methodExpected, beginOffset); // NOI18N
                     case REGEXP_LITERAL:
                     case REGEXP_END:
-                        return new Call("RegExp", null, false, methodExpected); // NOI18N
+                        return new Call("RegExp", null, false, methodExpected, beginOffset); // NOI18N
                     case FLOAT_LITERAL:
-                        return new Call("Number", null, false, methodExpected); // NOI18N
+                        return new Call("Number", null, false, methodExpected, beginOffset); // NOI18N
                     case LPAREN:
                     case LBRACE:
                     case LBRACKET:
@@ -301,7 +307,7 @@ public class Call {
                         // TODO: There are probably more valid contexts here
                         break searchBackwards;
                     case RPAREN: {
-                        Call call = new Call(null, null, false, false);
+                        Call call = new Call(null, null, false, false, beginOffset);
                         call.prevCallParenPos = ts.offset();
                         // The starting offset is more accurate for finding the AST node
                         // corresponding to the call
@@ -313,7 +319,7 @@ public class Call {
                         return call;
                     }
                     case RBRACKET: { // Parenthesis
-                        Call call = new Call(null, null, false, false);
+                        Call call = new Call(null, null, false, false, beginOffset);
                         call.prevCallParenPos = ts.offset();
                         // The starting offset is more accurate for finding the AST node
                         // corresponding to the call
@@ -324,6 +330,12 @@ public class Call {
 
                         return call;
                     }
+                    case NONUNARY_OP:
+                    case ANY_OPERATOR:
+                        // We're in an expression, e.g.  x+y.
+                        // and here we can stop when we get to the terminator
+                        break searchBackwards;
+                        
                     case IDENTIFIER:
                     case DOT:
                     case THIS:
@@ -333,9 +345,9 @@ public class Call {
                         continue searchBackwards;
                     case ANY_KEYWORD: {
                         if ("true".equals(tokenText)) { // NOI18N
-                            return new Call("Boolean", null, false, methodExpected);
+                            return new Call("Boolean", null, false, methodExpected, beginOffset);
                         } else if ("false".equals(tokenText)) { // NOI18N
-                            return new Call("Boolean", null, false, methodExpected);
+                            return new Call("Boolean", null, false, methodExpected, beginOffset);
                         }
                         // fallthrough
                     }
@@ -360,7 +372,7 @@ public class Call {
                     String lhs = doc.getText(beginOffset, lastSeparatorOffset - beginOffset);
 
                     if (lhs.equals("super") || lhs.equals("this")) { // NOI18N
-                        return new Call(lhs, lhs, false, true);
+                        return new Call(lhs, lhs, false, true, beginOffset);
                     } else if (Character.isUpperCase(lhs.charAt(0))) {
                         
                         // Detect type references of the form
@@ -384,9 +396,9 @@ public class Call {
                             type = lhs;
                         }
                         
-                        return new Call(type, lhs, true, methodExpected);
+                        return new Call(type, lhs, true, methodExpected, beginOffset);
                     } else {
-                        return new Call(null, lhs, false, methodExpected);
+                        return new Call(null, lhs, false, methodExpected, beginOffset);
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
@@ -397,5 +409,17 @@ public class Call {
         }
 
         return Call.LOCAL;
+    }
+    
+    public static String getCallExpression(BaseDocument doc, int offset) throws BadLocationException {
+        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+        Call call = getCallType(doc, th, offset);
+        if (call.getLhs() != null) {
+            int end = Utilities.getWordEnd(doc, offset);
+            int begin = call.getBeginOffset();
+            return doc.getText(begin, end - begin);
+        } else {
+            return Utilities.getIdentifier(doc, offset);
+        }
     }
 }

@@ -72,7 +72,13 @@ public class FileSearch {
     private List<FileDescription> files;
     
     private static final RequestProcessor RP = new RequestProcessor("Jump To File Request Processor", 1); // NOI18N   
+    private static final RequestProcessor SWRP = new RequestProcessor("Jump To event collector", 1); // NOI18N   
     private RequestProcessor.Task searchTask;
+    private final RequestProcessor.Task slidingTask = SWRP.create(new Runnable() {
+        public void run() {
+            panel.setModel(false, false);
+        }
+    });
     
     private boolean isSearchWorker;
     
@@ -125,16 +131,12 @@ public class FileSearch {
         //System.out.println("New prefix " + currentPrefix);
         
         this.currentPrefix = currentPrefix;
-        if ( currentPrefix != null ) {
+        if ( currentPrefix != null ) {            
             if ( worker == null ) {
                 //cancel( true );
-                isSearchWorker = false;
-                searchTask = RP.post(new Runnable() {
-                    public void run() {
-                        panel.setModel(false, false);
-                    }
-                }, 100);
+                isSearchWorker = false; //Probably worng or useless
             }
+            slidingTask.schedule(100);
         }
     }
     
@@ -145,7 +147,7 @@ public class FileSearch {
             return isSearchWorker;
         }
                
-        return prefix == null || !newPrefix.startsWith(prefix.toLowerCase());
+        return prefix == null || !newPrefix.startsWith(prefix.toLowerCase());   //Clearly wrong
     }
     
     public void newSearchResults( List<FileDescription> files ) {

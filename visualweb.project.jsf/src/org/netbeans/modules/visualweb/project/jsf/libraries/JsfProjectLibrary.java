@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
@@ -103,9 +105,9 @@ public class JsfProjectLibrary {
         String[] alltimeList;
         String[] designtimeList;
         String[] runtimeList;
-        Library[] alltimeLibs;
-        Library[] designtimeLibs;
-        Library[] runtimeLibs;
+//        Library[] alltimeLibs;
+//        Library[] designtimeLibs;
+//        Library[] runtimeLibs;
         String defaultTheme;
 
         if (JsfProjectUtils.isJavaEE5Project(project)) {
@@ -123,27 +125,35 @@ public class JsfProjectLibrary {
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_JSF_PROJECT_LIBRARIES_DIR, JsfProjectConstants.PATH_LIBRARIES);
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_CURRENT_THEME, defaultTheme);
 
-        alltimeLibs = new Library[alltimeList.length + 1];
-        for (int i = 0; i < alltimeList.length; i++) {
-            alltimeLibs[i] = libMgr.getLibrary(alltimeList[i]);
-        }
-        alltimeLibs[alltimeList.length] = libMgr.getLibrary(defaultTheme);
+//        alltimeLibs = new Library[alltimeList.length + 1];
+        List<Library> allTimeLibs = getLibraryList(alltimeList);
+//        alltimeLibs[alltimeList.length] = libMgr.getLibrary(defaultTheme);
+        allTimeLibs.addAll(getLibraryList(new String[] {defaultTheme}));
 
-        designtimeLibs = new Library[designtimeList.length];
-        for (int i = 0; i < designtimeList.length; i++) {
-            designtimeLibs[i] = libMgr.getLibrary(designtimeList[i]);
-        }
+//        designtimeLibs = new Library[designtimeList.length];
+        List<Library> designTimeLibs = getLibraryList(designtimeList);
 
-        runtimeLibs = new Library[runtimeList.length];
-        for (int i = 0; i < runtimeList.length; i++) {
-            runtimeLibs[i] = libMgr.getLibrary(runtimeList[i]);
-        }
+//        runtimeLibs = new Library[runtimeList.length];
+        List<Library> runTimeLibs = getLibraryList(runtimeList);
 
-        JsfProjectUtils.addLibraryReferences(project, alltimeLibs);
-        JsfProjectUtils.addLibraryReferences(project, designtimeLibs, ClassPath.COMPILE);
-        JsfProjectUtils.addLibraryReferences(project, runtimeLibs, ClassPath.EXECUTE);
+        JsfProjectUtils.addLibraryReferences(project, allTimeLibs.toArray(new Library[allTimeLibs.size()]));
+        JsfProjectUtils.addLibraryReferences(project, designTimeLibs.toArray(new Library[designTimeLibs.size()]), ClassPath.COMPILE);
+        JsfProjectUtils.addLibraryReferences(project, runTimeLibs.toArray(new Library[runTimeLibs.size()]), ClassPath.EXECUTE);
 
         updateLocalizedRoots(project);
+    }
+
+    private static List<Library> getLibraryList(String[] libraryNames) {
+        List<Library> libraries = new ArrayList<Library>();
+        for (String libraryName : libraryNames) {
+            Library library = LibraryManager.getDefault().getLibrary(libraryName);
+            if (library == null) {
+                info(new NullPointerException("The library of name was not found, libraryName=" + libraryName)); // NOI18N
+            } else {
+                libraries.add(library);
+            }
+        }
+        return libraries;
     }
 
     public static void updateLocalizedRoots(Project project) throws IOException {
@@ -224,5 +234,9 @@ public class JsfProjectLibrary {
         }
 
     	return name.startsWith("${libs.") && name.endsWith("-designtime.classpath}");
+    }
+
+    private static void info(Exception ex) {
+        Logger.getLogger(JsfProjectLibrary.class.getName()).log(Level.INFO, null, ex);
     }
 }

@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Subversion: Certificate Verification Dialog Box</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Subversion: Certificate Verification Dialog Box</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Subversion Certificate Verification Dialog Box displays when you attempt to connect to 
+            a Subversion repository using the <tt>https</tt> protocol, and the https server provides a 
+            certificate which has to be either accepted manually or cannot be trusted automatically.</p>
+        
+        <p>This dialog enables you to accept the certificate permanently or temporarily, or reject it.</p>
+            
+        <ul>
+            <li><strong>Accept Permanently.</strong> Authorization is enabled permanently. When you accept 
+                the certificate, it is stored in the Subversion config directory on your system.</li>
+            <li><strong>Accept Temporarily.</strong> Authorization is enabled temporarily - i.e., the 
+                the certificate needs to be accepted for each command invoked by NetBeans.</li>            
+            <li><strong>Reject.</strong> Authorization is rejected. If you reject the certificate, you 
+                are denied access to the repository.</li>
+        </ul>
+        
+        <p>The text area provides you with output describing the certificate. Information provided can
+            vary dependent on the certificate, but common details include:</p>
+            
+        <ul>
+            <li>Hostname</li>
+            <li>Validity dates</li>
+            <li>Issuer</li>
+            <li>Fingerprint</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../svn_checkout.html">Checking Out Files from a Subversion Repository</a></dd> 
+            <dd><a href="../svn_setup.html">Setting Up Subversion</a></dd>
+        </dl>
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

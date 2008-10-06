@@ -42,11 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <html>
 
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
         <title>Executing SQL Statements and Scripts</title>
 
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
@@ -70,12 +70,17 @@ made subject to such option by the copyright holder.
             <li>Expand the Databases node in the Services window.</li>
             <li>Right-click the node for the connected database and choose Execute Command from the pop-up menu to open the SQL Editor.</li>
             <li>Make sure your current database connection is selected in the Connection drop-down menu. 
-	    To see the status of the listed connections, click the Select Connection in Explorer button (&nbsp; <img src="images/showinexplorer.gif" alt="Select Connection in Explorer">&nbsp;) in the toolbar.
+	    To see the status of the listed connections, click the Select Connection in Explorer icon ( <img src="images/showinexplorer.gif" alt="Select Connection in Explorer">&nbsp;) in the toolbar.
             When you click Select Connection in Explorer, the selected connection is highlighted in the Services window. </li>
-            <li>Enter a (DDL or DML) statement in the SQL Editor window.</li>
-            <li>Click Run SQL (&nbsp; <img src="images/runsql.png" alt="Run SQL">&nbsp;) in the toolbar or right-click in the
+          <li>Enter a DDL or DML statement in the SQL Editor window.</li>
+            <li>Click Run SQL  <img src="images/runsql.png" alt="Run SQL">&nbsp; in the toolbar or right-click in the
             SQL Editor and choose Run Statement from the pop-up menu.</li> 
-        </ol>
+    </ol>
+       <ul class="note">
+         <li><b>Note: </b>When you execute SQL in the SQL Editor, normally the results tabs from the previous execution are closed.  You can change this behavior so
+that the previous tab remains open.  To do this, click Keep Prior Results  ( <img src="images/tabtoggle.png" alt="Keep Prior Results Tab Icon" width="20" height="23"> ) in the  tool bar. This setting is saved for all subsequent SQL executions, or until you toggle it off again.</li>
+    </ul>
+       
         <p>When you execute an SQL statement or script, you see the following:</p>
         <ul>        
             <li>The status of the SQL execution is displayed in the Output window.
@@ -88,7 +93,7 @@ made subject to such option by the copyright holder.
         <ul class="note">
             <li>You can run selected text in the SQL Editor by right-clicking the selected
             text and choosing Run Selection from the pop-up menu. </li>
-            <li>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node">&nbsp;) in the Services window.</li>
+            <li>You can access the Execute Command pop-up menu item from any subnode of a connected database (&nbsp;<img src="images/connection.gif" alt="Database Connection node"> )&nbsp; in the Services window.</li>
             <li>To view the data in a table, right-click a table in the Services window and choose View Data from the pop-up menu.
             For more, see <a href="viewdata.html">Viewing Data</a>.</li> 
         </ul>
@@ -108,7 +113,7 @@ made subject to such option by the copyright holder.
         <table border="0" cellpadding="50">
             <tr><td>&nbsp;</td></tr>
         </table>
-    </body>
+</body>
 
 </html>
 

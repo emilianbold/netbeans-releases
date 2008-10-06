@@ -326,13 +326,20 @@ public class ThreadsNodeModel implements NodeModel {
         public void propertyChange (PropertyChangeEvent e) {
             ThreadsNodeModel rm = getModel ();
             if (rm == null) return;
-            List nodes;
+            Set nodes;
             synchronized(currentNodes) {
-                nodes = new ArrayList(currentNodes);
+                nodes = new HashSet();
+                for (Object obj : currentNodes) {
+                    nodes.add(obj);
+                    if (obj instanceof JPDAThread) {
+                        nodes.add(new MonitorModel.ThreadWithBordel((JPDAThread)obj)); // fix for #136921
+                    }
+                }
             }
             JPDAThread t = debugger.getCurrentThread();
             if (t != null) {
                 nodes.add(t);
+                nodes.add(new MonitorModel.ThreadWithBordel(t)); // fix for #136921
                 JPDAThreadGroup tg = t.getParentThreadGroup();
                 while (tg != null) {
                     nodes.add(tg);

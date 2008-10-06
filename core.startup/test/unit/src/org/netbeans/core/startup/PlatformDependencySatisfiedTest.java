@@ -44,13 +44,9 @@ package org.netbeans.core.startup;
 import java.io.*;
 import java.io.File;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.jar.*;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
 /** Checks whether a module with generated
@@ -63,13 +59,14 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         super(name);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
         Main.getModuleSystem (); // init module system
         
-        File tmp = File.createTempFile ("PlatformDependencySatisfiedModule", ".jar");
-        moduleJarFile = tmp;
+        clearWorkDir();
+        moduleJarFile = new File(getWorkDir(), "PlatformDependencySatisfiedModule.jar");
 
         // clean the operatingSystem field
         java.lang.reflect.Field f;

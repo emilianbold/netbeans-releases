@@ -48,13 +48,13 @@ import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 import org.openide.ErrorManager;
-import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-import org.mozilla.javascript.Parser;
-import org.mozilla.javascript.Token;
-import org.mozilla.javascript.TokenStream;
+import org.mozilla.nb.javascript.CompilerEnvirons;
+import org.mozilla.nb.javascript.Context;
+import org.mozilla.nb.javascript.ErrorReporter;
+import org.mozilla.nb.javascript.EvaluatorException;
+import org.mozilla.nb.javascript.Parser;
+import org.mozilla.nb.javascript.Token;
+import org.mozilla.nb.javascript.TokenStream;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 
 
@@ -206,7 +206,7 @@ public final class JsLexer implements Lexer<JsTokenId> {
             token = tokenStream.getToken() & Parser.CLEAR_TI_MASK;
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
-            token = org.mozilla.javascript.Token.ERROR;
+            token = org.mozilla.nb.javascript.Token.ERROR;
         }
 
 //        if (DEBUG_TOKENS) {
@@ -214,7 +214,7 @@ public final class JsLexer implements Lexer<JsTokenId> {
 //                System.out.print(buffer.charAt(oldOffset + i));
 //            }
 //
-//            System.out.println(" = " + token + ": " + org.mozilla.javascript.Token.name(token));
+//            System.out.println(" = " + token + ": " + org.mozilla.nb.javascript.Token.name(token));
 //        }
 
         // Map to IDE types

@@ -1,65 +1,75 @@
-[display: |, block, display: block, 53]
-block
-inherit
-inline-block
-inline-table
-list-item
-none
-run-in
-table
-table-caption
-table-cell
-table-column
-table-column-group
-table-footer-group
-table-header-group
-table-row
-table-row-group
-End cursor position = 68
-[color: |, green, color: green, 91]
-black
-blue
-brown
-green
-grey
-inherit
-magenta
-olive
-orange
-pink
-purple
-red
-silver
-violet
-white
-yellow
-End cursor position = 104
-[border-right: |, inset, border-right: inset, 143]
-black
-blue
-brown
-dashed
-dotted
-double
-green
-grey
-groove
-hidden
-inherit
-inset
-magenta
-none
-olive
-orange
-outset
-pink
-purple
-red
-ridge
-silver
-solid
-transparent
-violet
-white
-yellow
-End cursor position = 163
+[display: |, display block, display: block, 61]
+display block
+display inherit
+display inline
+display inline-block
+display inline-table
+display list-item
+display none
+display run-in
+display table
+display table-caption
+display table-cell
+display table-column
+display table-column-group
+display table-footer-group
+display table-header-group
+display table-row
+display table-row-group
+End cursor position = 76
+[color: |, color green, color: green, 105]
+color aqua
+color black
+color blue
+color fuchsia
+color gray
+color green
+color inherit
+color lime
+color maroon
+color navy
+color olive
+color orange
+color purple
+color red
+color rgb
+color silver
+color teal
+color white
+color yellow
+End cursor position = 118
+[border-right: |, border-style inset, border-right: inset, 170]
+color aqua
+color black
+color blue
+border-style dashed
+border-style dotted
+border-style double
+color fuchsia
+color gray
+color green
+border-style groove
+border-style hidden
+border-right inherit
+border-style inset
+color lime
+color maroon
+border-right medium
+color navy
+border-style none
+color olive
+color orange
+border-style outset
+color purple
+color red
+color rgb
+border-style ridge
+color silver
+border-style solid
+color teal
+border-right thick
+border-right thin
+border-top-color transparent
+color white
+color yellow
+End cursor position = 190

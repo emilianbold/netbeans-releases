@@ -118,7 +118,7 @@ public class RelationPreRequest extends PreRequest
             }
             else if ( pImp != null )
             {
-                IInterface pInt = pImp.getContract();
+                IClassifier pInt = pImp.getContract();
                 if ( pInt != null )
                 {
                     m_OldTo = pInt;
@@ -312,7 +312,7 @@ public class RelationPreRequest extends PreRequest
                 }
                 else if ( pImp != null )
                 {
-                    IInterface pInt = pImp.getContract();
+                    IClassifier pInt = pImp.getContract();
                     if ( pInt != null )
                     {
                         m_NewTo = pInt;

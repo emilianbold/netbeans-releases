@@ -68,6 +68,7 @@ import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -302,7 +303,6 @@ public final class J2eePlatform {
      *
      * @param  toolName tool name, for example {@link #TOOL_APP_CLIENT_RUNTIME}.
      * @return classpath for the specified tool.
-     * @deprecated {@link #getLookup()} should be used to obtain tool specifics
      */
     public File[] getToolClasspathEntries(String toolName) {
         return impl.getToolClasspathEntries(toolName);
@@ -369,7 +369,7 @@ public final class J2eePlatform {
     public Image getIcon() {
         Image result = impl.getIcon();
         if (result == null)
-            result = Utilities.loadImage(DEFAULT_ICON);
+            result = ImageUtilities.loadImage(DEFAULT_ICON);
 
         return result;
     }

@@ -63,22 +63,25 @@ public class XMLIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        getFormatter().process(context);
+        if(context == null)
+            return;
+        MimePath mimePath = MimePath.parse (context.mimePath ());
+        if(mimePath == null)
+            return;        
+        Language language = Language.find (mimePath.getMimeType (0));
+        if(language == null)
+            return;
+        LanguagePath languagePath = LanguagePath.get (language);
+        if(languagePath == null)
+            return;
+        for (int i = 1; i < mimePath.size(); i++) {
+            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
+        }
+        XMLLexerFormatter formatter = new XMLLexerFormatter(languagePath);
+        formatter.process(context);
     }
 
     public ExtraLock indentLock() {
         return null;
-    }
-
-    private XMLLexerFormatter getFormatter() {
-        MimePath mimePath = MimePath.parse (context.mimePath ());
-        LanguagePath languagePath = LanguagePath.get (Language.find (mimePath.getMimeType (0)));
-        
-        for (int i = 1; i < mimePath.size(); i++) {
-            languagePath = languagePath.embedded(Language.find(mimePath.getMimeType(i)));
-        }
-
-        return new XMLLexerFormatter(languagePath);
-        //return null;
     }
 }

@@ -55,6 +55,7 @@ public class CreateNewFolderOperator extends NbDialogOperator {
     /** Tries to find "OK" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btOK() {
         if (_btOK==null) {
             _btOK = new JButtonOperator(this, "OK");
@@ -65,6 +66,7 @@ public class CreateNewFolderOperator extends NbDialogOperator {
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
             _btCancel = new JButtonOperator(this, "Cancel");
@@ -100,12 +102,14 @@ public class CreateNewFolderOperator extends NbDialogOperator {
 
     /** clicks on "OK" JButton
      */
+    @Override
     public void ok() {
         btOK().push();
     }
 
     /** clicks on "Cancel" JButton
      */
+    @Override
     public void cancel() {
         btCancel().push();
     }

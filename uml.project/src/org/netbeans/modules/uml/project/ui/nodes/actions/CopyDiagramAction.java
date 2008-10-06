@@ -121,38 +121,39 @@ public class CopyDiagramAction extends NodeAction
         }
     }
     
-
-    // TODO: meteora
-    // save presentation (.etlp) and layout (.etld) files
-//    private void saveFiles(String fileName, String newName)
-//    {
-//        String originalFile = original.getFilename();
-//        String original_p = originalFile;
-//        String original_l = originalFile;
-//        
-//        int index = originalFile.lastIndexOf(".");
-//        if (index > -1)
-//        {
-//            original_p = originalFile.substring(0, index) +
-//                    FileExtensions.DIAGRAM_PRESENTATION_EXT;
-//            original_l = originalFile.substring(0, index) +
-//                    FileExtensions.DIAGRAM_LAYOUT_EXT;
-//        }
-//        
-//        String clone_p = fileName + FileExtensions.DIAGRAM_PRESENTATION_EXT;
-//        String clone_l = fileName + FileExtensions.DIAGRAM_LAYOUT_EXT;
-//        
-//        // persist presentation file
-//        ProductArchiveImpl archive = new ProductArchiveImpl(original_p);
-//        IProductArchiveElement ele = archive.getElement(IProductArchiveDefinitions.DIAGRAMINFO_STRING);
-//        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
-//        ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
-//        archive.save(clone_p);
-//        
-//        // persist layout file
-//        archive = new ProductArchiveImpl(original_l);
-//        archive.save(clone_l);
-//    }
+    private boolean saveFiles(String fileName, String newName)
+    {
+        String originalFile = original.getFilename();
+        String original_l = originalFile;
+        
+        int index = originalFile.lastIndexOf(".");
+        if (index > -1)
+        {
+            original_l = originalFile.substring(0, index) +
+                    FileExtensions.DIAGRAM_LAYOUT_EXT;
+        }
+        String clone_l = fileName + FileExtensions.DIAGRAM_LAYOUT_EXT;
+        
+        // persist presentation file
+        ProductArchiveImpl archive = new ProductArchiveImpl(original_l);
+        IProductArchiveElement ele = archive.getDiagramElement(IProductArchiveDefinitions.UML_DIAGRAM_STRING);
+        if (ele != null)
+        {
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAMNAME_STRING, newName);
+            ele.addAttributeString(IProductArchiveDefinitions.DIAGRAM_XMIID, UMLXMLManip.generateId(true));
+            archive.save(clone_l);
+            return true;
+        }
+        else 
+        {
+             NotifyDescriptor.Message msg 
+                = new NotifyDescriptor.Message
+                (NbBundle.getMessage(CopyDiagramAction.class,
+                    "MSG_Cant_Copy_Diagram")); // NOI18N
+            DialogDisplayer.getDefault().notify(msg);
+            return false;
+        }
+    }
     
     
     private void createDiagram(String type, INamespace nameSpace, String name)
@@ -169,12 +170,12 @@ public class CopyDiagramAction extends NodeAction
             }
         }
         String filename = getFullFileName(name, nameSpace);
-        // TODO: meteora
-        //saveFiles(filename, name);
-        
-        // create diagram node
-        UMLProjectModule.getProjectTreeEngine().addDiagramNode(
-                filename + FileExtensions.DIAGRAM_PRESENTATION_EXT);
+
+        if (saveFiles(filename, name)) {
+            // create diagram node
+            UMLProjectModule.getProjectTreeEngine().addDiagramNode(
+                    filename + FileExtensions.DIAGRAM_PRESENTATION_EXT);
+        }
     }
     
     
@@ -249,4 +250,12 @@ public class CopyDiagramAction extends NodeAction
         }
         return buffer;
     }
+
+    @Override
+    protected boolean asynchronous()
+    {
+        return false;
+    }
+
+
 }

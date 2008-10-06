@@ -152,11 +152,37 @@ public class XMLGraphSerializer extends Object {
         // Use the class name and hash code that way we produce a name that is
         // at least partically readable.
 
-        StringBuffer lReturn = new StringBuffer();
-        lReturn.append(obj.getClass().getName());
-        lReturn.append(obj.hashCode());
-     
-        return lReturn.toString();
+        // Issue 80307: the hash code alone is not enough to guarantee an unique
+        // name, since two non-equal objects can have the same hash code.
+
+        StringBuffer lNameBuffer = new StringBuffer();
+        lNameBuffer.append(obj.getClass().getName());
+        lNameBuffer.append(obj.hashCode());
+
+        int fixedLength = lNameBuffer.length();
+        int index = 0;
+
+        for (;;)
+        {
+            lNameBuffer.setLength(fixedLength);
+            if (index > 0)
+            {
+                lNameBuffer.append('#');
+                lNameBuffer.append(index);
+            }
+
+            String name = lNameBuffer.toString();
+            Object mapObj = ObjectMap.get(name);
+
+            if (mapObj == null || mapObj == obj)
+            {
+                return name;
+            }
+            else
+            {
+                index++;
+            }
+        }
     }
 
     private void writeLevel(String value) throws IOException

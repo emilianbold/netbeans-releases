@@ -69,18 +69,22 @@ import org.w3c.dom.NodeList;
  */
 public class JBPluginUtils {
 
-    public static final String SERVER_4_XML = File.separator + "deploy" + File.separator +
-                "jbossweb-tomcat55.sar" + File.separator + "server.xml";
+    public static final String SERVER_4_XML = File.separator + "deploy" + File.separator + // NOI18N
+                "jbossweb-tomcat55.sar" + File.separator + "server.xml"; // NOI18N
 
-    public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator +
-                "jboss-web.deployer" + File.separator + "server.xml";
+    public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator + // NOI18N
+                "jboss-web.deployer" + File.separator + "server.xml"; // NOI18N
 
-    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator +
-                "jbossweb.deployer" + File.separator + "server.xml";
+    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator + // NOI18N
+                "jbossweb.deployer" + File.separator + "server.xml"; // NOI18N
+
+    public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
-    private static final Version DOM4J_SERVER = new Version("4.0.4");
+    private static final Version DOM4J_SERVER = new Version("4.0.4"); // NOI18N
+
+    
 
     //--------------- checking for possible domain directory -------------
     private static List<String> domainRequirements4x;

@@ -56,6 +56,13 @@ made subject to such option by the copyright holder.
 }]]>
         </code>
     </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.iface" abbreviation="iface" contexts="php-code">
+        <code>
+<![CDATA[interface ${iface_name} {
+    ${cursor}
+}]]>
+        </code>
+    </codetemplate>
 
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.cln" abbreviation="cln" contexts="php-code">
         <code>
@@ -243,6 +250,21 @@ ob_end_clean();]]>
 ${cursor}]]>
         </code>
     </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.tryc" abbreviation="tryc" contexts="php-code">
+        <code>
+<![CDATA[try {
+    ${selection}${cursor}
+} catch (Exception $e) {
+}
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.thr" abbreviation="thr" contexts="php-code">
+        <code>
+<![CDATA[throw new ${Exception};]]>
+        </code>
+    </codetemplate>
+
 
 </codetemplates>
 

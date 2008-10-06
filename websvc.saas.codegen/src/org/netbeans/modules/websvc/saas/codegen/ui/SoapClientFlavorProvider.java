@@ -40,14 +40,11 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
-import org.netbeans.modules.websvc.saas.codegen.ui.SoapClientEditorDrop;
 import java.net.URL;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import org.netbeans.modules.websvc.core.WebServiceReference;
-import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
@@ -83,10 +80,18 @@ public class SoapClientFlavorProvider implements ConsumerFlavorProvider {
                     if (url == null) {
                         return transferable;
                     }
-                    WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
+                    
                     ExTransferable t = ExTransferable.create(transferable);
-                    t.put(new WebServiceTransferable(ref));
+                    SoapServiceClientEditorDrop editorDrop = new SoapServiceClientEditorDrop(saas);
+                    ServiceActiveEditorDropTransferable s = new ServiceActiveEditorDropTransferable(editorDrop);
+                    t.put(s);
                     return t;
+                    
+                    //TODO take care of web service node from the project's explorer tree
+                    //WebServiceReference ref = new WebServiceReference(getWsdlLocationURL(saas), saas.getWsdlModel().getName(), "");
+                    //ExTransferable t = ExTransferable.create(transferable);
+                    //t.put(new WebServiceTransferable(ref));
+                    //return t;
                 }
             }
         } catch (Exception ex) {
@@ -122,6 +127,21 @@ public class SoapClientFlavorProvider implements ConsumerFlavorProvider {
 
         ActiveEditorDropTransferable(SoapClientEditorDrop drop) {
             super(SoapClientEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData() {
+            return drop;
+        }
+    }
+    
+    private static class ServiceActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private SoapServiceClientEditorDrop drop;
+
+        ServiceActiveEditorDropTransferable(SoapServiceClientEditorDrop drop) {
+            super(SoapServiceClientEditorDrop.FLAVOR);
 
             this.drop = drop;
         }

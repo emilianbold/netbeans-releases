@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard.imports;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -485,6 +487,12 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((SourcesPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
+            
         }
         
         public void storeSettings(final Object obj) {

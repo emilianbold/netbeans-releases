@@ -45,122 +45,186 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Adamek
  */
-public class GrailsSources implements Sources {
-    
+public class GrailsSources extends FileChangeAdapter implements Sources {
+
+    //  those are dirs in project root we already know and create specific source groups
+    public static final List KNOWN_FOLDERS = Arrays.asList(
+            "grails-app", // NOI18N
+            "lib", // NOI18N
+            "plugins", // NOI18N
+            "scripts", // NOI18N
+            "src", // NOI18N
+            "test", // NOI18N
+            "web-app" // NOI18N
+            );
+
+    //  those are dirs in grails-app root we already know and create specific source groups
+    public static final List KNOWN_FOLDERS_IN_GRAILS_APP = Arrays.asList(
+            "conf", // NOI18N
+            "controllers", // NOI18N
+            "domain", // NOI18N
+            "i18n", // NOI18N
+            "services", // NOI18N
+            "taglib", // NOI18N
+            "utils", // NOI18N
+            "views" // NOI18N
+            );
+
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
-    GrailsSources(FileObject projectDir) {
+
+    private GrailsSources(FileObject projectDir) {
         this.projectDir = projectDir;
     }
-    
+
+    static GrailsSources create(FileObject projectDir) {
+        GrailsSources sources = new GrailsSources(projectDir);
+        sources.startFSListener();
+        return sources;
+    }
+
+    private void startFSListener () {
+        try {
+            FileSystem fs = projectDir.getFileSystem();
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(this, fs));
+        } catch (FileStateInvalidException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
+
     public SourceGroup[] getSourceGroups(String type) {
-        List<SourceGroup> result = new ArrayList<SourceGroup>();
-        
+        List<Group> result = new ArrayList<Group>();
         if (Sources.TYPE_GENERIC.equals(type)) {
-            result.add(new Group(projectDir, projectDir.getName(), null, null, SourceCategory.NONE));
-        } else if ("grails-app/conf".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/conf"), "Configuration", null, null, SourceCategory.CONFIGURATION));
-        } else if ("grails-app/controllers".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/controllers"), "Controllers", null, null, SourceCategory.CONTROLLERS));
-        } else if ("grails-app/domain".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/domain"), "Domain classes", null, null, SourceCategory.DOMAIN));
-        } else if ("grails-app/i18n".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/i18n"), "Message bundles", null, null, SourceCategory.MESSAGES));
-        } else if ("grails-app/services".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/services"), "Services", null, null, SourceCategory.SERVICES));
-        } else if ("grails-app/taglib".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/taglib"), "Tag libraries", null, null, SourceCategory.TAGLIB));
-        } else if ("grails-app/utils".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/utils"), "Utility classes", null, null, SourceCategory.UTIL));
-        } else if ("grails-app/views".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("grails-app/views"), "Views and layouts", null, null, SourceCategory.VIEWS));
-        } else if ("web-app".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("web-app"), "Web Application", null, null, SourceCategory.VIEWS));
-        } else if ("lib".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("lib"), "Libraries", null, null, SourceCategory.LIB));
-        } else if ("test".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("test"), "Tests", null, null, SourceCategory.VIEWS));
-        } else if ("src".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("src"), "Source Packages", null, null, SourceCategory.SRC));
-        } else if ("scripts".equals(type)) {
-            result.add(new Group(projectDir.getFileObject("scripts"), "Scripts", null, null, SourceCategory.VIEWS));
-        } else {
-            if(!type.startsWith(".") && !type.startsWith("grails-app/.")) { // we have to filter-out hidden directories like .settings etc.
-                FileObject fileObject = projectDir.getFileObject(type);
-                if (fileObject != null) {
-                    result.add(new Group(fileObject, fileObject.getName(), null, null, SourceCategory.NONE));
+            addGroup(projectDir, projectDir.getName(), result);
+        } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
+            addGroup(projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"), result);
+        } else if (GroovySources.SOURCES_TYPE_GROOVY.equals(type)) {
+            addGroup(SourceCategory.GRAILSAPP_CONF, "LBL_grails-app_conf", result);
+            addGroup(SourceCategory.GRAILSAPP_CONTROLLERS, "LBL_grails-app_controllers", result);
+            addGroup(SourceCategory.GRAILSAPP_DOMAIN, "LBL_grails-app_domain", result);
+            addGroup(SourceCategory.GRAILSAPP_SERVICES, "LBL_grails-app_services", result);
+            addGroup(SourceCategory.GRAILSAPP_TAGLIB, "LBL_grails-app_taglib", result);
+            addGroup(SourceCategory.GRAILSAPP_UTILS, "LBL_grails-app_utils", result);
+            addGroup(SourceCategory.SCRIPTS, "LBL_scripts", result);
+            addGroup(SourceCategory.SRC_GROOVY, "LBL_SrcGroovy", result);
+            addGroup(SourceCategory.TEST_INTEGRATION, "LBL_IntegrationTests", result);
+            addGroup(SourceCategory.TEST_UNIT, "LBL_UnitTests", result);
+        } else if (GroovySources.SOURCES_TYPE_GRAILS.equals(type)) {
+            addGroup(SourceCategory.LIB, "LBL_lib", result);
+            addGroup(SourceCategory.GRAILSAPP_I18N, "LBL_grails-app_i18n", result);
+            addGroup(SourceCategory.WEBAPP, "LBL_web-app", result);
+            addGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views", result);
+        } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
+            addGroup(SourceCategory.PLUGINS, "LBL_Plugins", result);
+            for (FileObject child : projectDir.getChildren()) {
+                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS.contains(child.getName())) {
+                    String name = child.getName();
+                    addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
+                }
+            }
+            FileObject grailsAppFo = projectDir.getFileObject("grails-app");
+            if (grailsAppFo != null) {
+                for (FileObject child : grailsAppFo.getChildren()) {
+                    if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                        String name = child.getName();
+                        addGroup(child, Character.toUpperCase(name.charAt(0)) + name.substring(1), result);
+                    }
                 }
             }
         }
-        
         return result.toArray(new SourceGroup[result.size()]);
     }
-    
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-    
-    
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        changeSupport.fireChange();
+    }
+
+    private void addGroup(FileObject fileObject, String displayName, List<Group> list) {
+        if (fileObject != null) {
+            list.add(new Group(fileObject, displayName));
+        }
+    }
+
+    private void addGroup(SourceCategory sourceCategory, String bundleLabel, List<Group> list) {
+        FileObject fileObject = projectDir.getFileObject(sourceCategory.getRelativePath());
+        if (fileObject != null) {
+            list.add(new Group(fileObject, NbBundle.getMessage(GrailsSources.class, bundleLabel)));
+        }
+    }
+
     private final class Group implements SourceGroup {
-        
+
         private final FileObject loc;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
- 
         private final String displayName;
-        private final Icon icon;
-        private final Icon openedIcon;
-        private final SourceCategory category;
-        
-        public Group(FileObject loc, String displayName, Icon icon, Icon openedIcon, SourceCategory category) {
+
+        public Group(FileObject loc, String displayName) {
             this.loc = loc;
             this.displayName = displayName;
-            this.icon = icon;
-            this.openedIcon = openedIcon;
-            this.category = category;
         }
-        
-        public SourceCategory getSourceCategory(){
-            return category;
-            }
-        
+
         public FileObject getRootFolder() {
             return loc;
         }
-        
+
         public String getName() {
             String location = loc.getPath();
             return location.length() > 0 ? location : "generic"; // NOI18N
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }
-        
+
         public Icon getIcon(boolean opened) {
-            return opened ? icon : openedIcon;
+            return null;
         }
-        
+
         public boolean contains(FileObject file) throws IllegalArgumentException {
             if (file == loc) {
                 return true;
@@ -182,20 +246,20 @@ public class GrailsSources implements Sources {
             } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
             return true;
         }
-        
+
         public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
-        
+
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }
-        
+
         @Override
         public String toString() {
             return "GrailsSources.Group[name=" + getName() + ",rootFolder=" + getRootFolder() + "]"; // NOI18N
         }
-        
+
     }
-    
+
 }

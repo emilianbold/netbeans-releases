@@ -51,6 +51,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -60,13 +61,11 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author S. Aubrecht
  */
-class PluginsPanel extends JPanel {
+class PluginsPanel extends BackgroundPanel {
 
     public PluginsPanel() {
         super( new BorderLayout() );
-        setOpaque( false );
-        JPanel center = new JPanel( new GridBagLayout() );
-        center.setOpaque( false );
+        JPanel center = new BackgroundPanel( new GridBagLayout() );
         JLabel lbl = new JLabel("<html>" + BundleSupport.getLabel( "PluginsContent" ) ); //NOI18N
         lbl.setBorder( BorderFactory.createEmptyBorder(0, 0, 0, 0) );
         
@@ -76,8 +75,7 @@ class PluginsPanel extends JPanel {
                 GridBagConstraints.BOTH,new Insets(0,0,0,0),0,0) );
 
         add( center, BorderLayout.CENTER );
-        JPanel bottom = new JPanel( new GridBagLayout() );
-        bottom.setOpaque( false );
+        JPanel bottom = new BackgroundPanel( new GridBagLayout() );
         
         bottom.add( new ActionButton( new ShowPluginManagerAction(), false, null ), 
                 new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.EAST,

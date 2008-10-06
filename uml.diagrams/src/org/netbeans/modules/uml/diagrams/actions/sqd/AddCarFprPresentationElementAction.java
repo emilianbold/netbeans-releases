@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.diagrams.actions.sqd;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineWidget;
+import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
 
@@ -55,17 +56,18 @@ public class AddCarFprPresentationElementAction implements ActionProvider {
     private JTrackBar tb;
     private IPresentationElement pe;
     private LifelineWidget widget;
+    private SQDDiagramTopComponent tc;
     
-    public AddCarFprPresentationElementAction(JTrackBar tb,LifelineWidget widget, IPresentationElement pe)
+    public AddCarFprPresentationElementAction(SQDDiagramTopComponent tc,LifelineWidget widget, IPresentationElement pe)
     {
-        this.tb=tb;
+        this.tc=tc;
         this.pe=pe;
         this.widget=widget;
     }
     
    public void perfomeAction() {
-       if(tb != null)
-            tb.addPresentationElement(pe);
+       if(tc != null && tc.getTrackBar()!=null)
+            tc.getTrackBar().addPresentationElement(pe);
         //
         //and refresh lifeline one more time
         widget.revalidate();

@@ -33,11 +33,12 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
-
 package org.netbeans.installer.utils.helper.swing;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import javax.swing.JLabel;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -50,85 +51,88 @@ public class NbiLabel extends JLabel {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private boolean collapsePaths;
-    
+
     private String text;
-    
+
     public NbiLabel() {
         super();
-        
+
         setText(null);
         collapsePaths = false;
     }
-    
+
     public NbiLabel(final boolean collapsePaths) {
         this();
-        
         this.collapsePaths = collapsePaths;
+        if (collapsePaths) {
+            addComponentListener(new ComponentAdapter() {
+
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    String shortenedString = shortenString(text);
+                    NbiLabel.super.setText(shortenedString);
+                    NbiLabel.super.setToolTipText(StringUtils.stripMnemonic(shortenedString));
+                }
+            });
+        }
     }
-    
+
     public void clearText() {
         setText(null);
     }
-    
+
     @Override
     public void setText(final String text) {
         if ((text == null) || text.equals("")) {
             this.text = DEFAULT_TEXT;
-            
+
             super.setText(DEFAULT_TEXT);
             super.setDisplayedMnemonic(DEFAULT_MNEMONIC);
             super.setToolTipText(DEFAULT_TOOLTIP_TEXT);
         } else {
             this.text = text;
-            
-            super.setText(StringUtils.stripMnemonic(this.text));
-            super.setToolTipText(StringUtils.stripMnemonic(this.text));
-            
-            if (!SystemUtils.isMacOS()) {
-                super.setDisplayedMnemonic(StringUtils.fetchMnemonic(this.text));
-            }
-        }
-    }
-    
-    @Override
-    protected void paintComponent(Graphics graphics) {
-        if (collapsePaths && !text.equals(DEFAULT_TEXT)) {
-            final String string = StringUtils.stripMnemonic(text);
-            final String separator = SystemUtils.getFileSeparator();
-            
-            final int boundsWidth = getBounds().width;
-            final int lastIndex = string.lastIndexOf(separator);
-            
-            int stringWidth = getStringBounds(graphics).width;
-            int index = string.lastIndexOf(separator, lastIndex - 1);
-            
-            // we should continue while there is at least one separator
-            // (lastIndex > -1), there is a previous separator (index > -1) and
-            // the rendered string width exceeds the bounds
-            // (stringWidth > boundsWidth)
-            // note: if there are no separators in the string, it will not be
-            // shortened at all and the default shortening procedure will take
-            // place, also if collapsing a path does not help completely, additional
-            // shortening will be performed by the default procedure
-            while ((lastIndex != -1) &&
-                    (index != -1) &&
-                    (stringWidth > boundsWidth)) {
-                final String shortenedString =
-                        StringUtils.replace(string, "...", index + 1, lastIndex);
-                
+            if (collapsePaths) {
+                String shortenedString = shortenString(text);
                 super.setText(shortenedString);
-                
-                stringWidth = getStringBounds(graphics).width;
-                index = string.lastIndexOf(separator, index - 1);
+                super.setToolTipText(StringUtils.stripMnemonic(shortenedString));
+            } else {
+                super.setText(StringUtils.stripMnemonic(text));
+                super.setToolTipText(StringUtils.stripMnemonic(text));
+            }
+
+            if (!SystemUtils.isMacOS()) {
+                super.setDisplayedMnemonic(StringUtils.fetchMnemonic(text));
             }
         }
-        
-        super.paintComponent(graphics);
     }
-    
-    private Rectangle getStringBounds(Graphics graphics) {
+
+    private String shortenString(final String text) {
+        final String string = StringUtils.stripMnemonic(text);
+        final String separator = SystemUtils.getFileSeparator();
+        final int boundsWidth = getBounds().width;
+        final int lastIndex = string.lastIndexOf(separator);
+        int stringWidth = getStringBounds(getGraphics(), text).width;
+        int index = string.lastIndexOf(separator, lastIndex - 1);
+        // we should continue while there is at least one separator
+        // (lastIndex > -1), there is a previous separator (index > -1) and
+        // the rendered string width exceeds the bounds
+        // (stringWidth > boundsWidth)
+        // note: if there are no separators in the string, it will not be
+        // shortened at all and the default shortening procedure will take
+        // place, also if collapsing a path does not help completely, additional
+        // shortening will be performed by the default procedure
+        String shortenedString = string;
+        while ((lastIndex != -1) && (index != -1) && (stringWidth > boundsWidth)) {
+            shortenedString = StringUtils.replace(string, "...", index + 1, lastIndex);
+            stringWidth = getStringBounds(getGraphics(), shortenedString).width;
+            index = string.lastIndexOf(separator, index - 1);
+        }
+        return shortenedString;
+    }
+
+    private Rectangle getStringBounds(Graphics graphics, String text) {
         return getFontMetrics(
-                getFont()).getStringBounds(super.getText(), graphics).getBounds();
+                getFont()).getStringBounds(text, graphics).getBounds();
     }
     
     /////////////////////////////////////////////////////////////////////////////////

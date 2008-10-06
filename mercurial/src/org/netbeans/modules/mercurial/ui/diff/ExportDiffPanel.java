@@ -155,7 +155,6 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         exportHintLabel.setForeground(java.awt.Color.gray);
         org.openide.awt.Mnemonics.setLocalizedText(exportHintLabel, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "LBL_EXPORT_INFO")); // NOI18N
 
-        jLabel1.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ExportDiffPanel.class, "ExportDiffPanel.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -174,16 +173,16 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
                                 .add(outputFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(browseButton))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, exportHintLabel)))
                     .add(layout.createSequentialGroup()
                         .add(34, 34, 34)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 224, Short.MAX_VALUE))
+                        .add(revisionsComboBox, 0, 269, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)))
+                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -214,15 +213,15 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
     int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
     
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
-}//GEN-LAST:event_revisionsComboBoxActionPerformed
+}                                                 
     
     private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;
+        if (bGettingRevisions) return false;//GEN-LAST:event_revisionsComboBoxActionPerformed
         boolean bGetMore = false;
         int limit = -1;
 

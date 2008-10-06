@@ -50,17 +50,12 @@ import org.netbeans.api.lexer.Token;
 public interface CppTokenProcessor {
     void start(int startOffset, int firstTokenOffset);
     void end(int offset, int lastTokenOffset);
-    /**
-     *
-     * @param token current preprocessor directive token
-     * @return true if need embedded tokens of preprocessor directive
-     */
-    boolean ppTokenStarted(Token<CppTokenId> token, int tokenOffset);
-    void ppTokenFinished(Token<CppTokenId> token, int tokenOffset);
+    int getLastSeparatorOffset();
 
     /**
      *
      * @param token current token
+     * @return true if token processor is interested in getting embedding of input token as well
      */
-    void token(Token<CppTokenId> token, int tokenOffset);
+    boolean token(Token<CppTokenId> token, int tokenOffset);
 }

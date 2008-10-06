@@ -44,6 +44,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.integration.GameCodeSupport;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -74,9 +75,11 @@ public class TiledLayerCD extends ComponentDescriptor {
 	}
 	
 	protected List<? extends Presenter> createPresenters() {
+            List<String> fqnForImport = new LinkedList<String>();
 		return Arrays.asList (
             // code
-            GameCodeSupport.createTiledLayerCodePresenter ()
+            GameCodeSupport.createTiledLayerCodePresenter ( fqnForImport),
+            GameCodeSupport.createAddImportPresenter(fqnForImport)            
         );
 	}
 	

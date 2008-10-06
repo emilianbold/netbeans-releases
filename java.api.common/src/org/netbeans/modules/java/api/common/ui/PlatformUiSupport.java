@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -178,11 +179,25 @@ public final class PlatformUiSupport {
                 case 0:
                     explicitPlatform = root.getOwnerDocument().createElementNS(
                             projectConfigurationNamespace, "explicit-platform"); //NOI18N
-                    NodeList sourceRootNodes = root.getElementsByTagNameNS(
-                            projectConfigurationNamespace, "source-roots"); //NOI18N
-                    assert sourceRootNodes.getLength() == 1 : "Broken project.xml file";
-
-                    root.insertBefore(explicitPlatform, sourceRootNodes.item(0));
+                    // insert node after <name> and optional <minimum-ant-version>
+                    NodeList nodes = root.getChildNodes();
+                    Node insertBeforeMe = null;
+                    for (int i=0; i<nodes.getLength(); i++) {
+                        Node n = nodes.item(i);
+                        if (n.getNodeType() != Node.ELEMENT_NODE) {
+                            continue; // ignore TEXT nodes etc.
+                        }
+                        if (!n.getNodeName().equals("name") &&  // NOI18N
+                            !n.getNodeName().equals("minimum-ant-version")) { // NOI18N
+                            insertBeforeMe = n;
+                            break;
+                        }
+                    }
+                    if (insertBeforeMe != null) {
+                        root.insertBefore(explicitPlatform, insertBeforeMe);
+                    } else {
+                        root.appendChild(explicitPlatform);
+                    }
                     changed = true;
                     break;
                 case 1:
@@ -261,8 +276,8 @@ public final class PlatformUiSupport {
      * The model listens on the platform's {@link ComboBoxModel} and update its
      * state according to the changes. It is possible to define minimal JDK version.
      * @param platformComboBoxModel the platform's model used for listenning.
-     * @param initialSourceLevel initial source level value.
-     * @param initialTargetLevel initial target level value.
+     * @param initialSourceLevel initial source level value, null if unknown.
+     * @param initialTargetLevel initial target level value, null if unknown.
      * @param minimalSpecificationVersion minimal JDK version to be displayed. It can be <code>null</code> if all the JDK versions
      *                          should be displayed (typically for Java SE project).
      * @return {@link ComboBoxModel} of {@link SourceLevelKey}.
@@ -271,9 +286,6 @@ public final class PlatformUiSupport {
     public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel,
             String initialSourceLevel, String initialTargetLevel, SpecificationVersion minimalSpecificationVersion) {
         Parameters.notNull("platformComboBoxModel", platformComboBoxModel); // NOI18N
-        Parameters.notNull("initialSourceLevel", initialSourceLevel); // NOI18N
-        Parameters.notNull("initialTargetLevel", initialTargetLevel); // NOI18N
-
         return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel,
                 minimalSpecificationVersion);
     }
@@ -282,16 +294,14 @@ public final class PlatformUiSupport {
      * Exactly like {@link #createSourceLevelComboBoxModel(ComboBoxModel, String, String, JDK)}
      * but without any minimal JDK version.
      * @param platformComboBoxModel the platform's model used for listenning.
-     * @param initialSourceLevel initial source level value.
-     * @param initialTargetLevel initial target level value.
+     * @param initialSourceLevel initial source level value, null if unknown.
+     * @param initialTargetLevel initial target level value, null if unknown.
      * @return {@link ComboBoxModel} of {@link SourceLevelKey}.
      * @see #createSourceLevelComboBoxModel(ComboBoxModel, String, String, JDK)
      */
     public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel,
             String initialSourceLevel, String initialTargetLevel) {
         Parameters.notNull("platformComboBoxModel", platformComboBoxModel); // NOI18N
-        Parameters.notNull("initialSourceLevel", initialSourceLevel); // NOI18N
-        Parameters.notNull("initialTargetLevel", initialTargetLevel); // NOI18N
 
         return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel, null);
     }

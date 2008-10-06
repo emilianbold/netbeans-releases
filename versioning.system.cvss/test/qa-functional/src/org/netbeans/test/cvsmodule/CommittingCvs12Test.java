@@ -234,7 +234,7 @@ public class CommittingCvs12Test extends JellyTestCase {
         //oo = OutputOperator.invoke();
         oto = new OutputTabOperator(sessionCVSroot);
         oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-        oto.clear();
+//        oto.clear();
         in = TestKit.getStream(getDataDir().getCanonicalFile().toString() + File.separator + PROTOCOL_FOLDER, "commit_invoke.in");
         cvss = new PseudoCvsServer(in);
         new Thread(cvss).start();

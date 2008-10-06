@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                         <attr name="position" intvalue="1760"/>
                     </file>
-                    
+
                     <file name="SeparatorAfterFormat.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
@@ -77,15 +77,17 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
                         <attr name="position" intvalue="1840"/>
-                    </file>                    
+                    </file>
                     </folder>
             </folder>
         </folder>
         <folder name="AnnotationTypes">  <!-- Editor gutter popup menu -->
             <file name="DisabledFieldBreakpoint.xml" url="DisabledFieldBreakpoint.xml"/>
             <file name="DisabledMethodBreakpoint.xml" url="DisabledMethodBreakpoint.xml"/>
+            <file name="DisabledClassBreakpoint.xml" url="DisabledClassBreakpoint.xml"/>
             <file name="FieldBreakpoint.xml" url="FieldBreakpoint.xml"/>
             <file name="MethodBreakpoint.xml" url="MethodBreakpoint.xml"/>
+            <file name="ClassBreakpoint.xml" url="ClassBreakpoint.xml"/>
             <folder name="OtherThreadActions">
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetAsCurrentThreadGutterAction.instance">
                     <attr name="position" intvalue="100"/>
@@ -112,15 +114,25 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
-            <file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <!--attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.jpda.ui.actions.Bundle#CTL_SetCurrentThreadFromHistoryAction"/>
+            </file-->
+            <!--file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/-->
         </folder>
         <folder name="Window">
             <folder name="Debug">
-                <file name="org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
+                <file name="org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance">
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.debugger.jpda.ui.actions.DebuggingViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/jpda/resources/debugging.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.jpda.ui.actions.Bundle#CTL_DebuggingViewAction"/>
+                </file>
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Projects">
         <folder name="Debugger_Actions_temporary">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
@@ -170,6 +182,10 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
                 <attr name="position" intvalue="1400"/>
             </file>
+            <file name="org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.instance"/>
+                <attr name="position" intvalue="1450"/>
+            </file>
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
                 <attr name="position" intvalue="1500"/>
@@ -178,10 +194,6 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
                 <attr name="position" intvalue="1600"/>
             </file>
-            <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
-                <attr name="position" intvalue="1700"/>
-            </file>
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1800"/>
@@ -189,10 +201,14 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
                 <attr name="position" intvalue="1900"/>
-            </file>            
+            </file>
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="2000"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <attr name="position" intvalue="2050"/>
             </file>
             <folder name="Stack">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.jpda.ui.Bundle"/>
@@ -244,7 +260,7 @@ made subject to such option by the copyright holder.
             <folder name="Debug">
                 <file name="org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
-                    <attr name="position" intvalue="2000"/>
+                    <attr name="position" intvalue="920"/>
                 </file>
             </folder>
         </folder>
@@ -254,7 +270,7 @@ made subject to such option by the copyright holder.
         <file name="SO-9.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
         </file>
-        <file name="D-8.shadow">
+        <file name="SO-T.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
         </file>
         <!-- <file name="D-9.shadow">  TODO: Redefine, conflicts with Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance, defined in org.netbeans.modules.cnd.classview/1
@@ -266,13 +282,14 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Toolbars">
-        <!--<folder name="Build">            
+        <!--<folder name="Build">
             <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
             </file>
         </folder>-->
         <folder name="Debug">
+            <attr name="position" intvalue="500"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.jpda.ui.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
@@ -320,7 +337,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="explorer">
                 <file name="debugging.wstcref" url="debugging.wstcref">
-                    <attr name="position" intvalue="330"/>
+                    <attr name="position" intvalue="700"/>
                 </file>
             </folder>
         </folder>

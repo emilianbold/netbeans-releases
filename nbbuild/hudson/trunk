@@ -12,6 +12,7 @@ then
     dir=`dirname $0`/../..
     cd $dir
 else
+    hg up -C . # in case previous build mistakenly modified some source files
     hg --config extensions.purge= clean --all || exit
 fi
 
@@ -43,16 +44,15 @@ mkdir -p $DIST/zip/moduleclusters
 
 find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf php groovy; do
+for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done
@@ -99,11 +99,11 @@ done
 echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
-ant gen-sigtests 
+ant gen-sigtests || exit 1
 echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
-ant check-sigtests-release
+ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################
@@ -129,12 +129,15 @@ ant -f xml.schema/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.re
 #ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
 # Mobility UI validation tests
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
+ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sys-prop.wtk.dir=/hudson -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 # UML UI validation tests
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI validation tests
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI, Profiler UI and CND UI validation tests
 ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
+# PHP UI validation tests
+ant -f php.editor/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
@@ -143,3 +146,5 @@ rm -rf nbbuild/netbeans/testtools
 rm -f nbbuild/netbeans/bin/hs_err_*
 # Check to see if any other unregistered files remain (if so, delete them now so the problem can be fixed in incremental builds) (cf. #111946):
 ant clean-untracked-files
+# Make sure the build did not modify any files, or produce any nonignorable files.
+test -z "`hg st | tee /dev/stderr`" || exit

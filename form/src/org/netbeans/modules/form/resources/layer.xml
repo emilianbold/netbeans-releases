@@ -55,21 +55,24 @@ made subject to such option by the copyright holder.
         <folder name="x-java">
             <folder name="Factories">
                 <file name="org-netbeans-modules-form-FormDataLoader.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                        <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
         <folder name="x-form">
             <folder name="Factories">
                 <file name="org-netbeans-modules-form-FormDataLoader.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                        <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
         <folder name="x-palette-item">
             <folder name="Factories">
                 <file name="org-netbeans-modules-form-palette-PaletteItemDataObject$PaletteItemDataLoader.instance">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+                        <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
@@ -645,7 +648,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="navigator">
                 <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="200"/>
                 </file>
             </folder>
         </folder>
@@ -675,7 +678,13 @@ made subject to such option by the copyright holder.
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="FormEditor.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.form.FormEditorOptions"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+
+                <attr name="displayName" bundlevalue="org.netbeans.modules.form.Bundle#Form_Editor"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.form.Bundle#Form_Editor_Tooltip"/>
+                <attr name="controller" newvalue="org.netbeans.modules.form.FormEditorPanelController"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.form.Bundle#KW_FormOptions"/>
+                <attr name="keywordsCategory" stringvalue="Advanced/FormEditor"/>
             </file>
         </folder>
     </folder>

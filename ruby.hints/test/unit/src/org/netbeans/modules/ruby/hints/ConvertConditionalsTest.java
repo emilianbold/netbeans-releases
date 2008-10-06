@@ -39,137 +39,147 @@
 
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+
 public class ConvertConditionalsTest extends HintTestBase {
     
     public ConvertConditionalsTest(String testName) {
         super(testName);
     }            
 
+    private RubyAstRule createRule() {
+        return new ConvertConditionals();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testNoHint1() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", null);
+        checkHints(this, createRule(), "testfiles/conditionals.rb", null);
     }
 
     public void testNoHint2() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
+        checkHints(this, createRule(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
     }
 
     public void testNoHint3() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
+        checkHints(this, createRule(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
     
     public void testNoHint4() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/emptycondition.rb", "if (^)");
+        checkHints(this, createRule(), "testfiles/emptycondition.rb", "if (^)");
     }
     
     public void testNoHint5() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "if (^x > 5)");
+        checkHints(this, createRule(), "testfiles/conditionals3.rb", "if (^x > 5)");
     }
     
     public void testNoHint6() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
+        checkHints(this, createRule(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
     }
     
     public void testNoHint7() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "elsi^f !str.blank?");
     }
 
     public void testNoHint8() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "elsif !str.bla^nk?");
     }
 
     public void testNoHint9() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "if st^r != 'something'");
     }
 
     public void testNoHint10() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+        checkHints(this, createRule(), "testfiles/emptybody.rb",
                 "if !^x");
     }
 
     public void testNoHint11() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+        checkHints(this, createRule(), "testfiles/emptybody.rb",
                 "if !^y");
     }
 
     public void testHint2() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "if tr^ue");
     }
 
     public void testHint3() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 5");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f x < 5");
     }
     
     public void testHint4() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f (x < 6)");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f (x < 6)");
     }
 
     public void testHint5() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f !x");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f !x");
     }
 
     public void testHint6() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 8");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f x < 8");
     }
 
     public void testHint7() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 9");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f x < 9");
     }
     
     public void testHint8() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x < 11");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "^x < 11");
     }
     
     public void testHint9() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "unl^ess x < 5");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "unl^ess x < 5");
     }
     
     public void testHint10() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "un^less (x < 6)");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "un^less (x < 6)");
     }
     
     public void testHint11() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "^x > 12");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "^x > 12");
     }
     
     public void testHint12() throws Exception {
-        checkHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "i^f x < 12");
+        checkHints(this, createRule(), "testfiles/conditionals.rb", "i^f x < 12");
     }
     
     public void testFix1() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "if tr^ue", "Change statement into a modifier");
     }
     
     public void testFix2() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "i^f x < 5", "Change statement into a modifier");
     }
 
     public void testFix3() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "i^f (x < 6)", "Change statement into a modifier");
     }
 
     public void testFix4() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "i^f !x", "Change statement into a modifier");
     }
 
     public void testFix5() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "unl^ess x < 5", "Change statement into a modifier");
     }
 
     public void testFix6() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/conditionals.rb", 
+        applyHint(this, createRule(), "testfiles/conditionals.rb",
                 "i^f x < 12", "Change statement into a modifier");
     }
 
     public void testFixPosError() throws Exception {
-        applyHint(this, new ConvertConditionals(), "testfiles/position_errors.rb", 
+        applyHint(this, createRule(), "testfiles/position_errors.rb",
                 "unl^ess !(x < 5)", "Change statement into a modifier");
     }
 }

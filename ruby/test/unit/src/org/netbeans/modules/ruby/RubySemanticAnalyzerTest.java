@@ -34,4 +34,12 @@ public class RubySemanticAnalyzerTest extends RubyTestBase {
     public void testUnused2() throws Exception {
         checkSemantic("testfiles/unused2.rb");
     }
+    
+    public void testEmpty1() throws Exception {
+        checkSemantic("testfiles/empty.rb");
+    }
+
+    public void testJavaPrefixes() throws Exception {
+        checkSemantic("testfiles/java.rb");
+    }
 }

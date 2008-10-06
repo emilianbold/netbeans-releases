@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ResultSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:yahoo:maps" xsi:schemaLocation="urn:yahoo:maps http://api.local.yahoo.com/MapsService/V1/TrafficDataResponse.xsd">
+    <LastUpdateDate>1220704990</LastUpdateDate>
+    <Result type="construction">
+        <Title>Road construction, on I-880 at GATEWAY BLVD</Title>
+        <Description>NORTHBOUNDLONGTERM FULL RAMP CLOSURE CONSTRUCTION</Description>
+        <Latitude>37.477412</Latitude>
+        <Longitude>-121.933437</Longitude>
+        <Direction>N/A</Direction>
+        <Severity>2</Severity>
+        <ReportDate>1136610060</ReportDate>
+        <UpdateDate>1220699880</UpdateDate>
+        <EndDate>1230792300</EndDate>
+    </Result>
+</ResultSet>
+<!-- ws02.search.re2.yahoo.com compressed/chunked Sat Sep  6 05:45:59 PDT 2008 -->

@@ -40,9 +40,11 @@
 package org.netbeans.modules.uml.widgets;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
@@ -133,7 +135,6 @@ public class MultilineLabelWidget extends LabelWidget
                 
                 height += stringBounds.getHeight();
             }
-            
             rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
         }
         
@@ -160,11 +161,13 @@ public class MultilineLabelWidget extends LabelWidget
         LineDetails lines = breakupLines(g, fontMetrics);
         if ( lines != null)
         {
-            //System.out.println("MultilineLabelWidget.PaintWidget: draw text lines");
             // save the current color
             Color currentColor = g.getColor();
             g.setColor(this.getForeground());
-            float yPos = 0;
+            
+            int x;
+            int y = (getSize().height - lines.getNumberOfLines() * fontMetrics.getHeight()) / 2;;
+
             for(int index = 0; index < lines.getNumberOfLines(); index++)
             {
                 String line = lines.getLine(index);
@@ -172,9 +175,21 @@ public class MultilineLabelWidget extends LabelWidget
                 {
                     line = new String();
                 }
-                g.drawString(line, 0, yPos);
+                switch (getAlignment())
+                {
+                    case LEFT:
+                        x = 0;
+                        break;
+                    case RIGHT:
+                        x = getSize().width- fontMetrics.stringWidth(line);
+                        break;
+                    case CENTER:
+                    default:
+                        x = (getSize().width- fontMetrics.stringWidth(line)) / 2;
+                }
+                g.drawString(line, x, y);
 
-                yPos += lines.getHeight(index);
+                y += lines.getHeight(index);
             }
 
             // reset to the original color
@@ -183,8 +198,8 @@ public class MultilineLabelWidget extends LabelWidget
                 g.setColor(currentColor);
             }
         }
-    }
-    
+      }
+        
     protected LineDetails breakupLines(Graphics2D g, FontMetrics metrics)
     {
         LineDetails retVal = null;
@@ -219,7 +234,7 @@ public class MultilineLabelWidget extends LabelWidget
             String line = label.substring(startLine, index);
             Rectangle2D strBounds = metrics.getStringBounds(line, g);
 
-            if(strBounds.getWidth() < width)
+            if(strBounds.getWidth() <= width)
             {
                 previousLine = line;
                 previousHeight = strBounds.getHeight();
@@ -366,6 +381,16 @@ public class MultilineLabelWidget extends LabelWidget
         int y2 = (int) Math.ceil (rectangle.getMaxY ());
         return new Rectangle (x1, y1, x2 - x1, y2 - y1);
     }
+    
+    protected Dimension getSize()
+    {
+        Insets labelInsets = getBorder().getInsets();
+        int width = getBounds().width - labelInsets.left - labelInsets.right;      
+        int height = getBounds().height - labelInsets.top - labelInsets.bottom;
+        
+        return new Dimension(width, height);
+    }
+            
     
     protected class LineDetails
     {

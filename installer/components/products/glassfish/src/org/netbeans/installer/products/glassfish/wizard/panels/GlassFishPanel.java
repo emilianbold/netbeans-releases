@@ -189,15 +189,6 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_DEFAULT_HTTPS_PORT);
         setProperty(DEFAULT_ADMIN_PORT_PROPERTY,
                 DEFAULT_DEFAULT_ADMIN_PORT);
-        
-        setProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MINIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                DEFAULT_MAXIMUM_JDK_VERSION);
-        setProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
-                SystemUtils.isMacOS() ? 
-                    DEFAULT_VENDOR_JDK_ALLOWED_MACOSX : 
-                    DEFAULT_VENDOR_JDK_ALLOWED);        
     }
     
     @Override
@@ -217,18 +208,18 @@ public class GlassFishPanel extends DestinationPanel {
         
         jdkLocationPanel.setProperty(
                 JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
+                getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
         jdkLocationPanel.setProperty(
                 JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+                getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
         jdkLocationPanel.setProperty(
                 JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY,
-                getProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY));
+                getWizard().getProperty(JdkLocationPanel.VENDOR_JDK_ALLOWED_PROPERTY));
         
-        if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+        if (getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
             jdkLocationPanel.setProperty(
                     JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
-                    getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+                    getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
         }
         
         jdkLocationPanel.initialize();
@@ -1314,18 +1305,5 @@ public class GlassFishPanel extends DestinationPanel {
             "GFP.warning.port.in.use"); // NOI18N
     public static final String DEFAULT_WARNING_ASADMIN_FILES_EXIST = 
             ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.warning.asadmin.files.exist"); // NOI18N
-            
-    public static final String DEFAULT_MINIMUM_JDK_VERSION =
-            ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.minimum.jdk.version"); // NOI18N
-    public static final String DEFAULT_MAXIMUM_JDK_VERSION =
-            ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.maximum.jdk.version"); // NOI18N
-    public static final String DEFAULT_VENDOR_JDK_ALLOWED = 
-            ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.vendor.jdk.allowed"); // NOI18N
-    public static final String DEFAULT_VENDOR_JDK_ALLOWED_MACOSX = 
-            ResourceUtils.getString(GlassFishPanel.class,
-            "GFP.vendor.jdk.allowed.macosx"); // NOI18N
+            "GFP.warning.asadmin.files.exist"); // NOI18N   
 }

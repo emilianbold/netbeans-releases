@@ -25,7 +25,7 @@
                 </file>
                 <file name="structure.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
-                </file> 
+                </file>
             </folder>
         </folder>
     </folder>
@@ -33,12 +33,10 @@
         <folder name="text">
             <folder name="x-php5">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.lexer.PHPTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
-                
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -48,8 +46,10 @@
                         </folder>
                     </folder>
                 </folder>
-                
                 <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-php-editor-codegen-CGSGenerator$Factory.instance">
+                        <attr name="position" intvalue="50"/>
+                    </file>
                     <file name="org-netbeans-modules-php-editor-codegen-ConnectionGenerator$Factory.instance">
                         <attr name="position" intvalue="100"/>
                     </file>
@@ -57,15 +57,12 @@
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
-                
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-php-editor-codegen-PHPCodeTemplateProcessor$Factory.instance"/>
                 </folder>
-                
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-php-editor-PHPCodeTemplateFilter$Factory.instance"/>
-                </folder>  
-                
+                </folder>
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-php-editor-codetemplates.xml" url="code-templates.xml">
@@ -73,41 +70,19 @@
                         </file>
                     </folder>
                 </folder>
-                
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
                 </folder>
-                
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
+                </folder>
                 <!--issue #127161:-->
                 <folder name="Popup">
-                    <file name="in-place-refactoring">
-                        <attr name="position" intvalue="680" />
-                    </file>
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                        <attr name="position" intvalue="500" />
-                        <file name="goto-declaration">
-                            <attr name="position" intvalue="500" />
-                        </file>
-                        <file name="goto">
-                            <attr name="position" intvalue="600" />
-                        </file>
+                        <attr name="position" intvalue="500"/>
                     </folder>
-                    <file name="SeparatorBeforeCut.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                        <attr name="position" intvalue="1200" />
-                    </file>
-                    <file name="format">
-                        <attr name="position" intvalue="750" />
-                    </file>
-                    <file name="generate-code">
-                        <attr name="position" intvalue="760" />
-                    </file>
-                    <file name="SeparatorAfterFormat.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                        <attr name="position" intvalue="780" />
-                    </file>
                 </folder>
                 <!--end of issue #127161-->
                 
@@ -116,7 +91,6 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.spi.palette.PaletteController"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.palette.PHPPaletteFactory.getPalette"/>
                 </file>
-                
             </folder>
             <folder name="x-php-doccomment">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
@@ -133,6 +107,19 @@
                 <file name="x-php5" url="PHP5Example"/>
             </folder>
         </folder>
+        <folder name="Editor">
+            <folder name="Hints">
+                <attr name="position" intvalue="0"/>
+                <folder name="text">
+                    <folder name="x-php5">
+                        <file name="PHPHints.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.verification.HintsAdvancedOption.createStatic"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     
     <!-- registering PHP palette -->
@@ -141,45 +128,45 @@
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HTMLPaletteCustomizerAction.instance_hidden"/>
                 <file name="org-netbeans-modules-php-editor-palette-PHPPaletteCustomizerAction.instance">
-                    <attr name="position" intvalue="1200"/>
+                    <attr name="position" intvalue="450"/>
                 </file>
             </folder>
         </folder>
     </folder>
-    
     <folder name="Palettes">
         <folder name="PHP">
-
             <file name="HTML.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
                 <attr name="position" intvalue="100"/>
             </file>
-
             <file name="HTML_Forms.shadow">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
                 <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
                 <attr name="position" intvalue="200"/>
             </file>
-
-        </folder>    
-     </folder>
-     <folder name="gsf-hints">
+        </folder>
+    </folder>
+    <folder name="gsf-hints">
         <folder name="text">
             <folder name="x-php5">
                 <folder name="hints">
-                    <folder name="general">
+                    <folder name="stable">
+                        <attr name="position" intvalue="200"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
+                    </folder>
+                    <folder name="experimental">
                         <attr name="position" intvalue="100"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignementRule.instance"/>
-                        <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ImproperFieldAccessRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ClassNotFoundRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnusedVariableRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-UnknownFunctionRule.instance"/>
-                    </folder>    
-                </folder>    
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

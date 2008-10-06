@@ -40,15 +40,11 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import javax.swing.JComponent;
-
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
-
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;
-
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -59,8 +55,8 @@ import org.openide.util.NbBundle;
 public class GeneralInformationCategoryProvider implements CompositeCategoryProvider {
 
     public Category createCategory(Lookup context) {
-        return Category.create("generalInfo", 
-                NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_General"), 
+        return Category.create("generalInfo",   //NOI18N
+                NbBundle.getMessage(TargetMappingPanel.class, "LBL_ProjectCustomizer_Category_General"),   //NOI18N
                 null);
     }
 

@@ -108,7 +108,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-dd">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -174,7 +176,9 @@ made subject to such option by the copyright holder.
             <!-- Actions for web 2.5. See issue 85570 -->
             <folder name="x-dd-web2.5">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -243,7 +247,9 @@ made subject to such option by the copyright holder.
             <!-- Actions for ejb-jar.xml version 3.0 (see issue 76967)-->
             <folder name="x-dd-ejbjar3.0">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -311,7 +317,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-servlet2.2">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -321,7 +329,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-servlet2.3">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -331,7 +341,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-servlet2.4">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -341,7 +353,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-servlet2.5">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -351,7 +365,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-ejbjar2.0">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -361,7 +377,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-ejbjar2.1">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -381,7 +399,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-client1.3">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -391,7 +411,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-client1.4">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -401,7 +423,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-client5.0">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -411,7 +435,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-application1.4">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>
@@ -421,7 +447,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-dd-application5.0">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-ddloaders-web-DDDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ddloaders.Bundle"/>
+                    </file>
                     <file name="org-netbeans-modules-j2ee-ddloaders-web-DDWeb25DataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJarDataLoader.instance"/>
                     <file name="org-netbeans-modules-j2ee-ddloaders-ejb-EjbJar30DataLoader.instance"/>

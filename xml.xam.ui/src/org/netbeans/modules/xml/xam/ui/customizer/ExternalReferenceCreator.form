@@ -22,7 +22,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="namespaceLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="namespaceTextField" pref="297" max="32767" attributes="1"/>
+                      <Component id="namespaceTextField" pref="326" max="32767" attributes="1"/>
                   </Group>
                   <Component id="locationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="messageLabel" alignment="0" pref="389" max="32767" attributes="0"/>

@@ -220,7 +220,10 @@ public class I18nString {
         DataObject sourceDataObject = getSupport().getSourceDataObject();
 
         FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
-        ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo); 
+        ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo);
+        if (cp == null) {
+            return null; // #148081 properties file not found on classpath, likely invalid
+        }
         Map<String,String> map = new HashMap<String,String>(4);
 
         map.put("key", getKey()); // NOI18N

@@ -47,7 +47,7 @@
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://groups.google.com/group/twitter-development-talk/web/api-documentation"
+               api-doc="http://apiwiki.twitter.com/REST+API+Documentation"
                url="org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
 
     <description>What Are You Doing Service</description>

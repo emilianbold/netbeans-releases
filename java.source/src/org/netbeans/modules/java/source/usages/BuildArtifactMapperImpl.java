@@ -45,6 +45,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -53,28 +56,53 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.queries.FileBuiltQuery;
+import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.tasklist.TaskCache;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
+import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 
 /**
  *
  * @author Jan Lahoda
  */
 public class BuildArtifactMapperImpl {
+    
+    private static final String ASK_BEFORE_RUN_WITH_ERRORS = "askBeforeRunWithErrors"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
-    private static final String TAG_FILE_NAME = ".netbeans_automatic_build";
+    private static final String TAG_FILE_NAME = ".netbeans_automatic_build"; //NOI18N
 //    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
     private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
+
+    private static final long MINIMAL_TIMESTAMP = 2000L;
 
     public static synchronized void addArtifactsUpdatedListener(URL sourceRoot, ArtifactsUpdated listener) {
         Set<ArtifactsUpdated> listeners = source2Listener.get(sourceRoot);
@@ -99,6 +127,54 @@ public class BuildArtifactMapperImpl {
             source2Listener.remove(sourceRoot);
         }
     }
+
+    private static boolean protectAgainstErrors(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+        Preferences pref = NbPreferences.forModule(BuildArtifactMapperImpl.class).node(BuildArtifactMapperImpl.class.getSimpleName());
+
+        if (!pref.getBoolean(ASK_BEFORE_RUN_WITH_ERRORS, true)) {
+            return true;
+        }
+        
+        sources(targetFolder, sources);
+        
+        for (FileObject file : sources[0]) {
+            if (TaskCache.getDefault().isInError(file, true)) {
+                String runAnyway = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway");
+                String cancel = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_Cancel");
+                ContainsErrorsWarning panel = new ContainsErrorsWarning();
+                DialogDescriptor dd = new DialogDescriptor(panel,
+                                                           NbBundle.getMessage(BuildArtifactMapperImpl.class, "TITLE_ContainsErrorsWarning"),
+                                                           true,
+                                                           new Object[] {runAnyway, cancel},
+                                                           runAnyway,
+                                                           DialogDescriptor.DEFAULT_ALIGN,
+                                                           null,
+                                                           null);
+
+                dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                
+                Object option = DialogDisplayer.getDefault().notify(dd);
+                
+                if (option == runAnyway) {
+                    pref.putBoolean(ASK_BEFORE_RUN_WITH_ERRORS, panel.getAskBeforeRunning());
+
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void sources(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+        if (sources[0] == null) {
+            URL targetFolderURL = FileUtil.urlForArchiveOrDir(targetFolder);
+            
+            sources[0] = SourceForBinaryQuery.findSourceRoots(targetFolderURL).getRoots();
+        }
+    }
     
     private static File getTarget(URL source) {
         Result binaryRoots = BinaryForSourceQuery.findBinaryRoots(source);
@@ -106,27 +182,46 @@ public class BuildArtifactMapperImpl {
         File result = null;
         
         for (URL u : binaryRoots.getRoots()) {
-            if (FileUtil.isArchiveFile(u)) {
-                continue;
-            }
-            
             File f = FileUtil.archiveOrDirForURL(u);
+
+            try {
+                if (FileUtil.isArchiveFile(f.toURI().toURL())) {
+                    continue;
+                }
             
-            if (f != null && result != null) {
-                Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
-                return null;
+                if (f != null && result != null) {
+                    Logger.getLogger(BuildArtifactMapperImpl.class.getName()).log(Level.WARNING, "More than one binary directory for root: {0}", source.toExternalForm());
+                    return null;
+                }
+
+                result = f;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            
-            result = f;
         }
         
         return result;
     }
     
-    public static boolean ensureBuilt(URL sourceRoot) throws IOException {
+    @SuppressWarnings("deprecation")
+    public static Boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
         if (targetFolder == null) {
+            return null;
+        }
+        
+        try {
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException e) {
+            //Not Important
+            LOG.log(Level.FINE, null, e);
+            return false;
+        }
+
+        FileObject[][] sources = new FileObject[1][];
+        
+        if (!protectAgainstErrors(targetFolder, sources)) {
             return false;
         }
         
@@ -135,14 +230,16 @@ public class BuildArtifactMapperImpl {
         if (tagFile.exists()) {
             return true;
         }
-
-        delete(targetFolder);
+        
+        delete(targetFolder, cleanCompletely);
         
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
 
-        for (FileObject sr : SourceForBinaryQuery.findSourceRoots(targetFolder.toURI().toURL()).getRoots()) {
+        sources(targetFolder, sources);
+
+        for (FileObject sr : sources[0]) {
             File index = Index.getClassFolder(sr.getURL(), true);
 
             if (index == null) {
@@ -223,7 +320,7 @@ public class BuildArtifactMapperImpl {
             out = new FileOutputStream(target);
 
             FileUtil.copy(ins, out);
-            target.setLastModified(0);
+            target.setLastModified(MINIMAL_TIMESTAMP);
         } finally {
             if (ins != null) {
                 try {
@@ -273,7 +370,7 @@ public class BuildArtifactMapperImpl {
         }
     }
 
-    private static void delete(File file) throws IOException {
+    private static void delete(File file, boolean cleanCompletely) throws IOException {
         if (file.isDirectory()) {
             File[] listed = file.listFiles();
 
@@ -282,12 +379,16 @@ public class BuildArtifactMapperImpl {
             }
 
             for (File f : listed) {
-                delete(f);
+                delete(f, cleanCompletely);
             }
-            
-            file.delete();
+
+            if (cleanCompletely) {
+                file.delete();
+            }
         } else {
-            file.delete();
+            if (cleanCompletely || file.getName().endsWith(".class")) {
+                file.delete();
+            }
         }
     }
     
@@ -375,6 +476,136 @@ public class BuildArtifactMapperImpl {
             return path;
         } else {
             return path + File.separatorChar;
+        }
+    }
+
+    public static final class FileBuildQueryImpl implements FileBuiltQueryImplementation {
+
+        private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();
+        private final Map<FileObject, Reference<Status>> file2Status = new WeakHashMap<FileObject, Reference<Status>>();
+
+        public synchronized Status getStatus(FileObject file) {
+            Reference<Status> statusRef = file2Status.get(file);
+            Status result = statusRef != null ? statusRef.get() : null;
+
+            if (result != null) {
+                return result;
+            }
+            
+            if (recursive.get() != null) {
+                return null;
+            }
+
+            recursive.set(true);
+
+            try {
+                Status delegate = FileBuiltQuery.getStatus(file);
+
+                if (delegate == null) {
+                    return null;
+                }
+
+                ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                FileObject owner = source != null ? source.findOwnerRoot(file) : null;
+
+                if (owner == null) {
+                    return delegate;
+                }
+
+                File target = getTarget(owner.getURL());
+                File tagFile = FileUtil.normalizeFile(new File(target, TAG_FILE_NAME));
+
+                Reference<FileChangeListenerImpl> ref = file2Listener.get(tagFile);
+                FileChangeListenerImpl l = ref != null ? ref.get() : null;
+
+                if (l == null) {
+                    file2Listener.put(tagFile, new WeakReference<FileChangeListenerImpl>(l = new FileChangeListenerImpl()));
+                    listener2File.put(l, tagFile);
+                    FileChangeSupport.DEFAULT.addListener(l, tagFile);
+                }
+
+                file2Status.put(file, new WeakReference<Status>(result = new FileBuiltQueryStatusImpl(delegate, tagFile, l)));
+
+                return result;
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            } finally {
+                recursive.remove();
+            }
+        }
+        
+    }
+
+    private static Map<File, Reference<FileChangeListenerImpl>> file2Listener = new WeakHashMap<File, Reference<FileChangeListenerImpl>>();
+    private static Map<FileChangeListenerImpl, File> listener2File = new WeakHashMap<FileChangeListenerImpl, File>();
+    
+    private static final class FileBuiltQueryStatusImpl implements FileBuiltQuery.Status, ChangeListener {
+
+        private final FileBuiltQuery.Status delegate;
+        private final File tag;
+        private final FileChangeListenerImpl fileListener;
+        private final ChangeSupport cs = new ChangeSupport(this);
+
+        public FileBuiltQueryStatusImpl(Status delegate, File tag, FileChangeListenerImpl fileListener) {
+            this.delegate = delegate;
+            this.tag = tag;
+            this.fileListener = fileListener;
+
+            delegate.addChangeListener(this);
+            fileListener.addListener(this);
+        }
+
+        public boolean isBuilt() {
+            return delegate.isBuilt() || tag.canRead();
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            cs.addChangeListener(l);
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            cs.removeChangeListener(l);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            cs.fireChange();
+        }
+        
+    }
+
+    private static final class FileChangeListenerImpl implements FileChangeSupportListener {
+
+        private RequestProcessor NOTIFY = new RequestProcessor(FileChangeListenerImpl.class.getName());
+        
+        private Set<ChangeListener> notify = new WeakSet<ChangeListener>();
+        
+        public void fileCreated(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        public void fileDeleted(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        public void fileModified(FileChangeSupportEvent event) {
+            notifyListeners();
+        }
+
+        private synchronized void addListener(ChangeListener l) {
+            notify.add(l);
+        }
+
+        private synchronized void notifyListeners() {
+            final Set<ChangeListener> toNotify = new HashSet<ChangeListener>(notify);
+
+            NOTIFY.post(new Runnable() {
+                public void run() {
+                    for (ChangeListener l : toNotify) {
+                        l.stateChanged(null);
+                    }
+                }
+            });
         }
     }
 }

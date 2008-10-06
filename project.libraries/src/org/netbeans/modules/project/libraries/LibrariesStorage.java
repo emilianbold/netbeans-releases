@@ -82,6 +82,9 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     private static final String LIBRARIES_REPOSITORY = "org-netbeans-api-project-libraries/Libraries";  //NOI18N
     private static final String TIME_STAMPS_FILE = "libraries-timestamps.properties"; //NOI18B
     private static final String XML_EXT = "xml";    //NOI18N
+    
+    //Lock to prevent FileAlreadyLocked exception.
+    private static final Object TIMESTAMPS_LOCK = new Object ();
 
     // persistent storage, it may be null for before first library is store into storage
     private FileObject storage = null;
@@ -480,26 +483,28 @@ public class LibrariesStorage extends FileChangeAdapter implements WritableLibra
     
     private void saveTimeStamps () throws IOException {        
         if (this.storage != null) {
-            Properties timeStamps = getTimeStamps();
-            if (timeStamps.get(NB_HOME_PROPERTY) == null) {
-                String currNbLoc = getNBRoots();
-                timeStamps.put(NB_HOME_PROPERTY,currNbLoc);
-            }
-            FileObject parent = storage.getParent();
-            FileObject timeStampFile = parent.getFileObject(TIME_STAMPS_FILE);
-            if (timeStampFile == null) {
-                timeStampFile = parent.createData(TIME_STAMPS_FILE);
-            }
-            FileLock lock = timeStampFile.lock();
-            try {
-                OutputStream out = timeStampFile.getOutputStream(lock);
-                try {
-                    timeStamps.store (out, null);    
-                } finally {
-                    out.close();
+            synchronized (TIMESTAMPS_LOCK) {
+                Properties timeStamps = getTimeStamps();
+                if (timeStamps.get(NB_HOME_PROPERTY) == null) {
+                    String currNbLoc = getNBRoots();
+                    timeStamps.put(NB_HOME_PROPERTY,currNbLoc);
                 }
-            } finally {
-                lock.releaseLock();
+                FileObject parent = storage.getParent();
+                FileObject timeStampFile = parent.getFileObject(TIME_STAMPS_FILE);
+                if (timeStampFile == null) {
+                    timeStampFile = parent.createData(TIME_STAMPS_FILE);
+                }
+                FileLock lock = timeStampFile.lock();
+                try {
+                    OutputStream out = timeStampFile.getOutputStream(lock);
+                    try {
+                        timeStamps.store (out, null);    
+                    } finally {
+                        out.close();
+                    }
+                } finally {
+                    lock.releaseLock();
+                }
             }
         }
     }        

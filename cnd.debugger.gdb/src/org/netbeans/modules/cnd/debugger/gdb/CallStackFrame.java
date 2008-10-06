@@ -130,7 +130,8 @@ public class CallStackFrame {
      * @return name of file this stack frame is stopped in
      */
     public String getFullname() {
-        return fullname;
+        // PathMap.getLocalPath throws NPE when argument is null
+        return fullname == null? null : debugger.getPathMap().getLocalPath(fullname);
     }
     
     /**

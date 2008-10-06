@@ -247,40 +247,44 @@ public class StrutsConfigUtilities {
         if (dd == null) {
             return null;
         }
+        
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
-            Servlet servlet =  (Servlet) webApp
-                    .findBeanByName("Servlet", "ServletClass", "org.apache.struts.action.ActionServlet"); //NOI18N;
-            if (servlet == null){
-                // check whether a servler class doesn't extend org.apache.struts.action.ActionServlet
-                final Servlet[] servlets = webApp.getServlet();
-
-                ClasspathInfo cpi = ClasspathInfo.create(dd);
-                JavaSource js =  JavaSource.create(cpi, Collections.EMPTY_LIST);
-                final int[] index = new int[]{-1};
-                js.runUserActionTask( new Task <CompilationController>(){
-                    public void run(CompilationController  cc) throws Exception {                        
-                        Elements elements = cc.getElements();
-                        TypeElement strutsServletElement = elements.getTypeElement("org.apache.struts.action.ActionServlet"); //NOI18N
-                        TypeElement servletElement;
-                        if (strutsServletElement != null){
-                            for (int i = 0; i < servlets.length; i++) {
-                                servletElement = elements.getTypeElement(servlets[i].getServletClass()); 
-                                if (servletElement != null 
-                                        && cc.getTypes().isSubtype(servletElement.asType(),strutsServletElement.asType())){
-                                    index[0] = i;
-                                    continue;
-                                }
+            Servlet servlet = (Servlet) webApp.findBeanByName("Servlet", "ServletClass", "org.apache.struts.action.ActionServlet"); //NOI18N;
+            if (servlet != null) {
+                return servlet;
+            }
+            
+            // check whether a servler class doesn't extend org.apache.struts.action.ActionServlet
+            final Servlet[] servlets = webApp.getServlet();
+            if (servlets.length == 0) {
+                return null;
+            }
+            
+            ClasspathInfo cpi = ClasspathInfo.create(dd);
+            JavaSource js = JavaSource.create(cpi, Collections.EMPTY_LIST);
+            final int[] index = new int[]{-1};
+            js.runUserActionTask( new Task <CompilationController>(){
+                public void run(CompilationController  cc) throws Exception {                        
+                    Elements elements = cc.getElements();
+                    TypeElement strutsServletElement = elements.getTypeElement("org.apache.struts.action.ActionServlet"); //NOI18N
+                    TypeElement servletElement;
+                    if (strutsServletElement != null){
+                        for (int i = 0; i < servlets.length; i++) {
+                            servletElement = elements.getTypeElement(servlets[i].getServletClass()); 
+                            if (servletElement != null 
+                                    && cc.getTypes().isSubtype(servletElement.asType(),strutsServletElement.asType())){
+                                index[0] = i;
+                                continue;
                             }
                         }
                     }
-                    
-                },false);
-    
+                }
                 
-                if (index[0] > -1 )
-                    servlet = servlets[index[0]];
-            }
+            },false);
+            
+            if (index[0] > -1 )
+                servlet = servlets[index[0]];
             return servlet;
         } catch (java.io.IOException e) {
             Exceptions.printStackTrace(e);
@@ -449,6 +453,10 @@ public class StrutsConfigUtilities {
     
     public static MessageResources getDefatulMessageResource(FileObject dd){
         FileObject [] files = getConfigFilesFO(dd);
+        if (files == null) {
+            return null;
+        }
+
         MessageResources resource = null;
         int index = 0;
         DataObject configDO;

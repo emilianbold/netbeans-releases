@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
@@ -57,6 +58,7 @@ import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -96,7 +98,7 @@ public class WsdlSaasNode extends SaasNode {
     }
     
     private static final java.awt.Image ICON =
-       Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
+       ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservice.png" ); //NOI18N
     
     public Image getGenericIcon(int type) {
         return ICON;
@@ -113,17 +115,6 @@ public class WsdlSaasNode extends SaasNode {
         actions.add(SystemAction.get(ViewWSDLAction.class));
 
         return actions.toArray(new Action[actions.size()]);
-    }
-
-    @Override
-    public void destroy() throws IOException{
-        WsdlUtil.removeWsdlData(getSaas().getWsdlData());
-        super.destroy();
-    }
-    
-    @Override
-    public boolean canDestroy() {
-        return true;
     }
     
     /**

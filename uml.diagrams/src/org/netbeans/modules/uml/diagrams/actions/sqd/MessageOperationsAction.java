@@ -54,6 +54,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IVisibilityKind;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
@@ -62,6 +63,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageLabelManager;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageWidget;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.actions.SubMenuAction;
 import org.netbeans.modules.uml.drawingarea.actions.ToggleLabelAction;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetContext;
@@ -70,14 +72,13 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author psb
  */
-public class MessageOperationsAction extends NodeAction
+public class MessageOperationsAction extends SceneNodeAction
 {
     private MessageLabelManager lastManager = null;
     private WidgetContext context = null;
@@ -94,27 +95,30 @@ public class MessageOperationsAction extends NodeAction
     public Action createContextAwareInstance(Lookup actionContext)
     {
         context = actionContext.lookup(WidgetContext.class);
-        type = LabelManager.LabelType.valueOf(context.getContextName());
-        lastPresentationElement=actionContext.lookup(IPresentationElement.class);
-        lastScene=(ObjectScene) actionContext.lookup(Scene.class);
-        if(lastScene!=null && lastPresentationElement!=null)
+        if(context!=null)
         {
-            Widget w=lastScene.findWidget(lastPresentationElement);
-            if(!(w instanceof MessageWidget))
+            type = LabelManager.LabelType.valueOf(context.getContextName());
+            lastPresentationElement=actionContext.lookup(IPresentationElement.class);
+            lastScene=(ObjectScene) actionContext.lookup(Scene.class);
+            if(lastScene!=null && lastPresentationElement!=null)
             {
-                lastPresentationElement=null;//may be label selected or other related
-                //search for parents if will find, set pres element
-                if(w!=null)
-                    for(Widget par=w.getParentWidget();par!=null;par=par.getParentWidget())
-                    {
-                        if(par instanceof MessageWidget)
+                Widget w=lastScene.findWidget(lastPresentationElement);
+                if(!(w instanceof MessageWidget))
+                {
+                    lastPresentationElement=null;//may be label selected or other related
+                    //search for parents if will find, set pres element
+                    if(w!=null)
+                        for(Widget par=w.getParentWidget();par!=null;par=par.getParentWidget())
                         {
-                            lastPresentationElement=(IPresentationElement) lastScene.findObject(par);
-                            break;
+                            if(par instanceof MessageWidget)
+                            {
+                                lastPresentationElement=(IPresentationElement) lastScene.findObject(par);
+                                break;
+                            }
                         }
-                    }
+                }
+                //other option is to exclude message finding below, sepatrate this clas to sevelal for each message kind
             }
-            //other option is to exclude message finding below, sepatrate this clas to sevelal for each message kind
         }
         //
         return this;
@@ -129,7 +133,8 @@ public class MessageOperationsAction extends NodeAction
     {
         boolean retVal = false;
         
-        if(activatedNodes.length == 1 && lastPresentationElement!=null)
+        if(super.enable(activatedNodes) == true && 
+           activatedNodes.length == 1 && lastPresentationElement!=null)
         {
             Lookup lookup = activatedNodes[0].getLookup();
             IPresentationElement presentation = lookup.lookup(IPresentationElement.class);
@@ -171,6 +176,7 @@ public class MessageOperationsAction extends NodeAction
         //JMenuItem item =  new Actions.SubMenu(this, new OperationsMenuModel());
         if(lastPresentationElement==null)return new JMenuItem(getName());
         JMenu item=new JMenu(getName());
+        
         Action[] actions= getOperationsActons();
         for(int i=0;i<actions.length;i++)
         {
@@ -188,7 +194,6 @@ public class MessageOperationsAction extends NodeAction
             item.add(it);
         }
         Actions.connect(item, (Action)this, true);
-        
         return item;
     }
 

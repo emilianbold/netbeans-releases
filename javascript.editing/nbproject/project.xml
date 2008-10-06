@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.100</specification-version>
+                        <specification-version>1.102</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -19,8 +19,17 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -93,15 +102,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.9</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -201,7 +201,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.3.0.1</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -220,15 +220,6 @@
                         <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -239,6 +230,16 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.html.editor.lib</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
@@ -255,6 +256,7 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
@@ -263,18 +265,36 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ruby.platform</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javascript.hints</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
-                <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
+                <friend>org.netbeans.modules.web.client.tools.impl</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
                 <package>org.netbeans.modules.javascript.editing.embedding</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>
+                <package>org.netbeans.modules.javascript.editing.spi</package>
             </friend-packages>
         </data>
     </configuration>

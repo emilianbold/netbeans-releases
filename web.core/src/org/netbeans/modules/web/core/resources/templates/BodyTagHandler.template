@@ -21,8 +21,8 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
 public class ${name} extends BodyTagSupport {
     
     /** 
-    * Creates new instance of tag handler 
-    */
+     * Creates new instance of tag handler 
+     */
     public ${name}() {
         super();
     }
@@ -38,10 +38,8 @@ public class ${name} extends BodyTagSupport {
     /**
      * Method called from doStartTag().
      * Fill in this method to perform other operations from doStartTag().
-     *
      */
     private void otherDoStartTagOperations() {
-        //
         // TODO: code that performs other operations in doStartTag
         //       should be placed here.
         //       It will be called after initializing variables, 
@@ -56,23 +54,18 @@ public class ${name} extends BodyTagSupport {
         //   } catch (IOException ex) {
         //       // do something
         //   }
-        //
-        //
     }
     
     /**
      * Method called from doEndTag()
      * Fill in this method to perform other operations from doEndTag().
-     *
      */
     private void otherDoEndTagOperations() {
-        //
         // TODO: code that performs other operations in doEndTag
         //       should be placed here.
         //       It will be called after initializing variables,
         //       finding the parent, setting IDREFs, etc, and
         //       before calling shouldEvaluateRestOfPageAfterEndTag().
-        //
     }
     
     /**
@@ -83,24 +76,19 @@ public class ${name} extends BodyTagSupport {
      * will not be called.
      */
     private void writeTagBodyContent(JspWriter out, BodyContent bodyContent) throws IOException {
-        //
         // TODO: insert code to write html before writing the body content.
         // e.g.:
         //
         // out.println("<strong>" + attribute_1 + "</strong>");
         // out.println("   <blockquote>");
         
-        //
         // write the body content (after processing by the JSP engine) on the output Writer
-        //
         bodyContent.writeOut(out);
         
-        //
         // Or else get the body content as a string and process it, e.g.:
         //     String bodyStr = bodyContent.getString();
         //     String result = yourProcessingMethod(bodyStr);
         //     out.println(result);
-        //
         
         // TODO: insert code to write html after writing the body content.
         // e.g.:
@@ -129,8 +117,10 @@ public class ${name} extends BodyTagSupport {
      * This method is automatically generated. Do not modify this method.
      * Instead, modify the methods that this method calls.
      */
-    
-    public int doStartTag() throws JspException, JspException {
+<#if java15style??>
+    @Override
+</#if>
+    public int doStartTag() throws JspException {
         otherDoStartTagOperations();
         
         if (theBodyShouldBeEvaluated()) {
@@ -146,7 +136,10 @@ public class ${name} extends BodyTagSupport {
      * This method is automatically generated. Do not modify this method.
      * Instead, modify the methods that this method calls.
      */
-    public int doEndTag() throws JspException, JspException {
+<#if java15style??>
+    @Override
+</#if>
+    public int doEndTag() throws JspException {
         otherDoEndTagOperations();
         
         if (shouldEvaluateRestOfPageAfterEndTag()) {
@@ -162,15 +155,16 @@ public class ${name} extends BodyTagSupport {
      * This method is automatically generated. Do not modify this method.
      * Instead, modify the methods that this method calls.
      */
+<#if java15style??>
+    @Override
+</#if>
     public int doAfterBody() throws JspException {
         try {
-            //
             // This code is generated for tags whose bodyContent is "JSP"
-            //
-            BodyContent bodyContent = getBodyContent();
-            JspWriter out = bodyContent.getEnclosingWriter();
+            BodyContent bodyCont = getBodyContent();
+            JspWriter out = bodyCont.getEnclosingWriter();
             
-            writeTagBodyContent(out, bodyContent);
+            writeTagBodyContent(out, bodyCont);
         } catch (Exception ex) {
             handleBodyContentException(ex);
         }
@@ -187,7 +181,7 @@ public class ${name} extends BodyTagSupport {
      */
     private void handleBodyContentException(Exception ex) throws JspException {
         // Since the doAfterBody method is guarded, place exception handing code here.
-        throw new JspException("error in NewTag: " + ex);
+        throw new JspException("Error in ${name} tag", ex);
     }
     
     /**
@@ -196,7 +190,6 @@ public class ${name} extends BodyTagSupport {
      * Called from doEndTag().
      */
     private boolean shouldEvaluateRestOfPageAfterEndTag()  {
-        //
         // TODO: code that determines whether the rest of the page
         //       should be evaluated after the tag is processed
         //       should be placed here.
@@ -212,7 +205,6 @@ public class ${name} extends BodyTagSupport {
      * Called from doAfterBody().
      */
     private boolean theBodyShouldBeEvaluatedAgain() {
-        //
         // TODO: code that determines whether the tag body should be
         //       evaluated again after processing the tag
         //       should be placed here.

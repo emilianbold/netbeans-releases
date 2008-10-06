@@ -44,8 +44,10 @@ package org.netbeans.test.editor.search;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import javax.swing.SwingUtilities;
 import junit.framework.Test;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.actions.ReplaceAction;
 import org.netbeans.test.editor.lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
@@ -78,20 +80,16 @@ public class ReplaceTest extends EditorTestCase {
     }
     
     private void openReplaceDialog() {
-        MainWindowOperator mwo = MainWindowOperator.getDefault();
-        //mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
-        //new EventTool().waitNoEvent(100);
-        //mwo.pushKey(KeyEvent.VK_ESCAPE);
-        //new ReplaceAction().perform();
-        mwo.menuBar().pushMenu("Edit");
-        new EventTool().waitNoEvent(250);
-        mwo.pushKey(KeyEvent.VK_ESCAPE);
+        final MainWindowOperator mwo = MainWindowOperator.getDefault();        
         mwo.requestFocus();
-        mwo.pushKey(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK);
-        new EventTool().waitNoEvent(200);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                new ReplaceAction().performAPI();                
+            }
+        });        
     }
-    
-    
+        
     /**
      * TC1 - open and close replace dialog
      */

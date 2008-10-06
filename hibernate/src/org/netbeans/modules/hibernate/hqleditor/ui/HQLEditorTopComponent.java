@@ -39,6 +39,18 @@
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
 import java.awt.CardLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -52,11 +64,17 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.HibernateException;
+import org.hibernate.QueryException;
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.query.HQLQueryPlan;
+import org.hibernate.hql.QueryTranslator;
 import org.hibernate.hql.ast.QuerySyntaxException;
 import org.hibernate.impl.SessionFactoryImpl;
 import org.netbeans.api.progress.ProgressHandle;
@@ -68,12 +86,13 @@ import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
 import org.netbeans.modules.hibernate.hqleditor.HQLResult;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.hibernate.util.CustomClassLoader;
+import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -95,7 +114,8 @@ public final class HQLEditorTopComponent extends TopComponent {
     private HQLEditorController controller = null;
     private HibernateEnvironment env = null;
     private ProgressHandle ph = null;
-    private RequestProcessor.Task listenerTask;
+    private RequestProcessor requestProcessor;
+    private RequestProcessor.Task hqlParserTask;
     private boolean isSqlTranslationProcessDone = false;
 
     private static int getNextWindowCount() {
@@ -117,12 +137,147 @@ public final class HQLEditorTopComponent extends TopComponent {
         this.thisWindowCount = getNextWindowCount();
         setName(NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_HQLEditorTopComponent") + thisWindowCount);
         setToolTipText(NbBundle.getMessage(HQLEditorTopComponent.class, "HINT_HQLEditorTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
         sqlToggleButton.setSelected(true);
         hqlEditor.getDocument().addDocumentListener(new HQLDocumentListener());
+        hqlEditor.addMouseListener(new HQLEditorPopupMouseAdapter());
+
+    }
+
+    private class HQLEditorPopupMouseAdapter extends PopupMouseAdapter {
+
+        private JPopupMenu popupMenu;
+        private JMenuItem runHQLMenuItem;
+        private JMenuItem cutMenuItem;
+        private JMenuItem copyMenuItem;
+        private JMenuItem pasteMenuItem;
+        private JMenuItem selectAllMenuItem;
+        private final String RUN_HQL_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_RUN_HQL_COMMAND");
+        private final String CUT_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_CUT_COMMAND");
+        private final String COPY_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_COPY_COMMAND");
+        private final String PASTE_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_PASTE_COMMAND");
+        private final String SELECT_ALL_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_SELECT_ALL_COMMAND");
+        private Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+        public HQLEditorPopupMouseAdapter() {
+            super();
+            popupMenu = new JPopupMenu();
+            ActionListener actionListener = new PopupActionListener();
+            runHQLMenuItem = popupMenu.add(RUN_HQL_COMMAND);
+            runHQLMenuItem.setMnemonic('Q');
+            runHQLMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.ALT_MASK | InputEvent.SHIFT_MASK, false));
+            runHQLMenuItem.addActionListener(actionListener);
+
+            popupMenu.addSeparator();
+
+            cutMenuItem = popupMenu.add(CUT_COMMAND);
+            cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK, true));
+            cutMenuItem.setMnemonic('t');
+            cutMenuItem.addActionListener(actionListener);
+
+            copyMenuItem = popupMenu.add(COPY_COMMAND);
+            copyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK, true));
+            copyMenuItem.setMnemonic('y');
+            copyMenuItem.addActionListener(actionListener);
+
+            pasteMenuItem = popupMenu.add(PASTE_COMMAND);
+            pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK, true));
+            pasteMenuItem.setMnemonic('P');
+            pasteMenuItem.addActionListener(actionListener);
+            
+            popupMenu.addSeparator();
+            
+            selectAllMenuItem = popupMenu.add(SELECT_ALL_COMMAND);
+            selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK, true));
+            selectAllMenuItem.setMnemonic('A');
+            selectAllMenuItem.addActionListener(actionListener);
+        }
+
+        @Override
+        protected void showPopup(MouseEvent evt) {
+            // Series of checks.. to enable or disable menus.
+            if (hqlEditor.getText().trim().equals("")) {
+                runHQLMenuItem.setEnabled(false);
+                selectAllMenuItem.setEnabled(false);
+            } else {
+                runHQLMenuItem.setEnabled(true);
+                selectAllMenuItem.setEnabled(true);
+            }
+            if (hqlEditor.getSelectedText() == null || hqlEditor.getSelectedText().trim().equals("")) {
+                cutMenuItem.setEnabled(false);
+                copyMenuItem.setEnabled(false);
+            } else {
+                cutMenuItem.setEnabled(true);
+                copyMenuItem.setEnabled(true);
+            }
+
+            Transferable transferable = (Transferable) systemClipboard.getContents(null);
+            if (transferable.getTransferDataFlavors().length == 0) {
+                pasteMenuItem.setEnabled(false);
+            } else {
+                pasteMenuItem.setEnabled(true);
+            }
 
 
+            popupMenu.show(hqlEditor, evt.getX(), evt.getY());
+        }
+
+        private class PopupActionListener implements ActionListener {
+
+            public void actionPerformed(ActionEvent e) {
+                if (e.getActionCommand().equals(RUN_HQL_COMMAND)) {
+                    runHQLButtonActionPerformed(e);
+                } else if(e.getActionCommand().equals(SELECT_ALL_COMMAND)) {
+                    hqlEditor.selectAll();
+                } else if (e.getActionCommand().equals(CUT_COMMAND)) {
+                    StringSelection stringSelection = new StringSelection(hqlEditor.getSelectedText());
+                    systemClipboard.setContents(stringSelection, stringSelection);
+                    hqlEditor.setText(
+                            hqlEditor.getText().substring(0, hqlEditor.getSelectionStart()) +
+                            hqlEditor.getText().substring(hqlEditor.getSelectionEnd()));
+
+                } else if (e.getActionCommand().equals(COPY_COMMAND)) {
+                    StringSelection stringSelection = new StringSelection(hqlEditor.getSelectedText());
+                    systemClipboard.setContents(stringSelection, stringSelection);
+
+                } else if (e.getActionCommand().equals(PASTE_COMMAND)) {
+                    Transferable transferable = (Transferable) systemClipboard.getContents(null);
+                    String clipboardContents = "";
+                    try {
+                        if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                            clipboardContents = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                        } else if (transferable.isDataFlavorSupported(DataFlavor.getTextPlainUnicodeFlavor())) {
+                            clipboardContents = (String) transferable.getTransferData(DataFlavor.getTextPlainUnicodeFlavor());
+                        }
+                    } catch (UnsupportedFlavorException ex) {
+                        logger.log(Level.INFO, "Unsupported transfer flavor", ex);
+                    } catch (IOException ex) {
+                        logger.log(Level.INFO, "IOException during paste operation", ex);
+                    }
+                    if(!clipboardContents.equals("")) {
+                        if(hqlEditor.getSelectedText() != null) {
+                            hqlEditor.replaceSelection(clipboardContents);
+                        } else {
+                            hqlEditor.setText(
+                                    hqlEditor.getText().substring(0, hqlEditor.getCaretPosition()) +
+                                    clipboardContents +
+                                    hqlEditor.getText().substring(hqlEditor.getCaretPosition())
+                                    );
+                        }
+                    }
+                }
+            }
+        }
+
+        // Future..
+//        private class HQLTransferHandler extends TransferHandler {
+//
+//        }
+    }
+
+    public void setFocusToEditor() {
+        hqlEditor.requestFocus();
     }
 
     private class ParseHQL extends Thread {
@@ -130,83 +285,105 @@ public final class HQLEditorTopComponent extends TopComponent {
         @Override
         public void run() {
             while (!isSqlTranslationProcessDone) {
-                computeSQLAndDisplay();
-                if (Thread.interrupted()) { // Cancel the task.
+                if (hqlEditor.getText().trim().equals("")) {
                     return;
                 }
-            }
-        }
-    }
-
-    @Override
-    protected void componentShowing() {
-        super.componentShowing();
-
-    }
-
-    private void computeSQLAndDisplay() {
-        if (hqlEditor.getText().trim().equals("")) {
-            return;
-        }
-        FileObject selectedConfigObject = hibernateConfigMap.get(
-                hibernateConfigurationComboBox.getSelectedItem().toString());
-
-        if (hibernateConfigurationComboBox.getSelectedItem() != null ||
-                selectedConfigObject != null) {
-            Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
-            env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-            if (env == null) {
-                logger.warning("HiberEnv is not found in enclosing project.");
-                return;
-            }
-            CustomClassLoader ccl = new CustomClassLoader(
-                    env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}),
-                    getClass().getClassLoader());
-            ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(ccl);
-            Configuration hibernateConfiguration =
-                    controller.getHibernateConfigurationForThisContext(
-                    selectedConfigObject);
-            SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateConfiguration.buildSessionFactory();
-
-            StringBuilder stringBuff = new StringBuilder();
-            try {
-                HQLQueryPlan queryPlan = sessionFactoryImpl.getQueryPlanCache().getHQLQueryPlan(hqlEditor.getText(), true, Collections.EMPTY_MAP);
-                String[] sqlStrings = queryPlan.getSqlStrings();
-                for (String sqlString : sqlStrings) {
-                    stringBuff.append(sqlString + "\n");
+                if (hibernateConfigurationComboBox.getSelectedItem() == null) {
+                    logger.info("hibernate configuration combo box is empty.");
+                    return;
                 }
-                sqlEditorPane.setText(stringBuff.toString());
+                FileObject selectedConfigObject = hibernateConfigMap.get(
+                        hibernateConfigurationComboBox.getSelectedItem().toString());
 
-            } catch (QuerySyntaxException qe) {
-                showSQLError();
-            } catch (IllegalArgumentException ie) {
-                showSQLError();
-            } finally {
-                isSqlTranslationProcessDone = true;
-                Thread.currentThread().setContextClassLoader(oldClassLoader);
+                if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                    return;    // Cancel the task
+                }
+                if (selectedConfigObject != null) {
+                    Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
+                    env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
+                    if (env == null) {
+                        logger.warning("HiberEnv is not found in enclosing project.");
+                        return;
+                    }
+                    if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                        return;    // Cancel the task
+                    }
+                    ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+                    try {
+                        ClassLoader ccl = env.getProjectClassLoader(
+                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}));
+
+                        Thread.currentThread().setContextClassLoader(ccl);
+                        SessionFactory sessionFactory =
+                                controller.processAndConstructSessionFactory(
+                                hqlEditor.getText(), selectedConfigObject, ccl, enclosingProject);
+                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                            return;    // Cancel the task
+                        }
+                        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
+
+                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                            return;    // Cancel the task
+                        }
+                        StringBuilder stringBuff = new StringBuilder();
+
+                        HQLQueryPlan queryPlan = sessionFactoryImpl.getQueryPlanCache().getHQLQueryPlan(hqlEditor.getText(), true, Collections.EMPTY_MAP);
+                        QueryTranslator[] queryTranslators = queryPlan.getTranslators();
+                        for (QueryTranslator t : queryTranslators) {
+                            logger.info("SQL String = " + t.getSQLString());
+                            stringBuff.append(t.getSQLString() + "\n");
+                        }
+                        if (Thread.interrupted() || isSqlTranslationProcessDone) {
+                            return;    // Cancel the task
+                        }
+                        showSQL(stringBuff.toString());
+
+                    } catch (QuerySyntaxException qe) {
+                        logger.log(Level.INFO, "", qe);
+                        showSQLError("MalformedQuery");
+                    } catch (QueryException qe) {
+                        logger.log(Level.INFO, "", qe);
+                        showSQLError("MalformedQuery");
+                    } catch (IllegalArgumentException ie) {
+                        logger.log(Level.INFO, "", ie);
+                        showSQLError("MalformedQuery");
+                    } catch (HibernateException se) { // Database related exception!
+                        logger.log(Level.INFO, "", se);
+                        showSQLError("DbError");
+                    } catch (Exception e) {
+                        logger.log(Level.INFO, "", e);
+                        showSQLError("GeneralError");
+                    } finally {
+                        isSqlTranslationProcessDone = true;
+                        Thread.currentThread().setContextClassLoader(oldClassLoader);
+                    }
+                }
+
             }
         }
     }
 
-    private void showSQLError() {
-        sqlEditorPane.setText("Malformed or no query"); //TOOD I18N
+    private void showSQL(String sql) {
+        sqlEditorPane.setText(sql);
+        switchToSQLView();
+    }
+
+    private void showSQLError(String errorResourceKey) {
+        sqlEditorPane.setText(
+                NbBundle.getMessage(HQLEditorTopComponent.class, errorResourceKey));
+        switchToSQLView();
     }
 
     @Override
     protected void componentActivated() {
         super.componentActivated();
-        listenerTask = RequestProcessor.getDefault().post(new ParseHQL(), 1000);
+        requestProcessor = new RequestProcessor("hql-parser", 1, true);
     }
 
     @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
-        boolean cancelTaskResult = listenerTask.cancel();
-        logger.info("listener thread is cancelled : " + cancelTaskResult);
-        if (cancelTaskResult = true) {
-            listenerTask = null;
-        }
+        requestProcessor.stop();
     }
 
     private class HQLDocumentListener implements DocumentListener {
@@ -224,7 +401,10 @@ public final class HQLEditorTopComponent extends TopComponent {
         }
 
         private void process() {
-            listenerTask.schedule(400);
+            if (hqlParserTask != null && !hqlParserTask.isFinished() && (hqlParserTask.getDelay() != 0)) {
+                hqlParserTask.cancel();
+            }
+            hqlParserTask = requestProcessor.post(new ParseHQL(), 1000);
             isSqlTranslationProcessDone = false;
         }
     }
@@ -267,7 +447,8 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     }
 
-    public void setResult(HQLResult result) {
+    public void setResult(HQLResult result, ClassLoader ccl) {
+        Thread.currentThread().setContextClassLoader(ccl);
         if (result.getExceptions().size() == 0) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
@@ -323,11 +504,9 @@ public final class HQLEditorTopComponent extends TopComponent {
                 StringWriter sWriter = new StringWriter();
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
-                errorTextArea.append(sWriter.toString());
                 errorTextArea.append(
                         removeHibernateModuleCodelines(sWriter.toString()));
-                logger.log(
-                        Level.INFO, "", t);
+
             }
 
         }
@@ -362,7 +541,10 @@ public final class HQLEditorTopComponent extends TopComponent {
                             oneRow.add("NULL"); //NOI18N
                             continue;
                         }
-                        oneRow.add(methodReturnValue);
+                        if (methodReturnValue instanceof java.util.Collection) {
+                            continue;
+                        }
+                        oneRow.add(methodReturnValue.toString());
                     } catch (IllegalAccessException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IllegalArgumentException ex) {
@@ -434,8 +616,6 @@ public final class HQLEditorTopComponent extends TopComponent {
         setMaxRowCountLabel = new javax.swing.JLabel();
         setMaxRowCountComboBox = new javax.swing.JComboBox();
         executionPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        sqlEditorPane = new javax.swing.JEditorPane();
         resultContainerPanel = new javax.swing.JPanel();
         statusPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
@@ -444,6 +624,8 @@ public final class HQLEditorTopComponent extends TopComponent {
         errorTextArea = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
         resultsTable = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        sqlEditorPane = new javax.swing.JTextPane();
 
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
@@ -510,7 +692,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 241, Short.MAX_VALUE)
+            .add(0, 202, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -523,7 +705,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 134, Short.MAX_VALUE)
+            .add(0, 98, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -556,11 +738,6 @@ public final class HQLEditorTopComponent extends TopComponent {
         toolBar2.add(setMaxRowCountPanel);
 
         executionPanel.setLayout(new java.awt.CardLayout());
-
-        sqlEditorPane.setEditable(false);
-        jScrollPane2.setViewportView(sqlEditorPane);
-
-        executionPanel.add(jScrollPane2, "card2");
 
         resultContainerPanel.setLayout(new java.awt.BorderLayout());
 
@@ -616,7 +793,12 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         resultContainerPanel.add(resultsOrErrorPanel, java.awt.BorderLayout.CENTER);
 
-        executionPanel.add(resultContainerPanel, "card4");
+        executionPanel.add(resultContainerPanel, "card2");
+
+        sqlEditorPane.setEditable(false);
+        jScrollPane2.setViewportView(sqlEditorPane);
+
+        executionPanel.add(jScrollPane2, "card1");
 
         org.jdesktop.layout.GroupLayout containerPanelLayout = new org.jdesktop.layout.GroupLayout(containerPanel);
         containerPanel.setLayout(containerPanelLayout);
@@ -630,7 +812,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);
@@ -663,14 +845,14 @@ public final class HQLEditorTopComponent extends TopComponent {
 
 private void resultToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_resultToggleButtonItemStateChanged
     if (resultToggleButton.isSelected()) {//GEN-LAST:event_resultToggleButtonItemStateChanged
-            ((CardLayout) (executionPanel.getLayout())).last(executionPanel);
+            ((CardLayout) (executionPanel.getLayout())).first(executionPanel);
             sqlToggleButton.setSelected(false);
         }
     }
 
 private void sqlToggleButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sqlToggleButtonItemStateChanged
     if (sqlToggleButton.isSelected()) {//GEN-HEADEREND:event_sqlToggleButtonItemStateChanged
-        ((CardLayout) (executionPanel.getLayout())).first(executionPanel);//GEN-LAST:event_sqlToggleButtonItemStateChanged
+        ((CardLayout) (executionPanel.getLayout())).last(executionPanel);//GEN-LAST:event_sqlToggleButtonItemStateChanged
             resultToggleButton.setSelected(false);
         }
     }
@@ -718,7 +900,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JPanel spacerPanel1;
     private javax.swing.JPanel spacerPanel2;
     private javax.swing.JSplitPane splitPane;
-    private javax.swing.JEditorPane sqlEditorPane;
+    private javax.swing.JTextPane sqlEditorPane;
     private javax.swing.JToggleButton sqlToggleButton;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JPanel statusPanel;
@@ -727,6 +909,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JToolBar.Separator toolbarSeparator;
     private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
@@ -740,6 +923,10 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private void switchToResultView() {
         resultToggleButton.setSelected(true);
         ((CardLayout) resultsOrErrorPanel.getLayout()).last(resultsOrErrorPanel);
+    }
+
+    private void switchToSQLView() {
+        sqlToggleButton.setSelected(true);
     }
 
     private void switchToErrorView() {

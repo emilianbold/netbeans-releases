@@ -44,16 +44,19 @@ package org.netbeans.modules.projectimport.eclipse.core.wizard;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
+import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectFactory;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  * Iterates on the sequence of Eclipse wizard panels.
@@ -61,18 +64,18 @@ import org.openide.filesystems.FileUtil;
  * @author mkrauskopf
  */
 final class EclipseWizardIterator implements
-        WizardDescriptor.Iterator, ChangeListener {
+        WizardDescriptor.Iterator<WizardDescriptor>, ChangeListener {
     
     private String errorMessage;
     private SelectionWizardPanel workspacePanel;
     private ProjectWizardPanel projectPanel;
-    private ImporterWizardPanel current;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+    private List<String> currentPanelProviders = new ArrayList<String>();
     
-    private boolean hasNext;
-    private boolean hasPrevious;
+    int numberOfPanels = 2;
+    int currentPanel = 0;
     
-    /** Registered ChangeListeners */
-    private List changeListeners;
+    private final ChangeSupport cs = new ChangeSupport(this);
     
     /** Initialize and create an instance. */
     EclipseWizardIterator() {
@@ -80,7 +83,10 @@ final class EclipseWizardIterator implements
         workspacePanel.addChangeListener(this);
         projectPanel = new ProjectWizardPanel();
         projectPanel.addChangeListener(this);
-        current = workspacePanel;
+    }
+
+    List<Panel<WizardDescriptor>> getExtraPanels() {
+        return extraPanels;
     }
     
     /** Returns projects selected by selection panel */
@@ -126,85 +132,129 @@ final class EclipseWizardIterator implements
     }
     
     public void addChangeListener(ChangeListener l) {
-        if (changeListeners == null) {
-            changeListeners = new ArrayList(2);
-        }
-        changeListeners.add(l);
+        cs.addChangeListener(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        if (changeListeners != null) {
-            if (changeListeners.remove(l) && changeListeners.isEmpty()) {
-                changeListeners = null;
-            }
-        }
-    }
-    
-    protected void fireChange() {
-        if (changeListeners != null) {
-            ChangeEvent e = new ChangeEvent(this);
-            for (Iterator i = changeListeners.iterator(); i.hasNext(); ) {
-                ((ChangeListener) i.next()).stateChanged(e);
-            }
-        }
+        cs.removeChangeListener(l);
     }
     
     public void previousPanel() {
-        if (current == projectPanel) {
-            current = workspacePanel;
-            hasPrevious = false;
-            hasNext = true;
-            updateErrorMessage();
-        }
-    }
-    
-    public void nextPanel() {
-        if (current == workspacePanel) {
-            projectPanel.loadProjects(workspacePanel.getWorkspaceDir());
-            current = projectPanel;
-            hasPrevious = true;
-            hasNext = false;
-            updateErrorMessage();
-        }
-    }
-    
-    public String name() {
-        return (current == workspacePanel) ?
-            (workspacePanel.isWorkspaceChosen() ?
-                ImporterWizardPanel.WORKSPACE_LOCATION_STEP :
-                ImporterWizardPanel.PROJECT_SELECTION_STEP) :
-                ImporterWizardPanel.PROJECTS_SELECTION_STEP;
-    }
-    
-    public boolean hasPrevious() {
-        return hasPrevious;
-    }
-    
-    public boolean hasNext() {
-        return hasNext;
-    }
-    
-    public WizardDescriptor.Panel current() {
-        return current;
-    }
-    
-    public void stateChanged(javax.swing.event.ChangeEvent e) {
-        if (current == workspacePanel && current.isValid()) {
-            if (workspacePanel.isWorkspaceChosen()) {
-                hasNext = true;
-            } else {
-                hasNext = false;
-            }
-        }
+        currentPanel--;
         updateErrorMessage();
     }
     
+    public void nextPanel() {
+        if (getCurrent() == workspacePanel) {
+            projectPanel.loadProjects(workspacePanel.getWorkspaceDir());
+        }
+        currentPanel++;
+        updateErrorMessage();
+    }
+    
+    public String name() {
+        if (getCurrent() == workspacePanel) {
+            return ImporterWizardPanel.WORKSPACE_LOCATION_STEP;
+        } else if (getCurrent() == projectPanel) {
+            return ImporterWizardPanel.PROJECT_SELECTION_STEP;
+        } else {
+            return getCurrent().getComponent().getName();
+        }
+    }
+    
+    public boolean hasPrevious() {
+        return currentPanel > 0;
+    }
+    
+    public boolean hasNext() {
+        return currentPanel < numberOfPanels-1;
+    }
+    
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return getCurrent();
+    }
+    
+    public void stateChanged(javax.swing.event.ChangeEvent e) {
+        updateExtraWizardPanels();
+        updateErrorMessage();
+    }
+    
+    private void updateExtraWizardPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> l = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        if (getCurrent() == workspacePanel) {
+            numberOfPanels = workspacePanel.isWorkspaceChosen() ? 2 : 1;
+        }
+        if (getCurrent() != projectPanel) {
+            return;
+        }
+        Set<String> alreadyIncluded = new HashSet<String>();
+        List<String> panelProviders = new ArrayList<String>();
+        for (EclipseProject ep : getProjects()) {
+            if (!ep.isImportSupported()) {
+                continue;
+            }
+            if (alreadyIncluded.contains(ep.getProjectTypeFactory().getClass().getName())) {
+                continue;
+            } else {
+                alreadyIncluded.add(ep.getProjectTypeFactory().getClass().getName());
+            }
+            l.addAll(ep.getProjectTypeFactory().getAdditionalImportWizardPanels());
+            panelProviders.add(ep.getProjectTypeFactory().getClass().getName());
+        }
+        if (panelProviders.equals(currentPanelProviders)) {
+            return;
+        } else {
+            currentPanelProviders = panelProviders;
+        }
+        extraPanels = l;
+        numberOfPanels = 2 + l.size();
+        int index = 2;
+        for (WizardDescriptor.Panel p : l) {
+            JComponent comp = (JComponent)p.getComponent();
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,  // NOI18N
+                    new Integer(index));
+            index++;
+            comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getWizardPanelName(l));
+        }
+        ((JComponent)projectPanel.getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, getWizardPanelName(l));
+    }
+    
+    private String[] getWizardPanelName(List<WizardDescriptor.Panel<WizardDescriptor>> l) {
+        List<String> names = new ArrayList<String>();
+        names.add(ImporterWizardPanel.WORKSPACE_LOCATION_STEP);
+        names.add(ImporterWizardPanel.PROJECTS_SELECTION_STEP);
+        if (l != null) {
+            for (WizardDescriptor.Panel p : l) {
+                JComponent comp = (JComponent)p.getComponent();
+                names.add(comp.getName());
+            }
+        }
+        return names.toArray(new String[names.size()]);
+    }
+    
     void updateErrorMessage() {
-        errorMessage = current.getErrorMessage();
-        fireChange();
+        if (getCurrent() == workspacePanel) {
+            errorMessage = workspacePanel.getErrorMessage();
+        } else if (getCurrent() == projectPanel) {
+            errorMessage = projectPanel.getErrorMessage();
+        } else {
+            errorMessage = null;
+        }
+        cs.fireChange();
     }
     
     String getErrorMessage() {
         return errorMessage;
     }
+
+    WizardDescriptor.Panel<WizardDescriptor> getCurrent() {
+        if (currentPanel == 0) {
+            return workspacePanel;
+        } else if (currentPanel == 1) {
+            return projectPanel;
+        } else {
+            return extraPanels.get(currentPanel-2);
+        }
+    }
+    
 }

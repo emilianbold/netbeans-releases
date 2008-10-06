@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -53,6 +54,7 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -101,8 +103,9 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
         
         if (lastValidFile == activeFile)
             return;
-        
-        if (lastValidFile != null && isJava(lastValidFile)) {
+
+        if (lastValidFile != null && isJava(lastValidFile) && isModified(lastValidFile)) {
+            removeFromModified(lastValidFile);
             if (!IGNORE_COMPILE_REQUESTS) {
                 ClassPath cp = ClassPath.getClassPath(lastValidFile, ClassPath.SOURCE);
                 if (cp != null) {
@@ -148,4 +151,18 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
         }
     }
 
+    private static final Set<FileObject> modified = new WeakSet<FileObject>();
+
+    public static synchronized void addToModified(FileObject file) {
+        modified.add(file);
+    }
+
+    public static synchronized void removeFromModified(FileObject file) {
+        modified.remove(file);
+    }
+    
+    public static synchronized boolean isModified(FileObject file) {
+        return modified.contains(file);
+    }
+    
 }

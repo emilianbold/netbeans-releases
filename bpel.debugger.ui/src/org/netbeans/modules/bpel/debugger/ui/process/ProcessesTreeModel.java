@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 import javax.swing.SwingUtilities;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
 import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
@@ -118,7 +119,17 @@ public class ProcessesTreeModel implements TreeModel {
         }
         
         if (object instanceof CorrelationSet) {
-            return filter(((CorrelationSet) object).getProperties(), from, to);
+            final CorrelationSet.Property[] properties = 
+                    ((CorrelationSet) object).getProperties();
+            
+            if (properties.length == 0) {
+                return filter(
+                        new Object[] {new NoPropertiesDataMarker()}, 
+                        from, 
+                        to);
+            } else {
+                return filter(properties, from, to);
+            }
         }
         
         if (object instanceof CorrelationSet.Property) {
@@ -196,7 +207,9 @@ public class ProcessesTreeModel implements TreeModel {
         }
         
         if (object instanceof CorrelationSet) {
-            return ((CorrelationSet) object).getProperties().length;
+            final int length = ((CorrelationSet) object).getProperties().length;
+            
+            return length == 0 ? 1 : length;
         }
         
         if (object instanceof CorrelationSet.Property) {
@@ -459,5 +472,9 @@ public class ProcessesTreeModel implements TreeModel {
         public WaitingMessagesWrapper(final BpelProcess process) {
             super(process);
         }
+    }
+    
+    static class NoPropertiesDataMarker {
+        
     }
 }

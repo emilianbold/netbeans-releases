@@ -19,6 +19,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -30,9 +31,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="addrChBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jSeparator4" alignment="0" pref="489" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="cfgVersionLabel" min="-2" max="-2" attributes="0"/>
@@ -63,8 +65,8 @@
                               <Component id="profileComboLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="profileCombo" pref="234" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="profConfigButton" min="-2" pref="98" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="profConfigButton" pref="98" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -99,8 +101,9 @@
                       <Component id="stsConfigButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="fiChBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="jSeparator5" alignment="1" pref="489" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -160,6 +163,10 @@
               <Component id="tcpChBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="fiChBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jSeparator5" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="addrChBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -482,6 +489,15 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator4">
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="addrChBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/websvc/wsitconf/ui/service/Bundle.properties" key="LBL_Section_Service_addrChBox" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator5">
     </Component>
   </SubComponents>
 </Form>

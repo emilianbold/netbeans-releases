@@ -58,6 +58,6 @@ public class SetDefaultAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        record.setActive(true);
+        //record.setActive(true);
     }
 }

@@ -70,7 +70,13 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
@@ -430,8 +436,9 @@ public class CsmContextUtilities {
     
     private static boolean isInContext(CsmContext context, CsmObject obj) {
         // XXX: in fact better to start from end
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+        //for (Iterator it = context.iterator(); it.hasNext();) {
+        for (ListIterator it = context.reverseIterator(); it.hasPrevious();) {
+            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.previous();
             if (obj.equals(elem.getScope())) {
                 return true;
             }
@@ -464,6 +471,9 @@ public class CsmContextUtilities {
                     if (CsmKindUtilities.isEnum(elem)) {
                         listByName = CsmSortUtilities.filterList(((CsmEnum)elem).getEnumerators(), strPrefix, match, caseSensitive);
                         list.addAll(listByName);
+                    } else if (CsmKindUtilities.isUnion(elem) && ((CsmClass)elem).getName().length() == 0) {
+                        listByName = CsmSortUtilities.filterList(((CsmClass)elem).getMembers(), strPrefix, match, caseSensitive);
+                        list.addAll(listByName);
                     }
                 }
             }
@@ -471,35 +481,49 @@ public class CsmContextUtilities {
         return list;
     }
 
-    public static CsmClass getClass(CsmContext context, boolean checkFunDefition) {
+    public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            if (CsmKindUtilities.isClass(elem.getScope())) {
-                clazz = (CsmClass)elem.getScope();
-                // remember found class, but continue to possibly nested class
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isClass(scope)
+                    && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
+                clazz = (CsmClass)scope;
+                break;
             }
         }        
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
-            CsmFunction fun = getFunction(context);
+            CsmFunction fun = getFunction(context, false);
             clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         }
-        return clazz;
-    }    
-    
-    public static CsmFunction getFunction(CsmContext context) {
-        CsmFunction fun = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            if (CsmKindUtilities.isFunction(elem.getScope())) {
-                fun = (CsmFunction)elem.getScope();
-                break;
+        if (clazz == null) {
+            // IZ #141107 References to parent class field in static field initializers are unresolved
+            // for static field definition, take into account (static) class context
+            CsmObject last = context.getLastObject();
+            if(CsmKindUtilities.isVariableDefinition(last)) {
+                CsmVariable decl = ((CsmVariableDefinition) last).getDeclaration();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    clazz = ((CsmMember) decl).getContainingClass();
+                }
             }
         }
-        return fun;
+        return clazz;
+    }
+
+    public static CsmFunction getFunction(CsmContext context, boolean inScope) {
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            int offset = context.getOffset();
+            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
+                break;
+            } else if (CsmKindUtilities.isFunction(scope)
+                    && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
+                return (CsmFunction)scope;
+            }
+        }
+        return null;
     }    
-    
+
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {
@@ -513,12 +537,12 @@ public class CsmContextUtilities {
     }   
     
     public static CsmNamespace getNamespace(CsmContext context) {
-        CsmFunction fun = getFunction(context);
+        CsmFunction fun = getFunction(context, false);
         CsmNamespace ns = null;
         if (fun != null) {
             ns = getFunctionNamespace(fun);
         } else {
-            CsmClass cls = CsmContextUtilities.getClass(context, false);
+            CsmClass cls = CsmContextUtilities.getClass(context, false, false);
             ns = cls == null ? null : getClassNamespace(cls);
         }
         return ns;
@@ -542,7 +566,7 @@ public class CsmContextUtilities {
     }   
 
     public static boolean isInInitializerList(CsmContext context, int offset) {
-        CsmFunction f = getFunction(context);
+        CsmFunction f = getFunction(context, false);
         if (CsmKindUtilities.isConstructor(f)) {
             for (CsmExpression izer : ((CsmInitializerListContainer) f).getInitializerList()) {
                 if (CsmOffsetUtilities.isInObject(izer, offset)) {
@@ -552,14 +576,21 @@ public class CsmContextUtilities {
         }
         return false;
     }
-    
+
     public static boolean isInFunction(CsmContext context, int offset) {
-        CsmFunction fun = getFunction(context);
+        CsmFunction fun = getFunction(context, true);
         return fun != null;
     }     
-    
+
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
-        return CsmKindUtilities.isType(last) && CsmOffsetUtilities.isInObject(last, offset);
-    }    
+        CsmType type = null;
+        if (CsmKindUtilities.isTypedef(last)) {
+            type = ((CsmTypedef)last).getType();
+        } else if (CsmKindUtilities.isType(last)) {
+            type = (CsmType) last;
+        }
+        // in instantianiton everything is possible
+        return (type != null) && !type.isInstantiation() && CsmOffsetUtilities.isInObject(type, offset);
+    }
 }

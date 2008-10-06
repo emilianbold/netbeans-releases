@@ -47,7 +47,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
@@ -64,12 +70,24 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.ChangedCharSetException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTML.Tag;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.HTMLEditorKit.ParserCallback;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
@@ -110,9 +128,8 @@ public class TreeLoader extends LazyTreeLoader {
     }
     
     @Override
-    public boolean loadTreeFor(final ClassSymbol clazz) {
+    public boolean loadTreeFor(final ClassSymbol clazz, boolean persist) {
         assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
-        
         if (clazz != null) {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
@@ -124,7 +141,8 @@ public class TreeLoader extends LazyTreeLoader {
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                         jti.analyze(jti.enter(jti.parse(jfo)));
-                        dumpSymFile(jti, clazz);
+                        if (persist)
+                            dumpSymFile(jti, clazz);
                         return true;
                     } finally {
                         for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
@@ -140,12 +158,15 @@ public class TreeLoader extends LazyTreeLoader {
         return false;
     }
     
-    public final void startPartialReparse () {
-        this.partialReparse = true;
-    }
-    
-    public final void endPartialReparse () {
-        this.partialReparse = false;
+    @Override
+    public boolean loadParamNames(ClassSymbol clazz) {
+        assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
+        if (clazz != null) {
+            URL url = SourceUtils.getJavadoc(clazz, cpInfo);
+            if (url != null)
+                return getParamNamesFromJavadocText(url, clazz);
+        }
+        return false;
     }
 
     @Override
@@ -182,6 +203,14 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
     
+    public final void startPartialReparse () {
+        this.partialReparse = true;
+    }
+
+    public final void endPartialReparse () {
+        this.partialReparse = false;
+    }
+
     private void logCouplingError(ClassSymbol clazz, String info) {
         JavaFileObject classFile = clazz != null ? clazz.classfile : null;
         String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
@@ -249,5 +278,228 @@ public class TreeLoader extends LazyTreeLoader {
         } finally {
             fm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
         }
+    }
+
+    private boolean getParamNamesFromJavadocText(final URL url, final ClassSymbol clazz) {
+        HTMLEditorKit.Parser parser;
+        InputStream is = null;        
+        String charset = null;
+        for (;;) {
+            try{
+                is = url.openStream();
+                Reader reader = charset == null ? new InputStreamReader(is): new InputStreamReader(is, charset);
+                parser = new ParserDelegator();
+                parser.parse(reader, new ParserCallback() {
+
+                    private static final String ctor_summary_name = "constructor_summary"; //NOI18N
+                    private static final String method_summary_name = "method_summary"; //NOI18N
+                    private static final String ctor_detail_name = "constructor_detail"; //NOI18N
+                    private static final String method_detail_name = "method_detail"; //NOI18N
+
+                    private int state = 0; //init
+                    private String signature = null;
+                    private StringBuilder sb = null;
+
+                    @Override
+                    public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+                        if (t == HTML.Tag.A) {
+                            String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
+                            if (ctor_summary_name.equals(attrName)) {
+                                // we have found desired javadoc constructor info anchor
+                                state = 10; //ctos open
+                            } else if (method_summary_name.equals(attrName)) {
+                                // we have found desired javadoc method info anchor
+                                state = 20; //methods open
+                            } else if (ctor_detail_name.equals(attrName)) {
+                                state = 30; //end
+                            } else if (method_detail_name.equals(attrName)) {
+                                state = 30; //end
+                            } else if (state == 12 || state == 22) {
+                                String attrHref = (String)a.getAttribute(HTML.Attribute.HREF);
+                                if (attrHref != null) {
+                                    int idx = attrHref.indexOf('#');
+                                    if (idx >= 0) {
+                                        signature = attrHref.substring(idx + 1);
+                                        sb = new StringBuilder();
+                                    }
+                                }
+                            }
+                        } else if (t == HTML.Tag.TR) {
+                            if (state == 10 || state == 20)
+                                state++;
+                        } else if (t == HTML.Tag.CODE) {
+                            if (state == 11 || state == 21)
+                                state++;
+                        }
+                    }
+
+                    @Override
+                    public void handleEndTag(Tag t, int pos) {
+                        if (t == HTML.Tag.CODE && (state == 12 || state == 22))
+                            state--;
+                    }
+
+                    @Override
+                    public void handleText(char[] data, int pos) {
+                        if (signature != null && (state == 12 || state == 22))
+                            sb.append(data);
+                    }
+
+                    @Override
+                    public void handleSimpleTag(Tag t, MutableAttributeSet a, int pos) {
+                        if (t == HTML.Tag.BR) {
+                            if (state == 11) {
+                                state--;
+                                setParamNames(signature, sb.toString().trim(), true);
+                                sb = new StringBuilder();
+                            } else if (state == 21) {
+                                state--;
+                                setParamNames(signature, sb.toString().trim(), false);
+                                sb = new StringBuilder();
+                            }
+                        }
+                    }
+
+                    private void setParamNames(String signature, String names, boolean isCtor) {
+                        ArrayList<String> paramTypes = new ArrayList<String>();
+                        int idx = -1;
+                        for(int i = 0; i < signature.length(); i++) {
+                            switch(signature.charAt(i)) {
+                                case '(':
+                                    idx = i;
+                                    break;
+                                case ')':
+                                case ',':
+                                    if (idx > -1 && idx < i - 1) {
+                                        String typeName = signature.substring(idx + 1, i).trim();
+                                        if (typeName.endsWith("...")) //NOI18N
+                                            typeName = typeName.substring(0, typeName.length() - 3) + "[]"; //NOI18N
+                                        paramTypes.add(typeName);
+                                    }
+                                    idx = i;
+                                    break;
+                            }
+                        }
+                        String methodName = null;
+                        ArrayList<String> paramNames = new ArrayList<String>();
+                        idx = -1;
+                        for(int i = 0; i < names.length(); i++) {
+                            switch(names.charAt(i)) {
+                                case '(':
+                                    methodName = names.substring(0, i);
+                                    break;
+                                case ')':
+                                case ',':
+                                    if (idx > -1) {
+                                        paramNames.add(names.substring(idx + 1, i));
+                                        idx = -1;
+                                    }
+                                    break;
+                                case 160: //&nbsp;
+                                    idx = i;
+                                    break;
+                            }
+                        }
+                        assert methodName != null;
+                        assert paramTypes.size() == paramNames.size();
+                        if (paramNames.size() > 0) {
+                            for (Scope.Entry e = clazz.members().lookup(isCtor
+                                    ? clazz.name.table.init
+                                    : clazz.name.table.fromString(methodName)); e.scope != null; e = e.next()) {
+                                if (e.sym.kind == Kinds.MTH && e.sym.owner == clazz) {
+                                    MethodSymbol sym = (MethodSymbol)e.sym;
+                                    List<VarSymbol> params = sym.params;
+                                    if (checkParamTypes(params, paramTypes)) {
+                                        for (String name : paramNames) {
+                                            params.head.setName(clazz.name.table.fromString(name));
+                                            params = params.tail;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    private boolean checkParamTypes(List<VarSymbol> params, ArrayList<String> paramTypes) {
+                        Types types = Types.instance(context);
+                        for (String typeName : paramTypes) {
+                            if (params.isEmpty())
+                                return false;
+                            Type type = params.head.type;
+                            if (type.isParameterized())
+                                type = types.erasure(type);
+                            if (!typeName.equals(type.toString()))
+                                return false;
+                            params = params.tail;
+                        }
+                        return params.isEmpty();
+                    }
+                }, charset != null);
+                return true;
+            } catch (ChangedCharSetException e) {
+                if (charset == null) {
+                    charset = getCharSet(e);
+                    //restart with valid charset
+                } else {
+                    e.printStackTrace();
+                    break;
+                }
+            } catch(IOException ioe){
+                ioe.printStackTrace();
+                break;
+            }finally{
+                parser = null;
+                if (is!=null) {
+                    try{
+                        is.close();
+                    }catch(IOException ioe){
+                        ioe.printStackTrace();
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    private String getCharSet(ChangedCharSetException e) {
+        String spec = e.getCharSetSpec();
+        if (e.keyEqualsCharSet()) {
+            //charsetspec contains only charset
+            return spec;
+        }
+        
+        //charsetspec is in form "text/html; charset=UTF-8"
+                
+        int index = spec.indexOf(";"); // NOI18N
+        if (index != -1) {
+            spec = spec.substring(index + 1);
+        }
+        
+        spec = spec.toLowerCase();
+        
+        StringTokenizer st = new StringTokenizer(spec, " \t=", true); //NOI18N
+        boolean foundCharSet = false;
+        boolean foundEquals = false;
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (token.equals(" ") || token.equals("\t")) { //NOI18N
+                continue;
+            }
+            if (foundCharSet == false && foundEquals == false
+                    && token.equals("charset")) { //NOI18N
+                foundCharSet = true;
+                continue;
+            } else if (foundEquals == false && token.equals("=")) {//NOI18N
+                foundEquals = true;
+                continue;
+            } else if (foundEquals == true && foundCharSet == true) {
+                return token;
+            }
+            
+            foundCharSet = false;
+            foundEquals = false;
+        }
+        
+        return null;
     }
 }

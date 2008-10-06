@@ -60,6 +60,7 @@
         <group name="StrikeIron"/>
         <code-gen>
             <artifacts targets="java,servlet,resource,jsp"/>
+            <artifacts targets="php"/>
         </code-gen>
         <!-- http-basic, api-key, custom -->
         <authentication profile="SaaSServices/StrikeIron/profile.properties">

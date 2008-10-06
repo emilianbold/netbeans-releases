@@ -42,12 +42,13 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -65,6 +66,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class BreakpointsTreeModelFilter implements TreeModelFilter {
     
+    private static Logger logger = Logger.getLogger(BreakpointsTreeModelFilter.class.getName());
+
     static Map MAX_LINES = new WeakHashMap();
     
     private static boolean verbose = 
@@ -100,8 +103,11 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         int         from, 
         int         to
     ) throws UnknownTypeException {
-        if (to - from <= 0) return new Object[0]; 
-        Object[] ch = original.getChildren (parent, 0, 0);
+        if (to - from <= 0) {
+            logger.fine("getChildren("+from+", "+to+"): RETURNING an empty array.");
+            return new Object[0];
+        }
+        Object[] ch = original.getChildren (parent, from, to);
         List l = new ArrayList ();
         int i, k = ch.length, n = to - from;
         Map maxLines = new HashMap();
@@ -132,6 +138,9 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
                 MAX_LINES.put(lb, maxLines.get(EditorContextBridge.getFileName(lb)));
             }
         }
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("getChildren("+from+", "+to+"): Original Breakpoints: "+Arrays.asList(ch)+";  RETURNING: "+l);
+        }
         return l.toArray();
     }
     
@@ -153,7 +162,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         TreeModel original,
         Object node
     ) throws UnknownTypeException {
-        return getChildren(original, node, 0, Integer.MAX_VALUE).length;
+        return Integer.MAX_VALUE;
     }
     
     /**

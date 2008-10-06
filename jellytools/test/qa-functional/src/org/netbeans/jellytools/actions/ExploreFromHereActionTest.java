@@ -61,6 +61,10 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class ExploreFromHereActionTest extends JellyTestCase {
+
+    public static final String[] tests = new String[] {
+        "testInit"
+    };
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -80,7 +84,7 @@ public class ExploreFromHereActionTest extends JellyTestCase {
         //suite.addTest(new ExploreFromHereActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(ExploreFromHereActionTest.class, "testInit");
+        return createModuleTest(ExploreFromHereActionTest.class, tests);
     }
     
     /** Use for internal test execution inside IDE

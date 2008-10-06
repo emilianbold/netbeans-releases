@@ -46,6 +46,7 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -389,31 +390,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         getDocument().readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(getDocument());
-            TokenSequence ts = tokenSequence(hi, offset);
-            if(ts == null) {
-                //we are out of html - go back and try to find an html element
-                TokenSequence tseq = hi.tokenSequence();
-                tseq.move(offset);
-                if(!tseq.movePrevious() && !tseq.moveNext()) {
-                    //no token on the position
-                    return null;
-                }
-                int nonHtmlBlockStart = 0;
-                //go back until we find an html code
-                while(tseq.movePrevious()) {
-                    //XXX - just one level embedding
-                    TokenSequence htmlTS = tseq.embedded(HTMLTokenId.language());
-                    if(htmlTS != null) {
-                        if(htmlTS.moveNext() || htmlTS.movePrevious()) {
-                            //found html piece
-                            nonHtmlBlockStart = htmlTS.offset() + htmlTS.token().length();
-                            break;
-                        }
-                    }
-                }
-                return getNextElement( nonHtmlBlockStart );
-            }
+            TokenSequence<HTMLTokenId> ts = getJoinedHtmlSequence(getDocument());
             
+            if(ts == null) {
+                return  null;
+            }
             //html token found
             ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) return null; //no token found
@@ -421,6 +402,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             Token item = ts.token();
             
             int beginning = ts.offset();
+            
+            if(beginning > offset) {
+                //the offset is not in html content, the next token begins after the offset
+                return null;
+            }
             
             if( item.id() == HTMLTokenId.CHARACTER ) {
                 do {
@@ -436,7 +422,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             
             if( item.id() == HTMLTokenId.WS || item.id() == HTMLTokenId.ARGUMENT ||     // these are possible only in Tags
                     item.id() == HTMLTokenId.OPERATOR || item.id() == HTMLTokenId.VALUE ) { // so find boundary
-                while(ts.movePrevious() && !isTag(item = ts.token()));
+                //find beginning of the tag
+                while(ts.movePrevious() && !isTagSymbol(item = ts.token())) {
+                    //just skip tokens
+                };
                 return getNextElement(  item.offset(hi) );       // TAGC
             }
             
@@ -501,34 +490,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         getDocument().readLock();
         try {
             TokenHierarchy hi = TokenHierarchy.get(getDocument());
-            TokenSequence ts = tokenSequence(hi, offset);
+            TokenSequence ts = getJoinedHtmlSequence(getDocument());
             if(ts == null) {
-                //we are out of html - go back and try to find an html element
-                TokenSequence tseq = hi.tokenSequence();
-                tseq.move(offset);
-                if(!tseq.movePrevious() && !tseq.moveNext()) {
-                    //no token on the position
-                    return  null;
-                }
-                int nonHtmlBlockEnd = getDocument().getLength();
-                //find end of the non-html block
-                while(tseq.moveNext()) {
-                    //XXX - just one level embedding
-                    TokenSequence htmlTS = tseq.embedded(HTMLTokenId.language());
-                    if(htmlTS != null) {
-                        //found html piece
-                        if(!htmlTS.moveNext()) {
-                            return null; //no token in the TS!?!?!
-                        }
-                        nonHtmlBlockEnd = htmlTS.offset();
-                        break;
-                    }
-                }
-                if(offset == nonHtmlBlockEnd) {
-                    return null;
-                }
-                
-                return new SyntaxElement(this, offset, nonHtmlBlockEnd, SyntaxElement.TYPE_UNKNOWN);
+                return  null;
             }
             
             ts.move(offset);
@@ -549,18 +513,17 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION) {
                 java.lang.StringBuffer sb = new java.lang.StringBuffer(item.text());
                 
-                while (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION ||
-                        item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.SGML_COMMENT) {
+                while (item.id() == HTMLTokenId.DECLARATION || 
+                       item.id() == HTMLTokenId.SGML_COMMENT ||
+                       item.id() == HTMLTokenId.WS) {
                     lastOffset = getTokenEnd(hi, item);
                     if (!ts.moveNext()) {
                         break;
                     }
                     item = ts.token();
-                    if (item.id() ==
-                            org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION)
+                    if (item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.WS) {
                         sb.append(item.text().toString());
+                    }
                 }
                 java.lang.String image = sb.toString();
                 
@@ -748,6 +711,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         return null;
     }
     
+    public static boolean isTagSymbol(Token t) {
+        return (( t.id() == HTMLTokenId.TAG_OPEN_SYMBOL) ||
+                ( t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL));
+    }
     
     public static boolean isTag(Token t) {
         return (( t.id() == HTMLTokenId.TAG_OPEN ) ||
@@ -763,6 +730,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     
     
     private static int getTokenEnd( TokenHierarchy thi, Token item ) {
+        List<Token> parts = item.joinedParts();
+        if(parts != null) {
+            //non continuos token, take end offset from the last token part
+            item = parts.get(parts.size() - 1);
+        } 
         return item.offset(thi) + item.text().length();
     }
     
@@ -821,28 +793,50 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         int itemsCount = 0;
         for( elem= elem.getPrevious() ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG) { // NOI18N
-                DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                String tagName = ((SyntaxElement.Named)elem).getName().trim();
+                //HACK: if there is just close tag opening symbol (</) a syntax element of
+                //end tag is created for it. Such SE has empty name
+                if(tagName.length() == 0) {
+                    continue;
+                } 
+                DTD.Element tag = dtd.getElement( tagName.toUpperCase() );
                 if(tag != null) {
                     stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                } else {
+                    stack.push(tagName); //non-html tag, store it with the original case
                 }
             } else if(elem.getType() == SyntaxElement.TYPE_TAG) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
-                DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
+                if(((SyntaxElement.Tag)elem).isEmpty() ) {
+                    continue; // ignore empty Tags - they are like start and imediate end
+                }
                 
-                if( tag == null ) continue; // Unknown tag - ignore
-                if(((SyntaxElement.Tag)elem).isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
+                String tagName = ((SyntaxElement.Named)elem).getName();
+                DTD.Element tag = dtd.getElement( tagName.toUpperCase() );
                 
-                String name = tag.getName();
+                if(tag != null) {
+                    tagName = tag.getName();
+                    
+                    if(tag.isEmpty() && tag.hasOptionalEnd()) {
+                        continue; //forbidden end tag
+                    }
+                }
                 
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
-                    if( name.startsWith( prefix ) && !found.contains( name ) ) {    // add only new items
-                        found.add( name );
-                        result.add( new HTMLCompletionQuery.EndTagItem( name, offset-2-prefixLen, prefixLen+2, name, itemsCount ) );
+                    if( tagName.startsWith( prefix ) && !found.contains( tagName ) ) {    // add only new items
+                        found.add( tagName );
+                        if(tag != null) {
+                            //html item
+                            result.add( new HTMLCompletionQuery.EndTagItem( tagName, offset-2-prefixLen, prefixLen+2, tagName, itemsCount ) );
+                        } else {
+                            //non html item
+                            result.add( new HTMLCompletionQuery.NonHTMLEndTagItem( tagName, offset-2-prefixLen, prefixLen+2, itemsCount ) );
+                        }
                     }
-                    if( ! tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
+                    if( tag != null && !tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
                 } else {                        // not empty - we match content of stack
-                    if( stack.peek().equals( name ) ) { // match - close this branch of document tree
+                    if( stack.peek().equals( tagName ) ) { // match - close this branch of document tree
                         stack.pop();
-                    } else if( ! tag.hasOptionalEnd() ) break; // we reached error in document structure, give up
+                    } else if( tag != null && ! tag.hasOptionalEnd() ) break; // we reached error in document structure, give up
                 }
             }
         }
@@ -859,7 +853,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
                 if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
-                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
+                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, dtdElem != null);
                     l.add(eti);
                 }
             }
@@ -923,6 +917,61 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         }
         return COMPLETION_POST_REFRESH;
         
+    }
+    
+    public static LanguagePath findTopMostHtml(Document doc) {
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        for(LanguagePath path : (Set<LanguagePath>)th.languagePaths()) {
+            if(path.innerLanguage() == HTMLTokenId.language()) { //is this always correct???
+                return path;
+            }
+        }
+        return null;
+    }
+    
+    /** returns top most joined html token seuence for the document. */
+    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc) {
+         LanguagePath path = findTopMostHtml(doc);
+         if(path == null) {
+             return null;
+         }
+         
+         return getJoinedHtmlSequence(doc, path);
+    }
+    
+    /*
+     * supposes html tokens are always joined - just one joined sequence over the document!
+     */
+    public static TokenSequence<HTMLTokenId> getJoinedHtmlSequence(Document doc, LanguagePath languagePath) {
+        //find html token sequence, in joined version if embedded
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        List<TokenSequence> tslist = th.tokenSequenceList(languagePath, 0, Integer.MAX_VALUE);
+        if(tslist.isEmpty()) {
+            return  null; //no such sequence
+        }
+        TokenSequence first = tslist.get(0);
+        first.moveStart(); 
+        first.moveNext(); //should return true
+        
+        List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
+        TokenSequence sequence = null;
+        for (TokenSequence ts : embedded) {
+            if (ts.language() == HTMLTokenId.language()) {
+                if (sequence == null) {
+                    //html is top level
+                    sequence = ts;
+                    break;
+                } else {
+                    //the sequence is my master language
+                    //get joined html sequence from it
+                    sequence = sequence.embeddedJoined(HTMLTokenId.language());
+                    assert sequence != null;
+                    break;
+                }
+            }
+            sequence = ts;
+        }
+        return sequence;
     }
     
     

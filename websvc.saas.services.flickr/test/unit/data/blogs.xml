@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <blogs>
+        <blog id="73" name="Bloxus test" needspassword="0"
+		url="http://remote.bloxus.com/" />
+        <blog id="74" name="Manila Test" needspassword="1"
+		url="http://flickrtest1.userland.com/" />
+    </blogs>
+</rsp>

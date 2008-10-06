@@ -191,6 +191,9 @@ class ColumnSelectionPanel extends JPanel {
      * Shows the popup allowing to show/hide columns.
      */
     static void showColumnSelectionPopup(Component c, final ETable table) {
+        if( !table.isColumnHidingAllowed() )
+            return;
+        
         if (! table.isPopupUsedFromTheCorner()) {
             showColumnSelectionDialog(table);
             return;
@@ -273,6 +276,8 @@ class ColumnSelectionPanel extends JPanel {
      * Shows dialog allowing to show/hide columns.
      */
     static void showColumnSelectionDialog(ETable table) {
+        if( !table.isColumnHidingAllowed() )
+            return;
         TableColumnSelector tcs = table.getColumnSelector();
         if (tcs != null) {
             ETableColumnModel etcm = (ETableColumnModel)table.getColumnModel();

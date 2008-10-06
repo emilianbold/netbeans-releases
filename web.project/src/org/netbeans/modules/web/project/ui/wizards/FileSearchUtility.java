@@ -71,14 +71,13 @@ public final class FileSearchUtility {
     * @param onlyWritables only recurse into wriable directories
     * @return enumeration of type <code>FileObject</code>
     */
-    public static Enumeration getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
-        class WithChildren implements Enumerations.Processor {
+    public static Enumeration<FileObject> getChildrenToDepth(final FileObject root, final int depth, final boolean onlyWritables) {
+        class WithChildren implements Enumerations.Processor<FileObject, FileObject> {
             private int rootDepth;
             public WithChildren(final int rootDepth) {
                 this.rootDepth = rootDepth;
             }
-            public Object process(final Object obj, final Collection toAdd) {
-                FileObject fo = (FileObject)obj;
+            public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (!onlyWritables || (onlyWritables && fo.canWrite())) {
                     if (fo.isFolder() && (getDepth(fo) - rootDepth) < depth) {
                         toAdd.addAll(Arrays.asList(fo.getChildren()));
@@ -143,7 +142,7 @@ public final class FileSearchUtility {
     }
     
     static FileObject[] guessJavaRoots(final FileObject dir) {
-        List foundRoots = new ArrayList();
+        List<FileObject> foundRoots = new ArrayList<FileObject>();
         if (null == dir)
             return null;
         Enumeration ch = FileSearchUtility.getChildrenToDepth(dir, 10, true); // .getChildren(true);

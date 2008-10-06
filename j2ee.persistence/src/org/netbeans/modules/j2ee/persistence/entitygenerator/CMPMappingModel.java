@@ -53,16 +53,16 @@ import java.util.Map;
  * @author Chris Webster
  */
 public class CMPMappingModel {
-    private Map cmpFieldMapping;
-    private Map cmrFieldMapping;
+    private Map<String, String> cmpFieldMapping;
+    private Map<String, ColumnData[]> cmrFieldMapping;
     private String tableName;
-    private Map cmrJoinMapping;
+    private Map<String, String> cmrJoinMapping;
     private Map <String, JoinTableColumnMapping> joinTableColumnMappings;
     
     public CMPMappingModel() {
-        cmpFieldMapping = new HashMap();
-        cmrFieldMapping = new HashMap();
-        cmrJoinMapping = new HashMap();
+        cmpFieldMapping = new HashMap<String, String>();
+        cmrFieldMapping = new HashMap<String, ColumnData[]>();
+        cmrJoinMapping = new HashMap<String, String>();
         joinTableColumnMappings = new HashMap();
     }
     
@@ -74,65 +74,103 @@ public class CMPMappingModel {
         return tableName;
     }
     
-    public Map getCMPFieldMapping() {
+    public Map<String, String> getCMPFieldMapping() {
         return cmpFieldMapping;
     }
     
-    public void setCMPFieldMapping(Map m) {
+    public void setCMPFieldMapping(Map<String, String> m) {
         cmpFieldMapping = m;
     }
     
-    public Map getCmrFieldMapping() {
+    public Map<String, ColumnData[]> getCmrFieldMapping() {
         return cmrFieldMapping;
     }
     
-    public void setCmrFieldMapping(Map m) {
+    public void setCmrFieldMapping(Map<String, ColumnData[]> m) {
         cmrFieldMapping = m;
     }
     
-    public Map getJoinTableMapping() {
+    public Map<String, String> getJoinTableMapping() {
         return cmrJoinMapping;
     }
     
-    public void setJoinTableMapping(Map m) {
+    public void setJoinTableMapping(Map<String, String> m) {
         cmrJoinMapping = m;
     }
     
-    public static class JoinTableColumnMapping {
-        private String[] columns;
-        private String[] referencedColumns;
-        private String[] inverseColumns;
-        private String[] referencedInverseColumns;
+    public static class ColumnData {
+        private String columnName;
+        private boolean nullable;
+        
+        public ColumnData(String columnName, boolean nullable) {
+            this.columnName = columnName;
+            this.nullable = nullable;
+        }
+        
+        public String getColumnName() {
+            return this.columnName;
+        }
+        
+        public boolean isNullable() {
+            return this.nullable;
+        }
+      
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ColumnData)) {
+                return false;
+            }
 
-        public String[] getColumns() {
+            ColumnData other = (ColumnData) o;
+            
+            if(this.columnName.equals(other.columnName)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return this.columnName.hashCode();
+        }
+    }
+    
+    public static class JoinTableColumnMapping {
+        private ColumnData[] columns;
+        private ColumnData[] referencedColumns;
+        private ColumnData[] inverseColumns;
+        private ColumnData[] referencedInverseColumns;
+
+        public ColumnData[] getColumns() {
             return columns;
         }
 
-        public void setColumns(String[] columns) {
+        public void setColumns(ColumnData[] columns) {
             this.columns = columns;
         }
 
-        public String[] getReferencedColumns() {
+        public ColumnData[] getReferencedColumns() {
             return referencedColumns;
         }
 
-        public void setReferencedColumns(String[] referencedColumns) {
+        public void setReferencedColumns(ColumnData[] referencedColumns) {
             this.referencedColumns = referencedColumns;
         }
 
-        public String[] getInverseColumns() {
+        public ColumnData[] getInverseColumns() {
             return inverseColumns;
         }
 
-        public void setInverseColumns(String[] inverseColumns) {
+        public void setInverseColumns(ColumnData[] inverseColumns) {
             this.inverseColumns = inverseColumns;
         }
 
-        public String[] getReferencedInverseColumns() {
+        public ColumnData[] getReferencedInverseColumns() {
             return referencedInverseColumns;
         }
 
-        public void setReferencedInverseColumns(String[] referencedInverseColumns) {
+        public void setReferencedInverseColumns(ColumnData[] referencedInverseColumns) {
             this.referencedInverseColumns = referencedInverseColumns;
         }
     }
@@ -145,10 +183,12 @@ public class CMPMappingModel {
         this.joinTableColumnMappings = joinTableColumnMppings;
     }
     
+    @Override
     public int hashCode() {
         return tableName.hashCode();
     }
     
+    @Override
     public boolean equals(Object o) {
         if (! (o instanceof CMPMappingModel)) {
             return false;
@@ -163,11 +203,11 @@ public class CMPMappingModel {
         Iterator keyIt = cmrFieldMapping.keySet().iterator();
         while (keyIt.hasNext()) {
             String key = (String) keyIt.next();
-            String[] value = (String[]) cmrFieldMapping.get(key);
+            ColumnData[] value = (ColumnData[]) cmrFieldMapping.get(key);
             List l = Arrays.asList(value);
             Object otherValue = other.cmrFieldMapping.get(key);
             if (otherValue == null || 
-                !l.equals(Arrays.asList((String[])other.cmrFieldMapping.get(key)))) {
+                !l.equals(Arrays.asList((ColumnData[])other.cmrFieldMapping.get(key)))) {
                 return false;
             }
         }

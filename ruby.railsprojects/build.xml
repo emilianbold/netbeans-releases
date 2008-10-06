@@ -7,12 +7,6 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${cluster}"/>
-        <copy todir="${cluster}">
-            <fileset dir="external">
-                <include name="goldspike-1.6.zip"/>
-            </fileset>
-        </copy>
+        <copy todir="${cluster}" file="release/plugin.rb"/>
     </target>
-
 </project>

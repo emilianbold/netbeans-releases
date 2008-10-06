@@ -105,12 +105,91 @@ is the proper place.
         <!-- org.netbeans.modules.j2ee.deployment.common -->
         <apidef name="common">J2EE Server Common API</apidef>
         <!-- org.netbeans.modules.j2ee.deployment.profiler -->
-        <apidef name="profiler">J2EE Server Common API</apidef>        
+        <apidef name="profiler">J2EE Server Common API</apidef>
+        <!-- org.netbeans.modules.j2ee.deployment.plugins.spi.support -->
+        <apidef name="support">Server Integration Plugin SPI Support</apidef>        
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="undeploy">
+	    <api name="devmodules"/>
+	    <summary>
+                Programmatic undeploy for the project.
+	    </summary>
+	    <version major="1" minor="52"/>
+	    <date day="15" month="9" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Provides a way to programmatic undeploy of the deployed app
+                    (project represented by J2eeModuleProvider).
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
+            <issue number="83122"/>
+	 </change>        
+        <change id="finishServerInitialization">
+	    <api name="plugins"/>
+	    <summary>
+                Provide a way for a plugin to perform post initialization action.
+	    </summary>
+	    <version major="1" minor="51"/>
+	    <date day="31" month="7" year="2008"/>
+	    <author login="vkraemer"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    OptionalDeploymentManagerFactory gets a new stub, that plugin
+                    implementations would override.  The Plugin author can assume
+                    that the ServerRegistry is initialized to the point where it
+                    can support the creation on instances.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerInitializationException"/>
+            <issue number="141427"/>
+	 </change>
+         <change id="lookupProvider">
+ 	    <api name="plugins"/>
+ 	    <summary>
+                 LookupProvider support for J2eePlatform lookup.
+ 	    </summary>
+ 	    <version major="1" minor="50"/>
+ 	    <date day="23" month="7" year="2008"/>
+ 	    <author login="phejl"/>
+ 	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+ 	    <description>
+                 <p>
+                     Server plugins will use this static method in J2eePlatformImpl.getLookup()
+                     method to enable registration of additional Lookup Providers in layer.xml files.
+                 </p>
+ 	    </description>
+ 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="LookupProvider"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.support" name="LookupProviderSupport"/>
+            <issue number="140219"/>
+ 	</change>        
+        <change id="deployOnSaveAPI">
+	    <api name="plugins"/>
+	    <summary>
+                Provide a way for project to figure out whether deploy on save
+                is supported.
+	    </summary>
+	    <version major="1" minor="49"/>
+	    <date day="15" month="7" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Server instance class provides method isDeployOnSaveSupported
+                    in order to fugure out whether deploy on save is supported.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
+            <issue number="138476"/>
+	</change>
         <change id="deployOnSaveSPI">
 	    <api name="plugins"/>
 	    <summary>
@@ -129,7 +208,7 @@ is the proper place.
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment"/>
             <issue number="138476"/>
-	</change>         
+	</change>
         <change id="deploymentChangeDescriptor">
 	    <api name="plugins"/>
 	    <summary>
@@ -148,7 +227,7 @@ is the proper place.
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentChangeDescriptor"/>
             <issue number="138476"/>
-	</change>        
+	</change>
         <change id="serverInstanceDescriptor">
 	    <api name="plugins"/>
 	    <summary>
@@ -169,7 +248,7 @@ is the proper place.
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerInstanceDescriptor"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
             <issue number="133751"/>
-	</change>        
+	</change>
         <change id="serverInstanceAPI">
 	    <api name="plugins"/>
 	    <summary>
@@ -190,7 +269,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="InstanceRemovedException"/>
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerInstance"/>
             <issue number="135324"/>
-	</change>        
+	</change>
         <change id="j2eePlatformLookup">
 	    <api name="plugins"/>
 	    <summary>
@@ -233,7 +312,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.devmodules.spi" name="J2eeModuleProvider"/>
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
             <issue number="83934"/>
-        </change>        
+        </change>
         <change id="removeInstance">
 	    <api name="j2eeserver"/>
 	    <summary>
@@ -250,7 +329,7 @@ is the proper place.
                 </p>
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
-	</change>        
+	</change>
         <change id="createLibrary">
 	    <api name="plugins"/>
 	    <summary>
@@ -268,7 +347,7 @@ is the proper place.
                 </p>
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
-	</change>         
+	</change>
         <change id="isCommonUIRequired">
 	    <api name="j2eeserver"/>
 	    <summary>
@@ -291,7 +370,7 @@ is the proper place.
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
 	    <issue number="126010"/>
-	</change>        
+	</change>
         <change id="createInstancePropertiesWithoutUI">
 	    <api name="j2eeserver"/>
 	    <summary>
@@ -311,7 +390,7 @@ is the proper place.
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
 	    <issue number="122885"/>
-	</change>        
+	</change>
         <change id="fixedProfilerAPIConstants">
 	    <api name="profiler"/>
 	    <summary>
@@ -334,7 +413,7 @@ is the proper place.
         <change id="createInstanceProperties">
 	    <api name="j2eeserver"/>
 	    <summary>
-                Adding InstanceProperties.createInstanceProperties(String, String, 
+                Adding InstanceProperties.createInstanceProperties(String, String,
                     String, String, Map&lt;String, String&gt;) method.
 	    </summary>
 	    <version major="1" minor="35"/>
@@ -352,7 +431,7 @@ is the proper place.
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
 	    <issue number="120379"/>
-	</change>        
+	</change>
         <change id="findJndiNameForEjb2">
 	    <api name="j2eeserver"/>
 	    <summary>
@@ -364,8 +443,8 @@ is the proper place.
 	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
 	    <description>
                 <p>
-                    The J2eeModuleProvider.bindEjbReference and J2eeModuleProvider.bindEjbReferenceForEjb methods 
-                    need to pass an EJB JNDI name instead of EJB name to the plugin. The new J2eeModuleProvider.findJndiNameForEjb 
+                    The J2eeModuleProvider.bindEjbReference and J2eeModuleProvider.bindEjbReferenceForEjb methods
+                    need to pass an EJB JNDI name instead of EJB name to the plugin. The new J2eeModuleProvider.findJndiNameForEjb
                     method will allow to obtain the EJB JNDI name.
                 </p>
 	    </description>
@@ -400,8 +479,8 @@ is the proper place.
 	    <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
 	    <description>
                 <p>
-                    The EjbResourceConfiguration.bindEjbReference and EjbResourceConfiguration.bindEjbReferenceForEjb methods 
-                    need to pass an EJB JNDI name instead of EJB name to the plugin. The new EjbResourceConfiguration.findJndiNameForEjb 
+                    The EjbResourceConfiguration.bindEjbReference and EjbResourceConfiguration.bindEjbReferenceForEjb methods
+                    need to pass an EJB JNDI name instead of EJB name to the plugin. The new EjbResourceConfiguration.findJndiNameForEjb
                     method will allow to obtain the EJB JNDI name.
                 </p>
 	    </description>
@@ -424,7 +503,7 @@ is the proper place.
                     with J2eeModuleProvider.ConfigSupport.setCMPResource and MappingConfiguration.setCMPResource.
                 </p>
                 <p>
-                    The main reason for this change is that the ComponentInterface parameter can 
+                    The main reason for this change is that the ComponentInterface parameter can
                     no longer be used since the metadata model was introduced, other reason is that
                     the old name was confusing.
 		</p>
@@ -472,7 +551,7 @@ is the proper place.
 	<change id="ExposeFileDeploymentCapabilityToProjects">
             <api name="j2eeserver"/>
             <summary>
-                Add a method that will allow Java EE project to determine if 
+                Add a method that will allow Java EE project to determine if
                 they are being targeted at a server which will support directory-
                 based deployment.
             </summary>
@@ -483,7 +562,7 @@ is the proper place.
             <description>
                 <p>
                     Expose the directory deployment capabilities that a target server may
-                    have which would allow the build script for a project to be 
+                    have which would allow the build script for a project to be
                     optimized to delay or eliminate unnecessary steps
                 </p>
             </description>
@@ -560,24 +639,24 @@ is the proper place.
             <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
             <description>
                 <p>
-                    The initial motivation for the J2EE Server API changes is migration to Retouche, a new 
-		    NetBeans Java infrastructure. The new Java infrastructure does not supply the old deployment 
-		    descriptor model with fine-grained change notification events anymore and thus a new Merged 
+                    The initial motivation for the J2EE Server API changes is migration to Retouche, a new
+		    NetBeans Java infrastructure. The new Java infrastructure does not supply the old deployment
+		    descriptor model with fine-grained change notification events anymore and thus a new Merged
 		    deployment descriptor model infrastructure was created instead.
                 </p>
                 <p>
-		    Since the architecture of the new Merged deployment descriptor model is essentially different 
-		    from the old deployment descriptor model infrastructure, the model can no longer be wrapped in 
-		    the JSR-88 DDBean wrapper, which was a basis of all the server specific deployment configuration 
+		    Since the architecture of the new Merged deployment descriptor model is essentially different
+		    from the old deployment descriptor model infrastructure, the model can no longer be wrapped in
+		    the JSR-88 DDBean wrapper, which was a basis of all the server specific deployment configuration
 		    APIs, the deployment configuration related part of the J2EE Server API had to be redesigned.
                 </p>
                 <p>
-		    Because the redesign already introduced big incompatible changes, we took advantage of it to 
-		    fix couple of API issues, which required incompatible changes. First, the server plug-in part 
-		    of the API was split into API and SPI. So far, there was no clear distinction between API and 
-		    SPI and it was not obvious what a server plug-in writer is required to implement. Second, 
-		    throws ConfigurationException clause was added to all the server-specific configuration 
-		    related methods to inform the client about a problem which might have occurred when reading or 
+		    Because the redesign already introduced big incompatible changes, we took advantage of it to
+		    fix couple of API issues, which required incompatible changes. First, the server plug-in part
+		    of the API was split into API and SPI. So far, there was no clear distinction between API and
+		    SPI and it was not obvious what a server plug-in writer is required to implement. Second,
+		    throws ConfigurationException clause was added to all the server-specific configuration
+		    related methods to inform the client about a problem which might have occurred when reading or
 		    writing to server-specific configuration files.
                 </p>
                 <p>
@@ -620,8 +699,8 @@ is the proper place.
             <description>
                 <p>
                     Eliminate completely hard-code timeout for startup, shutdown
-                    and deployment operations.  Current hard-coded timeouts 
-                    remain the default for plugins that do not provide 
+                    and deployment operations.  Current hard-coded timeouts
+                    remain the default for plugins that do not provide
                     per-instance settings.
                 </p>
             </description>
@@ -677,7 +756,7 @@ is the proper place.
                 <p>
                     Ant deployment support allows to generate Ant deployment build
                     scripts that can be used to deploy j2ee modules to the
-                    server. The generated deployment build script can run in a headless 
+                    server. The generated deployment build script can run in a headless
                     mode - without the IDE. The IDE does not even have to be installed.
                 </p>
             </description>
@@ -737,9 +816,9 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    DS management API allows clients to access and manipulate the data sources. 
+                    DS management API allows clients to access and manipulate the data sources.
                     Data sources are created in the module and deployed when the module deployment begins.
-                    Data sources are accessed at two places - at the modules where they are stored after creation 
+                    Data sources are accessed at two places - at the modules where they are stored after creation
                     and on the module's target server.
                 </p>
             </description>
@@ -765,7 +844,7 @@ is the proper place.
                     directory changes.
                 </p>
                 <p>
-                    Property PROP_ENTERPRISE_RESOURCE_DIRECTORY and property change 
+                    Property PROP_ENTERPRISE_RESOURCE_DIRECTORY and property change
                     listener added to J2eeModuleProvider.
                 </p>
                 <p>
@@ -787,17 +866,17 @@ is the proper place.
             <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
             <description>
                 <p>
-                Profiler support extension of the j2eeserver API allows Profiler to profile Web and other 
+                Profiler support extension of the j2eeserver API allows Profiler to profile Web and other
                 J2EE project types in a comfortable and reliable way.
                 </p>
                 <p>
-                Profiler SPI, the Profiler is required to implement and register into the default 
-                Lookup, allows to obtain information about current profiling session status, settings 
+                Profiler SPI, the Profiler is required to implement and register into the default
+                Lookup, allows to obtain information about current profiling session status, settings
                 required for starting a server in profiling mode and to stop profiled server.
                 </p>
                 <p>
-                Profiler API, which defines class encapsulating settings required for 
-                starting a server in profiling mode and provides support for reading current 
+                Profiler API, which defines class encapsulating settings required for
+                starting a server in profiling mode and provides support for reading current
                 state of Profiler registered in the default Lookup.
                 </p>
                 <p>
@@ -805,15 +884,15 @@ is the proper place.
                 server supports profiling and allows to start it if it does.
                 </p>
                 <p>
-                Extension of J2eePlatform that allows the Profiler to check if the Java 
-                platform specified for the server is acceptable for profiling. If not, the 
-                Profiler is able to check if other platform which can be used for profiling is 
+                Extension of J2eePlatform that allows the Profiler to check if the Java
+                platform specified for the server is acceptable for profiling. If not, the
+                Profiler is able to check if other platform which can be used for profiling is
                 acceptable for running the server.
                 </p>
                 <p>
-                Ant task 'nbstartprofiledserver' that may stop other server being profiled 
-                and prepare the target server for profiling - this means (re)starting the 
-                server using provided settings or no action if the server is already running 
+                Ant task 'nbstartprofiledserver' that may stop other server being profiled
+                and prepare the target server for profiling - this means (re)starting the
+                server using provided settings or no action if the server is already running
                 with correct configuration.
                 </p>
             </description>
@@ -829,7 +908,7 @@ is the proper place.
             <api name="j2eeserver"/>
             <summary>
             The common server specific deployment descriptor data loader has been
-            removed from the j2eeserver. The plugins are no longer required to 
+            removed from the j2eeserver. The plugins are no longer required to
             use the DConfigBean based model.
             </summary>
             <version major="1" minor="8"/>
@@ -839,20 +918,20 @@ is the proper place.
             <description>
                 <p>
                 The common server specific deployment descriptor data loader has
-                been removed. Each plugin should now register its own data loader, 
+                been removed. Each plugin should now register its own data loader,
                 if needed. The j2eeserver does no longer control saving of the
                 server specific deployment descriptors, it is plugin responsibility
-                now. With the removal of the common data loader, the plugins are 
+                now. With the removal of the common data loader, the plugins are
                 no longer required to use the DConfigBean based model.
                 </p>
                 <p>
-                Plugins should implement the ConfigurationSupport abstract class 
+                Plugins should implement the ConfigurationSupport abstract class
                 in order to provide support for their server specific deployment
                 descriptors.
                 </p>
                 <p>
                 Removed: DConfigBeanProperties, DConfigBeanUIFactory, DeploymentPlanSplitter.
-                Modified: ConfigurationSupport interface was modified and turned into 
+                Modified: ConfigurationSupport interface was modified and turned into
                 an abstract class.
                 </p>
             </description>
@@ -864,7 +943,7 @@ is the proper place.
         </change>
         <change id="J2eeModule-UISupport">
             <api name="j2eeserver"/>
-            <summary>ServerManager and UISupport classes added. Added method supportsStartDebugging() 
+            <summary>ServerManager and UISupport classes added. Added method supportsStartDebugging()
             to the StartServer class.</summary>
             <version major="1" minor="7"/>
             <date day="9" month="8" year="2005"/>
@@ -872,7 +951,7 @@ is the proper place.
             <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
             <description>
                 <p>
-                    The <code>ServerManager</code> class allows other modules to display the Server Manager dialog. 
+                    The <code>ServerManager</code> class allows other modules to display the Server Manager dialog.
                     The <code>UISupport</code> class provides server plugins with an InputOutput instance with
                     the server state management actions: start, debug, restart, stop and refresh.
                     The <code>supportsStartDebugging()</code> method says whether the <code>startDebugging()</code>
@@ -908,8 +987,8 @@ is the proper place.
             <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
             <description>
                 <p>
-                    When adding module to j2ee application the target server needs 
-                    to be set to the same as for the app. To make this possible we 
+                    When adding module to j2ee application the target server needs
+                    to be set to the same as for the app. To make this possible we
                     need to add setServerInstanceID method into J2eeModuleProvider.
                 </p>
             </description>
@@ -925,7 +1004,7 @@ is the proper place.
             <description>
                 <p>
                     These methods allow plugins to stop the server silently when the IDE is being
-                    shutdown. This addresses the problem filed as 52978 - Shutdown of appserver at 
+                    shutdown. This addresses the problem filed as 52978 - Shutdown of appserver at
                     IDE shutdown is unresponsive.
                 </p>
             </description>
@@ -987,7 +1066,7 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer" link="no"/>
             <issue number="53721"/>
         </change>
-    
+
         <change id="Add-ModuleChangeDescriptor-getChangedFiles">
             <api name="plugins"/>
             <summary>Method getChangedFiles allows plugin code to access all
@@ -1067,11 +1146,11 @@ is the proper place.
 		</ul>
 		<p>
 		Constants for the J2EE specification version added to the <code>J2eeModule</code> class.<br/>
-		
+
 		To the <code>Deployment</code> class was added method <code>getJ2eePlatform(String serverInstanceID)</code>
 		which returns <code>J2eePlatform</code> instance for the given <code>serveInstanceID</code>.<br/>
-		
-		Added new classes: <code>J2eeLibraryTypeProvider</code>, <code>J2eePlatform</code>, 
+
+		Added new classes: <code>J2eeLibraryTypeProvider</code>, <code>J2eePlatform</code>,
 		<code>J2eePlatformFactory</code>, <code>J2eePlatformImpl</code>.<br/>
 		</p>
 	</description>
@@ -1167,12 +1246,12 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    The reason for deprecating is that plugin SPI method 
+                    The reason for deprecating is that plugin SPI method
 		    <code>DeploymentPlanSplitter.getDeploymentPlanFileNames</code>
-                    has become exact duplicate with layer.xml entries declaration: 
+                    has become exact duplicate with layer.xml entries declaration:
                     <code>J2EE/DeploymentPlugins/plugin-name/DeploymentFileNames</code>
-                    J2EE Server Registry code has now been consolidated 
-		    and is no longer depends on this method call; 
+                    J2EE Server Registry code has now been consolidated
+		    and is no longer depends on this method call;
 		    the require layer.xml entries are used instead.
                 </p>
                 <p>
@@ -1195,9 +1274,9 @@ is the proper place.
                     easier for plugin code to process the relationship mappings.
                     Part of this batching change, OriginalCMPMapping now includes ejbName.
                     J2eeModuleProvider.ConfigSupport now has new method saveConfiguration()
-                    to allow development module wizard to commit changes it caused to 
+                    to allow development module wizard to commit changes it caused to
                     component deployment configuration.
-                    OriginalMappingProvider, not used in the CMP mapping push module, 
+                    OriginalMappingProvider, not used in the CMP mapping push module,
                     is removed.
                 </p>
             </description>

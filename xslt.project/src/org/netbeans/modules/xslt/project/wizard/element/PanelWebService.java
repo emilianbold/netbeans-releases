@@ -102,7 +102,7 @@ final class PanelWebService<T> extends Panel<T> {
     c.gridy++;
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_INSET, 0, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, 0, TINY_SIZE, 0);
     if (myFileLabelString == null) {
         myFileLabelString = i18n("LBL_Web_Service_File");
     }
@@ -113,7 +113,7 @@ final class PanelWebService<T> extends Panel<T> {
     // wsdl
     c.weightx = 1.0;
     c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myWSDL = new JComboBox();
     myWSDL.setRenderer(new Renderer());
     myFileLabel.setLabelFor(myWSDL);
@@ -122,7 +122,7 @@ final class PanelWebService<T> extends Panel<T> {
     // [browse]
     c.weightx = 0.0;
     c.fill = GridBagConstraints.NONE;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myBrowse = createButton(
       new ButtonAction(
         i18n("LBL_Browse_WSDL"), // NOI18N

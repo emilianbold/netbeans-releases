@@ -1,0 +1,92 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+import javax.microedition.xlet.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Font;
+
+/**
+ * @author ${user}
+ */
+// Create the ${name} class. An xlet is a component.
+public class ${name} extends Component implements Xlet {
+    private Container rootContainer;
+    private Font font;
+
+    // Initialize the xlet.
+    public void initXlet(XletContext context) {
+        log("initXlet called");
+        // Setup the default container
+        // This is similar to standard JDK programming,
+        // except you need to get the container first.
+        // XletContext.getContainer gets the parent container for the
+        // Xlet to put its AWT components in. The size and location is
+        // arbitrary, so needs to be set. Calling setVisible(true) makes
+        // the container visible.
+        try {
+            rootContainer = context.getContainer();
+            rootContainer.setSize(400, 300);
+            rootContainer.setLayout(new BorderLayout());
+            rootContainer.setLocation(0, 0);
+            rootContainer.add("North", this);
+            rootContainer.validate();
+            font = new Font("SansSerif", Font.BOLD, 20);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Start the xlet.
+    public void startXlet() {
+        log("startXlet called");
+        //make the container visible
+        rootContainer.setVisible(true);
+    }
+
+    public void pauseXlet() {
+        log("pauseXlet called");
+        //make the container invisible
+        rootContainer.setVisible(false);
+    }
+
+    public void destroyXlet(boolean unconditional) {
+        log("destroyXlet called");
+        //some cleanup for the xlet..
+        rootContainer.remove(this);
+    }
+
+    void log(String s) {
+        System.out.println("SimpleXlet: " + s);
+    }
+
+    public void paint(Graphics g) {
+        int w = getSize().width;
+        int h = getSize().height;
+        g.setColor(Color.blue);
+        g.fill3DRect(0, 0, w - 1, h - 1, true);
+        g.setColor(Color.white);
+        g.setFont(font);
+        g.drawString("Hello Java World", 20, 150);
+    }
+
+    public Dimension getMinimumSize() {
+        return new Dimension(400, 300);
+    }
+
+    public Dimension getPreferredSize() {
+        return getMinimumSize();
+    }
+}

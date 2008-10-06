@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.extexecution.api.print;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -75,18 +74,26 @@ public final class LineConvertors {
      * Convertor is trying to mach each line against the given
      * <code>linePattern</code>. If the line matches the regexp group number
      * <code>fileGroup</code> is supposed to be filename. This filename is then
-     * checked whether it matches <code>extPattern</code> (if any). In next
-     * step converter tries to determine the line in file. The line is parsed
-     * as <code>lineGroup</code> regexp group.
+     * checked whether it matches <code>filePattern</code> (if any).
+     * <p>
+     * In next step converter tries to determine the line in file. The line
+     * is parsed as <code>lineGroup</code> regexp group. Line number begins
+     * with <code>1</code> (first line of the file). If resulting value
+     * representing line number can't be parsed or is less then or equal
+     * to zero the {@link OutputListener} associated with converted line
+     * will use value <code>1</code> as a line number.
      * <p>
      * When the line does not match the <code>linePattern</code> or
-     * received filename does not match <code>extPattern</code> the work is
+     * received filename does not match <code>filePattern</code> the work is
      * delegated to <code>chain</code> convertor. If this convertor is
      * <code>null</code> the line containing just the original text is returned.
      * <p>
      * Resulting converted line contains the original text and a listener
      * that consults the <code>fileLocator</code> (if any) when clicked
-     * and displays the received file in the editor.
+     * and displays the received file in the editor. If <code>fileLocator</code>
+     * is <code>null</code> output listener will try to find file simply by
+     * <code>new File(filename)</code> checking its existence by
+     * <code>isFile()</code>.
      * <p>
      * Returned convertor is <i>not thread safe</i>.
      *

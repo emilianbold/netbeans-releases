@@ -44,10 +44,10 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -175,6 +175,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         lazyDependingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 JPanel body = null;
+                // init required elements
+                model.getRequiredUpdateElements ();
                 if (model instanceof InstallUnitWizardModel) {
                     ((InstallUnitWizardModel) model).allLicensesApproved ();
                     ((InstallUnitWizardModel) model).hasCustomComponents ();
@@ -213,20 +215,30 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         });
     }
     
-    private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
+    static String prepareBrokenDependenciesForShow (OperationWizardModel model) {
         String s = new String ();
         boolean moreBroken = false;
-        SortedMap<String, Set<String>> broken2deps = model.getBrokenDependencies ();
-        for (String plugin : broken2deps.keySet ()) {
-            if (OperationWizardModel.MORE_BROKEN_PLUGINS.equals(plugin)) {
+        SortedMap<String, Set<UpdateElement>> dep2plugins = model.getBrokenDependency2Plugins ();
+        for (String brokenDep : dep2plugins.keySet ()) {
+            if (OperationWizardModel.MORE_BROKEN_PLUGINS.equals (brokenDep)) {
                 moreBroken = true;
                 continue;
             }
-            s += "<h3>" + getBundle ("OperationDescriptionStep_PluginHasBrokenDependencies", plugin) + "</h3>";
-            if (broken2deps.get (plugin) != null) {
-                SortedSet<String> sset = new TreeSet<String> (broken2deps.get (plugin));
-                for (String dep : sset) {
-                    s += "      " + tryTakeDisplayName (dep) + "<br>"; // NOI18N
+            s += getPresentationName (brokenDep);
+            if (dep2plugins.get (brokenDep) != null) {
+                Set<UpdateElement> sset = new HashSet<UpdateElement> (dep2plugins.get (brokenDep));
+                Set<UpdateElement> uniqueElements = new HashSet<UpdateElement> ();
+                for (UpdateElement plugin : sset) {
+                    uniqueElements.addAll (model.findPrimaryPlugins (plugin));
+                }
+                TreeSet<String> uniqueNames = new TreeSet<String> ();
+                for (UpdateElement plugin : uniqueElements) {
+                    uniqueNames.add (plugin.getDisplayName ());
+                }
+                s += uniqueNames.size () == 1 ? getBundle ("OperationDescriptionStep_AffectedPluginByBrokenDepOnce") :
+                    getBundle ("OperationDescriptionStep_AffectedPluginByBrokenDep");
+                for (String name : uniqueNames) {
+                    s += getBundle ("OperationDescriptionStep_AffectedPlugin", name);
                 }
             }
         }
@@ -236,9 +248,10 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return s.trim ();
     }
     
-    private String tryTakeDisplayName (String dep) {
-        String displayName = null;
+    private static String getPresentationName (String dep) {
+        String presentationName = null;
         boolean isPending = false;
+        String reason = null;
         if (dep != null && dep.startsWith ("module")) { // NOI18N
             String codeName = dep.substring (6).trim ();
             int end = codeName.indexOf ('/'); // NOI18N
@@ -247,33 +260,85 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
             }
             if (end != -1) {
                 codeName = codeName.substring (0, end);
-                for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
-                    if (codeName.equals (u.getCodeName ())) {
-                        if (u.getInstalled () != null) {
-                            displayName = u.getInstalled ().getDisplayName ();
-                        } else if (u.getAvailableUpdates ().size () > 0) {
-                            displayName = u.getAvailableUpdates ().get (0).getDisplayName ();
-                        }
-                        if (u != null) {
-                            isPending = u.isPending ();
-                        }
-                        break;
+            }
+            int greater = dep.indexOf ('>');
+            int equals = dep.indexOf ('=');
+            int idx = Math.max (greater, equals);
+            String version = null;
+            if (idx > 0) {
+                version = dep.substring (idx + 2).trim ();
+            }
+            UpdateElement other = null;
+            for (UpdateUnit u : UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE)) {
+                if (codeName.equals (u.getCodeName ())) {
+                    if (u.getInstalled () != null) {
+                        other = u.getInstalled ();
+                    } else if (u.getAvailableUpdates ().size () > 0) {
+                        other = u.getAvailableUpdates ().get (0);
                     }
+                    if (u != null) {
+                        isPending = u.isPending ();
+                    }
+                    break;
                 }
             }
-            if (displayName != null) {
-                if (isPending) {
-                    displayName = getBundle ("OperationDescriptionStep_PendingPluginNameFormat", displayName, dep);
+            if (idx == -1) {
+                // COMPARE_ANY
+                // The module named {0} was needed and not found.
+                reason = getBundle ("OperationDescriptionStep_BrokenModuleNameDep", other == null ? codeName : other.getDisplayName ());
+            } else if (greater > 0) {
+                // COMPARE_SPEC
+                if (version != null && other != null && version.equals (other.getSpecificationVersion ())) {
+                    // The module {0} would also need to be installed.
+                    reason = getBundle ("OperationDescriptionStep_BrokenModuleDep", other.getDisplayName ());
+                } else if (version != null) {
+                    if (other != null) {
+                        // The module {0} was requested in version >= {1} but only {2} was found.
+                        reason = getBundle ("OperationDescriptionStep_BrokenModuleVersionDep",
+                                other == null ? codeName : other.getDisplayName (),
+                                version,
+                                other.getSpecificationVersion ());
+                    } else {
+                        // The module {0} was requested in version >= {1}.
+                        reason = getBundle ("OperationDescriptionStep_BrokenModuleOnlyVersionDep",
+                                other == null ? codeName : other.getDisplayName (),
+                                version);
+                    }
                 } else {
-                    displayName = getBundle ("OperationDescriptionStep_PluginNameFormat", displayName, dep);
+                    // The module {0} would also need to be installed.
+                    reason = getBundle ("OperationDescriptionStep_BrokenModuleDep", other == null ? codeName : other.getDisplayName ());
+                }
+            } else if (equals > 0) {
+                // COMPARE_IMPL
+                // The module {0} was requested in implementation version "{1}".
+                if (version != null) {
+                    reason = getBundle ("OperationDescriptionStep_BrokenModuleImplDep",
+                            other == null ? codeName : other.getDisplayName (),
+                            version);
+                } else {
+                    reason = getBundle ("OperationDescriptionStep_BrokenModuleDep", other == null ? codeName : other.getDisplayName ());
                 }
             }
+            if (isPending) {
+                presentationName = getBundle ("OperationDescriptionStep_BrokenPendingModuleDepInit", other == null ? codeName : other.getDisplayName (), // NOI18N
+                        reason);
+            } else {
+                presentationName = getBundle ("OperationDescriptionStep_BrokenModuleDepInit", other == null ? codeName : other.getDisplayName (), // NOI18N
+                        reason);
+            }
+        } else if (dep != null && (dep.toLowerCase ().startsWith ("requires") || dep.toLowerCase ().startsWith ("needs"))) { // NOI18N
+            // No module providing the capability {0} could be found.
+            String token = dep.substring (dep.indexOf (' ') + 1);
+            presentationName = getBundle ("OperationDescriptionStep_BrokenRequireDepInit", token,
+                    getBundle ("OperationDescriptionStep_BrokenRequiresDep", token));
         } else if (dep != null && dep.toLowerCase ().startsWith ("java")) { // NOI18N
-            displayName = getBundle ("OperationDescriptionStep_PluginBrokesJavaDependency", dep, Dependency.JAVA_SPEC);
+            presentationName = getBundle ("OperationDescriptionStep_BrokenJavaDepInit",
+                    dep,
+                    getBundle ("OperationDescriptionStep_PluginBrokesJavaDependency", dep, Dependency.JAVA_SPEC));
         } else if (dep != null && dep.toLowerCase ().startsWith ("package")) { // NOI18N
-            displayName = getBundle ("OperationDescriptionStep_PluginBrokesPackageDependency", dep);
+            presentationName = getBundle ("OperationDescriptionStep_BrokenPackageDepInit");
         }
-        return displayName == null ? dep : displayName;
+        return presentationName == null ? dep : presentationName;
     }
     
     private String preparePluginsForShow (Set<UpdateElement> plugins, Set<UpdateElement> customHandled, OperationType type) {
@@ -368,7 +433,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         }
     }
 
-    private String getBundle (String key, Object... params) {
+    private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (OperationDescriptionPanel.class, key, params);
     }
 

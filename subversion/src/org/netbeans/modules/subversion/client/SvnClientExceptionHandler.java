@@ -74,7 +74,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.config.CertificateFile;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.util.FileUtils;
@@ -103,6 +102,7 @@ public class SvnClientExceptionHandler {
     
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
+
     private class CertificateFailure {
         int mask;
         String error;
@@ -173,14 +173,8 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
          
-    private boolean handleRepositoryConnectError() {        
-        // try to get the repository url from the svnclientdescriptor 
-        SVNUrl url = desc != null ? desc.getSvnUrl() : null;
-        if(url == null) { 
-            // huh ??? - try to fallback to the url given by the error msg. 
-            // unfortunatelly - this musn't be the repo url but only the the remote host url
-            url = getSVNUrl();
-        }
+    private boolean handleRepositoryConnectError() {                
+        SVNUrl url = getRemoteHostUrl(); // try to get the repository url from the svnclientdescriptor
         Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
         repository.selectUrl(url, true);
         
@@ -254,7 +248,8 @@ public class SvnClientExceptionHandler {
         AcceptCertificatePanel acceptCertificatePanel = new AcceptCertificatePanel();
         acceptCertificatePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
         acceptCertificatePanel.certificatePane.setText(getCertMessage(cert, hostString));
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N        
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(acceptCertificatePanel, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Error_CertFailed")); // NOI18N
+        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.subversion.serverCertificateVerification"));
         JButton permanentlyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptPermanently")); // NOI18N
         JButton temporarilyButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_AcceptTemp")); // NOI18N
         JButton rejectButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Cert_Reject")); // NOI18N
@@ -335,7 +330,7 @@ public class SvnClientExceptionHandler {
         ProxySettings proxySettings = new ProxySettings();
         String proxyHost = proxySettings.getHttpsHost();
         int proxyPort = proxySettings.getHttpsPort();                                     
-        if(proxyHost.equals("")) {
+        if(proxyHost.equals("")) {                                              // NOI18N
             proxyHost = proxySettings.getHttpHost();
             proxyPort = proxySettings.getHttpPort();
         }
@@ -357,25 +352,29 @@ public class SvnClientExceptionHandler {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
                 proxySocket.connect(new InetSocketAddress(proxyHost, proxyPort));           
                 connectProxy(proxySocket, host, port, proxyHost, proxyPort);                       
-            }
+            } 
         }
                         
         SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
-                        
-        context.init(getKeyManagers(host), trust, null);        
-        SSLSocketFactory factory = context.getSocketFactory();                                         
+        context.init(getKeyManagers(), trust, null);
+        SSLSocketFactory factory = context.getSocketFactory();
         SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
-        socket.startHandshake();
+        socket.startHandshake();    
         return socket;
     }
     
-    private KeyManager[] getKeyManagers(String host) {        
-        try {   
-            String certFile = SvnConfigFiles.getInstance().getClientCertFile(host);
+    private KeyManager[] getKeyManagers() {        
+        try {
+            SVNUrl url = getRemoteHostUrl();
+            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
+            if(rc == null) {
+                return null;
+            }
+            String certFile = rc.getCertFile();
             if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
                 return null;
-            }                                    
-            String certPassword = SvnConfigFiles.getInstance().getClientCertPassword(host);
+            }               
+            String certPassword = rc.getCertPassword();                                                                        
             char[] certPasswordChars = certPassword != null ? certPassword.toCharArray() : null;                        
             
             KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
@@ -389,7 +388,17 @@ public class SvnClientExceptionHandler {
             return null;
         }                                       
     }
-    
+
+    private SVNUrl getRemoteHostUrl() {
+        SVNUrl url = desc != null ? desc.getSvnUrl() : null;
+        if (url == null) {
+            // huh ??? - try to fallback to the url given by the error msg.
+            // unfortunatelly - this musn't be the repo url but only the the remote host url
+            url = getSVNUrl();
+        }
+        return url;
+    }
+
     private void connectProxy(Socket proxy, String host, int port, String proxyHost, int proxyPort) throws IOException {
       
       String connectString = "CONNECT "+ host + ":" + port + " HTTP/1.0\r\n" + "Connection: Keep-Alive\r\n\r\n"; // NOI18N
@@ -446,7 +455,6 @@ public class SvnClientExceptionHandler {
     
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);     
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
@@ -567,7 +575,8 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
-               msg.indexOf("can't get password") > - 1;                                     // NOI18N
+               msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
+               msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
     private static boolean isNoCertificate(String msg) {
@@ -648,7 +657,12 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.indexOf("file not found: revision") > -1 ||                                                  // NOI18N
               (msg.indexOf("unable to find repository location for") > -1 && msg.indexOf("in revision") > -1);  // NOI18N
-    }      
+    }
+    
+    public static boolean isPathNotFound(String msg) {
+        msg = msg.toLowerCase();
+        return msg.indexOf("path not found") > -1;  // NOI18N
+    }
         
     private static boolean isAlreadyAWorkingCopy(String msg) {   
         msg = msg.toLowerCase();       
@@ -673,7 +687,7 @@ public class SvnClientExceptionHandler {
     
     private static boolean isOutOfDate(String msg) {
         msg = msg.toLowerCase();       
-        return msg.indexOf("out of date") > -1;                                             // NOI18N
+        return msg.indexOf("out of date") > -1 || msg.indexOf("out-of-date") > -1;                                             // NOI18N
     }
     
     private static boolean isNoSvnClient(String msg) {
@@ -734,7 +748,7 @@ public class SvnClientExceptionHandler {
     }     
     
     private static void notifyNoClient() {
-        MissingSvnClient msc = new MissingSvnClient();
+        MissingClient msc = new MissingClient();
         msc.show();
     }
     

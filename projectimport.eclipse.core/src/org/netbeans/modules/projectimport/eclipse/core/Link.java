@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
-/**
- *
- */
 class Link {
     
     private String name;
@@ -66,10 +63,12 @@ class Link {
         return location;
     }
 
+    @Override
     public String toString() {
         return name + " = " + location + " (type type: " + file + ")"; // NOI18N
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Link)) return false;
@@ -82,6 +81,7 @@ class Link {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37 * result + System.identityHashCode(name);

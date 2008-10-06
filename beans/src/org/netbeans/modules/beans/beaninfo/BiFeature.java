@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -64,15 +66,18 @@ import org.netbeans.modules.beans.Pattern;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.beans.PropertyPattern;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /** The basic class representing features included in BeanInfo.
 *
 * @author Petr Hrebejk
 */
-public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
+public abstract class BiFeature implements IconBases, Node.Cookie, Comparable<BiFeature> {
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = -8680621542479107034L;
+
+    private static final Logger LOG = Logger.getLogger(BiFeature.class.getName());
 
     // Function names for code generation and reconition
     private static final String TEXT_EXPERT = "setExpert"; // NOI18N
@@ -323,6 +328,11 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             //    return null;    // NOI18N
             return BIF_DESCRIPTOR; // NOI18N
         }
+
+        @Override
+        public String getToolTip() {
+            return NbBundle.getMessage(BiFeature.class, "HINT_NODE_Descriptor");
+        }
         
         void analyzeCustomizationString( String statement ) {
         }
@@ -382,6 +392,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private String declaringClassName;
         private String getterName;
         private String setterName;
+        String debugTooltip;
 
         Property( PropertyPattern pp, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
             super( pp, bia );
@@ -394,6 +405,34 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             getterName = getterHandle == null? null: getterHandle.resolve(javac).getSimpleName().toString();
             ElementHandle<ExecutableElement> setterHandle = pattern.getSetterMethod();
             setterName = setterHandle == null? null: setterHandle.resolve(javac).getSimpleName().toString();
+
+            if (LOG.isLoggable(Level.FINE) && getClass() == Property.class) {
+                debugTooltip = String.format("<html><body><b>Field:</b> %s<br><b>Getter:</b> %s<br><b>Setter:</b> %s</body></html>", // NOI18N
+                        pp.getEstimatedField() == null
+                                ? null
+                                : ElementHeaders.getHeader(pp.getEstimatedField().resolve(javac), javac, ElementHeaders.NAME +
+                                        " : " + ElementHeaders.TYPE) + " :: " + // NOI18N
+                                        ((TypeElement) pp.getEstimatedField().resolve(javac).getEnclosingElement()).getQualifiedName(),
+                        printMethodHandleTip(getterHandle, javac),
+                        printMethodHandleTip(setterHandle, javac)
+                        );
+            }
+        }
+
+        static String printMethodHandleTip(ElementHandle<ExecutableElement> handle, CompilationInfo javac) {
+            if (handle == null) {
+                return null;
+            }
+            ExecutableElement method = handle.resolve(javac);
+            return ElementHeaders.getHeader(method, javac,
+                    ElementHeaders.NAME + ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE) + // NOI18N
+                    " :: " + ((TypeElement) method.getEnclosingElement()).getQualifiedName(); // NOI18N
+            
+        }
+
+        @Override
+        public String getToolTip() {
+            return debugTooltip != null ? debugTooltip : super.getToolTip();
         }
 
         protected final String getDeclaringClassName() {
@@ -576,6 +615,20 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             indexedSetterName = indexedSetterHandle == null
                     ? null
                     : indexedSetterHandle.resolve(javac).getSimpleName().toString();
+
+            if (LOG.isLoggable(Level.FINE)) {
+                debugTooltip = String.format("<html><body><b>Field:</b> %s<br><b>Getter:</b> %s<br><b>Setter:</b> %s<br><b>Indexed Getter:</b> %s<br><b>Indexed Setter:</b> %s</body></html>", // NOI18N
+                        pp.getEstimatedField() == null
+                                ? null
+                                : ElementHeaders.getHeader(pp.getEstimatedField().resolve(javac), javac, ElementHeaders.NAME +
+                                        " : " + ElementHeaders.TYPE) + " :: " +
+                                        ((TypeElement) pp.getEstimatedField().resolve(javac).getEnclosingElement()).getQualifiedName(), // NOI18N
+                            printMethodHandleTip(pattern.getGetterMethod(), javac),
+                            printMethodHandleTip(pattern.getGetterMethod(), javac),
+                            printMethodHandleTip(indexedGetterHandle, javac),
+                            printMethodHandleTip(indexedSetterHandle, javac)
+                        );
+            }
         }
 
         boolean isNiGetter() {
@@ -813,29 +866,31 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             super( me.getSimpleName().toString(), "\"\"", bia ); //NOI18N
             element = ElementHandle.create(me);
             toolTip = initToolTip(me, javac);
-            creationString = initCreationString(me);
+            creationString = initCreationString(me, javac);
         }
         
         String getBracketedName() {
             return "[METHOD_" + getName() + "]"; // NOI18N
         }
         
-        private static String getTypeClass(TypeMirror type) {
+        private static String getTypeClass(TypeMirror type, CompilationInfo javac) {
             TypeKind kind = type.getKind();
             if (kind.isPrimitive()) {
                 return type.toString();
             } else if (kind == TypeKind.ARRAY) {
-                return resolveArrayClass((ArrayType) type);
+                return resolveArrayClass((ArrayType) type, javac);
             } else if (kind == TypeKind.DECLARED) {
                 return ((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName().toString();
             } else if (kind == TypeKind.ERROR) {
                 return type.toString();
+            } else if (kind == TypeKind.TYPEVAR) {
+                return javac.getTypes().erasure(type).toString();
             } else {
                 throw new IllegalStateException("Unknown type: " + type + ", " + type.getKind()); // NOI18N
             }
         }
 
-        private static String resolveArrayClass(ArrayType array) {
+        private static String resolveArrayClass(ArrayType array, CompilationInfo javac) {
             TypeMirror type = array;
             StringBuilder dim = new StringBuilder();
             for (int i = 0; type.getKind() == TypeKind.ARRAY; i++) {
@@ -843,7 +898,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                 dim.append("[]"); // NOI18N
             }
             
-            return getTypeClass(type) + dim;
+            return getTypeClass(type, javac) + dim;
         }
 
         @Override
@@ -853,7 +908,9 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         
         private static String initToolTip(ExecutableElement element, CompilationInfo javac) {
             return ElementHeaders.getHeader(element, javac,
-                    ElementHeaders.NAME + ElementHeaders.PARAMETERS);
+                    ElementHeaders.NAME + ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE)
+                    + " :: " // NOI18N
+                    + ((TypeElement) element.getEnclosingElement()).getQualifiedName();
         }
         
         ElementHandle<ExecutableElement> getElement() {
@@ -865,13 +922,13 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             return creationString;
         }
         
-        private static String initCreationString (ExecutableElement element) {
+        private static String initCreationString (ExecutableElement element, CompilationInfo javac) {
             TypeElement enclClass = (TypeElement) element.getEnclosingElement();
             String code = "new MethodDescriptor(%1$s.class.getMethod(\"%2$s\", new Class[] {%3$s}))"; // NOI18N
             String paramdelim = ", "; //NOI18N
             StringBuilder sb = new StringBuilder();
             for (VariableElement param : element.getParameters()) {
-                sb.append(paramdelim).append(getTypeClass(param.asType())).append(".class"); // NOI18N
+                sb.append(paramdelim).append(getTypeClass(param.asType(), javac)).append(".class"); // NOI18N
             }
 
             return String.format(
@@ -923,10 +980,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         
     }
 
-    public int compareTo(Object other) {
-        if (!(other instanceof BiFeature))
-            return -1;
-        BiFeature bf = (BiFeature)other;
-        return getName().compareToIgnoreCase(bf.getName());
+    public int compareTo(BiFeature other) {
+        return getName().compareToIgnoreCase(other.getName());
     }
 }

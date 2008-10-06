@@ -48,18 +48,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -72,17 +73,19 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
+/*package-local*/ 
+class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
     private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
     private Map<CharSequence, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*String or String[]*/>();
-    
+   
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
 	super(new FileContainerKey(project.getUniqueName().toString()));
@@ -146,47 +149,28 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         CsmUID<CsmFile> fileUID = f.fileNew;
         FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
         if( impl == null ) {
-            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID));
+            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID)); // NOI18N
         }
         return impl;
     }
-    
+
+
+    /** 
+     * This should only be called if we are sure this is the only correct state:
+     * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
+     */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
-        if (f == null){
-            return;
-        }
-	if (f.state == null || !f.state.isValid()) {
-	    f.state = state;
-	} else {
-	    if (f.state.isCompileContext()) {
-		if (state.isCompileContext()) {
-		    f.state = state;
-		} else {
-		    if (TRACE_PP_STATE_OUT) {
-			System.err.println("Do not reset correct state to incorrect " + file.getAbsolutePath());
-		    }
-		}
-	    } else {
-		f.state = state;
-	    }
-	}
-	if (TRACE_PP_STATE_OUT) {
-	    String path = getFileKey(file, false);
-	    System.err.println("\nPut state for file" + path + "\n");
-	    System.err.println(state);
-	}
+        f.setState(state, null);
     }
-    
+
     public void invalidatePreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
             return;
         }
-        synchronized (getLock(file)) {
-            if (f.state != null){
-                f.state = APTHandlersSupport.createInvalidPreprocState(f.state);
-            }
+        synchronized (f) {
+            f.invalidateStates();
         }
         if (TRACE_PP_STATE_OUT) {
             String path = getFileKey(file, false);
@@ -194,27 +178,45 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
     
+    //@Deprecated
     public APTPreprocHandler.State getPreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
             return null;
         }
-        return f.state;
+        return f.getState();
+    }
+    
+    public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
+        MyFile f = getMyFile(file, false);
+        if (f == null){
+            return null;
+        }
+        return f.getPrerocStates();
+    }
+
+// unused    
+//    public FilePreprocessorConditionState getPreprocessorConditionState(File file) {
+//        MyFile f = getMyFile(file, false);
+//        return (f == null) ? null : f.getPCState();
+//    }
+
+    public Entry getEntry(File file) {
+        return getMyFile(file, false);
     }
 
     public Object getLock(File file) {
         MyFile f = getMyFile(file, false);
-        if (f == null){
-            return lock;
-        }
-        return f;
+        return f == null ? lock : f.getLock();
     }
     
-    public void clearState(){
+    public void debugClearState(){
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
-            file.state = null;
+            synchronized (file.getLock()) {
+                file.clearState();
+            }
         }
 	put();
     }
@@ -257,21 +259,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	//trace(canonicFiles, "Wrote in write()");
     }
     
-    public void read(DataInput aStream) throws IOException {
-        UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
-        HashMap<CharSequence,CsmUID<CsmFile>> files = new HashMap<CharSequence,CsmUID<CsmFile>>();
-        HashMap<CharSequence,APTPreprocHandler.State> handlers = new HashMap<CharSequence,APTPreprocHandler.State>();
-        aFactory.readStringToUIDMap(files, aStream, FilePathCache.getManager());
-        PersistentUtils.readStringToStateMap(handlers, aStream);
-        myFiles.clear();
-        System.err.println("NEED TO UPDATE DESERIALIZATION");
-        for(Map.Entry<CharSequence, CsmUID<CsmFile>> entry : files.entrySet()){
-            APTPreprocHandler.State state = handlers.get(entry.getValue());
-            MyFile file = new MyFile(entry.getValue(),state, entry.getKey());
-            myFiles.put(entry.getKey(),file);
-        }
-    }
-    
     public static String getFileKey(File file, boolean sharedText) {
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
@@ -304,7 +291,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         if (f == null) {
             // check alternative expecting that 'path' is canonical path
             String path2 = getAlternativeFileKey(path);
-            f = path2 == null ? null : myFiles.get(path2);
+            f = (path2 == null) ? null : myFiles.get(path2);
             if (f != null) {
                 if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
                     System.err.println("alternative for " + path + " is " + path2);
@@ -393,10 +380,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         output.writeInt(size);
         
         // write the map
-        final Set<Entry<CharSequence, MyFile>> entrySet = aMap.entrySet();
-        final Iterator <Entry<CharSequence, MyFile>> setIterator = entrySet.iterator();
+        final Set<Map.Entry<CharSequence, MyFile>> entrySet = aMap.entrySet();
+        final Iterator <Map.Entry<CharSequence, MyFile>> setIterator = entrySet.iterator();
         while (setIterator.hasNext()) {
-            final Entry<CharSequence, MyFile> anEntry = setIterator.next();
+            final Map.Entry<CharSequence, MyFile> anEntry = setIterator.next();
 
             output.writeUTF(anEntry.getKey().toString());
             assert anEntry.getValue() != null;
@@ -436,11 +423,11 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         final int size = aMap.size();
         output.writeInt(size);
         
-        final Set<Entry<CharSequence, Object>> entrySet = aMap.entrySet();
-        final Iterator<Entry<CharSequence, Object>> setIterator = entrySet.iterator();
+        final Set<Map.Entry<CharSequence, Object>> entrySet = aMap.entrySet();
+        final Iterator<Map.Entry<CharSequence, Object>> setIterator = entrySet.iterator();
         
         while (setIterator.hasNext()) {
-            final Entry<CharSequence, Object> anEntry = setIterator.next();
+            final Map.Entry<CharSequence, Object> anEntry = setIterator.next();
             assert anEntry != null;
             
             final CharSequence key = anEntry.getKey();
@@ -501,34 +488,402 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	    }
         }
     }
-    
-    private static class MyFile implements Persistent, SelfPersistent {
+
+    public static class StatePair {
+        
+        public final APTPreprocHandler.State state;
+        public final FilePreprocessorConditionState pcState;
+        
+        public StatePair(State ppState, FilePreprocessorConditionState pcState) {
+            this.state = ppState;
+            this.pcState = pcState;
+        }
+
+        @Override
+        public String toString() {
+            return "(" + pcState + "\n" + state + ')'; //NOI18N
+        }
+    }
+            
+    public static interface Entry {
+
+        /** Gets the states collection */
+        Collection<StatePair> getStates();
+        
+        void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        //void setStates(Collection<StatePair> pairs);
+        void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
+
+        public void invalidateStates();
+
+        /**
+         * Sets (replaces) new conditions state for the existent pair
+         * @return true in the case of success, otherwise (if no ppState found) false
+         */
+        //boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        
+        int size();
+
+        /**
+         * Gets mod count; mod count allows to understand whether the entry was changed:
+         * each modification changes mod count
+         */
+        int getModCount();
+        
+        public Object getLock();
+    }
+
+    private static final class MyFile implements Persistent, SelfPersistent, Entry {
+
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
-        private APTPreprocHandler.State state;
+        private Object data; // either StatePair or List<StatePair>
+        private volatile int modCount;
         
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = input.readUTF();
-            if (input.readBoolean()){
-                state = PersistentUtils.readPreprocState(input);
+            modCount = input.readInt();
+            if (input.readBoolean()) {
+                int cnt = input.readInt();
+                if (cnt == 1) {
+                    data = readStatePair(input);
+                } else {
+                    data = new ArrayList<StatePair>(cnt);
+                    for (int i = 0; i < cnt; i++) {
+                        ((List<StatePair>) data).add(readStatePair(input));
+                    }
+                }
             }
         }
         
         private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
-            this.state = state;
+            this.data = new StatePair(state, null);
             this.canonical = getCanonicalKey(fileKey);
+            this.modCount = 0;
         }
         
         public void write(final DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             output.writeUTF(canonical.toString());
-            output.writeBoolean(state != null);
-            if (state != null) {
-                PersistentUtils.writePreprocState(state, output);
+            output.writeInt(modCount);
+            output.writeBoolean(data != null);
+            if (data != null) {
+                if(data instanceof StatePair) {
+                    output.writeInt(1);
+                    writeStatePair(output, (StatePair) data);
+                } else {
+                    Collection<StatePair> pairs = (Collection<StatePair>)data;
+                    output.writeInt(pairs.size());
+                    for (StatePair pair : pairs) {
+                        writeStatePair(output, pair);
+                    }
+                }
             }
         }
+        
+        private static StatePair readStatePair(DataInput input) throws IOException {
+            if (input.readBoolean()) {
+                APTPreprocHandler.State state = null;
+                if (input.readBoolean()){
+                    state = PersistentUtils.readPreprocState(input);
+                }
+                FilePreprocessorConditionState pcState = null;
+                if (input.readBoolean()){
+                    pcState = new FilePreprocessorConditionState(input);
+                }
+                return new StatePair(state, pcState);
+            }
+            return null;
+            
+            
+        }
+
+        private static void writeStatePair(DataOutput output, StatePair pair) throws IOException {
+            output.writeBoolean(pair != null);
+            if (pair != null) {
+                output.writeBoolean(pair.state != null);
+                if (pair.state != null) {
+                    PersistentUtils.writePreprocState(pair.state, output);
+                }
+                output.writeBoolean(pair.pcState != null);
+                if (pair.pcState != null) {
+                    pair.pcState.write(output);
+                }
+            }
+        }
+
+        public final synchronized int getModCount() {
+            return modCount;
+        }
+
+        /**
+         * @return lock under which all sequances read-decide-modify should be done
+         * get* and replace* methods are synchronize on the same lock 
+         */
+        public Object getLock() {
+            return this;
+        }
+        
+        public synchronized int size() {
+            return (data instanceof Collection) ? ((Collection) data).size() : 1;
+        }
+
+        //@Deprecated
+        private final synchronized APTPreprocHandler.State getState() {
+            return getStates().iterator().next().state;
+        }
+
+        private synchronized void clearState() {
+            data = null;
+        }
+
+        /** 
+         * This should only be called if we are sure this is THE ONLY correct state:
+         * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
+         */
+        public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+            State oldState = null;
+            if( state != null && ! state.isCleaned() ) {
+                state = APTHandlersSupport.createCleanPreprocState(state);
+            }
+            if ((data instanceof Collection)) {
+                Collection<StatePair> states = (Collection<StatePair>) data;
+                // check how many good old states are there
+                // and pick a valid one to check that we aren't replacing better state by worse one 
+                int oldGoodStatesCount = 0;
+                for (StatePair pair : states) {
+                    if (pair.state != null && pair.state.isValid()) {
+                        oldGoodStatesCount++;
+                        if (oldState == null || state.isCompileContext()) {
+                            oldState = state;
+                        }
+                    }
+                }
+                if (oldGoodStatesCount > 1) {
+                    if (CndUtils.isDebugMode()) {
+                        StringBuilder sb = new StringBuilder("Attempt to set state while there are multiple states: " + canonical); // NOI18N
+                        for (StatePair pair : states) {
+                            sb.append(String.format("\nvalid: %b context: %b %s", pair.state.isValid(), pair.state.isCompileContext(), pair.pcState)); //NOI18N
+                        }
+                        Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception(sb.toString()));
+                    }
+                    //return;
+                }
+            } else if(data instanceof StatePair) {
+                oldState = ((StatePair) data).state;
+            }
+            
+            incrementModCount();
+            
+            if (oldState == null || !oldState.isValid()) {
+                data = state;
+            } else {
+                if (oldState.isCompileContext()) {
+                    if (state.isCompileContext()) {
+                        data = state;
+                    } else {
+                        if (CndUtils.isDebugMode()) {
+                            String message = "Replacing correct state to incorrect " + canonical; // NOI18N
+                            Utils.LOG.log(Level.SEVERE, message, new Exception());
+                        }
+                        return;
+                    }
+                } else {
+                    data = state;
+                }
+            }
+            if (TRACE_PP_STATE_OUT) {
+                System.err.println("\nPut state for file" + canonical + "\n");
+                System.err.println(state);
+            }
+            
+            data = new StatePair(state, pcState);
+        }
+        
+        private static int countValidStates(Collection<StatePair> states) {
+            int cnt = 0;
+            for (StatePair pair : states) {
+                if (pair.state != null && pair.state.isValid()) {
+                    cnt++;
+                }
+            }
+            return cnt;
+        }
+        
+        /**
+         * Sets (replaces) new conditions state for the existent pair
+         * @return true in the case of success, otherwise (if no ppState found) false
+         */
+//        public synchronized boolean setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+//            assert state != null : "state should not be null"; //NOI18N
+//            if (state == null) {
+//                return false;
+//            }
+//            if( state != null && ! state.isCleaned() ) {
+//                state = APTHandlersSupport.createCleanPreprocState(state);
+//            }
+//            if (data instanceof StatePair) {
+//                StatePair pair = (StatePair) data;
+//                if (state.equals(pair.state)) {
+//                    data = new StatePair(state, new FilePreprocessorConditionState(pcState));
+//                    return true;
+//                } else {
+//                    return false;
+//                }
+//
+//            } else {
+//                List<StatePair> list = (List<StatePair>) data;
+//                for (int i = 0; i < list.size(); i++) {
+//                    StatePair pair = list.get(i);
+//                    if (state.equals(pair.state)) {
+//                        list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
+//                        return true;
+//                    }
+//                }
+//                return false;
+//            }
+//        }
+        
+//        public synchronized void setStates(Collection<StatePair> pairs) {
+//            incrementModCount();
+//            if (pairs.size() == 1) {
+//                data = pairs.iterator().next();
+//            } else {
+//                data = new ArrayList<StatePair>(pairs);
+//            }
+//            if (CndUtils.isDebugMode()) {
+//                checkConsistency();
+//            }
+//        }
+
+        public synchronized void setStates(Collection<StatePair> pairs, StatePair yetOneMore) {
+            incrementModCount();
+            if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
+                yetOneMore = new StatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
+            }
+            if (pairs.size() == 0) {
+                data = yetOneMore;
+            } else {
+                ArrayList<StatePair> newData = new ArrayList<StatePair>(pairs.size()+1);
+                newData.addAll(pairs);
+                newData.add(yetOneMore);
+                data = newData;
+            }
+            if (CndUtils.isDebugMode()) {
+                checkConsistency();
+            }
+        }
+
+        private void checkConsistency() {
+            Collection<StatePair> pairs = getStates();
+            if (!pairs.isEmpty()) {
+                boolean alarm = false;
+
+                State firstState = null;
+                boolean first = true;
+                for (StatePair pair : getStates()) {
+                    if (first) {
+                        first = false;
+                        firstState = pair.state;
+                    } else {
+                        if ((firstState == null) != (pair.state == null)) {
+                            alarm = true;
+                            break;
+                        }
+                        if (firstState != null) {
+                            if ((firstState.isValid() != pair.state.isValid()) ||
+                                (firstState.isCompileContext() != pair.state.isCompileContext())) {
+                                alarm = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (alarm) {
+                    StringBuilder sb = new StringBuilder("Mixed preprocessor states: " + canonical); // NOI18N
+                    for (StatePair pair : getStates()) {
+                        if (pair.state == null) {
+                            sb.append(String.format(" (null, %s)", pair.pcState)); //NOI18N
+                        } else {
+                            sb.append(String.format(" (valid: %b, context: %b, %s) ", //NOI18N
+                                    pair.state.isValid(), pair.state.isCompileContext(), pair.pcState));
+                        }
+                    }
+                    Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception());                
+                }
+            }
+        }
+        
+        private synchronized void incrementModCount() {
+            modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
+        }
+
+        public synchronized void invalidateStates() {
+            incrementModCount();
+            if (data != null) {
+                if (data instanceof StatePair) {
+                    data = createInvalidState((StatePair) data);
+                } else {
+                    Collection<StatePair> newData = new ArrayList();
+                    for (StatePair pair : (Collection<StatePair>) data) {
+                        newData.add(createInvalidState(pair));
+                    }
+                    data = newData;
+                }
+            }
+        }
+        
+        private static StatePair createInvalidState(StatePair pair) {
+            if (pair == null) {
+                return pair;
+            } else {
+                if (pair.state == null) {
+                    return pair;
+                } else {
+                    return new StatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), pair.pcState);
+                }
+            }
+        }
+            
+        public synchronized Collection<StatePair> getStates() {
+            if (data == null) {
+                return Collections.singleton(new StatePair(null, null));
+            } else if(data instanceof StatePair) {
+                return Collections.singleton((StatePair) data);
+            } else {
+                return new ArrayList<StatePair>((Collection<StatePair>) data);
+            }
+        }
+        
+        public synchronized Collection<APTPreprocHandler.State> getPrerocStates() {
+            if (data == null) {
+                return Collections.emptyList();
+            } else if(data instanceof StatePair) {
+                return Collections.singleton(((StatePair) data).state);
+            } else {
+                Collection<StatePair> pairs = (Collection<StatePair>) data;
+                Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
+                for (StatePair pair : pairs) {
+                    result.add(pair.state);
+                }
+                return result;
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(fileNew);
+            sb.append("states:\n"); //NOI18N
+            for (StatePair pair : getStates()) {
+                sb.append(pair);
+                sb.append('\n'); //NOI18N
+            }
+            return sb.toString();
+        }
+
     }
     
     private static final CharSequence getCanonicalKey(CharSequence fileKey) {

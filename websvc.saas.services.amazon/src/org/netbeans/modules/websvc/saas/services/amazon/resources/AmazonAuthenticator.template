@@ -70,8 +70,7 @@ public class AmazonAuthenticator {
                 date + "\n" +
                 getCanonicalAmazonHeaders(headerMap) +
                 getCanonicalResource(headerMap);
-        
-        System.out.println("stringToSign = " + stringToSign);
+
         return stringToSign; 
         
     }

@@ -53,5 +53,5 @@ public interface HibernateFileLocationProvider {
      *
      * @return the location.
      */
-    FileObject getLocation();
+    FileObject getSourceLocation();
 }

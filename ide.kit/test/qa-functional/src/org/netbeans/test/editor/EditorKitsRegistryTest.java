@@ -97,7 +97,7 @@ public class EditorKitsRegistryTest extends NbTestCase {
             EditorKit kitFromNb = CloneableEditorSupport.getEditorKit("text/html");
             assertNotNull("Can't find Nb kit for text/html", kitFromNb);
             assertEquals("Wrong Nb kit for text/html",
-                "org.netbeans.modules.editor.html.HTMLKit", kitFromNb.getClass().getName());
+                "org.netbeans.modules.html.editor.HTMLKit", kitFromNb.getClass().getName());
         } else {
             log("Module org.netbeans.modules.html.editor not present, skipping HTMLKit test...");
         }

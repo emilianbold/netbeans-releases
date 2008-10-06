@@ -43,11 +43,11 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.GraphNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
@@ -96,7 +96,9 @@ public class CombinedFragmentReader implements GraphNodeReader {
      public void processGraphNode(GraphNodeReader peek, NodeInfo nodeInfo)
     {
         if (peek == null)
-            addNodeToScene(nodeInfo);
+        {
+            addNodeToScene(null, nodeInfo);
+        }
         else if (peek instanceof CombinedFragmentReader)
         {
             //we know it is is either a InteractionOperand or another Combinedfrag
@@ -105,26 +107,37 @@ public class CombinedFragmentReader implements GraphNodeReader {
             Widget widget = scene.findWidget(peek.getNodeInfo().getPresentationElement());
             if (widget != null && widget instanceof DiagramNodeReader)
             {
-                ((DiagramNodeReader)widget).load(nodeInfo);
+                if (getElement(nodeInfo.getProject(), nodeInfo.getMEID()) instanceof ICombinedFragment)
+                {
+                    addChild(peek, nodeInfo);
+                } else
+                {
+                    ((DiagramNodeReader) widget).load(nodeInfo);
+                }
             }
         }
         else
         {
-            addChild(nodeInfo);
+            addChild(peek, nodeInfo);
         }
     }
 
-    private void addChild(NodeInfo nodeInfo)
+    private void addChild(GraphNodeReader gnReader, NodeInfo nodeInfo)
     {
+        Widget container = null;
         IElement elt = getElement(nodeInfo.getProject(), nodeInfo.getMEID());
         if (elt != null)
         {
-            addNodeToScene(nodeInfo);
+            if (gnReader != null) //&& gnReader instanceof PackageReader)
+            {
+                container = ((DesignerScene)scene).findWidget(gnReader.getNodeInfo().getPresentationElement());
+            }
+            addNodeToScene(container, nodeInfo);
         }
         else
         {
             //it is just a visual elt.. no associated model elt
-        }
+        }        
     }
 
      private IElement getElement(IProject project, String sModelElementID)
@@ -138,7 +151,7 @@ public class CombinedFragmentReader implements GraphNodeReader {
     }
 
      
-    private void addNodeToScene(NodeInfo nodeInfo)
+    private void addNodeToScene(Widget container, NodeInfo nodeInfo)
     {
         try
         {
@@ -148,7 +161,11 @@ public class CombinedFragmentReader implements GraphNodeReader {
                 //there is nothing to add.. so return..
                 return;
             }
-            IPresentationElement pE = Util.createNodePresentationElement();
+            IPresentationElement pE = elt.getPresentationElementById(nodeInfo.getPEID());
+            if (pE == null)
+            {
+                pE = Util.createNodePresentationElement();
+            }
             pE.setXMIID(nodeInfo.getPEID());
             pE.addSubject(elt);
             nodeInfo.setPresentationElement(pE);
@@ -163,13 +180,17 @@ public class CombinedFragmentReader implements GraphNodeReader {
                 if (widget instanceof DiagramNodeReader)
                 {
                     nodeInfo.setPresentationElement(pE);
+                    if (container != null && container instanceof DiagramNodeReader)
+                    {
+                        ((DiagramNodeReader)container).addContainedChild(widget);
+                    }
                     //load all the properties
                     ((DiagramNodeReader) widget).load(nodeInfo);
                 }
             }
             else
             {
-                System.out.println("  engine.createWidget is returning null.... ");
+//                System.out.println("  engine.createWidget is returning null.... ");
             }
         }
         catch (Exception e)

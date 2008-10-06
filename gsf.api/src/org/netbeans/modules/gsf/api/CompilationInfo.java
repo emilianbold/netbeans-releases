@@ -46,10 +46,7 @@ import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -109,19 +106,7 @@ public abstract class CompilationInfo {
                 return null;
             }
 
-            DataObject od = null;
-            try {
-                od = DataObject.find(fo);
-            } catch (DataObjectNotFoundException donfe) {
-                return null;
-            }
-            EditorCookie ec = od.getCookie(EditorCookie.class);
-
-            if (ec != null) {
-                doc = ec.getDocument();
-            } else {
-                return null;
-            }
+            doc = DataLoadersBridge.getDefault().getDocument(fo);
         }
         
         return doc;

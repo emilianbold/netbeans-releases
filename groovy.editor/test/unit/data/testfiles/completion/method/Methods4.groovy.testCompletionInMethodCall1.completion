@@ -1,0 +1,15 @@
+Code completion result for source line:
+new File("something").ea|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     each(Closure)                              Object
+METHOD     eachByte(Closure)                          void
+METHOD     eachDir(Closure)                           void
+METHOD     eachDirMatch(Object, Closure)              void
+METHOD     eachDirRecurse(Closure)                    void
+METHOD     eachFile(Closure)                          void
+METHOD     eachFileMatch(Object, Closure)             void
+METHOD     eachFileRecurse(Closure)                   void
+METHOD     eachLine(Closure)                          Object
+METHOD     eachObject(Closure)                        void
+METHOD     eachWithIndex(Closure)                     Object

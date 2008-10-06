@@ -41,7 +41,7 @@
 package org.netbeans.modules.cnd.highlight.semantic.actions;
 
 import javax.swing.Action;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 
 /**

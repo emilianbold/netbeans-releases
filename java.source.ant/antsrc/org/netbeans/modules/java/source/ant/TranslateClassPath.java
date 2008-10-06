@@ -82,13 +82,13 @@ public class TranslateClassPath extends Task {
         }
         
         Project p = getProject();
-        
+
         String translated = translate(classpath);
         
         p.setProperty(targetProperty, translated);
     }
     
-    private static String translate(String classpath) {
+    private String translate(String classpath) {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
 
@@ -114,19 +114,36 @@ public class TranslateClassPath extends Task {
         return cp.toString();
     }
     
-    private static File[] translateEntry(String path) throws BuildException {
+    private File[] translateEntry(String path) throws BuildException {
         File entryFile = new File(path);
         try {
             URL entry = FileUtil.urlForArchiveOrDir(entryFile);
             
-            SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(entry);
-            
-            if (r.getRoots().length > 0) {
+            SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(entry);
+            boolean appendEntry = false;
+
+            if (r.preferSources() && r.getRoots().length > 0) {
                 List<File> translated = new LinkedList<File>();
                 
                 for (FileObject source : r.getRoots()) {
                     File sourceFile = FileUtil.toFile(source);
-                    BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL());
+
+                    if (sourceFile == null) {
+                        log("Source URL: " + source.getURL().toExternalForm() + " cannot be translated to file, skipped", Project.MSG_WARN);
+                        appendEntry = true;
+                        continue;
+                    }
+
+                    Boolean bamiResult = BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
+
+                    if (bamiResult == null) {
+                        appendEntry = true;
+                        continue;
+                    }
+                    
+                    if (!bamiResult) {
+                        throw new UserCancel();
+                    }
                     
                     for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
                         FileObject binaryFO = URLMapper.findFileObject(binary);
@@ -141,6 +158,10 @@ public class TranslateClassPath extends Task {
                         }
                     }
                 }
+
+                if (appendEntry) {
+                    translated.add(entryFile);
+                }
                 
                 return translated.toArray(new File[0]);
             }
@@ -150,5 +171,5 @@ public class TranslateClassPath extends Task {
 
         return new File[] {entryFile};
     }
-    
+
 }

@@ -43,9 +43,7 @@ package org.openide.loaders;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
-import java.beans.*;
 import java.io.IOException;
-import junit.textui.TestRunner;
 import org.netbeans.junit.*;
 
 /*
@@ -55,6 +53,7 @@ import org.netbeans.junit.*;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1105, and looks inherently unreliable
 public class SeparationOfThreadsTest extends NbTestCase {
     private DataFolder root;
     private DataFolder to;
@@ -159,7 +158,7 @@ public class SeparationOfThreadsTest extends NbTestCase {
     public void testCopy () throws Exception {
         res = a.copy (to);
     }
-    
+
     public void testCreateFromTemplate () throws Exception {
         res = a.createFromTemplate (to);
     }
@@ -358,6 +357,14 @@ public class SeparationOfThreadsTest extends NbTestCase {
        
        protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
            DataObject retValue;
+
+           FileObject artificial = FileUtil.createData(
+               FileUtil.createMemoryFileSystem().getRoot(),
+               "x.art"
+           );
+           FileUtil.setMIMEType("art", "text/x-art");
+           DataObject obj = DataObject.find(artificial);
+           assertEquals("Object really created", obj.getPrimaryFile(), artificial);
            
            retValue = super.handleCreateFromTemplate(df, name);
            

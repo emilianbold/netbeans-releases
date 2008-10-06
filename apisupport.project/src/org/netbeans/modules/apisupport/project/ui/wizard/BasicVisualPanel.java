@@ -74,14 +74,32 @@ public abstract class BasicVisualPanel extends JPanel {
     }
     
     /**
-     * Set an warning message but mark the panel as valid.
+     * Set a warning message but mark the panel as valid.
      */
     protected final void setWarning(String message) {
+        setWarning(message, true);
+    }
+    
+    /**
+     * Set a warning message and validity of the panel.
+     */
+    protected final void setWarning(String message, boolean valid) {
         if (message == null) {
             throw new NullPointerException();
         }
-        setMessage(message);
-        setValid(true);
+        settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, message);
+        setValid(valid);
+    }
+    
+    /**
+     * Set an info message and validity of the panel.
+     */
+    protected final void setInfo(String message, boolean valid) {
+        if (message == null) {
+            throw new NullPointerException();
+        }
+        settings.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
+        setValid(valid);
     }
     
     /**
@@ -148,15 +166,15 @@ public abstract class BasicVisualPanel extends JPanel {
         }
         
         protected boolean isSuiteWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE || getData().getWizardType() == NewNbModuleWizardIterator.Type.APPLICATION;
+            return NewNbModuleWizardIterator.isSuiteWizard(getData().getWizardType());
         }
         
         protected boolean isSuiteComponentWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.SUITE_COMPONENT;
+            return NewNbModuleWizardIterator.isSuiteComponentWizard(getData().getWizardType());
         }
 
         protected boolean isLibraryWizard() {
-            return getData().getWizardType() == NewNbModuleWizardIterator.Type.LIBRARY_MODULE;
+            return NewNbModuleWizardIterator.isLibraryWizard(getData().getWizardType());
         }
         
     }

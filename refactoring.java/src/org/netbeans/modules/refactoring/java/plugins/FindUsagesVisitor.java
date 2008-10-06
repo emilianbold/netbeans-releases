@@ -95,7 +95,7 @@ public class FindUsagesVisitor extends FindVisitor {
                 
                 if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
                     Scanner tokenizer = new Scanner(t.text().toString());
-                    tokenizer.useDelimiter("[^a-zA-Z_]"); //NO18N
+                    tokenizer.useDelimiter("[^a-zA-Z0-9_]"); //NOI18N
                     
                     while (tokenizer.hasNext()) {
                         String current = tokenizer.next();

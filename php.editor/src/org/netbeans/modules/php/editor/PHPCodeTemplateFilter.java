@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -41,15 +41,17 @@ package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.php.editor.index.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 
 /**
  *
@@ -58,49 +60,61 @@ import org.openide.util.Exceptions;
 public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationInfo> {
     private boolean accept = false;
     private int caretOffset;
+    private CompletionContext context;
 
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
-        FileObject fo = NbUtilities.findFileObject(component);
-        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
-        
-        if (!model.isScanInProgress()){
-            try {
-                model.runUserActionTask(this, false);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        FileObject fo = GsfUtilities.findFileObject(component);
+        if (fo != null) {  // fo can be null, see issue #144856
+            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+
+            if (model != null && !model.isScanInProgress()){
+                try {
+                    model.runUserActionTask(this, false);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }
-    
+
 
     public boolean accept(CodeTemplate template) {
         if (template.getContexts().contains("php-code")) //NOI18N
         {
+            if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
+                return template.getAbbreviation().equals("fnc");//NOI18N
+            }
             return accept;
         }
-        
         return true;
     }
-    
+
     public void cancel() {
-        
+
     }
 
     public void run(CompilationInfo parameter) throws Exception {
-        PHPCodeCompletion.CompletionContext context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
+        BaseDocument document = (BaseDocument) parameter.getDocument();
+        document.readLock();
         
-        switch(context){
-            case EXPRESSION:
-            case CLASS_MEMBER:
-            case STATIC_CLASS_MEMBER:
-                accept = true;
-                break;
+        try{
+            context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
+            switch(context){
+                case EXPRESSION:
+                    accept = true;
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    accept = true;
+                    break;
+            }
+        } finally {
+            document.readUnlock();
         }
     }
-    
+
     public static final class Factory implements CodeTemplateFilter.Factory {
-        
+
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter(component, offset);
         }

@@ -59,6 +59,8 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Enumeration;
 import java.util.Collections;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.IOException;
 import java.io.File;
 
@@ -81,6 +83,10 @@ final class ProjectUtilities {
             final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
 
             public void run () {
+                if (ptLogial == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Cannot find Project widnow, aborting.");
+                    return;
+                }
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
                 Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );

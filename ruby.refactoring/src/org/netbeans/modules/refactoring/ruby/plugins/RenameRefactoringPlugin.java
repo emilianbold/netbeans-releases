@@ -45,18 +45,18 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ClassVarAsgnNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -89,15 +89,15 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SClassNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SClassNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -105,6 +105,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult;
@@ -172,7 +173,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                        org.jruby.ast.Node root = AstUtilities.getRoot(co);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
                             RubyParseResult rpr = AstUtilities.getParseResult(co);
                             if (rpr != null) {
@@ -183,7 +184,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                                     // In Java, we look for a class with the name corresponding to the file.
                                     // It's not as simple in Ruby.
                                     AstElement element = els.get(0);
-                                    org.jruby.ast.Node node = element.getNode();
+                                    org.jruby.nb.ast.Node node = element.getNode();
                                     treePathHandle = new RubyElementCtx(root, node, element, co.getFileObject(), co);
                                     refactoring.getContext().add(co);
                                 }
@@ -298,18 +299,19 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         return preCheckProblem;
     }
     
-    private static final String getCannotRename(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
-    }
+//    private static final String getCannotRename(FileObject r) {
+//        return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
+//    }
     
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
         info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
         ElementKind kind = treePathHandle.getKind();
-//        
         String newName = refactoring.getNewName();
-//        String oldName = element.getSimpleName().toString();
         String oldName = treePathHandle.getSimpleName();
+        if (oldName == null) {
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
+        }
         
         if (oldName.equals(newName)) {
             boolean nameNotChanged = true;
@@ -883,9 +885,13 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     String primaryCategory = id.primaryCategory();
                     if ("comment".equals(primaryCategory) || "block-comment".equals(primaryCategory)) { // NOI18N
                         // search this comment
-                        String text = token.text().toString();
-                        int index = text.indexOf(oldName);
+                        CharSequence tokenText = token.text();
+                        if (tokenText == null || oldName == null) {
+                            continue;
+                        }
+                        int index = TokenUtilities.indexOf(tokenText, oldName);
                         if (index != -1) {
+                            String text = tokenText.toString();
                             // TODO make sure it's its own word. Technically I could
                             // look at identifier chars like "_" here but since they are
                             // used for other purposes in comments, consider letters
@@ -1092,6 +1098,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
          * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
+        @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {
             /* TODO look for both old and new and attempt to fix
              if (node instanceof AliasNode) {

@@ -1,0 +1,92 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2008 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>JSF 1.2 Menu Component</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Menu Component</h2>
+<p><small><a href="#seealso">See Also  </a></small>
+
+
+
+<p>The Menu component <img src="../../../images/menu.png" alt="Menu component icon">&nbsp;is an interface element consisting of one or more options. The component is intended to be used in cases where there can be more than one possible action related to a particular event of a component (such as clicking an hyperlink). In such cases, invoking the particular event on the component will open the popup menu which shows the list of possible actions that can be performed for that particular event.</p>
+<ul class="note">
+      <li>
+        The Menu component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+       see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+
+<p>After dragging the Menu component to from the Woodstock Composite category of the Palette to the Visual Designer, you can: </p>
+<ul>
+  <li>Select the Menu component and edit its properties in the Menu's <a href="propsheets/menu_props.html">Properties window</a>. Some typical properties you might set are:
+	  <ul>
+		  <li><b>items.</b> Specifies the items from which the web application user can choose. The value must be one of an array, Map, or Collection whose members are all subclasses of <tt>com.sun.webui.jsf.model.Option</tt>.</li>
+		  <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Menu</code> object.</li>
+		  <li><b>immediate.</b> The immediate flag.</li>
+          <li><strong>submitForm.</strong> When set to true, the form is immediately submitted when the user changes the selection in the menu.</li>
+          <li>visible. </li>
+    </ul>
+  </li>
+  <li>Right-click the Menu component and choose one of several actions:
+    <ul>
+			<li> <b>Edit processEvent Event Handler.</b> Opens the Source Editor, allowing you to edit the processEvent method.</li>
+			<li><b>Add Binding Attribute. </b>This option adds a binding attribute to the Menu component. <br>
+<ul>
+  <li><b>Note: </b>If you plan to script the component in Java code, you  must manually add a binding attribute, which is bound using a value binding expression to a property of the backing page bean.</li>
+</ul>
+</li>
+			<li><strong>Remove Binding Attribute.</strong> This option removes the binding attribute from the component. </li>
+			<li><b>Configure Ajax Transactions.</b> This option opens the Configure Ajax Transactions dialog box in which you can configure or add an Ajax transaction. </li>
+		    <li><b>Snap to Grid</b>. This option aligns the Menu component along the grid lines in the Visual Designer.</li>
+		    <li> <b>Preview in Browser</b>. See how the page renders in the default web browser for your system. </li>
+    </ul>
+  </li>
+</ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/menu_props.html">Menu Component Properties Window</a></dd>
+<dd>&nbsp;</dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+  <tr>
+  <td>&nbsp;</td>
+  </tr>
+</table>
+
+</body>
+</html>
+
+

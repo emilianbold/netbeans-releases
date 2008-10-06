@@ -52,6 +52,7 @@ import javax.swing.event.*;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -148,8 +149,8 @@ public class DetailPanel implements WizardDescriptor.Panel {
         if (empty) {
             fieldsChoice.setSelected(true);
             tableCombo.setEnabled(false);
-            availableLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableFields")); // NOI18N
-            includeLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
+            Mnemonics.setLocalizedText(availableLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableFields")); // NOI18N
+            Mnemonics.setLocalizedText(includeLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
             previewLabel.setIcon(fieldsIcon);
         }
         tableChoice.setEnabled(!empty);
@@ -417,8 +418,8 @@ public class DetailPanel implements WizardDescriptor.Panel {
         boolean selected = tableChoice.isSelected();
         tableCombo.setEnabled(selected);
         if (selected) {
-            availableLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableColumns")); // NOI18N
-            includeLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailColumnsToInclude")); // NOI18N
+            Mnemonics.setLocalizedText(availableLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableColumns")); // NOI18N
+            Mnemonics.setLocalizedText(includeLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailColumnsToInclude")); // NOI18N
             ForeignKey key = getForeignKey();
             fillLists(key.isValid() ? getForeignKey().getFKTable() : null);
             previewLabel.setIcon(tableIcon);
@@ -428,8 +429,8 @@ public class DetailPanel implements WizardDescriptor.Panel {
     private void fieldsChoiceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldsChoiceActionPerformed
         if (fieldsChoice.isSelected()) {
             tableCombo.setEnabled(false);
-            availableLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableFields")); // NOI18N
-            includeLabel.setText(NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
+            Mnemonics.setLocalizedText(availableLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailAvailableFields")); // NOI18N
+            Mnemonics.setLocalizedText(includeLabel, NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
             fillLists(masterTable);
             previewLabel.setIcon(fieldsIcon);
         }

@@ -62,15 +62,17 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="org-netbeans-modules-options-editor">
-        <folder name="OptionsDialogCategories">
-            <folder name="Editor">
-                <file name="MacrosPanel.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.macros.storage.ui.MacrosPanelController"/>
-                    <attr name="position" intvalue="400"/>
-                </file>
-            </folder>
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <file name="Macros.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+                <attr name="controller" newvalue="org.netbeans.modules.editor.macros.storage.ui.MacrosPanelController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#CTL_Macros_DisplayName"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#CTL_Macros_ToolTip"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.editor.macros.storage.ui.Bundle#KW_Macros"/>
+                <attr name="keywordsCategory" stringvalue="Editor/Macros"/>
+                <attr name="position" intvalue="700"/>
+            </file>
         </folder>
     </folder>
     

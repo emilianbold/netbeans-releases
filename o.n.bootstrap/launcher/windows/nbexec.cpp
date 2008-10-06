@@ -47,6 +47,11 @@
 #include <process.h>
 #include <commdlg.h>
 #include <errno.h>
+#include <winuser.h>
+#include <set>
+#include <string>
+
+using namespace std;
 
 #define PROG_FULLNAME "Error"
 #define IDE_MAIN_CLASS "org/netbeans/Main"
@@ -83,18 +88,18 @@ static int numOptions, maxOptions;
 static char *progArgv[1024];
 static int progArgc = 0;
 
-static void runClass(char *mainclass, bool deleteAUClustersFile);
+static void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode);
 
 static void fatal(const char *str);
 static char *findJavaExeInDirectory(char *dir);
 static int findJdkFromRegistry(const char* keyname, char jdkhome[]);
 
 static void addJdkJarsToClassPath(const char *jdkhome);
-static void addLauncherJarsToClassPath(const char *plathome);
+static void addLauncherJarsToClassPath();
 
 static void addToClassPath(const char *pathprefix, const char *path);
 static void addToClassPathIfExists(const char *pathprefix, const char *path);
-static void addAllFilesToClassPath(const char *dir, const char *pattern);
+static void addAllFilesToClassPath(const char *dir, const char *subdir, const char *pattern);
 
 static void parseArgs(int argc, char *argv[]);
 static void addOption(char *str);
@@ -120,6 +125,7 @@ double getPreciseTime();
 \n\
 General options:\n\
   --help                show this help\n\
+  --nosplash            do not show the splash screen\n\
   --jdkhome <path>      path to JDK\n\
   -J<jvm_option>        pass <jvm_option> to JVM\n\
 \n\
@@ -176,6 +182,7 @@ int main(int argc, char *argv[]) {
     
     parseArgs(argc - 1, argv + 1); // skip progname
 
+    DWORD retCode = 0;
     if (!runnormal && !runupdater) {
         char **newargv = (char**) malloc((argc+8) * sizeof (char*));
         int i;
@@ -217,7 +224,7 @@ int main(int argc, char *argv[]) {
         // run IDE
 
         newargv[1] = RUN_NORMAL;
-        _spawnv(_P_WAIT, exepath, newargv);
+        retCode = _spawnv(_P_WAIT, exepath, newargv);
 
         // check for patches again (for updater first)
         checkForNewUpdater(plathome);
@@ -232,18 +239,17 @@ int main(int argc, char *argv[]) {
         argc -= 2;
         argv += 2;
         if (bootclass != NULL) {
-            runClass(bootclass, TRUE);
+            runClass(bootclass, TRUE, &retCode);
         }
         else {
-            runClass(IDE_MAIN_CLASS, TRUE);
+            runClass(IDE_MAIN_CLASS, TRUE, &retCode);
         }
     } else if (runupdater) {
         argc -= 2;
         argv += 2;
-        runClass(UPDATER_MAIN_CLASS, FALSE);
+        runClass(UPDATER_MAIN_CLASS, FALSE, &retCode);
     }
-
-    return 0;
+    return retCode;
 }
 
 bool runAutoUpdaterOnClusters(bool firstStart) {
@@ -289,23 +295,29 @@ bool runAutoUpdater(bool firstStart, const char * root) {
     strcat(tmp, "\\update\\download\\install_later.xml");
     HANDLE laterFile = FindFirstFile(tmp, &ffd);
 
-    if (INVALID_HANDLE_VALUE != nbmFiles && (firstStart || INVALID_HANDLE_VALUE == laterFile))
+    FindClose(nbmFiles);
+    FindClose(laterFile);
+
+    if (INVALID_HANDLE_VALUE != nbmFiles && (firstStart || INVALID_HANDLE_VALUE == laterFile)) 
         return true;
 
     strcpy(tmp, root);
     strcat(tmp, "\\update\\deactivate\\deactivate_later.txt");
     laterFile = FindFirstFile(tmp, &ffd);
+    FindClose(laterFile);
     if (firstStart || (INVALID_HANDLE_VALUE == laterFile)) {
         strcpy(tmp, root);
         strcat(tmp, "\\update\\deactivate\\to_disable.txt");
         laterFile = FindFirstFile(tmp, &ffd);
         if (INVALID_HANDLE_VALUE != laterFile) {
+            FindClose(laterFile);
             return true;
         }
         strcpy(tmp, root);
         strcat(tmp, "\\update\\deactivate\\to_uninstall.txt");
         laterFile = FindFirstFile(tmp, &ffd);
         if (INVALID_HANDLE_VALUE != laterFile) {
+            FindClose(laterFile);
             return true;
         }
     }
@@ -313,7 +325,7 @@ bool runAutoUpdater(bool firstStart, const char * root) {
     return false;
 }
 
-void runClass(char *mainclass, bool deleteAUClustersFile) {
+void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode) {
     char buf[10240];
 
 #ifdef DEBUG
@@ -349,10 +361,10 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         strcpy(classpath, classpathBefore);
     else
         classpath[0] = '\0';
-  
-    addLauncherJarsToClassPath(plathome);
-    addJdkJarsToClassPath(jdkhome);
 
+    addLauncherJarsToClassPath();
+    addJdkJarsToClassPath(jdkhome);
+    
     char *proxy = 0, *nonProxyHosts = 0;
     char *socksProxy = 0;
     if (0 == findHttpProxyFromEnv(&proxy, &nonProxyHosts)) {
@@ -439,8 +451,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 #endif
     //_spawnv(_P_WAIT, javapath, args);
     double start = getPreciseTime();
-    DWORD retCode = 0;
-    if (!createProcessNoVirt(javapath, args, &retCode) && retCode == 1 && (getPreciseTime() - start < 2))
+    if (!createProcessNoVirt(javapath, args, retCode) && *retCode == 1 && (getPreciseTime() - start < 2))
     {
         // workaround for 64-bit java
         int i = 0;
@@ -463,7 +474,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         if (optionClient)
         {
             printf("Rerunnig without \"-client\" option...\n");
-            createProcessNoVirt(javapath, args);
+            createProcessNoVirt(javapath, args, retCode);
         }
     }
 }
@@ -508,13 +519,17 @@ static char *findJavaExeInDirectory(char *dir) {
     WIN32_FIND_DATA ffd;
 
     strcat(strcpy(javapath, dir), "\\jre\\bin\\java.exe");
-    if (INVALID_HANDLE_VALUE == FindFirstFile(javapath, &ffd)) {
+    HANDLE hFind = FindFirstFile(javapath, &ffd);
+    if (INVALID_HANDLE_VALUE == hFind) {
         strcat(strcpy(javapath, dir), "\\bin\\java.exe");
-        if (INVALID_HANDLE_VALUE == FindFirstFile(javapath, &ffd)) {
+        hFind = FindFirstFile(javapath, &ffd);
+        if (INVALID_HANDLE_VALUE == hFind) {
             free(javapath);
             return NULL;
         }
+        FindClose(hFind);
     }
+    FindClose(hFind);
     return javapath;
 }
 
@@ -727,17 +742,22 @@ void addJdkJarsToClassPath(const char *jdkhome)
     addToClassPathIfExists(jdkhome, "lib\\tools.jar");
 }
 
-void addLauncherJarsToClassPath(const char *plathome)
+void addJarsToClassPathFrom(const char *dir)
 {
-    char buf[1024];
+    addAllFilesToClassPath(dir, "lib\\patches", "*.jar");
+    addAllFilesToClassPath(dir, "lib\\patches", "*.zip");
 
-    strcat(strcpy(buf, plathome), "\\lib");
-    addAllFilesToClassPath(buf, "*.jar");
-    addAllFilesToClassPath(buf, "*.zip");
+    addAllFilesToClassPath(dir, "lib", "*.jar");
+    addAllFilesToClassPath(dir, "lib", "*.zip");
 
-    strcat(strcpy(buf, plathome), "\\lib\\locale");
-    addAllFilesToClassPath(buf, "*.jar");
-    addAllFilesToClassPath(buf, "*.zip");
+    addAllFilesToClassPath(dir, "lib\\locale", "*.jar");
+    addAllFilesToClassPath(dir, "lib\\locale", "*.zip");    
+}
+
+void addLauncherJarsToClassPath()
+{
+    addJarsToClassPathFrom(userdir);
+    addJarsToClassPathFrom(plathome);
 
     if (runupdater) {
         char userUpdater[MAX_PATH] = "";
@@ -746,25 +766,28 @@ void addLauncherJarsToClassPath(const char *plathome)
         if (fileExists(userUpdater))
             baseUpdaterPath = userdir;
         addToClassPath(baseUpdaterPath, "\\modules\\ext\\updater.jar");
-        strcat(strcpy(buf, baseUpdaterPath), "\\modules\\ext\\locale");
-        addAllFilesToClassPath(buf, "updater_*.jar");
+        addAllFilesToClassPath(baseUpdaterPath, "\\modules\\ext\\locale", "updater_*.jar");
     }
 }
 
-void addAllFilesToClassPath(const char *dir,
-                            const char *pattern) {
-    char buf[1024];
+set<string> addedToCP;
+
+void addAllFilesToClassPath(const char *dir, const char *subdir, const char *pattern) {
+    char path[1024];
+    char pathPattern[1024];
     struct _finddata_t fileinfo;
     long hFile;
+    snprintf(path, 1024, "%s\\%s", dir, subdir);
+    snprintf(pathPattern, 1024, "%s\\%s", path, pattern);
 
-    strcat(strcat(strcpy(buf, dir), "\\"), pattern);
-  
-    if ((hFile = _findfirst(buf, &fileinfo)) != -1L) {
-        addToClassPath(dir, fileinfo.name);
-
-        while (0 == _findnext(hFile, &fileinfo))
-            addToClassPath(dir, fileinfo.name);
-    
+    if ((hFile = _findfirst(pathPattern, &fileinfo)) != -1L) {
+        do {
+            string name = subdir;
+            name += fileinfo.name;
+            if (addedToCP.insert(name).second) {
+                addToClassPath(path, fileinfo.name);
+            }
+        } while (0 == _findnext(hFile, &fileinfo));
         _findclose(hFile);
     }
 }
@@ -874,8 +897,19 @@ void parseArgs(int argc, char *argv[]) {
                 arg = *argv;
                 argv++;
                 argc--;
-                if (arg != 0 && findJavaExeInDirectory(arg) != NULL) {
-                    strcpy(jdkhome, arg);
+                if (arg != 0) {
+                    if (findJavaExeInDirectory(arg))
+                        strcpy(jdkhome, arg);
+                    else {
+                        argv[-1] = argv[-2] = "";
+                        char errMsg[1024] = "";
+                        sprintf(errMsg, "Cannot find java.exe in specified jdkhome.\nNeither %s%s nor %s%s exists.\nDo you want to try to use default version?",
+                                arg, "\\jre\\bin\\java.exe",
+                                arg, "\\bin\\java.exe"
+                                );
+                        if (::MessageBox(NULL, errMsg, "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO)
+                            exit(255);
+                    }
                 }
             }
             else {

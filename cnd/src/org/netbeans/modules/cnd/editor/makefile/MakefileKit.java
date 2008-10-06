@@ -49,7 +49,7 @@ import org.netbeans.modules.editor.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
 * Makefile editor kit with appropriate document

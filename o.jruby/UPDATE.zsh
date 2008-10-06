@@ -16,6 +16,14 @@
 #
 # You can invoke this script with the extra parameter "local" to only update the local zip files (preindexed)
 # or "native" to only update the native zips, or "both" to update everything.
+#
+# To try debugging this, set up the properties in GsfModuleInstaller.java's restored method, for example like this:
+# System.setProperty("gsf.preindexing", "true");
+# System.setProperty("netbeans.full.hack=true", "true");
+# System.setProperty("ruby.interpreter", "/Users/tor/dev/ruby/install/ruby-1.8.5/bin/ruby");
+# System.setProperty("gsf.preindexing.projectpath=", "/Users/tor/NetBeansProjects/RailsPreindexProject");
+#
+
 
 #
 # Configure the following parameters:
@@ -25,7 +33,8 @@ NBHGHOME=~/netbeans/hg/main
 NATIVERUBYHOME=/Users/tor/dev/ruby/install/ruby-1.8.5/
 #NATIVERUBYHOME=/home/tor/dev/ruby-1.8.5
 VMFLAGS=-J-Xmx1024m
-INDEXING_PROJECT=/Users/tor/NetBeansProjects/RailsApplication1
+# -ANY- Rails project will do, I chose a recent one to avoid getting Rails version mismatch warning dialogs
+INDEXING_PROJECT=/Users/tor/NetBeansProjects/RailsPreindexProject
 
 # You probably don't want to change these:
 NB=$NBHGHOME/nbbuild/netbeans/bin/netbeans
@@ -33,6 +42,7 @@ NB=$NBHGHOME/nbbuild/netbeans/bin/netbeans
 NATIVERUBY=$NATIVERUBYHOME/bin/ruby
 SCRATCHFILE=/tmp/native.zip
 USERDIR=/tmp/preindexing
+TMP_BINARIES=/tmp/binaries-list
 
 #############################################################################################
 # No user-configurable parts beyond this point...
@@ -53,7 +63,7 @@ if test ! -f $CLUSTERS/extra/modules/org-netbeans-modules-gsf-tools.jar ; then
   exit 0
 fi
 
-find $CLUSTERS . -name "netbeans-index*.zip" -exec rm {} \;
+find $CLUSTERS -name "netbeans-index*.zip" -exec rm {} \;
 rm -rf $RUBY/preindexed/lib
 rm -rf $GSF/preindexed-javascript/lib
 
@@ -66,16 +76,18 @@ $NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.
 #cd $CLUSTERS
 cd $RUBY
 rm -f preindexed-jruby.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
-#zip -r preindexed-jruby.zip `find . -name "netbeans-index-ruby*" | egrep -v "action|active|rails"`
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
+#zip -r preindexed-jruby.zip `find . -name "netbeans-index-*ruby*" | egrep -v "action|active|rails"`
 zip -r preindexed-jruby.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
 mv preindexed-jruby.zip $NBHGHOME/ruby.platform/external/preindexed.zip
 rm -f preindexed-jruby.zip
 
 cd $GSF
 rm -f preindexed-javascript.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
-#zip -r preindexed-javascript.zip `find . -name "netbeans-index-javascript*" | egrep -v "action|active|rails"`
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
+#zip -r preindexed-javascript.zip `find . -name "netbeans-index-*javascript*" | egrep -v "action|active|rails"`
 zip -r preindexed-javascript.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
 mv preindexed-javascript.zip $NBHGHOME/javascript.editing/external/preindexed.zip
 rm -f preindexed-javascript.zip
@@ -93,7 +105,7 @@ $NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.
 # Ruby
 cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
-zip -r $SCRATCHFILE `find . -name "netbeans-index-ruby*.zip"` 
+zip -r $SCRATCHFILE `find . -name "netbeans-index-*ruby*.zip"` 
 cd $RUBY
 rm -rf preindexed
 mkdir preindexed
@@ -101,7 +113,8 @@ cd preindexed
 unzip $SCRATCHFILE
 cd ..
 rm -f $NBHGHOME/ruby.platform/external/preindexed-native.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
 zip -r $NBHGHOME/ruby.platform/external/preindexed-native.zip preindexed/
 
 # JavaScript
@@ -109,8 +122,8 @@ cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
 echo "**************"
 echo "Indexing complete. There should be no output after this:"
-find . -name "netbeans-index-javascript*.zip"
-#zip -r $SCRATCHFILE `find . -name "netbeans-index-javascript*.zip"` 
+find . -name "netbeans-index-*javascript*.zip"
+#zip -r $SCRATCHFILE `find . -name "netbeans-index-*javascript*.zip"` 
 #cd $GSF
 #rm -rf preindexed-javascript
 #mkdir preindexed-javascript
@@ -118,6 +131,25 @@ find . -name "netbeans-index-javascript*.zip"
 #unzip $SCRATCHFILE
 #cd ..
 #rm -f $NBHGHOME/javascript.editing/external/preindexed-native.zip
-#find . -name "netbeans-index-php*.zip" -exec rm {} \;
+#find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+#find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
 #zip -r $NBHGHOME/javascript.editing/external/preindexed-native.zip preindexed-javascript/
 fi
+
+
+
+
+# Update binaries-list -- manual upload is still necessary!
+# Ruby
+rm -f $TMP_BINARIES
+cat $JR/ruby.platform/external/binaries-list | sed '/preindexed.zip/d' | sed '/preindexed-native.zip/d' > $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/ruby.platform/external/preindexed-native.zip | awk '{ print toupper($2) }'` preindexed-native.zip >> $TMP_BINARIES
+mv $TMP_BINARIES $JR/ruby.platform/external/binaries-list
+
+# JavaScript
+rm -f $TMP_BINARIES
+cat $JR/javascript.editing/external/binaries-list | sed '/preindexed.zip/d' > $TMP_BINARIES
+echo `openssl dgst -sha1 $NBHGHOME/javascript.editing/external/preindexed.zip | awk '{ print toupper($2) }'` preindexed.zip >> $TMP_BINARIES
+mv $TMP_BINARIES $JR/javascript.editing/external/binaries-list
+

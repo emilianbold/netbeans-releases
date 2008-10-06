@@ -107,6 +107,77 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add ability to ensure a JDBC connection is valid</summary>
+            <version major="1" minor="30"/>
+            <date day="27" month="8" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change allows you to ensure that the physical database connection
+                obtained from a DatabaseConnection is valid or is null  .
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="143837"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>Add support for always quoting and for unquoting SQL identifiers.</summary>
+            <version major="1" minor="29"/>
+            <date day="15" month="8" year="2008"/>
+            <author login="abadea"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add support for always quoting and for unquoting SQL identifiers.
+            </description>
+            <class package="org.netbeans.api.db.sql.support" name="SQLIdentifiers"/>
+            <issue number="143441"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>Add ability to get the underlying JDBC Driver instance for a JDBCDriver</summary>
+            <version major="1" minor="28"/>
+            <date day="27" month="6" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change makes it possible to get the underlying Driver class.  Without
+                this, the only way you can obtain the driver is to create your own classloader that
+                has the driver classpath URLs in its search list and then load the driver.
+                This makes things much easier.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="JDBCDriver"/>
+            <issue number="134309"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>Add ability to show the Add JDBC Driver dialog synchronously</summary>
+            <version major="1" minor="27"/>
+            <date day="27" month="6" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add the ability to show the Add Driver dialog synchronously.  This
+                must be run on the AWT event thread, but it returns the <code>JDBCDriver</code> that was added.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="JDBCDriverManager"/>
+            <issue number="129633"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
+            <summary>Add ability to connect a database connection directly with no UI</summary>
+            <version major="1" minor="26"/>
+            <date day="26" month="6" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add the ability to connect a database connection directly from the API
+                without having any kind of UI pop up, be it a dialog or a progress window.
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="ConnectionManager"/>
+            <issue number="128546"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Add ability to remove a database connection</summary>
             <version major="1" minor="25"/>
             <date day="26" month="2" year="2008"/>
@@ -114,8 +185,9 @@ is the proper place.
             <compatibility addition="yes"/>
             <description>
                 Add the ability to remove a database connection from the Database
-                Explorer connection list
+                Explorer connection list.
             </description>
+            <class package="org.netbeans.api.db.explorer" name="ConnectionManager"/>
             <issue number="128502"/>
         </change>
 
@@ -183,7 +255,7 @@ is the proper place.
             <author login="abadea"/>
             <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
             <description>
-                This change adds a <code>showAddConnectionDialog</code> which opens the 
+                This change adds a <code>showAddConnectionDialog</code> which opens the
                 New Connection Dialog while pre-filling a specified database user and password.
                 It also adds <code>showAddConnectionDialogFromEventThread</code> methods
                 which are counterparts to the <code>showAddConnectionDialog</code> methods,

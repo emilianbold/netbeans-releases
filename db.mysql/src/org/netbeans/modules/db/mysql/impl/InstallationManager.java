@@ -41,14 +41,14 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.mysql.impl.Installation.Command;
+import org.netbeans.modules.db.mysql.installations.BundledInstallation;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -66,11 +66,16 @@ public class InstallationManager {
             "Databases/MySQL/Installations"; // NOI18N
 
 
-    public static List<Installation> getInstallations() {
+    public static synchronized List<Installation> getInstallations(Collection loadedInstallations) {
         if ( INSTALLATIONS == null ) {
-            Collection loadedInstallations = 
-                    Lookups.forPath(INSTALLATION_PROVIDER_PATH)
-                        .lookupAll(Installation.class);
+            // First see if we're bundled with MySQL.  If so, just return
+            // the bundled installation
+            Installation bundled = BundledInstallation.getDefault();
+            if (bundled.isInstalled()) {
+                ArrayList<Installation> bundledList = new ArrayList<Installation>();
+                bundledList.add(bundled);
+                return bundledList;
+            }
 
             // Now order them so that the stack-based installations come first.
             // See the javadoc for Installation.isStackInstall() for the reasoning 
@@ -104,9 +109,11 @@ public class InstallationManager {
      *      the other ones available will not be detected.
      */
     public static Installation detectInstallation() {
-        List<Installation> installations = InstallationManager.getInstallations();
+        List<Installation> installationCopy = new CopyOnWriteArrayList<Installation>();
+        Collection loadedInstallations = Lookups.forPath(INSTALLATION_PROVIDER_PATH).lookupAll(Installation.class);
+        installationCopy.addAll(InstallationManager.getInstallations(loadedInstallations));
         
-        for ( Iterator it = installations.iterator() ; it.hasNext() ; ) {
+        for ( Iterator it = installationCopy.iterator() ; it.hasNext() ; ) {
             Installation installation = (Installation)it.next();
             
             LOGGER.log(Level.FINE, "Looking for MySQL installation " + 

@@ -63,22 +63,21 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *           &lt;set attributeName="visibility" attributeType="XML" begin="age_spinner.focusout" fill="freeze" to="hidden"/>
  *       &lt;/rect>
  *       &lt;rect  x="5.0" y="0.0" width="33" height="20" fill="none" stroke="black" stroke-width="2"/>
- *   &lt;g>
+ *   &lt;g id="age_spinner_editor">
  *       &lt;!-- this editor is SVGTextField component -->
  *
  *       &lt;!-- metadata definition-->
- *           &lt;text display="none">type=editor&lt;/text>
- *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *       &lt;text display="none">type=editor&lt;/text>
+ *       &lt;text display="none">editable=false&lt;/text>
+ *       &lt;text display="none">enabled=true&lt;/text>
  *
- *       &lt;text x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">0
+ *       &lt;g>
+ *           &lt;text id="age_spinner_editor_text" x="10" y="15" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *           0&lt;/text>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=text&lt;/text>
- *       &lt;/text>
- *       &lt;g>
- *               &lt;!-- Metadata information. Please don't edit. -->
- *           &lt;text display="none">type=caret&lt;/text>
- *           &lt;rect  visibility="visible" x="17" y="3" width="2" height="15" fill="black" stroke="black"/>
  *       &lt;/g>
+ *       
  *       &lt;!-- The rectangle below is difference between rectangle that bounds spinner and spinner buttons ( the latter 
  *       has id = age_spinner_up and age_spinner_down ). It needed for counting bounds of input text area .
  *       It should be created programatically or SVGTextField should have API for dealing with "width"
@@ -86,21 +85,21 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;rect visibility="hidden" x="5.0" y="0" width="33" height="20"/>
  *   &lt;/g>
  *   &lt;g>
- *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=up_button&lt;/text>
  *
- *       &lt;rect x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *       &lt;rect id="age_spinner_up_button" x="21.0" y="0.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+ *           &lt;animate id="age_spinner_up_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate id="age_spinner_up_button_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
  *       &lt;/rect>
  *   &lt;/g>
  *   &lt;g>
- *           &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=down_button&lt;/text>
  *
- *       &lt;rect x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
- *           &lt;animate attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
+ *       &lt;rect id="age_spinner_down_button" x="21.0" y="10.0" width="16" height="10" fill="rgb(220,220,220)" stroke="black" stroke-width="1.5">
+ *           &lt;animate id="age_spinner_down_button_pressed" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(170,170,170)"/>
+ *           &lt;animate id="age_spinner_down_button_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(220,220,220)"/>
  *       &lt;/rect>
  *   &lt;/g>
  *   &lt;polygon transform="translate(28,6)"  points="0,0 2,0 1,-2" fill="blue" stroke="black" stroke-width="2"/>
@@ -112,9 +111,16 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SVGSpinner extends SVGComponent implements DataListener {
     
-    private static final String UP              = "up_button";      // NOI18N
-    private static final String DOWN            = "down_button";    // NOI18N
-    private static final String EDITOR          = "editor";         // NOI18N
+    private static final String UP              = "up_button";          // NOI18N
+    private static final String DOWN            = "down_button";        // NOI18N
+    private static final String EDITOR          = "editor";             // NOI18N
+    
+    private static final String UP_SUFFIX       = DASH+UP;
+    private static final String DOWN_SUFFIX     = DASH+DOWN;
+    private static final String EDITOR_SUFFIX   = DASH+EDITOR;
+    
+    private static final String PRESSED_SUFFIX =  DASH + "pressed";     // NOI18N
+    private static final String RELEASED_SUFFIX  = DASH + "released";   // NOI18N
     
     public SVGSpinner( SVGForm form, String elemId ) {
         super(form, elemId);
@@ -126,9 +132,8 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         myInputHandler = new SpinnerInputHandler();
 
         setModel( new DefaultModel() );
-        setEditor( new DefaultSpinnerEditor( form , 
-                (SVGLocatableElement)getElementByMeta( getElement(), TYPE, 
-                        EDITOR)  , myUILock )); 
+        
+        initEditor(); 
     }
 
     public void focusGained() {
@@ -188,18 +193,64 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         }
     }
     
+
+    private void initEditor() {
+        SVGLocatableElement editor =null;
+        if ( getElement().getId() != null ){
+            editor = (SVGLocatableElement)getElementById( getElement(), 
+                    getElement().getId()+EDITOR_SUFFIX);
+        }
+        if (editor == null) {
+            editor = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
+                    EDITOR);
+        }
+        if (editor != null) {
+            setEditor(new DefaultSpinnerEditor(getForm(), editor, myUILock));
+        }
+    }
+    
     private void initButtons() {
-        myUpButton = getNestedElementByMeta( getElement(), TYPE, UP);
-        myDownButton = getNestedElementByMeta( getElement(), TYPE , DOWN);
+        if ( getElement().getId() != null ){
+            myUpButton = getElementById( getElement(), getElement().getId() +
+                    UP_SUFFIX);
+            myDownButton = getElementById( getElement(), getElement().getId() +
+                    DOWN_SUFFIX);
+            
+            myUpPressedAnimation = (SVGAnimationElement)getElementById( myUpButton,
+                    myUpButton.getId() + PRESSED_SUFFIX );
+            myUpReleasedAnimation = (SVGAnimationElement) getElementById( 
+                    myUpButton, myUpButton.getId() + RELEASED_SUFFIX );
+            
+            myDownPressedAnimation = (SVGAnimationElement)getElementById( 
+                    myDownButton, myDownButton.getId() + PRESSED_SUFFIX );
+            myDownReleasedAnimation = (SVGAnimationElement)getElementById(
+                    myDownButton , myDownButton.getId() + RELEASED_SUFFIX);
+        }
         
-        myUpPressedAnimation = (SVGAnimationElement)myUpButton.getFirstElementChild();
-        myDownPressedAnimation = (SVGAnimationElement) myDownButton.
-            getFirstElementChild();
+        if ( myUpButton == null ) {
+            myUpButton = getNestedElementByMeta( getElement(), TYPE, UP);
+        }
+        if ( myDownButton == null ){
+            myDownButton = getNestedElementByMeta( getElement(), TYPE , DOWN);
+        }
         
-        myUpReleasedAnimation = (SVGAnimationElement)myUpPressedAnimation.
-            getNextElementSibling();
-        myDownReleasedAnimation = (SVGAnimationElement)myDownPressedAnimation.
-            getNextElementSibling();
+        if ( myUpPressedAnimation == null ){
+            myUpPressedAnimation = 
+                (SVGAnimationElement)myUpButton.getFirstElementChild();
+        }
+        if ( myDownPressedAnimation == null ){
+            myDownPressedAnimation = (SVGAnimationElement) myDownButton.
+                getFirstElementChild();
+        }
+        
+        if ( myUpReleasedAnimation ==null && myUpPressedAnimation != null ){
+            myUpReleasedAnimation = (SVGAnimationElement)myUpPressedAnimation.
+                getNextElementSibling();
+        }
+        if ( myDownReleasedAnimation == null && myDownPressedAnimation != null ){
+            myDownReleasedAnimation = (SVGAnimationElement)myDownPressedAnimation.
+                getNextElementSibling();
+        }
     }
     
     private void releaseUpButton() {

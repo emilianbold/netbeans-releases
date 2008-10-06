@@ -106,6 +106,7 @@ public class ReserveAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         Set<File> roots = context.getFiles();
         switch (status) {
         case STATUS_RESERVE:
@@ -128,7 +129,7 @@ public class ReserveAction extends AbstractAction {
         Mnemonics.setLocalizedText(reserveButton, NbBundle.getMessage(ReserveAction.class, "CTL_UnreserveDialog_Unreserve")); //NOI18N
         
         dd.setOptions(new Object[] {reserveButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(ReserveAction.class));
+        dd.setHelpCtx(new HelpCtx(" org.netbeans.modules.clearcase.ui.checkout.Unreserve"));
                 
         panel.putClientProperty("contentTitle", title);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
@@ -164,7 +165,7 @@ public class ReserveAction extends AbstractAction {
         Mnemonics.setLocalizedText(reserveButton, NbBundle.getMessage(ReserveAction.class, "CTL_ReserveDialog_Reserve")); //NOI18N
         
         dd.setOptions(new Object[] {reserveButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(ReserveAction.class));
+        dd.setHelpCtx(new HelpCtx(" org.netbeans.modules.clearcase.ui.checkout.Reserve"));
                 
         panel.putClientProperty("contentTitle", title);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N

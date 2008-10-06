@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.xml.tax/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/tax/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/tax/TAXModuleInstall.class
-OpenIDE-Module-Implementation-Version: 4
 OpenIDE-Module-Layer: org/netbeans/modules/xml/tax/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
+OpenIDE-Module-Specification-Version: 1.16
 

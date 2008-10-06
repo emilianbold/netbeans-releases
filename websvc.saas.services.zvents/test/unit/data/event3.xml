@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1081</stream_count>
+    <event id="136053">
+        <name>Ballroom Dancing</name>
+        <description>6 times on Wednesdays
+      $75.00 Member
+      $85.00 Public
+      Introduces the fundamentals of ballroom dance, basic steps and
+      patterns. Included will be waltz, rumba and Night Club Two-Step.
+      --- http://maven.jccsf.org/
+        </description>
+        <url>http://maven.jccsf.org/content_main.aspx?catid=376</url>
+        <starttime>200603011830</starttime>
+        <endtime>200603011930</endtime>
+        <creator_id>28</creator_id>
+        <price></price>
+        <venue_id>8102</venue_id>
+        <parent_id>136053</parent_id>
+        <series_count>3</series_count>
+    </event>
+    <event id="139885">
+        <name>Teen Dance</name>
+        <description>22 times on Thursdays
+      Age Requirement:  Ages 12-17
+      Join us for this unique class designed with you in mind. This
+      twice-per-week class lets you focus on several dance techniques each
+      week. On Tuesdays we will concentrate on ballet. Warm ups, new
+      techniques, barre work and floor work make this class a positive
+      learning experience.
+
+      Thursdays we will explore different dance forms. From hip-hop and
+      jazz to tap, students will learn new techqnieus and fun dance routines.
+
+      All levels of experience welcome.
+      --- http://maven.jccsf.org/
+        </description>
+        <url>http://maven.jccsf.org/content_main.aspx?catid=248</url>
+        <starttime>200603020500</starttime>
+        <endtime>200603020600</endtime>
+        <creator_id>28</creator_id>
+        <price>$410.00 Member, $430.00 Public</price>
+        <venue_id>8102</venue_id>
+        <parent_id>0</parent_id>
+        <series_count>2</series_count>
+    </event>
+    <venue id="8012">
+        <name>Improv Comedy Club and Restaurant</name>
+        <description></description>
+        <phone>(408) 280-7475</phone>
+        <link>http://www.zvents.com/san-jose-ca/venues/show/4553-improve-comedy-club-and-restaurant</link>
+        <url>http://improv2.com/v3/index.php?option=content&amp;task=blogcategory&amp;id=40&amp;Itemid=50</url>
+        <creator_id>2</creator_id>
+        <address>62 S. 2nd St.</address>
+        <city>San Jose</city>
+        <zipcode>95113</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <timezone>US/Pacific</timezone>
+        <latitude>37.3362</latitude>
+        <longitude>-121.889</longitude>
+    </venue>
+    <search_info>
+        <sst>1149145200</sst>
+        <set>1151737199</set>
+        <srss>10</srss>
+        <what>dancing</what>
+        <when>this month</when>
+        <where>san francisco, ca</where>
+        <radius>5.0</radius>
+        <st>event</st>
+    </search_info>
+</rsp>

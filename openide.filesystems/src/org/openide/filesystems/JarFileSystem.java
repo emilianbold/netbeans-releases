@@ -599,7 +599,7 @@ public class JarFileSystem extends AbstractFileSystem {
 
     protected void writeAttribute(String name, String attrName, Object value)
     throws IOException {
-        throw new IOException();
+        throw new IOException("Setting attribute not allowed for JarFileSystem [" + this.getDisplayName() + "!" + name + " <- " + attrName + "=" + value + "]");  //NOI18N
     }
 
     protected Enumeration<String>  attributes(String name) {

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.mysql.actions;
 
+import org.netbeans.modules.db.mysql.impl.ConnectManager;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.Utils;
@@ -75,9 +76,10 @@ public class PropertiesAction extends CookieAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
-        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        final DatabaseServer server = node.getCookie(DatabaseServer.class);
         
         PropertiesDialog dlg = new PropertiesDialog(server);
+        
         dlg.displayDialog();
     }
 

@@ -8,6 +8,7 @@ jmaki.namespace("jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table");
 var resourcesTable;
 var restStore;
 var restTopic;
+var _proxy = "";
 
 jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
 
@@ -133,6 +134,14 @@ jmaki.widgets.dojo.rest.__CONTAINER_PATH_NAME__table.Widget = function(wargs) {
         _widget.init();
         
     } else if (wargs.service) {
+        if(wargs.args) {
+            var args = wargs.args.split(";");
+            if(args.length > 0) {
+              var proxyE = args[0].split('=');
+              if(proxyE[0] == 'proxy')
+              _proxy = proxyE[1];
+            }
+        }
         table = rdj.initResource(wargs.service, _widget, container);
     } else {
         djd43.io.bind({
@@ -362,6 +371,8 @@ rdj.initResource = function (url, widget, container) {
         }
     };
     restStore = new rdj.data.__CONTAINER_NAME__Store({serviceUrl:url});
+    if(_proxy.length > 0)
+        restStore.setProxy(_proxy);
     var query = null;
     var result = restStore.find({query:query, sync:true, onnext:addRow});
     var table = djd43.widget.createWidget("rdj:ResourcesTable", {valueField:"Id"}, container);
@@ -410,7 +421,12 @@ rdj.initResource = function (url, widget, container) {
         var delAction = tr.appendChild(document.createElement('td'));
         delAction.innerHTML = delActionStr;
     } else {
-        var alertStr = '<span style="'+text2+'">No items to display! Please check url: <a href="'+url+'" target="_blank">'+url+'</a></span>';
+        var alertStr = '';
+        if(result == -1) {
+            alertStr = '<span style="'+text2+'">Error reading data store, Please check url: <a href="'+restStore._serverQueryUrl+'" target="_blank">'+restStore._serverQueryUrl+'</a>.<br/>Set proxy if RESTful web service is not running on the same domain as this application.</span>';
+        } else {
+            alertStr = '<span style="'+text2+'">No items to display!</span>';
+        }
         var alertAction = tr.appendChild(document.createElement('td'));
         alertAction.innerHTML = alertStr;
     }

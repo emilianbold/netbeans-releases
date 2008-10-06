@@ -44,31 +44,43 @@ package org.netbeans.modules.db.sql.loader;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.netbeans.modules.db.core.SQLOptions;
 import org.netbeans.modules.db.sql.execute.ui.SQLHistoryPanel;
-import org.netbeans.modules.db.sql.execute.ui.SQLResultPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.MouseUtils;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.text.CloneableEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -84,7 +96,15 @@ import org.openide.windows.TopComponent;
 public class SQLCloneableEditor extends CloneableEditor {
 
     private transient JSplitPane splitter;
-    private transient SQLResultPanel resultComponent;
+    private transient JTabbedPane resultComponent;
+    private transient JPopupMenu resultPopupMenu;
+    private transient Action closeTabAction;
+    private transient Action closeOtherTabsAction;
+    private transient Action closeAllTabsAction;
+    private transient Action closePreviousTabsAction;
+    private transient Component editor;
+
+    private transient List<Component> currentResultTabs;
 
     private transient SQLExecutionImpl sqlExecution;
 
@@ -106,18 +126,46 @@ public class SQLCloneableEditor extends CloneableEditor {
         initialize();
     }
 
-    public boolean hasResultComponent() {
-        return resultComponent != null;
-    }
-
-    public SQLResultPanel getResultComponent() {
+    void setResults(List<Component> results) {
         assert SwingUtilities.isEventDispatchThread();
-        if (resultComponent == null) {
-            createResultComponent();
+        if (resultComponent == null && results != null) {
+            createResultComponent(); 
         }
-        return resultComponent;
+        
+        if (resultComponent != null) {
+        populateResults(results);
+        }
     }
+    
+    private void populateResults(List<Component> components) {
+        if (currentResultTabs != null && closePreviousTabsAction != null) {
+            closePreviousTabsAction.setEnabled(true);
+        } else {
+            closePreviousTabsAction.setEnabled(false);
+        }
 
+        if (components == null) {
+            return;
+        }
+
+        currentResultTabs = components;
+
+        if (! SQLOptions.getDefault().isKeepOldResultTabs()) {
+            resultComponent.removeAll();
+        }
+        
+        for (Component comp : components ) {
+            resultComponent.add(comp);            
+        }
+
+        // Put focus on the first result from the set
+        if (components.size() > 0) {
+            resultComponent.setSelectedComponent(components.get(0));
+        }
+
+        showResultComponent();
+    }
+    
     private void createResultComponent() {
         JPanel container = findContainer(this);
         if (container == null) {
@@ -125,11 +173,14 @@ public class SQLCloneableEditor extends CloneableEditor {
             // thus CES.wrapEditorComponent() has not been called yet
             return;
         }
+        
+        resultComponent = TabbedPaneFactory.createCloseButtonTabbedPane();
+        createResultPopupMenu();
 
-        Component editor = container.getComponent(0);
+        editor = container.getComponent(0);
+
         container.removeAll();
 
-        resultComponent = new SQLResultPanel();
         splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, resultComponent);
         splitter.setBorder(null);
 
@@ -137,9 +188,7 @@ public class SQLCloneableEditor extends CloneableEditor {
         splitter.setDividerLocation(250);
         splitter.setDividerSize(7);
 
-        container.invalidate();
-        container.validate();
-        container.repaint();
+        showResultComponent();
 
         // #69642: the parent of the CloneableEditor's ActionMap is
         // the editor pane's ActionMap, therefore the delete action is always returned by the
@@ -150,7 +199,154 @@ public class SQLCloneableEditor extends CloneableEditor {
         if (equals(TopComponent.getRegistry().getActivated())) {
             // setting back the focus lost when removing the editor from the CloneableEditor
             requestFocusInWindow();
+        }        
+    }
+
+    /**
+     * Create the popup menu for the result pane
+     */
+    private void createResultPopupMenu() {
+        closeTabAction = new AbstractAction(getMessage("CLOSE_TAB_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                resultComponent.remove(resultComponent.getSelectedComponent());
+                enableTabActions();
+                if (resultComponent.getTabCount() == 0) {
+                    hideResultComponent();
+                }
+                revalidate();
+            }
+        };
+
+        closeOtherTabsAction = new AbstractAction(getMessage("CLOSE_OTHER_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                for (Component component : resultComponent.getComponents()) {
+                    if (! component.equals(resultComponent.getSelectedComponent())) {
+                        resultComponent.remove(component);
+                        enableTabActions();
+                    }
+                }
+                setEnabled(false);
+                revalidate();
+            }
+        };
+
+        closePreviousTabsAction = new AbstractAction(getMessage("CLOSE_PREVIOUS_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                for (Component component : resultComponent.getComponents()) {
+                    if ((currentResultTabs != null) && (! currentResultTabs.contains(component))) {
+                        resultComponent.remove(component);
+                        enableTabActions();
+                    }
+                }
+                setEnabled(false);
+                if (resultComponent.getTabCount() == 0) {
+                    hideResultComponent();
+                }
+                revalidate();
+            }
+        };
+
+        closeAllTabsAction = new AbstractAction(getMessage("CLOSE_ALL_TABS_ACTION")) {
+            public void actionPerformed(ActionEvent e) {
+                resultComponent.removeAll();
+                hideResultComponent();
+                revalidate();
+            }
+        };
+
+        resultPopupMenu = new JPopupMenu();
+        resultPopupMenu.add(closeTabAction);
+        resultPopupMenu.add(closeOtherTabsAction);
+        resultPopupMenu.add(closePreviousTabsAction);
+        resultPopupMenu.add(closeAllTabsAction);
+
+        resultComponent.addMouseListener(new MouseUtils.PopupMouseAdapter() {
+            @Override
+            protected void showPopup(MouseEvent evt) {
+                resultPopupMenu.show(resultComponent, evt.getX(), evt.getY());
+            }
+        });
+
+        resultComponent.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                enableTabActions();
+            }
+
+        });
+
+        resultComponent.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                    int selected = resultComponent.getSelectedIndex();
+                    resultComponent.remove((Component) evt.getNewValue());
+                    enableTabActions();
+                    int tabCount = resultComponent.getTabCount();
+                    if (selected > 0) {
+                        selected--;
+                    }
+                    if (selected >= 0 && selected < tabCount) {
+                        resultComponent.setSelectedIndex(selected);
+                    }
+                    if (tabCount == 0) {
+                        hideResultComponent();
+                    }
+                    revalidate();
+                }
+            }
+        });
+    }
+
+    private void enableTabActions() {
+        int numtabs = resultComponent.getTabCount();
+        if (numtabs == 0) {
+            hideResultComponent();
+        } else if (numtabs == 1) {
+            closeAllTabsAction.setEnabled(true);
+            closeOtherTabsAction.setEnabled(false);
+            closePreviousTabsAction.setEnabled(false);
+        } else {
+            closeAllTabsAction.setEnabled(true);
+            closeOtherTabsAction.setEnabled(true);
         }
+    }
+
+    private static String getMessage(String key, String ... params) {
+        return NbBundle.getMessage(SQLCloneableEditor.class, key, params);
+    }
+
+    private void hideResultComponent() {
+        if (splitter == null) {
+            return;
+        }
+
+        splitter.setBottomComponent(null);
+    }
+
+    private void showResultComponent() {
+        JPanel container = findContainer(this);
+        if (container == null) {
+            // the editor has just been deserialized and has not been initialized yet
+            // thus CES.wrapEditorComponent() has not been called yet
+            return;
+        }
+
+        if (splitter == null) {
+            return;
+        }
+
+        if (splitter.getBottomComponent() == null) {
+            splitter.setBottomComponent(resultComponent);
+            splitter.setDividerLocation(250);
+            splitter.setDividerSize(7);
+
+            container.invalidate();
+            container.validate();
+            container.repaint();
+        }
+
+
+        enableTabActions();
     }
 
     /**
@@ -188,7 +384,10 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
 
     protected void componentDeactivated() {
-        if (sqlEditorSupport().isConsole()) {
+        SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
+        // #132333: need to test if the support is still valid (it may be not, because
+        // the DataObject was deleted as the editor was closing.)
+        if (sqlEditorSupport.isConsole() && sqlEditorSupport.isValid()) {
             try {
                 cloneableEditorSupport().saveDocument();
             } catch (IOException e) {
@@ -395,19 +594,19 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void showHistory() {
-  
+            getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
-                    Object[] options = new Object[]{
-                        DialogDescriptor.CLOSED_OPTION
-                    };
-                    final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
-                            DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog dlg = null;
                     try {
+                        SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
+                        Object[] options = new Object[]{
+                            DialogDescriptor.CLOSED_OPTION
+                        };
+                        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
+                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("sql_history"), null);  // NOI18N
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
-                        dlg.getAccessibleContext().setAccessibleDescription("descr");
+                        dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLCloneableEditor.class, "ACSD_DLG"));
                         panel.setSize(panel.getPreferredSize());
                         dlg.pack();
                         dlg.setVisible(true);
@@ -415,6 +614,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                         if (dlg != null) {
                             dlg.dispose();
                         }
+                        getComponent().setCursor(null);
                     }
                 }
             });

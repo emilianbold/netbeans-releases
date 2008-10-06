@@ -11,24 +11,24 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Database (Database ) [2:1/1-8:3/104] lcurly=16 SCOPE: $Global$ 
+CLASS Database (Database ) [2:1/1-8:2/103] lcurly=16 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [4:5/30-7:6/101] MethodDDImpl SCOPE: Database 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:Database::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:Database::cursor<class>(int)
             DECLARATION: cursor  [4:5/30-7:6/101]
             PARAMETERS:
                 i [5:20/69-5:25/74]  TYPE: int TEXT=int  [5:20/69-5:23/72]  INIT: null  SCOPE: cursor 
             RETURNS int TEXT=int  [5:9/58-5:12/61]
             STATEMENT COMPOUND  [5:27/76-7:6/101] SCOPE: cursor 
                 STATEMENT RETURN  [6:9/86-6:18/95] SCOPE: Stmt  [5:27/76-7:6/101] text: 'return 0;'
-CLASS DataSource (DataSource ) [10:1/106-17:3/251] lcurly=123 SCOPE: $Global$ 
+CLASS DataSource (DataSource ) [10:1/106-17:2/250] lcurly=123 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [12:5/137-16:6/248] MethodDDImpl SCOPE: DataSource 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:DataSource::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:DataSource::cursor<class>(int)
             DECLARATION: cursor  [12:5/137-16:6/248]
             PARAMETERS:
                 i [13:16/171-13:21/176]  TYPE: int TEXT=int  [13:16/171-13:19/174]  INIT: null  SCOPE: cursor 
@@ -39,24 +39,24 @@ CLASS DataSource (DataSource ) [10:1/106-17:3/251] lcurly=123 SCOPE: $Global$
                 STATEMENT RETURN  [15:9/209-15:42/242] SCOPE: Stmt  [13:23/178-16:6/248] text: 'return db.template cursor<T> (1);'
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Database (Database ) [2:1/1-8:3/104] lcurly=16 SCOPE: $Global$ 
+CLASS Database (Database ) [2:1/1-8:2/103] lcurly=16 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [4:5/30-7:6/101] MethodDDImpl SCOPE: Database 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:Database::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:Database::cursor<class>(int)
             DECLARATION: cursor  [4:5/30-7:6/101]
             PARAMETERS:
                 i [5:20/69-5:25/74]  TYPE: int TEXT=int  [5:20/69-5:23/72]  INIT: null  SCOPE: cursor 
             RETURNS int TEXT=int  [5:9/58-5:12/61]
             STATEMENT COMPOUND  [5:27/76-7:6/101] SCOPE: cursor 
                 STATEMENT RETURN  [6:9/86-6:18/95] SCOPE: Stmt  [5:27/76-7:6/101] text: 'return 0;'
-CLASS DataSource (DataSource ) [10:1/106-17:3/251] lcurly=123 SCOPE: $Global$ 
+CLASS DataSource (DataSource ) [10:1/106-17:2/250] lcurly=123 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION cursor  [12:5/137-16:6/248] MethodDDImpl SCOPE: DataSource 
-            SIGNATURE cursor(int)
-            UNIQUE NAME f:DataSource::cursor<class T>(int)
+            SIGNATURE cursor<class>(int)
+            UNIQUE NAME f:DataSource::cursor<class>(int)
             DECLARATION: cursor  [12:5/137-16:6/248]
             PARAMETERS:
                 i [13:16/171-13:21/176]  TYPE: int TEXT=int  [13:16/171-13:19/174]  INIT: null  SCOPE: cursor 

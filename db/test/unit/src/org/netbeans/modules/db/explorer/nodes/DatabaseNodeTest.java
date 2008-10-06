@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.util.Iterator;
 import java.util.Vector;
 import junit.framework.TestCase;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -48,6 +49,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.test.Util;
 import org.openide.nodes.Node;
 
@@ -60,7 +62,12 @@ public class DatabaseNodeTest extends TestCase {
     public DatabaseNodeTest(String testName) {
         super(testName);
     }        
-    
+
+    @Override
+    public void setUp() throws Exception {
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+    }
     /**
      * Use case: create the root node, and verify that the expected
      * hierarchy of nodes and infos are created 
@@ -74,12 +81,14 @@ public class DatabaseNodeTest extends TestCase {
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
         
-        RootNode root = RootNode.getInstance();
+        // Need to force a refresh because otherwise it happens asynchronously
+        // and this test does not pass reliably
+        RootNodeInfo.getInstance().refreshChildren();
         
-        checkNodeChildren(root);
-        
-        checkInfoChildren(root.getInfo());
-        checkConnection(root.getInfo(), conn);
+        checkConnection(RootNodeInfo.getInstance(), conn);
+
+        checkInfoChildren(RootNodeInfo.getInstance());
+        checkNodeChildren(RootNode.getInstance());
     }
     
     private void checkNodeChildren(final RootNode root) throws Exception {
@@ -87,7 +96,7 @@ public class DatabaseNodeTest extends TestCase {
 
         // The Driver List Node and the connection node should be the two
         // children
-        assertTrue(children.length == 2);
+        assertEquals(2, children.length);
         assertTrue(children[0] instanceof DriverListNode);
         assertTrue(children[1] instanceof ConnectionNode); 
     }
@@ -95,19 +104,28 @@ public class DatabaseNodeTest extends TestCase {
     private void checkInfoChildren(DatabaseNodeInfo rootInfo) throws Exception {
         Vector children = rootInfo.getChildren();
         assertTrue(children.size() == 2);
-        assertTrue(children.get(0) instanceof DriverListNodeInfo);
-        assertTrue(children.get(1) instanceof ConnectionNodeInfo);
+
+        // These aren't sorted, and this is the order they come in
+        assertTrue(children.get(0) instanceof ConnectionNodeInfo);
+        assertTrue(children.get(1) instanceof DriverListNodeInfo);
     }
     
     private void checkConnection(DatabaseNodeInfo rootInfo, 
             DatabaseConnection expected) throws Exception {
-        
-        ConnectionNodeInfo connInfo = (ConnectionNodeInfo)rootInfo.getChildren().get(1);
-        DatabaseConnection conn = connInfo.getDatabaseConnection().getDatabaseConnection();
-        assertTrue(conn != null);
-        assertTrue(conn.getDatabaseURL().equals(expected.getDatabaseURL()));
-        assertTrue(conn.getUser().equals(expected.getUser()));
-        assertTrue(conn.getPassword().equals(expected.getPassword()));
-        assertTrue(conn.getDriverClass().equals(expected.getDriverClass()));        
+
+        Vector children = rootInfo.getChildren();
+        for (Iterator it = children.iterator() ; it.hasNext() ; ) {
+            Object next = it.next();
+            if (next instanceof ConnectionNodeInfo) {
+                ConnectionNodeInfo connInfo = (ConnectionNodeInfo)next;
+                DatabaseConnection conn = connInfo.getDatabaseConnection().getDatabaseConnection();
+                assertTrue(conn != null);
+                assertTrue(conn.getDatabaseURL().equals(expected.getDatabaseURL()));
+                assertTrue(conn.getUser().equals(expected.getUser()));
+                assertTrue(conn.getPassword().equals(expected.getPassword()));
+                assertTrue(conn.getDriverClass().equals(expected.getDriverClass()));
+                return;
+            }
+        }
     }
 }

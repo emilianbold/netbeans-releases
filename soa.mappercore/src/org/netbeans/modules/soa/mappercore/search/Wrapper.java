@@ -62,6 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.Searchable;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,14 +71,15 @@ import org.openide.util.NbBundle;
  */
 final class Wrapper extends JPanel {
 
-  Wrapper(JTree tree) {
-    myTree = tree;
-    KeyListener[] listeners = myTree.getListeners(KeyListener.class);
+  Wrapper(Searchable searchable) {
+    mySearchable = searchable;
+    KeyListener[] listeners = mySearchable.getSearchableComponent()
+            .getListeners(KeyListener.class);
 
     for (int i=0; i < listeners.length; i++) {
-      myTree.removeKeyListener(listeners[i]);
+      mySearchable.getSearchableComponent().removeKeyListener(listeners[i]);
     }
-    myTree.addKeyListener(new MyKeyAdapter());
+    mySearchable.getSearchableComponent().addKeyListener(new MyKeyAdapter());
 
     JLabel label = new JLabel(" " + i18n(Wrapper.class, "LBL_Quick_Search")); // NOI18N
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -91,7 +93,7 @@ final class Wrapper extends JPanel {
 
           SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-              myTree.requestFocus();
+              mySearchable.getSearchableComponent().requestFocus();
             }
           });
         }
@@ -157,8 +159,8 @@ final class Wrapper extends JPanel {
 
   private List<TreePath> doSearch(String prefix) {
     List<TreePath> results = new ArrayList<TreePath>();
-    int [] rows = myTree.getSelectionRows();
-    int size = myTree.getRowCount();
+    int [] rows = mySearchable.getSelectionRows();
+    int size = mySearchable.getRowCount();
     int startIndex;
     
     if (rows == null || rows.length == 0) {
@@ -173,12 +175,12 @@ final class Wrapper extends JPanel {
     }
     while (true) {
       startIndex = startIndex % size;
-      TreePath path = myTree.getNextMatch(prefix, startIndex, Position.Bias.Forward);
+      TreePath path = mySearchable.getNextMatch(prefix, startIndex, Position.Bias.Forward);
 
       if (path == null || results.contains(path)) {
         break;
       }
-      startIndex = myTree.getRowForPath(path);
+      startIndex = mySearchable.getRowForPath(path);
       results.add(path);
       startIndex++;
     }
@@ -218,7 +220,7 @@ final class Wrapper extends JPanel {
       }
       else if (keyCode == KeyEvent.VK_ESCAPE) {
         hidePanel();
-        myTree.requestFocus();
+        mySearchable.getSearchableComponent().requestFocus();
       }
     }
 
@@ -244,11 +246,11 @@ final class Wrapper extends JPanel {
           myIndex = 0;
         }
         TreePath path = myResults.get(myIndex);
-        myTree.setSelectionPath(path);
-        myTree.scrollPathToVisible(path);
+        mySearchable.setSelectionPath(path);
+        mySearchable.scrollPathToVisible(path);
       }
       else {
-        myTree.clearSelection();
+        mySearchable.clearSelection();
       }
     }
 
@@ -283,7 +285,7 @@ final class Wrapper extends JPanel {
     }
   }
 
-  private JTree myTree;
+  private Searchable mySearchable;
   private JTextField myTextField;
 
   private static final int TEXT_WIDTH = 60;

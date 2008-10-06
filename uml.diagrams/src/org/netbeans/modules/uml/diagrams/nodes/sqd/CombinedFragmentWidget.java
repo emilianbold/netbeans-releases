@@ -77,10 +77,12 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
+import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionFragment;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
+import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
@@ -122,16 +124,21 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public CombinedFragmentWidget(Scene scene, String kind) {
         super(scene,true);
         body = new Widget(getScene());
+        body.setForeground(null);
         operator = new InteractionOperatorWidget(getScene(), "");
+        operator.setForeground(null);
+        operator.setBackground(null);
         body.setBorder(BorderFactory.createLineBorder(1, getForeground()));
         operator.setPreferredLocation(new Point(0, 0));
         body.addChild(operator);
         operandsContainer = new Widget(getScene());
+        operandsContainer.setForeground(null);
+        operandsContainer.setBackground(null);
         operandsContainer.setPreferredLocation(new Point(0, 0));
         body.addChild(operandsContainer);
         //
         body.setMinimumSize(new Dimension(60, 20));
-        setMinimumSize(new Dimension(120, 100));
+        setPreferredBounds(new Rectangle(new Dimension(120, 100)));
 
         body.setPreferredLocation(new Point(0, 0));
         childContainer=new ContainerWidget(getScene());
@@ -177,21 +184,25 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     
     @Override
     public void initializeNode(IPresentationElement presentation) {
-        //
-        ICombinedFragment src = (ICombinedFragment) presentation.getFirstSubject();
-        String name = ((BaseElement)src).getAttributeValue("interactionOperator");
-        if (name == null || name.length() == 0) {
-            name = "assert";
-        }
-        setOperator(name);
-        //add all necessary operands
+        // Since the interaction boundary widget extends the the CombinedFragmentWidge
+        // we have to make sure the element type is not an interaction object.
+        if(presentation.getFirstSubject() instanceof ICombinedFragment)
+        {
+            ICombinedFragment src = (ICombinedFragment) presentation.getFirstSubject();
+            String name = ((BaseElement)src).getAttributeValue("interactionOperator");
+            if (name == null || name.length() == 0) {
+                name = "assert";
+            }
+            setOperator(name);
+            //add all necessary operands
 
-        for (IInteractionOperand i : src.getOperands()) {
-            //i.createGuard();
-            InteractionOperandWidget w=addOperand(i);
-            getScene().validate();
+            for (IInteractionOperand i : src.getOperands()) {
+                //i.createGuard();
+                InteractionOperandWidget w=addOperand(i);
+                getScene().validate();
+            }
         }
-    
+        super.initializeNode(presentation);
     }
 
     @Override
@@ -210,7 +221,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     @Override
     public String toString() {
         ICombinedFragment cf= null;
-        if(getObject()!=null)
+        if(getObject()!=null && getObject().getFirstSubject() instanceof ICombinedFragment)
         {
             cf=(ICombinedFragment) getObject().getFirstSubject();
             return "CombinedFragmentWidget: operator: "+ cf.getOperator()+"; name: "+cf.getName()+"; num operands: "+cf.getOperands().size()+"; bounds: "+getBounds()+"; ////" + super.toString();
@@ -360,7 +371,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         
         if (operands.get(op) != null) {
             //it was already added, log to track possile perfomance
-            System.out.println("***WARNING: "+"Operand is already added, op:"+op.getConstraintsAsString()+"; ");
+//            System.out.println("***WARNING: "+"Operand is already added, op:"+op.getConstraintsAsString()+"; ");
         } else {
             InteractionOperandWidget opW = new InteractionOperandWidget(getScene());
             ret=opW;
@@ -496,7 +507,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     }
     
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
@@ -681,7 +692,113 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             }
             operandsBounds.put(io, opRectngle);
         }
-        //
+        //look for all missed operands (i.e. not handled, need at least 0 size even if it will not look good)
+        //this way there will be no npe(in normalization logic) and broken diagram creation other cases should remain as was.
+        if(bounds!=null)
+        {
+            //find if there any space to expand if necessary
+            int y_min=40;
+            if(messageBeforeW!=null)
+            {
+                y_min=messageBeforeW.getSourceAnchor().getRelatedSceneLocation().y+10;
+            }
+            if(cfBeforeW!=null)
+            {
+                Point loc=cfBeforeW.getParentWidget().convertLocalToScene(cfBeforeW.getPreferredLocation());
+                int prevheight=0;
+                if(cfBeforeW.isPreferredBoundsSet())prevheight=cfBeforeW.getPreferredBounds().height;//we use bounds for resizing now, same should be in save-load etc
+                else if(cfBeforeW.getPreferredSize()!=null)prevheight=cfBeforeW.getPreferredSize().height;//but in case of any problem try also prefsize
+                else if(cfBeforeW.getMinimumSize()!=null)prevheight=cfBeforeW.getMinimumSize().height;//and min size
+                y_min=Math.max(y_min, loc.y+prevheight);
+            }
+            int count_null_before=0;
+            //first handle unhandled operands befor first handled (will use space above first with bounds)
+            for(IInteractionOperand io:operandInCf)
+            {
+                Rectangle recCur=operandsBounds.get(io);
+                if(recCur==null)
+                {
+                    count_null_before++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if(count_null_before>0)
+            {
+                int height_before=40*count_null_before;
+                height_before=Math.min(height_before, bounds.y-y_min);
+                height_before=Math.max(count_null_before*10,height_before);
+                //
+                bounds.y-=height_before;
+                bounds.height+=height_before;
+                //fill missed operands before first not null
+                int cnt=0;
+                for(IInteractionOperand io:operandInCf)
+                {
+                    Rectangle recCur=operandsBounds.get(io);
+                    if(recCur==null)
+                    {
+                        cnt++;
+                        operandsBounds.put(io, new Rectangle(bounds.x,bounds.y+cnt*height_before/count_null_before,bounds.width,height_before/count_null_before));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            //now handle operands between operands with bounds, need to use space between.
+            //and case where no handler operands after, use some default size.
+            Rectangle prevBnd=new Rectangle(bounds.x,bounds.y,bounds.width,0);//just to be sure not null
+            Rectangle nxtBnd=null;
+            for(int i=0;i<operandInCf.size();i++)
+            {
+                IInteractionOperand io=operandInCf.get(i);
+                Rectangle recCur=operandsBounds.get(io);
+                if(recCur==null)
+                {
+                    int cnt=0;
+                    for(int j=i;j<operandInCf.size();j++)
+                    {
+                        IInteractionOperand io2=operandInCf.get(j);
+                        Rectangle recCur2=operandsBounds.get(io2);
+                        if(recCur2==null)
+                        {
+                            cnt++;
+                        }
+                        else
+                        {
+                            nxtBnd=recCur2;
+                            break;
+                        }
+                    }
+                    int height=40*cnt;
+                    if(nxtBnd!=null)
+                    {
+                        height=nxtBnd.y-prevBnd.y-prevBnd.height;
+                    }
+                    else
+                    {
+                        bounds.height+=height;
+                    }
+                    if(height<0)
+                    {
+                        height=cnt;//will get at least 1px for each
+                    }
+                    for(int j=i;j<operandInCf.size();j++)
+                    {
+                        IInteractionOperand io2=operandInCf.get(j);
+                        if(operandsBounds.get(io2)==null)operandsBounds.put(io2, new Rectangle(bounds.x,prevBnd.y+prevBnd.height+(j-i)*height/cnt,bounds.width,height/cnt));
+                        else break;
+                    }
+                    i+=cnt-1;//skip handled part -1, this eway in next iteraction not null prevBnd should be set
+                }
+                prevBnd=recCur;
+            }
+        }
+        //case where no operands was handlled by previous section so entire cf need to be handled by boundary limits
         if(bounds==null)
         {
             //have no children, will look for neighbors
@@ -694,7 +811,11 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             if(cfBeforeW!=null)
             {
                 Point loc=cfBeforeW.getParentWidget().convertLocalToScene(cfBeforeW.getPreferredLocation());
-                y=Math.max(y, loc.y+cfBeforeW.getMinimumSize().height);
+                int prevheight=0;
+                if(cfBeforeW.isPreferredBoundsSet())prevheight=cfBeforeW.getPreferredBounds().height;//we use bounds for resizing now, same should be in save-load etc
+                else if(cfBeforeW.getPreferredSize()!=null)prevheight=cfBeforeW.getPreferredSize().height;//but in case of any problem try also prefsize
+                else if(cfBeforeW.getMinimumSize()!=null)prevheight=cfBeforeW.getMinimumSize().height;//and min size
+                y=Math.max(y, loc.y+prevheight);
             }
             y+=20;
             if(y<100)y=100;
@@ -721,9 +842,10 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             //correct upper side
             if(bounds.y<=5)bounds.y=5;//may be good to decrease height also,need to set better upper limit amy be
             //
-            bounds= convertSceneToLocal(bounds);
+            bounds= getParentWidget().convertSceneToLocal(bounds);
             setPreferredLocation(bounds.getLocation());
-            setMinimumSize(bounds.getSize());
+            //setMinimumSize(bounds.getSize());
+            setPreferredBounds(new Rectangle(bounds.getSize()));
             //need to set proper position for operands
             IInteractionOperand prevIO=null;
             for(IInteractionOperand io:operandInCf)
@@ -811,36 +933,6 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         this.cfAfterW=(CombinedFragmentWidget) cfW;
     }
 
-//    @Override
-//    public void load(NodeInfo nodeReader) {
-//        super.load(nodeReader);
-//        ArrayList<String> offsetsStr=nodeReader.getDevidersOffests();//currently deviders are used from ts import only, may be will be used in 6.5 loading later
-//        for(int i=0;i<offsetsStr.size();i++)
-//        {
-//            int offset=Integer.parseInt(offsetsStr.get(i));
-//            if(operandsContainer.getChildren().size()>(i+1))
-//            {
-//                Widget opW=operandsContainer.getChildren().get(i+1);//1st operand do not count
-//                Point opWLoc=opW.getPreferredLocation();
-//                opWLoc.y=offset;
-//                opW.setPreferredLocation(opWLoc);
-//            }
-//        }
-//        ArrayList<NodeInfo.NodeLabel> nodeLabels=nodeReader.getLabels();
-//        ArrayList<IElement> shownElements=new ArrayList<IElement>();
-//        for(int i=0;i<nodeLabels.size();i++)
-//        {
-//            NodeInfo.NodeLabel nL=nodeLabels.get(i);
-//            shownElements.add(nL.getElement());
-//        }
-//        for(IInteractionOperand io:operands.keySet())
-//        {
-//            if(shownElements.contains(io.getGuard().getSpecification()))
-//            {
-//                operands.get(io).show(LabeledWidget.TYPE.BODY);
-//            }
-//        }
-//    }
      IElementLocator locator = new ElementLocator();
     @Override
     public void load(NodeInfo nodeReader)
@@ -850,14 +942,14 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         {
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
         }            
-        if (elt != null && elt instanceof ICombinedFragment)
-        {
-            super.load(nodeReader);            
+        if (elt != null && (elt instanceof ICombinedFragment || elt instanceof IInteraction))
+        {            
+            super.load(nodeReader); 
+            setPreferredSize(nodeReader.getSize());
         } 
         else if (elt != null && elt instanceof IInteractionOperand)
         {
             //find the proper operand,and set its size and other properties
-            System.out.println("hello");
             InteractionOperandWidget iow = operands.get(elt);
             if (iow != null && iow instanceof DiagramNodeReader)
             {
@@ -872,7 +964,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     public void loadDependencies(NodeInfo nodeReader) {
         Collection nodeLabels = nodeReader.getLabels();
         //do we have any node labels here? guess not..
-        System.out.println(" NodeLabels = "+nodeLabels.toString());
+//        System.out.println(" NodeLabels = "+nodeLabels.toString());
     }
     
 }

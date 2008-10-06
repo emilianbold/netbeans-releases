@@ -41,17 +41,28 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.BasicStroke;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JViewport;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.router.Router;
+import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -78,7 +89,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -123,7 +133,25 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private IDiagram diagram = null;
     
     private Router edgeRouter;
+    private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
+    
+    private ArrayList < IPresentationElement > lockedSelected = 
+            new ArrayList < IPresentationElement >();
+    
+    /**
+     * The visual library uses a HashSet to manage the selected objects.  The 
+     * problem is that the HashSet uses the hash code to determine the order of 
+     * the elements in the list.  Therefore, the getSelectedObject does not 
+     * return a list in the order in which they where selected.  
+     * 
+     * Since some operations require the list to be in the order of the selection
+     * I am going to create a second list that can be accessed for the 
+     * special operations that need a list that contains the selected order.
+     */
+    private ArrayList < IPresentationElement > selectedElements = 
+            new ArrayList < IPresentationElement >();
+            
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
     {
@@ -177,6 +205,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         setActiveTool(DesignerTools.SELECT);
         setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
+        
+        setAccessibleContext(new UMLWidgetAccessibleContext(this));
     }
     
     
@@ -223,6 +253,11 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     public IDiagram getDiagram()
     {
         return diagram;
+    }
+    
+    public boolean isReadOnly()
+    {
+        return diagram.getReadOnly();
     }
     
     public LayerWidget getMainLayer()
@@ -293,7 +328,7 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         }
         else
         {
-            System.out.println("***WARNING: can't create "+node.getFirstSubjectsType());
+//            System.out.println("***WARNING: can't create "+node.getFirstSubjectsType());
         }
         
         return widget;
@@ -305,12 +340,15 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         if(edgeRouter != null && connection != null)
         {
-            connection.setRouter(edgeRouter);
-            connection.setRoutingPolicy (ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
+                connection.setRouter(edgeRouter);
+                connection.setRoutingPolicy (ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
         }
-        
-        connectionLayer.addChild(connection);
-        engine.setActions(connection,edge);
+        if(connection!=null)
+        {
+            connectionLayer.addChild(connection);
+            engine.setActions(connection,edge);
+            connection.initialize(edge);
+        }
         return connection;
     }
 
@@ -327,6 +365,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             Anchor anchor = getAnchorFor(sourceWidget);
             widget.setSourceAnchor(anchor);
         }
+        if (isSelfLink(widget))
+            setSelfLinkRouter(widget);
     }
 
     protected void attachEdgeTargetAnchor(IPresentationElement edge, 
@@ -342,8 +382,35 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             Anchor anchor = getAnchorFor(targetWidget);
             widget.setTargetAnchor(anchor);
         }
+        if (isSelfLink(widget))
+            setSelfLinkRouter(widget);
     }
 
+    
+    private boolean isSelfLink(ConnectionWidget connection)
+    {
+        Anchor sourceAnchor = connection.getSourceAnchor();
+        Anchor targetAnchor = connection.getTargetAnchor();
+        if (sourceAnchor != null && targetAnchor != null && sourceAnchor.getRelatedWidget() == targetAnchor.getRelatedWidget())
+            return true;
+        else
+            return false;
+    }
+    
+    private void setSelfLinkRouter(ConnectionWidget connection)
+    {
+        if (selfLinkRouter == null)
+        {
+            //selfLinkRouter = RouterFactory.createOrthogonalSearchRouter(connectionLayer);
+            selfLinkRouter = new SelfLinkRouter();
+        }
+        connection.setRouter(selfLinkRouter);
+        connection.setRoutingPolicy(ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
+        WidgetAction.Chain chain = connection.getActions(DesignerTools.SELECT);
+        chain.removeAction(ActionFactory.createFreeMoveControlPointAction());
+    }
+    
+    
     protected Anchor getAnchorFor(Widget widget)
     {
         Anchor retVal = anchorMap.get(widget);
@@ -507,5 +574,185 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         validate();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Helper Methods
     
+    /**
+     * Retrieves all of the edges that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the edges.
+     * @return The edges in the specified area.
+     */
+    public Set <IPresentationElement> getEdgesInRectangle(Rectangle sceneSelection,
+                                                          boolean canIntersect)
+    {
+        Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, 
+                                                                  true, 
+                                                                  canIntersect))
+        {
+            if(isEdge(item) == true)
+            {
+                retVal.add(item);
+            }
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves all of the Nodes that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the nodes.
+     * @return The edges in the specified nodes.
+     */
+    public Set <IPresentationElement> getNodesInRectangle(Rectangle sceneSelection)
+    {
+        Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, 
+                                                                  true, false))
+        {
+            if(isNode(item) == true)
+            {
+                retVal.add(item);
+            }
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves all of the nodes and edges that are in a specified area.  The area is 
+     * specified in screen coordinates.
+     * 
+     * @param sceneSelection The area that must contain the nodes and edges.
+     * @param containedOnly Only select nodes and edges that are fully contained.
+     * 
+     * @return The nodes and edges in the specified area.
+     */
+    public Set <IPresentationElement> getGraphObjectInRectangle(Rectangle sceneSelection,
+                                                                boolean intersectNodes,
+                                                                boolean intersectEdges)
+    {
+        //boolean entirely = sceneSelection.width > 0;
+        int w = sceneSelection.width;
+        int h = sceneSelection.height;
+        Rectangle rect = new Rectangle(w >= 0 ? 0 : w, h >= 0 ? 0 : h, w >= 0 ? w : -w, h >= 0 ? h : -h);
+        rect.translate(sceneSelection.x, sceneSelection.y);
+
+        HashSet<IPresentationElement> set = new HashSet<IPresentationElement>();
+        Set<?> objects = getObjects();
+        for (Object object : objects)
+        {
+            boolean isEdge = isEdge(object);
+            boolean isNode = isNode(object);
+            if((isEdge == false) && (isNode == false))
+            {
+                continue;
+            }
+            
+            Widget widget = findWidget(object);
+            
+            if(widget==null)continue;
+
+            if (((isNode == true) && (intersectNodes == false)) || 
+                ((isEdge == true) && (intersectEdges == false)))
+            {
+                // The node or edge must be entirely contained.  
+                Rectangle widgetRect = widget.convertLocalToScene(widget.getBounds());
+                if (rect.contains(widgetRect) && (object instanceof IPresentationElement))
+                {
+                    set.add((IPresentationElement)object);
+                }
+            }
+            else
+            {
+                // The node or edge can intersect the rectangle.
+                if (widget instanceof ConnectionWidget)
+                {
+                    ConnectionWidget conn = (ConnectionWidget) widget;
+                    java.util.List<Point> points = conn.getControlPoints();
+                    for (int i = points.size() - 2; i >= 0; i--)
+                    {
+                        Point p1 = widget.convertLocalToScene(points.get(i));
+                        Point p2 = widget.convertLocalToScene(points.get(i + 1));
+                        if (new Line2D.Float(p1, p2).intersects(rect))
+                        {
+                            set.add((IPresentationElement)object);
+                        }
+                    }
+                }
+                else
+                {
+                    Rectangle widgetRect = widget.convertLocalToScene(widget.getBounds());
+                    if (rect.intersects(widgetRect))
+                    {
+                        set.add((IPresentationElement)object);
+                    }
+                }
+            }
+        }
+        
+        return set;
+    }
+    
+    public void addLockedSelected(IPresentationElement element)
+    {
+        lockedSelected.add(element);
+    }
+    
+    public void removeLockSelected(IPresentationElement element)
+    {
+        lockedSelected.remove(element);
+    }
+    
+    public List < IPresentationElement > getLockedSelected()
+    {
+        return Collections.unmodifiableList(lockedSelected);
+    }
+    
+    public void clearLockedSelected()
+    {
+        lockedSelected.clear();
+    }
+    
+    public List < IPresentationElement > getOrderedSelection()
+    {
+        return selectedElements;
+    }
+    
+    public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection)
+    {
+        List < IPresentationElement > lockedSet = getLockedSelected();
+
+        // Build the set needed by the visual library.  Also build the ordered 
+        // set at the same time.  The invert selection means to add the new
+        // selection to the old selection.  So I need to keep a clone of the 
+        // original order list of selected elements so they can be put back into
+        // the selected elements list.
+        ArrayList < IPresentationElement > oldSelection = 
+                new ArrayList < IPresentationElement >(selectedElements);
+        
+        selectedElements.clear();
+        
+        HashSet < Object > selection = new HashSet < Object >();
+        if(lockedSet.size() > 0)
+        {
+            selection.addAll(lockedSet);
+            selectedElements.addAll(lockedSet);
+        }
+        
+        selection.addAll(suggestedSelectedObjects);
+        if(invertSelection == true)
+        {
+            selectedElements.addAll(oldSelection);
+        }
+        selectedElements.addAll((Collection<? extends IPresentationElement>) suggestedSelectedObjects);
+        
+        super.userSelectionSuggested(selection, invertSelection);
+    }
+
+
 }

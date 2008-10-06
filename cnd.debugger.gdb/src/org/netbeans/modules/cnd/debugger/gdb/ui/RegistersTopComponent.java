@@ -23,6 +23,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.RegisterValue;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -35,6 +36,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
 
     private static RegistersTopComponent instance;
     /** path to the icon used by the component and its open action */
+    // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/gdb/resources/registers.png"; // NOI18N
 
     private static final String PREFERRED_ID = "RegistersTopComponent"; // NOI18N
@@ -45,7 +47,7 @@ final class RegistersTopComponent extends TopComponent implements PropertyChange
         initComponents();
         setName(NbBundle.getMessage(RegistersTopComponent.class, "CTL_RegistersTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(RegistersTopComponent.class, "HINT_RegistersTopComponent")); // NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         
         jScrollPane1.getViewport().setBackground(UIManager.getColor("Table.background")); // NOI18N
         jTable1.setDefaultRenderer(RegisterValue.class, new RegisterCellRendererForValue());

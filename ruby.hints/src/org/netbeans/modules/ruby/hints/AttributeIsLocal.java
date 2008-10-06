@@ -36,10 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditRegions;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -52,7 +52,7 @@ import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstAttributeElement;
@@ -350,7 +350,7 @@ public class AttributeIsLocal extends RubyAstRule {
             int astOffset = element.getNode().getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
             if (lexOffset != -1) {
-                NbUtilities.open(fo, lexOffset, element.getName());
+                GsfUtilities.open(fo, lexOffset, element.getName());
             }
         }
 

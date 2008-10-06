@@ -61,6 +61,7 @@ import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
+import org.netbeans.modules.project.ant.ProjectXMLCatalogReader;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -74,7 +75,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
@@ -88,6 +91,10 @@ import org.xml.sax.SAXException;
 
 /**
  * Support class for implementing Ant-based projects.
+ * <p>As of 1.24, <code>project.xml</code> or <code>private.xml</code> reads or writes
+ * are first validated against any registered XML schemas.
+ * You must register a schema using the target namespace <code>http://www.netbeans.org/ns/foo/1</code>
+ * as <code>ProjectXMLCatalog/foo/1.xsd</code> in your layer for it to be found.
  * @author Jesse Glick
  */
 public final class AntProjectHelper {
@@ -133,7 +140,7 @@ public final class AntProjectHelper {
         };
     }
     
-    private static final RequestProcessor RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
+    private static RequestProcessor RP;
     
     /**
      * Project base directory.
@@ -149,18 +156,23 @@ public final class AntProjectHelper {
      * Ant-based project type factory.
      */
     private final AntBasedProjectType type;
-    
+
+    /** Used as a marker that project/privateXml was not found at all, rather than found but malformed. */
+    private static final Document NONEXISTENT = XMLUtil.createDocument("does-not-exist", null, null, null); // NOI18N
+
     /**
      * Cached project.xml parse (null if not loaded).
      * Access within {@link #modifiedMetadataPaths} monitor.
      */
     private Document projectXml;
+    private boolean projectXmlValid;
     
     /**
      * Cached private.xml parse (null if not loaded).
      * Access within {@link #modifiedMetadataPaths} monitor.
      */
     private Document privateXml;
+    private boolean privateXmlValid;
     
     /**
      * Set of relative paths to metadata files which have been modified
@@ -209,6 +221,7 @@ public final class AntProjectHelper {
         this.type = type;
         assert type != null;
         this.projectXml = projectXml;
+        projectXmlValid = true;
         assert projectXml != null;
         properties = new ProjectProperties(this);
         fileListener = new FileListener();
@@ -230,30 +243,32 @@ public final class AntProjectHelper {
     private Document getConfigurationXml(boolean shared) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
-        Document xml = shared ? projectXml : privateXml;
-        if (xml == null) {
+        if (!(shared ? projectXmlValid : privateXmlValid)) {
             String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
-            xml = loadXml(path);
-            if (xml == null) {
-                // Missing or broken; create a skeleton.
-                String element = shared ? "project" : "project-private"; // NOI18N
-                String ns = shared ? PROJECT_NS : PRIVATE_NS;
-                xml = XMLUtil.createDocument(element, ns, null, null);
+            Document _xml = loadXml(path);
+            if (_xml != null && _xml != NONEXISTENT) {
                 if (shared) {
-                    // #46048: need to generate minimal compliant XML skeleton.
-                    Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
-                    typeEl.appendChild(xml.createTextNode(getType().getType()));
-                    xml.getDocumentElement().appendChild(typeEl);
-                    xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
+                    projectXml = _xml;
+                } else {
+                    privateXml = _xml;
                 }
-            }
-            if (shared) {
-                projectXml = xml;
-            } else {
-                privateXml = xml;
+            } else if (_xml == NONEXISTENT && !shared) {
+                privateXml = null;
             }
         }
-        assert xml != null;
+        if (!shared && privateXml == null) {
+            // Missing or broken; create a skeleton.
+            // (projectXml must have been given a valid value when APH was constructed.)
+            privateXml = XMLUtil.createDocument("project-private", PRIVATE_NS, null, null); // NOI18N
+        }
+        // Mark valid even if had parse errors, so we do not try to reparse until corrected:
+        if (shared) {
+            projectXmlValid = true;
+        } else {
+            privateXmlValid = true;
+        }
+        Document xml = shared ? projectXml : privateXml;
+        assert xml != null : "shared=" + shared + " projectXml=" + projectXml + " privateXml=" + privateXml + " projectXmlValid=" + projectXmlValid + " privateXmlValid=" + privateXmlValid;
         return xml;
     }
     
@@ -265,19 +280,21 @@ public final class AntProjectHelper {
     
     /**
      * Try to load a config XML file from a named path.
-     * If the file does not exist, or there is any load error, return null.
+     * If the file does not exist, return NONEXISTENT; or if there is any load error, return null.
      */
     private Document loadXml(String path) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
         FileObject xml = dir.getFileObject(path);
         if (xml == null || !xml.isData()) {
-            return null;
+            return NONEXISTENT;
         }
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            Document doc = XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
+            ProjectXMLCatalogReader.validate(doc.getDocumentElement());
+            return doc;
         } catch (IOException e) {
             if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -298,6 +315,12 @@ public final class AntProjectHelper {
         assert ProjectManager.mutex().isWriteAccess();
         assert !writingXML;
         assert Thread.holdsLock(modifiedMetadataPaths);
+        try {
+            ProjectXMLCatalogReader.validate(doc.getDocumentElement());
+        } catch (SAXException x) {
+            Exceptions.attachMessage(x, "Saving " + path + " in " + FileUtil.getFileDisplayName(dir));
+            throw (IOException) new IOException(x.getMessage()).initCause(x);
+        }
         final FileLock[] _lock = new FileLock[1];
         writingXML = true;
         try {
@@ -355,12 +378,12 @@ public final class AntProjectHelper {
                                 // Revert the save.
                                 if (path.equals(PROJECT_XML_PATH)) {
                                     synchronized (modifiedMetadataPaths) {
-                                        projectXml = null;
+                                        projectXmlValid = false;
                                     }
                                 } else {
                                     assert path.equals(PRIVATE_XML_PATH) : path;
                                     synchronized (modifiedMetadataPaths) {
-                                        privateXml = null;
+                                        privateXmlValid = false;
                                     }
                                 }
                                 fireExternalChange(path);
@@ -425,12 +448,7 @@ public final class AntProjectHelper {
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {
-        final Mutex.Action<Void> action = new Mutex.Action<Void>() {
-            public Void run() {
-                fireChange(path, false);
-                return null;
-            }
-        };
+        final Mutex.Action<Void> action = new ActionImpl(this, path);
         if (ProjectManager.mutex().isWriteAccess() || ProjectLibraryProvider.FIRE_CHANGES_SYNCH) {
             // Run it right now. postReadRequest would be too late.
             ProjectManager.mutex().readAccess(action);
@@ -439,12 +457,14 @@ public final class AntProjectHelper {
             action.run();
         } else {
             // Not safe to acquire a new lock, so run later in read access.
-            RP.post(new Runnable() {
-                public void run() {
-                    ProjectManager.mutex().readAccess(action);
-                }
-            });
+            rp().post(new RunnableImpl(action));
         }
+    }
+    private static synchronized RequestProcessor rp() {
+        if (RP == null) {
+            RP = new RequestProcessor("AntProjectHelper.RP"); // NOI18N
+        }
+        return RP;
     }
 
     /**
@@ -778,14 +798,14 @@ public final class AntProjectHelper {
                         return ;
                     }
                     path = PROJECT_XML_PATH;
-                    projectXml = null;
+                    projectXmlValid = false;
                 } else if (f.equals(resolveFile(PRIVATE_XML_PATH))) {
                     if (modifiedMetadataPaths.contains(PRIVATE_XML_PATH)) {
                         //#68872: don't do anything if the given file has non-saved changes:
                         return ;
                     }
                     path = PRIVATE_XML_PATH;
-                    privateXml = null;
+                    privateXmlValid = false;
                 } else {
                     throw new AssertionError("Unexpected file change in " + f); // NOI18N
                 }
@@ -1006,7 +1026,29 @@ public final class AntProjectHelper {
      * @return an artifact
      */
     public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
-        return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName);
+        return createSimpleAntArtifact(type, locationProperty, eval, targetName, cleanTargetName, null);
+    }
+    
+    /**
+     * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
+     * is in a fixed location under a standard Ant-based project.
+     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param locationProperty an Ant property name giving the project-relative
+     *                         location of the artifact, e.g. <samp>dist.jar</samp>
+     * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
+     * @param targetName the name of an Ant target which will build the artifact,
+     *                   e.g. <samp>jar</samp>
+     * @param cleanTargetName the name of an Ant target which will delete the artifact
+     *                        (and maybe other build products), e.g. <samp>clean</samp>
+     * @param buildScriptProperty an Ant property name giving the project-relative
+     *      location and name of the build.xml or null if default one (<samp>build.xml</samp>) 
+     *      should be used; default value is also used if property is given but its value is null
+     * @return an artifact
+     * @since org.netbeans.modules.project.ant/1 1.25
+     */
+    public AntArtifact createSimpleAntArtifact(String type, String locationProperty, PropertyEvaluator eval, 
+            String targetName, String cleanTargetName, String buildScriptProperty) {
+        return new SimpleAntArtifact(this, type, locationProperty, eval, targetName, cleanTargetName, buildScriptProperty);
     }
     
     /**
@@ -1203,6 +1245,35 @@ public final class AntProjectHelper {
     @Override
     public String toString() {
         return "AntProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
+    }
+
+    private static class RunnableImpl implements Runnable {
+        private final Action<Void> action;
+
+        public RunnableImpl(Action<Void> action) {
+            this.action = action;
+        }
+
+        public void run() {
+            ProjectManager.mutex().readAccess(action);
+        }
+    }
+
+    private static class ActionImpl implements Action<Void> {
+
+        private final String path;
+        private AntProjectHelper helper;
+
+        public ActionImpl(AntProjectHelper helper, String path) {
+            this.path = path;
+            this.helper = helper;
+        }
+
+        public Void run() {
+            helper.fireChange(path, false);
+            helper = null;
+            return null;
+        }
     }
 
 }

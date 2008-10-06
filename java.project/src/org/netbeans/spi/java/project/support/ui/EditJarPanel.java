@@ -49,9 +49,11 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -77,14 +79,14 @@ class EditJarPanel extends javax.swing.JPanel {
         this.helper = helper;
         txtJar.setText(stripOffVariableMarkup(item.getJarFile()));
         if (item.getSourceFile() != null) {
-            txtSource.setText(stripOffVariableMarkup(item.getSourceFile()));
+            txtSource.setText(stripOffJARContent(stripOffVariableMarkup(item.getSourceFile())));
         }
         if (item.getJavadocFile() != null) {
-            txtJavadoc.setText(stripOffVariableMarkup(item.getJavadocFile()));
+            txtJavadoc.setText(stripOffJARContent(stripOffVariableMarkup(item.getJavadocFile())));
         }
     }
 
-    private String stripOffVariableMarkup(String v) {
+    private static String stripOffVariableMarkup(String v) {
         if (!v.startsWith("${var.")) { // NOI18N
             return v;
         }
@@ -95,7 +97,16 @@ class EditJarPanel extends javax.swing.JPanel {
         return v.substring(6, i-1)+v.substring(i);
     }
     
-    private Set<String> getVariableNames() {
+    private static String stripOffJARContent(String v) {
+        int i = v.indexOf("!/");
+        if (i == -1) { // NOI18N
+            return v;
+        } else {
+            return v.substring(0, i);
+        }
+    }
+
+    private static Set<String> getVariableNames() {
         Set<String> names = new HashSet<String>();
         for (String v : PropertyUtils.getGlobalProperties().keySet()) {
             if (!v.startsWith("var.")) { // NOI18N
@@ -106,7 +117,7 @@ class EditJarPanel extends javax.swing.JPanel {
         return names;
     }
     
-    private String addVariableMarkup(String v) {
+    private static String addVariableMarkup(String v) {
         int i = v.replace('\\', '/').indexOf('/'); // NOI18N
         if (i == -1) {
             i = v.length();
@@ -117,15 +128,54 @@ class EditJarPanel extends javax.swing.JPanel {
         }
         return "${var." + varName + "}" + v.substring(i); // NOI18N
     }
-    
+
+    private static String convertPath(AntProjectHelper helper, String path, boolean javadoc) {
+        String val = addVariableMarkup(path);
+        String eval = helper.getStandardPropertyEvaluator().evaluate(val);
+        if (eval == null) {
+            return val;
+        }
+        FileObject fo = helper.resolveFileObject(eval);
+        if (fo == null) {
+            return val;
+        }
+        boolean archiveFile = false;
+        if (FileUtil.isArchiveFile(fo)) {
+            fo = FileUtil.getArchiveRoot(fo);
+            archiveFile = true;
+        }
+        FileObject root;
+        if (javadoc) {
+            root = JavadocAndSourceRootDetection.findJavadocRoot(fo);
+        } else {
+            root = JavadocAndSourceRootDetection.findSourceRoot(fo);
+        }
+        if (root != null && !fo.equals(root)) {
+            if (archiveFile) {
+                val += "!/"; //NOI18N
+            }
+            val += (val.replace('\\', '/').endsWith("/") ? "" : File.separator); // NOI18N
+            String relPath = FileUtil.getRelativePath(fo, root);
+            assert relPath != null : "fo="+fo+" root="+root; // NOI18N
+            if (relPath.length() > 0) {
+                relPath += "/"; // NOI18N
+                if (!archiveFile) {
+                    relPath = relPath.replace('/', File.separatorChar); //NOI18N
+                }
+                val += relPath;
+            }
+        }
+        return val;
+    }
+
     EditJarSupport.Item assignValues() {
         if (txtSource.getText() != null && txtSource.getText().trim().length() > 0) {
-            item.setSourceFile(addVariableMarkup(txtSource.getText().trim()));
+            item.setSourceFile(convertPath(helper, txtSource.getText().trim(), false));
         } else {
             item.setSourceFile(null);
         }
         if (txtJavadoc.getText() != null && txtJavadoc.getText().trim().length() > 0) {
-            item.setJavadocFile(addVariableMarkup(txtJavadoc.getText().trim()));
+            item.setJavadocFile(convertPath(helper, txtJavadoc.getText().trim(), true));
         } else {
             item.setJavadocFile(null);
         }

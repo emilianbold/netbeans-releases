@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -70,7 +71,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private final SvnClientDescriptor desc;
     private Cancellable cancellable;
     private SvnProgressSupport support;
-    private final int handledExceptions; 
+    private final int handledExceptions;
+    private static boolean metricsAlreadyLogged = false;
     
    /**
      *
@@ -161,7 +163,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 Throwable c = t.getCause();
                 if(c instanceof InterruptedException) {                    
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
-                } 
+                }
+                if(support != null && support.isCanceled()) {
+                    Subversion.LOG.log(Level.WARNING, null, t);
+                    // who knows what might have happened ...
+                    throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);
+                }
                 throw t;
             }
         } finally {
@@ -169,6 +176,31 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // call refresh for all files notified by the client adapter
             Subversion.getInstance().getRefreshHandler().refresh();
         }
+    }
+
+    private void logClientInvoked() {
+        if(metricsAlreadyLogged) {
+            return;
+        }
+        try {
+            SvnClientFactory.checkClientAvailable();
+        } catch (SVNClientException e) {
+            return;
+        }
+        String client = null;
+        if(SvnClientFactory.isCLI()) {
+            client = "CLI";
+        } else if(SvnClientFactory.isJavaHl()) {
+            client = "JAVAHL";
+        } else if(SvnClientFactory.isSvnKit()) {
+            client = "SVNKIT";
+        } else {
+            Subversion.LOG.warning("Unknown client type!");            
+        }
+        if(client != null) {
+            Utils.logVCSClientEvent("SVN", client);   
+        }
+        metricsAlreadyLogged = true;
     }
     
     private boolean parallelizable(Method method, Object[] args) {
@@ -204,7 +236,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // save the proxy settings into the svn servers file                
             if(desc != null && desc.getSvnUrl() != null) {
                 SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl());
-            }                            
+            }
+            logClientInvoked();
             ret = adapter.getClass().getMethod(proxyMethod.getName(), parameters).invoke(adapter, args);
             if(support != null) {
                 support.setCancellableDelegate(null);

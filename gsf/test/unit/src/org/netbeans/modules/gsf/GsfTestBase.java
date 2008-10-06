@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.gsf;
 
+import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -54,21 +55,28 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintFix;
@@ -121,17 +129,34 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import javax.swing.JEditorPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
 import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.EditHistory;
+import org.netbeans.modules.gsf.api.EditList;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.PreviewableFix;
+import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.gsfret.hints.infrastructure.Pair;
 
 /**
  * @author Tor Norbye
@@ -192,9 +217,13 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue("success to create " + dir, dir.mkdirs());
         }
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, path);
+        return touch(dirFO, path);
     }
     
+    protected FileObject touch(final FileObject dir, final String path) throws IOException {
+        return FileUtil.createData(dir, path);
+    }
+
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {
@@ -205,6 +234,22 @@ public abstract class GsfTestBase extends NbTestCase {
             os.close();
         }
     }
+
+    /** Return the offset of the given position, indicated by ^ in the line fragment
+     * from the fuller text
+     */
+    public static int getCaretOffset(String text, String caretLine) {
+        int caretDelta = caretLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+        int lineOffset = text.indexOf(caretLine);
+        assertTrue("No occurrence of caretLine " + caretLine + " in text " + text, lineOffset != -1);
+
+        int caretOffset = lineOffset + caretDelta;
+
+        return caretOffset;
+    }
+
     
     /** Copy-pasted from APISupport. */
     protected static String slurp(File file) throws IOException {
@@ -273,9 +318,24 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    public BaseDocument getDocument(String s, String mimeType, Language language) {
+    public BaseDocument getDocument(String s, final String mimeType, final Language language) {
         try {
-            BaseDocument doc = new BaseDocument(true, mimeType);
+            BaseDocument doc = new BaseDocument(true, mimeType) {
+                @Override
+                public boolean isIdentifierPart(char ch) {
+                    if (mimeType != null) {
+                        org.netbeans.modules.gsf.Language l = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+                        if (l != null) {
+                            GsfLanguage gsfLanguage = l.getGsfLanguage();
+                            if (gsfLanguage != null) {
+                                return gsfLanguage.isIdentifierChar(ch);
+                            }
+                        }
+                    }
+
+                    return super.isIdentifierPart(ch);
+                }
+            };
 
             //doc.putProperty("mimeType", mimeType);
             doc.putProperty(org.netbeans.api.lexer.Language.class, language);
@@ -400,8 +460,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
+        assertDescriptionMatches(relFilePath, description, includeTestName, ext, true);
+    }
+
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext, boolean checkFileExistence) throws Exception {
         File rubyFile = getDataFile(relFilePath);
-        if (!rubyFile.exists()) {
+        if (checkFileExistence && !rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
         }
 
@@ -629,7 +694,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
     }
 
-    private String annotateErrors(String text, List<Error> errors) {
+    protected String annotateErrors(String text, List<Error> errors) {
         List<String> descs = new ArrayList<String>();
         for (Error error : errors) {
             StringBuilder desc = new StringBuilder();
@@ -676,7 +741,7 @@ public abstract class GsfTestBase extends NbTestCase {
         
         original = original.substring(0, caretPos) + original.substring(caretPos+1);
         int matchingCaretPos = original.indexOf('^');
-        assert caretPos < matchingCaretPos;
+        assertTrue(caretPos < matchingCaretPos);
         original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
 
         BaseDocument doc = getDocument(original);
@@ -700,59 +765,6 @@ public abstract class GsfTestBase extends NbTestCase {
                 caretPos, range.getStart());
     }
     
-    protected void insertBreak(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
-
-        BaseDocument doc = getDocument(original);
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-        int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-            // Indent the new line
-            //ParserResult result = parse(fo);
-
-            int startPos = caret.getDot()+1;
-            int endPos = startPos+1;
-
-            IndentPrefs preferences = null; // Test should supply default - new IndentPrefs(2, 2);
-            Formatter formatter = getFormatter(preferences);
-            if (formatter != null) {
-                assertNotNull("getFormatter() must be implemented", formatter);
-
-                //ParserResult result = parse(fo);
-                formatter.reindent(doc, startPos, endPos);
-            }
-            int indent = getLineIndent(doc, insertOffset+1);
-
-            //bc.afterBreak(doc, insertOffset, caret);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (newOffset != -1) {
-                caret.setDot(newOffset);
-            } else {
-                caret.setDot(insertOffset+1+indent);
-            }
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
-        }
-    }
-
     // Copied from LexUtilities
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
@@ -775,26 +787,22 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
-        
-        int insertOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, insertOffset) + original.substring(insertOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+    protected void insertChar(String original, char insertText, String expected, String selection, boolean codeTemplateMode) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        BaseDocument doc = getDocument(original);
-        
-        if (codeTemplateMode) {
-            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
-            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N        
-            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);            
-        }
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
+
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
+        caret.setDot(sourcePos);
         if (selection != null) {
             int start = original.indexOf(selection);
             assertTrue(start != -1);
@@ -805,105 +813,94 @@ public abstract class GsfTestBase extends NbTestCase {
             assertEquals(selection, ta.getSelectedText());
         }
 
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
 
-        boolean handled = false;
-        try {
-            handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        if (codeTemplateMode) {
+            // Copied from editor/codetemplates/src/org/netbeans/lib/editor/codetemplates/CodeTemplateInsertHandler.java
+            String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; // NOI18N
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
         }
-        if (!handled) {
-            if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
-                insertOffset = ta.getSelectionStart();
-                doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
-                caret.setDot(insertOffset);
-            }
-            doc.insertString(caret.getDot(), ""+insertText, null);
-            caret.setDot(insertOffset+1);
-            bc.afterCharInserted(doc, insertOffset, ta, insertText);
+
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
+
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
+
         String formatted = doc.getText(0, doc.getLength());
-        assertEquals(expected, formatted);
-        if (finalCaretPos != -1) {
-            assertEquals(finalCaretPos, caret.getDot());
+        assertEquals(reformatted, formatted);
+
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
     }
 
-    protected void deleteChar(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
+    protected void deleteChar(String original, String expected) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        BaseDocument doc = getDocument(original);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        char ch = doc.getChars(dot-1, 1)[0];
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
 
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
+        }
 
-        try {
-            doc.remove(dot - 1, 1);
-            caret.setDot(dot-1);
-            boolean handled = bc.charBackspaced(doc, dot-1, ta, ch);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, DefaultEditorKit.deletePrevCharAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
     }
     
-    protected void deleteWord(String original, String expected) throws BadLocationException {
-        KeystrokeHandler bc = getKeystrokeHandler();
-        assertNotNull("getKeystrokeHandler() must be implemented!", bc);
+    protected void deleteWord(String original, String expected) throws Exception {
+        String source = original;
+        String reformatted = expected;
+        Formatter formatter = getFormatter(null);
 
-        int afterRemoveOffset = original.indexOf('^');
-        int finalCaretPos = expected.indexOf('^');
-        original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
-        expected = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos+1);
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
 
-        BaseDocument doc = getDocument(original);
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
 
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
-        caret.setDot(afterRemoveOffset);
-        int dot = afterRemoveOffset;
-        //REMOVE char ch = doc.getChars(dot-1, 1)[0];
-
-        int begin = bc.getNextWordOffset(doc, dot, true);
-        if (begin == -1) {
-            begin = Utilities.getPreviousWord(ta, dot);
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
-        
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
 
-        try {
-            doc.remove(begin, dot-begin);
-            caret.setDot(begin);
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(expected, formatted);
-            if (finalCaretPos != -1) {
-                assertEquals(finalCaretPos, caret.getDot());
-            }
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        setupDocumentIndentation(doc, null);
+
+        runKitAction(ta, BaseKit.removePreviousWordAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
+
     }
     
     protected FileObject getTestFileObject() {
@@ -960,7 +957,7 @@ public abstract class GsfTestBase extends NbTestCase {
         }
 
         if (sourceStartPos != -1) {
-            assert sourceEndPos != -1;
+            assertTrue(sourceEndPos != -1);
             selected = new OffsetRange(sourceStartPos, sourceEndPos);            
 
             for (int i = 0; i < ranges.size(); i++) {
@@ -989,7 +986,7 @@ public abstract class GsfTestBase extends NbTestCase {
             }
             fail("Selection range " + selected + " is not in the range; ranges=" + ranges);
         } else {
-            assert ranges.size() > 0;
+            assertTrue(ranges.size() > 0);
             OffsetRange was = ranges.get(0);
             assertEquals("Wrong selection: expected \"" + 
                     expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
@@ -1044,10 +1041,11 @@ public abstract class GsfTestBase extends NbTestCase {
             // Extra check: Ensure that occurrences are symmetric: Placing the caret on ANY of the occurrences
             // should produce the same set!!
             for (OffsetRange range : occurrences.keySet()) {
-                finder.setCaretPosition(range.getStart()+range.getLength()/2);
+                int midPoint = range.getStart() + range.getLength() / 2;
+                finder.setCaretPosition(midPoint);
                 finder.run(info);
                 Map<OffsetRange, ColoringAttributes> alternates = finder.getOccurrences();
-                assertEquals("Marks differ between caret positions", occurrences, alternates);
+                assertEquals("Marks differ between caret positions - failed at " + midPoint, occurrences, alternates);
             }
         }
     }
@@ -1120,13 +1118,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
+            caretOffset = getCaretOffset(text, caretLine);
             info.setCaretOffset(caretOffset);
         }
 
@@ -1136,6 +1128,9 @@ public abstract class GsfTestBase extends NbTestCase {
         analyzer.run(info);
         Map<OffsetRange, Set<ColoringAttributes>> highlights = analyzer.getHighlights();
 
+        if (highlights == null) {
+            highlights = Collections.emptyMap();
+        }
         checkNoOverlaps(highlights.keySet(), info.getDocument());
         
         String annotatedSource = annotateSemanticResults(info.getDocument(), highlights);
@@ -1221,13 +1216,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = info.getText().indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
+            caretOffset = getCaretOffset(info.getText(), caretLine);
         }
 
         String annotatedSource;
@@ -1565,9 +1554,9 @@ public abstract class GsfTestBase extends NbTestCase {
             public void emphasis(boolean start) {
             }
         };
-        List<? extends StructureItem> structure = analyzer.scan(info, formatter);
+        List<? extends StructureItem> structure = analyzer.scan(info);
         
-        String annotatedSource = annotateStructure(info.getDocument(), structure);
+        String annotatedSource = annotateStructure(info.getDocument(), structure, formatter);
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".structure");
     }
     
@@ -1647,7 +1636,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".folds");
     }
 
-    private void annotateStructureItem(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure) {
+    private void annotateStructureItem(int indent, StringBuilder sb, Document document, List<? extends StructureItem> structure, HtmlFormatter formatter) {
         for (StructureItem element : structure) {
             for (int i = 0; i < indent; i++) {
                 sb.append("  ");
@@ -1658,7 +1647,8 @@ public abstract class GsfTestBase extends NbTestCase {
             sb.append(":");
             sb.append(element.getModifiers());
             sb.append(":");
-            sb.append(element.getHtml());
+            formatter.reset();
+            sb.append(element.getHtml(formatter));
             sb.append(":");
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
@@ -1684,14 +1674,14 @@ public abstract class GsfTestBase extends NbTestCase {
                     
                 });
                 
-                annotateStructureItem(indent+1, sb, document, c);
+                annotateStructureItem(indent+1, sb, document, c, formatter);
             }
         }
     }
 
-    private String annotateStructure(Document document, List<? extends StructureItem> structure) {
+    private String annotateStructure(Document document, List<? extends StructureItem> structure, HtmlFormatter formatter) {
         StringBuilder sb = new StringBuilder();
-        annotateStructureItem(0, sb, document, structure);
+        annotateStructureItem(0, sb, document, structure, formatter);
         
         return sb.toString();
     }
@@ -1725,9 +1715,76 @@ public abstract class GsfTestBase extends NbTestCase {
             return hanging;
         }
     }
-    
+
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly) throws BadLocationException {
+        configureIndenters(document, formatter, compilationInfo, indentOnly, getPreferredMimeType());
+    }
+
+    protected void configureIndenters(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, boolean indentOnly, String mimeType) throws BadLocationException {
+        ReformatTask.Factory reformatFactory = new ReformatTask.Factory() {
+            public ReformatTask createTask(Context context) {
+                final Context ctx = context;
+                return new ReformatTask() {
+                    public void reformat() throws BadLocationException {
+                        if (formatter != null) {
+                            formatter.reformat(ctx, compilationInfo);
+                        }
+                    }
+
+                    public ExtraLock reformatLock() {
+                        return null;
+                    }
+                };
+            }
+        };
+        IndentTask.Factory indentFactory = new IndentTask.Factory() {
+            public IndentTask createTask(Context context) {
+                final Context ctx = context;
+                return new IndentTask() {
+                    public void reindent() throws BadLocationException {
+                        if (formatter != null) {
+                            formatter.reindent(ctx);
+                        }
+                    }
+
+                    public ExtraLock indentLock() {
+                        return null;
+                    }
+                };
+            }
+
+        };
+
+        MockServices.setServices(MockMimeLookup.class);
+        if (indentOnly) {
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), indentFactory);
+        } else {
+            MockMimeLookup.setInstances(MimePath.parse(mimeType), reformatFactory, indentFactory);
+        }
+    }
+
+    protected void format(final BaseDocument document, final Formatter formatter,
+            final CompilationInfo compilationInfo, int startPos, int endPos, boolean indentOnly) throws BadLocationException {
+        //assertTrue(SwingUtilities.isEventDispatchThread());
+        configureIndenters(document, formatter, compilationInfo, indentOnly);
+
+//        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
+        @SuppressWarnings("deprecation")
+        final org.netbeans.editor.Formatter f = document.getFormatter();
+        try {
+            f.reformatLock();
+            int reformattedLen = f.reformat(document, 
+                    Math.min(document.getLength(), startPos),
+                    Math.min(document.getLength(), endPos));
+        } finally {
+            f.reformatUnlock();
+        }
+    }
+
     public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
+        final Formatter formatter = getFormatter(preferences);
         assertNotNull("getFormatter must be implemented", formatter);
 
         String BEGIN = "%<%"; // NOI18N
@@ -1737,7 +1794,7 @@ public abstract class GsfTestBase extends NbTestCase {
         } else {
             startPos = 0;
         }
-        
+
         String END = "%>%"; // NOI18N
         int endPos = source.indexOf(END);
         if (endPos != -1) {
@@ -1749,13 +1806,15 @@ public abstract class GsfTestBase extends NbTestCase {
         if (endPos == -1) {
             endPos = doc.getLength();
         }
-        
-        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
 
+        setupDocumentIndentation(doc, preferences);
+        final CompilationInfo compilationInfo = getInfoForText(source, "unittestdata");
+        format(doc, formatter, compilationInfo, startPos, endPos, false);
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
     }
-    
+
+
     protected void reformatFileContents(String file, IndentPrefs preferences) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
@@ -1765,48 +1824,133 @@ public abstract class GsfTestBase extends NbTestCase {
         
         Formatter formatter = getFormatter(preferences);
         assertNotNull("getFormatter must be implemented", formatter);
+        setupDocumentIndentation(doc, preferences);
 
-        formatter.reformat(doc, 0, doc.getLength(), getInfo(fo));
+        format(doc, formatter, getInfo(fo), 0, doc.getLength(), false);
         String after = doc.getText(0, doc.getLength());
         
         assertDescriptionMatches(file, after, false, ".formatted");
     }
-    
-    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        Formatter formatter = getFormatter(preferences);
-        assertNotNull("getFormatter must be implemented", formatter);
 
+    protected BaseKit getEditorKit(String mimeType) {
+        org.netbeans.modules.gsf.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        assertNotNull(language);
+        if (!language.useCustomEditorKit()) {
+            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
+            return factory.kit();
+        }
+        fail("Must override getEditorKit() for useCustomEditorKit languages");
+        return null;
+    }
+
+    protected void toggleComment(String text, String expected) throws Exception {
+        JEditorPane pane = getPane(text);
+
+        runKitAction(pane, "toggle-comment", "");
+
+        String toggled = pane.getText();
+        assertEquals(expected, toggled);
+    }
+
+    protected JEditorPane getPane(String text) throws Exception {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            fail("You must run this test from the event dispatch thread! To do that, add @Override protected boolean runInEQ() { return true } from your testcase!");
+        }
+        String BEGIN = "$start$"; // NOI18N
+        String END = "$end$"; // NOI18N
+        int sourceStartPos = text.indexOf(BEGIN);
+        int caretPos = -1;
+        int sourceEndPos = -1;
+        if (sourceStartPos != -1) {
+            text = text.substring(0, sourceStartPos) + text.substring(sourceStartPos+BEGIN.length());
+            sourceEndPos = text.indexOf(END);
+            assertTrue(sourceEndPos != -1);
+            text = text.substring(0, sourceEndPos) + text.substring(sourceEndPos+END.length());
+        } else {
+            caretPos = text.indexOf('^');
+            if (caretPos != -1) {
+                text = text.substring(0, caretPos) + text.substring(caretPos+1);
+            }
+        }
+
+        JEditorPane pane = new JEditorPane();
+        pane.setContentType(getPreferredMimeType());
+        pane.setEditorKit(getEditorKit(getPreferredMimeType()));
+        pane.setText(text);
+
+        BaseDocument bdoc = (BaseDocument)pane.getDocument();
+
+        bdoc.putProperty(org.netbeans.api.lexer.Language.class, getPreferredLanguage().getLexerLanguage());
+        bdoc.putProperty("mimeType", getPreferredMimeType());
+
+        //bdoc.insertString(0, text, null);
+        if (sourceStartPos != -1) {
+            assertTrue(sourceEndPos != -1);
+            pane.setSelectionStart(sourceStartPos);
+            pane.setSelectionEnd(sourceEndPos);
+        } else if (caretPos != -1) {
+            pane.getCaret().setDot(caretPos);
+        }
+        pane.getCaret().setSelectionVisible(true);
+
+        return pane;
+    }
+
+    protected void runKitAction(JEditorPane jt, String actionName, String cmd) {
+        BaseKit kit = (BaseKit)jt.getEditorKit();
+        Action a = kit.getActionByName(actionName);
+        assertNotNull(a);
+        a.actionPerformed(new ActionEvent(jt, 0, cmd));
+    }
+    
+    protected void setupDocumentIndentation(BaseDocument doc, IndentPrefs preferences) {
+        // Enforce indentprefs
+        if (preferences != null) {
+            assertEquals("Hanging indentation not yet supported; must be exposed through options", preferences.getIndentation(), preferences.getHangingIndentation());
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, preferences.getIndentation());
+        } else {
+            int preferred = 4;
+            if (getPreferredLanguage().hasFormatter()) {
+                preferred = getPreferredLanguage().getFormatter().indentSize();
+            }
+            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+            prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, preferred);
+        }
+    }
+
+    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');     
         assertNotNull(sourcePos);
         source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+        Formatter formatter = getFormatter(null);
 
         int reformattedPos = reformatted.indexOf('^');        
         assertNotNull(reformattedPos);
         reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
         
-        BaseDocument doc = getDocument(source);
-
-        JTextArea ta = new JTextArea(doc);
+        JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
-        doc.atomicLock();
-        DocumentUtilities.setTypingModification(doc, true);
-
-        try {
-            doc.insertString(caret.getDot(), "\n", null);
-        
-            int startPos = caret.getDot()+1;
-            int endPos = startPos;
-
-            //ParserResult result = parse(fo);
-            formatter.reindent(doc, startPos, endPos);
-
-            String formatted = doc.getText(0, doc.getLength());
-            assertEquals(reformatted, formatted);
-        } finally {
-            DocumentUtilities.setTypingModification(doc, false);
-            doc.atomicUnlock();
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, null, true);
         }
+
+        setupDocumentIndentation(doc, preferences);
+
+        runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
+
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
+        }
+    }
+
+    protected void insertBreak(String original, String expected) throws Exception {
+        insertNewline(original, expected, null);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1828,6 +1972,9 @@ public abstract class GsfTestBase extends NbTestCase {
                 begin++;
             }
         }
+        if (s.length() == 0) {
+            return s;
+        }
         s.charAt(offset);
         int end = s.indexOf('\n', offset);
         if (end == -1) {
@@ -1836,7 +1983,7 @@ public abstract class GsfTestBase extends NbTestCase {
         return (s.substring(begin, offset)+"|"+s.substring(offset, end)).trim();
     }
 
-    private String getSourceWindow(String s, int offset) {
+    protected String getSourceWindow(String s, int offset) {
         int prevLineBegin;
         int nextLineEnd;
         int begin = offset;
@@ -1874,8 +2021,8 @@ public abstract class GsfTestBase extends NbTestCase {
     }
 
     private String describeCompletion(String caretLine, String text, int caretOffset, NameKind kind, QueryType type, List<CompletionProposal> proposals, 
-            boolean includeModifiers, boolean[] deprecatedHolder) {
-        assert deprecatedHolder != null && deprecatedHolder.length == 1;
+            boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
+        assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
         StringBuilder sb = new StringBuilder();
         sb.append("Code completion result for source line:\n");
         String sourceLine = getSourceLine(text, caretOffset);
@@ -1899,12 +2046,19 @@ public abstract class GsfTestBase extends NbTestCase {
                     return p1.getKind().compareTo(p2.getKind());
                 }
                 
-                if (!p1.getLhsHtml().equals(p2.getLhsHtml())) {
-                    return p1.getLhsHtml().compareTo(p2.getLhsHtml());
+                formatter.reset();
+                String p1L = p1.getLhsHtml(formatter);
+                formatter.reset();
+                String p2L = p2.getLhsHtml(formatter);
+                
+                if (!p1L.equals(p2L)) {
+                    return p1L.compareTo(p2L);
                 }
 
-                String p1Rhs = p1.getRhsHtml();
-                String p2Rhs = p2.getRhsHtml();
+                formatter.reset();
+                String p1Rhs = p1.getRhsHtml(formatter);
+                formatter.reset();
+                String p2Rhs = p2.getRhsHtml(formatter);
                 if (p1Rhs == null) {
                     p1Rhs = "";
                 }
@@ -1932,7 +2086,8 @@ public abstract class GsfTestBase extends NbTestCase {
             }
 
             deprecatedHolder[0] = false;
-            proposal.getLhsHtml(); // Side effect to deprecatedHolder used
+            formatter.reset();
+            proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
             boolean strike = includeModifiers && deprecatedHolder[0];
             
             String n = proposal.getKind().toString();
@@ -1957,7 +2112,8 @@ public abstract class GsfTestBase extends NbTestCase {
 
             sb.append(" ");
             
-            n = proposal.getLhsHtml();
+            formatter.reset();
+            n = proposal.getLhsHtml(formatter);
             int MAX_LHS = 30;
             if (strike) {
                 MAX_LHS -= 6; // Account for the --- --- strikethroughs
@@ -1996,13 +2152,26 @@ public abstract class GsfTestBase extends NbTestCase {
 
             sb.append("  ");
             
-            sb.append(proposal.getRhsHtml());
+            formatter.reset();
+            sb.append(proposal.getRhsHtml(formatter));
             sb.append("\n");
             
             isSmart = proposal.isSmart();
         }
         
         return sb.toString();
+    }
+
+    private static org.netbeans.modules.gsf.Language getCompletableLanguage(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<org.netbeans.modules.gsf.Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (org.netbeans.modules.gsf.Language l : list) {
+            if (l.getCompletionProvider() != null) {
+                return l;
+            }
+        }
+
+        return null;
     }
     
     public void checkCompletion(String file, String caretLine, boolean includeModifiers) throws Exception {
@@ -2019,13 +2188,155 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
+            caretOffset = getCaretOffset(text, caretLine);
+            ci.setCaretOffset(caretOffset);
+        }
 
-            caretOffset = lineOffset + caretDelta;
+        //String targetMime = ci.getPreferredMimeType();
+        String targetMime = getCompletableLanguage(ci.getDocument(), caretOffset).getMimeType();
+
+        ParserResult pr = ci.getEmbeddedResult(targetMime, 0);
+        assertNotNull(pr);
+        
+        CodeCompletionHandler cc = getCodeCompleter();
+        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        final boolean deprecatedHolder[] = new boolean[1];
+        
+        final HtmlFormatter formatter = new HtmlFormatter() {
+            private StringBuilder sb = new StringBuilder();
+            
+            @Override
+            public void reset() {
+                sb.setLength(0);
+            }
+
+            @Override
+            public void appendHtml(String html) {
+                sb.append(html);
+            }
+
+            @Override
+            public void appendText(String text, int fromInclusive, int toExclusive) {
+                sb.append(text, fromInclusive, toExclusive);
+            }
+            
+            @Override
+            public void emphasis(boolean start) {
+            }
+
+            @Override
+            public void active(boolean start) {
+            }
+
+            @Override
+            public void name(ElementKind kind, boolean start) {
+            }
+
+            @Override
+            public void parameters(boolean start) {
+            }
+
+            @Override
+            public void type(boolean start) {
+            }
+
+            @Override
+            public void deprecated(boolean start) {
+                deprecatedHolder[0] = true;
+            }
+
+            @Override
+            public String getText() {
+                return sb.toString();
+            }
+        };
+        boolean upToOffset = type == QueryType.COMPLETION;
+        String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
+        if (prefix == null) {
+            if (prefix == null) {
+                int[] blk =
+                    org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument)ci.getDocument(),
+                        caretOffset);
+
+                if (blk != null) {
+                    int start = blk[0];
+
+                    if (start < caretOffset ) {
+                        if (upToOffset) {
+                            prefix = ci.getDocument().getText(start, caretOffset - start);
+                        } else {
+                            prefix = ci.getDocument().getText(start, blk[1]-start);
+                        }
+                    }
+                }
+            }
+        }
+
+        Source js = Source.forFileObject(ci.getFileObject());
+        if (js != null) {
+            assertNotNull(js);
+            //ci.getIndex();
+            //index.setDirty(js);
+            js.testUpdateIndex();
+        }
+        
+        final int finalCaretOffset = caretOffset;
+        final String finalPrefix = prefix;
+        CodeCompletionContext context = new CodeCompletionContext() {
+
+            @Override
+            public int getCaretOffset() {
+                return finalCaretOffset;
+            }
+
+            @Override
+            public CompilationInfo getInfo() {
+                return ci;
+            }
+
+            @Override
+            public String getPrefix() {
+                return finalPrefix;
+            }
+
+            @Override
+            public NameKind getNameKind() {
+                return kind;
+            }
+
+            @Override
+            public QueryType getQueryType() {
+                return type;
+            }
+
+            @Override
+            public boolean isCaseSensitive() {
+                return caseSensitive;
+            }
+        };
+        
+        CodeCompletionResult completionResult = cc.complete(context);
+        List<CompletionProposal> proposals = completionResult.getItems();
+        
+        String described = describeCompletion(caretLine, text, caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder, formatter);
+        assertDescriptionMatches(file, described, true, ".completion");
+    }
+
+    public void checkCompletionDocumentation(String file, String caretLine, boolean includeModifiers, String itemPrefix) throws Exception {
+        initializeClassPaths();
+
+        // TODO call TestCompilationInfo.setCaretOffset!        
+        final QueryType type = QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+        final NameKind kind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
+
+        final GsfTestCompilationInfo ci = getInfo(file);
+        String text = ci.getText();
+        assertNotNull(text);
+
+        int caretOffset = -1;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(text, caretLine);
             ci.setCaretOffset(caretOffset);
         }
 
@@ -2147,18 +2458,130 @@ public abstract class GsfTestBase extends NbTestCase {
             public boolean isCaseSensitive() {
                 return caseSensitive;
             }
-
-            @Override
-            public HtmlFormatter getFormatter() {
-                return formatter;
-            }
         };
         
         CodeCompletionResult completionResult = cc.complete(context);
         List<CompletionProposal> proposals = completionResult.getItems();
+
+        CompletionProposal match = null;
+        for (CompletionProposal proposal : proposals) {
+            if (proposal.getName().startsWith(itemPrefix)) {
+                match = proposal;
+                break;
+            }
+        }
+        assertNotNull(match);
+        assertNotNull(match.getElement());
+
+        // Get documentation
+        String documentation = cc.document(ci, match.getElement());
         
-        String described = describeCompletion(caretLine, text, caretOffset, kind, type, proposals, includeModifiers, deprecatedHolder);
-        assertDescriptionMatches(file, described, true, ".completion");
+        String described = describeCompletionDoc(text, caretOffset, kind, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
+        assertDescriptionMatches(file, described, true, ".html");
+    }
+    
+    private String describeCompletionDoc(String text, int caretOffset, NameKind kind, QueryType type, 
+             CompletionProposal proposal, String documentation,
+            boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
+        assertTrue(deprecatedHolder != null && deprecatedHolder.length == 1);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        sb.append("<body>\n");
+        sb.append("<pre>");
+        sb.append("Code completion result for source line:\n");
+        String sourceLine = getSourceLine(text, caretOffset);
+        if (sourceLine.length() == 1) {
+            sourceLine = getSourceWindow(text, caretOffset);
+        }
+        sb.append(sourceLine);
+        sb.append("\n(QueryType=" + type + ", NameKind=" + kind + ")");
+        sb.append("\n");
+
+        boolean isSmart = true;
+        if (isSmart && !proposal.isSmart()) {
+            sb.append("------------------------------------\n");
+            isSmart = false;
+        }
+
+        deprecatedHolder[0] = false;
+        formatter.reset();
+        proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
+        boolean strike = includeModifiers && deprecatedHolder[0];
+
+        String n = proposal.getKind().toString();
+        int MAX_KIND = 10;
+        if (n.length() > MAX_KIND) {
+            sb.append(n.substring(0, MAX_KIND));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_KIND; i++) {
+                sb.append(" ");
+            }
+        }
+
+//            if (proposal.getModifiers().size() > 0) {
+//                List<String> modifiers = new ArrayList<String>();
+//                for (Modifier mod : proposal.getModifiers()) {
+//                    modifiers.add(mod.name());
+//                }
+//                Collections.sort(modifiers);
+//                sb.append(modifiers);
+//            }
+
+        sb.append(" ");
+
+        formatter.reset();
+        n = proposal.getLhsHtml(formatter);
+        int MAX_LHS = 30;
+        if (strike) {
+            MAX_LHS -= 6; // Account for the --- --- strikethroughs
+            sb.append("---");
+        }
+        if (n.length() > MAX_LHS) {
+            sb.append(n.substring(0, MAX_LHS));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_LHS; i++) {
+                sb.append(" ");
+            }
+        }
+
+        if (strike) {
+            sb.append("---");
+        }
+
+        sb.append("  ");
+
+        assertNotNull("Return Collections.emptySet() instead from getModifiers!", proposal.getModifiers());
+        if (proposal.getModifiers().isEmpty()) {
+            n = "";
+        } else {
+            n = proposal.getModifiers().toString();
+        }
+        int MAX_MOD = 9;
+        if (n.length() > MAX_MOD) {
+            sb.append(n.substring(0, MAX_MOD));
+        } else {
+            sb.append(n);
+            for (int i = n.length(); i < MAX_MOD; i++) {
+                sb.append(" ");
+            }
+        }
+
+        sb.append("  ");
+
+        formatter.reset();
+        sb.append(proposal.getRhsHtml(formatter));
+        sb.append("\n");
+
+        isSmart = proposal.isSmart();
+        sb.append("</pre>");
+        sb.append("<h2>Documentation:</h2>");
+        sb.append(documentation);
+
+        sb.append("</body>");
+        sb.append("</html>");
+        return sb.toString();
     }
     
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {
@@ -2186,7 +2609,7 @@ public abstract class GsfTestBase extends NbTestCase {
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
     }
     
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+    public void checkComputeMethodCall(String file, String caretLine, String param, boolean expectSuccess) throws Exception {
         initializeClassPaths();
         
         QueryType type = QueryType.COMPLETION;
@@ -2198,13 +2621,7 @@ public abstract class GsfTestBase extends NbTestCase {
         
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
+            caretOffset = getCaretOffset(text, caretLine);
             ci.setCaretOffset(caretOffset);
         }
         
@@ -2212,7 +2629,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();
-        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        assertNotNull("getCodeCompleter must be implemented", cc);
 
         boolean upToOffset = type == QueryType.COMPLETION;
         String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
@@ -2320,13 +2737,8 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
+            caretOffset = getCaretOffset(text, caretLine);
 
-            caretOffset = lineOffset + caretDelta;
             info.setCaretOffset(caretOffset);
         }
 
@@ -2339,7 +2751,6 @@ public abstract class GsfTestBase extends NbTestCase {
         initializeNodes(info, info.getEmbeddedResult(getPreferredMimeType(), caretOffset),
                 validNodes, positions, invalidNodes);
 
-        BaseDocument doc = (BaseDocument) info.getDocument();
         String annotatedSource = annotateOffsets(validNodes, positions, invalidNodes, info);
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".offsets");
     }
@@ -2421,24 +2832,51 @@ public abstract class GsfTestBase extends NbTestCase {
         sb.append("\n");
         
         for (int i = 0; i < text.length(); i++) {
+            List<Object> deferred = null;
+            if (ends.containsKey(i)) {
+                List<Object> ns = ends.get(i);
+                List<Object> sts = starts.get(i);
+                for (Object n : ns) {
+                    if (sts != null && sts.contains(n)) {
+                        if (deferred == null) {
+                            deferred = new ArrayList<Object>();
+                        }
+                        deferred.add(n);
+                    } else {
+                        sb.append("</");
+                        String desc = describeNode(info, n, false);
+                        assertNotNull(desc);
+                        sb.append(desc);
+                        sb.append(">");
+                    }
+                }
+            }
             if (starts.containsKey(i)) {
                 List<Object> ns = starts.get(i);
+                List<Object> ets = ends.get(i);
                 for (Object n : ns) {
+                    if (ets != null && ets.contains(n)) {
+                        if (deferred == null) {
+                            deferred = new ArrayList<Object>();
+                        } else if (deferred.get(deferred.size()-1) != n) {
+                            deferred.add(n);
+                        }
+                    } else {
+                        sb.append("<");
+                        String desc = describeNode(info, n, false);
+                        assertNotNull(desc);
+                        sb.append(desc);
+                        sb.append(">");
+                    }
+                }
+            }
+            if (deferred != null) {
+                for (Object n : deferred) {
                     sb.append("<");
                     String desc = describeNode(info, n, false);
                     assertNotNull(desc);
                     sb.append(desc);
-                    sb.append(">");
-                }
-            }
-            if (ends.containsKey(i)) {
-                List<Object> ns = ends.get(i);
-                for (Object n : ns) {
-                    sb.append("</");
-                    String desc = describeNode(info, n, false);
-                    assertNotNull(desc);
-                    sb.append(desc);
-                    sb.append(">");
+                    sb.append("/>");
                 }
             }
             char c = text.charAt(i);
@@ -2517,38 +2955,19 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
-    /**
-     * Produce an incremental parser result for the given test file with the given
-     * series of edits. An edit is a pair of caret position string (with ^ representing
-     * the caret) and a corresponding insert or delete (with insert:string or remove:string)
-     * as the value.
-     */
-    protected IncrementalParse getIncrementalResult(String relFilePath, String... edits) throws Exception {
+    protected final Pair<EditHistory,String> getEditHistory(String initialText, String... edits) {
+        return getEditHistory(initialText, new EditHistory(), edits);
+    }
+
+    protected final Pair<EditHistory,String> getEditHistory(String initialText, EditHistory history, String... edits) {
         assertNotNull("Must provide a list of edits", edits);
         assertTrue("Should be an even number of edit events: pairs of caret, insert/remove", edits.length % 2 == 0);
 
-        GsfTestCompilationInfo info = getInfo(relFilePath);
-
-        // Obtain the initial parse result
-        ParserResult initialResult = info.getEmbeddedResult(getPreferredMimeType(), 0);
-        assertNotNull(initialResult);
-
-        // Apply edits
-        String modifiedText = info.getText();
-        assertNotNull(modifiedText);
-        String initialText = modifiedText;
-        EditHistory history = new EditHistory();
+        String modifiedText = initialText;
         for (int i = 0, n = edits.length; i < n; i += 2) {
             String caretLine = edits[i];
             String event = edits[i+1];
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = modifiedText.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            int caretOffset = lineOffset + caretDelta;
-            //info.setCaretOffset(caretOffset);
+            int caretOffset = getCaretOffset(modifiedText, caretLine);
 
             assertTrue(event + " must start with " + INSERT + " or " + REMOVE,
                     event.startsWith(INSERT) || event.startsWith(REMOVE));
@@ -2564,6 +2983,29 @@ public abstract class GsfTestBase extends NbTestCase {
                 modifiedText = modifiedText.substring(0, caretOffset) + modifiedText.substring(caretOffset+event.length());
             }
         }
+
+        return new Pair<EditHistory,String>(history, modifiedText);
+    }
+
+    /**
+     * Produce an incremental parser result for the given test file with the given
+     * series of edits. An edit is a pair of caret position string (with ^ representing
+     * the caret) and a corresponding insert or delete (with insert:string or remove:string)
+     * as the value.
+     */
+    protected final IncrementalParse getIncrementalResult(String relFilePath, double speedupExpectation, String... edits) throws Exception {
+        GsfTestCompilationInfo info = getInfo(relFilePath);
+
+        // Obtain the initial parse result
+        ParserResult initialResult = info.getEmbeddedResult(getPreferredMimeType(), 0);
+        assertNotNull(initialResult);
+
+        // Apply edits
+        String initialText = info.getText();
+        assertNotNull(initialText);
+        Pair<EditHistory,String> pair = getEditHistory(initialText, edits);
+        EditHistory history = pair.getA();
+        String modifiedText = pair.getB();
 
         info.setText(modifiedText);
         info.setEditHistory(history);
@@ -2591,20 +3033,30 @@ public abstract class GsfTestBase extends NbTestCase {
         long fullParseEndTime = System.nanoTime();
         assertNotNull(fullParseResult);
 
-        long incrementalParseTime = incrementalEndTime-incrementalStartTime;
-        long fullParseTime = fullParseEndTime-fullParseStartTime;
-        //assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-        //        incrementalParseTime < fullParseTime);
-        // Figure out how to ensure garbage collections etc. make a fair run.
-        assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns)",
-// 2x here -- figure out how to make test stable, then remove!!                
-                incrementalParseTime < 2*fullParseTime);
+        if (speedupExpectation > 0.0) {
+            long incrementalParseTime = incrementalEndTime-incrementalStartTime;
+            long fullParseTime = fullParseEndTime-fullParseStartTime;
+            // Figure out how to ensure garbage collections etc. make a fair run.
+            assertTrue("Incremental parsing time (" + incrementalParseTime + " ns) should be less than full parse time (" + fullParseTime + " ns); speedup was " +
+                    ((double)fullParseTime)/incrementalParseTime,
+                    ((double)incrementalParseTime)*speedupExpectation < fullParseTime);
+        }
 
         return new IncrementalParse(initialResult, info, incrementalResult, history, initialText, modifiedText, fullParseResult);
     }
 
-    protected void checkIncremental(String relFilePath, String... edits) throws Exception {
-        IncrementalParse parse = getIncrementalResult(relFilePath, edits);
+    /**
+     * Check incremental parsing
+     * @param relFilePath Path to test file to be parsed
+     * @param speedupExpectation The speed up we're expecting for incremental processing
+     *   over normal full-file analysis. E.g. 1.0d means we want to ensure that incremental
+     *   parsing is at least as fast as normal parsing. For small files there may be extra
+     *   overhead; you can pass 0.0d to turn off this check (but the test runs to ensure
+     *   that things are working okay.)
+     * @param edits A list of edits to perform.
+     */
+    protected final void checkIncremental(String relFilePath, double speedupExpectation, String... edits) throws Exception {
+        IncrementalParse parse = getIncrementalResult(relFilePath, speedupExpectation, edits);
 
         ParserResult incrementalResult = parse.newParserResult;
         ParserResult fullParseResult = parse.fullParseResult;
@@ -2658,13 +3110,7 @@ public abstract class GsfTestBase extends NbTestCase {
 
         int caretOffset = -1;
         if (caretLine != null) {
-            int caretDelta = caretLine.indexOf("^");
-            assertTrue(caretDelta != -1);
-            caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
-            int lineOffset = text.indexOf(caretLine);
-            assertTrue(lineOffset != -1);
-
-            caretOffset = lineOffset + caretDelta;
+            caretOffset = getCaretOffset(text, caretLine);
             info.setCaretOffset(caretOffset);
         }
 
@@ -2891,9 +3337,91 @@ public abstract class GsfTestBase extends NbTestCase {
     }
  
     protected boolean parseErrorsOk;
+
+    protected boolean checkAllHintOffsets() {
+        return true;
+    }
+
+    protected void customizeHintError(Error error, int start) {
+        // Optionally override
+    }
+
+    private enum ChangeOffsetType { NONE, OVERLAP, OUTSIDE };
+
+    private void customizeHintInfo(GsfTestCompilationInfo info, ParserResult result, ChangeOffsetType changeOffsetType) {
+        if (changeOffsetType == ChangeOffsetType.NONE) {
+            return;
+        }
+        if (info == null || result == null) {
+            return;
+        }
+        // Test offset handling to make sure we can handle bogus node positions
+
+        Document doc = info.getDocument();
+        int docLength = doc.getLength();
+        // Replace errors with offsets
+        List<Error> errors = new ArrayList<Error>();
+        List<Error> oldErrors = result.getDiagnostics();
+        for (Error error : oldErrors) {
+            int start = error.getStartPosition();
+            int end = error.getEndPosition();
+
+            // Modify document position to be off
+            int length = end-start;
+            if (changeOffsetType == ChangeOffsetType.OUTSIDE) {
+                start = docLength+1;
+            } else {
+                start = docLength-1;
+            }
+            end = start+length;
+            if (end <= docLength) {
+                end = docLength+1;
+            }
+
+            DefaultError newError = new DefaultError(error.getKey(), error.getDisplayName(), error.getDescription(), error.getFile(), start,
+                    end, error.getSeverity());
+            newError.setParameters(error.getParameters());
+            customizeHintError(error, start);
+            errors.add(newError);
+        }
+        oldErrors.clear();
+        oldErrors.addAll(errors);
+    }
     
     protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
-        assert relFilePath == null || fileObject == null;
+        ComputedHints hints = computeHints(test, hint, relFilePath, fileObject, caretLine, ChangeOffsetType.NONE);
+
+        if (checkAllHintOffsets()) {
+            // Run alternate hint computation AFTER the real computation above since we will destroy the document...
+            Logger.global.addHandler(new Handler() {
+                @Override
+                public void publish(LogRecord record) {
+                    if (record.getThrown() != null) {
+                        StringWriter sw = new StringWriter();
+                        record.getThrown().printStackTrace(new PrintWriter(sw));
+                        fail("Encountered error: " + sw.toString());
+                    }
+                }
+
+                @Override
+                public void flush() {
+                }
+
+                @Override
+                public void close() throws SecurityException {
+                }
+
+            });
+            for (ChangeOffsetType type : new ChangeOffsetType[] { ChangeOffsetType.OUTSIDE, ChangeOffsetType.OVERLAP }) {
+                computeHints(test, hint, relFilePath, fileObject, caretLine, type);
+            }
+        }
+
+        return hints;
+    }
+
+    protected ComputedHints computeHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine, ChangeOffsetType changeOffsetType) throws Exception {
+        assertTrue(relFilePath == null || fileObject == null);
         UserConfigurableRule ucr = null;
         if (hint instanceof UserConfigurableRule) {
             ucr = (UserConfigurableRule)hint;
@@ -2913,6 +3441,16 @@ public abstract class GsfTestBase extends NbTestCase {
         
         GsfTestCompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         ParserResult pr = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
+
+        if (changeOffsetType != ChangeOffsetType.NONE) {
+            customizeHintInfo(info, pr, changeOffsetType);
+
+            // Also: Delete te contents from the document!!!
+            // This ensures that the node offsets will be out of date by the time the rules run
+            Document doc = info.getDocument();
+            doc.remove(0, doc.getLength());
+        }
+
         if (pr == null /*|| pr.hasErrors()*/ && !(hint instanceof ErrorRule)) { // only expect testcase source errors in error tests
             if (parseErrorsOk) {
                 List<Hint> result = new ArrayList<Hint>();
@@ -2966,7 +3504,7 @@ public abstract class GsfTestBase extends NbTestCase {
                 provider.computeSelectionHints(manager, context, hints, start, end);
             }
         } else {
-            assert hint instanceof AstRule && ucr != null;
+            assertTrue(hint instanceof AstRule && ucr != null);
             AstRule AstRule = (AstRule)hint;
             // Create a hint registry which contains ONLY our hint (so other registered
             // hints don't interfere with the test)
@@ -3040,7 +3578,7 @@ public abstract class GsfTestBase extends NbTestCase {
         CompilationInfo info = r.info;
         List<Hint> result = r.hints;
         int caretOffset = r.caretOffset;
-        
+
         String annotatedSource = annotateHints((BaseDocument)info.getDocument(), result, caretOffset);
 
         if (fileObject != null) {
@@ -3088,8 +3626,15 @@ public abstract class GsfTestBase extends NbTestCase {
         
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
-        
-        fix.implement();
+
+        if (fix.isInteractive() && fix instanceof PreviewableFix) {
+            PreviewableFix preview = (PreviewableFix)fix;
+            assertTrue(preview.canPreview());
+            EditList editList = preview.getEditList();
+            editList.applyToDocument((BaseDocument) info.getDocument());
+        } else {
+            fix.implement();
+        }
         
         Document doc = info.getDocument();
         String fixed = doc.getText(0, doc.getLength());
@@ -3154,9 +3699,85 @@ public abstract class GsfTestBase extends NbTestCase {
             this.caretOffset = caretOffset;
         }
 
+        @Override
+        public String toString() {
+            return "ComputedHints(caret=" + caretOffset + ",info=" + info + ",hints=" + hints + ")";
+        }
+
         public CompilationInfo info;
         public List<Hint> hints;
         public int caretOffset;
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // DeclarationFinder
+    ////////////////////////////////////////////////////////////////////////////
+    protected DeclarationFinder getFinder() {
+        DeclarationFinder finder = getPreferredLanguage().getDeclarationFinder();
+        if (finder == null) {
+            fail("You must override getFinder()");
+        }
+
+        return finder;
+    }
+
+    protected DeclarationLocation findDeclaration(String relFilePath, String caretLine) throws Exception {
+        CompilationInfo info = getInfo(relFilePath);
+
+        String text = info.getText();
+
+        int caretDelta = caretLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
+        int lineOffset = text.indexOf(caretLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset + caretDelta;
+
+        DeclarationFinder finder = getFinder();
+        DeclarationLocation location = finder.findDeclaration(info, caretOffset);
+
+        return location;
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, URL url) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        assertEquals(location.getUrl(), url);
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, String declarationLine) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        int caretDelta = declarationLine.indexOf('^');
+        assertTrue(caretDelta != -1);
+        declarationLine = declarationLine.substring(0, caretDelta) + declarationLine.substring(caretDelta + 1);
+        String text = readFile(location.getFileObject());
+        int lineOffset = text.indexOf(declarationLine);
+        assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset + caretDelta;
+
+        if (caretOffset != location.getOffset()) {
+            fail("Offset mismatch (expected " + caretOffset + " vs. actual " + location.getOffset() + ": got " + getSourceWindow(text, location.getOffset()));
+        }
+        assertEquals(caretOffset, location.getOffset());
+    }
+
+    protected void checkDeclaration(String relFilePath, String caretLine, String file, int offset) throws Exception {
+        DeclarationLocation location = findDeclaration(relFilePath, caretLine);
+        if (location == DeclarationLocation.NONE) {
+            // if we dont found a declaration, bail out.
+            assertTrue("DeclarationLocation.NONE", false);
+        }
+
+        assertEquals(file, location.getFileObject() != null ? location.getFileObject().getNameExt() : "<none>");
+        assertEquals(offset, location.getOffset());
+    }
 }

@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
@@ -120,10 +121,10 @@ class ProjectNode extends AbstractNode {
             ProjectInformation info = getProjectInformation();
             if (info != null) {
                 Icon icon = info.getIcon();
-                cachedIcon = Utilities.icon2Image(icon);
+                cachedIcon = ImageUtilities.icon2Image(icon);
             }
             else {
-                cachedIcon = Utilities.loadImage(PROJECT_ICON);
+                cachedIcon = ImageUtilities.loadImage(PROJECT_ICON);
             }
         }
         return cachedIcon;
@@ -193,8 +194,8 @@ class ProjectNode extends AbstractNode {
         }
 
         public void showJavadoc() {
-            Set us = findJavadoc();
-            URL[] urls = (URL[])us.toArray(new URL[us.size()]);
+            Set<URL> us = findJavadoc();
+            URL[] urls = us.toArray(new URL[us.size()]);
             URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
             if (pageURL == null) {
                 pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
@@ -208,9 +209,9 @@ class ProjectNode extends AbstractNode {
                 NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
         }
         
-        private Set findJavadoc() {            
+        private Set<URL> findJavadoc() {            
             File scriptLocation = this.antArtifact.getScriptLocation();            
-            Set urls = new HashSet();
+            Set<URL> urls = new HashSet<URL>();
             try {
                 URL artifactURL = scriptLocation.toURI().resolve(this.artifactLocation).normalize().toURL();
                 if (FileUtil.isArchiveFile(artifactURL)) {

@@ -118,12 +118,14 @@ public class CreateAction extends ContextAction {
         File f1 = files[0];
 
         for (int i = 1; i < files.length; i++) {
-            f1 = getCommonAncestor(f1, files[i]);
-            if (f1 == null) {
+            File f = getCommonAncestor(f1, files[i]);
+            if (f == null) {
                 Mercurial.LOG.log(Level.SEVERE, "Unable to get common parent of {0} and {1} ", // NOI18N
                         new Object[] {f1.getAbsolutePath(), files[i].getAbsolutePath()});
-             }
-
+                // XXX not sure wat to do at this point
+            } else {
+                f1 = f;
+            }
         }
         return f1;
     }
@@ -139,7 +141,7 @@ public class CreateAction extends ContextAction {
         
         for (File file : files) {
             if(!file.isDirectory()) file = file.getParentFile();
-            if (hg.getTopmostManagedParent(file) != null) {
+            if (hg.getRepositoryRoot(file) != null) {
                 Mercurial.LOG.log(Level.SEVERE, "Found .hg directory in ancestor of {0} ", // NOI18N
                         file);
                 return;

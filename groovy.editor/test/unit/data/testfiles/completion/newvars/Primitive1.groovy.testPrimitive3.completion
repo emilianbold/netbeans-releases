@@ -1,0 +1,5 @@
+Code completion result for source line:
+char |
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+VARIABLE   c                                          null

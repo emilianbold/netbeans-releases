@@ -42,6 +42,9 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserResult;
@@ -50,7 +53,6 @@ import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbPreferences;
 
 /**
  * @author Tor Norbye
@@ -59,6 +61,12 @@ public abstract class JsTestBase extends GsfTestBase {
 
     public JsTestBase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
     }
 
     @Override
@@ -79,6 +87,9 @@ public abstract class JsTestBase extends GsfTestBase {
 
     @Override
     protected void validateParserResult(ParserResult result) {
+        if (JsParser.runtimeException != null) {
+            JsParser.runtimeException.printStackTrace();
+        }
         JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
     }
     
@@ -95,17 +106,15 @@ public abstract class JsTestBase extends GsfTestBase {
             preferences = new IndentPrefs(4,4);
         }
 
-        Preferences prefs = NbPreferences.forModule(JsFormatterTest.class);
-        prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
-        prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
-        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
+        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
+        prefs.putInt(SimpleValueNames.SPACES_PER_TAB, preferences.getIndentation());
         
-        JsFormatter formatter = new JsFormatter(codeStyle, 80);
+        JsFormatter formatter = new JsFormatter();
         
         return formatter;
     }
     
-    // Called via reflection from NbUtilities. This is necessary because
+    // Called via reflection from GsfUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
     // if all the correct data loaders are installed and working - and that
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.

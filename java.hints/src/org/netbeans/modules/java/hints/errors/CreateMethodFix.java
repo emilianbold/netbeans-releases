@@ -83,13 +83,11 @@ public final class CreateMethodFix implements Fix {
     private String name;
     private String inFQN;
     private String methodDisplayName;
-    private CompilationInfo info;
     
     public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
         this.name = name;
         this.inFQN = target.getQualifiedName().toString();
         this.cpInfo = info.getClasspathInfo();
-        this.info = info;
         this.modifiers = modifiers;
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);

@@ -27,8 +27,8 @@
  */
 package org.netbeans.spi.editor.bracesmatching.support;
 
-import org.netbeans.modules.editor.bracesmatching.*;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -65,37 +65,47 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
     // -----------------------------------------------------
     
     public int [] findOrigin() throws BadLocationException {
-        int result [] = BracesMatcherSupport.findChar(
-            context.getDocument(), 
-            context.getSearchOffset(),
-            context.isSearchingBackward() ? 
-                Math.max(context.getLimitOffset(), lowerBound) :
-                Math.min(context.getLimitOffset(), upperBound),
-            matchingPairs
-        );
-        
-        if (result != null) {
-            originOffset = result[0];
-            originalChar = matchingPairs[result[1]];
-            matchingChar = matchingPairs[result[1] + result[2]];
-            backward = result[2] < 0;
-            return new int [] { originOffset, originOffset + 1 };
-        } else {
-            return null;
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int result [] = BracesMatcherSupport.findChar(
+                context.getDocument(),
+                context.getSearchOffset(),
+                context.isSearchingBackward() ?
+                    Math.max(context.getLimitOffset(), lowerBound) :
+                    Math.min(context.getLimitOffset(), upperBound),
+                matchingPairs
+            );
+
+            if (result != null) {
+                originOffset = result[0];
+                originalChar = matchingPairs[result[1]];
+                matchingChar = matchingPairs[result[1] + result[2]];
+                backward = result[2] < 0;
+                return new int [] { originOffset, originOffset + 1 };
+            } else {
+                return null;
+            }
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
     }
 
     public int [] findMatches() throws BadLocationException {
-        int offset = BracesMatcherSupport.matchChar(
-            context.getDocument(),
-            backward ? originOffset : originOffset + 1,
-            backward ? 
-                Math.max(0, lowerBound) :
-                Math.min(context.getDocument().getLength(), upperBound),
-            originalChar,
-            matchingChar
-        );
-        
-        return offset != -1 ? new int [] { offset, offset + 1 } : null;
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int offset = BracesMatcherSupport.matchChar(
+                context.getDocument(),
+                backward ? originOffset : originOffset + 1,
+                backward ?
+                    Math.max(0, lowerBound) :
+                    Math.min(context.getDocument().getLength(), upperBound),
+                originalChar,
+                matchingChar
+            );
+
+            return offset != -1 ? new int [] { offset, offset + 1 } : null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
+        }
     }
 }

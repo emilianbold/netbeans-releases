@@ -64,25 +64,20 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     public void execute(final ProjectActionEvent ev, final InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
-            String gdb = profile.getGdbPath((MakeConfiguration)ev.getConfiguration());
+            String gdb = profile.getGdbPath((MakeConfiguration)ev.getConfiguration(), true);
             if (gdb != null) {
-                final GdbActionHandler gah = this;
                 executionStarted();
-                Runnable loadProgram = new Runnable() {
-                    public void run() {
-                        if (ev.getID() == ProjectActionEvent.DEBUG) {
+                if (ev.getID() == ProjectActionEvent.DEBUG || ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(
                                     DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[] {ev, io, gah}));
-                        } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                            DebuggerManager.getDebuggerManager().startDebugging(
-                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[] {ev, io, gah}));
+                                    new Object[]{ev, io, GdbActionHandler.this}));
                         }
-                    }
-                };
-                SwingUtilities.invokeLater(loadProgram);
+                    });
+                }
             } else {
+                executionFinished(-1);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N
 

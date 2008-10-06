@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Base class for the connection dialogs.
@@ -61,6 +63,7 @@ public abstract class ConnectionDialogMediator {
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     
     private boolean valid = true;
+    private boolean connected = false;
     
     public void addConnectionProgressListener(ConnectionProgressListener listener) {
         synchronized (connProgressListeners) {
@@ -72,7 +75,35 @@ public abstract class ConnectionDialogMediator {
         propChangeSupport.addPropertyChangeListener(listener);
     }
     
+    public void closeConnection()
+    {
+    }
+    
     protected abstract boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema);
+
+    /**
+     * An async version of retrieveSchemas.
+     * 
+     * @param schemaPanel the schema panel
+     * @param dbcon the db connection
+     * @param defaultSchema the name of the default schema
+     * 
+     * @return the Task instance passed to the Requestprocessor
+     */
+    protected Task retrieveSchemasAsync(final SchemaPanel schemaPanel, final DatabaseConnection dbcon, final String defaultSchema)
+    {
+        fireConnectionStarted();
+        
+        Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                retrieveSchemas(schemaPanel, dbcon, defaultSchema);
+                fireConnectionFinished();
+            }
+        });
+
+        return task;
+    }
+
     
     protected void fireConnectionStarted() {
         for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
@@ -104,6 +135,17 @@ public abstract class ConnectionDialogMediator {
             listenersCopy = new ArrayList(connProgressListeners);
         }
         return listenersCopy.iterator();
+    }
+    
+    public void setConnected(boolean conn)
+    {
+        connected = conn;
+        propChangeSupport.firePropertyChange(PROP_VALID, null, null);
+    }
+    
+    public boolean isConnected()
+    {
+        return connected;
     }
     
     public void setValid(boolean valid) {

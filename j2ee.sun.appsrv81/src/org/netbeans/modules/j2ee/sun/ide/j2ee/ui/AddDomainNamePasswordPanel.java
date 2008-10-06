@@ -114,7 +114,7 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
     
     // Event handling
     //
-    private final Set/*<ChangeListener>*/ listeners = new HashSet/*<ChangeListener>*/(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -126,13 +126,13 @@ class AddDomainNamePasswordPanel implements WizardDescriptor.Panel, ChangeListen
         }
     }
     protected final void fireChangeEvent() {
-        Iterator/*<ChangeListener>*/ it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet/*<ChangeListener>*/(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
     

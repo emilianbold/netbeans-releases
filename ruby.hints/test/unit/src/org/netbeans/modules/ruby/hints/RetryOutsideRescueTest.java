@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.hints;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 
 /**
  *
@@ -52,12 +53,20 @@ public class RetryOutsideRescueTest extends HintTestBase  {
         super(testName);
     }            
 
+    private RubyAstRule createRule() {
+        return new RetryOutsideRescue();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+
     public void testNoHint1() throws Exception {
-        checkHints(this, new RetryOutsideRescue(), "testfiles/reverseif.rb", null);
+        checkHints(this, createRule(), "testfiles/reverseif.rb", null);
     }
 
     public void testHints1() throws Exception {
-        checkHints(this, new RetryOutsideRescue(), "testfiles/retry.rb", null);
+        checkHints(this, createRule(), "testfiles/retry.rb", null);
     }
 
     public void testNoPositives() throws Exception {
@@ -68,7 +77,7 @@ public class RetryOutsideRescueTest extends HintTestBase  {
             // Known exceptions
             exceptions.add("invokemethod.rb");
         
-            assertNoJRubyMatches(new RetryOutsideRescue(), exceptions);
+            assertNoJRubyMatches(createRule(), exceptions);
             
         } finally {
             parseErrorsOk = false;

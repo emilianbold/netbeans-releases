@@ -61,6 +61,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -130,10 +131,12 @@ public final class View implements LogicalViewProvider {
             this.p = p;
         }
         
+        @Override
         public String getName() {
             return ProjectUtils.getInformation(p).getName();
         }
         
+        @Override
         public String getDisplayName() {
             return ProjectUtils.getInformation(p).getDisplayName();
         }
@@ -143,39 +146,46 @@ public final class View implements LogicalViewProvider {
             return NbBundle.getMessage(View.class, "View.RootNode.shortDescription", FileUtil.getFileDisplayName(p.getProjectDirectory()));
         }
         
+        @Override
         public Image getIcon(int type) {
-            return Utilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
+            return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
         }
         
+        @Override
         public Action[] getActions(boolean context) {
             return Actions.createContextMenu(p);
         }
         
+        @Override
         public boolean canRename() {
             return true;
         }
         
+        @Override
         public boolean canDestroy() {
             return false;
         }
         
+        @Override
         public boolean canCut() {
             return false;
         }
         
+        @Override
         public void setName(String name) {
             DefaultProjectOperations.performDefaultRenameOperation(p, name);
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("freeform.node." + org.netbeans.modules.ant.freeform.Util.getMergedHelpIDFragments(p)); // NOI18N
         }
         
     }
-
     
 }

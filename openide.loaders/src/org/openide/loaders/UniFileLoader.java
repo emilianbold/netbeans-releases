@@ -43,7 +43,6 @@ package org.openide.loaders;
 
 import java.io.IOException;
 
-import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.util.io.SafeException;
 
@@ -147,6 +146,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     *    as bellonging to obj data object
     * @return null 
     */
+    @Override
     final DataObject checkCollision (DataObject obj, FileObject file) {
         return null;
     }
@@ -157,6 +157,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     * 
     * @param obj the object to test
     */
+    @Override
     final void checkConsistency (MultiDataObject obj) {
     }
     
@@ -166,6 +167,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     * 
     * @param obj the object to test
     */
+    @Override
     final void checkFiles (MultiDataObject obj) {
     }
 
@@ -191,6 +193,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     /** Writes extensions to the stream.
     * @param oo ignored
     */
+    @Override
     public void writeExternal (java.io.ObjectOutput oo) throws IOException {
         super.writeExternal (oo);
 
@@ -200,6 +203,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     /** Reads nothing from the stream.
     * @param oi ignored
     */
+    @Override
     public void readExternal (java.io.ObjectInput oi)
     throws IOException, ClassNotFoundException {
         SafeException se;

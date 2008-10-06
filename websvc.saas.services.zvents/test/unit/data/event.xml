@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1</stream_count>
+    <event id="650271">
+        <name>Permanent exhibits include"A World of Ice ";"Arrival of the People: Life in a Cold Climate ";"The Changing Environment ";"A Pequot Village. "</name>
+        <description />
+        <summary />
+        <link>http://www.zvents.com/north-stonington-ct/events/show/650271-permanent-exhibits-includea-world-of-ice-arrival-of-the-people-life-in-a-cold-climate-the-changing-environment-a-pequot-village</link>
+        <url />
+        <phone />
+        <starttime>200702051000</starttime>
+        <endtime>200702051700</endtime>
+        <creator_id>6658</creator_id>
+        <price />
+        <age_suitability>Teens and up</age_suitability>
+        <venue_id>18009</venue_id>
+    </event>
+    <venue id="18009">
+        <name>Mashantucket Pequot Museum And Research Center</name>
+        <description>Actual address:
+110 Pequot Trail
+P.O. Box 3180
+Mashantucket, CT 06338-3180
+        </description>
+        <phone>(800) 411-9671</phone>
+        <link>http://www.zvents.com/north-stonington-ct/venues/show/18009-mashantucket-pequot-museum-and-research-center</link>
+        <url>http://pequotmuseum.org</url>
+        <creator_id>2</creator_id>
+        <address>Lantern Hill Rd and Pequot Trail</address>
+        <city>North Stonington</city>
+        <zipcode>06338</zipcode>
+        <state>CT</state>
+        <country>United States</country>
+        <timezone>US/Eastern</timezone>
+        <latitude>41.46653</latitude>
+        <longitude>-71.95401</longitude>
+    </venue>
+</rsp>

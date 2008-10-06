@@ -43,6 +43,7 @@ package org.netbeans.lib.lexer;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
@@ -60,9 +61,6 @@ import org.netbeans.lib.lexer.token.TextToken;
 
 public final class BatchTokenList<T extends TokenId>
 extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     private static boolean maintainLAState;
     
@@ -102,7 +100,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
         this.inputAttributes = inputAttributes;
-        if (testing) { // Maintain lookaheads and states when in test environment
+        if (TokenList.LOG.isLoggable(Level.FINE)) { // Maintain lookaheads and states when in test environment
             laState = LAState.empty();
         }
         this.lexerInputOperation = createLexerInputOperation();
@@ -145,7 +143,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return rawOffset;
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         AbstractToken<T> token = existingToken(index);
         int offset;
         if (token.isFlyweight()) {
@@ -176,6 +174,8 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         while (lexerInputOperation != null && index >= size()) {
             AbstractToken<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
                 add(token);
                 if (laState != null) { // maintaining lookaheads and states
                     laState = laState.add(lexerInputOperation.lookahead(),
@@ -209,7 +209,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffsetByIndex(cntM1) + tokenOrEmbeddingImpl(cntM1).token().length();
+            return tokenOffset(cntM1) + tokenOrEmbeddingImpl(cntM1).token().length();
         return 0;
     }
 

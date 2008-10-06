@@ -108,12 +108,12 @@
                 <xsl:attribute name="if">no.netbeans.home</xsl:attribute>
 
                 <property file="${{basedir}}/nbproject/private/private.properties"/>
-                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform8"/>
+                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform9"/>
                 <property name="netbeans.user" value="${{caps.netbeans.user}}"/>
                 <property name="from.commandline" value="true"/>
             </target>
 
-            <target name="pre-init">
+            <target name="-pre-init">
                 <xsl:attribute name="depends">-check-netbeans-home,-init-caps</xsl:attribute>
             </target>
         </project>

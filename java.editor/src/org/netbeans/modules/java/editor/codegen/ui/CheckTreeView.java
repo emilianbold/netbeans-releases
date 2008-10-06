@@ -166,6 +166,12 @@ public class CheckTreeView extends BeanTreeView  {
                     }
                 }
             }
+
+            if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (e.getSource() instanceof JTree == false)) {
+                TreePath path = tree.getSelectionPath();
+                toggle(path);
+                e.consume();
+            }
         }
         
         // Private methods -----------------------------------------------------

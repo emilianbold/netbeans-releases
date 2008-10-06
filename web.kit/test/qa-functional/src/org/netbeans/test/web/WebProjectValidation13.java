@@ -48,7 +48,6 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.NewProjectAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -88,11 +87,11 @@ public class WebProjectValidation13 extends WebProjectValidation {
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebProjectValidation13.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.TOMCAT, conf, 
               "testNewWebProject", "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-              "testBuildProject", "testCompileAllJSP", "testCompileJSP",
-              "testCleanProject", "testRunProject", "testRunJSP", "testRunServlet", 
-              "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testCompileAllJSP", "testCompileJSP",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testFinish");
         conf = conf.enableModules(".*").clusters(".*");
@@ -129,7 +128,7 @@ public class WebProjectValidation13 extends WebProjectValidation {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("Tomcat");
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_13"));
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
@@ -141,16 +140,9 @@ public class WebProjectValidation13 extends WebProjectValidation {
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        // wait for project creation
-        new EditorWindowOperator().getEditor("index.jsp");//NOI18N
-        // HACK
-        Node webPages = new Node(new ProjectsTabOperator().
-                getProjectRootNode(PROJECT_NAME),"Web Pages");
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("META-INF|context.xml");
     }
     
     @Override
@@ -160,12 +152,7 @@ public class WebProjectValidation13 extends WebProjectValidation {
     
     @Override
     public void testCreateTagHandler() {
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
-        // WORKAROUND
-        new EventTool().waitNoEvent(1000);
         WizardOperator newFileWizard = new WizardOperator("New File");
         new JComboBoxOperator(newFileWizard).selectItem(PROJECT_NAME);
         new Node(new JTreeOperator(newFileWizard), "Web").select();

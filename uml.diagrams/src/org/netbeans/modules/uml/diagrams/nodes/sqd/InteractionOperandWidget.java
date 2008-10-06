@@ -65,13 +65,13 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.SubWidget;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -312,16 +312,22 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
             {
                 if (nodeLabel.getPosition() != null)
                 {
+                    ((UMLLabelWidget)label).addPersistenceProperty(UMLNodeWidget.LOCATION, nodeLabel.getPosition());
+                    UMLNodeWidget cf = PersistenceUtil.getParentUMLNodeWidget(this);
+                    if (cf != null)
+                    {
+                        label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, cf.getPreferredLocation());
+                    }
                     label.setPreferredLocation(nodeLabel.getPosition());
                 }
-//                if (nodeLabel.getSize() != null)
-//                {
-//                    label.setPreferredSize(nodeLabel.getSize());
-//                }
-                label.refresh();
+                else if (nodeLabel.getPosition() == null) //we need default location for TSLoading
+                {
+                    label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, UMLNodeWidget.DEFAULT);
+                }
+                label.refresh(false);
             }
         }
-        System.out.println(" NodeLabels = " + nodeLabels.toString());
+//        System.out.println(" NodeLabels = " + nodeLabels.toString());
     }
             
     protected void setNodeWriterValues(NodeWriter nodeWriter, Widget widget) {
@@ -330,37 +336,21 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
         PersistenceUtil.populateProperties(nodeWriter, widget);
     }
     
+    
     @Override
     protected void notifyAdded () 
     {
+        if(getLabel()==null || !getLabel().isVisible())return;//invisible/unadded labels don't need to be adjusted
+        final Widget cf=Util.getParentByClass(this, CombinedFragmentWidget.class);
+        if(cf==null || cf.getParentWidget()==null || getParentWidget()==null)return;//if cf absent or not yet added
+        if(cf.getParentWidget()==getLabel().getParentWidget())return;//if label already on correct layer
         // this is invoked when this widget or its parent gets added, only need to
         // process the case when this widget is changed, same for notifyRemoved to 
         // avoid concurrent modification to children list
-        new AfterValidationExecutor(new ActionProvider() {
-            public void perfomeAction() {
-                MovableLabelWidget labelWidget=getLabel();
-                if (labelWidget == null || getParentWidget() == null)
-                {
-                    return;
-                }
-               Widget cf=Util.getParentByClass(InteractionOperandWidget.this, CombinedFragmentWidget.class);
-               if(cf.getParentWidget()==labelWidget.getParentWidget())return;
-
-               labelWidget.removeFromParent();
-                int index = cf.getParentWidget().getChildren().indexOf(cf);
-                cf.getParentWidget().addChild(index + 1, labelWidget);
-                new AfterValidationExecutor(new ActionProvider() {
-                    public void perfomeAction() {
-                        revalidate();
-                        getScene().validate();
-                    }
-                }, getScene());
-                getScene().validate();
-            }
-        }, getScene());
-        getScene().validate();
+                getLabel().removeFromParent();
+                int index=cf.getParentWidget().getChildren().indexOf(cf);
+                cf.getParentWidget().addChild(index + 1, getLabel());
     }
-    
     @Override
     protected void notifyRemoved()
     {

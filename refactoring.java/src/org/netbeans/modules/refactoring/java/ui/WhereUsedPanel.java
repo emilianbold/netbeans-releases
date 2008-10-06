@@ -171,7 +171,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 } else if (element.getKind().isClass() || element.getKind().isInterface()) {
                     labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getSimpleName()); // NOI18N
                 } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", getHeader(element), getSimpleName(element.getEnclosingElement())); // NOI18N
+                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", getHeader(element,info), getSimpleName(element.getEnclosingElement())); // NOI18N
                 } else if (element.getKind().isField()) {
                     labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", element.getSimpleName(), getSimpleName(element.getEnclosingElement())); // NOI18N
                 } else if (element.getKind() == ElementKind.PACKAGE) {
@@ -274,7 +274,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         //return NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"); // NOI18N
     }
     
-    private String getHeader(ExecutableElement call, CompilationInfo info) {
+    private String getHeader(Element call, CompilationInfo info) {
         String result = ElementHeaders.getHeader(call, info, ElementHeaders.NAME + ElementHeaders.PARAMETERS);
         if (result.length() > MAX_NAME) {
             result = result.substring(0,MAX_NAME-1) + "..."; // NOI18N
@@ -534,17 +534,13 @@ private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         return c_usages.isSelected();
     }
     
-    public Dimension getPreferredSize() {
-        Dimension orig = super.getPreferredSize();
-        return new Dimension(orig.width + 30 , orig.height + 30);
-    }
+//    public Dimension getPreferredSize() {
+//        Dimension orig = super.getPreferredSize();
+//        return new Dimension(orig.width + 30 , orig.height + 30);
+//    }
     
     public boolean isSearchInComments() {
         return searchInComments.isSelected();
-    }
-
-    private Object getHeader(javax.lang.model.element.Element element) {
-        return element.toString();
     }
 
     public Component getComponent() {

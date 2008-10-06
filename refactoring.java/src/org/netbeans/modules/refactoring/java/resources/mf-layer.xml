@@ -89,6 +89,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1800"/>
             </file>
         </folder>    
+        <!-- #147199: disabled for the time being
          <folder name="Window">
             <folder name="Output">
                 <file name="CallHierarchyAction.shadow">
@@ -97,6 +98,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>
+        -->
     </folder>   
     <folder name="Editors">
         <folder name="text">
@@ -176,7 +178,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="CallHierarchyTopComponent.wstcref" url="CallHierarchyTopComponentWstcref.xml">
-                    <attr name="position" intvalue="1150"/>
+                    <attr name="position" intvalue="2300"/>
                 </file>
             </folder>
         </folder>

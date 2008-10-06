@@ -41,21 +41,14 @@
 
 package org.netbeans.test.sanity;
 
-import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.SubmitButton;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebForm;
-import com.meterware.httpunit.WebResponse;
-import java.awt.Component;
-import javax.swing.JComponent;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.junit.NbTestSuite;
-
-import java.io.File;
-import java.awt.*;
+import org.netbeans.jellytools.OutputTabOperator;
 
 import org.netbeans.modules.visualweb.gravy.*;
 import org.netbeans.modules.visualweb.gravy.ProjectNavigatorOperator;
@@ -67,13 +60,16 @@ import org.netbeans.modules.visualweb.gravy.model.IDE;
 import org.netbeans.modules.visualweb.gravy.model.deployment.*;
 import org.netbeans.modules.visualweb.gravy.navigation.NavigatorOperator;
 import org.netbeans.modules.visualweb.gravy.properties.SheetTableOperator;
-import java.awt.event.KeyEvent;
+
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.io.IOException;
+import javax.swing.JComponent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jemmy.operators.*;
+
+
+
 
 /**
  * @author Alexey Butenko (alexey.butenko@sun.com)
@@ -100,13 +96,25 @@ public class SanityTests extends RaveTestCase {
     public static String paletteGroup = null;
     public static int xButtonLoc;
     public static int yButtonLoc;
+
+    static final String [] tests = {
+                "testAddPlugin",
+                "testAddApplicationServer",
+                "testCreateProject",
+                "testAddButton",
+                "testBackingFile",
+                "testCloseProject",
+                "testCreateJavaEE5Project",
+                "testAddStandardComponents",
+                "testExecution",
+                "testCheckIDELog"
+    };
     
     public SanityTests(String testName) {
         super(testName);
-        doFullThreadDump = true;
     }
     
-    public static Test suite() {
+    /*public static Test suite() {
         TestSuite suite= new NbTestSuite();
         suite.addTest(new SanityTests("testAddPlugin"));
         suite.addTest(new SanityTests("testAddApplicationServer"));
@@ -123,8 +131,18 @@ public class SanityTests extends RaveTestCase {
         suite.addTest(new SanityTests("testExecution"));
         suite.addTest(new SanityTests("testCheckIDELog"));
         return suite;
+    }*/
+
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(SanityTests.class)
+                .addTest(tests)
+                .clusters(".*")
+                .enableModules(".*")
+                .gui(true)
+                );
     }
-    
+
     /** method called before each testcase
      */
     protected void setUp() {

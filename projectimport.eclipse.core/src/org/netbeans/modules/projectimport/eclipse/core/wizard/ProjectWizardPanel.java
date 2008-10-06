@@ -42,8 +42,6 @@
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
 import java.awt.Component;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
@@ -56,26 +54,18 @@ import org.openide.WizardValidationException;
  *
  * @author mkrauskopf
  */
-final class ProjectWizardPanel extends ImporterWizardPanel implements
-        PropertyChangeListener, WizardDescriptor.ValidatingPanel {
+final class ProjectWizardPanel extends ImporterWizardPanel implements WizardDescriptor.ValidatingPanel<WizardDescriptor> {
     
     private ProjectSelectionPanel panel;
     
     /** Creates a new instance of WorkspaceWizardPanel */
     ProjectWizardPanel() {
-        panel = new ProjectSelectionPanel();
-        panel.addPropertyChangeListener(this);
+        panel = new ProjectSelectionPanel(this);
         initPanel(panel, 1);
     }
     
     public Component getComponent() {
         return panel;
-    }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if ("errorMessage".equals(evt.getPropertyName())) { //NOI18N
-            setErrorMessage((String) evt.getNewValue());
-        }
     }
     
     // ==== delegate methods ==== //
@@ -97,11 +87,16 @@ final class ProjectWizardPanel extends ImporterWizardPanel implements
     
     public void validate() throws WizardValidationException {
         String dest = panel.getDestination();
-        if (dest != null && (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest))) {
+        if (panel.isSeparateFolder() && dest != null && (!new File(dest).isAbsolute() || !EclipseUtils.isWritable(dest))) {
             String message = ProjectImporterWizard.getMessage(
                     "MSG_CannotCreateProjectInFolder", dest); // NOI18N
             setErrorMessage(message);
             throw new WizardValidationException(panel, message, null);
         }
     }
+    
+    void fireProjectListChanged() {
+        cs.fireChange();
+    }
+    
 }

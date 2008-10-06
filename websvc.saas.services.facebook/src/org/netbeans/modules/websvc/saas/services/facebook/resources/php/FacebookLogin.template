@@ -1,18 +1,24 @@
 <?php
 
+    session_start();
+    
+    include_once "FacebookSocialNetworkingServiceAuthenticator.php";
+    
+    FacebookSocialNetworkingServiceAuthenticator::saveSession("facebook_return_url", $_GET['rUrl']);
+    
     printf("<html>");
     printf("<head>");
     printf("<title>Facebook Authorization Page</title>");
     printf("</head>");
     printf("<body>");
     printf("<p>Please click on the following link to log into your Facebook account and authorize this application to access your account:</p>");
-    $sessionKey = $_SESSION["facebook_session_key"];
-
+    $sessionKey = FacebookSocialNetworkingServiceAuthenticator::getSession("facebook_session_key");
     if ($sessionKey != null) {
         printf("<p>Already logged in.</b>");
     } else {
+        $authToken = $_GET['auth_token'];
         $apiKey = FacebookSocialNetworkingServiceAuthenticator::getApiKey();
-        printf("<a href=\"http://www.facebook.com/login.php?api_key="+$apiKey+"&v=1.0\">Facebook Login</a>");
+        printf("<a href=\"http://www.facebook.com/login.php?api_key=".$apiKey."&v=1.0\">Facebook Login</a>");
     }
     printf("</body>");
     printf("</html>");

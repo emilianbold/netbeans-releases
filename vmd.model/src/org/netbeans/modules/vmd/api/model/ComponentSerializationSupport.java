@@ -67,9 +67,19 @@ public class ComponentSerializationSupport {
     public static void refreshDescriptorRegistry (String projectType) {
         GlobalDescriptorRegistry registry = GlobalDescriptorRegistry.getGlobalDescriptorRegistry (projectType);
         DataFolder registryFolder = registry.getRegistryFolder ();
-        registryFolder.getPrimaryFile ().refresh (true);
+        /* 
+         * The logic of GlobalDescriptorRegistry CTOR allows to be regestryFolder and
+         * producersFolder to be null. 
+         * So there should be check for this.
+         * Fix for #146498 .
+         */
+        if ( registryFolder!= null ){
+            registryFolder.getPrimaryFile ().refresh (true);
+        }
         DataFolder producersFolder = registry.getProducersFolder ();
-        producersFolder.getPrimaryFile ().refresh (true);
+        if( producersFolder != null ){
+            producersFolder.getPrimaryFile ().refresh (true);
+        }
         registry.reload ();
     }
 

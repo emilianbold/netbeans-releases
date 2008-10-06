@@ -46,6 +46,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.visual.action.AlignWithMoveDecorator;
 import org.netbeans.api.visual.action.ResizeProvider.ControlPoint;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -53,16 +54,20 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -71,18 +76,19 @@ import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 public abstract class ContainerNode extends UMLNodeWidget implements org.netbeans.modules.uml.drawingarea.widgets.ContainerNode
 {
     private ContainerResizeProvider resizeProvider;
-    
+
     public ContainerNode(Scene scene)
     {
-        this(scene,false);
+        this(scene, false);
     }
-    public ContainerNode(Scene scene,boolean useDefaultNodeResource)
+
+    public ContainerNode(Scene scene, boolean useDefaultNodeResource)
     {
         super(scene, useDefaultNodeResource);
-        
-        if(scene instanceof DesignerScene)
+
+        if (scene instanceof DesignerScene)
         {
-            DesignerScene designerScene = (DesignerScene)scene;
+            DesignerScene designerScene = (DesignerScene) scene;
             AlignWithMoveDecorator decorator = new AlignWithMoveDecorator()
             {
                 public ConnectionWidget createLineWidget(Scene scene)
@@ -94,138 +100,143 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 }
             };
 
-            AlignWithMoveStrategyProvider moveProvider = 
-                    new AlignWithMoveStrategyProvider(new GraphSceneNodeAlignCollector (designerScene),
-                                                      designerScene.getInterractionLayer(),
-                                                      designerScene.getMainLayer(),
-                                                      decorator,
-                                                      false)
-            {
-                // I do not want the calculateChildren to be called when the 
-                // user simply selects the node.  When the user moves the node
-                // more than two pixels then calculate will be set to true.
-                // When the movement is done, calculate will be set back to 
-                // false.
-                private boolean calculate =  false;
-                
-                @Override
-                public Point locationSuggested(Widget widget, Point originalLocation, Point suggestedLocation)
-                {
-                    Point retVal = super.locationSuggested(widget, originalLocation, suggestedLocation);
-                    
-                    if(Math.abs(originalLocation.x - retVal.x) > 2)
+            AlignWithMoveStrategyProvider moveProvider =
+                    new AlignWithMoveStrategyProvider(new GraphSceneNodeAlignCollector(designerScene),
+                    designerScene.getInterractionLayer(),
+                    designerScene.getMainLayer(),
+                    decorator,
+                    false)
                     {
-                        calculate = true;
-                    }
-                    
-                    if(Math.abs(originalLocation.y - retVal.y) > 2)
-                    {
-                        calculate = true;
-                    }
-                    
-                    return retVal;
-                }
-                
-                @Override
-                public void movementFinished (Widget widget)
-                {   
-                    super.movementFinished(widget);
-                    if((getContainer() != null) && (calculate == true))
-                    {
-                        getContainer().calculateChildren(false);
-                        calculate = false;
-                    }
-                }
-            };
-            
+                        // I do not want the calculateChildren to be called when the 
+                        // user simply selects the node.  When the user moves the node
+                        // more than two pixels then calculate will be set to true.
+                        // When the movement is done, calculate will be set back to 
+                        // false.
+
+                        private boolean calculate = false;
+
+                        @Override
+                        public Point locationSuggested(Widget widget, Point originalLocation, Point suggestedLocation)
+                        {
+                            Point retVal = super.locationSuggested(widget, originalLocation, suggestedLocation);
+
+                            if (Math.abs(originalLocation.x - retVal.x) > 2)
+                            {
+                                calculate = true;
+                            }
+
+                            if (Math.abs(originalLocation.y - retVal.y) > 2)
+                            {
+                                calculate = true;
+                            }
+
+                            return retVal;
+                        }
+
+                        @Override
+                        public void movementFinished(Widget widget)
+                        {
+                            super.movementFinished(widget);
+                            if ((getContainer() != null) && (calculate == true))
+                            {
+                                getContainer().calculateChildren(false);
+                                calculate = false;
+                            }
+                        }
+                    };
+
             addToLookup(moveProvider);
         }
     }
-    
+
     @Override
     public ResizeStrategyProvider getResizeStrategyProvider()
     {
-        if(resizeProvider==null)
+        if (resizeProvider == null)
         {
-            resizeProvider=new ContainerResizeProvider(getResizeControlPoints());
+            resizeProvider = new ContainerResizeProvider(getResizeControlPoints());
         }
         return resizeProvider;
     }
-    
+
     @Override
     public void addContainedChild(Widget widget)
     {
         widget.removeFromParent();
         getContainer().addChild(widget);
-//        firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
+        getContainer().firePropertyChange(ContainerWidget.CHILDREN_CHANGED, null, null);
     }
 
     @Override
     protected void saveAnchorage(NodeWriter nodeWriter)
     {
         //write anchor info
-        DesignerScene dScene = (DesignerScene)this.getScene();
+        DesignerScene dScene = (DesignerScene) this.getScene();
         // First get only output edges (to have proper src node anchor assigned)
-        Collection outEdgeList = dScene.findNodeEdges(this.getObject(), true, false); 
-        for (Iterator it = outEdgeList.iterator(); it.hasNext();) {
-            IPresentationElement pE = (IPresentationElement)it.next();
+        Collection outEdgeList = dScene.findNodeEdges(this.getObject(), true, false);
+        for (Iterator it = outEdgeList.iterator(); it.hasNext();)
+        {
+            IPresentationElement pE = (IPresentationElement) it.next();
             Widget widget = dScene.findWidget(pE);
-            if (widget instanceof ConnectionWidget) {
-                ConnectionWidget connectionWidget = (ConnectionWidget)(widget);
+            if (widget instanceof ConnectionWidget)
+            {
+                ConnectionWidget connectionWidget = (ConnectionWidget) (widget);
                 Anchor srcAnchor = connectionWidget.getSourceAnchor();
                 PersistenceUtil.addAnchor(srcAnchor); // this is to cross ref the anchor ID from the edge later on..                
+
                 nodeWriter.addAnchorEdge(srcAnchor, PersistenceUtil.getPEID(connectionWidget));
-            }            
+            }
         }
         // Now get all in edges (to have proper target anchor assigned)
-        Collection inEdgeList = dScene.findNodeEdges(this.getObject(), false, true); 
-        for (Iterator it = inEdgeList.iterator(); it.hasNext();) {
-            IPresentationElement pE = (IPresentationElement)it.next();
+        Collection inEdgeList = dScene.findNodeEdges(this.getObject(), false, true);
+        for (Iterator it = inEdgeList.iterator(); it.hasNext();)
+        {
+            IPresentationElement pE = (IPresentationElement) it.next();
             Widget widget = dScene.findWidget(pE);
-            if (widget instanceof ConnectionWidget) {
-                ConnectionWidget connectionWidget = (ConnectionWidget)(widget);
+            if (widget instanceof ConnectionWidget)
+            {
+                ConnectionWidget connectionWidget = (ConnectionWidget) (widget);
                 Anchor targetAnchor = connectionWidget.getTargetAnchor();
                 PersistenceUtil.addAnchor(targetAnchor); // this is to cross ref the anchor ID from the edge later on..                
+
                 nodeWriter.addAnchorEdge(targetAnchor, PersistenceUtil.getPEID(connectionWidget));
-            }            
-        }        
+            }
+        }
         nodeWriter.writeAnchorage();
         //done writing the anchoredgemap.. now time to clear it.
         nodeWriter.clearAnchorEdgeMap();
 
     }
-    
+
     protected class ContainerResizeProvider extends WindowStyleResizeProvider
     {
-        private ArrayList < Widget > children = new ArrayList < Widget >();
+
+        private ArrayList<Widget> children = new ArrayList<Widget>();
         private int prevIndex = -1;
-        
         private double leftBounds = Double.MAX_VALUE;
         private double topBounds = Double.MAX_VALUE;
         private double rightBounds = Double.MIN_VALUE;
         private double bottomBounds = Double.MIN_VALUE;
-        
+
         public ContainerResizeProvider()
         {
-            
         }
 
         public ContainerResizeProvider(ControlPoint[] points)
         {
             super(points);
         }
-        
+
         @Override
         public void resizingFinished(Widget widget)
         {
             super.resizingFinished(widget);
-            
+
             Widget container = getContainer();
-            if(container!=null)
+            if (container != null)
             {
-                for(Widget child : children)
+                for (Widget child : children)
                 {
-//                    Point location = container.convertSceneToLocal(child.getBounds().getLocation());
                     Point location = container.convertSceneToLocal(child.getLocation());
                     child.setPreferredLocation(location);
 
@@ -233,7 +244,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                     container.addChild(child);
                 }
 
-                if(getContainer() != null)
+                if (getContainer() != null)
                 {
                     // Since the container can not be resized smaller than its 
                     // children, do not calculate the existing children.
@@ -244,14 +255,13 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 // for more information.
                 Widget parent = getParentWidget();
                 parent.removeChild(ContainerNode.this);
-                
+
                 // If the new number of children is now less than before the 
                 // resize then add the container node to the end.
-                if(parent.getChildren().size() < prevIndex)
+                if (parent.getChildren().size() < prevIndex)
                 {
                     parent.addChild(ContainerNode.this);
-                }
-                else
+                } else
                 {
                     parent.addChild(prevIndex, ContainerNode.this);
                 }
@@ -262,18 +272,20 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
         }
 
         @Override
-        public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint) {
-            
+        public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint)
+        {
+
             suggestedBounds = super.boundsSuggested(widget, originalBounds, suggestedBounds, controlPoint);
-            suggestedBounds = restrictBounds( widget, suggestedBounds);
-            
-            if(widget instanceof UMLNodeWidget)
+            suggestedBounds = restrictBounds(widget, suggestedBounds);
+
+            if (widget instanceof UMLNodeWidget)
             {
-                UMLNodeWidget nw=(UMLNodeWidget) widget;
-                if(nw.getContentBounds()!=null)
+                UMLNodeWidget nw = (UMLNodeWidget) widget;
+                if (nw.getContentBounds() != null)
                 {
                     //correct suggested bounds
                     suggestedBounds.add(nw.getContentBounds());//suggested should cover content
+
                 }
             }
             return suggestedBounds;
@@ -285,7 +297,7 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
             super.resizingStarted(widget);
             // Next remove the children.  That way they are above the container.
             Widget container = getContainer();
-            if(container!=null)
+            if (container != null)
             {
                 // Fix for issue 12677.  The location of a child is relative to the
                 // parents top left corner.  If you resize the node by using the 
@@ -303,36 +315,29 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                 prevIndex = parent.getChildren().indexOf(ContainerNode.this);
                 parent.removeChild(ContainerNode.this);
                 parent.addChild(0, ContainerNode.this);
-
+                children.clear();
                 children.addAll(container.getChildren());
 
                 Widget containerParent = container.getParentWidget();
                 Insets insets = null;
-                if(containerParent.getBorder() != null)
+                if (containerParent.getBorder() != null)
                 {
                     insets = containerParent.getBorder().getInsets();
                 }
-                
-                Point containerLoc = containerParent.convertLocalToScene(container.getLocation());
-                Point nodeLoc = getParentWidget().convertLocalToScene(getLocation());
-                
-                int dx = containerLoc.x - nodeLoc.x;
-                if(insets != null)
-                {
-                    dx += insets.left;
-                }
-                
-                int dy = containerLoc.y - nodeLoc.y;
-                if(insets != null)
-                {
-                    dy += insets.top;
-                }
-                
+
+                Rectangle contBnd = container.convertLocalToScene(container.getBounds());
+                Rectangle nodeBnd = convertLocalToScene(getBounds());
+
+                int dx = contBnd.x - nodeBnd.x;
+                int dy = contBnd.y - nodeBnd.y;
+                int dxR = nodeBnd.x + nodeBnd.width - contBnd.x - contBnd.width;
+                int dYB = nodeBnd.y + nodeBnd.height - contBnd.y - contBnd.height;
+
                 leftBounds = Double.MAX_VALUE;
                 topBounds = Double.MAX_VALUE;
                 rightBounds = Double.MIN_VALUE;
                 bottomBounds = Double.MIN_VALUE;
-                
+
                 // The parent is a reasonable default, but what we want is the
                 // true interaction layer.
                 Widget interactionLayer = parent;
@@ -341,28 +346,32 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
                     DesignerScene scene = (DesignerScene) getScene();
                     interactionLayer = scene.getInterractionLayer();
                 }
-        
-                for(Widget child : children)
+
+                for (Widget child : children)
                 {
+                    if (!child.isVisible())
+                    {
+                        continue;
+                    }
                     Point location = child.getLocation();
                     Point childSceneLocation = child.getParentWidget().convertLocalToScene(location);
-                    
-                    double width = child.getClientArea().width;
-                    double height = child.getClientArea().height;
-                    
-                    leftBounds = Math.min(leftBounds, childSceneLocation.getX() - dx);
-                    topBounds = Math.min(topBounds, childSceneLocation.getY() - dy);
-                    rightBounds = Math.max(rightBounds, childSceneLocation.getX() + dx + width);
-                    bottomBounds = Math.max(bottomBounds, childSceneLocation.getY() + height + 
-                                            (insets != null ? insets.top + insets.bottom : 0));
+                    Rectangle childRec = child.convertLocalToScene(child.getBounds());
+
+                    leftBounds = Math.min(leftBounds, childRec.x - dx);
+                    topBounds = Math.min(topBounds, childRec.y - dy);
+                    rightBounds = Math.max(rightBounds, childRec.x + dxR + childRec.width);
+                    bottomBounds = Math.max(bottomBounds, childRec.y + childRec.height + dYB);
 
                     child.setPreferredLocation(childSceneLocation);
-                    container.removeChild(child);
-                    interactionLayer.addChild(child);
+                    if (child.getParentWidget() != null && container == child.getParentWidget())//some widgets may be removed by dependencies handlers already
+                    {
+                        container.removeChild(child);
+                        interactionLayer.addChild(child);
+                    }
                 }
-            } 
+            }
         }
-    
+
         private Rectangle restrictBounds(Widget widget, Rectangle suggestedBounds)
         {
             Rectangle testBounds = widget.convertLocalToScene(suggestedBounds);
@@ -399,15 +408,117 @@ public abstract class ContainerNode extends UMLNodeWidget implements org.netbean
     }
 
     @Override
-    public Dimension getDefaultMinimumSize() {
+    public Dimension getDefaultMinimumSize()
+    {
         //TBD later it may calculate actual content, but first realization same as in 6.1, reszie to content do nothing
-        Dimension size=getBounds().getSize();
+        Dimension size = getBounds().getSize();
         return size;
     }
-    
+
     ///////////////////////////////////////////////////////////////////////////
     // Abstract Methods
-    
     public abstract ContainerWidget getContainer();
-    
+
+    @Override
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof ContainerNode;
+        assert target.getScene() instanceof DesignerScene;
+
+        super.duplicate(setBounds, target);
+
+        DesignerScene targetScene = (DesignerScene) target.getScene();
+        DesignerScene sourceScene = (DesignerScene) getScene();
+
+        // some nodes may have logic to populate contained elements during initialization,
+        // clear the container and only create the ones exist in original container
+        List<Widget> children = new ArrayList<Widget>(((ContainerNode) target).getContainer().getChildren());
+        for (Widget c: children)
+        {
+            Object o = targetScene.findObject(c);
+            if (o instanceof IPresentationElement)
+                targetScene.removeNodeWithEdges((IPresentationElement)o);
+        }
+
+        // 1. clone contained inner nodes
+        List<Widget> list = new ArrayList<Widget>(getContainer().getChildren());
+        for (Widget child : list)
+        {
+            if (!(child instanceof UMLNodeWidget))
+            {
+                continue;
+            }
+            IPresentationElement presentation = Util.createNodePresentationElement();
+            presentation.addSubject(((UMLNodeWidget) child).getObject().getFirstSubject());
+            Widget copy = targetScene.getEngine().addWidget(presentation, child.getPreferredLocation());
+            ((UMLNodeWidget) child).duplicate(setBounds, copy);
+            copy.setPreferredLocation(child.getPreferredLocation());
+
+            ((ContainerNode) target).addContainedChild(copy);
+        }
+        targetScene.validate();
+
+        // 2. clone connections among contained inner nodes
+
+        for (ConnectionWidget cw : Util.getAllContainedEdges(this))
+        {
+            if (cw instanceof UMLEdgeWidget)
+            {
+                UMLEdgeWidget originalCW = (UMLEdgeWidget) cw;
+                IPresentationElement sourcePE = sourceScene.getEdgeSource(originalCW.getObject());
+                IPresentationElement targetPE = sourceScene.getEdgeTarget(originalCW.getObject());
+
+                IPresentationElement newSourcePE = null;
+                IPresentationElement newTargetPE = null;
+
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(sourcePE.getFirstSubject().getXMIID()))
+                    {
+                        newSourcePE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(targetPE.getFirstSubject().getXMIID()))
+                    {
+                        newTargetPE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+
+                IPresentationElement clonedEdgePE = Util.createNodePresentationElement();
+                // Workaround for nested link. Unlike other relationships, it does not
+                // have its own designated IElement, the IPresentationElement.getFirstSubject
+                // returns an element at one end. Use this mechanism (multiple subjects) for 
+                // DefaultDiagramEngine.createConnectionWidget() to identify the connector type
+                if (((UMLEdgeWidget) cw).getWidgetID().
+                        equals(UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString()))
+                {
+                    clonedEdgePE.addSubject(sourcePE.getFirstSubject());
+                    clonedEdgePE.addSubject(targetPE.getFirstSubject());
+                } else
+                {
+                    clonedEdgePE.addSubject(originalCW.getObject().getFirstSubject());
+                }
+
+                Widget clonedEdge = targetScene.addEdge(clonedEdgePE);
+
+                targetScene.setEdgeSource(clonedEdgePE, newSourcePE);
+                targetScene.setEdgeTarget(clonedEdgePE, newTargetPE);
+                Lookup lookup = clonedEdge.getLookup();
+                if (lookup != null)
+                {
+                    LabelManager manager = lookup.lookup(LabelManager.class);
+                    if (manager != null)
+                    {
+                        manager.createInitialLabels();
+                    }
+                }
+                ((UMLEdgeWidget) originalCW).duplicate(clonedEdge);
+            }
+        }
+        targetScene.validate();
+    }
 }

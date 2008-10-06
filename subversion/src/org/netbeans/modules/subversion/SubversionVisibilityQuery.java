@@ -69,9 +69,19 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
     }
 
     public boolean isVisible(FileObject fileObject) {
-        if (fileObject.isData()) return true;
-        File file = FileUtil.toFile(fileObject);
-        return isVisible(file);
+        long t = System.currentTimeMillis();
+        Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
+        boolean ret = true;
+        try {
+            if (fileObject.isData()) return true;
+            File file = FileUtil.toFile(fileObject);
+            ret = isVisible(file);
+            return ret;
+        } finally {
+            if(Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
+            }
+        }
     }
     
     public boolean isVisible(File file) {

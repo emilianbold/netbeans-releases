@@ -14,6 +14,7 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -117,7 +118,7 @@
               <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="L_Line_Breakpoint_File_Name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="ACSD_L_Line_Breakpoint_File_Name_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="ACSD_L_Line_Breakpoint_File_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
         </Component>
@@ -129,8 +130,11 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="A11y_TF_ File" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle.properties" key="ACSD_TF_Line_Breakpoint_File_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="ACSD_TF_Line_Breakpoint_File_Name_Description" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
         </Component>
@@ -160,9 +164,11 @@
             </Property>
           </Properties>
           <AccessibilityProperties>
-            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Line number"/>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="A11y_TF_ LineNumber" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle.properties" key="ACSD_TF_Line_Breakpoint_Line_Number" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="A11Y_TF_LineNumber_Desc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
         </Component>
@@ -185,6 +191,14 @@
               <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="TTT_TF_Resolved_URL" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="A11y_TF_ ResolvedURL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="A11y_TF_ ResolvedURL_TF_Desc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>

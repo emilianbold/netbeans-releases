@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 
 /**
@@ -51,7 +52,8 @@ import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
  * @author Tor Norbye
  */
 public class JsAnalyzerTest extends JsTestBase {
-    
+    private boolean isJson;
+
     public JsAnalyzerTest(String testName) {
         super(testName);
     }
@@ -64,6 +66,14 @@ public class JsAnalyzerTest extends JsTestBase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        if (isJson) {
+            return new JsonAnalyzer();
+        }
+        return super.getStructureScanner();
     }
 
     private void checkImports(String relFilePath) throws Exception {
@@ -140,18 +150,22 @@ public class JsAnalyzerTest extends JsTestBase {
     }
 
     public void testJsonFolds() throws Exception {
+        isJson = true;
         checkFolds("testfiles/sample.json");
     }
 
     public void testJsonStructure() throws Exception {
+        isJson = true;
         checkStructure("testfiles/sample.json");
     }
 
     public void testJsonFolds2() throws Exception {
+        isJson = true;
         checkFolds("testfiles/sample2.json");
     }
 
     public void testJsonStructure2() throws Exception {
+        isJson = true;
         checkStructure("testfiles/sample2.json");
     }
 }

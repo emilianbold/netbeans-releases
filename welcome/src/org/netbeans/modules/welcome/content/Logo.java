@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -72,7 +73,7 @@ public class Logo extends JPanel implements Constants, MouseListener {
     /** Creates a new instance of RecentProjects */
     public Logo( String img, String url ) {
         super( new BorderLayout() );
-        Icon image = new ImageIcon(Utilities.loadImage(img, true));
+        Icon image = new ImageIcon(ImageUtilities.loadImage(img, true));
         JLabel label = new JLabel( image );
         label.setBorder( BorderFactory.createEmptyBorder() );
         label.setOpaque( false );

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
+import org.openide.util.NbBundle;
 
 /**
  * Thread safe model of provider results of asociated category.
@@ -53,25 +54,37 @@ import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 public final class CategoryResult implements Runnable {
     
     static final int MAX_RESULTS = 7;
+    static final int ALL_MAX_RESULTS = 30;
+
+    private final boolean allResults; 
     
     private final Object LOCK = new Object();
     
-    private ProviderModel.Category category;
+    private final ProviderModel.Category category;
     
-    private List<ItemResult> items;
+    private final List<ItemResult> items;
     
     private boolean obsolete;
     
     private int previousSize;
 
-    CategoryResult (ProviderModel.Category category) {
+    private boolean moreResults = false;
+
+    public CategoryResult (ProviderModel.Category category, boolean allResults) {
         this.category = category;
-        items = new ArrayList<ItemResult>(MAX_RESULTS);
+        this.allResults = allResults;
+        items = new ArrayList<ItemResult>(allResults ? ALL_MAX_RESULTS : MAX_RESULTS);
     }
-    
+
     public boolean addItem (ItemResult item) {
         synchronized (LOCK) {
-            if (obsolete || items.size() >= MAX_RESULTS) {
+            if (obsolete) {
+                return false;
+            }
+            if (items.size() >= (allResults ? ALL_MAX_RESULTS : MAX_RESULTS)) {
+                if (!allResults) {
+                    moreResults = true;
+                }
                 return false;
             }
             items.add(item);
@@ -95,6 +108,10 @@ public final class CategoryResult implements Runnable {
         List<ItemResult> rItems = null;
         synchronized (LOCK) {
             rItems = new ArrayList<ItemResult>(items);
+            if (moreResults) {
+                rItems.add(new ItemResult(this, null, this,
+                        NbBundle.getMessage(getClass(), "LBL_MoreResults")));
+            }
         }
         return rItems;
     }
@@ -133,7 +150,8 @@ public final class CategoryResult implements Runnable {
         boolean shouldNotify = false;
         synchronized (LOCK) {
             curSize = items.size();
-            shouldNotify = !obsolete && items.size() <= MAX_RESULTS;
+            shouldNotify = !obsolete && 
+                    items.size() <= (allResults ? ALL_MAX_RESULTS : MAX_RESULTS);
         }
         
         if (!shouldNotify) {

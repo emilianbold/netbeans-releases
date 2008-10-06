@@ -42,9 +42,8 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Font;
 import java.awt.Rectangle;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -55,10 +54,13 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.DiagramEditorNameCollisionHandler;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
+import org.netbeans.modules.uml.ui.support.applicationmanager.NameCollisionListener;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -143,7 +145,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             lookupContent.add(edcAction);
         }
         
-        getActions().addAction(action);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction(action);//TBD need to add lock edit support
     }
     
     /**
@@ -160,7 +162,9 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
     {
         super(scene,text, id, displayName);
         edcAction=(InplaceEditorProvider.EditorController) ActionFactory.createInplaceEditorAction(new EditControlEditorProvider(baseGraphWidget,element));
-        getActions().addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+//        getActions().addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction((WidgetAction)edcAction);//TBD need to add lock edit support
+        
     }
     
     public void switchToEditMode()
@@ -194,10 +198,12 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
         private Widget baseFitWidget;
         private Widget basePresentationWidget;
         private IElement modelElement;
-        
+        private NameCollisionListener m_NameCollisionListener = new NameCollisionListener();
+	private DiagramEditorNameCollisionHandler m_CollisionHandler = new DiagramEditorNameCollisionHandler();
+				
         public EditControlEditorProvider()
         {
-            
+            m_NameCollisionListener.setHandler(m_CollisionHandler);
         }
         
         
@@ -207,6 +213,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
          */
         public EditControlEditorProvider(Widget toFit,Widget presentationWidget)
         {
+            this();
             baseFitWidget=toFit;
             basePresentationWidget=presentationWidget;
         }
@@ -217,6 +224,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
          */
         public EditControlEditorProvider(Widget toFit,IElement element)
         {
+            this();
             baseFitWidget=toFit;
             modelElement=element;
         }
@@ -224,7 +232,7 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
         public void notifyOpened(final EditorController controller, Widget widget, final EditControlImpl editor) {
             editor.setVisible(true);
             editor.setAssociatedParent(controller);
-            
+            m_NameCollisionListener.setEnabled(true);
             DocumentListener listener = new DocumentListener()
             {
 
@@ -270,12 +278,18 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             editor.setVisible(false);
             
             Scene scene = widget.getScene();
-            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
-            
-            if(manager != null)
+            //Fix #138735. Reselect the object when finishing editing to update the property sheet.
+            if ( scene instanceof DesignerScene)
             {
-                manager.selectionChanged(null);
+                DesignerScene dScene = (DesignerScene)scene;
+                Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
+                if (selectedObjs != null && selectedObjs.size() == 1)
+                {
+                    dScene.userSelectionSuggested(selectedObjs, false);
+                }
             }
+            
+            m_NameCollisionListener.setEnabled(false);
         }
 
         public EditControlImpl createEditorComponent(EditorController controller, Widget widget)
@@ -284,14 +298,37 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             
             DesignerScene scene = (DesignerScene) widget.getScene();
             
-            // Sheryl commented out below for LabelNode widget, 
-            // I first need to verify that the widget (or at least the one
-            // associated to the model element) is focused.  If it does 
-            // not have focus, it should not be editable.
             Object data = scene.findObject(widget);
             Widget assocWidget = scene.findWidget(data);
+
+            // When using the keystroke ENTER to open the inplaced editor the
+            // logic states that only the focused widget can enter into edit
+            // mode.  Without this logic the last editable field in the last
+            // editable node always enter into edit mode when the enter key is
+            // pressed.  Therefore the reason for the focus logic.
+            //
+            // However, In some case the widget can not have keyboard focus. For
+            // example subpartitions in a partition.  However we do not want to
+            // stop the user from entering into edit mode via the mouse.
+            //
+            // Therefore check if the user we are trying to enter into edit
+            // mode via a mouse press or a keyboard action.
+            boolean canEdit = assocWidget.getState().isFocused();
+            if(canEdit == false)
+            {
+                if (controller instanceof TypedEditorController)
+                {
+                    TypedEditorController typedController = (TypedEditorController) controller;
+                    EditorInvocationType type = typedController.getEditorInvocationType();
+                    if((type == EditorInvocationType.CODE) ||
+                       (type == EditorInvocationType.MOUSE))
+                    {
+                        canEdit = true;
+                    }
+                }
+            }
             
-            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
+            if((assocWidget == null) || (canEdit == false))
             {
                 return null;
             }

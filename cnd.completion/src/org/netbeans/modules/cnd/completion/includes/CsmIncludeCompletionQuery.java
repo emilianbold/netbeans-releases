@@ -47,7 +47,7 @@ import org.openide.loaders.ExtensionList;
  */
 public class CsmIncludeCompletionQuery {
     private static final Collection<String> EXCLUDED_DIR_NAMES = Arrays.asList(new String[] {
-        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"});// NOI8N
+        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"}); // NOI18N
     private Map<String, CsmIncludeCompletionItem> results;
     private final CsmFile file;
     public CsmIncludeCompletionQuery(CsmFile file) {
@@ -95,7 +95,9 @@ public class CsmIncludeCompletionQuery {
                     addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
                 }
             }
-            addParentFolder(substitutionOffset, childSubDir, false);
+            if (usrDir.getParentFile() != null) {
+                addParentFolder(substitutionOffset, childSubDir, false);
+            }
         } else {
             for (String sysPath : sysPaths) {
                 addFolderItems(sysPath, sysPath, childSubDir, false, true, false, substitutionOffset);
@@ -105,7 +107,9 @@ public class CsmIncludeCompletionQuery {
                     addFolderItems(usrPath, usrPath, childSubDir, false, false, true, substitutionOffset);
                 }
                 addFolderItems(usrDir.getAbsolutePath(), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
-                addParentFolder(substitutionOffset, childSubDir, true);
+                if (usrDir.getParentFile() != null) {
+                    addParentFolder(substitutionOffset, childSubDir, true);
+                }
             }
         }
         return results.values();

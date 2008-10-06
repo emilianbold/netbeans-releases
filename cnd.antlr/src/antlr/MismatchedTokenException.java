@@ -156,7 +156,7 @@ public class MismatchedTokenException extends RecognitionException {
 
         return sb.toString();
     }
-    
+
     private String tokenName(int tokenType) {
         return tokenName(tokenNames, tokenType);
     }
@@ -172,4 +172,10 @@ public class MismatchedTokenException extends RecognitionException {
             return tokenNames[tokenType];
         }
     }
+
+    @Override
+    public String getTokenText() {
+        return tokenText;
+    }
+
 }

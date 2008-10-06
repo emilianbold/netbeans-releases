@@ -88,7 +88,7 @@ public class PlaceMultipleElements extends UMLTestCase {
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
     private JTreeOperator prTree=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static int elCount=0;
     private String lastTestCase=null;
     //

@@ -46,6 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map.Entry;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -181,4 +182,17 @@ public class J2SEProjectUtil {
     public static FileObject getBuildXml (final J2SEProject project) {
         return project.getProjectDirectory().getFileObject (getBuildXmlName(project));
     }
+
+    public static boolean isCompileOnSaveSupported(final J2SEProject project) {
+        for (Entry<String, String> e :project.evaluator().getProperties().entrySet()) {
+            if (e.getKey().startsWith(J2SEProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
+                if (e.getValue() != null && Boolean.valueOf(e.getValue())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
 }

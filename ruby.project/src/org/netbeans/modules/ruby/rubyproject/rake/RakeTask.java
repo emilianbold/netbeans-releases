@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.ruby.rubyproject.rake;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,6 +55,15 @@ public final class RakeTask implements Comparable<RakeTask> {
     private final String description;
     private final String displayName;
 
+    /**
+     * The parameters for this task.
+     */
+    private final List<String> taskParameters = new ArrayList<String>();
+    /**
+     * The parameters to be passed for the rake cmd itself when running this task.
+     */
+    private final List<String> rakeParameters = new ArrayList<String>();
+
     private Set<RakeTask> children;
 
     public static RakeTask newNameSpace(final String displayName) {
@@ -67,6 +78,38 @@ public final class RakeTask implements Comparable<RakeTask> {
 
     boolean isNameSpace() {
         return task == null;
+    }
+
+    /**
+     * @see #rakeParameters
+     */
+    public void addRakeParameters(String... params) {
+        for (String param : params) {
+            rakeParameters.add(param);
+        }
+    }
+
+    /**
+     * @see #taskParameters
+     */
+    public void addTaskParameters(String... params) {
+        for (String param : params) {
+            taskParameters.add(param);
+        }
+    }
+
+    /**
+     * @see #taskParameters
+     */
+    List<String> getTaskParameters() {
+        return taskParameters;
+    }
+
+    /**
+     * @see #rakeParameters
+     */
+    List<String> getRakeParameters() {
+        return rakeParameters;
     }
 
     /**

@@ -11,11 +11,11 @@ package org.netbeans.test.subversion.main.delete;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -29,6 +29,7 @@ import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.RevertModificationsOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -46,7 +47,8 @@ public class DeleteTest extends JellyTestCase {
     public PrintStream stream;
     String os_name;
     Operator.DefaultStringComparator comOperator; 
-    Operator.DefaultStringComparator oldOperator;     
+    Operator.DefaultStringComparator oldOperator;
+    static Logger log;
     
     /** Creates a new instance of DeleteTest */
     public DeleteTest(String name) {
@@ -55,10 +57,14 @@ public class DeleteTest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
-        
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
     
     protected boolean isUnix() {
@@ -81,11 +87,10 @@ public class DeleteTest extends JellyTestCase {
      }
     
     public void testDeleteRevert() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            OutputOperator.invoke();
-            TestKit.closeProject(PROJECT_NAME);
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             TestKit.showStatusLabels();
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
@@ -101,7 +106,6 @@ public class DeleteTest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -113,24 +117,25 @@ public class DeleteTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-//            oto.clear();            
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            
             TestKit.waitForScanFinishedAndQueueEmpty();
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.performPopupAction("Subversion|Show Changes");
-            oto.waitText("Refreshing... finished.");
+
+            TestKit.waitText(mh);
+
             node.performPopupActionNoBlock("Delete");
-            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Delete");
             JButtonOperator btn = new JButtonOperator(dialog, "OK");
             btn.push();
             
@@ -138,6 +143,7 @@ public class DeleteTest extends JellyTestCase {
             vo = VersioningOperator.invoke();
             JTableOperator table;
             Exception e = null;
+            Thread.sleep(1000);
             try {
                 table = vo.tabFiles();
                 assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
@@ -147,6 +153,7 @@ public class DeleteTest extends JellyTestCase {
             assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
@@ -155,17 +162,18 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
             
             //revert local changes
-            
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Reverting");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(node);
             rmo.rbLocalChanges().push();
             rmo.revert();
-            oto.waitText("Modifications finished.");
+            TestKit.waitText(mh);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
                 table = vo.tabFiles();
@@ -175,13 +183,13 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
                 e = ex;
             }
             assertNull("Reverted file should be visible!!!", e);
-            
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
@@ -190,11 +198,10 @@ public class DeleteTest extends JellyTestCase {
     }
     
     public void testDeleteCommit() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            TestKit.closeProject(PROJECT_NAME);
-            
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
             CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
@@ -205,7 +212,6 @@ public class DeleteTest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -216,31 +222,33 @@ public class DeleteTest extends JellyTestCase {
             wdso.setLocalFolder(work.getCanonicalPath());
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
+
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-//            oto.clear();            
-            oto.waitText("Checking out... finished.");
+            TestKit.waitText(mh);
+            
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            
             TestKit.waitForScanFinishedAndQueueEmpty();
             
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.performPopupAction("Subversion|Show Changes");
-            oto.waitText("Refreshing... finished.");
+
+            TestKit.waitText(mh);
+
             node.performPopupActionNoBlock("Delete");
-            NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
+            NbDialogOperator dialog = new NbDialogOperator("Delete");
             dialog.ok();
             
             Thread.sleep(1000);
             vo = VersioningOperator.invoke();
             JTableOperator table;
             Exception e = null;
+            Thread.sleep(1000);
             try {
                 table = vo.tabFiles();
                 assertEquals("Files should have been [Locally Deleted]", "Locally Deleted", table.getValueAt(0, 1).toString());
@@ -250,6 +258,7 @@ public class DeleteTest extends JellyTestCase {
             assertNull("Unexpected behavior - file should appear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
@@ -258,16 +267,19 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("TimeoutExpiredException should have been thrown. Deleted file can't be visible!!!", e);
             
             //commit deleted file
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             CommitOperator cmo = CommitOperator.invoke(node);
             assertEquals("There should be \"Main.java\" file in Commit dialog!!!", cmo.tabFiles().getValueAt(0, 0), "Main.java");
             cmo.commit();
-            oto.waitText("finished.");
+
+            TestKit.waitText(mh);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
                 table = vo.tabFiles();
@@ -277,13 +289,13 @@ public class DeleteTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - file should disappear in Versioning view!!!", e);
             
             e = null;
+            Thread.sleep(1000);
             try {
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             } catch (Exception ex) {
                 e = ex;
             }
             assertNotNull("Deleteted file should be visible!!!", e);
-            
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {

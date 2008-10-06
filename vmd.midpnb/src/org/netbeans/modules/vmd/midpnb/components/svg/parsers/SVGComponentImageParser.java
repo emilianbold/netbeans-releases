@@ -36,14 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 
 import java.io.InputStream;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 
 /**
@@ -51,7 +50,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
  * @author avk
  */
 public abstract class SVGComponentImageParser {
-    
+
     /**
      * parses svg image source from provided InputStream and updsates 
      * provided DesignComponent with svg image data, if necessary.
@@ -70,15 +69,22 @@ public abstract class SVGComponentImageParser {
      * @param svgComponent
      * @return SVGComponentImageParser
      */
-    public static SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
-        DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
-        TypeID typeID = svgComponent.getType();
-        if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
-            return new SVGMenuImageParser();
-        } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
-            return new SVGFormImageParser();
-        }
-        return null;
+    public static SVGComponentImageParser getParserByComponent(final DesignComponent svgComponent) {
+        final DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
+        final SVGComponentImageParser[] parser = new SVGComponentImageParser[1];
+        svgComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                TypeID typeID = svgComponent.getType();
+                if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
+                    parser[0] =  new SVGMenuImageParser();
+                } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
+                    parser[0] = new SVGFormImageParser();
+                }
+            }
+        });
+
+        return parser[0];
 
     }
 }

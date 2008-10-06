@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>2</stream_count>
+    <venue id="5813">
+        <name>Mission Bar</name>
+        <description></description>
+        <phone>(415) 647-2300</phone>
+        <link>http://www.zvents.com/venues/show/5813</link>
+        <url></url>
+        <creator_id>2</creator_id>
+        <address>2695 Mission St.</address>
+        <city>San Francisco</city>
+        <zipcode>94110</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <latitude>37.7539</latitude>
+        <longitude>-122.419</longitude>
+    </venue>
+    <venue id="5795">
+        <name>Bar 821</name>
+        <description></description>
+        <phone>(415) 596-3986</phone>
+        <link>http://www.zvents.com/venues/show/5795</link>
+        <url></url>
+        <creator_id>2</creator_id>
+        <address>821 Divisadero St.</address>
+        <city>San Francisco</city>
+        <zipcode>94117</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <latitude>37.777</latitude>
+        <longitude>-122.438</longitude>
+    </venue>
+    <search_info>
+        <sst/>
+        <set/>
+        <srss>10</srss>
+        <what>bar</what>
+        <when/>
+        <where>san francisco, ca</where>
+        <radius>5.0</radius>
+        <st>venue</st>
+    </search_info>
+</rsp>

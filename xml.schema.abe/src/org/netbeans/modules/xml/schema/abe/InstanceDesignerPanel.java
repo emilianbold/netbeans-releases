@@ -49,10 +49,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,7 +109,8 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
         JPanel wrapperPanel = new JPanel(new BorderLayout());
         wrapperPanel.setOpaque(true);
         wrapperPanel.setBackground(new Color(252, 250, 245));
-        
+//        wrapperPanel.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+//        wrapperPanel.putClientProperty("print.size", new java.awt.Dimension(width, height)); // NOI18N
         /*wrapperPanel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 weakThis.get().dispatchEvent(e);

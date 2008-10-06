@@ -256,7 +256,7 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         }
 
         public String getName() {
-            if (name != null) {
+            if (name == null) {
                 List<Expression> parameters = invocation.getParameters();
                 if (parameters.size() == 2 && parameters.get(0) instanceof Scalar && parameters.get(1) instanceof Scalar) {
                     Scalar value = (Scalar)parameters.get(0);
@@ -306,6 +306,35 @@ public abstract class GSFPHPElementHandle implements ElementHandle {
         public Set<Modifier> getModifiers() {
             return translateModifiers(declaration.getModifier());
         }    
+    }
+
+    public static class FieldsFromTagProperty extends GSFPHPElementHandle {
+
+        private PHPDocPropertyTag declaration;
+
+        public FieldsFromTagProperty (CompilationInfo info, PHPDocPropertyTag declaration) {
+            super (info);
+            this.declaration = declaration;
+        }
+
+        @Override
+        public ASTNode getASTNode() {
+            return declaration;
+        }
+
+        public String getName() {
+            return "$" + declaration.getFieldName(); //NOI18N
+        }
+
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        public Set<Modifier> getModifiers() {
+            return translateModifiers(BodyDeclaration.Modifier.PUBLIC);
+        }
+
+
     }
     
     private static Set<Modifier> translateModifiers (int modifier) {

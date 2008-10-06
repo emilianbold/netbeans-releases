@@ -41,59 +41,19 @@
 
 package org.netbeans.test.xml.schema.general.navigator;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-import org.netbeans.jellytools.actions.AttachWindowAction;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
 import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
-import javax.swing.ListModel;
 import org.netbeans.jellytools.TopComponentOperator;
-import javax.swing.JPopupMenu;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 
 /**
  *
@@ -234,13 +194,23 @@ public class Navigator_0001 extends Navigator {
       JTreeOperator tree = new JTreeOperator( top, 0 );
       String sOriginal = Dump( tree, tree.getRoot( ), -1, "" );
       if( !sOriginal.equals( data.sOriginal ) )
-        fail( "Invalid orignal data: \"" + sOriginal + "\"" );
+      {
+        // TODO : check tree
+        System.out.println( "+++1:" + data.sOriginal );
+        System.out.println( "+++2:" + sOriginal );
+        fail( "Invalid orignal data" );//: \"" + sOriginal + "\"" );
+      }
 
       button.setSelected( false );
 
       String sAttributes = Dump( tree, tree.getRoot( ), -1, "" );
       if( !sAttributes.equals( data.sAttributes ) )
-        fail( "Invalid attributes data: \"" + sAttributes + "\"" );
+      {
+        // TODO : check tree
+        System.out.println( "+++1:" + data.sAttributes );
+        System.out.println( "+++2:" + sAttributes );
+        fail( "Invalid attributes data" );//: \"" + sAttributes + "\"" );
+      }
 
       endTest( );
     }
@@ -270,7 +240,7 @@ public class Navigator_0001 extends Navigator {
       TopComponentOperator top = new TopComponentOperator( " - Navigator" );
       JComboBoxOperator jcb = new JComboBoxOperator( top );
       jcb.selectItem( "XML View" );
-      try { Thread.sleep( 3000 ); } catch( InterruptedException ex ) { }
+      Sleep( 3000 );
 
       // Get toggle button
       JToggleButtonOperator button = new JToggleButtonOperator( top, 1 );

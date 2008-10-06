@@ -41,7 +41,6 @@ package org.netbeans.modules.palette.ui;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -84,7 +83,6 @@ class TextImporterUI extends javax.swing.JPanel {
         };
         updateButton(btnOk);
         txtName.getDocument().addDocumentListener(dl);
-        txtTooltip.getDocument().addDocumentListener(dl);
         txtContent.getDocument().addDocumentListener(dl);
     }
     
@@ -112,7 +110,6 @@ class TextImporterUI extends javax.swing.JPanel {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
                 boolean enable = txtName.getText().length() > 0;
-                enable &= txtTooltip.getText().length() > 0;
                 enable &= txtContent.getText().length() > 0;
                 btn.setEnabled(enable);
             }
@@ -142,11 +139,13 @@ class TextImporterUI extends javax.swing.JPanel {
         lblSmallIcon = new javax.swing.JLabel();
         btnSelectSmallIcon = new javax.swing.JButton();
 
+        jLabel1.setDisplayedMnemonic('N');
         jLabel1.setLabelFor(txtName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel1.text")); // NOI18N
 
         txtName.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.txtName.text")); // NOI18N
 
+        jLabel2.setDisplayedMnemonic('T');
         jLabel2.setLabelFor(txtTooltip);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel2.text")); // NOI18N
 
@@ -158,6 +157,7 @@ class TextImporterUI extends javax.swing.JPanel {
         jLabel4.setLabelFor(lblLargeIcon);
         jLabel4.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel4.text")); // NOI18N
 
+        jLabel5.setDisplayedMnemonic('C');
         jLabel5.setLabelFor(txtContent);
         jLabel5.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.jLabel5.text")); // NOI18N
 
@@ -174,6 +174,7 @@ class TextImporterUI extends javax.swing.JPanel {
         lblLargeIcon.setIconTextGap(0);
         lblLargeIcon.setPreferredSize(new java.awt.Dimension(40, 40));
 
+        btnSelectLargeIcon.setMnemonic('e');
         btnSelectLargeIcon.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectLargeIcon.text")); // NOI18N
         btnSelectLargeIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,6 +191,7 @@ class TextImporterUI extends javax.swing.JPanel {
         lblSmallIcon.setIconTextGap(0);
         lblSmallIcon.setPreferredSize(new java.awt.Dimension(40, 40));
 
+        btnSelectSmallIcon.setMnemonic('S');
         btnSelectSmallIcon.setText(org.openide.util.NbBundle.getMessage(TextImporterUI.class, "TextImporterUI.btnSelectSmallIcon.text")); // NOI18N
         btnSelectSmallIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -204,15 +206,15 @@ class TextImporterUI extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel1)
                             .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)))
+                            .add(txtTooltip, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                            .add(txtName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -336,7 +338,9 @@ private void btnSelectSmallIconActionPerformed(java.awt.event.ActionEvent evt) {
                 }
                 return res;
             }
-        } catch( IOException ioE ) {
+        } catch( ThreadDeath td ) {
+            throw td;
+        } catch( Throwable ioE ) {
             //ignore
         }
         JOptionPane.showMessageDialog(this, 

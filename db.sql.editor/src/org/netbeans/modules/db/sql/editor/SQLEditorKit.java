@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.db.sql.editor;
 
+import javax.swing.Action;
 import javax.swing.text.Document;
+import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.SyntaxSupport;
@@ -59,26 +61,38 @@ public class SQLEditorKit extends NbEditorKit {
     public static final String MIME_TYPE = "text/x-sql"; // NOI18N
 
     /**
-     * Creates a new instance of SQLEditorKit 
+     * Creates a new instance of SQLEditorKit
      */
-    public SQLEditorKit() { 
+    public SQLEditorKit() {
     }
-    
+
     /**
      * Create a syntax object suitable for highlighting SQL syntax
      */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new SQLSyntax();
     }
-    
+
     /** Create syntax support */
+    @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new SQLSyntaxSupport(doc);
     }
-    
+
+    @Override
+    protected Action[] createActions() {
+        Action[] superActions = super.createActions();
+        Action[] sqlActions = new Action[] {
+            new ToggleCommentAction("--") // NOI18N
+        };
+        return TextAction.augmentList(superActions, sqlActions);
+    }
+
     /**
      * Retrieves the content type for this editor kit
      */
+    @Override
     public String getContentType() {
         return MIME_TYPE;
     }

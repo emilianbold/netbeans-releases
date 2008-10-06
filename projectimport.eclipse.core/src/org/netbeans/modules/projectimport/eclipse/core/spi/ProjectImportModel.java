@@ -41,11 +41,11 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -57,10 +57,13 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.ClassPathContainerResolver;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.core.EclipseUtils;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Data about Eclipse project to import.
@@ -74,13 +77,22 @@ public final class ProjectImportModel {
     private File projectLocation;
     private JavaPlatform platform;
     private List<Project> alreadyImportedProjects;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels;
 
-    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, List<Project> alreadyImportedProjects) {
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
+            List<Project> alreadyImportedProjects) {
+        this(project, projectLocation, platform, alreadyImportedProjects, null);
+    }
+    
+    public ProjectImportModel(EclipseProject project, File projectLocation, JavaPlatform platform, 
+            List<Project> alreadyImportedProjects, List<WizardDescriptor.Panel<WizardDescriptor>> extraWizardPanels) {
+        Parameters.notNull("project", project); // NOI18N
         this.project = project;
         assert projectLocation == null || projectLocation.equals(FileUtil.normalizeFile(projectLocation));
         this.projectLocation = projectLocation;
         this.platform = platform;
         this.alreadyImportedProjects = alreadyImportedProjects;
+        this.extraWizardPanels = extraWizardPanels;
     }
 
     public Facets getFacets() {
@@ -205,13 +217,15 @@ public final class ProjectImportModel {
     private boolean readJUnitFileHeader(FileObject fo) throws IOException {
         InputStream is = fo.getInputStream();
         try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(is, "ISO-8859-1")); // NOI18N
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, getEncoding()));
             String line;
             int maxLines = 100;
             while (null != (line = input.readLine()) && maxLines > 0) {
                 maxLines--;
                 if (line.contains("junit.framework.Test") || // NOI18N
-                    line.contains("org.junit.Test")) { // NOI18N
+                    line.contains("org.junit.Test") || // NOI18N
+                    line.contains("junit.framework.*") || // NOI18N
+                    line.contains("org.junit.*")) { // NOI18N
                     return true;
                 }
                     
@@ -226,7 +240,7 @@ public final class ProjectImportModel {
         return platform;
     }
     
-    public String getEclipseVersion() {
+    /*public*/ String getEclipseVersion() {
         // TODO: could be useful for client to fork their import of needed
         return null;
     }
@@ -257,7 +271,7 @@ public final class ProjectImportModel {
      */
     public String getSourceLevel() {
         Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
-        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.5"); // NOI18N
         return p.getProperty("org.eclipse.jdt.core.compiler.source", compliance); // NOI18N
     }
 
@@ -267,7 +281,7 @@ public final class ProjectImportModel {
      */
     public String getTargetLevel() {
         Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
-        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.5"); // NOI18N
         return p.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform", compliance); // NOI18N
     }
 
@@ -323,7 +337,7 @@ public final class ProjectImportModel {
 
     /**
      * Gets the encoding, if any.
-     * @return the Eclipse project's specified encoding, or null if unspecified
+     * @return the Eclipse project's specified encoding (UTF-8 is the default, so never null)
      */
     public String getEncoding() {
         Properties p = getPreferences("org.eclipse.core.resources"); // NOI18N
@@ -331,36 +345,48 @@ public final class ProjectImportModel {
         if (enc != null) {
             return enc;
         } else {
-            return p.getProperty("encoding"); // NOI18N
+            enc = p.getProperty("encoding"); // NOI18N
+            if (enc != null) {
+                return enc;
+            } else {
+                return "UTF-8"; // NOI18N
+            }
         }
     }
 
     private Properties getPreferences(String plugin) {
         Properties p = new Properties();
-        String settings = ".settings/" + plugin + ".prefs";
-        tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
-        tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
+        String settings = ".settings/" + plugin + ".prefs"; //NOI18N
+        EclipseUtils.tryLoad(p, getEclipseWorkspaceFolder(), ".metadata/.plugins/org.eclipse.core.runtime/" + settings); // NOI18N
+        EclipseUtils.tryLoad(p, getEclipseProjectFolder(),settings); // NOI18N
         return p;
     }
 
-    private static void tryLoad(Properties p, File base, String path) {
-        if (base == null) {
-            return;
+    /**
+     * Finds any launch configurations associated with this project in the workspace.
+     * @return a possibly empty collection of launch configurations
+     */
+    public Collection<LaunchConfiguration> getLaunchConfigurations() {
+        Workspace workspace = project.getWorkspace();
+        if (workspace == null) {
+            return Collections.emptySet();
         }
-        File f = new File(base, path);
-        if (!f.isFile()) {
-            return;
-        }
-        try {
-            InputStream is = new FileInputStream(f);
-            try {
-                p.load(is);
-            } finally {
-                is.close();
+        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
+        for (LaunchConfiguration config : workspace.getLaunchConfigurations()) {
+            if (getProjectName().equals(config.getProjectName())) {
+                configs.add(config);
             }
-        } catch (IOException x) {
-            Exceptions.printStackTrace(x);
         }
+        return configs;
+    }
+
+    /**
+     * Returns valid value only in import scenario when impor wizard is shown. 
+     * During project update the value is null.
+     * @return
+     */
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getExtraWizardPanels() {
+        return extraWizardPanels;
     }
 
 }

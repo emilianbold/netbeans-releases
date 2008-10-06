@@ -1601,6 +1601,7 @@ public class TranslatorImpl implements ITranslator
       {
          refreshEditControl();
       }
+      nStartPos += pField.getTextStartPos() - startPos;
       setPosition(nStartPos + sText.length(), nStartPos + sText.length());
       m_Modified = true;
       

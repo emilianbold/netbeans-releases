@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 final class WizardTypePanel extends BasicWizardIterator.Panel {
 
     private DataModel data;
-    private boolean firstTime = true;
     private boolean lastStaticValue = true;
     
     public WizardTypePanel(final WizardDescriptor setting, final DataModel data) {
@@ -85,18 +84,15 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
     private int getNumberOfSteps() {
         return Integer.parseInt(numberOfSteps.getText().trim());
     }
-    
+
     protected void readFromDataModel() {
-        if (firstTime) {
-            firstTime = false;
-            markInvalid();
-        } else {
-            checkValidity();
-        }
+        checkValidity();
     }
     
     private void checkValidity() {
-        if (!isNumberOfStepsValid()) {
+        if (numberOfSteps.getText().trim().length() == 0) {
+            setInfo(getMessage("MSG_EmptyNumberOfSteps"), false);
+        } else if (!isNumberOfStepsValid()) {
             setError(getMessage("MSG_IncorrectNumberOfSteps"));
         } else {
             markValid();

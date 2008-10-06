@@ -51,9 +51,11 @@ import java.util.List;
 import java.awt.Component;
 import java.awt.Dialog;
 
+import java.io.UnsupportedEncodingException;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -80,7 +82,6 @@ import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -108,10 +109,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -129,7 +128,8 @@ import org.openide.filesystems.FileObject;
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
 
-    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    private static final String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
     private static final int WSDL_FROM_PROJECT = 0;
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_URL = 2;
@@ -461,7 +461,14 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
     private void jBtnBrowse1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowse1ActionPerformed
         // TODO add your handling code here:
         String result = browseProjectServices();
-        if (result!=null) jTxtWsdlProject.setText(result);
+        if (result != null) {
+            try {
+                jTxtWsdlProject.setText(URLDecoder.decode(result, "UTF-8")); //NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                jTxtWsdlProject.setText(result);
+            }
+        }
+        
     }//GEN-LAST:event_jBtnBrowse1ActionPerformed
     
     private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed
@@ -1014,7 +1021,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             String wsdlUrl = (wsdlSource == WSDL_FROM_PROJECT?jTxtWsdlProject.getText().trim():jTxtWsdlURL.getText().trim());
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
+                wizardDescriptor.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
                 return false;
             }
             
@@ -1043,7 +1050,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             String wsdlFilePath = jTxtLocalFilename.getText().trim();
             
             if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterFilename")); // NOI18N
+                wizardDescriptor.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterFilename")); // NOI18N
                 return false; // unspecified WSDL file
             }
             

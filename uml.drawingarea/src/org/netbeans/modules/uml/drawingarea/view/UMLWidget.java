@@ -73,6 +73,7 @@ public interface UMLWidget {
         DATATYPEWIDGET,
         DERIVATIONCLASSIFIERWIDGET,
         UMLCLASSWIDGET,
+        UMLINTERFACEWIDGET,
         ELEMENTLISTWIDGET,
         ATTRIBUTEWIDGET,
         OPERATIONWIDGET,
@@ -135,5 +136,5 @@ public interface UMLWidget {
     
     public void remove();
     
-    public void refresh();
+    public void refresh(boolean resizetocontent);
 }

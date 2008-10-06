@@ -45,15 +45,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.ActionText;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
+import org.openide.util.Exceptions;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -85,14 +88,38 @@ final class OutputForwarder implements Runnable {
     private OutputWriter writer;
     private FileLocator fileLocator;
     private List<OutputRecognizer> recognizers;
+    private String encoding;
+    private final int readMaxWaitTime;
+    /**
+     * Specifies whether the forwarder should invoke the {@link OutputRecognizer#beforeFinish()} 
+     * method after the processing is done. 
+     * <i>Not a very elegant solution for issue 145447 -- we only want this to be enabled for
+     * one forwarder -- but since we're migrating to the new execution
+     * API it didn't seem worth the effort to do major redesigns at this point</i>.
+     */
+    private final boolean runBeforeFinishHook;
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction) {
+        this(instream, out, fileLocator, recognizers, stopAction, null, 50);
+    }
+
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding, int readWaitTime) {
+        this(instream, out, fileLocator, recognizers, stopAction, null,readWaitTime, false);
+    }
+
+    OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding,
+        int readWaitTime, boolean runBeforeFinishHook) {
         str = instream;
         writer = out;
         this.fileLocator = fileLocator;
         this.recognizers = recognizers;
         this.stopAction = stopAction;
+        this.encoding = encoding;
+        this.readMaxWaitTime = readWaitTime;
+        this.runBeforeFinishHook = runBeforeFinishHook;
     }
 
     /** Package private for unit test. */
@@ -150,7 +177,22 @@ final class OutputForwarder implements Runnable {
                 String[] toPrint = ((FilteredOutput) recognizedOutput).getLinesToPrint();
                 if (toPrint != null) {
                     for (String l : toPrint) {
-                        writer.println(l);
+                        boolean printed = false;
+                        // a somewhat ugly hack to link filtered output, related to issue 142404. resorting to a hack
+                        // since we will be moving to the new output API anyway where this shouldn't
+                        // be necessary
+                        for (OutputRecognizer each : RubyExecution.getStandardRubyRecognizers()) {
+                            RecognizedOutput ro = each.processLine(l);
+                            if (ro instanceof FileLocation) {
+                                FileLocation fileLocation = (FileLocation) ro;
+                                writer.println(l, new OutputProcessor(fileLocation.file, fileLocation.line, fileLocator));
+                                printed = true;
+                                break;
+                            }
+                        }
+                        if (!printed) {
+                            writer.println(l);
+                        }
                     }
                 }
                 handled = true;
@@ -171,32 +213,49 @@ final class OutputForwarder implements Runnable {
         for (OutputRecognizer recognizer : recognizers) {
             recognizer.start();
         }
-        
-        BufferedReader read = new BufferedReader(new InputStreamReader(str), 1200);
+
+        BufferedReader read = null;
+        try {
+            InputStreamReader isr = encoding == null
+                    ? new InputStreamReader(str)
+                    : new InputStreamReader(str, encoding);
+            read = new BufferedReader(isr, 1200);
+        } catch (UnsupportedEncodingException uee) {
+            Exceptions.printStackTrace(uee);
+            return;
+        }
 
         StringBuilder sb = new StringBuilder();
 
         try {
             while (true) {
                 if (!read.ready()) {
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ie) {
-                        return;
-                    }
-
                     if (stopAction.process == null) {
                         // process finished
                         return;
                     }
-                    
+
+                    // the interval for polling the readiness of the stream
+                    // the default max wait time is 50 (specified in ExecutionDescriptor)
+                    final int waitMillis = 25;
+                    int millisWaited = 0;
+                    // wait upto readDelay for the stream to be ready
+                    while (!read.ready() && millisWaited < readMaxWaitTime) {
+                        try {
+                            Thread.sleep(waitMillis);
+                            millisWaited += waitMillis;
+                        } catch (InterruptedException ie) {
+                            return;
+                        }
+                    }
+
                     if (!read.ready() && sb.length() > 0) {
                         // Some output has been written - not a complete line
                         // and the process seems to be stalling so emit what
                         // we've got.
                         String line = sb.toString();
                         sb.setLength(0);
-
+                        LOGGER.log(Level.INFO, "Process seems to be stalling, emitting chars read so far: " + line);
                         writer.print(line);
                     }
 
@@ -294,6 +353,13 @@ final class OutputForwarder implements Runnable {
                     read.close();
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
+                }
+                if (runBeforeFinishHook) {
+                    for (OutputRecognizer recognizer : recognizers) {
+                        for (String line : recognizer.beforeFinish()) {
+                            writer.println(line);
+                        }
+                    }
                 }
                 writer.flush();
                 writer.close();

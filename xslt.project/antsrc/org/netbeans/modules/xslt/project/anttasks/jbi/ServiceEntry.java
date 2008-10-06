@@ -21,18 +21,22 @@ package org.netbeans.modules.xslt.project.anttasks.jbi;
 import javax.xml.namespace.QName;
 
 public class ServiceEntry {
-    private String mTargetNs = null;
-    
-    private String mName = null;
+    //Member variable representing partner link name
+    private String mPartnerLinkName = null;
     //Member variable representing port name
     private String mPortName = null;
     //Member variable representing partnerlink Namespace
+    private String mPartnerLinkNS = null;
+    //Member variable representing portname namespace
     private String mPortNameNS = null;
     //Member variable representing  role name
     private String mRoleName = null;
+    //Member variable representing Partnerlink Namespace Prefix
+    private String mPartnerLinkNSPrefix = null;
     //Member variable representing Portname Namespace Prefix
     private String mPortNameNSPrefix = null;    
     
+    private QName mPartnerLinkNameQname = null;
     private QName mPortNameQname = null;
     
     private String mDisplayName;
@@ -41,24 +45,22 @@ public class ServiceEntry {
     
     /**
      * Constructor
+     * @param partnerLinkName Partner link name
      * @param portName    Port name
+     * @param partnerLinkNS Namespace URI of the Partner Link
      * @param portNameNS Namespace URI of the portname
      * @param rolename  role name
      */
-    public ServiceEntry(String targetNs, String name, String portName,  
-            String portNameNS, String portNameNSPrefix, QName portNameQname, 
-            String displayName, String processName, String filePath) 
-    {
-        if (targetNs == null) {
-            throw new IllegalStateException("target namespace should not be null");
-        }
-        mTargetNs = targetNs;
-        mName = name;
-        
+    public ServiceEntry(String partnerLinkName, String portName, String partnerLinkNS, String portNameNS, String roleName, String partnerLinkNSPrefix, String portNameNSPrefix, QName partnerLinkNameQname, QName portNameQname, String displayName, String processName, String filePath) {
+        mPartnerLinkName = partnerLinkName;
         mPortName = portName;
+        mPartnerLinkNS = partnerLinkNS;
         mPortNameNS = portNameNS;
+        mRoleName =roleName;
+        mPartnerLinkNSPrefix = partnerLinkNSPrefix;
         mPortNameNSPrefix = portNameNSPrefix;
         
+        mPartnerLinkNameQname = partnerLinkNameQname;
         mPortNameQname = portNameQname;
         
         mDisplayName = displayName;
@@ -67,20 +69,16 @@ public class ServiceEntry {
     }
     
 
-    /**
-     * Get TargetNamespace of the TransformMap
-     * @return TargetNamespace of the TransformMap
-     */
-    public String getTargetNamespace() {
-        return mTargetNs;
+    public QName getPartnerLinkNameQname() {
+        return mPartnerLinkNameQname;
     }
-
+    
     /**
-     * Get Name of the Service/Invoke
-     * @return Name of the Service/Invoke
+     * Get Name of the Partner Link
+     * @return Name of the Partner Link
      */
-    public String getName() {
-        return mName;
+    public String getPartnerLinkName() {
+        return mPartnerLinkName;
     }
 
     public QName getPortNameQname() {
@@ -95,6 +93,15 @@ public class ServiceEntry {
         return mPortName;
     }
         
+
+    /**
+     * Get Namespace URI of the Partner Link
+     * @return Namespace URI of the Partner Link
+     */
+    public String getPartnerLinkNamespace() {
+        return mPartnerLinkNS;
+    }
+    
     /**
      * Return Namespace URI of portName
      * @return Namespace URI of the portname
@@ -110,6 +117,13 @@ public class ServiceEntry {
     public String getRoleName(){
         return mRoleName;
     }
+    /**
+     * Get Namespace Prefix of the Partner Link
+     * @return Namespace URI of the Partner Link
+     */
+    public String getPartnerLinkNamespacePrefix() {
+        return mPartnerLinkNSPrefix;
+    }    
     /**
      * Return Namespace Prefix of portName
      * @return Namespace URI of the portname
@@ -135,15 +149,17 @@ public class ServiceEntry {
             return false;
         }
         ServiceEntry serviceEntry = (ServiceEntry)obj;
-        if (this.mPortName.equals(serviceEntry.getPortName()) && 
-            this.mPortNameNSPrefix.equals(serviceEntry.getPortNameNamespacePrefix())){
+        if (this.mPartnerLinkName.equals(serviceEntry.getPartnerLinkName()) && 
+            this.mPortName.equals(serviceEntry.getPortName()) && 
+            this.mPortNameNSPrefix.equals(serviceEntry.getPortNameNamespacePrefix())&& 
+            this.mRoleName.equals(serviceEntry.getRoleName())){
                 return true;
         }
         return false;
     }
     
     public int hashCode() {
-       return (this.mPortName).hashCode();
+       return (this.mPartnerLinkName+this.mPortName+this.mRoleName).hashCode();
     }
         
 }

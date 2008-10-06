@@ -39,23 +39,33 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.File;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.RemoteSettings;
+import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.TransferInfo;
+import org.netbeans.modules.php.project.connections.ui.TransferFilter;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Upload files to remote connection.
  * @author Tomas Mysik
  */
-public class UploadCommand extends Command implements Displayable {
+public class UploadCommand extends FtpCommand implements Displayable {
     public static final String ID = "upload"; // NOI18N
+    public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
 
     public UploadCommand(PhpProject project) {
         super(project);
@@ -67,41 +77,90 @@ public class UploadCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    protected Runnable getContextRunnable(final Lookup context) {
+        return new Runnable() {
+            public void run() {
+                invokeActionImpl(context);
+            }
+        };
+    }
+
+    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
-        String configName = getRemoteConfigurationName();
-        assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
+        uploadFiles(selectedFiles, (FileObject[]) null);
+    }
 
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
+    void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
-        assert sources.length == 1 : "More than 1 source root found";
 
-        RemoteClient remoteClient = new RemoteClient(remoteConfiguration, getRemoteDirectory());
+        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
+        RemoteClient remoteClient = getRemoteClient(ftpLog);
+        String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+        TransferInfo transferInfo = null;
         try {
-            remoteClient.connect();
-            remoteClient.upload(sources[0], selectedFiles);
+            progressHandle.start();
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], filesToUpload);
+
+            // manage preselected files - it is just enough to touch the file
+            if (preselectedFiles != null && preselectedFiles.length > 0) {
+                File baseLocalDir = FileUtil.toFile(sources[0]);
+                String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
+                for (FileObject fo : preselectedFiles) {
+                    TransferFile transferFile = TransferFile.fromFileObject(fo, baseLocalAbsolutePath);
+                    transferFile.touch();
+                    boolean result = forUpload.remove(transferFile);
+                    assert result : "Transfer file not in upload set: " + transferFile;
+                    result = forUpload.add(transferFile);
+                    assert result : "Transfer file not added to upload set: " + transferFile;
+                }
+            }
+
+            forUpload = TransferFilter.showUploadDialog(forUpload, RemoteSettings.getLastUpload(getProject()));
+            if (forUpload.size() == 0) {
+                return;
+            }
+
+            if (forUpload.size() > 0) {
+                progressHandle.finish();
+                progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+                progressHandle.start();
+                transferInfo = remoteClient.upload(sources[0], forUpload);
+                StatusDisplayer.getDefault().setStatusText(
+                        NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
+                rememberLastUpload(sources[0], filesToUpload);
+            }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
             }
+            if (transferInfo != null) {
+                processTransferInfo(transferInfo, ftpLog);
+            }
+            progressHandle.finish();
         }
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        // XXX add support for source directories&files
-        return isRemoteConfigSelected();
+    public String getDisplayName() {
+        return DISPLAY_NAME;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
+    // #142955 - but remember only if one of the selected files is source directory
+    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
+    //  -> upload another file or the whole project [timestamp is irrelevant])
+    private void rememberLastUpload(FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject fo : selectedFiles) {
+            if (sources.equals(fo)) {
+                RemoteSettings.setLastUpload(getProject(), TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                return;
+            }
+        }
     }
 }

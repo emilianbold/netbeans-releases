@@ -91,7 +91,7 @@ public class SQDDiagramTests extends UMLTestCase {
     
     private final String CONFIRM_DELETION_DLG_TTL = "Confirm Object Deletion";
     private final String YES_BTN = "Yes";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
    
     /********************************************************/
     

@@ -201,8 +201,8 @@ public class ELExpression {
         return result;
     }
     
-    public List<CompletionItem> getPropertyCompletionItems(String beanType){
-        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType);
+    public List<CompletionItem> getPropertyCompletionItems(String beanType, int anchor){
+        PropertyCompletionItemsTask task = new PropertyCompletionItemsTask(beanType, anchor);
         runTask(task);
         
         return task.getCompletionItems();
@@ -221,9 +221,11 @@ public class ELExpression {
         String beanName = extractBeanName();
         
         BeanData[] allBeans = sup.getBeanData();
-        for (BeanData beanData : allBeans) {
-            if (beanData.getId().equals(beanName)){
-                return beanData.getClassName();
+        if (allBeans != null) {
+            for (BeanData beanData : allBeans) {
+                if (beanData.getId().equals(beanName)) {
+                    return beanData.getClassName();
+                }
             }
         }
         
@@ -401,9 +403,11 @@ public class ELExpression {
     private class PropertyCompletionItemsTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
         
         private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+        private int anchorOffset;
         
-        PropertyCompletionItemsTask(String beanType){
+        PropertyCompletionItemsTask(String beanType, int anchor){
             super(beanType);
+            this.anchorOffset = anchor;
         }
         
         public void run(CompilationController parameter) throws Exception {
@@ -421,8 +425,7 @@ public class ELExpression {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
                         String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
                         
-                        CompletionItem item = new JspCompletionItem.ELProperty(
-                                propertyName, type);
+                        CompletionItem item = JspCompletionItem.createELProperty(propertyName, anchorOffset, type);
                         
                         completionItems.add(item);
                     }

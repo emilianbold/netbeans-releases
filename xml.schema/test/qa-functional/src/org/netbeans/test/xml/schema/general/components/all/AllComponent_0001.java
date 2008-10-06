@@ -41,51 +41,9 @@
 
 package org.netbeans.test.xml.schema.general.components.all;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-import org.netbeans.jellytools.properties.Property;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
-import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.TopComponentOperator;
 
 /**
  *
@@ -94,14 +52,6 @@ import junit.framework.Test;
 
 public class AllComponent_0001 extends AllComponent {
     
-    static final String [] m_aTestMethods = {
-        "OpenSchema",
-        "CheckProperties",
-        "CheckingIDProperty",
-        "CheckingMinOccursProperty",
-        "CheckSource"
-      };
-
     String sPathInTree = "Complex Types|ComplexType-0|all";
 
     String[] asCorrectIDValues = { "qwerty", "asdfg" };
@@ -109,23 +59,9 @@ public class AllComponent_0001 extends AllComponent {
     String[] asCorrectMOValues = { "0", "1" };
     String[] asIncorrectMOValues = { "a" };
 
-
-
     public AllComponent_0001(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(AllComponent_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new AllComponent_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -170,8 +106,6 @@ public class AllComponent_0001 extends AllComponent {
       CheckingProperty( "ID", asCorrectIDValues, true );
       CheckingProperty( "ID", asIncorrectIDValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -181,8 +115,6 @@ public class AllComponent_0001 extends AllComponent {
 
       CheckingProperty( "Min Occurs", asCorrectMOValues, true );
       CheckingProperty( "Min Occurs", asIncorrectMOValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }
@@ -199,4 +131,5 @@ public class AllComponent_0001 extends AllComponent {
 
       endTest( );
     }
+
 }

@@ -44,7 +44,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 
 /**
@@ -67,6 +67,7 @@ public class InstallIntoNewClusterTest extends OperationsTestImpl {
         return "com.sun.testmodule.cluster"; //NOI18N
     }
 
+    @RandomlyFails // NB-Core-Build #1191
     public void testSelf() throws Exception {
         UpdateUnit toUnInstall = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull(toUnInstall);

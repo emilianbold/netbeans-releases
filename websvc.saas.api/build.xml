@@ -45,43 +45,6 @@
     <description>Builds, tests, and runs the project org.netbeans.modules.websvc.saas.api</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
-    <target name="all-saas">
-        <antcall target="netbeans"/>
-        <ant dir="../websvc.saas.ui"/>
-        <ant dir="../websvc.manager"/>
-        <ant dir="../visualweb.websvcmgr"/>
-        <ant dir="../websvc.saas.codegen"/>
-        <ant dir="../websvc.saas.services.amazon"/>
-        <ant dir="../websvc.saas.services.delicious"/>
-        <ant dir="../websvc.saas.services.facebook"/>
-        <ant dir="../websvc.saas.services.flickr"/>
-        <ant dir="../websvc.saas.services.google"/>
-        <ant dir="../websvc.saas.services.strikeiron"/>
-        <ant dir="../websvc.saas.services.twitter"/>
-        <ant dir="../websvc.saas.services.yahoo"/>
-        <ant dir="../websvc.saas.services.youtube"/>
-        <ant dir="../websvc.saas.services.zillow"/>
-        <ant dir="../websvc.saas.services.weatherbug"/>
-        <ant dir="../websvc.saas.services.zvents"/>
-        <ant dir="../websvc.restkit" target="all-rest"/>
-    </target>
-
-    <target name="all-saas-clean">
-        <antcall target="clean"/>
-        <ant dir="../websvc.saas.ui" target="clean"/>
-        <ant dir="../websvc.saas.codegen" target="clean"/>
-        <ant dir="../websvc.saas.services.amazon" target="clean"/>
-        <ant dir="../websvc.saas.services.delicious" target="clean"/>
-        <ant dir="../websvc.saas.services.facebook" target="clean"/>
-        <ant dir="../websvc.saas.services.flickr" target="clean"/>
-        <ant dir="../websvc.saas.services.google" target="clean"/>
-        <ant dir="../websvc.saas.services.strikeiron" target="clean"/>
-        <ant dir="../websvc.saas.services.twitter" target="clean"/>
-        <ant dir="../websvc.saas.services.yahoo" target="clean"/>
-        <ant dir="../websvc.saas.services.youtube" target="clean"/>
-        <ant dir="../websvc.saas.services.zillow" target="clean"/>
-    </target>
-
     <property name="saas.service.xsd" value="src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd"/>
     <property name="saas.model.jaxb" value="src/org/netbeans/modules/websvc/saas/model/jaxb"/>
     <property name="wadl.xsd" value="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"/>
@@ -90,9 +53,9 @@
     <target name="xjc-init" depends="build-init">
         <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
             <classpath>
-                <fileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxws21" includes="*.jar"/>
-                <fileset dir="${netbeans.dest.dir}/${nb.cluster.java.dir}/modules/ext/jaxws21/api" includes="*.jar"/>
-            </classpath>
+                <fileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb/api" includes="*.jar"/>
+				<fileset dir="${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb" includes="*.jar"/>            
+			</classpath>
         </taskdef>
     </target>
     

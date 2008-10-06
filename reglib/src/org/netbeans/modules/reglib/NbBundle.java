@@ -64,7 +64,10 @@ import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Convenience class permitting easy loading of localized resources of various sorts.
+/**
+* Copy from openide.util to avoid any external dependency of reglib.
+*
+* Convenience class permitting easy loading of localized resources of various sorts.
 * Extends the functionality of the default Java resource support, and interacts
 * better with class loaders in a multiple-loader system.
 * <p>Example usage:
@@ -77,7 +80,7 @@ import java.util.logging.Logger;
 * }
 * </pre></code>
 */
-public class NbBundle extends Object {
+class NbBundle extends Object {
     
     private static final boolean USE_DEBUG_LOADER = Boolean.getBoolean("org.openide.util.NbBundle.DEBUG"); // NOI18N
     private static String brandingToken = null;

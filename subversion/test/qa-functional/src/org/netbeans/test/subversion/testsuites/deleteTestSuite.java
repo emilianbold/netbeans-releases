@@ -71,7 +71,7 @@ public class deleteTestSuite extends JellyTestCase {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(DeleteTest.class, "testDeleteRevert", "testDeleteCommit")
                     .addTest(RefactoringTest.class, "testRefactoring")
-                    .addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
+                    //.addTest(FilesViewRefTest.class, "testFilesViewRefactoring")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());

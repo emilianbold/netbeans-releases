@@ -92,7 +92,6 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     public CodeTemplatesPanel () {
         initComponents ();
         
-        setName(loc("Code_Templates_Tab")); //NOI18N
         loc(lLanguage, "Language"); //NOI18N
         loc(lTemplates, "Templates"); //NOI18N
         loc(bNew, "New"); //NOI18N
@@ -163,6 +162,14 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         Collections.sort (languages);
         for(String l : languages) {
             cbLanguage.addItem(l);
+        }
+        if (languages.isEmpty ()) {
+            cbLanguage.setEnabled (false);
+            bNew.setEnabled (false);
+            bRemove.setEnabled (false);
+            tTemplates.setEnabled (false);
+            tabPane.setEnabled (false);
+            cbExpandTemplateOn.setEnabled (false);
         }
         KeyStroke expander = model.getExpander ();
         if (KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK).equals (expander))

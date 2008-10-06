@@ -120,7 +120,7 @@ public class WindowManagerMock extends WindowManager {
     }
 
     public TopComponentGroup findTopComponentGroup(String name) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

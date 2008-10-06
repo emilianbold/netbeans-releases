@@ -59,7 +59,6 @@ public class J2EETest extends CompletionTest {
     /** Creates a new instance of CompletionTesJ2EE */
     public J2EETest(String name, FileObject testFileObj) {
         super(name, testFileObj);
-        debug = false;
     }
     
     public static Test suite() {

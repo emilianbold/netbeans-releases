@@ -43,7 +43,9 @@ package org.netbeans.modules.ruby.rubyproject.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractAction;
@@ -125,12 +127,23 @@ public class ProjectRootNodeFactory implements NodeFactory {
         private List<? extends RootChildNode> getRootFiles() {
             FileObject rootDir = project.getProjectDirectory();
             List<RootChildNode> rootFiles =  new ArrayList<RootChildNode>();
+
+            // prefer Rakefile
             FileObject rakeFile = RakeSupport.findRakeFile(project);
             if (rakeFile != null && rootDir.equals(rakeFile.getParent())) {
                 rootFiles.add(new RootChildNode(rakeFile));
             }
-            for (FileObject rootChild : rootDir.getChildren()) {
-                if (rootChild.isFolder() || RakeSupport.isRakeFile(rootChild)) {
+            
+            // the rest
+            FileObject[] children = rootDir.getChildren();
+            Comparator<FileObject> c = new Comparator<FileObject>() {
+                public int compare(FileObject f1, FileObject f2) {
+                    return f1.getNameExt().toLowerCase().compareTo(f2.getNameExt().toLowerCase());
+                }
+            };
+            Arrays.sort(children, c);
+            for (FileObject rootChild : children) {
+                if (rootChild.isFolder() || RakeSupport.isMainRakeFile(rootChild)) {
                     continue;
                 }
                 rootFiles.add(new RootChildNode(rootChild));
@@ -261,9 +274,13 @@ public class ProjectRootNodeFactory implements NodeFactory {
         }
 
         private static Node getOriginalNode(final SourceGroup group) {
-            FileObject root = group.getRootFolder();
             // Guard condition, if the project is (closed) and deleted but not
             // yet GCed and the view is switched, the source group is not valid.
+            if (group == null) {
+                return new AbstractNode(Children.LEAF);
+            }
+            FileObject root = group.getRootFolder();
+            // Guard as above
             if (root == null || !root.isValid()) {
                 return new AbstractNode(Children.LEAF);
             }

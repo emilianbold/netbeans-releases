@@ -42,12 +42,8 @@
 package org.netbeans.modules.vmd.componentssupport.ui.wizard;
 
 import java.awt.Component;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -56,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -65,36 +59,20 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ui.wizard.spi.ModuleTypePanel;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.CustomComponentHelper;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.JavaMELibsConfigurationHelper;
+import org.netbeans.modules.vmd.componentssupport.ui.helpers.ProjectTemplateZipHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class CustomComponentWizardIterator implements
         WizardDescriptor./* Progress */InstantiatingIterator
 {
-
-    // unzipped project filtering
-    private static final String UTF_8       = "UTF-8";                           // NOI18N
-    
-    private static final String CODE_NAME_BASE 
-                                            = "code-name-base";                  // NOI18N
-    private static final String DATA        = "data";                            // NOI18N
-    private static final String PROJECT_XML = "nbproject/project.xml";           // NOI18N
-    private static final String BUILD_IMPL_XML 
-                                            = "nbproject/build-impl.xml";        // NOI18N
-    private static final String BUILD_XML   = "build.xml";                       // NOI18N
 
     // wizard properties
     public static final String WIZARD_PANEL_ERROR_MESSAGE 
@@ -105,6 +83,9 @@ public class CustomComponentWizardIterator implements
     public static final String SELECTED_INDEX 
                                             = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX;// NOI18N
 
+    public static final String BUNDLE_PROPERTIES
+                                            = BaseHelper.BUNDLE_PROPERTIES;
+    public static final String LAYER_XML    = BaseHelper.LAYER_XML;
     // steps
     public static final String STEP_BASIC_PARAMS 
                                             = "LBL_BasicProjectParamsStep";      // NOI18N
@@ -123,6 +104,7 @@ public class CustomComponentWizardIterator implements
     public static final String CODE_BASE_NAME
                                             = "codeBaseName";                    // NOI18N
     public static final String DISPLAY_NAME = "displayName";                     // NOI18N
+
     // added library descriptors
     public static final String LIBRARIES    = "libraries";                       // NOI18N
     public static final String LIB_DISPLAY_NAMES
@@ -131,24 +113,13 @@ public class CustomComponentWizardIterator implements
     // added Custom components
     public static final String CUSTOM_COMPONENTS  
                                             = "customComponents";                // NOI18N
-
-    // parameters for project
-    private static final String CODE_NAME_PARAM 
-                                            = "_CODE_NAME_";                     // NOI18N
-    private static final String BUNDLE_PATH_PARAM 
-                                            = "_BUNDLE_PATH_";                   // NOI18N
-    private static final String PROJECT_NAME_PARAM 
-                                            = "_PROJECT_NAME_";                  // NOI18N
-    // names of templates
-    public static final String BUNDLE_PROPERTIES 
-                                            = "Bundle.properties";               // NOI18N
-    public static final String LAYER_XML    = "layer.xml";             // NOI18N
-
-    private static final String SRC         = "src/";                            // NOI18N
-    private static final String BUNDLE_NAME = SRC + BUNDLE_PROPERTIES;           // NOI18N
-    private static final String LAYER_NAME  = SRC + LAYER_XML;                   // NOI18N
-    private static final String MANIFEST    = "manifest.mf";                     // NOI18N
-    private static final String LAYER       = "OpenIDE-Module-Layer: ";          // NOI18N
+    
+    private static final String TEMPLATE_PROJECT_NETBEANSORG 
+                                = "CustomComponentProject_netbeansorg.zip";     //NOI18N
+    private static final String TEMPLATE_PROJECT_STANDALONE 
+                                = "CustomComponentProject_standalone.zip";      //NOI18N
+    private static final String TEMPLATE_PROJECT_SUITECOMPONENT 
+                                = "CustomComponentProject_suitecomponent.zip";  //NOI18N
 
     private CustomComponentWizardIterator() {
     }
@@ -188,9 +159,11 @@ public class CustomComponentWizardIterator implements
                 .getProperty(PROJECT_DIR));
         dirF.mkdirs();
 
-        FileObject template = Templates.getTemplate(myWizard);
+        FileObject template = getProjectTemplate(myWizard);
         FileObject dir = FileUtil.toFileObject(dirF);
-        unZipFile(template.getInputStream(), dir , myWizard );
+        
+        ProjectTemplateZipHelper.
+                unZipFile(template.getInputStream(), dir , myWizard );
 
         
         // Always open top dir as a project:
@@ -209,13 +182,26 @@ public class CustomComponentWizardIterator implements
             ProjectChooser.setProjectsFolder(parent);
         }
         
+        ProjectManager.getDefault().clearNonProjectCache();
         Project createdProject = FileOwnerQuery.getOwner(dir);
+        assert createdProject != null : "crated project is null";
         // store ME Libraries
         JavaMELibsConfigurationHelper
                 .configureJavaMELibs(createdProject, myWizard);
         // store custom component descriptors
         configureComponents(createdProject, myWizard);
         return resultSet;
+    }
+    
+    private FileObject getProjectTemplate(WizardDescriptor wizard){
+        if (BaseHelper.isNetBeansOrg(wizard)){
+            return BaseHelper.getTemplate(TEMPLATE_PROJECT_NETBEANSORG);
+        } else if (BaseHelper.isSuiteComponent(wizard)){
+            return BaseHelper.getTemplate(TEMPLATE_PROJECT_SUITECOMPONENT);
+        } else if (BaseHelper.isStandalone(wizard)){
+            return BaseHelper.getTemplate(TEMPLATE_PROJECT_STANDALONE);
+        }
+        throw new IllegalArgumentException("unsupported wizard type");
     }
 
     public void initialize( WizardDescriptor wiz ) {
@@ -314,183 +300,6 @@ public class CustomComponentWizardIterator implements
             return Collections.EMPTY_SET;
     }
     
-    private static void unZipFile( InputStream source, FileObject projectRoot ,
-            WizardDescriptor wizard )
-            throws IOException
-    {
-        try {
-            ZipInputStream zipIS = new ZipInputStream(source);
-            ZipEntry entry;
-            while ((entry = zipIS.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    FileUtil.createFolder(projectRoot, entry.getName());
-                }
-                else {
-                    FileObject fo = null;
-                    if (PROJECT_XML.equals(entry.getName())) {
-                        // Special handling for setting name of Ant-based
-                        // projects; customize as needed:
-                        fo = FileUtil.createData(projectRoot, entry
-                                .getName());
-                        filterProjectXML(fo, zipIS, (String)wizard.getProperty( 
-                                CODE_BASE_NAME ));
-                    }
-                    else if ( MANIFEST.equals(entry.getName())){
-                        fo = FileUtil.createData(projectRoot, entry
-                                .getName());
-                        filterManifest( fo , zipIS, wizard );
-                    }
-                    else if ( LAYER_NAME.equals(entry.getName())){
-                        copyLayer( projectRoot , zipIS , wizard );
-                    }
-                    else if ( BUNDLE_NAME.equals(entry.getName()) ) {
-                        filterBundle( projectRoot , zipIS, wizard );
-                    }
-                    else if ( BUILD_XML.equals(entry.getName()) 
-                            || BUILD_IMPL_XML.equals(entry.getName())) 
-                    {
-                        fo = FileUtil.createData(projectRoot, entry
-                                .getName());
-                        filterBuild( fo , zipIS, (String)wizard.getProperty( 
-                                CODE_BASE_NAME ) );
-                    }
-                    else {
-                        fo = FileUtil.createData(projectRoot, entry
-                                .getName());
-                        BaseHelper.copyByteAfterByte(zipIS, fo);
-                    }
-                }
-            }
-        }
-        finally {
-            source.close();
-        }
-    }
-
-    private static void filterBuild( FileObject fo, ZipInputStream zipIS,
-            String codeBaseName ) throws IOException
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copy( zipIS , baos);
-        String content = baos.toString(UTF_8);
-        
-        content = content.replace( CODE_NAME_PARAM , codeBaseName );
-
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(content
-                .getBytes(UTF_8));
-        OutputStream out = fo.getOutputStream();
-        try {
-            FileUtil.copy(inputStream, out);
-        }
-        finally {
-            out.close();
-        }    
-    }
-
-    private static void filterBundle( FileObject projectRoot, ZipInputStream is,
-            WizardDescriptor wizardDescriptor ) throws IOException
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copy(is, baos);
-        String content = baos.toString(UTF_8);
-        
-        content = content.replace( PROJECT_NAME_PARAM , 
-                (String)wizardDescriptor.getProperty( DISPLAY_NAME ) );
-
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(content
-                .getBytes(UTF_8));
-        FileObject fileObject = FileUtil.createData(projectRoot, 
-                SRC + (String)wizardDescriptor.getProperty( BUNDLE_PATH) );
-        OutputStream out = fileObject.getOutputStream();
-        try {
-            FileUtil.copy(inputStream, out);
-        }
-        finally {
-            out.close();
-        }                
-    }
-
-    private static void copyLayer( FileObject projectRoot, ZipInputStream is,
-            WizardDescriptor wizard ) throws IOException
-    {
-        String layer = (String)wizard.getProperty( LAYER_PATH);
-        if ( layer == null || layer.length() ==0 ){
-            return;
-        }
-        FileObject fileObject = FileUtil.createData(projectRoot, SRC + layer );
-        BaseHelper.copyByteAfterByte(is, fileObject );
-    }
-
-    private static void filterManifest( FileObject fo, ZipInputStream is,
-            WizardDescriptor wizard ) throws IOException
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtil.copy(is, baos);
-        String content = baos.toString(UTF_8);
-        
-        content = content.replace( CODE_NAME_PARAM , (String)wizard.getProperty( 
-                CODE_BASE_NAME ));
-        content = content.replace( BUNDLE_PATH_PARAM, (String)wizard.getProperty( 
-                BUNDLE_PATH));
-        StringBuilder builder = new StringBuilder( content );
-        String layer = (String)wizard.getProperty( LAYER_PATH);
-        if ( layer != null){
-            builder.append( LAYER );
-            builder.append( layer );
-            builder.append( "\n" );
-        }
-
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(
-                builder.toString().getBytes(UTF_8));
-        OutputStream out = fo.getOutputStream();
-        try {
-            FileUtil.copy(inputStream, out);
-        }
-        finally {
-            out.close();
-        }        
-    }
-
-
-    private static void filterProjectXML( FileObject fo, ZipInputStream str,
-            String name ) throws IOException
-    {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileUtil.copy(str, baos);
-            Document doc = XMLUtil.parse(new InputSource(
-                    new ByteArrayInputStream(baos.toByteArray())), false,
-                    false, null, null);
-            NodeList nl = doc.getDocumentElement().getElementsByTagName(
-                    CODE_NAME_BASE);
-            if (nl != null) {
-                for (int i = 0; i < nl.getLength(); i++) {
-                    Element el = (Element) nl.item(i);
-                    if (el.getParentNode() != null
-                            && DATA.equals(el.getParentNode().getNodeName()))
-                    {
-                        NodeList nl2 = el.getChildNodes();
-                        if (nl2.getLength() > 0) {
-                            nl2.item(0).setNodeValue(name);
-                        }
-                        break;
-                    }
-                }
-            }
-            OutputStream out = fo.getOutputStream();
-            try {
-                XMLUtil.write(doc, out, UTF_8);
-            }
-            finally {
-                out.close();
-            }
-        }
-        catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            BaseHelper.copyByteAfterByte(str, fo);
-        }
-
-    }
     
     private int index;
     private WizardDescriptor.Panel[] panels;

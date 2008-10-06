@@ -77,6 +77,15 @@ public class KeymapModel {
             return al;
         }
         al.addAll(Lookup.getDefault().lookupAll(KeymapManager.class));
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Dumping registered KeymapManagers: ");
+            for(KeymapManager m : al) {
+                LOG.fine("    KeymapManager: " + s2s(m));
+            }
+            LOG.fine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        }
+
         return al;
     }
     
@@ -95,7 +104,7 @@ public class KeymapModel {
      */
     private Map<String,Set<ShortcutAction>> categoryToActions = 
             new HashMap<String,Set<ShortcutAction>>();
-    
+
     /**
      * Returns List (ShortcutAction) of all global and editor actions.
      */
@@ -109,6 +118,14 @@ public class KeymapModel {
                 }
             }
             categoryToActions.put(category, actions);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Category '" + category + "' actions (" + actions.size() + "), KeymapModel=" + this + ":"); //NOI18N
+                for(ShortcutAction sa : actions) {
+                    LOG.fine("    id='" + sa.getId() + "', did='" + sa.getDelegatingActionId() + ", " + s2s(sa)); //NOI18N
+                }
+                LOG.fine("---------------------------"); //NOI18N
+            }
         }
         return categoryToActions.get(category);
     }
@@ -118,6 +135,10 @@ public class KeymapModel {
      */
     public void refreshActions () {
         categoryToActions = new HashMap<String,Set<ShortcutAction>>();
+        sharedActions = new HashMap<ShortcutAction, CompoundAction>();
+        keyMaps = new HashMap<String, Map<ShortcutAction, Set<String>>>();
+        keyMapDefaults = new HashMap<String, Map<ShortcutAction, Set<String>>>();
+
         for (KeymapManager m : getKeymapManagerInstances()) {
             m.refreshActions();
         }
@@ -193,6 +214,7 @@ public class KeymapModel {
     public Map<ShortcutAction,Set<String>> getKeymap (String profile) {
         profile = displayNameToName(profile);
         if (!keyMaps.containsKey(profile)) {
+            ensureActionsLoaded();
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
             for (KeymapManager m : getKeymapManagerInstances()) {
@@ -216,6 +238,7 @@ public class KeymapModel {
     public Map<ShortcutAction, Set<String>> getKeymapDefaults(String profile) {
         profile = displayNameToName(profile);
         if (!keyMapDefaults.containsKey (profile)) {
+            ensureActionsLoaded();
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
             for (KeymapManager m : getKeymapManagerInstances()) {
@@ -263,7 +286,7 @@ public class KeymapModel {
         LOG.fine(name);
         for(Iterator i = items.iterator(); i.hasNext(); ) {
             Object item = i.next();
-            LOG.fine("  " + item);
+            LOG.fine("  " + item); //NOI18N
         }
     }
     
@@ -351,8 +374,18 @@ public class KeymapModel {
                 action = sharedActions.get(action);
             }
             res.put(action, shortcuts);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Action='" + action.getId() + "' (" + s2s(action) + ") shortcuts: " + shortcuts);
+            }
         }
         return res;
+    }
+
+    private void ensureActionsLoaded() {
+        for(String c : getActionCategories()) {
+            getActions(c);
+        }
     }
 
     private String displayNameToName(String keymapDisplayName) {
@@ -377,11 +410,44 @@ public class KeymapModel {
         return profilesMap;
     }
     
-    {
+    public KeymapModel() {
+//        System.out.println("\n\n\n~~~ Dumping all actions in all categories:");
+//        TreeSet<String> categories = new TreeSet<String>(getActionCategories());
+//        for(String category : categories) {
+//            System.out.println("Category='" + category + "'");
+//            TreeMap<String, ShortcutAction> actions = new TreeMap<String, ShortcutAction>();
+//            for(ShortcutAction sa : getActions(category)) {
+//                assert sa != null : "ShortcutAction must not be null";
+//                assert sa.getId() != null : "Action Id must not be null";
+//
+//                if (actions.containsKey(sa.getId())) {
+//                    System.out.println("! Duplicate action detected: '" + sa.getId()
+//                        + "', delegatingId='" + sa.getDelegatingActionId()
+//                        //+ "', displayName='" + sa.getDisplayName()
+//                        + "', " + s2s(sa));
+//                }
+//
+//                actions.put(sa.getId(), sa);
+//            }
+//
+//            for(String id : actions.keySet()) {
+//                ShortcutAction sa = actions.get(id);
+//                System.out.println("Id='" + sa.getId()
+//                    + "', delegatingId='" + sa.getDelegatingActionId()
+//                    //+ "', displayName='" + sa.getDisplayName()
+//                    + "', " + s2s(sa));
+//            }
+//        }
+//        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n\n");
+
         // HACK - loads all actions. othervise during second open of Options
         // Dialog (after cancel) map of sharedActions is not initialized.
         Iterator it = getActionCategories ().iterator ();
         while (it.hasNext ())
             getActions ((String) it.next ());
+    }
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 }

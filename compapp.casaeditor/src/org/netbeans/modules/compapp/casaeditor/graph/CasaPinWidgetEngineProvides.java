@@ -44,6 +44,7 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Image;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities.Directions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -52,9 +53,9 @@ import org.openide.util.Utilities;
  */
 public class CasaPinWidgetEngineProvides extends CasaPinWidgetEngine {
     
-    private static final Image IMAGE_ARROW_RIGHT_PROVIDES = Utilities.loadImage(
+    private static final Image IMAGE_ARROW_RIGHT_PROVIDES = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRight.png"); // NOI18N
-    private static final Image IMAGE_ARROW_RIGHT_PROVIDES_CLASSIC = Utilities.loadImage(
+    private static final Image IMAGE_ARROW_RIGHT_PROVIDES_CLASSIC = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/graph/resources/providesRightClassic.png"); // NOI18N
     
     /** Creates a new instance of CasaPinWidgetEngineProvides */

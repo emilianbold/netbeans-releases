@@ -118,7 +118,7 @@ public class FindJSPServletImplTest {
             expResult = "";
             result = instance.getServletResourcePath(moduleContextPath, jspResourcePath);
             fail("should have triggered an exception");            
-        } catch (StringIndexOutOfBoundsException sioobe) {
+        } catch (IllegalArgumentException iae) {
             
         }
         // TODO review the generated test code and remove the default call to fail.

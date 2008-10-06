@@ -48,6 +48,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -94,14 +95,16 @@ public class AddNewWSDLDocument extends PerformanceTestCase {
     @Override
     protected void shutdown() {
         super.shutdown();
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         new EventTool().waitNoEvent(1000);
     }
     
     public void prepare(){
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
-        
+
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("WSDL Document"); //NOI18N
         wizard.next();
@@ -126,6 +129,7 @@ public class AddNewWSDLDocument extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

@@ -47,7 +47,7 @@ import java.util.Collection;
  * Represent namespace declaration
  * @author Vladimir Kvashin
  */
-public interface CsmNamespaceDefinition extends CsmOffsetableDeclaration<CsmNamespaceDefinition> {
+public interface CsmNamespaceDefinition extends CsmOffsetableDeclaration<CsmNamespaceDefinition>, CsmScope {
 
     /** Gets elements declared within this namesapce declaration */
     Collection<CsmOffsetableDeclaration> getDeclarations();

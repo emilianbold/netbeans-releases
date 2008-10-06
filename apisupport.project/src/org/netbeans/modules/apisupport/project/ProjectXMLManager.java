@@ -59,6 +59,7 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -69,6 +70,7 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
+import org.openide.util.Mutex;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -457,7 +459,7 @@ public final class ProjectXMLManager {
      * supported - <code>UNIT</code> and <code>QA_FUNCTIONAL</code>. Test dependencies under 
      * test types are sorted by CNB.
      */
-    public void addTestDependency(String testType, TestModuleDependency newTestDep) throws IOException {
+    public void addTestDependency(final String testType, final TestModuleDependency newTestDep) throws IOException {
         final String UNIT = TestModuleDependency.UNIT;
         final String QA_FUNCTIONAL = TestModuleDependency.QA_FUNCTIONAL;
         assert (UNIT.equals(testType) || QA_FUNCTIONAL.equals(testType)) : "Current impl.supports only " + QA_FUNCTIONAL +
@@ -476,8 +478,8 @@ public final class ProjectXMLManager {
         if (!testDependenciesSet.add(newTestDep)) {
             return; //nothing new to add, dep is already there, finished
         }
-        Element confData = getConfData();
-        Document doc = confData.getOwnerDocument();
+        final Element confData = getConfData();
+        final Document doc = confData.getOwnerDocument();
         Element testModuleDependenciesEl = findTestDependenciesElement(confData);
         if (testModuleDependenciesEl == null) {      // test dependencies element does not exist, create it
             Element before = findPublicPackagesElement(confData);
@@ -503,30 +505,50 @@ public final class ProjectXMLManager {
                 testTypeEl = tt;
             }
         }
-        //? new or existing test type?
-        if (testTypeEl == null) {
-            //this test type, does not exist, create it, and add new test dependency
-            Element newTestTypeEl = createNewTestTypeElement(doc, testType);
-            testModuleDependenciesEl.appendChild(newTestTypeEl);
-            createTestModuleDependencyElement(newTestTypeEl, newTestDep);
-            project.putPrimaryConfigurationData(confData);
-            return;
-        } else {
-            //testtype exists, refresh it
-            Node beforeWhat = testTypeEl.getNextSibling();
-            testModuleDependenciesEl.removeChild(testTypeEl);
-            Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
-            if (beforeWhat == null) {
-                testModuleDependenciesEl.appendChild(refreshedTestTypeEl);
-            } else {
-                testModuleDependenciesEl.insertBefore(refreshedTestTypeEl, beforeWhat);
+
+        // #142594: silently switch to /3 schema
+        final Element ttEl = testTypeEl;
+        final Element tmdEl = testModuleDependenciesEl;
+        final Set<TestModuleDependency> tdSet = testDependenciesSet;
+
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+
+            public Void run() {
+                try {
+                    project.setRunInAtomicAction(true);
+                    AuxiliaryConfiguration auxConf = project.getHelper().createAuxiliaryConfiguration();
+                    auxConf.removeConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true);
+
+                    //? new or existing test type?
+                    if (ttEl == null) {
+                        //this test type, does not exist, create it, and add new test dependency
+                        Element newTestTypeEl = createNewTestTypeElement(doc, testType);
+                        tmdEl.appendChild(newTestTypeEl);
+                        createTestModuleDependencyElement(newTestTypeEl, newTestDep);
+                        project.putPrimaryConfigurationData(confData);
+                        return null;
+                    } else {
+                        //testtype exists, refresh it
+                        Node beforeWhat = ttEl.getNextSibling();
+                        tmdEl.removeChild(ttEl);
+                        Element refreshedTestTypeEl = createNewTestTypeElement(doc, testType);
+                        if (beforeWhat == null) {
+                            tmdEl.appendChild(refreshedTestTypeEl);
+                        } else {
+                            tmdEl.insertBefore(refreshedTestTypeEl, beforeWhat);
+                        }
+                        for (Iterator it = tdSet.iterator(); it.hasNext();) {
+                            TestModuleDependency tmd = (TestModuleDependency) it.next();
+                            createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
+                            project.putPrimaryConfigurationData(confData);
+                        }
+                    }
+                } finally {
+                    project.setRunInAtomicAction(false);
+                }
+                return null;
             }
-            for (Iterator it = testDependenciesSet.iterator(); it.hasNext();) {
-                TestModuleDependency tmd = (TestModuleDependency) it.next();
-                createTestModuleDependencyElement(refreshedTestTypeEl, tmd);
-                project.putPrimaryConfigurationData(confData);
-            }
-        }
+        });
     }
 
     private Element createNewTestTypeElement(Document doc, String testTypeName) {

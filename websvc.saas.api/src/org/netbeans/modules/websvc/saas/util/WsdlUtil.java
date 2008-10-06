@@ -41,6 +41,7 @@ package org.netbeans.modules.websvc.saas.util;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
@@ -55,8 +56,32 @@ import org.openide.util.Lookup;
  */
 public class WsdlUtil {
 
+    private static WsdlDataManager getWsdlDataManager(){
+        WsdlDataManager wsdlDataManager = null;
+        int precedence = 0;
+        boolean first = true;
+        Collection<? extends WsdlDataManager> mgrs = Lookup.getDefault().lookupAll(WsdlDataManager.class);
+        for(WsdlDataManager mgr : mgrs){
+            if(first){
+                first = false;
+                precedence = mgr.getPrecedence();
+                wsdlDataManager = mgr;
+                continue;
+            }
+            int newPrecedence = mgr.getPrecedence();
+            if(newPrecedence < precedence){
+                wsdlDataManager = mgr;
+                precedence = newPrecedence;
+            }
+        }
+        return wsdlDataManager;
+    }
+    public static boolean hasWsdlSupport() {
+        return getWsdlDataManager() != null;
+    }
+    
     public static WsdlData findWsdlData(String url, String serviceName) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
             return manager.findWsdlData(url, serviceName);
         }
@@ -64,7 +89,7 @@ public class WsdlUtil {
     }
     
     public static WsdlData addWsdlData(String url, String packageName) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
             return manager.addWsdlData(url, packageName);
         }
@@ -72,7 +97,7 @@ public class WsdlUtil {
     }
     
     public static WsdlData getWsdlData(String url, String serviceName, boolean synchronous) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
             return manager.getWsdlData(url, serviceName, synchronous);
         } 
@@ -80,21 +105,21 @@ public class WsdlUtil {
     }
     
     public static void removeWsdlData(WsdlData data) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
             manager.removeWsdlData(data.getOriginalWsdlUrl(), data.getName());
         }
     }    
 
-    public static void saveWsdlData(WsdlData data) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+    public static void removeWsdlData(String url) {
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
-            manager.save(data);
+            manager.removeWsdlData(url, null);
         }
     }
-
+  
     public static void refreshWsdlData(WsdlData data) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
+        WsdlDataManager manager = getWsdlDataManager();
         if (manager != null) {
             manager.refresh(data);
         }
@@ -129,6 +154,9 @@ public class WsdlUtil {
                 start = urlPath.lastIndexOf(System.getProperty("path.separator")); // NOI18N
                 start = (start < 0) ? urlPath.lastIndexOf("/") : start; // NOI18N
             } else {
+                if(urlPath.endsWith("/")){
+                    urlPath = urlPath.substring(0, urlPath.length() - 1);
+                }
                 start = urlPath.lastIndexOf("/");
             }
             start++;

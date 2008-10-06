@@ -64,7 +64,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -93,7 +94,7 @@ implements Executor {
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
-    private SingleThreadedStepWatch stepWatch;
+    //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
 
     
@@ -152,12 +153,13 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        synchronized (getDebuggerImpl ().LOCK) {
-            //S ystem.out.println("\nStepAction.doAction");
-            try {
+        //S ystem.out.println("\nStepAction.doAction");
+        try {
+            int suspendPolicy;
+            synchronized (getDebuggerImpl ().LOCK) {
                 // 1) init info about current state & remove old
                 //    requests in the current thread
-                int suspendPolicy = getDebuggerImpl().getSuspend();
+                suspendPolicy = getDebuggerImpl().getSuspend();
                 JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
                 synchronized (resumeThread) {
                     resumeThread.waitUntilMethodInvokeDone();
@@ -193,21 +195,22 @@ implements Executor {
                     resumeThread.disableMethodInvokeUntilResumed();
                 }
                 // 3) resume JVM
-                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-                    stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                    getDebuggerImpl().resumeCurrentThread();
-                    //resumeThread.resume();
-                } else {
-                    getDebuggerImpl ().resume ();
-                }
-            } catch (VMDisconnectedException e) {
-                ErrorManager.getDefault().notify(ErrorManager.USER,
-                    ErrorManager.getDefault().annotate(e,
-                        NbBundle.getMessage(StepActionProvider.class,
-                            "VMDisconnected")));
-            }   
-            //S ystem.out.println("/nStepAction.doAction end");
+                resumeThread.setInStep(true, stepRequest);
+            }
+            if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                getDebuggerImpl().resumeCurrentThread();
+                //resumeThread.resume();
+            } else {
+                getDebuggerImpl ().resume ();
+            }
+        } catch (VMDisconnectedException e) {
+            ErrorManager.getDefault().notify(ErrorManager.USER,
+                ErrorManager.getDefault().annotate(e,
+                    NbBundle.getMessage(StepActionProvider.class,
+                        "VMDisconnected")));
         }
+        //S ystem.out.println("/nStepAction.doAction end");
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) {
@@ -231,6 +234,14 @@ implements Executor {
         mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+        // TODO: mb.setSession(debugger);
+        try {
+            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+            setSessionMethod.setAccessible(true);
+            setSessionMethod.invoke(mb, debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     
@@ -254,10 +265,13 @@ implements Executor {
     public boolean exec (Event ev) {
         // TODO: fetch current engine from the Event
         // 1) init info about current state
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) ev.request();
+        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
+        st.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         LocatableEvent event = (LocatableEvent) ev;
         String className = event.location ().declaringType ().name ();
         ThreadReference tr = event.thread ();
@@ -296,7 +310,7 @@ implements Executor {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
+                logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
             }
             
             // Stop execution here?
@@ -322,7 +336,7 @@ implements Executor {
             if (smartSteppingStepOut) {
                 getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_OUT);
             } else {
-                getStepIntoActionProvider ().doAction(ActionsManager.ACTION_STEP_INTO);
+                getStepIntoActionProvider ().doAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO);
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
@@ -330,10 +344,13 @@ implements Executor {
     }
 
     public void removed(EventRequest eventRequest) {
-        if (stepWatch != null) {
+        StepRequest sr = (StepRequest) eventRequest;
+        JPDAThreadImpl st = (JPDAThreadImpl) getDebuggerImpl().getThread(sr.thread());
+        st.setInStep(false, null);
+        /*if (stepWatch != null) {
             stepWatch.done();
             stepWatch = null;
-        }
+        }*/
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -347,6 +364,10 @@ implements Executor {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
+        setLastOperation(tr, getDebuggerImpl(), returnValue);
+    }
+
+    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) {
         Location loc;
         try {
             loc = tr.frame(0).location();
@@ -356,9 +377,9 @@ implements Executor {
         }
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
-        SourcePath sourcePath = getDebuggerImpl().getEngineContext();
+        SourcePath sourcePath = debugger.getEngineContext();
         String url = sourcePath.getURL(loc, language);
-        ExpressionPool exprPool = getDebuggerImpl().getExpressionPool();
+        ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
         if (expr == null) {
             return ;
@@ -380,7 +401,7 @@ implements Executor {
             return ;
         }
         lastOperation.setReturnValue(returnValue);
-        JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
+        JPDAThreadImpl jtr = (JPDAThreadImpl) debugger.getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
     }

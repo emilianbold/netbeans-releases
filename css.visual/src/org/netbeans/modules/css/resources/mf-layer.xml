@@ -54,6 +54,7 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="Other">
                 <attr name="position" intvalue="1700"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.Bundle"/>
                 <file name="CssPreviewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-css-visual-ui-preview-CssPreviewAction.instance"/>
                     <attr name="position" intvalue="700"/>
@@ -76,9 +77,10 @@ made subject to such option by the copyright holder.
             <folder name="CssPreviewTCWsmode">
                 <file name="CssPreviewTC.wstcref" url="CssPreviewTCWstcref.xml"/>
             </folder>
-            <file name="StyleBuilderTCWsmode.wsmode" url="StyleBuilderTCWsmode.xml"/>
-            <folder name="StyleBuilderTCWsmode">
-                <file name="StyleBuilderTC.wstcref" url="StyleBuilderTCWstcref.xml"/>
+            <folder name="output">
+                <file name="StyleBuilderTC.wstcref" url="StyleBuilderTCWstcref.xml">
+                    <attr name="position" intvalue="2700"/>
+                </file>
             </folder>
         </folder>
         <folder name="Groups">

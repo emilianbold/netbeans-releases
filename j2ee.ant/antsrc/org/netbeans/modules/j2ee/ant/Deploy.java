@@ -48,7 +48,6 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
-import org.apache.tools.ant.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 
@@ -119,9 +118,18 @@ public class Deploy extends Task implements Deployment.Logger {
                         address = Integer.toString(sdi.getPort());
                     }
 
+                    getProject().setProperty("name", jmp.getDeploymentName());
                     getProject().setProperty("jpda.transport", transport);
                     getProject().setProperty("jpda.host", h);
                     getProject().setProperty("jpda.address", address);
+                }
+            } catch (Deployment.DeploymentException ex) {
+                if (null != ex.getCause()) {
+                    // send the message and the exception to the ant output
+                    throw new BuildException(ex.getMessage(),ex);
+                } else {
+                    // just send the message to the ant output
+                    throw new BuildException(ex.getMessage());
                 }
             } catch (Exception ex) {
                 throw new BuildException(ex);

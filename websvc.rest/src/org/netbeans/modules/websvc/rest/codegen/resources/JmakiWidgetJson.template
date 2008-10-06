@@ -54,8 +54,12 @@
                    '../rdj/Support.js',
                    '../rdj/TestResourcesTable.html',
                    '../TestResourcesTable.jsp',
-                   '../Readme.txt',
-                   '../rjs/TestStubs.html'
+                   '../Readme.html',
+                   '../rjs/TestStubs.html',
+                   '../rjs/Readme.html',
+                   '../rjs/RestProxyServlet.txt',
+                   '../rjs/css/images',
+                   '../rjs/css'
                ]
          }      
      }

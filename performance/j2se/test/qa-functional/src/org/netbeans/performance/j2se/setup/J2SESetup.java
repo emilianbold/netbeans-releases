@@ -82,9 +82,12 @@ public class J2SESetup extends JellyTestCase {
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }
+    
+    public void testAddAppServer() {
+        CommonUtilities.addApplicationServer();
+    }
 
-        public void testAddTomcatServer() {
-        
+   public void testAddTomcatServer() {
         CommonUtilities.addTomcatServer();
     }
 
@@ -96,6 +99,7 @@ public class J2SESetup extends JellyTestCase {
         CommonUtilities.waitProjectTasksFinished();
     }
 
+   
     public void testOpenDataProject() {
 
         String projectsDir = workdir + File.separator+"PerformanceTestData";
@@ -127,6 +131,9 @@ public class J2SESetup extends JellyTestCase {
         assertNotNull(prj);        
         CommonUtilities.waitProjectTasksFinished();
     }
+    
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }    
   
-   
 }

@@ -45,7 +45,10 @@ import com.sun.source.tree.ImportTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.Task;
@@ -55,6 +58,7 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -66,7 +70,8 @@ import org.openide.util.NbPreferences;
  */
 public class RemoveUnusedImportFix implements Fix  {
     
-    public static String IS_ENABLED_KEY = "Enabled";
+    public static final String IS_ENABLED_KEY = "Enabled";
+    private static final String SEVERITY_KEY = "Severity";
     private static Preferences preferences;
     
     public static RemoveUnusedImportFix create(FileObject file, TreePathHandle importToRemove) {
@@ -76,7 +81,7 @@ public class RemoveUnusedImportFix implements Fix  {
     public static RemoveUnusedImportFix create(FileObject file, List<TreePathHandle> importsToRemove) {
         return new RemoveUnusedImportFix(file, importsToRemove, "FIX_All_Remove_Unused_Import");
     }
-    
+
     private FileObject file;
     private List<TreePathHandle> importsToRemove;
     private String bundleKey;
@@ -137,5 +142,26 @@ public class RemoveUnusedImportFix implements Fix  {
     public static void setEnabled( boolean enabled ) {
         getPreferences().putBoolean(IS_ENABLED_KEY, enabled);
     }
-    
+
+    public static Severity getSeverity() {
+        int severity = getPreferences().getInt(SEVERITY_KEY, 1);
+        for (Entry<Severity, Integer> e : severity2index.entrySet()) {
+            if (e.getValue() == severity)
+                return e.getKey();
+        }
+        return Severity.VERIFIER;
+    }
+
+    public static void setSeverity(Severity severity) {
+        getPreferences().putInt(SEVERITY_KEY, severity2index.get(severity));
+    }
+
+    private static Map<Severity,Integer> severity2index;
+
+    static {
+        severity2index = new HashMap<Severity, Integer>();
+        severity2index.put( Severity.ERROR, 0  );
+        severity2index.put( Severity.VERIFIER, 1  );
+        severity2index.put( Severity.HINT, 2  );        
+    }
 }

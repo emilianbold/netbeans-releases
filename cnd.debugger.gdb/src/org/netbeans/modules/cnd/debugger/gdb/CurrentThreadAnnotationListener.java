@@ -140,7 +140,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // this set is used to avoid duplicated annotations (of the same line)
     private final Set<String> annotatedAddresses = new HashSet<String>();
     
-    private RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher"); // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Debugger Thread Annotation Refresher"); // NOI18N
 
     // currently waiting / running refresh task
     // there is at most one

@@ -28,12 +28,13 @@
                   <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="modifiedFiles" pref="315" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="modifiedFiles" alignment="1" pref="315" max="32767" attributes="0"/>
                   <Component id="extensionsHint" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="createdFiles" alignment="0" pref="315" max="32767" attributes="0"/>
-                  <Component id="tfMimeType" alignment="0" pref="315" max="32767" attributes="1"/>
                   <Component id="tfExtensions" alignment="0" pref="315" max="32767" attributes="1"/>
+                  <Component id="tfMimeType" alignment="1" pref="315" max="32767" attributes="1"/>
+                  <Component id="mimeTypeHint" alignment="0" pref="315" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -48,6 +49,8 @@
                   <Component id="tfMimeType" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="mimeTypeHint" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lExtensions" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="tfExtensions" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -57,11 +60,11 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="createdFiles" alignment="3" max="32767" attributes="0"/>
+                  <Component id="createdFiles" alignment="3" pref="80" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="modifiedFiles" alignment="3" pref="109" max="32767" attributes="0"/>
+                  <Component id="modifiedFiles" alignment="3" pref="99" max="32767" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -164,6 +167,13 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/glf/Bundle.properties" key="GLFTemplateVisualPanel2.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="mimeTypeHint">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/apisupport/project/ui/wizard/glf/Bundle.properties" key="LBL_mimeTypeHint" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

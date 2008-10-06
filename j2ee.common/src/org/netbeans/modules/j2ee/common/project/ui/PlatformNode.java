@@ -68,6 +68,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -178,7 +179,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         return new PlatformNode (pp, cs);
     }
 
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
         private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
@@ -190,22 +191,21 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }
 
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptySet());
         }
 
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup sg) {
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null,null,null,null,null,null)};
         }
 
-        private List getKeys () {            
+        private List<SourceGroup> getKeys () {            
             JavaPlatform platform = ((PlatformNode)this.getNode()).pp.getPlatform();
             if (platform == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.<SourceGroup>emptyList();
             }
             //Todo: Should listen on returned classpath, but now the bootstrap libraries are read only
             FileObject[] roots = platform.getBootstrapLibraries().getRoots();
-            List result = new ArrayList (roots.length);
+            List<SourceGroup> result = new ArrayList<SourceGroup>(roots.length);
             for (int i = 0; i < roots.length; i++) {
                 try {
                     FileObject file;
@@ -213,7 +213,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                     Icon openedIcon;
                     if ("jar".equals(roots[i].getURL().getProtocol())) { //NOI18N
                         file = FileUtil.getArchiveFile (roots[i]);
-                        icon = openedIcon = new ImageIcon (Utilities.loadImage(ARCHIVE_ICON));
+                        icon = openedIcon = new ImageIcon (ImageUtilities.loadImage(ARCHIVE_ICON));
                     }
                     else {
                         file = roots[i];
@@ -318,13 +318,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         
         private static URL[]  getJavadocRoots (JavaPlatform platform) {
-            Set result = new HashSet ();
-            List/*<ClassPath.Entry>*/ l = platform.getBootstrapLibraries().entries();            
-            for (Iterator it = l.iterator(); it.hasNext();) {
-                ClassPath.Entry e = (ClassPath.Entry) it.next ();                
+            Set<URL> result = new HashSet<URL>();
+            List<ClassPath.Entry> l = platform.getBootstrapLibraries().entries();            
+            for (ClassPath.Entry e : l) {
                 result.addAll(Arrays.asList(JavadocForBinaryQuery.findJavadoc (e.getURL()).getRoots()));
             }
-            return (URL[]) result.toArray (new URL[result.size()]);
+            return result.toArray (new URL[result.size()]);
         }
         
         

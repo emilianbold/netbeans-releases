@@ -54,6 +54,7 @@ import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.Language;
 
 /**
  * CC indentation services are located here.
@@ -69,6 +70,24 @@ public class CCFormatter extends ExtFormatter {
     @Override
     protected boolean acceptSyntax(Syntax syntax) {
         return (syntax instanceof CCSyntax);
+    }
+
+    @Override
+    public boolean expandTabs() {
+        if (CKit.class.equals(getKitClass())){
+            return CodeStyle.getDefault(Language.C).expandTabToSpaces();
+        } else {
+            return CodeStyle.getDefault(Language.CPP).expandTabToSpaces();
+        }
+    }
+
+    @Override
+    public int getTabSize() {
+        if (CKit.class.equals(getKitClass())){
+            return CodeStyle.getDefault(Language.C).getTabSize();
+        } else {
+            return CodeStyle.getDefault(Language.CPP).getTabSize();
+        }
     }
 
     @Override
@@ -121,7 +140,7 @@ public class CCFormatter extends ExtFormatter {
             typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
-                if (checkCase(doc, fnw, typedText+"\n") || 
+                if (checkCase(doc, fnw, typedText+"\n") || // NOI18N
                     dotPos == doc.getLength() && checkCase(doc, fnw, typedText)) { // NOI18N
                     ret = new int[]{fnw, fnw + 1};
                 }

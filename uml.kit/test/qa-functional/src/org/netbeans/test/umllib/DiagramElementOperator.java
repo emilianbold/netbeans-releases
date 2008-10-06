@@ -85,7 +85,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+//import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.test.umllib.actions.Actionable;
 import org.netbeans.test.umllib.actions.ActionablePoint;

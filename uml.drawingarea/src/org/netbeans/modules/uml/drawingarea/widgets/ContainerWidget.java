@@ -43,19 +43,21 @@ package org.netbeans.modules.uml.drawingarea.widgets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
@@ -68,14 +70,17 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WidgetAcceptAction;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.MoveWidgetTransferable;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget.UMLWidgetIDString;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -87,6 +92,7 @@ public class ContainerWidget extends Widget
     public final static String CHILDREN_CHANGED = "children-changed";
     private ArrayList < PropertyChangeListener > listeners 
             = new ArrayList < PropertyChangeListener >();
+    private ArrayList <IPresentationElement> droppedNodes = null;
     
     public ContainerWidget(Scene scene)
     {
@@ -96,8 +102,19 @@ public class ContainerWidget extends Widget
         setLayout(LayoutFactory.createAbsoluteLayout());
         
         initActions();
+        //all should be as for scene initially
+        if(scene instanceof DesignerScene)
+        {
+            DesignerScene sc=(DesignerScene) scene;
+            // Inherit the foreground and background properties from the parent
+            // node.
+            setForeground(null);
+            setBackground(null);
+            setFont(sc.getMainLayer().getFont());
+            //need to add font/colors listener to scene to get updates, but currently inheritance from scene
+        }
     }
-    
+
     public INamespace getContainerNamespace()
     {
         INamespace retVal=null;
@@ -169,7 +186,8 @@ public class ContainerWidget extends Widget
 
     protected void initActions()
     {
-        ContainerAcceptProvider provider = new ContainerAcceptProvider();
+        //ContainerAcceptProvider provider = new ContainerAcceptProvider();
+        ContainerAcceptProvider provider = new ContainerAcceptProvider(this);
         WidgetAction acceptAction = ActionFactory.createAcceptAction(provider);
         
         createActions(DesignerTools.SELECT).addAction(acceptAction);
@@ -196,10 +214,8 @@ public class ContainerWidget extends Widget
         return true;
     }
 
-    private boolean addChildLifeline(ICombinedFragment namespace, Object nodeData, Widget node)
+    private boolean addChildToCombinedFragment(ICombinedFragment namespace, Object nodeData, Widget node)
     {
-        if(((IPresentationElement)nodeData).getFirstSubject() instanceof ILifeline)
-        {
             Widget parent = node.getParentWidget();
             Point sceneLocation = node.getPreferredLocation();
             if(parent != null)
@@ -211,15 +227,13 @@ public class ContainerWidget extends Widget
             addChild(node);
             node.setPreferredLocation(convertSceneToLocal(sceneLocation));
 
+        if(((IPresentationElement)nodeData).getFirstSubject() instanceof ILifeline)
+        {
             ILifeline element = (ILifeline) ((IPresentationElement)nodeData).getFirstSubject();
             if(namespace!=null)namespace.addCoveredLifeline(element);//combined fragment isn't a namespace but support graphical containment
             //TBD is it necessary to add element to an interaction?
-            return true;
         }
-        else
-        {
-            return false;
-        }
+        return true;
     }
     
     
@@ -277,7 +291,7 @@ public class ContainerWidget extends Widget
                         }
                         else if(contElement instanceof ICombinedFragment) {
                             //combined fragment can contain lifelines for example (cover) and is not a namespace
-                            changed =addChildLifeline((ICombinedFragment) contElement,nodeData, node);
+                            changed =addChildToCombinedFragment((ICombinedFragment) contElement,nodeData, node);
                         }
                     }
                 }
@@ -392,6 +406,9 @@ public class ContainerWidget extends Widget
      */
     protected boolean isFullyContained(Widget widget)
     {
+        // Calling getPreferredBounds forces the bounds to be calculated if it
+        // has not already been calculated.  For example when the Widget was 
+        // just created and therefore has not had a chance to be displayed.
         Rectangle area = widget.getClientArea();
         
         boolean retVal = false;
@@ -400,17 +417,42 @@ public class ContainerWidget extends Widget
             Rectangle sceneArea = widget.convertLocalToScene(area);
 
             Rectangle localArea = convertSceneToLocal(sceneArea);
-            retVal = getClientArea().contains(localArea);
+            Rectangle myArea = getClientArea();
+            retVal = myArea.contains(localArea);
         }
         
         return retVal;
     }
     
+
+    public ArrayList<IPresentationElement> getDroppedNodes()
+    {
+        if (droppedNodes == null)
+        {
+            droppedNodes = new ArrayList<IPresentationElement>();
+        }
+        return droppedNodes;
+    }
+
+    public void setDroppedNodes(ArrayList<IPresentationElement> droppedNodes)
+    {
+        this.droppedNodes = droppedNodes;
+    }
+    
+    
     public class ContainerAcceptProvider extends SceneAcceptProvider
     {
+        private Widget containerWidget = null;
+        
         public ContainerAcceptProvider()
         {
             super(null);
+        }
+        
+        public ContainerAcceptProvider(ContainerWidget containerW)
+        {
+            this();
+            containerWidget = containerW;
         }
         
         @Override
@@ -418,6 +460,42 @@ public class ContainerWidget extends Widget
         {
             return allowed(elements);
         }
+
+        @Override
+        public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
+        {
+            ConnectorState retVal = super.isAcceptable(widget, point, transferable);
+            
+            if(isWidgetMove(transferable) == true)
+            {
+                try
+                {
+                    MoveWidgetTransferable data = (MoveWidgetTransferable) transferable.getTransferData(MoveWidgetTransferable.FLAVOR);
+                    Widget[] target = new Widget[]{data.getWidget()};
+                    for (Widget curWidget : target)
+                    {
+                        if (isFullyContained(curWidget) == false)
+                        {
+                            retVal = ConnectorState.REJECT;
+                            break;
+                        }
+                    }
+                }
+                catch (UnsupportedFlavorException ex)
+                {
+                    // Since we first test if the datafalvor is supported, 
+                    // it is an error if we get this exception.
+                    Exceptions.printStackTrace(ex);
+                }
+                catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            return retVal;
+        }
+        
         
         @Override
         public void accept(Widget widget, Point point, Transferable transferable)
@@ -552,6 +630,12 @@ public class ContainerWidget extends Widget
             }
             revalidate();
             scene.validate();
+           
+            // after accept the dropped nodes, clear the list
+           if (getContainerWidget() != null)
+           {
+               ((ContainerWidget)getContainerWidget()).setDroppedNodes(null);
+           }
         }
         
         @Override
@@ -564,5 +648,122 @@ public class ContainerWidget extends Widget
         {
             return transferable.isDataFlavorSupported(MoveWidgetTransferable.FLAVOR);
         }
+
+        public Widget getContainerWidget()
+        {
+            return containerWidget;
+        }
+
+        public void setContainerWidget(Widget containerWidget)
+        {
+            this.containerWidget = containerWidget;
+        }
+        
+    }
+    
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof ContainerWidget;
+        assert target.getScene() instanceof DesignerScene;
+
+        DesignerScene targetScene = (DesignerScene) target.getScene();
+        DesignerScene sourceScene = (DesignerScene) getScene();
+
+        target.setFont(getFont());
+        target.setForeground(getForeground());
+        target.setBackground(getBackground());
+        
+        // some nodes may have logic to populate contained elements during initialization,
+        // clear the container and only create the ones exist in original container
+        List<Widget> children = new ArrayList<Widget> (target.getChildren());
+        for (Widget c: children)
+        {
+            Object o = targetScene.findObject(c);
+            if (o instanceof IPresentationElement)
+                targetScene.removeNodeWithEdges((IPresentationElement)o);
+        }
+
+        // 1. clone contained inner nodes
+        List<Widget> list = new ArrayList<Widget> (getChildren());
+        for (Widget child : list)
+        {
+            if (!(child instanceof UMLNodeWidget))
+            {
+                continue;
+            }
+            IPresentationElement presentation = Util.createNodePresentationElement();
+            presentation.addSubject(((UMLNodeWidget) child).getObject().getFirstSubject());
+            Widget copy = targetScene.getEngine().addWidget(presentation, child.getPreferredLocation());
+            ((UMLNodeWidget) child).duplicate(setBounds, copy);
+            copy.setPreferredLocation(child.getPreferredLocation());
+
+            copy.removeFromParent();
+            target.addChild(copy);
+        }
+        targetScene.validate();
+
+        // 2. clone connections among contained inner nodes
+
+        for (ConnectionWidget cw : Util.getAllContainedEdges(this))
+        {
+            if (cw instanceof UMLEdgeWidget)
+            {
+                UMLEdgeWidget originalCW = (UMLEdgeWidget) cw;
+                IPresentationElement sourcePE = sourceScene.getEdgeSource(originalCW.getObject());
+                IPresentationElement targetPE = sourceScene.getEdgeTarget(originalCW.getObject());
+
+                IPresentationElement newSourcePE = null;
+                IPresentationElement newTargetPE = null;
+
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(sourcePE.getFirstSubject().getXMIID()))
+                    {
+                        newSourcePE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+                for (Object obj : Util.getAllNodeChildren(target))
+                {
+                    if (((IPresentationElement) obj).getFirstSubject().getXMIID().equals(targetPE.getFirstSubject().getXMIID()))
+                    {
+                        newTargetPE = (IPresentationElement) obj;
+                        break;
+                    }
+                }
+
+                IPresentationElement clonedEdgePE = Util.createNodePresentationElement();
+                // Workaround for nested link. Unlike other relationships, it does not
+                // have its own designated IElement, the IPresentationElement.getFirstSubject
+                // returns an element at one end. Use this mechanism (multiple subjects) for 
+                // DefaultDiagramEngine.createConnectionWidget() to identify the connector type
+                if (((UMLEdgeWidget) cw).getWidgetID().
+                        equals(UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString()))
+                {
+                    clonedEdgePE.addSubject(sourcePE.getFirstSubject());
+                    clonedEdgePE.addSubject(targetPE.getFirstSubject());
+                } else
+                {
+                    clonedEdgePE.addSubject(originalCW.getObject().getFirstSubject());
+                }
+
+                Widget clonedEdge = targetScene.addEdge(clonedEdgePE);
+
+                targetScene.setEdgeSource(clonedEdgePE, newSourcePE);
+                targetScene.setEdgeTarget(clonedEdgePE, newTargetPE);
+                Lookup lookup = clonedEdge.getLookup();
+                if (lookup != null)
+                {
+                    LabelManager manager = lookup.lookup(LabelManager.class);
+                    if (manager != null)
+                    {
+                        manager.createInitialLabels();
+                    }
+                }
+                ((UMLEdgeWidget) originalCW).duplicate(clonedEdge);
+            }
+        }   
+        targetScene.validate();
     }
 }

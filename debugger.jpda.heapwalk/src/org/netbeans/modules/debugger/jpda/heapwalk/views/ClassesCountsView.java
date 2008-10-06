@@ -64,6 +64,7 @@ import org.netbeans.modules.debugger.jpda.heapwalk.HeapImpl;
 import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -93,7 +94,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
      * Creates a new instance of ClassesCountsView
      */
     public ClassesCountsView () {
-        setIcon (Utilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
+        setIcon (ImageUtilities.loadImage ("org/netbeans/modules/debugger/resources/classesView/Classes.png")); // NOI18N
         setLayout (new BorderLayout ());
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
@@ -144,10 +145,15 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     
     private synchronized void tearDown() {
         if (content != null) {
-            remove(content);
+            final JPanel tempContent = content;
             content = null;
             hfw = null;
             clc = null;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    remove(tempContent);
+                }
+            });
         }
     }
     
@@ -166,27 +172,23 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             final JPDADebugger fDebugger = debugger;
             Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    final HeapFragmentWalker hfw;
-                    synchronized (this) {
-                        Heap heap = new HeapImpl(fDebugger);
-                        hfw = new DebuggerHeapFragmentWalker(heap);
-                    }
+                    Heap heap = new HeapImpl(fDebugger);
+                    final HeapFragmentWalker hfw = new DebuggerHeapFragmentWalker(heap);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             ClassesController cc;
-                            synchronized (this) {
+                            synchronized (ClassesCountsView.this) {
                                 ClassesCountsView.this.hfw = hfw;
                                 cc = hfw.getClassesController();
                                 content = cc.getPanel();
                                 clc = cc.getClassesListController();
+                                java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
+                                header.setVisible(false);
+                                cc.getClassesListController().setColumnVisibility(3, false);
+                                add(content, "Center");
                             }
-                            java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
-                            header.setVisible(false);
-                            cc.getClassesListController().setColumnVisibility(3, false);
-                            add(content, "Center");
                             repaint();
                             revalidate();
-                            //System.err.println("  Added content "+content);
                         }
                     });
                 }

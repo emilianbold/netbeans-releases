@@ -6,87 +6,86 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Debugging Threads in the IDE</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>Debugging Threads in the IDE</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>All the threads created in the current session are displayed in the Threads window.
-  You can open the Threads window by choosing Window  &gt; Debugging &gt; Threads (Alt-Shift-7).</p>
+<p>All the threads created in the current session are displayed in the Debugging window.
+  You can open the Debugging window by choosing Window  &gt; Debugging &gt; Debugging (Alt-Shift-9).</p>
   
 <h3>Changing the Current Thread</h3>
 <p> Only one thread is the current thread at any given time. By default, the
-	current thread is the thread within the current session from which the debugger
-	gained control. When you switch between threads to debug, the Call Stack and
-	Local Variables windows are automatically updated to reflect the data applicable
-	to that thread. </p>
+	current thread is the thread within the current session from which the debugger gained control. 
+        When you switch between threads to debug, the Local Variables window is
+        automatically updated to reflect the data applicable to that thread. </p>
         
 <p><b>To change the current thread:</b></p>
 <ul>
-  <li>Double-click any thread in the Threads window to make it the current thread. </li>
+  <li>Double-click any thread in the Debugging window to make it the current thread. </li>
 </ul>
 
 <h3>Suspending and Resuming Threads</h3>
-<p> You can suspend execution of a thread if you think it is causing problems
-  and then later resume the thread once the problem is solved. </p>
-<p>In the Threads window, the icon to the left of the thread name indicates whether the thread
+<p>You can suspend execution of a thread if you think it is causing problems
+  and then later resume the thread once the problem is solved.
+The Debugging window enables you to easily see the threads in the debugging session and 
+identify the running and suspended threads.
+The icon to the left of the thread name indicates whether the thread
 is suspended or waiting to be resumed.</p>
-<table border="1" cellpadding="5" cellspacing="0">
-	<tr align="left" valign="top">
-		<th scope="col">Icon</th>
-		<th scope="col">Description</th>
-	</tr>
-        <tr valign="top">
-		<td><img src="images/CurrentThread.gif" alt="Current thread"></td>
-		<td>Indicates the current thread</td>
-	</tr>
-        <tr valign="top">
-		<td><img src="images/RunningThread.gif" alt="Running thread"></td>
-		<td>Indicates a thread that is running and is not current</td>
-	</tr>
-        <tr valign="top">
-		<td><img src="images/SuspendedThread.gif" alt="Suspended thread"></td>
-		<td>Indicates a thread that is suspended and is not current</td>
-	</tr>
-        </table>
-        <p>You can display the Suspend property as a boolean flag (True or False) 
-        in the Threads window by clicking the columns button 
-        (<img src="images/ChangeColumn.gif" alt="Change Column">) and select the Suspend checkbox. </p>
-<ul class="note">
-  <li>  The state of the Thread is independent of whether the thread is suspended
-  	or waiting to be resumed. A thread's state may be Running while the Suspend
-  	property is True. </li>
+<p>You can suspend, interrupt and resume application threads by right-clicking a thread
+in the Debugging window and choosing an action from the popup menu.
+Alternatively, you can click the  Resume (<img src="images/resume_button_16.png">&nbsp;) and Suspend 
+(<img src="images/suspend_button_16.png">&nbsp;) buttons in the right side of the Debugging window. 
+ You can hide the Suspend and Resume buttons by clicking the 
+ Show suspend/resume table button (<img src="images/show_suspend_table_option_16.png" alt="Show suspend/resume table">&nbsp;)
+ in the Debugging window toolbar.
+</p>
+    <ul class="note">
+        <li>You can also resume and suspend threads in the Threads window.</li>
   </ul>
-<p><b>To suspend or resume a thread:</b></p>
-<ul>
-  <li>Right-click the thread in the Threads window and choose the Resume or Suspend command. </li>
-</ul>
+
+<h3>Editor window icons</h3>
+<p>A thread icon in the left margin of the source editor indicates that there is a suspended thread at that line.
+    The following table describes the icons representing the thread states that 
+    appear in the source editor during a debugging session.</p>
+    <table border="1" cellpadding="5" cellspacing="0">
+            <tr align="left" valign="top">
+                    <th scope="col">Icons</th>
+                    <th scope="col">Description</th>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/other_threads_suspended.png" alt="Running thread"></td>
+                    <td>Other suspended threads</td>
+            </tr>
+            <tr>
+                    <td align="center"><img src="images/other_threads_breakpoint.png" alt="Thread suspended by breakpoint"></td>
+                    <td>Other threads suspended by hitting a breakpoint</td>
+            </tr>
+        </table>
+        
+        
+        <p><b>To switch a suspended thread to the current thread:</b></p>
+        <ul>
+          <li>In the source editor, right-click the suspended thread icon and choose Set Current Thread To &gt; <i>new_current_thread</i>.</li>
+        </ul>
 
 <h3>Multi-threaded Applications</h3>
-<p>When debugging a multi-threaded application, a step in a particular thread may be interrupted by
+    <p>When debugging a multi-threaded application, a step in a particular thread may be interrupted by
     a breakpoint encountered in some other thread.
-This behavior is desirable in some cases but not in others.</p>
-
-<p>Let us suppose you are stepping through a thread (<i>thread 1</i>), 
-and one of the steps is interrupted by a breakpoint encountered in another thread (<i>thread 2</i>).
-When this happens, the program counter is set to the breakpoint in <i>thread 2</i>.</p>
-
-<p>You can continue stepping through your program in the following ways:</p>
-
-<ul>
-    <li>Continue stepping through your program from the breakpoint in <i>thread 2</i>.</li>
-    <li>Step through the program from the previous step (in <i>thread 1</i>) and ignore the breakpoint in <i>thread 2</i>.    
-    <p>To continue with the step in <i>thread 1</i>, do one of the following in the Threads window: </p>
-    <ul>
-        <li><b>Click Ignore Breakpoint.</b> Clicking this will cause the 
-        debugger to ignore the specified breakpoint encountered in <i>thread 2</i> and you can continue to step
-        through the program following <i>thread 1</i>.</li>
-        <li><b>Click Ignore All Such Breakpoints.</b>
-        Clicking this will cause the debugger to ignore all breakpoints that would interrupt a step in progress.
-        If clicked, the IDE ignores such breakpoints until the end of the debugging session.</li>
-    </ul></li>
-</ul>
+    When this occurs the IDE gives you the option to switch threads.
+    The IDE does not automatically switch the context to the new thread.</p>
+    
+    <p>When a breakpoint in another thread is hit you are notified by a panel that appears in the Debugging window.
+    The current thread remains the current thread until you explicitly switch it or the thread stops.
+    At any time you can click the arrow in the panel in the Debugging window and choose 
+    a thread to switch to that thread.
+    This enables you to continue debugging the current thread and when it is convenient you can switch to the thread that hit
+    a breakpoint.</p>
+    <ul class="note">
+        <li>You can use the Current Thread Chooser (Ctrl-8) to select the thread you want to be the current thread.</li>
+    </ul>
 
 
 <h3>Viewing Source Code for a Thread</h3>
@@ -101,6 +100,7 @@ think it is causing problems and want to examine it further.</p>
 </ul>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="debug_debuggingwindow.html">Using the Debugging Window</a></dd>
     <dd><a href="debug_new_watch.html">Creating a Watch</a></dd>
     <dd><a href="debug_callstack.html">Using the Call Stack</a></dd>
     <dd><a href="debug_step.html">Stepping Through Your Program</a></dd>

@@ -42,6 +42,7 @@ package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -68,33 +69,37 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
 
     private TristateCheckBox check;
     private JLabel label;
-            
+
     private static final JList LIST_FOR_COLORS = new JList();
-    
+
     public CheckRenderer() {
-        
+
         setLayout(new BorderLayout() );
         setOpaque(true);
-        
+
         this.check = new TristateCheckBox();
         this.label = new JLabel();
-        
+
         add(check, BorderLayout.WEST );
         add(label, BorderLayout.CENTER );
-        
+
         check.setOpaque(false);
         label.setOpaque(false);
     }
-        
+
     /** The component returned by HtmlRenderer.Renderer.getTreeCellRendererComponent() */
-    
-    
+
+
     public Component getTreeCellRendererComponent(JTree tree, Object value,
     boolean isSelected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setOpaque(true);
+
         Node n = Visualizer.findNode(value);
         ElementNode.Description description = n.getLookup().lookup(ElementNode.Description.class);
-        
+
         if ( description != null ) {
             check.setVisible( description.isSelectable() || description.hasSelectableSubs() );
             if( description.isSelectable() ) {
@@ -103,25 +108,28 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
                 check.setState( getCheckState( description.getSubs() ));
             }
         }
-            
+
         if ( isSelected ) {
             label.setForeground(LIST_FOR_COLORS.getSelectionForeground());
-            setOpaque(true);
-            setBackground(LIST_FOR_COLORS.getSelectionBackground());
+            panel.setOpaque(true);
+            panel.setBackground(LIST_FOR_COLORS.getSelectionBackground());
         }
         else {
             label.setForeground(tree.getForeground());
-            setOpaque(false);
+            panel.setOpaque(false);
             //setBackground(tree.getBackground());
         }
-        
+
         label.setText( n.getHtmlDisplayName() );
         label.setIcon( new ImageIcon( n.getIcon(BeanInfo.ICON_COLOR_16x16) ) ); // XXX Ask description directly
-        
-        return this;
-        
+
+        panel.add(check, BorderLayout.WEST );
+        panel.add(label, BorderLayout.CENTER );
+
+        panel.setPreferredSize(new Dimension(label.getPreferredSize().width + check.getPreferredSize().width, panel.getPreferredSize().height));
+        return panel;
     }
-    
+
     private State getCheckState( List<ElementNode.Description> children ) {
         if( null == children )
             return State.OTHER;
@@ -138,27 +146,28 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
         return selCounter > 0 ? State.SELECTED : State.NOT_SELECTED;
     }
-    
+
     public Rectangle getCheckBounds() {
         return (Rectangle)check.getBounds().clone();
     }
-        
+
     private enum State {
         SELECTED, NOT_SELECTED, OTHER;
     };
-    
+
     private static class TristateCheckBox extends JCheckBox {
-        
+
         private final TristateDecorator model;
-        
+
         public TristateCheckBox() {
             super(null, null);
             model = new TristateDecorator(getModel());
             setModel(model);
             setState(State.OTHER);
         }
-        
+
         /** No one may add mouse listeners, not even Swing! */
+        @Override
         public void addMouseListener(MouseListener l) { }
         /**
          * Set the new state to either SELECTED, NOT_SELECTED or
@@ -168,6 +177,7 @@ class CheckRenderer extends JPanel implements TreeCellRenderer {
         /** Return the current state, which is determined by the
          * selection status of the model. */
         public State getState() { return model.getState(); }
+        @Override
         public void setSelected(boolean b) {
             if (b) {
                 setState(State.SELECTED);

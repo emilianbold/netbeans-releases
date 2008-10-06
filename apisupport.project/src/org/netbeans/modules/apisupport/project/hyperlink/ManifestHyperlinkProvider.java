@@ -129,6 +129,8 @@ public class ManifestHyperlinkProvider implements HyperlinkProviderExt {
         }
         Sources srcs = prj.getLookup().lookup(Sources.class);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (grps.length == 0)   // #143157: there needn't to be source group (yet)
+            return null;
         ClassPath cp = ClassPath.getClassPath(grps[0].getRootFolder(), ClassPath.SOURCE);
         path = path.trim();
         return cp.findResource(path);

@@ -17,6 +17,8 @@ cd  $NB_ALL
 #
 ###################################################################
 
+mkdir -p nbbuild/netbeans
+
 #Build source packages
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
 ERROR_CODE=$?
@@ -39,11 +41,11 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dcluster.config=stableuc -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then
-    echo "ERROR: $ERROR_CODE - Can't build stableuc module config"
+    echo "ERROR: $ERROR_CODE - Can't build IDE"
     exit $ERROR_CODE;
 fi
 
@@ -54,18 +56,13 @@ TESTS_STARTED=`date`
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=$JDK_HOME
 # standard NetBeans unit and UI validation tests
-for i in 1 2 3; do
-    ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER commit-validation
-    ERROR_CODE=$?
-    if [ $ERROR_CODE = 0 ]; then
-        break;
-    fi
-done
-
+ant -v -f nbbuild/build.xml -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER commit-validation
+ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Commit validation failed"
     TEST_CODE=1;
 fi
+
 # Init application server for tests
 #sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
@@ -175,6 +172,23 @@ if [ $TEST_CODE = 1 ]; then
     exit 1;
 fi
 
+#Build UML modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.uml -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build UML modules"
+    exit $ERROR_CODE;
+fi
+
+#Build the NB stableuc modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build stableuc modules"
+    exit $ERROR_CODE;
+fi
 
 #Build JNLP
 ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp

@@ -190,7 +190,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     public boolean pushExpanding(Token token) {
         assert (token != null);
         if (!isExpanding(token)) {
-            expandingMacros.push(APTUtils.getTokenTextKey(token));
+            expandingMacros.push(token.getText());
             return true;
         }
         return false;
@@ -208,7 +208,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     
     public boolean isExpanding(Token token) {
         try {
-            return expandingMacros.contains(APTUtils.getTokenTextKey(token));
+            return expandingMacros.contains(token.getText());
         } catch (ArrayIndexOutOfBoundsException ex) {
             assert (false) : "why ask empty stack?"; // NOI18N
         }

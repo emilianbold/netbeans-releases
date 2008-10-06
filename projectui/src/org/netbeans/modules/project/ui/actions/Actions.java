@@ -72,7 +72,7 @@ public class Actions implements ActionsFactory {
     private static Action COPY_PROJECT;
     private static Action MOVE_PROJECT;
     private static Action RENAME_PROJECT;
-            
+
     public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
             SET_AS_MAIN_PROJECT = new SetMainProject();
@@ -298,8 +298,8 @@ public class Actions implements ActionsFactory {
     }
     
     // Main Project actions ----------------------------------------------------
-    
-    
+
+
     public static Action buildMainProject() {
         Action a = new MainProjectAction (
             ActionProvider.COMMAND_BUILD, 

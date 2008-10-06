@@ -43,12 +43,15 @@ package org.netbeans.modules.xml.text.syntax;
 
 import java.lang.ref.*;
 import java.util.*;
-import java.io.*;
 
 import javax.swing.text.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 
@@ -663,24 +666,45 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     }
     
     /**
-     * No completion inside CDATA or comment section.
-     * 
+     * No completion inside PI, CDATA, comment section.
+     * True only inside PI or CDATA section, false otherwise.
      * @param target
      */
     public boolean noCompletion(JTextComponent target) {
+        if(target == null || target.getCaret() == null)
+            return false;
+        int offset = target.getCaret().getDot();
+        if(offset < 0)
+            return false;            
         //no completion inside CDATA or comment section
+        BaseDocument document = (BaseDocument)target.getDocument();
+        ((AbstractDocument)document).readLock();
         try {
-            int dotPos = target.getCaret().getDot();
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            SyntaxElement sel = getElementChain(dotPos);
-            if(sel instanceof CDATASectionImpl || sel instanceof CommentImpl) {
-                return true;
+            TokenHierarchy th = TokenHierarchy.get(document);
+            TokenSequence ts = th.tokenSequence();
+            if(ts == null)
+                return false;
+            ts.move(offset);
+            Token token = ts.token();
+            if(token == null) {
+                ts.moveNext();
+                token = ts.token();
+                if(token == null)
+                    return false;
             }
-        } catch (BadLocationException e) {
-            //ignore
+            if( token.id() == XMLTokenId.CDATA_SECTION ||
+               token.id() == XMLTokenId.BLOCK_COMMENT ||
+               token.id() == XMLTokenId.PI_START ||
+               token.id() == XMLTokenId.PI_END ||
+               token.id() == XMLTokenId.PI_CONTENT ||
+               token.id() == XMLTokenId.PI_TARGET ) {
+               return true;
+            }
+        } finally {
+            ((AbstractDocument)document).readUnlock();
         }
         
-        return false;        
+        return false;
     }
     
     /**
@@ -714,7 +738,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
      */
     public int[] findMatchingBlock(int offset, boolean simpleSearch)
     throws BadLocationException {
-        return findMatch(offset, simpleSearch);
+        //return findMatch(offset, simpleSearch);
+        return null;
     }
     
     public int[] findMatch(int offset, boolean simpleSearch)

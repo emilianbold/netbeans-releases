@@ -358,7 +358,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         
         private Cursor dragMoveCursor = DragSource.DefaultMoveDrop;
         private Cursor dragNoDropCursor = DragSource.DefaultMoveNoDrop;
-        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, ImageUtilities.loadImage( "org/openide/loaders/delete.gif"), "NO_ACTION_MOVE" );
         private Map<Component, DragGestureRecognizer> recognizers = new HashMap<Component, DragGestureRecognizer>();
         
         public DnDSupport() {
@@ -408,7 +408,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void dragGestureRecognized(DragGestureEvent e) {
-            if( !ToolbarPool.getDefault().isInEditMode() )  
+            if( !ToolbarPool.getDefault().isInEditMode()
+                    || "QuickSearch".equals(getName()) )  //HACK (137286)- there's not better way...
                 return;
             try {
                  Component c = e.getComponent();
@@ -447,8 +448,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void drop(DropTargetDropEvent dtde) {
-            if( validateDropPosition() ) {
-                dtde.dropComplete( handleDrop( dtde.getTransferable() ) );
+            boolean res = false;
+            try {
+                if( validateDropPosition() ) {
+                    res = handleDrop( dtde.getTransferable() );
+                }
+            } finally {
+                dtde.dropComplete(res);
             }
             resetDropGesture();
         }
@@ -581,11 +587,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private DataObject getDataObjectUnderDropCursor( int dropIndex, boolean dropBefore ) {
         DataObject[] buttons = backingFolder.getChildren();
         DataObject objUnderCursor = null;
-        boolean appendToEnd = false;
         if( buttons.length > 0 ) {
             if( !dropBefore )
                 dropIndex++;
-            if( dropIndex < buttons.length ) {
+            if( dropIndex < buttons.length && dropIndex >= 0 ) {
                 objUnderCursor = buttons[dropIndex];
             }
         }
@@ -841,11 +846,15 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      * on the contrary to the programmatic name */
     public String getDisplayName () {
         if (displayName == null) {
-            if (!backingFolder.isValid()) {
-                // #17020
-                return backingFolder.getName();
+            if (backingFolder.isValid()) {
+                try {
+                    return backingFolder.getNodeDelegate ().getDisplayName ();
+                } catch (IllegalStateException ex) {
+                    // OK: #141387
+                }
             }
-            return backingFolder.getNodeDelegate ().getDisplayName ();
+            // #17020
+            return backingFolder.getName();
         }
         return displayName;
     }
@@ -1099,7 +1108,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                              a.getValue(javax.swing.Action.NAME).toString().length() ==
                              0)) {
                             a.putValue(javax.swing.Action.SMALL_ICON,
-                                       new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") ));
+                                       new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") ));
                         }
                         org.openide.awt.Actions.connect(b, a);
                         b.putClientProperty("file", file);
@@ -1653,7 +1662,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             Icon retValue = super.getIcon();
             if( null == retValue && (null == getText() || getText().length() == 0 ) ) {
                 if (unknownIcon == null) {
-                    unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/loaders/unknown.gif") );
+                    unknownIcon = new ImageIcon( ImageUtilities.loadImage( "org/openide/loaders/unknown.gif") );
                 }
                 retValue = unknownIcon;
             }

@@ -50,7 +50,6 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.openide.util.NbBundle;
 
@@ -67,22 +66,23 @@ public class J2eePlatformUiSupport {
     private J2eePlatformUiSupport() {
     }
     
-    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel) {
-        return new J2eePlatformComboBoxModel(serverInstanceId, j2eeLevel);
+    public static ComboBoxModel createPlatformComboBoxModel(String serverInstanceId, String j2eeLevel, Object moduleType) {
+        return new J2eePlatformComboBoxModel(serverInstanceId, j2eeLevel, moduleType);
     }
     
     public static ComboBoxModel createSpecVersionComboBoxModel(String j2eeSpecVersion) {
         return new J2eeSpecVersionComboBoxModel(j2eeSpecVersion);
     }
     
-    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject, Object j2eeSpecVersionModelObject) {
+    public static boolean getJ2eePlatformAndSpecVersionMatch(Object j2eePlatformModelObject,
+            Object j2eeSpecVersionModelObject, Object moduleType) {
         if (!(j2eePlatformModelObject instanceof J2eePlatformAdapter && j2eeSpecVersionModelObject instanceof String)) {
             return false;
         }
         
         J2eePlatform j2eePlatform = ((J2eePlatformAdapter)j2eePlatformModelObject).getJ2eePlatform();
         String specVersion = (String)j2eeSpecVersionModelObject;
-        return j2eePlatform.getSupportedSpecVersions(J2eeModule.EJB).contains(specVersion);
+        return j2eePlatform.getSupportedSpecVersions(moduleType).contains(specVersion);
     }
     
     public static String getSpecVersion(Object j2eeSpecVersionModelObject) {
@@ -118,22 +118,25 @@ public class J2eePlatformUiSupport {
     
     private static final class J2eePlatformComboBoxModel extends AbstractListModel implements ComboBoxModel {
         private J2eePlatformAdapter[] j2eePlatforms;
-        private String initialJ2eePlatform;
+        private final String initialJ2eePlatform;
         private J2eePlatformAdapter selectedJ2eePlatform;
-        private String j2eeLevel;
+        private final String j2eeLevel;
+        private final Object moduleType;
         
-        public J2eePlatformComboBoxModel(String serverInstanceID, String j2eeLevel) {
+        public J2eePlatformComboBoxModel(String serverInstanceID, String j2eeLevel, Object moduleType) {
             initialJ2eePlatform = serverInstanceID;
             this.j2eeLevel = j2eeLevel;
-            getJ2eePlatforms();
+            this.moduleType = moduleType;
+
+            getJ2eePlatforms(moduleType);
         }
         
         public Object getElementAt(int index) {
-            return getJ2eePlatforms()[index];
+            return getJ2eePlatforms(moduleType)[index];
         }
 
         public int getSize() {
-            return getJ2eePlatforms().length;
+            return getJ2eePlatforms(moduleType).length;
         }
         
         public Object getSelectedItem() {
@@ -153,17 +156,17 @@ public class J2eePlatformUiSupport {
             }
         }
                 
-        private synchronized J2eePlatformAdapter[] getJ2eePlatforms() {
+        private synchronized J2eePlatformAdapter[] getJ2eePlatforms(Object moduleType) {
             if (j2eePlatforms == null) {
                 String[] serverInstanceIDs = Deployment.getDefault().getServerInstanceIDs();
-                Set orderedNames = new TreeSet();
+                Set<J2eePlatformAdapter> orderedNames = new TreeSet<J2eePlatformAdapter>();
                 boolean activeFound = false;
 
                 for (int i = 0; i < serverInstanceIDs.length; i++) {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs[i]);
                     if (j2eePlatform != null) {
-                        if (j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.WAR) 
-                                && j2eePlatform.getSupportedSpecVersions(J2eeModule.WAR).contains(j2eeLevel)) {
+                        if (j2eePlatform.getSupportedModuleTypes().contains(moduleType)
+                                && j2eePlatform.getSupportedSpecVersions(moduleType).contains(j2eeLevel)) {
                             J2eePlatformAdapter adapter = new J2eePlatformAdapter(j2eePlatform, serverInstanceIDs[i]);
                             orderedNames.add(adapter);
                         
@@ -176,7 +179,7 @@ public class J2eePlatformUiSupport {
                         }
                     }
                 }
-                j2eePlatforms = (J2eePlatformAdapter[])orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
+                j2eePlatforms = orderedNames.toArray(new J2eePlatformAdapter[orderedNames.size()]);
             }
             return j2eePlatforms;
         }
@@ -200,7 +203,11 @@ public class J2eePlatformUiSupport {
         }
         
         public String toString() {
-            return platform.getDisplayName();
+            String s = platform.getDisplayName();
+            if (s == null) {
+                s = ""; // NOI18N
+            }
+            return s;
         }
 
         public int compareTo(Object o) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -105,18 +105,12 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
-import static javax.lang.model.util.ElementFilter.methodsIn;
-import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
-import static org.netbeans.api.java.classpath.ClassPath.BOOT;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
-import static org.netbeans.modules.junit.JUnitSettings.JUNIT_GENERATOR_ASK_USER;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
-import static org.openide.NotifyDescriptor.OK_CANCEL_OPTION;
-import static org.openide.NotifyDescriptor.QUESTION_MESSAGE;
 import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 
 /**
@@ -1625,6 +1619,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @see  #junitVer
      */
     private void readSystemSettingsJUnitVer() {
+        junitVer = null;
+        /*
         String value = JUnitSettings.getDefault().getGenerator();
         if ((value == null) || value.equals(JUNIT_GENERATOR_ASK_USER)) {
             junitVer = null;
@@ -1635,6 +1631,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 junitVer = null;
             }
         }
+        */
     }
     
     /**
@@ -1802,7 +1799,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             // if everything went ok, and the option is enabled,
             // create a suite for the folder .
             if (!results.isAbborted()
-                    && !mySuite.isEmpty()
+//                    && !mySuite.isEmpty()
                     && JUnitSettings.getDefault().isGenerateSuiteClasses()) {
                 createSuiteTest(srcFileObj,
                                 (String) null,
@@ -1879,12 +1876,12 @@ public final class DefaultPlugin extends JUnitPlugin {
                 testFile = testDataObj.getPrimaryFile();
             }
             
-//            List<String> processedClasses;
-//            JavaSource testSrc = JavaSource.forFileObject(testFile);
+            List<String> processedClasses;
+            //JavaSource testSrc = JavaSource.forFileObject(testFile);
             try {
-//                processedClasses = testCreator.createTestSuite(classesToInclude,
-//                                                               testSrc,
-//                                                               isNew);
+                processedClasses = testCreator.createTestSuite(classesToInclude,
+                                                               testFile,
+                                                               isNew);
                 if (testDataObj == null) {
                     testDataObj = DataObject.find(testFile);
                 }
@@ -1895,13 +1892,13 @@ public final class DefaultPlugin extends JUnitPlugin {
             }
 
             // add the suite class to the list of members of the parent
-//            if ((parentSuite != null) && !processedClasses.isEmpty()) {
-//                for (String simpleClassName : processedClasses) {
-//                    parentSuite.add(dotPkg.length() != 0
-//                                    ? dotPkg + '.' + simpleClassName
-//                                    : simpleClassName);
-//                }
-//            }
+            if ((parentSuite != null) && !processedClasses.isEmpty()) {
+                for (String simpleClassName : processedClasses) {
+                    parentSuite.add(dotPkg.length() != 0
+                                    ? dotPkg + '.' + simpleClassName
+                                    : simpleClassName);
+                }
+            }
             return testDataObj;
         } catch (IOException ioe) {
             throw new CreationError(ioe);

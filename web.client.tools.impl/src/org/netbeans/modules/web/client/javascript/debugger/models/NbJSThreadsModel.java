@@ -69,7 +69,6 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 
 public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel, NodeActionsProvider, JSDebuggerEventListener {
 
@@ -78,8 +77,7 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
     private static final String FRAME =
         "org/netbeans/modules/web/client/javascript/debugger/ui/resources/frame"; // NOI18N
     
-    private NbJSContextProviderWrapper contextProvider;
-    private final NbJSDebugger debugger;
+    private NbJSDebugger debugger;
     private JSWindow[] windows;
     private final List<ModelListener> listeners;
     
@@ -93,17 +91,17 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
     }
     private PropertyChangeListener propertyChangeListener;
     
-    private final Action GO_TO_ACTION;
+    private Action GO_TO_ACTION;
     
     public NbJSThreadsModel(ContextProvider contextProvider) {
-        this.contextProvider = NbJSContextProviderWrapper.getContextProviderWrapper(contextProvider);
-        debugger = this.contextProvider.getNbJSDebugger();
-        debugger.addJSDebuggerEventListener(WeakListeners.create(JSDebuggerEventListener.class, this, debugger));
+        NbJSContextProviderWrapper contextProviderWrapper = NbJSContextProviderWrapper.getContextProviderWrapper(contextProvider);
+        debugger = contextProviderWrapper.getNbJSDebugger();
+        debugger.addJSDebuggerEventListener(this);
         
         GO_TO_ACTION = NbJSEditorUtil.createDebuggerGoToAction(debugger);
         
         propertyChangeListener = new PropertyChangeListenerImpl();
-        this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
+        this.debugger.addPropertyChangeListener(propertyChangeListener);
 
         listeners = new CopyOnWriteArrayList<ModelListener>();
 
@@ -219,10 +217,10 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
             UnknownTypeException {
         if (node instanceof JSWindow ) {
             if ( THREAD_STATE_COLUMN_ID.equals(columnID) ) {
-                return debugger.getState();
+                return debugger != null ? debugger.getState() : JSDebuggerState.DISCONNECTED;
             }
             else if ( THREAD_SUSPENDED_COLUMN_ID.equals(columnID)){
-                if( debugger.getState().getState().equals(JSDebuggerState.State.SUSPENDED) ){
+                if( debugger != null && debugger.getState().getState().equals(JSDebuggerState.State.SUSPENDED) ){
                     return Boolean.TRUE;
                 }
                 return Boolean.FALSE;
@@ -245,7 +243,7 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
 
     public void performDefaultAction(Object node)
             throws UnknownTypeException {
-       if ( node instanceof JSWindow ){
+       if ( debugger != null && node instanceof JSWindow ){
            JSWindow window = (JSWindow)node;
            String strURI = window.getURI();
            JSSource source = JSFactory.createJSSource(strURI);
@@ -255,7 +253,7 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
 
     public Action[] getActions(Object node)
             throws UnknownTypeException {
-        if( node instanceof JSWindow ){
+        if( GO_TO_ACTION != null && node instanceof JSWindow ){
             return new Action[]{ GO_TO_ACTION };
         } 
         return new Action[]{};
@@ -267,10 +265,13 @@ public final class NbJSThreadsModel implements TreeModel, TableModel, NodeModel,
     
     public void onDebuggerEvent(JSDebuggerEvent debuggerEvent) {
         JSDebuggerState jsDebuggerState = debuggerEvent.getDebuggerState();
-        NbJSDebugger debugger = (NbJSDebugger) debuggerEvent.getSource();
+        assert debuggerEvent.getSource() == debugger;
         switch (jsDebuggerState.getState()) {
         case DISCONNECTED:
             debugger.removeJSDebuggerEventListener(this);
+            debugger.removePropertyChangeListener(propertyChangeListener);
+            debugger = null;
+            GO_TO_ACTION = null;
             break;
         default:
         }

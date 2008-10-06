@@ -42,7 +42,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import org.mozilla.javascript.Context;
+import org.mozilla.nb.javascript.Context;
 import org.netbeans.modules.javascript.editing.options.JsOptionsController;
 import org.openide.util.NbPreferences;
 
@@ -140,7 +140,7 @@ public class SupportedBrowsers {
         getPreferences().put(SUPPORTED_KEY,flags);
     }
     
-    /** Return one of the VERSION_ constants in {@link org.mozilla.javascript.Context}. */
+    /** Return one of the VERSION_ constants in {@link org.mozilla.nb.javascript.Context}. */
     public int getLanguageVersion() {
         return languageVersion;
     }

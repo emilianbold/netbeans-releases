@@ -155,7 +155,14 @@ public final class PhpOptions {
 
     // XXX the default value could be improved (OS dependent)
     public String getPhpGlobalIncludePath() {
-        return getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, ""); // NOI18N
+        String phpGlobalIncludePath = getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, null);
+        if (phpGlobalIncludePath == null) {
+            // first time we want to read it => write an empty string to the global properties so property evaluator is not confused
+            //  (property evaluator returns JAR entry, see org.netbeans.modules.php.project.classpath.ClassPathProviderImpl#getBootClassPath())
+            setPhpGlobalIncludePath(""); // NOI18N
+            phpGlobalIncludePath = ""; // NOI18N
+        }
+        return phpGlobalIncludePath;
     }
 
     public void setPhpGlobalIncludePath(String phpGlobalIncludePath) {

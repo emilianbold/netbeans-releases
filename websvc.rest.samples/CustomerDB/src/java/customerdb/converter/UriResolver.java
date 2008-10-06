@@ -42,7 +42,6 @@
 package customerdb.converter;
 
 import javax.ws.rs.WebApplicationException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -51,7 +50,7 @@ import javax.xml.bind.JAXBContext;
 /**
  * Utility class for resolving an uri into an entity.
  *
- * @author __USER__
+ * @author PeterLiu
  */
 public class UriResolver {
     
@@ -86,7 +85,7 @@ public class UriResolver {
      * @param uri the uri identifying the entity
      * @return the entity associated with the given uri
      */
-    public Object resolve(Class type, URI uri) {
+    public <T> T resolve(Class<T> type, URI uri) {
         if (inProgress) return null;
         
         inProgress = true;
@@ -102,9 +101,8 @@ public class UriResolver {
             
             if (conn.getResponseCode() == 200) {
                 JAXBContext context = JAXBContext.newInstance(type);
-                Object obj = context.createUnmarshaller().unmarshal(conn.getInputStream());
                 
-                return resolveEntity(obj);
+                return (T) context.createUnmarshaller().unmarshal(conn.getInputStream());
             } else {
                 throw new WebApplicationException(new Throwable("Resource for " + uri + " does not exist."), 404);
             }
@@ -114,17 +112,6 @@ public class UriResolver {
             throw new WebApplicationException(ex);
         } finally {
             removeInstance();
-        }
-    }
-    
-    private Object resolveEntity(Object obj) {
-        try {
-            Class clazz = obj.getClass();
-            Method method = clazz.getMethod("resolveEntity");
-            
-            return method.invoke(obj);
-        } catch (Exception ex) {
-            throw new WebApplicationException(ex);
         }
     }
 }

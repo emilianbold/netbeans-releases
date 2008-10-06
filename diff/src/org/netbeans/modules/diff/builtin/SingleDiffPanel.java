@@ -45,6 +45,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -88,13 +89,16 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     }
 
     private void initMyComponents() throws IOException {
-        refreshController();
+        // centers components on the toolbar
+        actionsToolbar.add(Box.createHorizontalGlue(), 0);
+        actionsToolbar.add(Box.createHorizontalGlue());
+        
         nextAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 onNext();
             }
         };
-        nextAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
+        nextAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
         bNext.setAction(nextAction);
             
         prevAction = new AbstractAction() {
@@ -102,11 +106,13 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onPrev();
             }
         };
-        prevAction.putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
+        prevAction.putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
         bPrevious.setAction(prevAction);
         
         getActionMap().put("jumpNext", nextAction);  // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
+
+        refreshController();
     }
 
     private void refreshController() throws IOException {
@@ -243,10 +249,7 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(controllerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(137, Short.MAX_VALUE)
-                .add(actionsToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 259, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(135, Short.MAX_VALUE))
+            .add(actionsToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

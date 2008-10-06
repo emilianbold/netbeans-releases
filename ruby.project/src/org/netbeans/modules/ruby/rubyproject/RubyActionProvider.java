@@ -176,6 +176,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return supportedActions;
     }
 
+    private String getSourceEncoding() {
+        return project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
+    }
+
     private void runRubyScript(FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
@@ -183,26 +187,21 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             return;
         }
         ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+        RubyExecution service = new RubyExecution(desc, getSourceEncoding());
         service.run();
     }
-    
+
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
-        String options = project.evaluator().getProperty(RubyProjectProperties.RUBY_OPTIONS);
-
-        if (options != null && options.trim().length() == 0) {
-            options = null;
-        }
+        String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
-        if (options != null) {
-            options = includePath + " " + options; // NOI18N
+        if (rubyOptions != null) {
+            rubyOptions = includePath + " " + rubyOptions; // NOI18N
         } else {
-            options = includePath;
+            rubyOptions = includePath;
         }
         FileObject[] srcPath = project.getSourceRoots().getRoots();
         FileObject[] testPath = project.getTestSourceRoots().getRoots();
@@ -236,20 +235,21 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-        String jrubyProps = project.evaluator().getProperty(RubyProjectProperties.JRUBY_PROPS);
+        String jvmArgs = project.evaluator().getProperty(RubyProjectProperties.JVM_ARGS);
 
         ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
         desc.fileObject(fileObject);
-        desc.jrubyProperties(jrubyProps);
-        desc.initialArgs(options);
+        desc.jvmArguments(jvmArgs);
+        desc.initialArgs(rubyOptions);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        desc.setEncoding(getSourceEncoding());
         
         if (extraRecognizers != null) {
             for (OutputRecognizer recognizer : extraRecognizers) {
@@ -352,7 +352,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
                 addStandardRecognizers(),
-                project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                getSourceEncoding()
                 ).
                 run();
     }
@@ -463,7 +463,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     appendJdkToPath(platform.isJRuby()).
                     addStandardRecognizers().
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -566,7 +566,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
                     addStandardRecognizers(),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -575,8 +575,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled(project)) {
-                AutoTestSupport support = new AutoTestSupport(context, project, 
-                        project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 support.start();
             }
@@ -757,10 +756,9 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 //    }
     
     public boolean isActionEnabled( String command, Lookup context ) {
-//        FileObject buildXml = findBuildXml();
-//        if (  buildXml == null || !buildXml.isValid()) {
-//            return false;
-//        }
+        if (getPlatform() == null) {
+            return false;
+        }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
@@ -771,8 +769,12 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
 //        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
 //            FileObject[] files = findTestSourcesForSources(context);
 //            return files != null && files.length == 1;
-        } else if (command.equals(COMMAND_RUN_SINGLE) || 
-                        command.equals(COMMAND_DEBUG_SINGLE)) {
+        } else if (command.equals(COMMAND_RUN_SINGLE) ||
+                command.equals(COMMAND_DEBUG_SINGLE)) {
+            if (RakeSupport.isRakeFileSelected(context)) {
+                return true;
+            }
+
             FileObject fos[] = findSources(context);
             if (fos != null && fos.length == 1) {
                 return true;
@@ -784,9 +786,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             return true;
         }
     }
-    
-    
-   
+
     // Private methods -----------------------------------------------------------------
     
     
@@ -1052,5 +1052,4 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         return null;
     }
-
 }

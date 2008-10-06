@@ -42,10 +42,10 @@
 package org.netbeans.modules.xml.text.structure;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -472,7 +472,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
         if(tag.getAttributes().getLength() == 0) {
             return Collections.EMPTY_MAP;
         } else {
-            HashMap map = new HashMap(tag.getAttributes().getLength());
+            HashMap map = new LinkedHashMap(tag.getAttributes().getLength());
             for(int i = 0; i < tag.getAttributes().getLength(); i++) {
                 AttrImpl attr = (AttrImpl)tag.getAttributes().item(i);
                 map.put(attr.getName(), attr.getValue());

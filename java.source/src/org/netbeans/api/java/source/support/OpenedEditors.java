@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -64,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -71,8 +74,8 @@ import org.openide.util.Parameters;
  */
 class OpenedEditors implements PropertyChangeListener {
 
-    private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
-    private Map<JTextComponent, DataObject> visibleEditors2Files = new HashMap<JTextComponent, DataObject>();
+    private Set<JTextComponent> visibleEditors = new WeakSet<JTextComponent>();
+    private Map<JTextComponent, DataObject> visibleEditors2Files = new WeakHashMap<JTextComponent, DataObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
     private static OpenedEditors DEFAULT;

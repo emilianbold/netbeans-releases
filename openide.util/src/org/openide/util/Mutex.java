@@ -71,34 +71,34 @@ import java.util.logging.Logger;
 * <P>
 * Examples of use:
 *
-* <p><code><PRE>
-* Mutex m = new Mutex ();
+* <pre>
+* Mutex m = new Mutex();
 *
 * // Grant write access, compute an integer and return it:
-* return (Integer)m.writeAccess (new Mutex.Action () {
-*   public Object run () {
-*     return new Integer (1);
-*   }
+* return m.writeAccess(new Mutex.Action&lt;Integer>(){
+*     public Integer run() {
+*         return 1;
+*     }
 * });
 *
-* // Obtain read access, do some computation, possibly throw an IOException:
+* // Obtain read access, do some computation,
+* // possibly throw an IOException:
 * try {
-*   m.readAccess (new Mutex.ExceptionAction () {
-*     public Object run () throws IOException {
-*       if (...) throw new IOException ();
-*
-*       return null;
-*     }
-*   });
+*     m.readAccess(new Mutex.ExceptionAction&lt;Void>() {
+*         public Void run() throws IOException {
+*             if (...) throw new IOException();
+*             return null;
+*         }
+*     });
 * } catch (MutexException ex) {
-*   throw (IOException)ex.getException ();
+*     throw (IOException) ex.getException();
 * }
 *
 * // check whether you are already in read access
-* if (m.isReadAccess ()) {
-*   // do your work
+* if (m.isReadAccess()) {
+*     // do your work
 * }
-* </PRE></code>
+* </pre>
 *
 * @author Ales Novak
 */
@@ -604,12 +604,12 @@ public final class Mutex extends Object {
     // priv methods  -----------------------------------------
 
     /** enters this mutex for writing */
-    private void writeEnter(Thread t) {
+    final void writeEnter(Thread t) {
         enter(X, t, true);
     }
 
     /** enters this mutex for reading */
-    private void readEnter(Thread t) {
+    final void readEnter(Thread t) {
         enter(S, t, true);
     }
 
@@ -827,7 +827,7 @@ public final class Mutex extends Object {
     }
 
     /** Leaves this mutex */
-    private void leave(Thread t) {
+    final void leave(Thread t) {
         boolean log = LOG.isLoggable(Level.FINE);
 
         if (log) doLog("Leaving {0}", grantedMode); // NOI18N
@@ -1595,18 +1595,22 @@ public final class Mutex extends Object {
         * if wakeMeUp was already called then the thread will not sleep
         */
         public synchronized void sleep() {
+            boolean wasInterrupted = false;
             try {
                 while (!signal) {
                     try {
                         wait();
-
                         return;
                     } catch (InterruptedException e) {
-                        Logger.getLogger(Mutex.class.getName()).log(Level.WARNING, null, e);
+                        wasInterrupted = true;
+                        Logger.getLogger(Mutex.class.getName()).log(Level.FINE, null, e);
                     }
                 }
             } finally {
                 left = true;
+                if (wasInterrupted) { // #129003
+                    Thread.currentThread().interrupt();
+                }
             }
         }
 

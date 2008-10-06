@@ -5,22 +5,25 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>About Running Java Applications</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>About Running Java Applications</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Because the IDE builds its project infrastructure directly on top of Apache
-Ant, it uses Ant scripts to run your Java applications. </p>
+<p>As you are developing your application, you can run the application
+in the IDE to test the application's behavior. When you run a project in the IDE,
+the IDE runs the application from the
+files in the project's <tt>build/classes</tt> folder.</p>
 <p>Typically, the project that contains the program's main class is set as
 	the main project. You can then run the entire application with the Run Main
 	Project command (F6). You can also run any executable class by choosing Run  &gt; Run
 	File  &gt; Run <tt>my_class</tt> (Shift-F6).
-	Alternately, you can run any project that has a main class by right-clicking
+	Alternatively, you can run any project that has a main class by right-clicking
 	its project node in the Projects window and choosing Run Project. </p>
 <h3>Running Standard Projects</h3>
-<p>If you are using a
+<p>For
    <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
    	<param name="content" value="../project/csh/glossary_standard.html">
    	<param name="viewerActivator" value="javax.help.LinkLabel">
@@ -33,14 +36,13 @@ Ant, it uses Ant scripts to run your Java applications. </p>
    	<param name="textFontWeight" value="bold">
    	<param name="textColor" value="blue">
    	</object>
-   , the IDE generates the build script based on the options you enter in the
-   project's Project Properties dialog box. You can set the project's main class,
-   runtime arguments, VM arguments, and working directory in the Project Properties
-   dialog box. You can further customize program execution by editing the Ant
-script and Ant properties for the project. </p>
-
-        <ul class="note">
-        <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+   , the IDE uses settings that you specify in project's
+   Project Properties dialog box. You can set the project's main class,
+   runtime arguments, VM arguments, and working directory.
+</p>
+<p>To run the application outside of the IDE, you first need to use the Clean and Build
+command so that the project's JAR file is built or updated.
+For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
         <param name="content" value="../project/csh/glossary_standard.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">
         <param name="viewerStyle" value="javax.help.Popup">
@@ -51,14 +53,15 @@ script and Ant properties for the project. </p>
         <param name="textFontStyle" value="italic">
         <param name="textFontWeight" value="bold">
         <param name="textColor" value="blue">
-        </object> that have a main class is specified, the IDE automatically copies any JAR 
+        </object> that have a main class specified, the IDE automatically copies any JAR
         files on the project's classpath to the <tt>dist/lib</tt> folder.
-        The IDE also adds each of the JAR files 
-        to the Class-Path element in the application JAR's <tt>manifest.mf</tt> 
-        file. This simplifies running the application outside the IDE. For more 
-        information, see <a href="../compile/comp_jar_deploy.html">Preparing 
+        The IDE also adds each of the JAR files
+        to the Class-Path element in the application JAR's <tt>manifest.mf</tt>
+        file. This simplifies running the application outside the IDE. For more
+        information, see <a href="../compile/comp_jar_deploy.html">Preparing
         a JAR for Deployment Outside the IDE</a></li>
-        </ul>  
+        </ul>
+
 
 <h3>Running Free-Form Projects</h3>
 <p>If you are using a 
@@ -85,6 +88,8 @@ it to the Run File command. </p>
     <dd><a href="run_file.html">Running a Single File</a></dd>
     <dd><a href="run_args.html">Setting the Main Class and Runtime Arguments</a></dd>
     <dd><a href="run_classpath.html">Setting the Runtime Classpath</a></dd>
+    <dd><a href="../compile/comp_project.html">Building a Project</a></dd>
+
 </dl>
 
 

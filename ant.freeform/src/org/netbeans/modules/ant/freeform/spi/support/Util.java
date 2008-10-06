@@ -45,15 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.xml.XMLConstants;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
@@ -70,7 +66,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
-import org.w3c.dom.Attr;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,9 +76,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /**
  * Miscellaneous helper methods.
@@ -360,11 +354,11 @@ public class Util {
             public Void run() {
                 Element dataAs1 = translateXML(data, FreeformProjectType.NS_GENERAL_1);
                 try {
-                    validate(dataAs1, SCHEMA_1);
+                    XMLUtil.validate(dataAs1, SCHEMA_1);
                     putPrimaryConfigurationDataAs1(helper, dataAs1);
                 } catch (SAXException x1) {
                     try {
-                        validate(data, SCHEMA_2);
+                        XMLUtil.validate(data, SCHEMA_2);
                         putPrimaryConfigurationDataAs2(helper, data);
                     } catch (SAXException x2) {
                         assert false : x2.getMessage() + "; rejected content: " + format(data);
@@ -397,51 +391,6 @@ public class Util {
         } catch (SAXException e) {
             throw new ExceptionInInitializerError(e);
         }
-    }
-    private static void validate(Element data, Schema schema) throws SAXException {
-        Validator v = schema.newValidator();
-        final SAXException[] error = {null};
-        v.setErrorHandler(new ErrorHandler() {
-            public void warning(SAXParseException x) throws SAXException {}
-            public void error(SAXParseException x) throws SAXException {
-                // Just rethrowing it is bad because it will also print it to stderr.
-                error[0] = x;
-            }
-            public void fatalError(SAXParseException x) throws SAXException {
-                error[0] = x;
-            }
-        });
-        try {
-            v.validate(new DOMSource(fixupNoNamespaceAttrs(data)));
-        } catch (IOException x) {
-            assert false : x;
-        }
-        if (error[0] != null) {
-            throw error[0];
-        }
-    }
-    private static Element fixupNoNamespaceAttrs(Element root) {
-        // XXX #6529766: some versions of JAXP reject attributes set using setAttribute
-        // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
-        // JDK 5 is fine; JDK 6 broken; JDK 6u2 supposedly will be fixed; current JDK 7 broken
-        Element copy = (Element) root.cloneNode(true);
-        NodeList nl = copy.getElementsByTagName("*");
-        for (int i = 0; i < nl.getLength(); i++) {
-            Element e = (Element) nl.item(i);
-            Map<String,String> replace = new HashMap<String,String>();
-            NamedNodeMap attrs = e.getAttributes();
-            for (int j = 0; j < attrs.getLength(); j++) {
-                Attr attr = (Attr) attrs.item(j);
-                if (attr.getNamespaceURI() == null) {
-                    replace.put(attr.getName(), attr.getValue());
-                }
-            }
-            for (Map.Entry<String,String> entry : replace.entrySet()) {
-                e.removeAttribute(entry.getKey());
-                e.setAttributeNS(null, entry.getKey(), entry.getValue());
-            }
-        }
-        return copy;
     }
     private static String format(Element data) {
         LSSerializer ser = ((DOMImplementationLS) data.getOwnerDocument().getImplementation().getFeature("LS", "3.0")).createLSSerializer();

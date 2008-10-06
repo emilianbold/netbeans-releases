@@ -81,6 +81,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.designtime.idebridge</friend>
                 <friend>org.netbeans.modules.visualweb.designtimeext</friend>
                 <friend>org.netbeans.modules.visualweb.ejb</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
@@ -94,12 +95,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors.api</friend>
+                <friend>org.netbeans.modules.visualweb.removebindings</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
                 <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
-                <friend>org.netbeans.modules.visualweb.removebindings</friend>
                 <package>com.sun.rave.designtime</package>
                 <package>com.sun.rave.designtime.event</package>
                 <package>com.sun.rave.designtime.faces</package>

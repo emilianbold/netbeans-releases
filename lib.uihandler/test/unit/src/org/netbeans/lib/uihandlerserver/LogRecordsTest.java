@@ -35,6 +35,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -393,29 +394,6 @@ public class LogRecordsTest extends NbTestCase {
         assertEquals("The four amount of records", 5, h.cnt);
     }
 
-    public void testSurviveNumberFormatExc() throws Exception {
-        String what = "NB1101666645.1";
-        InputStream is = getClass().getResourceAsStream(what);
-        class H extends Handler {
-            int cnt;
-            
-            public void publish(LogRecord record) {
-                cnt++;
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-        }
-        
-        H h = new H();
-        is = getClass().getResourceAsStream(what);
-        LogRecords.scan(is, h);
-        is.close();
-    }
-    
     public void testScanEmpty91974() throws Exception {
         String what = "uigestures-iz91974.xml";
         InputStream is = getClass().getResourceAsStream(what);
@@ -654,5 +632,23 @@ public class LogRecordsTest extends NbTestCase {
             arr[i] = (byte)ch;
         }
         return new String(new String(arr, "utf-8").getBytes(),"utf-8");
+    }
+
+    LogRecord rec;
+    public void testNFE() throws IOException{
+        InputStream stream = getClass().getResourceAsStream("issue140886");
+        rec = null;
+        Handler h = new Handler(){
+            public void publish(LogRecord record) {
+                rec = record;
+            }
+            @Override public void flush() {}
+            @Override public void close() throws SecurityException {}
+        };
+        LogRecords.scan(stream, h);
+        assertNotNull("Whole file is parsed", rec);
+        assertEquals("UI_ACTION_EDITOR", rec.getMessage());
+        assertEquals(5, rec.getParameters().length);
+        
     }
 }

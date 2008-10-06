@@ -62,6 +62,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -107,25 +108,22 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
         else
             return null;
     }
+
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
     
     /** Gets image open support. */
-    private ImageOpenSupport getOpenSupport() {
+    private synchronized ImageOpenSupport getOpenSupport() {
         if(openSupport == null) {
-            synchronized(this) {
-                if(openSupport == null)
-                    openSupport = new ImageOpenSupport(getPrimaryEntry());
-            }
+            openSupport = new ImageOpenSupport(getPrimaryEntry());
         }
-        
         return openSupport;
     }
 
-    protected ImagePrintSupport getPrintSupport(){
+    protected synchronized ImagePrintSupport getPrintSupport(){
         if(printSupport == null) {
-            synchronized(this) {
-                if(printSupport == null)
-                    printSupport = new ImagePrintSupport( this );
-            }
+            printSupport = new ImagePrintSupport( this );
         }
         return printSupport;
     }

@@ -133,6 +133,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             }
         }
         else if (type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
+            //Change in firing order caused that isValid is called before readSettings completed => no targetName available
+            if (gui.getTargetName() == null) {
+                setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
+                return false;
+            }
             assert "package-info".equals( gui.getTargetName() );        //NOI18N
             if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
@@ -180,7 +185,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         
         if (type != NewJavaFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
             if(isValidPackageRequired){
-                setErrorMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
+                setInfoMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
                 return false;
             }
             //Only warning, display it only if everything else is OK.
@@ -301,7 +306,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                     String name = null;
                     while (tk.hasMoreTokens()) {
                         name = tk.nextToken();
-                        FileObject fo = folder.getFileObject (name,"");   //NOI8N
+                        FileObject fo = folder.getFileObject (name,"");   //NOI18N
                         if (fo == null) {
                             break;
                         }
@@ -387,7 +392,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         String newObjectNameToDisplay = newObjectName;
         if (newObjectName != null) {
-            newObjectName = newObjectName.replace ('.', '/'); // NOI8N
+            newObjectName = newObjectName.replace ('.', '/'); // NOI18N
         }
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();
@@ -412,11 +417,15 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_or_folder_does_not_exist"); // NOI18N
         }
         
-        // target filesystem should be writable
-        if (!targetFolder.canWrite ()) {
+        // target package should be writable
+        File targetPackage = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
+        if (targetPackage != null) {
+            if (targetPackage.exists () && ! targetPackage.canWrite ()) {
+                return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
+            }
+        } else if (! targetFolder.canWrite ()) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
         }
-        
         
         if (existFileName(targetFolder, relFileName)) {
             return NbBundle.getMessage (JavaTargetChooserPanel.class, "MSG_file_already_exist", newObjectNameToDisplay); // NOI18N

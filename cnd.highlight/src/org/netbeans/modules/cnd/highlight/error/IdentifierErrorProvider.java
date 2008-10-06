@@ -39,23 +39,16 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,63 +60,66 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =
             getBoolean("cnd.identifier.error.provider", true); //NOI18N
+    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     @Override
-    public Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile file) {
-        final Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        if (ENABLED && file.isParsed()) {
-            CsmFileReferences.getDefault().accept(
-                    file, new ReferenceVisitor(result),
-                    CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+    protected boolean validate(CsmErrorProvider.Request request) {
+        return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
+    }
+
+    @Override
+    public boolean isEnabledByDefault() {
+        return !CndUtils.isReleaseMode();
+    }
+    
+    @Override
+    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        long start = System.currentTimeMillis();
+        if (SemanticHighlighter.isVeryBigDocument(request.getDocument())) {
+            return;
         }
-        return result;
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
+        CsmFileReferences.getDefault().accept(
+                request.getFile(), new ReferenceVisitor(request, response),
+                CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
+    }
+    
+    public String getName() {
+        return "unresolved-identifier"; //NOI18N
     }
 
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {
 
-        private final Collection<CsmErrorInfo> result;
-        private CsmReference lastValidRef;
+        private final CsmErrorProvider.Request request;
+        private final CsmErrorProvider.Response response;
 
-        public ReferenceVisitor(Collection<CsmErrorInfo> result) {
-            this.result = result;
+        public ReferenceVisitor(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+            this.request = request;
+            this.response = response;
         }
 
-        public void visit(CsmReference ref) {
-            if (ref.getReferencedObject() == null) {
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
+            if (!request.isCancelled() && ref.getReferencedObject() == null) {
+                if (CsmFileReferences.isAfterUnresolved(context)) {
+                    return;
+                }
+                if (CsmFileReferences.isMacroBased(context)) {
+                    return;
+                }
                 Severity severity = Severity.ERROR;
-                if (ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE
-                        && lastValidRef != null
-                        && isTemplateParameterInvolved(lastValidRef)) {
+
+                if (CsmFileReferences.isTemplateBased(context)) {
+                    severity = Severity.WARNING;
+                } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) {
                     severity = Severity.WARNING;
                 }
-                result.add(new IdentifierErrorInfo(
+
+                response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));
-            } else {
-                lastValidRef = ref;
             }
-        }
-
-        private static boolean isTemplateParameterInvolved(CsmReference ref) {
-            CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isTemplateParameter(obj)) {
-                return true;
-            }
-            CsmType type = null;
-            if (CsmKindUtilities.isFunction(obj)) {
-                type = ((CsmFunction)obj).getReturnType();
-            } else if (CsmKindUtilities.isVariable(obj)) {
-                type = ((CsmVariable)obj).getType();
-            }
-            while (type != null) {
-                CsmClassifier classifier = type.getClassifier();
-                if (CsmKindUtilities.isTypedef(classifier)) {
-                    type = ((CsmTypedef)classifier).getType();
-                } else {
-                    break;
-                }
-            }
-            return CsmKindUtilities.isTemplateParameterType(type);
         }
     }
 
@@ -159,7 +155,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         }
 
     }
-    
+
     private static boolean getBoolean(String name, boolean result) {
         String value = System.getProperty(name);
         if (value != null) {

@@ -1,115 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
 <xsd:schema attributeFormDefault="unqualified"
             elementFormDefault="unqualified"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.0">
     <xsd:element name="rsp">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="stream_count" type="xsd:int"/>
-                <xsd:element name="venue" maxOccurs="unbounded" minOccurs="0" type="venueType"/>
+                <xsd:element name="stream_count" type="xsd:int" minOccurs="0"/>
                 <xsd:element name="event" type="eventType" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="venue" maxOccurs="unbounded" minOccurs="0" type="venueType"/>
                 <xsd:element name="category" maxOccurs="unbounded" type="categoryType" minOccurs="0"/>
                 <xsd:element name="group" minOccurs="0" maxOccurs="unbounded" type="groupType"/>
                 <xsd:element name="user" minOccurs="0" maxOccurs="unbounded" type="userType"/>
                 <xsd:element name="tag" minOccurs="0" maxOccurs="unbounded" type="tagType"/>
                 <xsd:element name="search_info" type="searchInfoType" minOccurs="0"/>
-                <xsd:element name="venue_type" minOccurs="0" type="venueTypeType"/>
+                <xsd:element name="venue_type" minOccurs="0" type="venueTypeType" maxOccurs="unbounded"/>
+                <xsd:element name="msg" minOccurs="0" type="xsd:string"/>
             </xsd:sequence>
             <xsd:attribute name="status" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:complexType name="venueType">
-        <xsd:sequence>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="url" type="xsd:anyURI"/>
-            <xsd:element name="phone" type="xsd:string"/>
-            <xsd:element name="link" type="xsd:anyURI"/>
-            <xsd:element name="creator_id" type="xsd:int"/>
-            <xsd:element name="address" type="xsd:string"/>
-            <xsd:element name="city" type="xsd:string"/>
-            <xsd:element name="zipcode" type="xsd:string"/>
-            <xsd:element name="state" type="xsd:string"/>
-            <xsd:element name="country" type="xsd:string"/>
-            <xsd:element name="latitude" type="xsd:float"/>
-            <xsd:element name="longitude" type="xsd:float"/>
+        <xsd:all>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="phone" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="link" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="url" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="creator_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="address" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="city" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="zipcode" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="state" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="country" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="timezone" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="latitude" type="xsd:float" minOccurs="0"/>
+            <xsd:element name="longitude" type="xsd:float" minOccurs="0"/>
             <xsd:element name="images" minOccurs="0" type="imageType"/>
-            <xsd:element name="venue_types">
+            <xsd:element name="venue_types" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="venue_type" minOccurs="0" maxOccurs="unbounded" type="venueTypeType"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:int"/>
+        </xsd:all>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="eventType">
         <xsd:sequence>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string" nillable="true" minOccurs="1"/>
-            <xsd:element name="url" type="xsd:anyURI" minOccurs="1"/>
-            <xsd:element name="starttime" type="xsd:int"/>
-            <xsd:element name="endtime" type="xsd:int" minOccurs="1"/>
-            <xsd:element name="creator_id" type="xsd:int"/>
-            <xsd:element name="price" type="xsd:string" minOccurs="1"/>
-            <xsd:element name="venue_id" type="xsd:int"/>
-            <xsd:element name="parent_id" type="xsd:int"/>
-            <xsd:element name="summary" type="xsd:string" nillable="false" minOccurs="1"/>
-            <xsd:element name="link" type="xsd:anyURI"/>
-            <xsd:element name="external_urls">
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="summary" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="link" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="url" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="external_urls" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="external_url" minOccurs="0" maxOccurs="unbounded" type="externalUrlType"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:element name="phone" type="xsd:string"/>
-            <xsd:element name="age_suitability" type="xsd:string"/>
-            <xsd:element name="images" type="imageType" minOccurs="0" maxOccurs="unbounded"/>
-            <xsd:element name="tags" >
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="tag" type="tagType" minOccurs="0" maxOccurs="unbounded"/>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
-            <xsd:element name="performers">
+            <xsd:element name="performers" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="performer" type="performerType" minOccurs="0" maxOccurs="unbounded"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:element name="categories">
+            <xsd:element name="phone" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="starttime" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="endtime" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="creator_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="price" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="age_suitability" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="venue_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="parent_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="series_count" type="xsd:int" minOccurs="0"/>
+            <xsd:element name="tags" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="tag" type="tagType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="categories" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="category" minOccurs="0" maxOccurs="unbounded" type="categoryType"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
+            <xsd:element name="images" type="imageType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="groupType">
-        <xsd:sequence>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="url" type="xsd:anyURI"/>
-            <xsd:element name="private" type="xsd:boolean"/>
-            <xsd:element name="creator_id" type="xsd:int"/>
-            <xsd:element name="restrict_event_addition" type="xsd:int"/>
-        </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:all>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="url" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="private" type="xsd:boolean" minOccurs="0"/>
+            <xsd:element name="creator_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="restrict_event_addition" type="xsd:int" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="categoryType">
-        <xsd:sequence>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="parent_id" type="xsd:int"/>
-            <xsd:element name="depth" type="xsd:int"/>
-            <xsd:element name="id" type="xsd:int"/>
-        </xsd:sequence>
+        <xsd:all>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="parent_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="depth" type="xsd:int" minOccurs="0"/>
+            <xsd:element name="id" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jxb:property name="idElement"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:all>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="userType">
         <xsd:sequence>
@@ -121,20 +173,20 @@
         <xsd:sequence>
             <xsd:element name="name" type="xsd:string"/>
         </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="searchInfoType">
-        <xsd:sequence>
-            <xsd:element name="sst" type="xsd:int" nillable="true"/>
-            <xsd:element name="set" type="xsd:int" nillable="true"/>
-            <xsd:element name="srss" type="xsd:int" nillable="true"/>
-            <xsd:element name="what" type="xsd:string"/>
-            <xsd:element name="when" type="xsd:string"/>
-            <xsd:element name="where" type="xsd:string"/>
-            <xsd:element name="radius" type="xsd:float"/>
-            <xsd:element name="st" type="xsd:string"/>
-        </xsd:sequence>
-        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:all>
+            <xsd:element name="sst" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="set" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="srss" type="xsd:int" minOccurs="0"/>
+            <xsd:element name="what" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="when" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="where" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="radius" type="xsd:float" minOccurs="0"/>
+            <xsd:element name="st" type="xsd:string" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="id" type="xsd:string"/>
     </xsd:complexType>
     <xsd:complexType name="imageType">
         <xsd:sequence>
@@ -143,25 +195,26 @@
     </xsd:complexType>
     <xsd:complexType name="venueTypeType">
         <xsd:sequence>
-            <xsd:element name="id" type="xsd:int"/>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="venue_type"/>
+            <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
-        <!--xsd:attribute name="id" type="xsd:string"/-->
+        <!--
+        <xsd:attribute name="id" type="xsd:string"/>
+        -->
     </xsd:complexType>
     <xsd:complexType name="externalUrlType">
-        <xsd:sequence>
-            <xsd:element name="type" type="xsd:string"/>
-            <xsd:element name="anchor_text" type="xsd:string"/>
-            <xsd:element name="location" type="xsd:anyURI"/>
-        </xsd:sequence>
+        <xsd:all>
+            <xsd:element name="type" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="anchor_text" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="location" type="xsd:anyURI" minOccurs="0"/>
+        </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="performerType">
-        <xsd:sequence>
-            <xsd:element name="id" type="xsd:int"/>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="link" type="xsd:anyURI"/>
-        </xsd:sequence>
+        <xsd:all>
+            <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="link" type="xsd:anyURI" minOccurs="0"/>
+        </xsd:all>
     </xsd:complexType>
 </xsd:schema>
 

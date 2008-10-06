@@ -50,7 +50,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 
 /** SyntaxParser unit tests
  *
@@ -538,7 +538,7 @@ public class SyntaxParserTest extends TestBase {
     
      public void testDoctype() throws BadLocationException {
         NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
-        String text = "<!DOCTYPE html \t PUBLIC \"id\" \n \"file\">";
+        String text = "<!DOCTYPE html \t PUBLIC \"id part 2\" \n \"file\">";
         //             0123456789
         doc.insertString(0, text, null);
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
@@ -567,7 +567,43 @@ public class SyntaxParserTest extends TestBase {
         assertEquals(text, e1.text());
         
         assertEquals("html",declaration.getRootElement());
-        assertEquals("\"id\"", declaration.getPublicIdentifier());
+        assertEquals("id part 2", declaration.getPublicIdentifier());
+        assertEquals("\"file\"", declaration.getDoctypeFile());
+        
+    }
+     
+     public void testDoctypeSimplePublicId() throws BadLocationException {
+        NbEditorDocument doc = new NbEditorDocument(HTMLKit.class);
+        String text = "<!DOCTYPE html \t PUBLIC \"simpleid\" \n \"file\">";
+        //             0123456789
+        doc.insertString(0, text, null);
+        SyntaxParser parser = SyntaxParser.get(doc, languagePath);
+
+        assertNotNull(parser);
+
+        parser.forceParse();
+
+        List<SyntaxElement> elements = parser.elements();
+
+        assertNotNull(elements);
+        assertEquals(1, elements.size());
+
+        SyntaxElement e1 = elements.get(0);
+        
+        assertNotNull(e1);
+        
+        assertEquals(SyntaxElement.TYPE_DECLARATION, e1.type());
+        
+        SyntaxElement.Declaration declaration = (SyntaxElement.Declaration)e1;
+        
+        assertEquals(0, e1.offset());
+        
+        assertEquals(text.length(), e1.length());
+        
+        assertEquals(text, e1.text());
+        
+        assertEquals("html",declaration.getRootElement());
+        assertEquals("simpleid", declaration.getPublicIdentifier());
         assertEquals("\"file\"", declaration.getDoctypeFile());
         
     }

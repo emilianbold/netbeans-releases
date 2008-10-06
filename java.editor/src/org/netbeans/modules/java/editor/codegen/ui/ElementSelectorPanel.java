@@ -165,6 +165,10 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     
     private void getSelectedHandles( ElementNode.Description description,
                                      ArrayList<ElementHandle<? extends Element>> target) {
+
+        //#143049
+        if (description == null)
+            return;
         
         List<ElementNode.Description> subs = description.getSubs();
         

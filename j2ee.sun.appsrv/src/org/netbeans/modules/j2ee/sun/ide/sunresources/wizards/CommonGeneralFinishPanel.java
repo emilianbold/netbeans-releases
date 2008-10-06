@@ -49,10 +49,9 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.wizards;
 import java.awt.Component;
 import javax.swing.JTextField;
 
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
-
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
@@ -144,6 +143,7 @@ public class CommonGeneralFinishPanel extends  ResourceWizardPanel {
                         setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isLegalResourceName(jndiName)){
+                        setErrorMsg(bundle.getString("Err_InvalidJndiName"));
                         return false;
                     }else if(! ResourceUtils.isUniqueFileName(jndiName, this.helper.getData().getTargetFileObject(), __MAILResource)){
                         setErrorMsg(bundle.getString("Err_DuplFileJndiName"));

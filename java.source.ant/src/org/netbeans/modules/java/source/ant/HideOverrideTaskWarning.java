@@ -49,6 +49,13 @@ import org.apache.tools.ant.module.spi.AntSession;
  */
 public class HideOverrideTaskWarning extends AntLogger {
 
+    public static ThreadLocal<Boolean> cleanBuild = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+    
     @Override
     public int[] interestedInLogLevels(AntSession session) {
         return new int[] {AntEvent.LOG_WARN};
@@ -61,6 +68,7 @@ public class HideOverrideTaskWarning extends AntLogger {
 
     @Override
     public boolean interestedInAllScripts(AntSession session) {
+        // XXX BAD!!! Please fix this to only check your snippets. -jglick
         return true;
     }
     
@@ -69,6 +77,18 @@ public class HideOverrideTaskWarning extends AntLogger {
         if (!event.isConsumed() && event.getMessage().startsWith("Trying to override old definition of task javac")) { // NOI18N
             event.consume();
         }
+    }
+
+    @Override
+    public void buildStarted(AntEvent event) {
+        String[] targets = event.getSession().getOriginatingTargets();
+        
+        cleanBuild.set(targets.length > 0 && "clean".equals(targets[0])); //NOI18N
+    }
+
+    @Override
+    public void buildFinished(AntEvent event) {
+        cleanBuild.set(false);
     }
 
 }

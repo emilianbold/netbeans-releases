@@ -40,10 +40,8 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import org.netbeans.modules.cnd.remote.support.managers.ScriptManager;
-import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import org.openide.util.Exceptions;
 
 /**
  * Base class for running a script remotely where the script requires a manager class
@@ -54,11 +52,9 @@ import org.openide.util.Exceptions;
  */
 public class RemoteScriptSupport extends RemoteConnectionSupport {
     
-    private ChannelExec echannel;
-    
     public RemoteScriptSupport(String key, ScriptManager manager, int port) {
         super(key, port);
-        if (!isCancelled()) {
+        if (!isFailedOrCancelled()) {
             manager.setSupport(this);
             setChannelCommand(manager.getScript());
             manager.runScript(); 
@@ -68,20 +64,17 @@ public class RemoteScriptSupport extends RemoteConnectionSupport {
     public RemoteScriptSupport(String key, ScriptManager manager) {
         this(key, manager, 22);
     }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
-        return echannel;
-    }
     
     private void setChannelCommand(String script) {
         try {
             channel = createChannel();
             // The PATH stuff makes in much less likely to get a non-standard chmod...
-            ((ChannelExec) channel).setCommand("(PATH=/bin:/usr/bin:$PATH chmod 755 " + script + ") && " + script); // NOI18N
+            String cmd = ShellUtils.prepareExportString(new String[] {"PATH=/bin:/usr/bin:$PATH"})+ "(chmod 755 " + script + ") && " + script; // NOI18N
+            log.finest("RemoteScriptSupport runs: " + cmd);
+            ((ChannelExec) channel).setCommand( ShellUtils.wrapCommand(key, cmd));
         } catch (JSchException ex) {
-            log.warning(ex.getMessage());
+            setFailed(ex.getMessage());
+            log.warning("RemoteScriptSupport.setChannelCommand: Reason = [" + ex.getMessage() + "]");
         }
     }
 }

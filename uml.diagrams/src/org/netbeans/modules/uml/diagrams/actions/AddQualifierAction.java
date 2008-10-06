@@ -43,13 +43,13 @@ package org.netbeans.modules.uml.diagrams.actions;
 import javax.swing.Action;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociationEnd;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
-public final class AddQualifierAction extends NodeAction
+public final class AddQualifierAction extends SceneNodeAction
 {
     private IAssociationEnd end = null;
     
@@ -84,12 +84,16 @@ public final class AddQualifierAction extends NodeAction
     
     protected boolean enable(Node[] activatedNodes)
     {
-        boolean retVal = true;
-        if (end == null)
-        {
-            retVal = false;
-        }
+        boolean retVal = false;
         
+        if(super.enable(activatedNodes) == true)
+        {
+            retVal = true;
+            if (end == null)
+            {
+                retVal = false;
+            }
+        }
         return retVal;
     }
     
@@ -97,10 +101,10 @@ public final class AddQualifierAction extends NodeAction
     public Action createContextAwareInstance(Lookup actionContext)
     {
         end = actionContext.lookup(IAssociationEnd.class);
-        if (end == null)
-        {
-            return null;
-        }
+//        if (end == null)
+//        {
+//            return null;
+//        }
         
         return this;
     }

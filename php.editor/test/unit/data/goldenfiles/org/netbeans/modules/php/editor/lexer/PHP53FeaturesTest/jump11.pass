@@ -73,5 +73,5 @@ token #71 WHITESPACE
 token #72 PHP_STRING foobar
 token #73 PHP_SEMICOLON ;
 token #74 WHITESPACE \n
-token #75 PHP_CLOSETAG ?>\n
-token #76 T_INLINE_HTML --EXPECT--\nok!\nok!\nok!\n
+token #75 PHP_CLOSETAG ?>
+token #76 T_INLINE_HTML \n--EXPECT--\nok!\nok!\nok!\n

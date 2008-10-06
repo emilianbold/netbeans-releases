@@ -118,9 +118,8 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         pSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("L_Fault_Breakpoint_BorderTitle"))); // NOI18N
         pSettings.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle").getString("MN_L_Fault_Breakpoint_Process_Namespace").charAt(0));
         jLabel2.setLabelFor(tfProcessNamespace);
-        jLabel2.setText(bundle.getString("L_Fault_Breakpoint_Process_Namespace")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("L_Fault_Breakpoint_Process_Namespace")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -129,9 +128,8 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         pSettings.add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Fault_Breakpoint_Process_Namespace")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle").getString("MN_L_Fault_Breakpoint_Process_Name").charAt(0));
         jLabel3.setLabelFor(tfProcessName);
-        jLabel3.setText(bundle.getString("L_Fault_Breakpoint_Process_Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("L_Fault_Breakpoint_Process_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -161,9 +159,8 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         pSettings.add(tfProcessNamespace, gridBagConstraints);
         tfProcessNamespace.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Fault_Breakpoint_Process_Namespace")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle").getString("MN_L_Fault_Breakpoint_Fault_Namespace").charAt(0));
         jLabel4.setLabelFor(tfFaultNamespace);
-        jLabel4.setText(bundle.getString("L_Fault_Breakpoint_Fault_Namespace")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("L_Fault_Breakpoint_Fault_Namespace")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -183,9 +180,8 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         pSettings.add(tfFaultNamespace, gridBagConstraints);
         tfFaultNamespace.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Fault_Breakpoint_Fault_Namespace")); // NOI18N
 
-        jLabel5.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle").getString("MN_L_Fault_Breakpoint_Fault_Name").charAt(0));
         jLabel5.setLabelFor(tfFaultName);
-        jLabel5.setText(bundle.getString("L_Fault_Breakpoint_Fault_Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, bundle.getString("L_Fault_Breakpoint_Fault_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -205,8 +201,7 @@ public class BpelFaultBreakpointPanel extends JPanel implements Controller/*, or
         pSettings.add(tfFaultName, gridBagConstraints);
         tfFaultName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Fault_Breakpoint_Fault_Name")); // NOI18N
 
-        cbAllFaults.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/bpel/debugger/ui/breakpoint/Bundle").getString("MN_CB_Fault_Breakpoint_All_Faults").charAt(0));
-        cbAllFaults.setText(bundle.getString("CB_Fault_Breakpoint_All_Faults")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbAllFaults, bundle.getString("CB_Fault_Breakpoint_All_Faults")); // NOI18N
         cbAllFaults.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cbAllFaults.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

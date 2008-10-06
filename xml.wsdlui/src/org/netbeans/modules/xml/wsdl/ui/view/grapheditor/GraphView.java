@@ -62,7 +62,6 @@ import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -72,6 +71,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.MessagesWidget;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.PartnerScene;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget.WidgetConstants;
 import org.netbeans.modules.xml.xam.Component;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -230,10 +230,6 @@ public class GraphView extends JPanel {
             showHideMessageToggle.setBorder(border);
         }
         toolbar.add(showHideMessageToggle);
-
-        // vlv: print
-        toolbar.addSeparator();
-        toolbar.add(PrintManager.printPreviewAction());
     }
 
     /**
@@ -335,7 +331,7 @@ public class GraphView extends JPanel {
         public ViewCollaborationsAction() {
             String path = NbBundle.getMessage(ViewCollaborationsAction.class,
                     "IMG_ViewCollaborationsAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }
@@ -367,7 +363,7 @@ public class GraphView extends JPanel {
         public ViewMessagesAction() {
             String path = NbBundle.getMessage(ViewMessagesAction.class,
                     "IMG_ViewMessagesAction");
-            Image img = Utilities.loadImage(path);
+            Image img = ImageUtilities.loadImage(path);
             if (img != null) {
                 putValue(Action.SMALL_ICON, new ImageIcon(img));
             }

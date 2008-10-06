@@ -55,7 +55,7 @@ import org.openide.loaders.DataFolder.SortMode;
  *
  * @author  Jaroslav Tulach
  */
-final class FolderOrder extends Object implements Comparator<DataObject> {
+final class FolderOrder extends Object implements Comparator<Object> {
     
     /** a static map with (FileObject, Reference (Folder))
      */
@@ -142,15 +142,15 @@ final class FolderOrder extends Object implements Comparator<DataObject> {
 
     /** Compares two data object or two nodes.
     */
-    public int compare (DataObject obj1, DataObject obj2) {
-        Integer i1 = (order == null) ? null : order.get (obj1.getPrimaryFile ().getNameExt ());
-        Integer i2 = (order == null) ? null : order.get (obj2.getPrimaryFile ().getNameExt ());
+    public int compare (Object obj1, Object obj2) {
+        Integer i1 = (order == null) ? null : (Integer) order.get(FolderComparator.findFileObject(obj1).getNameExt());
+        Integer i2 = (order == null) ? null : (Integer) order.get(FolderComparator.findFileObject(obj2).getNameExt());
 
         if (i1 == null) {
             if (i2 != null) return 1;
 
             // compare by the provided comparator
-            return getSortMode ().compare (obj1, obj2);
+            return ((FolderComparator)(getSortMode())).doCompare(obj1, obj2);
         } else {
             if (i2 == null) return -1;
             // compare integers

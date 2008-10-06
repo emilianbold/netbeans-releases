@@ -62,7 +62,7 @@ public class ClassDiagramBasicLinksTests extends UMLTestCase {
     public static int COUNT = 0;
     //public static boolean initialized = false;
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private DiagramOperator diagram = null;
     private DependencyDiagramVerifier verifier = null;
     

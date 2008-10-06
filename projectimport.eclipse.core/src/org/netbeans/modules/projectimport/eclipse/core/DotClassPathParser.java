@@ -70,7 +70,7 @@ final class DotClassPathParser {
         try {
             dotClasspathXml = XMLUtil.parse(new InputSource(dotClasspath.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(dotClasspath + ": " + e.toString()).initCause(e);
+            IOException ioe = (IOException) new IOException(dotClasspath + ": " + e.toString()).initCause(e); //NOI18N
             throw ioe;
         }
         Element classpathEl = dotClasspathXml.getDocumentElement();
@@ -113,7 +113,7 @@ final class DotClassPathParser {
                 }
                 props.put(key, value);
             }
-            Element entryAttrs = Util.findElement(classpathEntry, "attributes", null);
+            Element entryAttrs = Util.findElement(classpathEntry, "attributes", null); //NOI18N
             if (entryAttrs != null) {
                 /*
                 <classpathentry kind="lib" path="/home/dev/hibernate-annotations-3.3.1.GA/lib/hibernate-commons-annotations.jar" sourcepath="/home/dev/hibernate-annotations-3.3.1.GA/src">
@@ -125,7 +125,7 @@ final class DotClassPathParser {
                 List<Element> attrsList = Util.findSubElements(entryAttrs);
                 if (attrsList != null) {
                     for (Element e : attrsList) {
-                        props.put(e.getAttribute("name"), e.getAttribute("value"));
+                        props.put(e.getAttribute("name"), e.getAttribute("value")); //NOI18N
                     }
                 }
             }
@@ -133,7 +133,7 @@ final class DotClassPathParser {
             if (entry.getKind() == DotClassPathEntry.Kind.SOURCE) {
                 sources.add(entry);
             } else if (entry.getKind() == DotClassPathEntry.Kind.OUTPUT) {
-                assert output == null : "there should be always just one default output";
+                assert output == null : "there should be always just one default output"; //NOI18N
                 output = entry;
             } else if (entry.getKind() == DotClassPathEntry.Kind.CONTAINER &&
                     entry.getRawPath().startsWith(Workspace.DEFAULT_JRE_CONTAINER)) {
@@ -150,9 +150,10 @@ final class DotClassPathParser {
     }
     
     private static String resolveLink(String value, List<Link> links) {
+        String[] v = EclipseUtils.splitVariable(value);
         for (Link l : links) {
-            if (l.getName().equals(value)) {
-                return l.getLocation();
+            if (l.getName().equals(v[0])) {
+                return l.getLocation() + v[1];
             }
         }
         return null;

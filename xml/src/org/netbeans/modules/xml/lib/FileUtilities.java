@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.lib;
 
+import org.netbeans.modules.xml.util.Util;
 import java.io.IOException;
 
 import org.openide.loaders.DataObject;
@@ -176,7 +177,8 @@ public final class FileUtilities {
             file = folder.getFileObject (name + ext);
         } else if ( askForOverwrite ) {
 
-            if (!!! GuiUtil.confirmAction (Util.THIS.getString ("PROP_replaceMsg", name + ext) ) ) {
+            if (!!! GuiUtil.confirmAction (Util.THIS.getString (
+                    FileUtilities.class, "PROP_replaceMsg", name + ext) ) ) {
                 file = null;
             }
 

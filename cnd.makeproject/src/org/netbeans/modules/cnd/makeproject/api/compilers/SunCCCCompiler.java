@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -121,7 +122,14 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         }
     }
     
-    protected abstract String getDefaultPath();
+    protected String getDefaultPath() {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getNames().length > 0){
+            return compiler.getNames()[0];
+        }
+        return ""; // NOI18N
+    }
+
     protected abstract String getCompilerStderrCommand();
     protected abstract String getCompilerStderrCommand2();
     
@@ -129,14 +137,14 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
         String path = getPath();
-        if (path == null || !new File(path).exists()) {
+        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
             path = getDefaultPath();
         }
         try {
             getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
             if (getCompilerStderrCommand2() != null)
                 getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand2(), false);
-            systemIncludeDirectoriesList.addUnique("/usr/include"); // NOI18N
+            systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
 
             saveSystemIncludesAndDefines();
         } catch (IOException ioe) {
@@ -150,6 +158,4 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     public void resetSystemIncludesAndDefines() {
         getFreshSystemIncludesAndDefines();
     }
-    
-    
 }

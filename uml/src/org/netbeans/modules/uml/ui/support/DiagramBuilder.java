@@ -117,11 +117,7 @@ public class DiagramBuilder
             String meid = target.getModelElementID();
             if (presentationId != null && presentationId.length() > 0)
             {
-               diagram.centerPresentationElement2(target.getPresentationID(), true, true);
-            }
-            else if (meid != null && meid.length() > 0 && toplevelId != null && toplevelId.length() > 0)
-            {
-               centerOnME(diagram, toplevelId, meid);
+               diagram.centerPresentationElement(target.getPresentationID(), true, true);
             }
          }
       }
@@ -212,46 +208,11 @@ public class DiagramBuilder
                diaMgr.raiseWindow(openDia);
                if (presId != null && presId.length() > 0)
                {
-                  openDia.centerPresentationElement2(presId, true, true);
-               }
-               else if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
-               {
-                  centerOnME(openDia, meid, topLevelId);
+                  //openDia.centerPresentationElement(presId, true, true);
                }
             }
          }
       }
-   }
-
-   /**
-    * Centers on the first PE of a model element
-    */
-   private void centerOnME(IDiagram openDia, String meid, String topLevelId)
-   {
-       // TODO: meteora
-//      if (topLevelId != null && topLevelId.length() > 0 && meid != null && meid.length() > 0)
-//      {
-//         // The presentation target comes from a stub diagram so the presentation elements were
-//         // not available - only the model element.
-//         IDrawingAreaControl control = null;
-//         if (openDia != null && openDia instanceof IUIDiagram)
-//         {
-//            control = ((IUIDiagram) openDia).getDrawingArea();
-//         }
-//         if (control != null)
-//         {
-//            ETList < IPresentationElement > pPEs = control.getAllItems(topLevelId, meid);
-//            if (pPEs != null)
-//            {
-//               int count = pPEs.size();
-//               if (count > 0)
-//               {
-//                  IPresentationElement pPE = pPEs.get(0);
-//                  control.centerPresentationElement(pPE, true, true);
-//               }
-//            }
-//         }
-//      }
    }
 
    /**

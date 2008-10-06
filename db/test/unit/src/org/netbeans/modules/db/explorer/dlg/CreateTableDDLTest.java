@@ -28,9 +28,9 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.util.Vector;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
-public class CreateTableDDLTest extends DBTestBase {
+public class CreateTableDDLTest extends DDLTestBase {
 
     public CreateTableDDLTest(String name) {
         super(name);
@@ -63,7 +63,7 @@ public class CreateTableDDLTest extends DBTestBase {
         col.setProperty(ColumnItem.TYPE, type);
         cols.add(col);
         
-        CreateTableDDL ddl = new CreateTableDDL(spec, SCHEMA, tablename);
+        CreateTableDDL ddl = new CreateTableDDL(getSpecification(), getSchema(), tablename);
         
         boolean wasException = ddl.execute(cols, pkcols);
         
@@ -94,7 +94,7 @@ public class CreateTableDDLTest extends DBTestBase {
         cols.add(col);
         pkcols.add(col);
         
-        CreateTableDDL ddl = new CreateTableDDL(spec, SCHEMA, tablename);
+        CreateTableDDL ddl = new CreateTableDDL(getSpecification(), getSchema(), tablename);
         
         boolean wasException = ddl.execute(cols, pkcols);
         
@@ -134,7 +134,7 @@ public class CreateTableDDLTest extends DBTestBase {
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
         cols.add(col);
         
-        CreateTableDDL ddl = new CreateTableDDL(spec, SCHEMA, tablename);
+        CreateTableDDL ddl = new CreateTableDDL(getSpecification(), getSchema(), tablename);
         
         boolean wasException = ddl.execute(cols, pkcols);
         

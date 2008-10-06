@@ -45,8 +45,10 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -58,8 +60,10 @@ import org.netbeans.modules.gsf.api.HintFix;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.PreviewableFix;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.AstUtilities;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
+import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -86,7 +90,6 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class StrictWarning extends JsErrorRule {
-
     public static final String ANON_NO_RETURN_VALUE = "msg.anon.no.return.value"; // NOI18N
     public static final String BAD_OCTAL_LITERAL = "msg.bad.octal.literal"; // NOI18N
     public static final String DUP_PARAMS = "msg.dup.parms"; // NOI18N
@@ -133,6 +136,9 @@ public class StrictWarning extends JsErrorRule {
 
         int astOffset = error.getStartPosition();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+        if (lexOffset == -1) {
+            return;
+        }
 
         if (TRAILING_COMMA.equals(key)) { // NOI18N
             // See if we're targeting the applicable browsers
@@ -146,6 +152,9 @@ public class StrictWarning extends JsErrorRule {
 
             astOffset = (Integer) error.getParameters()[0];
             lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            if (lexOffset == -1) {
+                return;
+            }
             range = new OffsetRange(lexOffset, lexOffset + 1);
         } else if (RESERVED_KEYWORD.equals(key)) {
             String keyword = (String) error.getParameters()[1];
@@ -177,7 +186,7 @@ public class StrictWarning extends JsErrorRule {
             }
 
             if (key.equals(NO_SIDE_EFFECTS) && node.hasChildren() && node.getFirstChild().getType() == Token.NAME &&
-                    "debugger".equals(node.getFirstChild().getString())) { // NOI18N
+                "debugger".equals(node.getFirstChild().getString())) { // NOI18N
                 // Don't warn about no side effects on the debugger keyword...
                 context.remove = true;
                 return;
@@ -205,8 +214,21 @@ public class StrictWarning extends JsErrorRule {
 
                 range = new OffsetRange(start, Math.min(doc.getLength(), start+1));
             }
+
+            if (key.equals(NO_SIDE_EFFECTS)) {
+                // When you're typing "foo.", you don't want a warning that
+                // the foo range has no side effects
+                JsParseResult jpr = (JsParseResult)context.parserResult;
+                OffsetRange sanitizedRange = jpr.getSanitizedRange();
+                if (sanitizedRange.overlaps(range) || sanitizedRange.containsInclusive(range.getStart()) ||
+                        sanitizedRange.containsInclusive(range.getEnd())) {
+                    context.remove = true;
+                    return;
+                }
+            }
         } else {
             int errorOffset = lexOffset;
+            errorOffset = Math.min(errorOffset, doc.getLength());
             try {
                 int rowLastNonWhite = Utilities.getRowLastNonWhite(doc, errorOffset);
                 if (rowLastNonWhite <= errorOffset) {
@@ -230,10 +252,25 @@ public class StrictWarning extends JsErrorRule {
             //List<HintFix> fixList = Collections.singletonList(fix);
             List<HintFix> fixList;
             if (key.equals(TRAILING_COMMA)) { // NOI18N
-
                 fixList = new ArrayList<HintFix>(2);
                 fixList.add(new RemoveTrailingCommaFix(context, lexOffset));
                 fixList.add(new MoreInfoFix(key));
+            } else if (key.equals(NO_SIDE_EFFECTS)) {
+                Node node = (Node) error.getParameters()[0];
+                if (node.getType() == Token.EXPR_VOID) {
+                    fixList = new ArrayList<HintFix>(2);
+                    fixList.add(new AssignToVar(context, node, true));
+                    // Determine if we can return this expression
+                    Node returnNode = node.getNext();
+                    if (returnNode != null && returnNode.getType() == Token.RETURN &&
+                            // Implicit returns only for now
+                            !returnNode.hasChildren() && returnNode.getSourceStart() == returnNode.getSourceEnd()) {
+                        fixList.add(new AssignToVar(context, node, false));
+                    }
+                    fixList.add(new MoreInfoFix(key));
+                } else {
+                    fixList = Collections.<HintFix>singletonList(new MoreInfoFix(key));
+                }
             } else {
                 fixList = Collections.<HintFix>singletonList(new MoreInfoFix(key));
             }
@@ -256,7 +293,10 @@ public class StrictWarning extends JsErrorRule {
             // Adjust offsets, since (a) Node offsets are still kinda shaky, and
             // (b) for things like block nodes we want to limit the errors to
             // a single line!
+            range = range.boundTo(0, doc.getLength());
             if (range.getStart() == 0) {
+                offset = Math.min(offset, doc.getLength());
+
                 // Probably an incorrectly initialized node AST offset somewhere
                 int start = Math.max(range.getStart(), Utilities.getRowStart(doc, offset));
                 int end = Math.max(start, Math.min(range.getEnd(), doc.getLength()));
@@ -268,7 +308,7 @@ public class StrictWarning extends JsErrorRule {
             } else {
                 int start = range.getStart();
                 int end = Math.min(Utilities.getRowEnd(doc, start), range.getEnd());
-                range = new OffsetRange(start, end);
+                range = new OffsetRange(Math.min(start,end), end);
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -341,6 +381,95 @@ public class StrictWarning extends JsErrorRule {
             list.replace(offset, 1, null, false, 0);
 
             return list;
+        }
+
+        public boolean isSafe() {
+            return false;
+        }
+
+        public boolean isInteractive() {
+            return false;
+        }
+
+        public boolean canPreview() {
+            return true;
+        }
+    }
+
+    private static class AssignToVar implements PreviewableFix {
+        private final boolean assign;
+        private final JsRuleContext context;
+        private final Node node;
+        private int varOffset;
+        private String varName;
+
+        public AssignToVar(JsRuleContext context, Node node, boolean assign) {
+            this.context = context;
+            this.node = node;
+            this.assign = assign;
+        }
+
+        public String getDescription() {
+            return assign ?
+                NbBundle.getMessage(StrictWarning.class, "AssignToVarFix") :
+                NbBundle.getMessage(StrictWarning.class, "AssignToReturnFix");
+        }
+
+        public EditList getEditList() throws Exception {
+            BaseDocument doc = context.doc;
+            EditList edits = new EditList(doc);
+
+            OffsetRange astRange = AstUtilities.getRange(node);
+            if (astRange != OffsetRange.NONE) {
+                OffsetRange lexRange = LexUtilities.getLexerOffsets(context.compilationInfo, astRange);
+                if (lexRange != OffsetRange.NONE) {
+                    if (assign) {
+                        int offset = lexRange.getStart();
+                        StringBuilder sb = new StringBuilder();
+                        varName = NbBundle.getMessage(StrictWarning.class, "VarName");
+                        sb.append(varName);
+                        sb.append(" = "); // NOI18N
+                        varOffset = offset;
+                        edits.replace(offset, 0, sb.toString(), false, 0);
+                    } else {
+                        if (node.getNext() != null && node.getNext().getType() == Token.RETURN &&
+                            !node.getNext().hasChildren()) {
+                            Node returnNode = node.getNext();
+                            int returnEnd = returnNode.getSourceEnd();
+                            int returnStart = returnNode.getSourceStart();
+                            // Is this node in the source, or added automatically because it is implicit?
+                            boolean implicit = returnStart == returnEnd;
+                            int offset = lexRange.getStart();
+                            edits.replace(offset, 0, "return ", false, 0); // NOI18N
+                            if (!implicit) {
+                                int returnLength = returnEnd - returnStart;
+                                if (returnEnd < doc.getLength() &&
+                                        "return;".equals(doc.getText(returnStart, returnLength+1))) { // NOI18N
+                                    returnLength++;
+                                }
+                                edits.replace(returnStart, returnLength, "", false, 0);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return edits;
+        }
+
+        public void implement() throws Exception {
+            EditList edits = getEditList();
+
+            Position pos = edits.createPosition(varOffset);
+            edits.apply();
+            if (pos != null && pos.getOffset() != -1) {
+                JTextComponent target = GsfUtilities.getPaneFor(context.compilationInfo.getFileObject());
+                if (target != null) {
+                    int start = pos.getOffset();
+                    int end = start + varName.length();
+                    target.select(start, end);
+                }
+            }
         }
 
         public boolean isSafe() {

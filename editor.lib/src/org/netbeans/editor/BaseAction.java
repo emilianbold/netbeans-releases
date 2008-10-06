@@ -248,6 +248,12 @@ public abstract class BaseAction extends TextAction {
     */
     public final void actionPerformed(final ActionEvent evt) {
         final JTextComponent target = getTextComponent(evt);
+
+        // #146657 - Only perform the action if the document is BaseDocument's instance
+        // #147899 - NPE
+        if (target == null || !(target.getDocument() instanceof BaseDocument)) {
+            return;
+        }
                               
         if( recording && 0 == (updateMask & NO_RECORDING) ) {
             recordAction( target, evt );

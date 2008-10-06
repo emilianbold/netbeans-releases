@@ -219,6 +219,7 @@ private void standAlonePatternSelected(java.awt.event.ActionEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     
     public boolean valid(WizardDescriptor wizard) {
+        AbstractPanel.clearErrorMessage(wizard);
         return true;
     }
     
@@ -226,7 +227,7 @@ private void standAlonePatternSelected(java.awt.event.ActionEvent evt) {//GEN-FI
         Pattern p = (Pattern) settings.getProperty(WizardProperties.PATTERN_SELECTION);
         if (p == Pattern.CONTAINER) {
             patternButtons.setSelected(containerRadioButton.getModel(), true);
-        } if (p == Pattern.CLIENTCONTROLLED) {
+        } else if (p == Pattern.CLIENTCONTROLLED) {
             patternButtons.setSelected(clientControlledRadioButton.getModel(), true);
         } else { // default
             patternButtons.setSelected(standAloneRadioButton.getModel(), true);

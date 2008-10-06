@@ -68,8 +68,6 @@ import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;     
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.TurboProvider;
-import org.netbeans.modules.turbo.TurboProvider;
-import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -231,7 +229,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }        
         fireChanged(from);        
-    }    
+    }
+
+    static File getStorageRootFile() {
+        String userDir = System.getProperty("netbeans.user"); // NOI18N
+        return new File(new File(userDir, "var"), "filehistory"); // NOI18N
+    }
 
     private long lastModified(File file) {   
         StoreDataFile data = readStoreData(file, true); 
@@ -794,8 +797,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }    
        
     private void initStorage() {
-        String userDir = System.getProperty("netbeans.user");                   // NOI18N                
-        storage = new File(new File (userDir , "var"), "filehistory");       // NOI18N                    
+        storage = getStorageRootFile();
         if(!storage.exists()) {
             storage.mkdirs();            
         }        

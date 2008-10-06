@@ -154,6 +154,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** document we work with */
     private StrongRef doc;
 
+    /** State of doc reference, it is set to true in prepareDocument when StrongRef is created
+     * and set to false when document loading is finished. It helps to reset doc reference to weak just once. */
+    private boolean isStrongSet = false;
+
+    private int counterGetDocument = 0;
+    private int counterOpenDocument = 0;
+    private int counterPrepareDocument = 0;
+
     /** Non default MIME type used to editing */
     private String mimeType;
 
@@ -226,12 +234,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private Map<Line,Reference<Line>> lineSetWHM;
     private boolean annotationsLoaded;
-
-    /* Whether the file was externally modified or not.
-     * This flag is used only in saveDocument to prevent
-     * overriding of externally modified file. See issue #32777.
-     */
-    private boolean externallyModified;
 
     /** Creates new CloneableEditorSupport attached to given environment.
     *
@@ -416,6 +418,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Overrides superclass method, first processes document preparation.
      * @see #prepareDocument */
+    @Override
     public void open() {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
@@ -498,6 +501,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return propertyChangeSupport;
     }
 
+    private boolean canReleaseDoc () {
+        if ((counterGetDocument == 0) && (counterOpenDocument == 0) && (counterPrepareDocument == 0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //
     // EditorCookie implementation
     // 
@@ -519,8 +530,30 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
-
-                return prepareDocument(false);
+                counterPrepareDocument++;
+                Task t = prepareDocument(false);
+                //Check for null is workaround for issue #144722
+                if (t != null) {
+                    t.addTaskListener(new TaskListener() {
+                        public void taskFinished(Task task) {
+                            counterPrepareDocument--;
+                            if (isStrongSet && canReleaseDoc()) {
+                                isStrongSet = false;
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
+                            task.removeTaskListener(this);
+                        }
+                    });
+                } else {
+                    counterPrepareDocument--;
+                    if (isStrongSet && canReleaseDoc()) {
+                        isStrongSet = false;
+                        if (this.doc != null) {
+                            this.doc.setStrong(false);
+                        }
+                    }
+                }
+                return t;
 
             default:
 
@@ -557,7 +590,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             final StyledDocument[] docToLoad = { getDoc() };
             if (docToLoad[0] == null) {
                 docToLoad[0] = createStyledDocument(kit);
-                setDoc(docToLoad[0], false);
+                setDoc(docToLoad[0], true);
+                isStrongSet = true;
 
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
@@ -716,7 +750,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
-            return openDocumentCheckIOE();
+            try {
+                counterOpenDocument++;
+                StyledDocument doc = openDocumentCheckIOE();
+                return doc;
+            } finally {
+                counterOpenDocument--;
+                if (isStrongSet && canReleaseDoc()) {
+                    isStrongSet = false;
+                    this.doc.setStrong(false);
+                }
+            }
         }
     }
 
@@ -773,6 +817,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
     }
 
+    Throwable getPrepareDocumentRuntimeException () {
+        return prepareDocumentRuntimeException;
+    }
+
     /** Get the document. This method may be called before the document initialization
      * (<code>prepareTask</code>)
      * has been completed, in such a case the document must not be modified.
@@ -796,9 +844,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     }
 
                     try {
-                        return openDocumentCheckIOE();
+                        counterGetDocument++;
+                        StyledDocument doc = openDocumentCheckIOE();
+                        return doc;
                     } catch (IOException e) {
                         return null;
+                    } finally {
+                        counterGetDocument--;
+                        if (isStrongSet && canReleaseDoc()) {
+                            isStrongSet = false;
+                            this.doc.setStrong(false);
+                        }
                     }
                 }
             }
@@ -831,28 +887,32 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (!cesEnv().isModified()) {
             return;
         }
-
-        //#32777: check that file was not modified externally.
-        // If it was then cancel saving operation. It is not absolutely
-        // correct, but there is no other way.
-        if (lastSaveTime != -1) {
-            externallyModified = false;
-
-            // asking for time should if necessary refresh the underlaying object
-            // (eg. FileObject) and this change can result in document reload task
-            // which will set externallyModified to true
-            cesEnv().getTime();
-
-            if (externallyModified) {
-                // save operation must be cancelled now. The user get message box
-                // asking user to reload externally modified file. 
-                return;
-            }
-        }
-
         final StyledDocument myDoc = getDocument();
         if (myDoc == null) {
             return;
+        }
+
+        long prevLST = lastSaveTime;
+        if (prevLST != -1) {
+            final long externalMod = cesEnv().getTime().getTime();
+            if (externalMod > prevLST) {
+                throw new UserQuestionException(mimeType) {
+                    @Override
+                    public String getLocalizedMessage() {
+                        return NbBundle.getMessage(
+                            CloneableEditorSupport.class,
+                            "FMT_External_change_write",
+                            myDoc.getProperty(Document.TitleProperty)
+                        );
+                    }
+
+                    @Override
+                    public void confirmed() throws IOException {
+                        lastSaveTime = externalMod;
+                        saveDocument();
+                    }
+                };
+            }
         }
 
         // save the document as a reader
@@ -881,8 +941,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         
                         doMarkAsUnmodified = true;
                         ERR.fine("doMarkAsUnmodified"); // NOI18N
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException blex) {
+                        Exceptions.printStackTrace(blex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
                             ERR.fine("restoring old save time"); // NOI18N
@@ -1127,6 +1187,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *
     * @return <code>true</code> if everything can be closed
     */
+    @Override
     protected boolean canClose() {
         if (cesEnv().isModified()) {
 
@@ -1249,6 +1310,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         return documentStatus != DOCUMENT_NO;
     }
+    
+    /** Test whether the document is ready.
+    * @return <code>true</code> if document is ready
+    */
+    private boolean isDocumentReady() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.isDocumentReady();
+        }
+        return documentStatus == DOCUMENT_READY;
+    }
 
     /**
     * Set the MIME type for the document.
@@ -1363,16 +1435,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // Doing this in a different thread would need to lock the document for
         // reading through doc.render() while this stream is open, which may be unacceptable
         // So we copy the document in memory
-        StyledDocument doc = getDocument();
+        StyledDocument tmpDoc = getDocument();
 
-        if (doc == null) {
+        if (tmpDoc == null) {
             return cesEnv().inputStream();
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
-            saveFromKitToStream(doc, kit, baos);
+            saveFromKitToStream(tmpDoc, kit, baos);
         } catch (BadLocationException e) {
             //assert false : e;
             // should not happen
@@ -1730,7 +1802,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             String message = null;
 
-            if (e.getMessage() != e.getLocalizedMessage()) {
+            if ((Object)e.getMessage() != e.getLocalizedMessage()) {
                 message = e.getLocalizedMessage();
             } else {
                 message = Exceptions.findLocalizedMessage(e);
@@ -1929,6 +2001,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @param ask ask whether to save the document or not?
     * @return <code>false</code> if the operation is cancelled
     */
+    @Override
     protected boolean close(boolean ask) {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
@@ -1941,7 +2014,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         notifyClosed();
-
+        
         return true;
     }
 
@@ -1984,11 +2057,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (positionManager != null) {
             positionManager.documentClosed();
-
+            
             documentStatus = DOCUMENT_NO;
             fireDocumentChange(getDoc(), true);
         }
-
+        
         documentStatus = DOCUMENT_NO;
         setDoc(null, false);
         kit = null;
@@ -2183,7 +2256,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** If one or more editors are opened finds one.
     * @return an editor or null if none is opened
     */
-    private Pane getAnyEditor() {
+    Pane getAnyEditor() {
         CloneableTopComponent ctc;
         ctc = allEditors.getArbitraryComponent();
 
@@ -2220,9 +2293,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-   
+    
     final Pane openReuse(final PositionRef pos, final int column, int mode) {
         if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
+        return openAtImpl(pos, column, true);
+    }
+
+    final Pane openReuse(final PositionRef pos, final int column, Line.ShowOpenType mode) {
+        if (mode == Line.ShowOpenType.REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
     }
     
@@ -2253,6 +2331,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         final Task t = prepareDocument();
         e.ensureVisible();
         class Selector implements TaskListener, Runnable {
+            private boolean documentLocked = false;
+
             public void taskFinished(org.openide.util.Task t2) {
                 javax.swing.SwingUtilities.invokeLater(this);
                 t2.removeTaskListener(this);
@@ -2272,38 +2352,39 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     return; // already closed or error loading
                 }
 
-                Caret caret = ePane.getCaret();
+                if (!documentLocked) {
+                    documentLocked = true;
+                    doc.render(this);
+                } else {
+                    Caret caret = ePane.getCaret();
 
-                if (caret == null) {
-                    return;
-                }
+                    if (caret == null) {
+                        return;
+                    }
 
-                int offset;
+                    int offset;
 
-                if (column >= 0) {
                     javax.swing.text.Element el = NbDocument.findLineRootElement(doc);
                     el = el.getElement(el.getElementIndex(pos.getOffset()));
-                    offset = el.getStartOffset() + column;
+                    offset = el.getStartOffset() + Math.max(0, column);
 
                     if (offset > el.getEndOffset()) {
-                        offset = el.getEndOffset();
+                        offset = Math.max(el.getStartOffset(), el.getEndOffset() - 1);
                     }
-                } else {
-                    offset = Math.min(pos.getOffset(), doc.getLength());
-                }
 
-                caret.setDot(offset);
+                    caret.setDot(offset);
 
-                try { // scroll to show reasonable part of the document
-                    Rectangle r = ePane.modelToView(offset);
-                    if (r != null) {
-                        r.height *= 5; 
-                        ePane.scrollRectToVisible(r);
+                    try { // scroll to show reasonable part of the document
+                        Rectangle r = ePane.modelToView(offset);
+                        if (r != null) {
+                            r.height *= 5;
+                            ePane.scrollRectToVisible(r);
+                        }
+                    } catch (BadLocationException ex) {
+                        ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                            + ", column=" + column + ", offset=" + offset //NOI18N
+                            + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                     }
-                } catch (BadLocationException ex) {
-                    ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
-                        + ", column=" + column + ", offset=" + offset //NOI18N
-                        + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                 }
             }
         }
@@ -2366,6 +2447,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return;
         }
         this.doc = new StrongRef(doc, strong);
+        Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
     }
 
     private final class StrongRef extends WeakReference<StyledDocument> 
@@ -2465,12 +2547,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         /** @return cloned instance
         */
+        @Override
         public Object clone() {
             return new PlainEditorKit();
         }
 
         /** @return this (I am the ViewFactory)
         */
+        @Override
         public ViewFactory getViewFactory() {
             return this;
         }
@@ -2482,6 +2566,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         /** Set to a sane font (not proportional!). */
+        @Override
         public void install(JEditorPane pane) {
             super.install(pane);
             pane.setFont(new Font("Monospaced", Font.PLAIN, pane.getFont().getSize() + 1)); //NOI18N
@@ -2582,16 +2667,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
                 
-                ERR.fine("PROP_TIME new value: " + time);
-                ERR.fine("       lastSaveTime: " + lastSaveTime);
+                ERR.fine("PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1));
+                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime);
                 
                 boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime));
                 ERR.fine("             reload: " + reload);
 
                 if (reload) {
-                    //#32777 - set externallyModified to true because file was externally modified
-                    externallyModified = true;
-
                     // - post in AWT event thread because of possible dialog popup
                     // - acquire the write access before checking, so there is no
                     //   clash in-between and we're safe for potential reload.
@@ -2616,12 +2698,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                                     return;
                                 }
-
-                                checkReload((time == null) || !isModified());
+                                ERR.fine("checkReload starting"); // NOI18N
+                                boolean noAsk = time == null || !isModified();
+                                ERR.fine("checkReload noAsk: " + noAsk);
+                                checkReload(noAsk);
                             }
                         }
-                    
                     );
+                    ERR.fine("reload task posted"); // NOI18N
                 }
             }
 
@@ -2776,6 +2860,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             this.saveTime = saveTime;
         }
 
+        @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             if (delegate == null) {
                 delegate = anEdit;
@@ -2786,6 +2871,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
 
+        @Override
         public boolean addEdit(UndoableEdit anEdit) {
             if (!(anEdit instanceof BeforeModificationEdit) && !(anEdit instanceof SearchBeforeModificationEdit)) {
                 /* UndoRedo.addEdit() must not be done lazily
@@ -2799,6 +2885,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
 
+        @Override
         public void redo() {
             super.redo();
 
@@ -2807,6 +2894,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public boolean isSignificant() {
             return (delegate != null);
         }
@@ -2824,6 +2912,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             ERR.log(Level.FINE, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
         }
 
+        @Override
         public boolean addEdit(UndoableEdit anEdit) {
             if ((delegate == null) && !(anEdit instanceof SearchBeforeModificationEdit)) {
                 delegate = anEdit;
@@ -2834,6 +2923,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return delegate.addEdit(anEdit);
         }
 
+        @Override
         public void undo() {
             super.undo();
 
@@ -2853,6 +2943,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         SearchBeforeModificationEdit() {
         }
 
+        @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             if (delegate == null) {
                 delegate = anEdit;
@@ -2875,6 +2966,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             super.setLimit(1000);
         }
 
+        @Override
         public void redo() throws javax.swing.undo.CannotRedoException {
             final StyledDocument myDoc = support.getDocument();
 
@@ -2890,6 +2982,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public void undo() throws javax.swing.undo.CannotUndoException {
             final StyledDocument myDoc = support.getDocument();
 
@@ -2905,58 +2998,77 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public boolean canRedo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(2, myDoc).booleanResult;
         }
 
+        @Override
         public boolean canUndo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(3, myDoc).booleanResult;
         }
 
+        @Override
         public int getLimit() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(4, myDoc).intResult;
         }
 
+        @Override
         public void discardAllEdits() {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(5, myDoc);
         }
 
+        @Override
         public void setLimit(int l) {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(6, myDoc, l);
         }
 
+        @Override
         public boolean canUndoOrRedo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(7, myDoc).booleanResult;
         }
 
+        @Override
         public java.lang.String getUndoOrRedoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(8, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(8, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
+        @Override
         public java.lang.String getRedoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(9, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(9, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
+        @Override
         public java.lang.String getUndoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(10, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(10, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
+        @Override
         public void undoOrRedo() throws javax.swing.undo.CannotUndoException, javax.swing.undo.CannotRedoException {
             final StyledDocument myDoc = support.getDocument();
 
@@ -3070,7 +3182,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Special runtime exception that holds the original I/O failure.
      */
-    private static final class DelegateIOExc extends IllegalStateException {
+    static final class DelegateIOExc extends IllegalStateException {
         public DelegateIOExc(IOException ex) {
             super(ex.getMessage());
             initCause(ex);

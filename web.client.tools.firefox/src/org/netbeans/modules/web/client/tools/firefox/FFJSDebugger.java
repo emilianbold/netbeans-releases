@@ -38,13 +38,9 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -52,6 +48,7 @@ import org.netbeans.modules.web.client.tools.common.launcher.Utils;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,12 +64,29 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
     protected void launchImpl(int port) {
         LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
         launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
+        if (!Utilities.isMac()) {
+            launchDescriptor.setArguments(getBrowserArguments());
+        }
         try {
             Launcher.launch(launchDescriptor);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }        
     }
+    
+    @Override
+    protected boolean startDebuggingImpl() {
+        boolean result = super.startDebuggingImpl();
+        if (result) {
+            startHttpMonitorThread();
+        }
+        return result;
+    }
+    
+    @Override
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        return super.getInputStreamForURLImpl(uri, true);
+    }        
 
     public String getID() {
         if (ID == null) {
@@ -80,20 +94,4 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
         }
         return ID;
     }
-   
-    @Override
-    protected InputStream getInputStreamForURLImpl(URL url) {
-        if (proxy != null && url != null) {
-            try {
-                String source = proxy.getSource(url.toURI());
-                if (source != null) {
-                    return new ByteArrayInputStream(source.getBytes());
-                }
-            } catch (URISyntaxException use) {
-                Log.getLogger().log(Level.INFO, use.getMessage(), use);
-            }
-        }
-        return null;
-    }
-    
 }

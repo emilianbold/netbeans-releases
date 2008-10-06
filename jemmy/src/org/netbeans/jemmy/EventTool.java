@@ -51,6 +51,8 @@ import java.awt.Toolkit;
 
 import java.awt.event.AWTEventListener;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -329,7 +331,12 @@ public class EventTool implements Timeoutable, Outputable {
      * @throws	TimeoutExpiredException
      */
     public void waitNoEvent(long waitTime) {
-	waitNoEvent(listenerSet.getTheWholeMask(), waitTime);
+        ListenerSet ls = listenerSet;
+        if (ls != null) {
+            // surprisingly this field can be null in case of massive
+            // garbage collecting efforts like in NbTestCase.assertGC
+            waitNoEvent(ls.getTheWholeMask(), waitTime);
+        }
     }
 
     private AWTEvent waitEvent(long eventMask, long waitTime, TestOut waiterOutput) {
@@ -365,18 +372,18 @@ public class EventTool implements Timeoutable, Outputable {
     private static class EventType implements AWTEventListener {
 	long eventMask;
 	long eventTime;
-	private AWTEvent event;
+	private Reference eventRef;
 	public EventType(long eventMask) {
 	    this.eventMask = eventMask;
-	    event = null;
+	    eventRef = new WeakReference(null);
 	    eventTime = -1;
 	}
 	public void eventDispatched(AWTEvent event) {
-	    this.event = event;
+	    eventRef = new WeakReference(event);
 	    eventTime = System.currentTimeMillis();
 	}
 	public AWTEvent getEvent() {
-	    return(event);
+	    return (AWTEvent)eventRef.get();
 	}
 	public long getTime() {
 	    return(eventTime);

@@ -3,15 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="label" transform="translate(130,200)">
-   <text display="none">type=label</text>
-   <text x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
-       <text display="none">type=text</text>
-       Label
-   </text>
-</g>]]> 
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.Label" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/label_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/label_32.png"/>
      

@@ -40,6 +40,7 @@
 package org.netbeans.junit;
 
 
+import java.net.URISyntaxException;
 import test.pkg.not.in.junit.NbModuleSuiteIns;
 import test.pkg.not.in.junit.NbModuleSuiteT;
 import test.pkg.not.in.junit.NbModuleSuiteS;
@@ -79,7 +80,7 @@ public class NbModuleSuiteTest extends TestCase {
         assertProperty("netbeans.full.hack", "true");
     }
     
-    public void testPreparePathes() {
+    public void testPreparePathes() throws URISyntaxException {
         Properties p = new Properties();
 
         String prop = File.separator + "x" + File.separator + "c:org-openide-util.jar" + File.pathSeparator +

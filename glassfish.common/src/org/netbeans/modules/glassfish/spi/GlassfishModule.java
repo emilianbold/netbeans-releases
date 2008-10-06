@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -68,6 +69,8 @@ public interface GlassfishModule {
     public static final String JRUBY_HOME = "jruby.home"; // NOI18N
     public static final String DOMAINS_FOLDER_ATTR = "domainsfolder"; // NOI18N
     public static final String DOMAIN_NAME_ATTR = "domainname";
+    public static final String HTTP_MONITOR_FLAG = "httpMonitorOn";
+    public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
     
     public static final String DEBUG_PORT = "debugPort"; // NOI18N
     public static final String JVM_MODE = "jvmMode"; // NOI18N
@@ -84,7 +87,7 @@ public interface GlassfishModule {
     // Resource types
     public static final String JDBC_RESOURCE = "jdbc-resource"; // NOI18N
     public static final String JDBC_CONNECTION_POOL = "jdbc-connection-pool"; // NOI18N
-    
+    public static final String SESSION_PRESERVATION_FLAG = "preserveSessionsOn";
     /**
      * Enum for the current state of the server (stopped, running, etc.)
      */
@@ -138,6 +141,17 @@ public interface GlassfishModule {
      *   completed (or failed).
      */
     public Future<OperationState> startServer(OperationStateListener stateListener);
+
+    /**
+     * Start the server with a specific JDK.
+     * 
+     * @param stateListener listener to listen message describing the startup 
+     *   process as it progresses.  Can be null.
+     * 
+     * @return Future instance that finishes when the server startup has
+     *   completed (or failed).
+     */
+    public Future<OperationState> startServer(OperationStateListener stateListener,FileObject jdkRoot, String[] jvmArgs);
 
     /**
      * Stop the server.

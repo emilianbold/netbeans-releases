@@ -58,7 +58,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -121,7 +120,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
@@ -336,15 +334,24 @@ public class RetoucheUtils {
         Project p = FileOwnerQuery.getOwner(fo);
         if (p==null) 
             return false;
+
+        //workaround for 143542
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        if (!Arrays.asList(opened).contains(p)) {
-            return false;
+        for (Project pr : opened) {
+            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                    return true;
+                }
+            }
         }
-        return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
+        return false;
+        //end of workaround
+        //return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
-        return fo.equals(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo));
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        return cp != null ? fo.equals(cp.findOwnerRoot(fo)) : false;
     }
     
     public static boolean isRefactorable(FileObject file) {
@@ -508,6 +515,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementHandle();
         } catch (IOException ex) {
@@ -519,6 +527,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementKind();
         } catch (IOException ex) {
@@ -531,6 +540,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getSimpleName();
         } catch (IOException ex) {
@@ -543,6 +553,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + handle.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(handle), true);
             return ff.getFileObject();
         } catch (IOException ex) {
@@ -554,6 +565,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getQualifiedName();
         } catch (IOException ex) {
@@ -565,6 +577,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
             return ff.typeExist();
         } catch (IOException ex) {
@@ -630,6 +643,17 @@ public class RetoucheUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
         ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+        //When file[0] is a class file, there is no compile cp but execute cp
+        //try to get it
+        if (compile == null) {
+            compile = ClassPath.getClassPath(files[0], ClassPath.EXECUTE);
+        }
+        //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
+        //doesn't accept null compile or boot cp.
+        if (compile == null) {
+            LOG.warning ("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
+            compile = nullPath;
+        }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
@@ -785,7 +809,6 @@ public class RetoucheUtils {
         private String fqn;
         private String typeToCheck;
         private boolean typeExist;
-        private ElementHandle<TypeElement> enclosingTypeHandle;
         private ElementKind kind;
         private IllegalArgumentException iae;
         
@@ -811,6 +834,9 @@ public class RetoucheUtils {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
             Element el = handle.resolveElement(cc);
+            if (el == null) {
+                return;
+            }
             f = SourceUtils.getFile(el, cc.getClasspathInfo());
             try {
                 eh=ElementHandle.create(el);
@@ -818,18 +844,15 @@ public class RetoucheUtils {
                 this.iae = iae;
             }
             name = el.getSimpleName().toString();
-            if (el instanceof TypeElement) 
+            kind = el.getKind();
+            if (kind.isClass() || kind.isInterface()) {
                 fqn = ((TypeElement) el).getQualifiedName().toString();
+            }
+
             if (typeToCheck!=null) {
                 typeExist = cc.getElements().getTypeElement(typeToCheck)!=null;
             }
-                if (el instanceof TypeElement) {
-                    enclosingTypeHandle = ElementHandle.create((TypeElement)el);
-                } else {
-                    enclosingTypeHandle = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
-                }
             
-            kind = el.getKind();
         }
         
         public FileObject getFileObject() {
@@ -850,12 +873,6 @@ public class RetoucheUtils {
         
         public boolean typeExist() {
             return typeExist;
-        }
-        
-        public ElementHandle<TypeElement> getEnclosingTypeHandle() {
-            if (iae!=null)
-                throw iae;
-            return enclosingTypeHandle;
         }
         
         public ElementKind getElementKind() {
@@ -969,8 +986,10 @@ public class RetoucheUtils {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (!cancel) {
-                        if (waitDialog!=null)
+                        if (waitDialog != null) {
                             waitDialog.setVisible(false);
+                            waitDialog.dispose();
+                        }
                         action.run();
                     }
                 }
@@ -985,6 +1004,7 @@ public class RetoucheUtils {
             if (waitDialog != null) {
                 cancel = true;
                 waitDialog.setVisible(false);
+                waitDialog.dispose();
             }
         }
     }

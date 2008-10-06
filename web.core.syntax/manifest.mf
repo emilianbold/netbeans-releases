@@ -2,6 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.web.core.syntax/2
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/core/syntax/Bundle.properties
-OpenIDE-Module-Install: org/netbeans/modules/web/core/syntax/settings/RestoreSettings.class
 OpenIDE-Module-Layer: org/netbeans/modules/web/core/syntax/resources/layer.xml
 

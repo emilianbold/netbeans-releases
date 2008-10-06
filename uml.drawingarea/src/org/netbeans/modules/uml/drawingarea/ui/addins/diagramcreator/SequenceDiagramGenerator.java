@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -70,6 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -350,6 +352,10 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                                     ((UMLNodeWidget)addedW).initializeNode(pEle);
                                     saveDrawEngineIntoMap(lifeline, pEle);
                                 }
+                                else
+                                {
+                                    UMLLogger.logMessage("attempt to add a lifeline cause addition of "+addedW,Level.WARNING);
+                                }
                                 scene.validate();
                                 horizontalOffset=addedW.getPreferredLocation().x+addedW.getPreferredBounds().x+addedW.getPreferredBounds().width;
                                 numCreated++;
@@ -549,6 +555,15 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                     {
                         UMLNodeWidget sendLL=m_MapLifelineToEngine.get(sendLifeline);
                         UMLNodeWidget receiveLL=m_MapLifelineToEngine.get(recLifeline);
+                        //in some rare cases, not reproducible consistently nodes are missed, need to skip this message
+                        //it may be better to skip even if it's error somewhere to avoid fail in diagram creation with more worst result.
+                        if(sendLL==null || receiveLL==null)
+                        {
+                            verticalOffset += 15;
+                            UMLLogger.logMessage("source or target lifeline is missed, can't create message",Level.WARNING);
+                            continue;
+                        }
+                        //
                         Point startingPoint=new Point(0,verticalOffset);
                         Point finishingPoint=new Point(0,verticalOffset);
                         //check if need to bump down result message
@@ -691,7 +706,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
             // Deselect everything
             m_Diagram.selectAll(false);
             //m_Diagram.setLayoutStyleSilently(ILayoutKind.LK_SEQUENCEDIAGRAM_LAYOUT);
-            ((SQDDiagramEngineExtension) scene.getEngine()).layout();      
+            ((SQDDiagramEngineExtension) scene.getEngine()).layout(false);
             // Force everything to draw
             //m_Diagram.fitInWindow();
         }

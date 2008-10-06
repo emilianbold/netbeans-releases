@@ -13,7 +13,7 @@ Macros:
     <no macros>
 NAMESPACE DEFINITOIN boost [1:1/0-18:2/380] SCOPE: infinite3.cc
     NAMESPACE DEFINITOIN noncopyable_ [3:1/19-14:2/329] SCOPE: infinite3.cc
-        CLASS noncopyable (boost::noncopyable_::noncopyable ) [5:3/81-13:5/327] lcurly=101 SCOPE: noncopyable_ 
+        CLASS noncopyable (boost::noncopyable_::noncopyable ) [5:3/81-13:4/326] lcurly=101 SCOPE: noncopyable_ 
             BASE CLASSES:
             MEMBERS:
                 FUNCTION DEFINITION noncopyable  [8:7/123-8:23/139] ConstructorDDImpl SCOPE: noncopyable 
@@ -44,17 +44,17 @@ NAMESPACE DEFINITOIN boost [1:1/0-18:2/380] SCOPE: infinite3.cc
                     PARAMETERS:
                          [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:42/306]  INIT: null  SCOPE: operator = 
                     RETURNS const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:7/271-12:25/289]
-    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
+    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: boost::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
 
 ========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for boost (boost) 
     infinite3.cc  [1:1/0-18:2/380]
 NAMESPACE boost (boost) 
-    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: $unresolved$::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
+    TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: boost::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
     NAMESPACE DEFINITIONS for noncopyable_ (boost::noncopyable_) 
         infinite3.cc  [3:1/19-14:2/329]
     NAMESPACE noncopyable_ (boost::noncopyable_) 
-        CLASS noncopyable (boost::noncopyable_::noncopyable ) [5:3/81-13:5/327] lcurly=101 SCOPE: noncopyable_ 
+        CLASS noncopyable (boost::noncopyable_::noncopyable ) [5:3/81-13:4/326] lcurly=101 SCOPE: noncopyable_ 
             BASE CLASSES:
             MEMBERS:
                 FUNCTION DEFINITION noncopyable  [8:7/123-8:23/139] ConstructorDDImpl SCOPE: noncopyable 

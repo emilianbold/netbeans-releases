@@ -508,6 +508,7 @@ public class VerifyLibsAndLicenses extends Task {
      * Not as precise:
      * 1. Might be some '?' status files (though these should be fixed by someone).
      * 2. Some tracked files/dirs might for some reason be listed as ignored.
+     * Also adds in external binaries listed in a binaries-list file, if present.
      */
     static Set<String> findHgControlledFiles(File dir) throws IOException {
         File[] kids = dir.listFiles();
@@ -559,6 +560,29 @@ public class VerifyLibsAndLicenses extends Task {
                 }
             }
             files.add(n);
+        }
+        File list = new File(dir, "binaries-list");
+        if (list.isFile()) {
+            Reader r = new FileReader(list);
+            try {
+                BufferedReader br = new BufferedReader(r);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("#")) {
+                        continue;
+                    }
+                    if (line.trim().length() == 0) {
+                        continue;
+                    }
+                    String[] hashAndFile = line.split(" ", 2);
+                    if (hashAndFile.length < 2) {
+                        throw new BuildException("Bad line '" + line + "' in " + list);
+                    }
+                    files.add(hashAndFile[1]);
+                }
+            } finally {
+                r.close();
+            }
         }
         return files;
     }

@@ -46,7 +46,12 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
@@ -61,7 +66,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public OffsetableDeclarationBase(AST ast, CsmFile file) {
         super(ast, file);
     }
-    
+
+    public OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+    }
+
     protected OffsetableDeclarationBase(CsmFile containingFile, CsmOffsetable pos) {
         super(containingFile, pos);
     }
@@ -95,7 +104,114 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     protected CsmUID createUID() {
         return UIDUtilities.createDeclarationUID(this);
     }
-    
+
+    public boolean isValid() {
+        return CsmBaseUtilities.isValid(getContainingFile());
+    }
+
+    protected TemplateDescriptor createTemplateDescriptor(AST node, CsmScope scope, StringBuilder classTemplateSuffix) {
+        boolean _template = false, specialization = false;
+        switch(node.getType()) {
+            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION: 
+            case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION: 
+            case CPPTokenTypes.CSM_CTOR_TEMPLATE_DECLARATION: 
+            case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:  
+            case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
+                _template = true;
+                break;
+            case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
+            case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
+                _template = true;
+                specialization = true;
+                break;
+        }
+        if (_template) {
+            boolean templateClass = false;
+            List<CsmTemplateParameter> templateParams = null;
+            AST templateNode = node.getFirstChild();
+            AST templateClassNode = templateNode;            
+            if (templateNode == null || templateNode.getType() != CPPTokenTypes.LITERAL_template) {
+                return null;
+            }
+            // 0. our grammar can't yet differ template-class's method from template-method
+            // so we need to check here if we has template-class or not
+            AST qIdToken = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
+            // 1. check for definition of template class's method
+            // like template<class A> C<A>:C() {}
+            AST startTemplateSign = qIdToken != null ? AstUtil.findChildOfType(qIdToken, CPPTokenTypes.LESSTHAN) : null;
+            if (startTemplateSign != null) {
+                // TODO: fix parsing of inline definition of template operator <
+                // like template<class T, class P> bool operator<(T x, P y) {return x<y};
+                // workaround is next validation
+                AST endTemplateSign = null;//( startTemplateSign.getNextSibling() != null ? startTemplateSign.getNextSibling().getNextSibling() : null);
+                for( AST sibling = startTemplateSign.getNextSibling(); sibling != null; sibling = sibling.getNextSibling() ) {
+                    if( sibling.getType() == CPPTokenTypes.GREATERTHAN ) {
+                        endTemplateSign = sibling;
+                        break;
+                    }
+                }
+                if (endTemplateSign != null) {
+                    AST scopeSign = endTemplateSign.getNextSibling();
+                    if (scopeSign != null && scopeSign.getType() == CPPTokenTypes.SCOPE) {
+                        // 2. we have template class, we need to determine, is it specialization definition or not
+                        if (specialization && classTemplateSuffix != null) { 
+                            // we need to initialize classTemplateSuffix in this case
+                            // to avoid mixing different specialization (IZ92138)
+                            classTemplateSuffix.append(TemplateUtils.getSpecializationSuffix(qIdToken, null));
+                        }     
+                        // but there is still a chance to have template-method of template-class
+                        // e.g.: template<class A> template<class B> C<A>::C(B b) {}
+                        AST templateSiblingNode = templateNode.getNextSibling();
+                        if ( templateSiblingNode != null && templateSiblingNode.getType() == CPPTokenTypes.LITERAL_template ) {
+                            // it is template-method of template-class
+                            templateNode = templateSiblingNode;
+                            templateClass = true;
+                        } else {
+                            // we have no template-method at all
+                            templateClass = true;
+                            _template = false;
+                        }
+                    }
+                }
+            }
+            int inheritedTemplateParametersNumber = 0;
+            if(templateClass){
+                templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
+                    getContainingFile(), scope);
+                inheritedTemplateParametersNumber = templateParams.size();
+            }
+            CharSequence templateSuffix = "";
+            if (_template) {                
+                // 3. We are sure now what we have template-method, 
+                // let's check is it specialization template or not
+                if (specialization) {
+                    // 3a. specialization
+                    if (qIdToken == null) {
+                        // malformed template specification
+                        templateSuffix = "<>"; //NOI18N
+                    } else {
+                        templateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, null);
+                    }
+                } else {
+                    // 3b. no specialization, plain and simple template-method
+                    StringBuilder sb  = new StringBuilder();
+                    TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb, null);
+                    templateSuffix = '<' + sb.toString() + '>';
+                }                
+                if(templateParams != null) {
+                    templateParams.addAll(TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), scope));
+                } else {
+                    templateParams = TemplateUtils.getTemplateParameters(templateNode,
+                        getContainingFile(), scope);                    
+                }
+            }            
+            return new TemplateDescriptor(
+                templateParams, templateSuffix, inheritedTemplateParametersNumber);
+        }
+        return null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

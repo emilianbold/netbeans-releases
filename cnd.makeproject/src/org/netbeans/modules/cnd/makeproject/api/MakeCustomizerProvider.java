@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor.ProjectItemChangeEvent;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -91,7 +90,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     private DialogDescriptor dialogDescriptor;
     private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
     private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
+    private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
     
     public MakeCustomizerProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -212,7 +211,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put (project, dialog);
         dialog.setVisible(true);
-        
+        clonedProjectdescriptor.closed();
     }    
     
 
@@ -252,6 +251,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 }
                 
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
+                makeCustomizer.save();
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606

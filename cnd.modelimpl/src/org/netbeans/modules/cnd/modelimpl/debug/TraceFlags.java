@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.debug;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 
@@ -48,10 +51,11 @@ import org.netbeans.modules.cnd.apt.debug.DebugUtils;
  * A common place for tracing flags that are used by several classes
  * @author Vladimir Kvashim
  */
-public interface TraceFlags {
+public class TraceFlags {
     
     public static final boolean TRACE_PARSER_QUEUE_DETAILS = Boolean.getBoolean("cnd.parser.queue.trace.details");
     public static final boolean TRACE_PARSER_QUEUE = TRACE_PARSER_QUEUE_DETAILS || Boolean.getBoolean("cnd.parser.queue.trace");
+    public static final boolean TRACE_PARSER_QUEUE_POLL = TRACE_PARSER_QUEUE || Boolean.getBoolean("cnd.parser.queue.trace.poll");
     public static final boolean TRACE_CLOSE_PROJECT = DebugUtils.getBoolean("cnd.trace.close.project", false);
     public static final boolean TIMING_PARSE_PER_FILE_DEEP = Boolean.getBoolean("cnd.modelimpl.timing.per.file.deep");
     public static final boolean TIMING_PARSE_PER_FILE_FLAT = Boolean.getBoolean("cnd.modelimpl.timing.per.file.flat");
@@ -60,6 +64,10 @@ public interface TraceFlags {
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors");
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast");
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false);
+
+
+    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", true);    
+    public static final boolean NO_HEADERS_REPARSE = DebugUtils.getBoolean("cnd.no.hdr.reparse", false);
     
     /** 
      * swithces off parsing function bodies
@@ -101,8 +109,6 @@ public interface TraceFlags {
     public static final boolean SET_UNNAMED_QUALIFIED_NAME = DebugUtils.getBoolean("cnd.modelimpl.fqn.unnamed", false);
     public static final boolean TRACE_UNNAMED_DECLARATIONS = DebugUtils.getBoolean("cnd.modelimpl.trace.unnamed", false);
 
-    public static final boolean CHECK_DECLARATIONS = DebugUtils.getBoolean("cnd.modelimpl.check.decl", false);
-
     public static final boolean TRACE_REGISTRATION = DebugUtils.getBoolean("cnd.modelimpl.trace.registration", false);
     public static final boolean TRACE_DISPOSE = DebugUtils.getBoolean("cnd.modelimpl.trace.dispose", false);
 
@@ -111,6 +117,8 @@ public interface TraceFlags {
 
     public static final boolean USE_DEEP_REPARSING = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing", true);
     public static final boolean USE_DEEP_REPARSING_TRACE = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.trace", false);
+    public static final boolean DEEP_REPARSING_OPTIMISTIC = DebugUtils.getBoolean("cnd.modelimpl.use.deep.repersing.optimistic", false);
+
     
     public static final boolean SAFE_REPOSITORY_ACCESS = DebugUtils.getBoolean("cnd.modelimpl.repository.safe.access", false);
 
@@ -133,4 +141,20 @@ public interface TraceFlags {
     public static boolean TRACE_EXTERNAL_CHANGES = DebugUtils.getBoolean("cnd.modelimpl.trace.external.changes", false);
     
     public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false);
+    public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false);
+    public static final boolean TRACE_PC_STATE = DebugUtils.getBoolean("cnd.pp.condition.state.trace", false);
+    
+    public static final String[] logMacros;
+    static {
+         String text = System.getProperty("parser.log.macro"); //NOI18N
+         if (text != null && text.length() > 0) {
+             List<String> l = new ArrayList<String>();
+             for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) { //NOI18N
+                 l.add(stringTokenizer.nextToken());
+             }
+             logMacros = l.toArray(new String[l.size()]);
+         } else {
+             logMacros = null;
+         }
+    }
 }

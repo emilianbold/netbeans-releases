@@ -45,17 +45,32 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author karolharezlak
  */
-public final class DatabindingElement implements PropertyEditorElement {
+public final class DatabindingElement implements PropertyEditorElement, CleanUp {
 
+    private static final String DATABINDING_LABEL = "DatabindingElement.radioButton"; // NOI18N
+    private static final String ASCN_DATABINDING = "ASCN_Databinding";
+    private static final String ASCD_DATABINDING = "ASCD_Databinding";
     private JRadioButton radioButton;
     private DatabindingElementUI customEditor;
     private WeakReference<DesignComponent> component;
     private DesignPropertyEditor propertyEditor;
+
+    public void clean(DesignComponent component) {
+        if (customEditor != null) {
+            customEditor.clean(component);
+            customEditor = null;
+        }
+        radioButton = null;
+        this.component = null;
+        propertyEditor = null;
+    }
 
     public DatabindingElement(DesignPropertyEditor propertyEditor) {
         assert propertyEditor != null;
@@ -63,15 +78,16 @@ public final class DatabindingElement implements PropertyEditorElement {
     }
 
     public void updateState(PropertyValue value) {
-        if (component == null)
+        if (component == null) {
             return;
+        }
         final DesignComponent c = component.get();
         if (c == null) {
             return;
         }
         customEditor.updateComponent(c);
     }
-    
+
     public void updateDesignComponent(DesignComponent component) {
         this.component = new WeakReference(component);
     }
@@ -80,12 +96,13 @@ public final class DatabindingElement implements PropertyEditorElement {
     }
 
     public String getTextForPropertyValue() {
-        return null; 
+        return null;
     }
 
     public JComponent getCustomEditorComponent() {
         if (customEditor == null) {
             customEditor = new DatabindingElementUI(propertyEditor, radioButton);
+            radioButton.setSelected(false);
             if (component != null) {
                 customEditor.updateComponent(component.get());
             }
@@ -95,7 +112,13 @@ public final class DatabindingElement implements PropertyEditorElement {
 
     public JRadioButton getRadioButton() {
         if (radioButton == null) {
-            radioButton = new JRadioButton("Databinding"); //TODO locolized
+            radioButton = new JRadioButton();
+            Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(
+                    DatabindingElement.class, DATABINDING_LABEL));
+            radioButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                    DatabindingElement.class, ASCN_DATABINDING));
+            radioButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                    DatabindingElement.class, ASCD_DATABINDING));
         }
         return radioButton;
     }

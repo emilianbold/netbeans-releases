@@ -405,7 +405,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -427,7 +427,10 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfloader</friend>
+                <package>org.netbeans.modules.visualweb.designer.jsf</package>
+                <package>org.netbeans.modules.visualweb.designer.jsf.ui</package>
                 <package>org.netbeans.modules.visualweb.spi.designer.jsf</package>
             </friend-packages>
         </data>

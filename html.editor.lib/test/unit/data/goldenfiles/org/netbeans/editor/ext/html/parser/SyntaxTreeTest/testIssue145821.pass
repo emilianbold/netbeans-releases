@@ -1,0 +1,9 @@
+root:null<0,70>
+-table:TAG<0,70>
+--table:OPEN_TAG<0,20>
+--table:TAG<25,78>
+---table:OPEN_TAG<25,32>
+---table:UNMATCHED_TAG<41,48>
+----table:OPEN_TAG<41,48>
+---table:ENDTAG<70,78>
+--table:ENDTAG<79,87>

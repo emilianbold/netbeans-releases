@@ -65,6 +65,7 @@ public class LogReader {
     private static boolean TRACE = false;
     
     private String workingDir;
+    private String baseWorkingDir;
     private final String root;
     private final String fileName;
     private List<SourceFileProperties> result;
@@ -140,10 +141,14 @@ public class LogReader {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = dirMessage.replaceAll("`|'|\"", ""); //NOI18N
             if (TRACE) message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
+            baseWorkingDir = workDir;
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
             if (TRACE) message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
+            if (workDir.startsWith("/")){ // NOI18N
+                baseWorkingDir = workDir;
+            }
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
             workDir = line.trim();
             if (TRACE) message = "**>> by [just path string] "; //NOI18N
@@ -153,16 +158,24 @@ public class LogReader {
             return false;
         }
 
-        if (new File(workDir).exists()) {
+        if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
             if (TRACE) System.err.print(message);
             setWorkingDir(workDir);
             return true;
         } else {
-            workDir = workingDir + File.separator + workDir;
-            if (new File(workDir).exists()) {
+            String dir = workingDir + File.separator + workDir;
+            if (new File(dir).exists()) {
                 if (TRACE) System.err.print(message);
-                setWorkingDir(workDir);
+                setWorkingDir(dir);
                 return true;
+            }
+            if (baseWorkingDir != null) {
+                dir = baseWorkingDir + File.separator + workDir;
+                if (new File(dir).exists()) {
+                    if (TRACE) System.err.print(message);
+                    setWorkingDir(dir);
+                    return true;
+                }
             }
         }
         return false;
@@ -284,7 +297,7 @@ public class LogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
            return true;
        }
        return false;

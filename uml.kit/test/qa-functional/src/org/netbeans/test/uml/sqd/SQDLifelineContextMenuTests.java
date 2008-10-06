@@ -95,7 +95,7 @@ public class SQDLifelineContextMenuTests  extends UMLTestCase {
     private String FONT_DLG = "Font";
     private String BOLD_CHB = "Bold";
     private String ITALIC_CHB = "Italic";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     /********************************************************/
     
     

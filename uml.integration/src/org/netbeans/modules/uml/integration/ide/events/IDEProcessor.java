@@ -272,7 +272,7 @@ public class IDEProcessor implements EventProcessor {
             ETList < IImplementation > impls = sym.getImplementations();
             for(IImplementation curImpl : impls)
             {
-                IInterface contract = curImpl.getContract();
+                IClassifier contract = curImpl.getContract();
                 IClassifier implementor = curImpl.getImplementingClassifier();
                 
                 if((contract.isSame(interfaceSym) == true) &&

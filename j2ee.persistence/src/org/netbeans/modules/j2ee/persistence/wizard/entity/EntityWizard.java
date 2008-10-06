@@ -69,7 +69,9 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
@@ -115,10 +117,18 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
+        Sources sources = ProjectUtils.getSources(project);
         sourceGroups = SourceGroups.getJavaSourceGroups(project);
         ejbPanel = new EntityWizardDescriptor();
-        WizardDescriptor.Panel p = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
-        panels = new WizardDescriptor.Panel[] {p};
+        WizardDescriptor.Panel targetChooserPanel = null;
+        // Need to check if there are any Java Source group. See issue 139851
+        if(sourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
+            targetChooserPanel = new ValidatingPanel(Templates.createSimpleTargetChooser( project, sourceGroups, ejbPanel ));
+        } else {
+            targetChooserPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
+        }
+        panels = new WizardDescriptor.Panel[] {targetChooserPanel};
         Wizards.mergeSteps(wiz, panels, null);
     }
     
@@ -157,7 +167,11 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         String entityFQN = "";
         ClassPathProvider classPathProvider = project.getLookup().lookup(ClassPathProvider.class);
         if (classPathProvider != null) {
-            entityFQN = classPathProvider.findClassPath(entity, ClassPath.SOURCE).getResourceName(entity, '.', false);
+            ClassPath clsPath = classPathProvider.findClassPath(entity, ClassPath.SOURCE);
+            if(clsPath == null ) {
+               return;
+            }
+            entityFQN = clsPath.getResourceName(entity, '.', false);
         }
         
         if (project != null && !Util.isSupportedJavaEEVersion(project) && ProviderUtil.getDDFile(project) != null) {

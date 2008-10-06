@@ -48,6 +48,7 @@
 package org.netbeans.modules.uml.project;
 
 import javax.swing.SwingUtilities;
+import org.openide.util.Lookup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.uml.core.IApplication;
@@ -58,6 +59,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.ADProduct;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
 import org.netbeans.modules.uml.ui.support.DispatchHelper;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.project.ui.UMLUserInterface;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
 import org.openide.modules.ModuleInstall;
@@ -83,18 +85,7 @@ public class UMLProjectModule extends ModuleInstall
     {
         
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // ModuleInstall Methods
-    
-    /**
-     * Loads the UML application and the initializes the Application Designer
-     * product.
-     */
-    public void restored()
-    {
-	lightInit();
-    }
+        
 
     private static void lightInit() 
     {
@@ -109,30 +100,24 @@ public class UMLProjectModule extends ModuleInstall
         
 		    if(product != null)
 		    {
-//         RequestProcessor.getDefault().post(new Runnable()
-//         {
-//             public void run()
+
+                        IProductDiagramManager diagManager = (IProductDiagramManager) Lookup.getDefault()
+                            .lookup(IProductDiagramManager.class);
+                        product.setDiagramManager(diagManager);
+
 			{
                 
 			    DispatchHelper helper = new DispatchHelper();
-                            // TODO: meteora
-//			    helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 			}
-//         });
-            
-			//product.setDiagramManager(new UMLDiagramManager());
             
 			// Put the user interface proxy
 			product.setProxyUserInterface(new UMLUserInterface());
 			product.setProjectManager(new UMLProductProjectManager());
                         product.setProjectTreeModel(mModel);
-			// m_AcceleratorMgr = m_ADProduct.getAcceleratorManager();
 		    }
 		    else
 		    {
 			DispatchHelper helper = new DispatchHelper();
-                        // TODO: meteora
-//			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 		    }      
 		    lightInitialized = true;
 		}

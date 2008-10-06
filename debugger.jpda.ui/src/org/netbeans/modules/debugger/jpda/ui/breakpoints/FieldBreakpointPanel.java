@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -52,6 +53,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,22 +66,23 @@ import org.openide.util.NbBundle;
 public class FieldBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.field"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private FieldBreakpoint             breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 epClassName;
+    private JTextField                  tfClassName;
     
     private static FieldBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String fieldName;
         try {
-            fieldName = EditorContextBridge.getContext().getCurrentFieldName();
+            fieldName = EditorContextBridge.getMostRecentFieldName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             fieldName = "";
         }
@@ -111,11 +114,12 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
 
         ResourceBundle bundle = NbBundle.getBundle(FieldBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
-        epClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
-        epClassName.setToolTipText(tooltipText); // NOI18N
-        epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
-        jLabel3.setLabelFor(epClassName);
+        tfClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
+        tfClassName.setToolTipText(tooltipText); // NOI18N
+        tfClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        tfClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
+        jLabel3.setLabelFor(tfClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Field_Breakpoint_Type_Access"));
         cbBreakpointType.addItem (bundle.getString("LBL_Field_Breakpoint_Type_Modification"));
@@ -132,7 +136,8 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
@@ -145,7 +150,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.field"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
     
@@ -282,7 +287,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
             return false;
         }
         actionsPanel.ok ();
-        String className = epClassName.getText ().trim ();
+        String className = tfClassName.getText ().trim ();
         breakpoint.setClassName (className);
         breakpoint.setFieldName (tfFieldName.getText ().trim ());
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -326,7 +331,7 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
     }
     
     private String valiadateMsg () {
-        if (epClassName.getText().trim ().length() == 0 || tfFieldName.getText().trim ().length() == 0) {
+        if (tfClassName.getText().trim ().length() == 0 || tfFieldName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(FieldBreakpointPanel.class, "MSG_No_Class_or_Field_Name_Spec");
         }
         return null;

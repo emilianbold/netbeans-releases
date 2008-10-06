@@ -53,7 +53,7 @@ public final class WSStack<T> {
 
     private final WSStackImplementation<T> impl;
     private final Source stackSource;
-    private final Class<T> stackType;
+    private final Class<T> stackDescriptor;
 
     static {
         WSStackAccessor.DEFAULT = new WSStackAccessor() {
@@ -69,27 +69,25 @@ public final class WSStack<T> {
     
     /** This method is used to find WSStack instance from J2eePlatform lookup
      * 
-     * @param <T> class parameter that identifies WSStack type: it's the same as in WSStackFactory.createWSStack() method
+     * @param <T> class parameter that identifies WSStack type: it's the same as in {@link org.netbeans.modules.websvc.wsstack.spi.WSStackFactory#createWSStack WSStackFactory.createWSStack()} method
      * @param lookupContext J2eePlatform lookup that will be searched for WSStack objects
-     * @param stackType Class object used to search WSStack type: it's the same as in WSStackFactory.createWSStack() method
+     * @param stackDescriptor Class object used to search WSStack type: it's the same as in {@link org.netbeans.modules.websvc.wsstack.spi.WSStackFactory#createWSStack WSStackFactory.createWSStack()} method
      * @return WSStack object of a particular WSStack type
      */
     @SuppressWarnings("unchecked")
-    public static <T> WSStack<T> findWSStack(Lookup lookupContext, Class<T> stackType) {
-        System.out.println("findWSStack()");
+    public static <T> WSStack<T> findWSStack(Lookup lookupContext, Class<T> stackDescriptor) {
         Collection<? extends WSStack> wsStacks = lookupContext.lookupAll(WSStack.class);
         for (WSStack wsStack: wsStacks) {
-            System.out.println("wsStack = "+wsStack+":"+wsStack.get()+":"+wsStack.getVersion());
-            if (wsStack.stackType == stackType) return wsStack;
+            if (wsStack.stackDescriptor == stackDescriptor) return wsStack;
         }
         return null;
     }
     
 
-    private WSStack(Class<T> stackType, WSStackImplementation<T> impl, Source stackSource) {
+    private WSStack(Class<T> stackDescriptor, WSStackImplementation<T> impl, Source stackSource) {
         this.impl = impl;
         this.stackSource = stackSource;
-        this.stackType = stackType;
+        this.stackDescriptor = stackDescriptor;
     }
     
     /** Returns an instance of type parameter (<T>).
@@ -111,7 +109,7 @@ public final class WSStack<T> {
         return impl.getVersion();
     }
     
-    /** Returns WSTool for particular WS Stack Tool (e.g. wsimport), based on toolId.
+    /** Returns {@link WSTool} for particular WS Stack Tool (e.g. wsimport), based on toolId.
      * 
      * @param toolId WS tool identifier
      * @return WSTool API object
@@ -169,9 +167,11 @@ public final class WSStack<T> {
      *  Options are: SERVER, IDE or JDK.
      */
     public enum Source {
-
+        /** WS Stack libraries are provided by IDE (IDE library) */
         IDE,
+        /** WS Stack libraries are provided by JDK (WS Stack is part of JDK) */
         JDK,
+        /** WS Stack libraries are provided by (J2EE) Server */
         SERVER
     }
 }

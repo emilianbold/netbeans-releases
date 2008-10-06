@@ -45,13 +45,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Hit;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
@@ -93,6 +96,37 @@ public class LuceneIndexTest extends NbTestCase {
             assertTrue (indexFolder2.canRead());
             assertTrue (IndexReader.indexExists(indexFolder2));
             compareIndeces (indexFolder1, indexFolder2);
+        }
+    }
+
+    public void testHitsBug () throws Exception {
+        File root = getWorkDir();
+        root.mkdirs();
+        Directory dir = FSDirectory.getDirectory(root);
+        final IndexWriter w = new IndexWriter(dir, new KeywordAnalyzer(),true);
+        try {
+           for (int i=0; i<200; i++) {
+               Field field = new Field("KEY","value"+i,Field.Store.YES,Field.Index.NO_NORMS);
+               Document doc = new Document();
+               doc.add(field);
+               w.addDocument(doc);
+           }
+        } finally {
+            w.close();
+        }
+        final IndexReader in = IndexReader.open(dir);
+        try {
+            final Searcher searcher = new IndexSearcher (in);
+            try {
+                Hits hits = searcher.search(new  PrefixQuery((new Term("KEY", "value1"))));
+                for (int j=0; j<hits.length(); j++) {
+                    in.deleteDocument (hits.id(j));
+                }
+            } finally {
+                searcher.close();
+            }
+        } finally {
+            in.close();
         }
     }
     

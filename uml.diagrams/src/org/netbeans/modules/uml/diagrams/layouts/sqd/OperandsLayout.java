@@ -40,13 +40,11 @@
 package org.netbeans.modules.uml.diagrams.layouts.sqd;
 
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.sqd.CombinedFragmentWidget;
 
 /**
  *

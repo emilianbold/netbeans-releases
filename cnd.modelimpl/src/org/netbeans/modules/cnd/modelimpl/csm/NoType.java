@@ -84,11 +84,11 @@ public class NoType implements CsmType {
         return false;
     }
     
-    public String getText() {
+    public CharSequence getText() {
         return "";
     }
     
-    public String getCanonicalText() {
+    public CharSequence getCanonicalText() {
 	return "";
     }
     
@@ -125,6 +125,10 @@ public class NoType implements CsmType {
     }
 
     public boolean isInstantiation() {
+        return false;
+    }
+
+    public boolean isTemplateBased() {
         return false;
     }
 

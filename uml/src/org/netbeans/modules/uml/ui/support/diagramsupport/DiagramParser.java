@@ -42,11 +42,13 @@ package org.netbeans.modules.uml.ui.support.diagramsupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -59,9 +61,11 @@ public class DiagramParser implements IDiagramParser
 {
 
     private String filename;
-    private DiagramDetails diagInfo = null;
+    private DiagramDetails diagInfo = new DiagramDetails();
     private XMLStreamReader reader = null;
     private boolean jumpToEnd = false;
+    private HashMap<String, DiagramInfo> map;
+    private boolean  diagramModelMappingFlag = false;
     
     public DiagramParser(String filename) 
     {
@@ -155,6 +159,10 @@ public class DiagramParser implements IDiagramParser
             if (localPart!= null && localPart.equalsIgnoreCase("Diagram")) {
                 handleDiagram();
             }
+            else if(localPart!= null && localPart.equalsIgnoreCase("GraphNode") && !jumpToEnd) {
+                processGraphNode();
+                return;
+            }
         }
     }
     
@@ -176,10 +184,61 @@ public class DiagramParser implements IDiagramParser
                 }
                 //if we encounter contained.. we should exit this method and let others handle the rest
                 else if (localPart.equalsIgnoreCase("GraphElement.contained")) {
-                    jumpToEnd = true;
+                    if (!diagramModelMappingFlag)
+                    {
+                        jumpToEnd = true;
+                    }                    
                     return;
                 }
             }
+        }
+    }
+
+     private void processGraphNode()
+    {
+        try
+        {
+            String meid;
+            String peid = reader.getAttributeValue(null, "xmi.id");
+
+            while (reader.hasNext())
+            {
+                if (XMLStreamConstants.START_ELEMENT == reader.next())
+                {
+                    //we are only intersted in data of particular start elements
+                    if (reader.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
+                    {
+                        reader.nextTag();
+                        //get the  xmi.idref
+                        meid = reader.getAttributeValue(null, "xmi.idref");
+                        
+                        DiagramInfo info = map.get(meid);
+                        if(info != null)
+                        {
+                            info.addPeid(peid);
+                        }
+                        else
+                        {
+                            info = new DiagramInfo();
+                            info.addPeid(peid);
+                            map.put(meid, info);
+                            
+                            //populate the map with meid and peid
+                            map.put(meid, info);
+                        
+                        }
+                        return;
+                    }
+                }
+                else if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphNode"))
+                {
+                    return;
+                }
+            }
+        }
+        catch (XMLStreamException ex)
+        {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -203,4 +262,49 @@ public class DiagramParser implements IDiagramParser
             }
         }
     }
+
+    public HashMap getDiagramModelMap()
+    {
+        diagramModelMappingFlag = true;
+        map = new HashMap();
+
+        if (filename != null && filename.trim().length() > 0) {
+            FileObject fo = FileUtil.toFileObject(new File (filename));
+            InputStream ins = null;
+            try {
+
+                if ( fo != null && fo.getSize() > 0 ) {
+                    XMLInputFactory factory = XMLInputFactory.newInstance();
+                    factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
+                    ins = fo.getInputStream();
+                    reader = factory.createXMLStreamReader(ins);
+                    readXML();                    
+                }
+                else {
+                    System.err.println(" Corrupted diagram file. Cannot open the diagram."+filename);
+                }
+            } catch (XMLStreamException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            finally {
+                try {
+                    if ( reader != null) {
+                        reader.close();
+                    }
+                    if (ins != null) {
+                        ins.close();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (XMLStreamException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        diagramModelMappingFlag = false;
+        return map;
+    }
+
 }

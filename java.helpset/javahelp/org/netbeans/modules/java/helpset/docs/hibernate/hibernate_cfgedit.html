@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Editing the Hibernate Configuration File</title> 
+    <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    
+    </head>
+    <body>
+        
+        <h2>Editing the Hibernate Configuration File</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The <tt>hibernate.cfg.xml</tt> editor enables you edit the configuration properties 
+        for an application that uses the Hibernate framework. 
+        You can edit the <tt>hibernate.cfg.xml</tt> file in a visual editor or edit the XML directly.
+        In the visual editor you can use the Add, Edit and Remove buttons to open dialog boxes to modify the properties.
+        In the XML editor you can use the IDE's code completion to assist you.</p>
+        
+        <p>You open the editor by expanding the project's Source Packages node in the Projects window 
+        and double-clicking the <tt>hibernate.cfg.xml</tt> file located under the <tt>&lt;default package&gt;</tt> node. </p>
+        
+        <p>Many of the properties in the configuration file are supplied and modified by other wizards in the IDE.
+        For example, if you create Hibernate mapping files using the Hibernate Mapping File wizard, 
+        <tt>hibernate.cfg.xml</tt> is automatically updated with information about the mapping files.</p>
+
+        <p>The <tt>hibernate.cfg.xml</tt> visual editor contains the following sections for editing the configuration settings:</p>
+        
+        <ul>
+            <li><strong>JDBC Properties.</strong> This section enables you to set the JDBC connection information 
+            for your datasource, including the JDBC driver and the location of your datasource.</li>
+            <li><strong>Datasource Properties.</strong> This section enables you to set the datasource properties, 
+            including the username and password for accessing the datasource.</li>
+            <li><strong>Mappings.</strong> This section enables you to specify the Hibernate mapping files (<tt>.hbm.xml</tt>) 
+            used in the application. </li>
+            <li><strong>Cache.</strong> This section enables you to add Class and Collection Cache properties.</li>
+            <li><strong>Events.</strong> This section enables you to specify the listener classes for handling Hibernate session events.</li>
+            <li><strong>Optional Properties.</strong> This section enables you to configure optional Hibernate properties
+            such as JDBC connection properties, Hibernate SQL dialects and transaction properties.</li>
+            <li><strong>Security.</strong> This section enables you to configure security roles.</li>
+        </ul>
+        
+        <p>You can also edit any of the properties in the XML editor and use code completion
+        to set the properties and values.</p>
+        
+        <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
+        <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+    <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

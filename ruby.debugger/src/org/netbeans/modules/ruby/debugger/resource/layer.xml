@@ -145,6 +145,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Toolbars">
         <folder name="Debug">
+            <attr name="position" intvalue="500"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.debugger.Bundle"/>
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>

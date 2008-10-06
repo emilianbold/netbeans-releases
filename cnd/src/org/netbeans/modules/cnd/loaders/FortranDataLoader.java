@@ -49,7 +49,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 
 /**
@@ -90,7 +90,7 @@ public class FortranDataLoader extends CndAbstractDataLoaderExt {
     }
 
     public String getDisplayNameForExtensionList() {
-	throw new UnsupportedOperationException();
+        return NbBundle.getMessage(FortranDataLoader.class, "FortranDataLoader_Name_ForExtList"); // NOI18N
     }
 
     public String getSettingsName() {

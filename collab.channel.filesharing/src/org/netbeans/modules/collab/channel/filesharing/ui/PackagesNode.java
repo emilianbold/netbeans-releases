@@ -69,7 +69,7 @@ public class PackagesNode extends AbstractNode implements FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////
     public static final String ICON_BASE = "org/netbeans/modules/collab/ui/resources/group_png"; // NOI18N
     private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {  };
-    public static final Image PACKAGE_BADGE = Utilities.loadImage(
+    public static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/collab/channel/filesharing/resources/packageBadge.gif", true
         ); // NOI18N		
 
@@ -124,7 +124,7 @@ public class PackagesNode extends AbstractNode implements FilesharingConstants {
         Image icon = opened ? originalNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16)
                             : originalNode.getIcon(BeanInfo.ICON_COLOR_16x16);
 
-        return Utilities.mergeImages(icon, PACKAGE_BADGE, 7, 7);
+        return ImageUtilities.mergeImages(icon, PACKAGE_BADGE, 7, 7);
     }
 
     /**

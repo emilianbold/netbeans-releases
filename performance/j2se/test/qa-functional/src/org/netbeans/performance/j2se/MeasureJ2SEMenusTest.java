@@ -45,24 +45,28 @@ import org.netbeans.performance.j2se.menus.*;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 public class MeasureJ2SEMenusTest {
 
 
     public static Test suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");
 
-        s.addTest(NbModuleSuite.create(MainMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(MainSubMenus.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(EditorDownButtonPopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(FilesViewPopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(FormInspectorNodePopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(ProjectsViewPopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(ProjectsViewSubMenus.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(RuntimeViewPopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(SourceEditorPopupMenu.class, ".*", ".*"));
-        s.addTest(NbModuleSuite.create(ToolsMenu.class, ".*", ".*"));
+        s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
+        //--.addTest(MainSubMenus.class)
+        .addTest(EditorDownButtonPopupMenu.class)
+        .addTest(FilesViewPopupMenu.class)
+        .addTest(FormInspectorNodePopupMenu.class)
+        .addTest(ProjectsViewPopupMenu.class)
+        //--.addTest(ProjectsViewSubMenus.class)
+        .addTest(RuntimeViewPopupMenu.class)
+        .addTest(SourceEditorPopupMenu.class)
+        .addTest(ToolsMenu.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return s;
     }

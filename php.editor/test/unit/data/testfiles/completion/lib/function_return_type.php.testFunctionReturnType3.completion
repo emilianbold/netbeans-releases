@@ -1,0 +1,5 @@
+Code completion result for source line:
+$result_from_static_method->|foo();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     foo()                           [PUBLIC]   TestClass
+VARIABLE   ? tst                           [PUBLIC]   TestClass

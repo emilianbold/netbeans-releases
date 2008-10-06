@@ -249,8 +249,17 @@ made subject to such option by the copyright holder.
     </target>
     
     <!-- Generate simple HTML preview page -->
-    
-    <target name="generate-html-preview">
+
+    <target name="-check-html-preview">
+         <condition property="generate.html.preview">
+             <or>
+                 <equals arg1="${jnlp.descriptor}" arg2="application"/>
+                 <equals arg1="${jnlp.descriptor}" arg2="applet"/>
+             </or>
+         </condition>
+     </target>
+
+    <target name="generate-html-preview" depends="-check-html-preview" if="generate.html.preview">
         <copy file="preview-${jnlp.descriptor}.html" tofile="${jnlp.dest.dir}/launch.html" overwrite="true" encoding="UTF-8">
             <filterchain>
                 <replacestring from="${JNLP.FILE}" to="${jnlp.file}"/>

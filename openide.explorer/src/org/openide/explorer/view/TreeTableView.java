@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -73,6 +74,7 @@ import javax.swing.tree.*;
 import org.openide.explorer.view.TreeView.PopupAdapter;
 import org.openide.explorer.view.TreeView.PopupSupport;
 import org.openide.explorer.view.TreeView.TreePropertyListener;
+import org.openide.util.Utilities;
 
 
 /** Explorer view. Allows to view tree of nodes on the left
@@ -267,6 +269,8 @@ public class TreeTableView extends BeanTreeView {
 
         ImageIcon ic = new ImageIcon(TreeTable.class.getResource(COLUMNS_ICON)); // NOI18N
         colsButton = new javax.swing.JButton(ic);
+        colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
+        colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
         colsButton.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
@@ -1595,14 +1599,22 @@ public class TreeTableView extends BeanTreeView {
                     ((JLabel) comp).setIcon(getProperIcon(treeColumnProperty.isSortOrderDescending()));
                     ((JLabel) comp).setHorizontalTextPosition(SwingConstants.LEFT);
 
-                    // don't use deriveFont() - see #49973 for details
-                    comp.setFont(new Font(comp.getFont().getName(), Font.BOLD, comp.getFont().getSize()));
+                    if( Utilities.isWindows() ) {
+                        comp.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
+                    } else {
+                        // don't use deriveFont() - see #49973 for details
+                        comp.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
+                    }
                 } else if ((column != 0) && ((tableModel.getVisibleSortingColumn() + 1) == column)) {
                     ((JLabel) comp).setIcon(getProperIcon(tableModel.isSortOrderDescending()));
                     ((JLabel) comp).setHorizontalTextPosition(SwingConstants.LEFT);
 
-                    // don't use deriveFont() - see #49973 for details
-                    comp.setFont(new Font(comp.getFont().getName(), Font.BOLD, comp.getFont().getSize()));
+                    if( Utilities.isWindows() ) {
+                        comp.setFont(getFont().deriveFont(Font.BOLD, getFont().getSize()));
+                    } else {
+                        // don't use deriveFont() - see #49973 for details
+                        comp.setFont(new Font(getFont().getName(), Font.BOLD, getFont().getSize()));
+                    }
                 } else {
                     ((JLabel) comp).setIcon(null);
                 }
@@ -1613,9 +1625,9 @@ public class TreeTableView extends BeanTreeView {
 
         private ImageIcon getProperIcon(boolean descending) {
             if (descending) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(SORT_DESC_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(SORT_DESC_ICON));
             } else {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(SORT_ASC_ICON));
+                return new ImageIcon(ImageUtilities.loadImage(SORT_ASC_ICON));
             }
         }
     }

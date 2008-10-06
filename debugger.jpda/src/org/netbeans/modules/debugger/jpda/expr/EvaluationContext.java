@@ -90,13 +90,15 @@ public class EvaluationContext {
      * @param imports list of imports
      * @param staticImports list of static imports
      */
-    public EvaluationContext(StackFrame frame, int frameDepth,
+    public EvaluationContext(ThreadReference thread, StackFrame frame, int frameDepth,
                              List<String> imports, List<String> staticImports,
                              boolean canInvokeMethods, Runnable methodInvokePreproc,
                              JPDADebuggerImpl debugger) {
+        if (thread == null) throw new IllegalArgumentException("Thread argument must not be null");
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
         if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
+        this.thread = thread;
         this.frame = frame;
         this.frameDepth = frameDepth;
         this.sourceImports = imports;
@@ -130,7 +132,6 @@ public class EvaluationContext {
         if (methodInvokePreproc != null) {
             methodInvokePreproc.run();
         }
-        thread = frame.thread();
     }
     
     void methodInvokeDone() throws IncompatibleThreadStateException {

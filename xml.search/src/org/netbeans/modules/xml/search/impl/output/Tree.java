@@ -74,9 +74,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.api.print.PrintManager;
 import org.netbeans.modules.xml.search.api.SearchElement;
-
 import org.netbeans.modules.xml.search.impl.ui.Export;
 import static org.netbeans.modules.xml.ui.UI.*;
 
@@ -124,7 +123,7 @@ final class Tree extends JTree {
         return;
       }
     }
-    // cannot find the same node, add new node
+    // can not find the same node, add new node
     MutableTreeNode node = new DefaultMutableTreeNode(next);
 //out("add internal: " + next);
     root.insert(node, 0);
@@ -309,7 +308,7 @@ final class Tree extends JTree {
     item.setIcon(getPrintIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        PrintManager.printPreviewAction().actionPerformed(event);
+        PrintManager.printAction(Tree.this).actionPerformed(event);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
@@ -370,7 +369,7 @@ final class Tree extends JTree {
   }
 
   private Icon getPrintIcon() {
-    Object object = PrintManager.printPreviewAction().getValue(Action.SMALL_ICON);
+    Object object = PrintManager.printAction(this).getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;

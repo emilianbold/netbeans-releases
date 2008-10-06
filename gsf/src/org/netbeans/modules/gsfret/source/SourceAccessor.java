@@ -49,8 +49,6 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsfret.source.parsing.SourceFileObject;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /**
@@ -97,7 +95,7 @@ public abstract class SourceAccessor {
     
     protected abstract void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Source.Priority priority);
         
-    public abstract ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo,/* DiagnosticListener<? super SourceFileObject> diagnosticListener,*/ String sourceLevel);
+    public abstract ParserTaskImpl createParserTask(Language language, ClasspathInfo cpInfo);
     
     
 //    /**

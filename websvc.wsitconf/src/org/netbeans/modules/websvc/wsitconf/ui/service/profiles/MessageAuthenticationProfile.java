@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeatu
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
+import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
@@ -126,6 +127,7 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
     
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
@@ -141,6 +143,7 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
@@ -154,6 +157,7 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
@@ -163,10 +167,8 @@ public class MessageAuthenticationProfile extends ProfileBase
         if ((keyAlias == null) && (trustAlias == null)  && (trustLoc == null) && (keyLoc == null) && (trustPasswd == null) && (keyPasswd == null)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
-            if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
-                if ((trustLoc == null) && (trustPasswd == null) && (keyPasswd != null) && (keyLoc == null)) {
-                    return true;
-                }
+            if (Util.isEqual(DEFAULT_PASSWORD, passwd) && Util.isEqual(DEFAULT_USERNAME, user)) {
+                return true;
             }
         }
         return false;
@@ -234,6 +236,17 @@ public class MessageAuthenticationProfile extends ProfileBase
         } else {
             SecurityTokensModelHelper.removeSupportingTokens(component);
             stmh.setSupportingTokens(component, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);            
+        }
+    }
+    
+    @Override
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl, ConfigVersion configVersion) {
+        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(configVersion);
+        RMModelHelper rmh = RMModelHelper.getInstance(configVersion);
+        pmh.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
+        boolean isRM = rmh.isRMEnabled(component);
+        if (isRM) {
+            enableSecureConversation(component, true);
         }
     }
     

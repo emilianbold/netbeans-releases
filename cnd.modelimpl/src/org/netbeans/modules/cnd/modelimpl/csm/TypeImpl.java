@@ -51,10 +51,13 @@ import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -65,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Kvashin
  */
-public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeClassifierProvider {
+public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierProvider, SafeTemplateBasedProvider {
 
     private final byte pointerDepth;
     private final boolean reference;
@@ -73,7 +76,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private final boolean _const;
     CharSequence classifierText;
 
-    final List<CsmType> instantiationParams = new ArrayList();
+    final List<CsmType> instantiationParams = new ArrayList<CsmType>();
 
     // FIX for lazy resolver calls
     CharSequence[] qname = null;
@@ -108,6 +111,26 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         this.arrayDepth = (byte) arrayDepth;
         this._const = _const;
     }
+    
+    // package-local
+    TypeImpl(CsmType type) {
+        super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
+
+        this.pointerDepth = (byte) type.getPointerDepth();
+        this.reference = type.isReference();
+        this.arrayDepth = (byte) type.getArrayDepth();
+        this._const = type.isConst();
+
+        if (type instanceof TypeImpl) {
+            TypeImpl ti = (TypeImpl) type;
+            this.classifierUID = ti.classifierUID;
+            this.qname = ti.qname;
+            this.classifierText = ti.classifierText;
+            if (!ti.instantiationParams.isEmpty()) {
+                this.instantiationParams.addAll(ti.instantiationParams);
+            }
+        }
+    }    
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
@@ -156,6 +179,32 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return !instantiationParams.isEmpty();
     }
 
+    /** Though it returns the same for now, it's better if its name differs */
+    protected boolean isInstantiationOrSpecialization() {
+        return !instantiationParams.isEmpty();
+    }
+
+    public boolean isTemplateBased() {
+        return isTemplateBased(new HashSet<CsmType>());
+    }
+
+    public boolean isTemplateBased(Set<CsmType> visited) {
+        CsmClassifier classifier = getClassifier();
+        if (CsmKindUtilities.isTypedef(classifier)) {
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            CsmType type = ((CsmTypedef)classifier).getType();
+            if (type instanceof SafeTemplateBasedProvider) {
+                return ((SafeTemplateBasedProvider)type).isTemplateBased(visited);
+            } else {
+                return type.isTemplateBased();
+            }
+        }
+        return false;
+    }
+
     public static boolean initIsConst(AST node) {
         if( node != null ) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {
@@ -175,8 +224,60 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return _const;
     }
 
-    public String getCanonicalText() {
-	return decorateText(getClassifierText(), this, true, null).toString();
+    public CharSequence getCanonicalText() {
+        CharSequence text = getClassifierText();
+        if (isInstantiationOrSpecialization()) {
+            text = text.toString() + getInstantiationCanonicalText();
+        }
+	return decorateText(text, this, true, null);
+    }
+    
+    private CharSequence getInstantiationCanonicalText() {
+        StringBuilder sb = new StringBuilder();
+        if ( ! instantiationParams.isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : instantiationParams) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(getCanonicalText(param));
+            }
+            sb.append('>');
+        }
+	return sb;
+    }
+    
+    private CharSequence getCanonicalText(CsmType type) {
+        CharSequence canonicalText = null;
+        if (type instanceof CsmTemplateParameterType) {
+            CsmTemplateParameterType parType = (CsmTemplateParameterType) type;
+            CsmTemplateParameter par = parType.getParameter();
+            if (CsmKindUtilities.isClassifierBasedTemplateParameter(par)) {
+                CsmType defType = (CsmType) par.getDefaultValue();
+                if (defType == null) {
+                    canonicalText = TemplateUtils.TYPENAME_STRING;
+                } else {
+                    canonicalText = getCanonicalText(defType);
+                }
+            }
+        }
+        if (canonicalText == null) {
+            canonicalText = type.getCanonicalText().toString();
+        }
+        return canonicalText;
+    }
+    
+
+    // package
+    CharSequence getOwnText() {
+        if (qname != null && qname.length>0) {
+            return qname[qname.length-1];
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -277,7 +378,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
-        if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
+        if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
@@ -297,9 +398,41 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     protected CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-        CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
-        if( CsmKindUtilities.isClassifier(o) ) {
-            result = (CsmClassifier) o;
+        if (isInstantiationOrSpecialization()) {
+            CharSequence[] specializationQname = new CharSequence[qname.length];
+            final int last = qname.length - 1;
+            StringBuilder sb = new StringBuilder(qname[last]);
+            sb.append('<');
+            for (int i = 0; i < instantiationParams.size(); i++) {
+                CsmType type = instantiationParams.get(i);
+                if (i > 0) {
+                    sb.append(',');
+                }
+                CharSequence canonicalText = getCanonicalText(type);
+                sb.append(canonicalText);
+            }
+            sb.append('>');
+            specializationQname[last] = sb.toString();
+            for (int i = 0; i < last; i++) {
+                specializationQname[i] = qname[i];
+            }
+            CsmObject o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
+            if (result == null) {
+                specializationQname[last] = qname[last].toString() + "<>"; //NOI18N
+                o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
+                if( CsmKindUtilities.isClassifier(o) ) {
+                    result = (CsmClassifier) o;
+                }
+            }
+        }
+        if (result == null) {
+            CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
         }
         if( result == null ) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());

@@ -743,6 +743,7 @@ final class Central implements ControllerHandler {
 
     /** Adds opened TopComponent into model and requests view (if needed). */
     public void addModeOpenedTopComponent(ModeImpl mode, TopComponent tc) {
+        boolean wasOpened = tc.isOpened();
         if(getModeOpenedTopComponents(mode).contains(tc)) {
             return;
         }
@@ -758,11 +759,14 @@ final class Central implements ControllerHandler {
                 null, tc));
         }
         
-        // Notify opened.
-        WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        if( !wasOpened ) { //make sure componentOpened() is called just once
+            // Notify opened.
+            WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        }
     }
     
     public void insertModeOpenedTopComponent(ModeImpl mode, TopComponent tc, int index) {
+        boolean wasOpened = tc.isOpened();
         List openedTcs = getModeOpenedTopComponents(mode);
         if(index >= 0 && !openedTcs.isEmpty()
         && openedTcs.size() > index && openedTcs.get(index) == tc) {
@@ -780,8 +784,10 @@ final class Central implements ControllerHandler {
                 null, tc));
         }
         
-        // #102258: Notify opened when opened through openAtTabPosition as well
-        WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        if( !wasOpened ) { //make sure componentOpened() is called just once
+            // #102258: Notify opened when opened through openAtTabPosition as well
+            WindowManagerImpl.getInstance().notifyTopComponentOpened(tc);
+        }
     }
     
     public boolean addModeClosedTopComponent(ModeImpl mode, TopComponent tc) {
@@ -1705,10 +1711,12 @@ final class Central implements ControllerHandler {
         // improve performance for such cases.
         if (oldActiveMode != null && oldActiveMode.equals(mode)) {
             if (tc != null && tc.equals(model.getModeSelectedTopComponent(mode))) {
-                // #82385: do repeat activation if focus is in another window
-                KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                if (kfm.getActiveWindow() == SwingUtilities.getWindowAncestor(tc)) {
-                    //#70173 - activation request came probably from a sliding 
+                // #82385, #139319 do repeat activation if focus is not
+                // owned by tc to be activated
+                Component fOwn = KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                        getFocusOwner();
+                if (fOwn != null && SwingUtilities.isDescendingFrom(fOwn, tc)) {
+                    //#70173 - activation request came probably from a sliding
                     //window in 'hover' mode, so let's hide it
                     slideOutSlidingWindows( mode );
                     return;

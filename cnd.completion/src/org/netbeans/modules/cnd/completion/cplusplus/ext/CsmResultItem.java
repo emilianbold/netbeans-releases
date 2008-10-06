@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.Iterator;
-import org.netbeans.editor.Settings;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -67,23 +66,25 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
@@ -144,31 +146,35 @@ public abstract class CsmResultItem
         return false;
     }
     
-    public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getReplaceText();
-        
+    public boolean substituteText(final JTextComponent c, final int offset, final int len, final boolean shift) {
+        final BaseDocument doc = (BaseDocument)c.getDocument();
+        final String text = getReplaceText();
+        final boolean res[] = new boolean[] {true};
         if (text != null) {
             // Update the text
-            doc.atomicLock();
-            try {
-                CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
-                if (CharSequenceUtilities.textEquals(text, textToReplace)) return false;
-                
-                doc.remove(offset, len);
-                doc.insertString(offset, text, null);
-                if (selectionStartOffset >= 0) {
-                    c.select(offset + selectionStartOffset,
-                            offset + selectionEndOffset);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
+                        if (CharSequenceUtilities.textEquals(text, textToReplace)) {
+                            res[0] = false;
+                            return;
+                        }
+
+                        doc.remove(offset, len);
+                        doc.insertString(offset, text, null);
+                        if (selectionStartOffset >= 0) {
+                            c.select(offset + selectionStartOffset,
+                                    offset + selectionEndOffset);
+                        }
+                    } catch (BadLocationException e) {
+                        // Can't update
+                    }
                 }
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
         }
         
-        return true;
+        return res[0];
     }
     
     public java.awt.Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
@@ -350,17 +356,18 @@ public abstract class CsmResultItem
     
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
-        normalizeInclude(inc1);
-        normalizeInclude(inc2);
+        inc1 = normalizeInclude(inc1);
+        inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
     
     // Normailizes include directive string
-    private void normalizeInclude(String inc) {
+    private String normalizeInclude(String inc) {
         inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
+        return inc;
     }
 
     // Says is it forward declarartion or not
@@ -393,8 +400,8 @@ public abstract class CsmResultItem
     }
     
     // Inserts include derctive into document
-    private void insertInclude(JTextComponent component, CsmFile currentFile, String include, boolean isSystem) {
-        BaseDocument doc = (BaseDocument) component.getDocument();
+    private void insertInclude(final JTextComponent component, final CsmFile currentFile, final String include, final boolean isSystem) {
+        final BaseDocument doc = (BaseDocument) component.getDocument();
         CsmInclude lastInclude = null;
         boolean isLastIncludeTypeMatch = false;
         for (CsmInclude inc : currentFile.getIncludes()) {
@@ -407,39 +414,43 @@ public abstract class CsmResultItem
                 }
             }
         }
-        doc.atomicLock();
-        try {
-            if (lastInclude != null) {
-                if (isLastIncludeTypeMatch) {
-                    doc.insertString(lastInclude.getEndOffset(), "\n" + include, null); // NOI18N
-                } else if (!isSystem) {
-                    doc.insertString(lastInclude.getEndOffset(), "\n\n" + include, null); // NOI18N
-                } else {
-                    doc.insertString(lastInclude.getStartOffset(), include + "\n\n", null); // NOI18N
-                }
-            } else {
-                CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
-                CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
-                TokenSequence<CppTokenId> ts;
-                if(guardOffset != null) {
-                    ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
-                } else {
-                    ts = CndLexerUtilities.getCppTokenSequence(component, 0);
-                }
-                if (ts != null) {
-                    int offset = getIncludeOffsetFromTokenSequence(ts);
-                    if (offset == 0 || guardOffset != null) {
-                        doc.insertString(offset, "\n" + include + "\n\n", null); // NOI18N
+        final CsmInclude lastInclude2 = lastInclude;
+        final boolean isLastIncludeTypeMatch2 = isLastIncludeTypeMatch;
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
+                try {
+                    if (lastInclude2 != null) {
+                        if (isLastIncludeTypeMatch2) {
+                            doc.insertString(lastInclude2.getEndOffset(), "\n" + include, null); // NOI18N
+                        } else if (!isSystem) {
+                            doc.insertString(lastInclude2.getEndOffset(), "\n\n" + include, null); // NOI18N
+                        } else {
+                            doc.insertString(lastInclude2.getStartOffset(), include + "\n\n", null); // NOI18N
+                        }
                     } else {
-                        doc.insertString(offset, "\n\n" + include + "\n", null); // NOI18N
+                        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+                        CsmOffsetable guardOffset = fiq.getGuardOffset(currentFile);
+                        TokenSequence<CppTokenId> ts;
+                        if (guardOffset != null) {
+                            ts = CndLexerUtilities.getCppTokenSequence(component, guardOffset.getStartOffset());
+                        } else {
+                            ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                        }
+                        if (ts != null) {
+                            int offset = getIncludeOffsetFromTokenSequence(ts);
+                            if (offset == 0 || guardOffset != null) {
+                                doc.insertString(offset, "\n" + include + "\n\n", null); // NOI18N
+                            } else {
+                                doc.insertString(offset, "\n\n" + include + "\n", null); // NOI18N
+                            }
+                        }
                     }
+                } catch (BadLocationException e) {
+                    // Can't update
                 }
             }
-        } catch (BadLocationException e) {
-            // Can't update
-        } finally {
-            doc.atomicUnlock();
-        }
+        });
     }
 
     // Finds place for include insertion in case if there is no other includes in document
@@ -716,8 +727,8 @@ public abstract class CsmResultItem
     }
     
     public static class FileLocalFunctionResultItem extends MethodResultItem {
-        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
-            super(mtd, substituteExp, priotity);
+        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
+            super(mtd, substituteExp, priotity, isDeclaration);
         }
         
         @Override
@@ -727,41 +738,79 @@ public abstract class CsmResultItem
     }
     
     public static class GlobalFunctionResultItem extends MethodResultItem {
-        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
-            super(mtd, substituteExp, priotity);
+        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
+            super(mtd, substituteExp, priotity, isDeclaration);
         }
         
         @Override
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
             return new CsmPaintComponent.GlobalFunctionPaintComponent();
         }
+
+        // Checks is it function call or usage of function as a pointer
+        // IZ 145380 : In code completion is missing command endl (without any parenthesis)
+        @Override
+        protected boolean isFunctionAsPointer(JTextComponent c, String funName) {
+            if ((funName.startsWith("endl") || // NOI18N
+                    funName.startsWith("ends") || // NOI18N
+                    funName.startsWith("flush") || // NOI18N
+                    funName.startsWith("getline") || // NOI18N
+                    funName.startsWith("ws")) && // NOI18N
+                    isAfterShiftOperator(c)) {
+                return true;
+            }
+            return false;
+        }
+        
+        private boolean isAfterShiftOperator(JTextComponent c) {
+            TokenSequence<CppTokenId> ts;
+            ts = CndLexerUtilities.getCppTokenSequence(c, 0);
+            ts.moveStart();
+            if (!ts.moveNext()) {
+                return false;
+            }
+            boolean result = false;
+            while (ts.offset() < substituteOffset) {
+                CppTokenId id = ts.token().id();
+                switch (id) {
+                    case LTLT:
+                    case GTGT:
+                        result = true;
+                        break;
+                    default:
+                        switch (id) {
+                            case IDENTIFIER:
+                            case SCOPE:
+                            case BLOCK_COMMENT:
+                            case DOXYGEN_COMMENT:
+                            case NEW_LINE:
+                            case LINE_COMMENT:
+                            case WHITESPACE:
+                                break;
+                            default:
+                                result = false;
+                        }
+                }
+                if (!ts.moveNext()) {
+                    return false;
+                }
+            }
+            return result;
+        }
     }
-    
+
     public static class MethodResultItem extends ConstructorResultItem {
         
         private static CsmPaintComponent.MethodPaintComponent mtdComponent = null;
         private static CsmPaintComponent.MethodPaintComponent globFunComponent = null;
         private String typeName;
         private Color typeColor;
-        private String mtdName;
         
         
-        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity){
-            super(mtd, substituteExp, priotity);
+        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration){
+            super(mtd, substituteExp, priotity, isDeclaration);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
-            mtdName = mtd.getName().toString();
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
-        }
-        
-        @Override
-        public String getName(){
-            return mtdName;
-        }
-        
-        
-        @Override
-        public String getItemText() {
-            return getName();
         }
         
         public String getTypeName() {
@@ -818,33 +867,43 @@ public abstract class CsmResultItem
         
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
+        private boolean isDeclaration;
         private List params = new ArrayList();
         private List excs = new ArrayList();
         private int modifiers;
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
-        
-        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priotity){
-            super(ctr, priotity);
+        private final String mtdName;
+        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(ctr, priority);
             this.ctr = ctr;
             this.substituteExp = substituteExp;
+            this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
-            CsmParameter[] prms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
-            for (int i=0; i<prms.length; i++) {
-                CsmParameter prm = (CsmParameter) prms[i];
-                CsmType type = prm.getType();
+            if (CsmKindUtilities.isTemplate(ctr)) {
+                mtdName = ((CsmTemplate)ctr).getDisplayName().toString();
+            } else {
+                mtdName = ctr.getName().toString();
+            }
+            int i = 0;
+            for (Object prm : ctr.getParameters() ) {
+                if (prm == null){
+                    continue;
+                }
+                CsmType type = ((CsmParameter)prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (prm.isVarArgs());
-                    params.add(new ParamStr("", "" , prm.getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    assert (((CsmParameter)prm).isVarArgs());
+                    params.add(new ParamStr("", "" , ((CsmParameter)prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
-                } else {
+                 } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
                     String strFullName = type.getText().toString();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText().toString() , prm.getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter)prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
+                i++;
             }           
             // TODO
 //            CsmClass excepts[] = ctr.getExceptions();
@@ -879,7 +938,7 @@ public abstract class CsmResultItem
         
         public String getName(){
             // TODO review the output
-            return ctr.getName().toString();
+            return mtdName;
         }
         
         public List getParams(){
@@ -925,175 +984,189 @@ public abstract class CsmResultItem
         }
         
         @Override
-        public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
-            
-            if (true) {
-                BaseDocument doc = (BaseDocument) c.getDocument();
-                String text = null;
-                boolean addParams = true;
-//            CsmCompletionExpression exp = substituteExp;
-//            while(exp != null) {
-////                if (exp.getExpID() == CsmCompletionExpression.IMPORT) {
-////                    addParams = false;
-////                    break;
-////                }
-//                exp = exp.getParent();
-//            }
+        public boolean substituteText(final JTextComponent c, final int offset, final int origLen, final boolean shift) {
+            final boolean res[] = new boolean[] { true };
+            final AtomicBoolean showTooltip = new AtomicBoolean();
+            final BaseDocument doc = (BaseDocument) c.getDocument();
+            doc.runAtomic(new Runnable() {
 
-                switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
-                    case CsmCompletionExpression.METHOD:
-                        // no subst
-                        break;
+                public void run() {
+                    String text = null;
+                    boolean addParams = true;
+                    int len = origLen;
 
-                    case CsmCompletionExpression.METHOD_OPEN:
-                        int parmsCnt = params.size();
-                        if (parmsCnt == 0) {
-                            if (getActiveParameterIndex() == -1) { // not showing active parm
+                    switch ((substituteExp != null) ? substituteExp.getExpID() : -1) {
+                        case CsmCompletionExpression.METHOD:
+                            // no subst
+                            break;
+
+                        case CsmCompletionExpression.METHOD_OPEN:
+                            int parmsCnt = params.size();
+                            if (parmsCnt == 0) {
+                                if (getActiveParameterIndex() == -1) { // not showing active parm
+                                    try {
+                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
+                                            text = doc.getText(offset + len, fnwpos + 1 - offset - len);
+                                            len = fnwpos + 1 - offset;
+                                        }
+                                    } catch (BadLocationException e) {
+                                    }
+                                    if (text == null) {
+                                        text = ")";  // NOI18N
+                                    }
+                                }
+
+                            } else { // one or more parameters
+                                int activeParamIndex = getActiveParameterIndex();
+                                if (activeParamIndex != -1) { // Active parameter being shown
+                                    boolean substed = false;
+                                    if (activeParamIndex < parmsCnt) {
+                                        String paramName = ((ParamStr) params.get(activeParamIndex)).getName();
+                                        if (paramName != null) {
+                                            try {
+                                                // Fill in the parameter's name
+                                                doc.insertString(c.getCaretPosition(), paramName, null);
+                                                substed = true;
+                                            } catch (BadLocationException e) {
+                                                // Can't insert
+                                            }
+                                        }
+                                    }
+                                    res[0] = substed;
+                                }
+                                int ind = substituteExp.getParameterCount() - 1;
+                                boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
                                 try {
-                                    int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                                    if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
-                                        text = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                        len = fnwpos + 1 - offset;
+                                    if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
+                                        addSpace = false;
                                     }
                                 } catch (BadLocationException e) {
                                 }
-                                if (text == null) {
-                                    text = ")";  // NOI18N
-                                }
-                            }
 
-                        } else { // one or more parameters
-                            int activeParamIndex = getActiveParameterIndex();
-                            if (activeParamIndex != -1) { // Active parameter being shown
-                                boolean substed = false;
-                                if (activeParamIndex < parmsCnt) {
-                                    String paramName = ((ParamStr) params.get(activeParamIndex)).getName();
-                                    if (paramName != null) {
-                                        try {
-                                            // Fill in the parameter's name
-                                            doc.insertString(c.getCaretPosition(), paramName, null);
-                                            substed = true;
-                                        } catch (BadLocationException e) {
-                                            // Can't insert
-                                        }
-                                    }
+                                boolean isVarArg = parmsCnt > 0 ? ((ParamStr) params.get(parmsCnt - 1)).isVarArg() : false;
+                                if (ind < parmsCnt || isVarArg) {
+                                    text = addSpace ? " " : ""; // NOI18N
                                 }
-                                return substed;
                             }
-                            int ind = substituteExp.getParameterCount() - 1;
-                            boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
-                            try {
-                                if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
-                                    addSpace = false;
-                                }
-                            } catch (BadLocationException e) {
-                            }
+                            break;
 
-                            boolean isVarArg = parmsCnt > 0 ? ((ParamStr) params.get(parmsCnt - 1)).isVarArg() : false;
-                            if (ind < parmsCnt || isVarArg) {
-                                text = addSpace ? " " : ""; // NOI18N
-                            }
-                        }
-                        break;
+                        default:
+                            text = getItemText();
+                            boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
+                            boolean addClosingParen = false;
 
-                    default:
-                        text = getItemText();
-                        boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
-                        boolean addClosingParen = false;
-                        Formatter f = doc.getFormatter();
-                        if (f instanceof ExtFormatter) {
-                            Object o = ((ExtFormatter) f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                            o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                            if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                                addClosingParen = true;
+                            String mimeType = CsmCompletionUtils.getMimeType(doc);
+                            if (mimeType != null) {
+                                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                                addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
-                        }
-
-                        if (addParams) {
-                            String paramsText = null;
-                            try {
-                                int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                                if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
-                                    paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
-                                    if (addSpace && paramsText.length() < 2) {
-                                        text += ' ';
-                                    } // NOI18N
-                                    len = fnwpos + 1 - offset;
-                                    text += paramsText;
-                                    toAdd = null; // do not add '.', ',', ';'
-                                }
-                            } catch (BadLocationException e) {
+                            
+                            if (addParams) {
+                                addParams = !isFunctionAsPointer(c, text);
                             }
-                            if (paramsText == null) {
-                                if (addSpace) {
-                                    text += ' '; // NOI18N
-                                }
-                                text += '('; // NOI18N
-                                if (params.size() > 0) {
-                                    selectionStartOffset = selectionEndOffset = text.length();
-                                    Completion completion = Completion.get();
-                                    completion.hideCompletion();
-                                    completion.hideDocumentation();
-                                    completion.showToolTip();
-                                }
-                                if (addClosingParen) {
-                                    text += ")";  // NOI18N
-                                }
-                            } else {
+                            if (addParams) {
+                                String paramsText = null;
                                 try {
                                     int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                                    if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
+                                    if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
                                         paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
+                                        if (addSpace && paramsText.length() < 2) {
+                                            text += ' ';
+                                        } // NOI18N
                                         len = fnwpos + 1 - offset;
-                                        if (params.size() > 0) {
-                                            selectionStartOffset = selectionEndOffset = text.length();
-                                        }
                                         text += paramsText;
+                                        toAdd = null; // do not add '.', ',', ';'
                                     }
                                 } catch (BadLocationException e) {
                                 }
+                                if (paramsText == null) {
+                                    if (addSpace) {
+                                        text += ' '; // NOI18N
+                                    }
+                                    text += '('; // NOI18N
+                                    if (params.size() > 0) {
+                                        selectionStartOffset = selectionEndOffset = text.length();
+                                        showTooltip.set(true);
+                                    }
+                                    if (isDeclaration) {
+                                        for (Object obj : createParamsList()) {
+                                            text += obj;
+                                        }
+                                    }
+                                    if (isDeclaration || addClosingParen) {
+                                        text += ")";  // NOI18N
+                                        if (isDeclaration && CsmKindUtilities.isMethod(ctr) && ((CsmMethod)ctr).isConst()) {
+                                            // Fix for IZ#143117: Method autocompletion does not add 'const' keyword
+                                            text += " const"; // NOI18N
+                                        }
+                                    }
+                                } else {
+                                    try {
+                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
+                                            paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
+                                            len = fnwpos + 1 - offset;
+                                            if (params.size() > 0) {
+                                                selectionStartOffset = selectionEndOffset = text.length();
+                                            }
+                                            text += paramsText;
+                                        }
+                                    } catch (BadLocationException e) {
+                                    }
+                                }
                             }
-                        }
-                        break;
-                }
+                            break;
+                    }
 
-                if (text != null) {
-                    if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
-                    {
-                        text += toAdd;
-                    }
-                    // Update the text
-                    doc.atomicLock();
-                    try {
-                        CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
-                        if (CharSequenceUtilities.textEquals(text, textToReplace)) {
-                            c.setCaretPosition(offset + len);
-                            return false;
+                    if (text != null) {
+                        if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
+                        {
+                            text += toAdd;
                         }
-                        doc.remove(offset, len);
-                        doc.insertString(offset, text, null);
-                        if (selectionStartOffset >= 0) {
-                            c.select(offset + selectionStartOffset,
-                                    offset + selectionEndOffset);
-                        } else if ("(".equals(toAdd)) { // NOI18N
-                            int index = text.lastIndexOf(')');
-                            if (index > -1) {
-                                c.setCaretPosition(offset + index);
+                        // Update the text
+                        try {
+                            CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
+                            if (CharSequenceUtilities.textEquals(text, textToReplace)) {
+                                c.setCaretPosition(offset + len);
+                                res[0] = false;
                             }
+                            doc.remove(offset, len);
+                            doc.insertString(offset, text, null);
+                            if (isDeclaration) {
+                                c.setCaretPosition(offset + text.length());
+                            } else if (selectionStartOffset >= 0) {
+                                c.select(offset + selectionStartOffset,
+                                        offset + selectionEndOffset);
+                            } else if ("(".equals(toAdd)) { // NOI18N
+                                int index = text.lastIndexOf(')');
+                                if (index > -1) {
+                                    c.setCaretPosition(offset + index);
+                                }
+                            }
+                        } catch (BadLocationException e) {
+                            // Can't update
                         }
-                    } catch (BadLocationException e) {
-                        // Can't update
-                    } finally {
-                        doc.atomicUnlock();
+                        res[0] = true;
+                    } else {
+                        res[0] = false;
                     }
-                    return true;
-                } else {
-                    return false;
                 }
+            });
+            if (showTooltip.get()) {
+                Completion completion = Completion.get();
+                completion.hideCompletion();
+                completion.hideDocumentation();
+                completion.showToolTip();
             }
-            return false;
+            return res[0];
         }
         
+        // Checks is it function call or usage of function as a pointer
+        protected boolean isFunctionAsPointer(JTextComponent c, String funName) {
+            return false;
+        }
+      
         public String getItemText() {
             // TODO review the output
             return ctr.getName().toString();
@@ -1328,7 +1401,7 @@ public abstract class CsmResultItem
         
         @Override
         protected String getReplaceText(){
-            String text = getItemText();
+            String text = cls.getName().toString();
             if (classDisplayOffset > 0
                     && classDisplayOffset < text.length()
                     ) { // Only the last name for inner classes

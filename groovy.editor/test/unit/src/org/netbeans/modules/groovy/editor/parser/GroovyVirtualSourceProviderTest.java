@@ -120,4 +120,31 @@ public class GroovyVirtualSourceProviderTest extends GroovyTestBase {
                 "}\n", charSequence);
     }
 
+    public void testGenerics() throws IOException {
+        copyStringToFileObject(testFO,
+                "class Foo {\n" +
+                "  static List<String> get() {\n" +
+                "    return new ArrayList<String>()" +
+                "  }\n" +
+                "}");
+        List<ClassNode> classNodes = GroovyVirtualSourceProvider.getClassNodes(FileUtil.toFile(testFO));
+        assertEquals(classNodes.size(), 1);
+
+        GroovyVirtualSourceProvider.JavaStubGenerator generator = new GroovyVirtualSourceProvider.JavaStubGenerator();
+        CharSequence charSequence = generator.generateClass(classNodes.get(0));
+        assertEquals(
+                "import groovy.util.*;\n" +
+                "import java.util.*;\n" +
+                "import java.io.*;\n" +
+                "import java.lang.*;\n" +
+                "import groovy.lang.*;\n" +
+                "import java.net.*;\n" +
+                "\n" +
+                "public class Foo\n" +
+                "  extends java.lang.Object  implements\n" +
+                "    groovy.lang.GroovyObject {\n" +
+                "public static java.util.List<java.lang.String> get() { return (java.util.List<java.lang.String>)null;}\n" +
+                "}\n", charSequence);
+    }
+
 }

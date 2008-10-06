@@ -8,6 +8,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -21,11 +22,11 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                  <Component id="jPanel4" alignment="0" pref="361" max="32767" attributes="1"/>
-                  <Component id="jPanel3" alignment="0" min="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jPanel4" alignment="1" max="32767" attributes="1"/>
+                  <Component id="jPanel3" alignment="0" max="32767" attributes="1"/>
                   <Component id="jPanel2" alignment="0" max="32767" attributes="1"/>
-                  <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
+                  <Component id="jPanel1" alignment="1" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -34,14 +35,13 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jPanel1" min="-2" pref="86" max="-2" attributes="0"/>
+              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jPanel3" min="-2" pref="74" max="-2" attributes="0"/>
+              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jPanel4" min="-2" pref="110" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,46 +62,35 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Component id="imageTypeLbl" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="fileNameLbl" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="imageTypeComboBox" min="-2" max="-2" attributes="1"/>
-                      <Component id="fileNameField" min="0" pref="0" max="32767" attributes="1"/>
+                      <Component id="fileNameLbl" min="-2" max="-2" attributes="0"/>
+                      <Component id="imageTypeLbl" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="browseBtn" min="-2" pref="79" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="imageTypeComboBox" pref="218" max="32767" attributes="1"/>
+                      <Component id="fileNameField" alignment="0" pref="218" max="32767" attributes="2"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="browseBtn" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" max="-2" attributes="0">
-                          <Group type="103" groupAlignment="2" attributes="0">
-                              <Component id="imageTypeLbl" alignment="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="imageTypeComboBox" alignment="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="2" attributes="0">
-                              <Component id="browseBtn" alignment="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="fileNameField" alignment="2" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="2" attributes="0">
-                          <EmptySpace min="36" pref="36" max="36" attributes="0"/>
-                          <Component id="fileNameLbl" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                  <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="imageTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="imageTypeLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="fileNameLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="browseBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="fileNameField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
@@ -151,25 +140,15 @@
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[300, 30]"/>
             </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[200, 22]"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="imageTypeComboBoxItemStateChanged"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="imageTypeComboBoxActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JTextField" name="fileNameField">
           <Properties>
-            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[300, 19]"/>
-            </Property>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[200, 19]"/>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[270, 19]"/>
-            </Property>
+            <Property name="columns" type="int" value="20"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="browseBtn">
@@ -204,19 +183,14 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="visibleOnlyCheckBox" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Component id="selectedOnlyCheckBox" min="-2" pref="146" max="-2" attributes="0"/>
-                  <EmptySpace pref="58" max="32767" attributes="0"/>
+                  <EmptySpace pref="250" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="visibleOnlyCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="selectedOnlyCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="visibleOnlyCheckBox" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -244,16 +218,6 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="selectedOnlyCheckBox">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.selectedOnlyCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-          </AuxValues>
-        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel3">
@@ -270,92 +234,116 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-                          <Component id="lowLbl" min="-2" max="-2" attributes="0"/>
+              <Group type="102" alignment="1" attributes="0">
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="jPanel5" alignment="1" pref="391" max="32767" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="qualitySlider" min="-2" pref="264" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="highLbl" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" attributes="0">
-                          <EmptySpace min="-2" pref="98" max="-2" attributes="0"/>
-                          <Component id="qualityLbl" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="qualityField" min="-2" max="-2" attributes="0"/>
+                          <Component id="jPanel6" pref="379" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="14" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="qualityLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="qualityField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="highLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="lowLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="qualitySlider" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jPanel6" min="-2" pref="20" max="-2" attributes="0"/>
+                  <EmptySpace pref="13" max="32767" attributes="0"/>
+                  <Component id="jPanel5" min="-2" pref="44" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="qualityLbl">
-          <Properties>
-            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="qualityField"/>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.qualityLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JTextField" name="qualityField">
-          <Properties>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[30, 19]"/>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[30, 19]"/>
-            </Property>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JSlider" name="qualitySlider">
-        </Component>
-        <Component class="javax.swing.JLabel" name="lowLbl">
-          <Properties>
-            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-              <ComponentRef name="qualitySlider"/>
-            </Property>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.lowLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JLabel" name="highLbl">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.highLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-        </Component>
+        <Container class="javax.swing.JPanel" name="jPanel5">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="lowLbl">
+              <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="qualitySlider"/>
+                </Property>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.lowLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="javax.swing.JSlider" name="qualitySlider">
+              <Properties>
+                <Property name="majorTickSpacing" type="int" value="5"/>
+                <Property name="paintTicks" type="boolean" value="true"/>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="-1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="0.0"/>
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="javax.swing.JLabel" name="highLbl">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.highLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+                <Property name="verticalAlignment" type="int" value="1"/>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
+                </Constraint>
+              </Constraints>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="jPanel6">
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="qualityLbl">
+              <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="qualityField"/>
+                </Property>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/uml/drawingarea/ui/Bundle.properties" key="ExportImagePanel.qualityLbl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="6" anchor="13" weightX="0.0" weightY="0.0"/>
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="javax.swing.JTextField" name="qualityField">
+              <Properties>
+                <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[30, 19]"/>
+                </Property>
+                <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                  <Dimension value="[30, 19]"/>
+                </Property>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
+                </Constraint>
+              </Constraints>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="jPanel4">
@@ -375,30 +363,26 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="currentZoomLevelBtn" min="-2" max="-2" attributes="0"/>
+                      <Component id="customBtn" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="currentZoomLevelBtn" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="actualSizeBtn" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="fitInWindowBtn" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="heightLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="widthLbl" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Component id="customBtn" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="actualSizeBtn" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="fitInWindowBtn" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="heightField" max="32767" attributes="1"/>
-                              <Component id="widthField" alignment="0" pref="64" max="32767" attributes="1"/>
+                          <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="heightLbl" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="widthLbl" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="widthField" min="0" pref="0" max="32767" attributes="1"/>
+                      <Component id="heightField" alignment="0" pref="66" max="32767" attributes="1"/>
+                  </Group>
+                  <EmptySpace pref="90" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -407,23 +391,20 @@
               <Group type="102" alignment="0" attributes="0">
                   <Component id="currentZoomLevelBtn" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="actualSizeBtn" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="fitInWindowBtn" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="customBtn" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="actualSizeBtn" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="widthLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="heightField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="fitInWindowBtn" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="heightLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="widthField" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="heightLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="heightField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="customBtn" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -510,6 +491,7 @@
         </Component>
         <Component class="javax.swing.JTextField" name="widthField">
           <Properties>
+            <Property name="columns" type="int" value="5"/>
             <Property name="editable" type="boolean" value="false"/>
           </Properties>
         </Component>

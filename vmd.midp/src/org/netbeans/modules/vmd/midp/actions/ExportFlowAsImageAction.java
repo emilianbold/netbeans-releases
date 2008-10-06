@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -55,6 +56,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
@@ -62,6 +64,8 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.FileNotFoundException;
+
 
 /**
  * @author David Kaspar
@@ -141,12 +145,37 @@ public class ExportFlowAsImageAction extends SystemAction implements DesignDocum
             if (descriptor.getValue () != DialogDescriptor.YES_OPTION)
                 return;
         }
-
+        
+        FileImageOutputStream stream = null;
         try {
-            ImageIO.write (bi, "png", file); // NOI18N
-        } catch (IOException e) {
-            throw Debug.error (e);
+            stream = new FileImageOutputStream( file );
+            ImageIO.write (bi, "png", stream); // NOI18N
         }
+        catch (FileNotFoundException e) {
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message( 
+                    NbBundle.getMessage (ExportFlowAsImageAction.class, 
+                            "LBL_NoWrite", file.getAbsolutePath ()) , 
+                    NotifyDescriptor.   ERROR_MESSAGE );
+            DialogDisplayer.getDefault().notify( descriptor );
+            return;
+        }
+        catch (IOException e) {
+            throw Debug.error(e);
+        }
+        finally {
+            try {
+                if ( stream != null ){
+                    stream.close();
+                }
+            }
+            catch (IOException e) {
+                Debug.error(e);
+            }
+        }
+
+        
+            
+        
 
     }
 

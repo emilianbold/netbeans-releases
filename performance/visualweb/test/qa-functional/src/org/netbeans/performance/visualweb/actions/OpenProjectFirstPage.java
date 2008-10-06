@@ -79,7 +79,7 @@ public class OpenProjectFirstPage extends org.netbeans.modules.performance.utili
         expectedTime = 10000;
         WAIT_AFTER_OPEN=20000;
     }
-    
+
     public void testOpenSmallProjectFirstPage() {
         targetProject = "VisualWebProject";
         doMeasurement();

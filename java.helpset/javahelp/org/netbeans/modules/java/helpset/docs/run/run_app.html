@@ -5,6 +5,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Running an Application</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -36,10 +37,14 @@
   <li>Right-click the project's node in the Projects window and choose Run Project.</li>
 </ul>
 <ul class="note">
-    <li> If you run a project for which you have not specified a main class,
+<li>If you have the Save on Compile option selected in the Compiling section of
+the Project Properties window, the project will be run directly from the
+<tt>build/classes</tt> directory of your project. If Compile on Save is not
+selected, the project will be run using the project's build script.</li>
+    <li>If you run a project for which you have not specified a main class,
     	the  IDE prompts you for the main class. You can change this setting in
     	the Run panel of the project's Project Properties dialog box.
-    	Each project can only contain one main class. </td>
+    	Each project can only contain one main class. 
   </li>
 </ul>
 <!--todo : verify accuracy for FF projects-->

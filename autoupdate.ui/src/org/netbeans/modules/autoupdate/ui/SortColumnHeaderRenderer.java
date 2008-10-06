@@ -46,6 +46,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.TableCellRenderer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
@@ -54,7 +55,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Radek Matous
  */
-public class SortColumnHeaderRenderer implements TableCellRenderer{
+public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
     private UnitCategoryTableModel model;
     private TableCellRenderer textRenderer;
     private String sortColumn;

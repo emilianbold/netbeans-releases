@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<friends_getLists_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <friendlist>
+        <flid>524434806283</flid>
+        <name>sample list</name>
+    </friendlist>
+    <friendlist>
+        <flid>524434806284</flid>
+        <name>another sample</name>
+    </friendlist>
+</friends_getLists_response>

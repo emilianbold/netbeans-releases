@@ -64,7 +64,7 @@ public class WrongOrderOfArgsRule extends PHPRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(WrongOrderOfArgsRule.class, "WrongOrderOfArgsRuleDispName");
     }
 
     public HintSeverity getDefaultSeverity() {
@@ -81,7 +81,7 @@ public class WrongOrderOfArgsRule extends PHPRule {
             } else if (wasDefaultVar) {
                 OffsetRange range = new OffsetRange(param.getStartOffset(), param.getEndOffset());
 
-                Hint hint = new Hint(WrongOrderOfArgsRule.this, getDescription(),
+                Hint hint = new Hint(WrongOrderOfArgsRule.this, getDisplayName(),
                         context.compilationInfo.getFileObject(), range, null, 500);
 
                 addResult(hint);

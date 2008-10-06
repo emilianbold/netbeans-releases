@@ -62,7 +62,7 @@ public class JBPluginProperties {
     public static final String PROPERTY_ROOT_DIR = "root-dir";//NOI18N
     public static final String PROPERTY_HOST = "host";//NOI18N
     public static final String PROPERTY_PORT = "port";//NOI18N
-    
+    public static final String PROPERTY_JAVA_OPTS = "java_opts"; // NOI18N
     
     private static JBPluginProperties pluginProperties = null;
     private String installLocation;

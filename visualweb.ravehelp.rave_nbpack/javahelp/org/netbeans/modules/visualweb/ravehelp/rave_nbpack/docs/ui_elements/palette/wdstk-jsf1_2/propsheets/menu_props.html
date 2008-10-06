@@ -1,0 +1,133 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2008 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>JSF 1.2 Menu Component Properties Window</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>JSF 1.2 Menu Component Properties Window </h2>
+<p><small><a href="#seealso">See Also  </a></small></p>
+
+
+<p>You see the Properties window for an Menu Component <img src="../../../../images/menu.png" alt="Alert Component icon">&nbsp;when you select the component on a page that you are editing in the Visual Designer. Most of the component's properties are both JSP attributes and properties of the <code>Menu</code> Java component in the page bean.</p>
+<p>This JavaServer Faces 1.2 component has the following properties. </p>
+
+<h3>General</h3>
+<ul>
+	<li><b>id.</b><code> Type: String</code><br>
+  The name of the Menu Component in the page bean and the JSP file. </li>
+    
+</ul>
+
+<h3>Appearance</h3>
+<ul>
+ 
+<li><b>style.</b><code> Type: String</code><br>
+		Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
+		<p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
+<p>You can enter values directly or click the ellipsis (...) button to use the <a href="../../../propeditors/style_prop_ed_main.html">Style Editor</a>.
+    <ul class="note">
+          <li>This property overrides any settings in the theme or the project CSS file for this component. If a style specified in this property does not appear to take effect, it is because an area of the component is obscured by a child component that has different style settings.</li>
+    </ul>
+
+	  <p>For a list of CSS2 style attributes, see the web page at<br>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+	      <param name="content" value="http://www.w3.org/TR/REC-CSS2/propidx.html">
+	      <param name="text" value="http://www.w3.org/TR/REC-CSS2/propidx.html"></object>
+      </p>
+  </li>
+	<li><b>styleClass.<a name="themecss"></a></b><code> Type: String</code><br>A space-separated list of CSS2 style classes to be applied when the component is rendered. The style classes must be defined in the project's style sheet or in the theme's CSS file. If you click the ellipsis button (...), you see a list of all styles you can add to this property. For information on adding CSS classes and rules to the project's cascading style sheet, see <a href="../../../editors/about_css_editor.html">CSS Editor</a>.
+      <ul class="note">
+        <li>See the note above under the <code>style</code> property description for an explanation of why a class added to this property might appear to have no effect on the component. </li>
+        <li> If you add a CSS style class from the current <a href="../../../../components/aboutthemes.html">theme</a> to your project CSS file and you redefine the style class, the change affects all components that use this style class. However, you can add your own style classes to the project CSS file that redefine the default style classes, and then when you add them to this property, the changes affect only this instance of this component.</li>
+     </ul>
+</ul>
+
+<h3>Data</h3>
+<ul>
+  <li><b>items.</b><code> Type: String</code><br> 
+Specifies the items that the web application user can choose from. The value must be one of an array, Map, or Collection whose members are all subclasses of <tt>com.sun.webui.jsf.model.Option</tt>.</li>
+</ul>
+<h3>Behavior</h3>
+<ul>
+<li><strong>immediate.</strong> <code> Type: Boolean</code><br>
+  The immediate flag.</li>
+    <li><strong>submitForm.</strong><code> Type: Boolean</code><br>
+      When the <tt>submitForm</tt> attribute is set to true, the form is immediately submitted when the user changes the selection in the menu.  </li>
+    
+<li><strong>visible.</strong><code> Type: Boolean</code><br>Use the visible attribute to indicate whether the component should be viewable by the user in the rendered HTML page. If set to false, the HTML code for the component is present in the page, but the component is hidden with style attributes. By default, visible is set to true, so HTML for the component HTML is included and visible to the user. If the component is not visible, it can still be processed on subsequent form submissions because the HTML is present.</li></ul>
+  <h3>JavaScript</h3>
+  <ul>
+<li><strong>onChange.</strong> <code> Type: String</code><br>
+  Scripting code executed when the element value of this component is changed. </li>
+    <li><strong>onClick.</strong><code> Type: String</code><br>
+      Scripting code executed when a mouse click occurs over this component.The Menu element has a function called <tt>getSelectedOption</tt> which can be invoked by <tt>onClick</tt> function handlers to know which option has been selected. This will return the name of the option that was clicked.</li>
+    <li><strong>onDblClick.</strong><code> Type: String</code><br>
+      Scripting code executed when a mouse double click occurs over this component.  </li>
+    <li><strong>onKeyDown.</strong><code> Type: String</code><br>
+      Scripting code executed when the user presses down on a key while the component has focus.  </li>
+  <li><strong>onKeyPress.</strong> <code> Type: String</code><br>
+  Scripting code executed when the user presses and releases a key while the component has focus.</li>
+    <li><strong>onKeyUp.</strong><code> Type: String</code><br>
+      Scripting code executed when the user releases a key while the component has focus.</li>
+    <li><strong>onMouseDown.</strong><code> Type: String</code><br>
+      Scripting code executed when the user presses a mouse button while the mouse pointer is on the component.  </li>
+    <li><strong>onMouseMove.</strong><code> Type: String</code><br>
+      Scripting code executed when the user moves the mouse pointer while over the component.</li>
+  <li><strong>onMouseOut.</strong><code> Type: String</code><br>
+      Scripting code executed when a mouse out movement occurs over this component.</li>
+    <li><strong>onMouseOver.</strong><code> Type: String</code><br>
+      Scripting code executed when the user moves the mouse pointer into the boundary of this component.</li>
+    <li><strong>onMouseUp.</strong><code> Type: String</code><br>
+      Scripting code executed when the user releases a mouse button while the mouse pointer is on the component.  </li>
+  </ul>
+<h3>Advanced</h3>
+<ul>
+  <li><b>phaseId.</b><code> Type: String </code><br>
+The <tt>PhaseId</tt> in which events should be broadcast. The default is<tt> PhaseId.INVOKE_APPLICATION</tt> or <tt>PhaseId.ANY</tt> if  Immediate returns true.</li><li><b>rendered.</b><code> Type: Boolean</code><br>
+If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. If you need the component to be hidden but still processed when the page is submitted, deselect the <code>visible</code> property instead of this property. </li>
+</ul>
+  
+<h3>Events</h3>
+<ul>
+  <li><b>event.</b><code> Type: String </code><br> 
+  The event handler property.
+</li>
+  
+</ul>
+</li>
+</ul>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../menu.html">Menu Component</a></dd>
+
+<dd><a href="menu_props.html">Menu Component Properties Window</a></dd>
+	<dd><a href="../../../../components/component_process.html">Working With Components</a></dd>
+	<dd><a href="../../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Alert Component Properties Window">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>
+

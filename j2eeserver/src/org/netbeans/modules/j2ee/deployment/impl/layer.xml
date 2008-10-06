@@ -86,25 +86,6 @@ made subject to such option by the copyright holder.
     </folder>
   </folder>
 
-  <folder name="UI">
-     <!-- <folder name="Runtime">
-       <file name="ServerRegistry2.instance">
-           <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode.getServerRegistryNode"/>
-           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
-           <attr name="position" intvalue="400"/>
-            </file>
-       </folder> -->
-    <folder name="Services">
-        <folder name="IDEConfiguration">
-           <folder name="ServerAndExternalToolSettings">
-              <file name="J2EEServers.shadow">
-                 <attr name="originalFile" stringvalue="Services/J2EEServers"/>
-              </file>
-           </folder>
-        </folder>
-    </folder>
-  </folder>
-
     <folder name="xml">
         <folder name="entities">
         <!--Entity registration-->

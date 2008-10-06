@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -42,9 +42,11 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.List;
-import java.util.Set;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.groovy.grailsproject.GrailsSources;
+import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -56,34 +58,25 @@ import org.openide.util.Exceptions;
 public class SourceRoots {
 
     private final FileObject projectRoot;
-    
+
     public SourceRoots(FileObject projectRoot) {
         this.projectRoot = projectRoot;
     }
-    
+
     public FileObject[] getRoots() {
-        String[] paths = new String[] {
-            "src/java", // NOI18N
-            "src/groovy", // NOI18N
-            "grails-app/conf", // NOI18N
-            "grails-app/controllers", // NOI18N
-            "grails-app/domain", // NOI18N
-            "grails-app/services", // NOI18N
-            "grails-app/taglib", // NOI18N
-            "test/integration", // NOI18N
-            "test/unit" // NOI18N
-        };
-        
-        Set<FileObject> roots = new HashSet<FileObject>();
-        for (String path : paths) {
-            FileObject fo = projectRoot.getFileObject(path); // NOI18N
-            if (fo != null) {
-                roots.add(fo);
+        List<FileObject> result = new ArrayList<FileObject>();
+        addGrailsSourceRoots(projectRoot, result);
+        FileObject pluginsDir = projectRoot.getFileObject("plugins");
+        if (pluginsDir != null) {
+            Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
+            while (subfolders.hasMoreElements()) {
+                addGrailsSourceRoots(subfolders.nextElement(), result);
             }
         }
-        return roots.toArray(new FileObject[roots.size()]);
+
+        return result.toArray(new FileObject[result.size()]);
     }
-    
+
     public List<URL> getRootURLs() {
         List<URL> urls = new ArrayList<URL>();
         try {
@@ -94,6 +87,42 @@ public class SourceRoots {
             Exceptions.printStackTrace(murle);
         }
         return urls;
+    }
+
+    private static void addGrailsSourceRoots(FileObject projectRoot, List<FileObject> result) {
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONF, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_CONTROLLERS, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_DOMAIN, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_SERVICES, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_TAGLIB, result);
+        addRoot(projectRoot, SourceCategory.GRAILSAPP_UTILS, result);
+        addRoot(projectRoot, SourceCategory.SCRIPTS, result);
+        addRoot(projectRoot, SourceCategory.SRC_GROOVY, result);
+        addRoot(projectRoot, SourceCategory.SRC_JAVA, result);
+        addRoot(projectRoot, SourceCategory.TEST_INTEGRATION, result);
+        addRoot(projectRoot, SourceCategory.TEST_UNIT, result);
+        for (FileObject child : projectRoot.getChildren()) {
+            if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
+                    !GrailsSources.KNOWN_FOLDERS.contains(child.getName())) {
+                result.add(child);
+            }
+        }
+        FileObject grailsAppFo = projectRoot.getFileObject("grails-app"); // NOI18N
+        if (grailsAppFo != null) {
+            for (FileObject child : grailsAppFo.getChildren()) {
+                if (child.isFolder() && VisibilityQuery.getDefault().isVisible(child) &&
+                        !GrailsSources.KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                    result.add(child);
+                }
+            }
+        }
+    }
+
+    private static void addRoot(FileObject projectRoot, SourceCategory category, List<FileObject> roots) {
+        FileObject root = projectRoot.getFileObject(category.getRelativePath());
+        if (root != null) {
+            roots.add(root);
+        }
     }
 
 }

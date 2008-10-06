@@ -265,11 +265,19 @@ made subject to such option by the copyright holder.
         
     </folder>
     
-    <folder name="org.netbeans.modules.java.source">
-      <folder name="options">
-          <file name="Hints.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.java.hints.options.HintsAdvancedOption"/>
-          </file>
+    <folder name="OptionsDialog">
+      <folder name="Editor">
+          <folder name="Hints">
+              <attr name="position" intvalue="0"/>
+              <folder name="text">
+                  <folder name="x-java">
+                      <file name="JavaHints.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.options.HintsOptionsPanelController"/>
+                      </file>
+                  </folder>
+              </folder>
+          </folder>
       </folder>
   </folder>
   

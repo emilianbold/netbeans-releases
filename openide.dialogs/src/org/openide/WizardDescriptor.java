@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -99,6 +99,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -298,6 +299,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** a component with wait cursor */
     private Component waitingComponent;
     private boolean changeStateInProgress = false;
+    private boolean currentPanelWasChangedWhileStoreSettings = false;
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
      * <CODE>(JComponent)Panel.getComponent()</CODE> client properties or returned
@@ -1282,7 +1284,11 @@ public class WizardDescriptor extends DialogDescriptor {
             //Bugfix #25820: make sure that storeSettings
             //is called before propertyChange.
             if (data.current != null) {
+                Panel old = data.current;
                 data.current.storeSettings(data.getSettings(this));
+                if (! old.equals (data.current)) {
+                    currentPanelWasChangedWhileStoreSettings = true;
+                }
             }
         }
 
@@ -1317,7 +1323,7 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static Image getDefaultImage() {
-        return Utilities.loadImage("org/netbeans/modules/dialogs/defaultWizard.gif", true);
+        return ImageUtilities.loadImage("org/netbeans/modules/dialogs/defaultWizard.gif", true);
     }
 
     private void updateButtonAccessibleDescription() {
@@ -1344,10 +1350,16 @@ public class WizardDescriptor extends DialogDescriptor {
 
                 try {
                     // try validation current panel
-                    v.validate();
+                    if (currentPanelWasChangedWhileStoreSettings) {
+                        err.log (Level.FINE, "validationPeformer interupt because currentPanelWasChangedWhileStoreSettings"); // NOI18N
+                        currentPanelWasChangedWhileStoreSettings = false;
+                    } else {
+                        v.validate();
+                        err.log (Level.FINE, "validation passed successfully."); // NOI18N
+                    }
                     validationRuns = false;
 
-                    // validation succesfull
+                    // validation was successful
                     if (SwingUtilities.isEventDispatchThread ()) {
                         err.log (Level.FINE, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();
@@ -2511,17 +2523,17 @@ public class WizardDescriptor extends DialogDescriptor {
                 switch (msgType) {
                     case MSG_TYPE_ERROR:
                         prepareMessage(m_lblMessage,
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/error.gif")),
                             nbErrorForeground);
                         break;
                     case MSG_TYPE_WARNING:
                         prepareMessage(m_lblMessage, 
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif")),
                             nbWarningForeground);
                         break;
                     case MSG_TYPE_INFO:
                         prepareMessage(m_lblMessage, 
-                            new ImageIcon (Utilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
+                            new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/dialogs/info.png")),
                             nbInfoForeground);
                         break;
                     default:
@@ -2538,9 +2550,15 @@ public class WizardDescriptor extends DialogDescriptor {
             label.setForeground(fgColor);
         }
         
-        private void setProgressComponent (JComponent progressComp, JLabel progressLabel) {
+        private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
             if (progressLabel != null) {
                 progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
+                progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
+                    }
+                });
+                progressLabel.setToolTipText (PROGRESS_BAR_DISPLAY_NAME);
                 progressBarPanel.add (progressLabel, BorderLayout.NORTH);
             }
             progressBarPanel.add (progressComp, BorderLayout.CENTER);
@@ -2865,7 +2883,7 @@ public class WizardDescriptor extends DialogDescriptor {
         @Override
         public Dimension getPreferredSize() {
             Dimension preferredSize = super.getPreferredSize();
-            assert ESTIMATED_HEIGHT == Utilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
+            assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
             preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
             return preferredSize;
         }

@@ -106,7 +106,7 @@ public final class BreakpointsReader implements Properties.Reader {
         try {
             fo = URLMapper.findFileObject(new URL(url));
         } catch (MalformedURLException e) {
-            Util.finest("Did not find FileObject. Malformed URL '" + url + "'");
+            Util.finer("Did not find FileObject. Malformed URL '" + url + "'");
             return null;
         }
         if (fo == null) {

@@ -40,11 +40,12 @@
  */
 package org.netbeans.modules.websvc.wsitmodelext.addressing;
 
+import org.netbeans.modules.websvc.wsitmodelext.policy.OptionalAttributeAllowed;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
  * @author Martin Grebac
  */
-public interface Addressing10WsdlUsingAddressing extends ExtensibilityElement {
+public interface Addressing10WsdlUsingAddressing extends ExtensibilityElement, OptionalAttributeAllowed {
 }

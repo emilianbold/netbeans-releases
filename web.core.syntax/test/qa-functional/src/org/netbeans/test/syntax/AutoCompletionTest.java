@@ -62,18 +62,18 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author jindra
+ * @author Jindrich Sedek
  */
 public class AutoCompletionTest extends CompletionTest {
     
     /** Creates a new instance of AutoCompletionTest */
     public AutoCompletionTest(String name, FileObject testFileObj) {
         super(name, testFileObj);
-        debug = false;
     }
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
@@ -94,6 +94,12 @@ public class AutoCompletionTest extends CompletionTest {
             };
             addTest(RecurrentSuiteFactory.createSuite(AutoCompletionTest.class, projectsDir, filter));
         }
+    }
+
+    @Override
+    protected File getProjectsDir() {
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "AutoCompletionTestProjects");
     }
 
     @Override
@@ -131,11 +137,9 @@ public class AutoCompletionTest extends CompletionTest {
             }
             waitTypingFinished(doc);
             waitTypingFinished(doc);
-            doc.atomicLock();
             int rowStart = Utilities.getRowStart(doc, step.getOffset() + 1);
             int rowEnd = Utilities.getRowEnd(doc, step.getOffset() + 1);
             String result = doc.getText(new int[]{rowStart, rowEnd}).trim();
-            doc.atomicUnlock();
             if (!result.equals(step.getResult())) {
                 ref("EE: unexpected CC result:\n< " + result + "\n> " + step.getResult());
             }

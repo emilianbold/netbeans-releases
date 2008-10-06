@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.navigation.includeview;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -53,16 +54,22 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -139,7 +146,11 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private MyBeanTreeView getTreeView(){
         return (MyBeanTreeView)hierarchyPane;
     }
-    
+
+    private Color getBorderColor(){
+        return UIManager.getDefaults().getColor("SplitPane.shadow"); // NOI18N
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -262,7 +273,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         add(toolBar, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(getBorderColor()));
+        jPanel2.setFocusable(false);
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -271,6 +283,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(jPanel2, gridBagConstraints);
+
+        hierarchyPane.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -489,10 +503,10 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
     private class RefreshAction extends AbstractAction implements Presenter.Popup {
         private JMenuItem menuItem;
         public RefreshAction() {
-            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.refreshButton.toolTipText")); //NOI18N
+            putValue(Action.NAME, NbBundle.getMessage(IncludeHierarchyPanel.class, "IncludeHierarchyPanel.refreshButton.menuText")); //NOI18N
             putValue(Action.SMALL_ICON, refreshButton.getIcon());
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -509,8 +523,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         public WhoIncludesAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.WHO_INCLUDES));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.WHO_INCLUDES));
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -528,8 +542,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         public WhoIsIncludedAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.WHO_IS_INCLUDED));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.WHO_IS_INCLUDED));
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -547,8 +561,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         public DirectOnlyAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.DIRECT_ONLY));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.DIRECT_ONLY));
-            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JCheckBoxMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -566,8 +580,8 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         public TreeAction() {
             putValue(Action.NAME, getButtonTooltip(IncludeHierarchyPanel.TREE));
             putValue(Action.SMALL_ICON, getButtonIcon(IncludeHierarchyPanel.TREE));
-            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JCheckBoxMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -648,16 +662,16 @@ public class IncludeHierarchyPanel extends JPanel implements ExplorerManager.Pro
         String path = null;
         switch (kind){
         case WHO_INCLUDES:
-            path = "IncludeHierarchyPanel.whoIncludesButton.toolTipText"; // NOI18N
+            path = "IncludeHierarchyPanel.whoIncludesButton.menuText"; // NOI18N
             break;
         case WHO_IS_INCLUDED:
-            path = "IncludeHierarchyPanel.whoIsIncludedButton.toolTipText"; // NOI18N
+            path = "IncludeHierarchyPanel.whoIsIncludedButton.menuText"; // NOI18N
             break;
         case DIRECT_ONLY:
-            path = "IncludeHierarchyPanel.directOnlyButton.toolTipText"; // NOI18N
+            path = "IncludeHierarchyPanel.directOnlyButton.menuText"; // NOI18N
             break;
         case TREE:
-            path = "IncludeHierarchyPanel.treeButton.toolTipText"; // NOI18N
+            path = "IncludeHierarchyPanel.treeButton.menuText"; // NOI18N
             break;
         }
         return org.openide.util.NbBundle.getMessage(getClass(), path);

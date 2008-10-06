@@ -8,12 +8,12 @@
         <BLOCK><EXPR_VOID><CALL><NAME>in_second_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
     } <CATCH>catch ( <NAME>e</NAME> if <EQ><NAME>e</NAME> == <STRING>"InvalidEmailException"</STRING></EQ> ) { 
         <BLOCK><EXPR_VOID><CALL><NAME>in_third_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
-    } <CATCH>catch ( <NAME>e<EMPTY></EMPTY></NAME> ) {
+    } <CATCH>catch ( <NAME>e</NAME><EMPTY/> ) {
         <BLOCK><EXPR_VOID><CALL><NAME>in_default_catch</NAME>()</CALL></EXPR_VOID></BLOCK>;</CATCH> 
     } <FINALLY>finally <BLOCK>{
         <EXPR_VOID><CALL><NAME>in_finally</NAME>()</CALL></EXPR_VOID>;
     }</BLOCK></FINALLY></TRY>
-<RETURN></RETURN></BLOCK>}</FUNCTION>
+</BLOCK><RETURN/>}</FUNCTION>
    
 
 // Simple - no catch
@@ -25,13 +25,13 @@
 
 <TRY>try <BLOCK>{
     <EXPR_RESULT><CALL><NAME>in_try_block_2</NAME>()</CALL></EXPR_RESULT>;
-}</BLOCK> <CATCH>catch(<NAME>e<EMPTY></EMPTY></NAME>) {
+}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) {
     <BLOCK><EXPR_RESULT><CALL><NAME>in_catch</NAME>()</CALL></EXPR_RESULT></BLOCK>;</CATCH>
 }</TRY>
 
 // Empty blocks
 <TRY>try <BLOCK>{
-}</BLOCK> <CATCH>catch(<NAME>e<EMPTY></EMPTY></NAME>) <BLOCK>{</BLOCK></CATCH>
+}</BLOCK> <CATCH>catch(<NAME>e</NAME><EMPTY/>) <BLOCK>{</BLOCK></CATCH>
 } <FINALLY>finally <BLOCK>{
 }</BLOCK></FINALLY></TRY></SCRIPT>
 

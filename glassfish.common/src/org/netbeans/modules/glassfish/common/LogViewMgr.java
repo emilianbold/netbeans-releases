@@ -47,12 +47,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
@@ -61,22 +69,27 @@ import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.openide.ErrorManager;
+import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 
 /**
  * This class is capable of tailing the specified file or input stream. It
  * checks for changes at the specified intervals and outputs the changes to
- * the given I/O panel in NetBeans
+ * the given I/O panel in NetBeans.
+ *
+ * It is now particularly tuned, in the case of files, for GlassFish V3 log
+ * files.
  *
  * FIXME Refactor: LogViewMgr should be a special case of SimpleIO
  * 
- * @author Michal Mocnak
  * @author Peter Williams
+ * @author Michal Mocnak
  */
 public class LogViewMgr {
     
@@ -89,13 +102,29 @@ public class LogViewMgr {
     /**
      * Singleton model pattern
      */
-    private static final Map<String, LogViewMgr> instances = new HashMap<String, LogViewMgr>();
-    
+    private static final Map<String, WeakReference<LogViewMgr>> instances =
+            new HashMap<String, WeakReference<LogViewMgr>>();
+
     /**
      * The I/O window where to output the changes
      */
     private InputOutput io;
-    
+
+    /**
+     * Active readers for this log view.  This list contains references either
+     * to nothing (which means log is not active), a single file reader to
+     * monitor server.log if the server is running outside the IDE, or two
+     * stream readers for servers started within the IDE.
+     *
+     * !PW not sure this complexity is worth it.  Reading server.log correctly
+     * is a major pain compared to reading server I/O streams directly.  But we
+     * don't have that luxury for servers created outside the IDE, so this is a
+     * feeble attempt to have our cake and eat it too :)  I'll probably regret
+     * it later.
+     */
+    private final List<WeakReference<LoggerRunnable>> readers =
+            Collections.synchronizedList(new ArrayList<WeakReference<LoggerRunnable>>());
+
     /**
      * Creates and starts a new instance of Hk2Logger
      * 
@@ -114,8 +143,6 @@ public class LogViewMgr {
         } catch (IOException ex) {
             // no op
         }
-        
-        io.select();
     }
     
     /**
@@ -127,24 +154,54 @@ public class LogViewMgr {
     public static LogViewMgr getInstance(String uri) {
         LogViewMgr logViewMgr = null;
         synchronized (instances) {
-            logViewMgr = instances.get(uri);
+            WeakReference<LogViewMgr> viewRef = instances.get(uri);
+            logViewMgr = viewRef != null ? viewRef.get() : null;
             if(logViewMgr == null) {
                 logViewMgr = new LogViewMgr(uri);
-                instances.put(uri, logViewMgr);
+                instances.put(uri, new WeakReference<LogViewMgr>(logViewMgr));
+            }
+            if(logViewMgr.io != null) {
+                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: closed = " + logViewMgr.io.isClosed() + ", output error flag = " + logViewMgr.io.getOut().checkError());
+            } else {
+                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: io = " + logViewMgr.io);
             }
         }
         return logViewMgr;
     }
     
+    public void ensureActiveReader(List<Recognizer> recognizers, File serverLog) {
+        synchronized (readers) {
+            boolean activeReader = false;
+            for(WeakReference<LoggerRunnable> ref: readers) {
+                LoggerRunnable logger = ref.get();
+                if(logger != null) {
+                    activeReader = true;
+                    break;
+                }
+            }
+
+            if(!activeReader && serverLog != null) {
+                readFiles(recognizers, serverLog);
+            }
+        }
+    }
+
     /**
      * Reads a newly included InputSreams
      *
      * @param inputStreams InputStreams to read
      */
-    public void readInputStreams(InputStream... inputStreams) {
-        RequestProcessor rp = RequestProcessor.getDefault();
-        for(InputStream inputStream : inputStreams){
-            rp.post(new LoggerRunnable(inputStream, false));
+    public void readInputStreams(List<Recognizer> recognizers, InputStream... inputStreams) {
+        synchronized (readers) {
+            stopReaders();
+
+            RequestProcessor rp = RequestProcessor.getDefault();
+            for(InputStream inputStream : inputStreams){
+                // LoggerRunnable will close the stream if necessary.
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false);
+                readers.add(new WeakReference<LoggerRunnable>(logger));
+                rp.post(logger);
+            }
         }
     }
     
@@ -153,14 +210,45 @@ public class LogViewMgr {
      * 
      * @param files Files to read
      */
-    public void readFiles(File[] files) {
-        RequestProcessor rp = RequestProcessor.getDefault();
-        for(File file : files) {
-            try {
-                // LoggerRunnable will close the stream.
-                rp.post(new LoggerRunnable(new FileInputStream(file), true));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
+    public void readFiles(List<Recognizer> recognizers, File... files) {
+        synchronized (readers) {
+            stopReaders();
+            
+            RequestProcessor rp = RequestProcessor.getDefault();
+            for(File file : files) {
+                try {
+                    // LoggerRunnable will close the stream.
+                    LoggerRunnable logger = new LoggerRunnable(recognizers, new FileInputStream(file), true);
+                    readers.add(new WeakReference<LoggerRunnable>(logger));
+                    rp.post(logger);
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
+                }
+            }
+        }
+    }
+    
+    private void stopReaders() {
+        synchronized (readers) {
+            for(WeakReference<LoggerRunnable> ref: readers) {
+                LoggerRunnable logger = ref.get();
+                if(logger != null) {
+                    logger.stop();
+                }
+            }
+            readers.clear();
+        }
+    }
+    
+    private void removeReader(LoggerRunnable logger) {
+        synchronized (readers) {
+            int size = readers.size();
+            for(int i = 0; i < size; i++) {
+                WeakReference<LoggerRunnable> ref = readers.get(i);
+                if(logger == ref.get()) {
+                    readers.remove(i);
+                    break;
+                }
             }
         }
     }
@@ -170,25 +258,92 @@ public class LogViewMgr {
      * 
      * @param s message to write
      */
-    public synchronized void write(String s) {
-        io.getOut().print(s);
+    public synchronized void write(String s, boolean error) {
+        Logger.getLogger("glassfish").log(Level.FINE, "write: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
+        OutputWriter writer = error ? io.getErr() : io.getOut();
+        writer.print(s);
     }
     
+    /**
+     * Writes a message into output
+     * 
+     * @param s message to write
+     */
+    public synchronized void write(String s, OutputListener link, boolean important, boolean error) {
+        Logger.getLogger("glassfish").log(Level.FINE, "writeOL: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
+        try {
+            OutputWriter writer = error ? io.getErr() : io.getOut();
+            writer.println(s, link, important);
+        } catch(IOException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    private final Locale logLocale = getLogLocale();
+    private final String logBundleName = getLogBundle();
+    private final String localizedWarning = getLocalized(Level.WARNING.getName());
+    private final String localizedSevere = getLocalized(Level.SEVERE.getName());
+    private final Map<String, String> localizedLevels = getLevelMap();
+    
+    private Locale getLogLocale() {
+        // XXX detect and use server language/country/variant instead of IDE's.
+        String language = System.getProperty("user.language");
+        if(language != null) {
+            return new Locale(language, System.getProperty("user.country", ""), System.getProperty("user.variant", ""));
+        }
+        return Locale.getDefault();
+    }
+    
+    private String getLogBundle() {
+        return Level.INFO.getResourceBundleName();
+    }
+    
+    private String getLocalized(String text) {
+        ResourceBundle bundle = ResourceBundle.getBundle(logBundleName, logLocale);
+        String localized = bundle.getString(text);
+        return localized != null ? localized : text;
+    }
+
+    private Map<String, String> getLevelMap() {
+        Map<String, String> levelMap = new HashMap<String, String>();
+        for(Level l: new Level [] { Level.ALL, Level.CONFIG, Level.FINE,
+                Level.FINER, Level.FINEST, Level.INFO, Level.SEVERE, Level.WARNING } ) {
+            String name = l.getName();
+            levelMap.put(name, getLocalized(name));
+        }
+        return levelMap;
+    }
+    
+    private String getLocalizedLevel(String level) {
+        String localizedLevel = localizedLevels.get(level);
+        return localizedLevel != null ? localizedLevel : level;
+    }
+    
+
     /**
      * Selects output panel
      */
     public synchronized void selectIO() {
+        Logger.getLogger("glassfish").log(Level.FINE, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
         io.select();
     }
     
     private class LoggerRunnable implements Runnable {
-        
+
+        private final List<Recognizer> recognizers;
         private final InputStream inputStream;
         private final boolean ignoreEof;
+        private volatile boolean shutdown;
         
-        public LoggerRunnable(InputStream inputStream, boolean ignoreEof) {
+        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, boolean ignoreEof) {
+            this.recognizers = recognizers;
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
+            this.shutdown = false;
+        }
+
+        public void stop() {
+            shutdown = true;
         }
         
         /**
@@ -197,29 +352,40 @@ public class LogViewMgr {
          */
         public void run() {
             final String originalName = Thread.currentThread().getName();
+            BufferedReader reader = null;
             
             try {
                 Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
-                
-                // create a reader from the input stream
-                Reader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                // ignoreEof is true for log files and false for process streams.
+                // FIXME Should differentiate filter types more cleanly.
+                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : new StreamFilter();
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
                 int len = 0;
-                while(len != -1) {
+
+                while(!shutdown && len != -1) {
                     if(ignoreEof) {
                         // For file streams, only read if there is something there.
-                        while(reader.ready()) {
-                            write(new String(chars, 0, reader.read(chars)));
-                            selectIO();
+                        while(!shutdown && reader.ready()) {
+                            String text = filter.process((char) reader.read());
+                            if(text != null) {
+                                processLine(text);
+                            }
                         }
                     } else {
                         // For process streams, check for EOF every <DELAY> interval.
-                        while((len = reader.read(chars)) != -1) {
-                            write(new String(chars, 0, len));
-                            selectIO();
-
+                        // We don't use readLine() here because it blocks.
+                        while(!shutdown && (len = reader.read(chars)) != -1) {
+                            for(int i = 0; i < len; i++) {
+                                String text = filter.process(chars[i]);
+                                if(text != null) {
+                                    processLine(text);
+                                }
+                            }
                             if(!reader.ready()) {
                                 break;
                             }
@@ -233,17 +399,331 @@ public class LogViewMgr {
                         // ignore
                     }
                 }
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception reading server log", ex);
             } finally {
                 try {
                     inputStream.close();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                } catch (IOException ex) {
+                    Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception closing server log", ex);
                 }
+                
+                if(reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException ex) {
+                        Logger.getLogger("glassfish").log(Level.WARNING, "I/O exception closing stream buffer", ex);
+                    }
+                }
+                
+                removeReader(this);
                 
                 Thread.currentThread().setName(originalName);
             }
+        }
+
+        private void processLine(String line) {
+            if(Logger.getLogger("glassfish").isLoggable(Level.FINE)) {
+                Logger.getLogger("glassfish").log(Level.FINE, "processing text: '" + line + "'");
+            }
+            OutputListener listener = null;
+            Iterator<Recognizer> iterator = recognizers.iterator();
+            while(iterator.hasNext() && listener == null) {
+                listener = iterator.next().processLine(line);
+            }
+            boolean showAsError = isWarning(line);
+            if(listener != null) {
+                line = stripNewline(line);
+                write(line, listener, false, showAsError);
+            } else {
+                write(line, showAsError);
+            }
+            selectIO();
+        }
+    }
+
+    private static final String stripNewline(String s) {
+        int len = s.length();
+        if(len > 0 && '\n' == s.charAt(len-1)) {
+            s = s.substring(0, len-1);
+        }
+        return s;
+    }
+    
+    private boolean isWarning(String line) {
+        return line.startsWith(localizedWarning) || line.startsWith(localizedSevere);
+    }
+
+    private static interface Filter {
+        
+        public String process(char c);
+        
+    }
+    
+    private static abstract class StateFilter implements Filter {
+        
+        protected String message;
+        
+        protected int state;
+        protected StringBuilder msg;
+        
+        StateFilter() {
+            state = 0;
+            msg = new StringBuilder(128);
+        }
+        
+        protected void reset() {
+            message = "";
+        }
+        
+        public abstract String process(char c);
+        
+    }
+    
+    private static final class StreamFilter extends StateFilter {
+
+        private static final Pattern messagePattern = Pattern.compile("([\\p{Lu}]{0,16}?):|([^\\r\\n]{0,24}?\\d\\d?:\\d\\d?:\\d\\d?)");
+        
+        private String line;
+        
+        public StreamFilter() {
+            reset();
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+            line = "";
+        }
+
+        /**
+         * GlassFish server log format, when read from process stream:
+         *
+         * Aug 13, 2008 3:01:49 PM com.sun.enterprise.glassfish.bootstrap.ASMain main
+         * INFO: Launching GlassFish on Apache Felix OSGi platform
+         * Aug 13, 2008 3:01:50 PM com.sun.enterprise.glassfish.bootstrap.ASMainHelper setUpOSGiCache
+         * INFO: Removing Felix cache profile dir /space/tools/v3Aug7/domains/domain1/.felix/gf left from a previous run
+         * 
+         * Welcome to Felix.
+         * =================
+         * 
+         * Aug 13, 2008 3:01:51 PM HK2Main start
+         * INFO: contextRootDir = /space/tools/v3Aug7/modules
+         * ...
+         * Aug 13, 2008 3:02:14 PM
+         * SEVERE: Exception in thread "pool-6-thread-1"
+         * Aug 13, 2008 3:02:14 PM org.glassfish.scripting.rails.RailsDeployer load
+         * INFO: Loading application RailsGFV3 at /RailsGFV3
+         * Aug 13, 2008 3:02:14 PM
+         * SEVERE: /...absolute.path.../connection_specification.rb:232:in `establish_connection':
+         *
+         * !PW FIXME This parser should be checked for I18N stability.
+         */
+        public String process(char c) {
+            String result = null;
+
+            if(c == '\n') {
+                if(msg.length() > 0) {
+                    msg.append(c);
+                    line = msg.toString();
+                    msg.setLength(0);
+
+                    Matcher matcher = messagePattern.matcher(line);
+                    if(matcher.find() && matcher.start() == 0 && matcher.groupCount() > 1 && matcher.group(2) != null) {
+                        result = null;
+                    } else {
+                        result = line;
+                    }
+                }
+            } else if(c != '\r') {
+                msg.append(c);
+            }
+
+            return result;
+        }
+
+    }
+
+    private static final class LogFileFilter extends StateFilter {
+        
+        private String time;
+        private String type;
+        private String version;
+        private String classinfo;
+        private String threadinfo;
+        private boolean multiline;
+        private final Map<String, String> typeMap;
+
+        public LogFileFilter(Map<String, String> typeMap) {
+            this.typeMap = typeMap;
+            reset();
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+            time = type = version = classinfo = threadinfo = "";
+            multiline = false;
+        }
+        
+        private String getLocalizedType(String type) {
+            String localizedType = typeMap.get(type);
+            return localizedType != null ? localizedType : type;
+        }
+
+        /**
+         * GlassFish server log entry format (unformatted), when read from file:
+         *
+         * [#|
+         *    2008-07-20T16:59:11.738-0700|
+         *    INFO|
+         *    GlassFish10.0|
+         *    org.jvnet.hk2.osgiadapter|
+         *    _ThreadID=11;_ThreadName=Thread-6;org.glassfish.admin.config-api [1794];|
+         *    Started bundle org.glassfish.admin.config-api [1794]
+         * |#]
+         *
+         * !PW FIXME This parser should be checked for I18N stability.
+         */
+        public String process(char c) {
+            String result = null;
+
+            switch(state) {
+                case 0:
+                    if(c == '[') {
+                        state = 1;
+                    } else {
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                msg.append(c);
+                                result = msg.toString();
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 1:
+                    if(c == '#') {
+                        state = 2;
+                    } else {
+                        state = 0;
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                msg.append(c);
+                                result = msg.toString();
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            msg.append('[');
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 2:
+                    if(c == '|') {
+                        state = 3;
+                        msg.setLength(0);
+                    } else {
+                        if(c == '\n') {
+                            if(msg.length() > 0) {
+                                msg.append(c);
+                                result = msg.toString();
+                                msg.setLength(0);
+                            }
+                        } else if(c != '\r') {
+                            state = 0;
+                            msg.append('[');
+                            msg.append('#');
+                            msg.append(c);
+                        }
+                    }
+                    break;
+                case 3:
+                    if(c == '|') {
+                        state = 4;
+                        time = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 4:
+                    if(c == '|') {
+                        state = 5;
+                        type = getLocalizedType(msg.toString());
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 5:
+                    if(c == '|') {
+                        state = 6;
+                        version = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 6:
+                    if(c == '|') {
+                        state = 7;
+                        classinfo = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 7:
+                    if(c == '|') {
+                        state = 8;
+                        threadinfo = msg.toString();
+                        msg.setLength(0);
+                    } else {
+                        msg.append(c);
+                    }
+                    break;
+                case 8:
+                    if(c == '|') {
+                        state = 9;
+                        message = msg.toString();
+                    } else if(c == '\n') {
+                        if(msg.length() > 0) { // suppress blank lines in multiline messages
+                            msg.append('\n');
+                            result = !multiline ? type + ": " + msg.toString() : msg.toString();
+                            multiline = true;
+                            msg.setLength(0);
+                        }
+                    } else if(c != '\r') {
+                        msg.append(c);
+                    }
+                    break;
+                case 9:
+                    if(c == '#') {
+                        state = 10;
+                    } else {
+                        state = 8;
+                        msg.append('|');
+                        msg.append(c);
+                    }
+                    break;
+                case 10:
+                    if(c == ']') {
+                        state = 0;
+                        msg.setLength(0);
+                        result = (multiline ? message : type + ": " + message) + '\n';
+                        reset();
+                    } else {
+                        state = 8;
+                        msg.append('|');
+                        msg.append('#');
+                        msg.append(c);
+                    }
+                    break;
+            }
+            return result;
         }
     }
     
@@ -261,8 +741,15 @@ public class LogViewMgr {
         synchronized (ioWeakMap) {
             // look in the cache
             InputOutput serverIO = ioWeakMap.get(si);
+//            if(serverIO != null && !serverIO.getOut().checkError()) {
             if(serverIO != null) {
-                return serverIO;
+                if(serverIO.isClosed()) {
+                    Logger.getLogger("glassfish").fine("Output for " + uri + " is closed.");
+                } else if(serverIO.getOut().checkError()) {
+                    Logger.getLogger("glassfish").fine("Output for " + uri + " is in error state.");
+                } else {
+                    return serverIO;
+                }
             }
 
             // look up the node that belongs to the given server instance

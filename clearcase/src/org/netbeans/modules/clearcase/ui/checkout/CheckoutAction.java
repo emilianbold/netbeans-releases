@@ -111,6 +111,7 @@ public class CheckoutAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         Set<File> roots = context.getFiles();
         switch (status) {
         case STATUS_CHECKOUT:
@@ -142,7 +143,7 @@ public class CheckoutAction extends AbstractAction {
         Mnemonics.setLocalizedText(unCheckoutButton, NbBundle.getMessage(CheckoutAction.class, "CTL_UncheckoutDialog_Unheckout")); //NOI18N
         
         dd.setOptions(new Object[] {unCheckoutButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(CheckoutAction.class));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.clearcase.ui.checkout.Uncheckout"));
                 
         panel.putClientProperty("contentTitle", contextTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
@@ -189,7 +190,7 @@ public class CheckoutAction extends AbstractAction {
         org.openide.awt.Mnemonics.setLocalizedText(checkoutButton, org.openide.util.NbBundle.getMessage(CheckoutAction.class, "CTL_CheckoutDialog_Checkout")); //NOI18N
         
         dd.setOptions(new Object[] {checkoutButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(CheckoutAction.class));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.clearcase.ui.checkout.Checkout"));
                 
         panel.putClientProperty("contentTitle", title);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N

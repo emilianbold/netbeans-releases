@@ -104,6 +104,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
         updateName();
         _setCloseOperation();
+        setMinimumSize(new Dimension(10, 10));
     }
     @SuppressWarnings("deprecation")
     private void _setCloseOperation() {
@@ -252,6 +253,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     break;
                 }
             case 1:
+                if (CloneableEditor.this.pane != this.tmp) {
+                    //#138686: Cancel initialization when TC was closed in the meantime
+                    //and pane is null or even different instance
+                    phase = Integer.MAX_VALUE;
+                    break;
+                }
                 initVisual();
                 if (newInitialize()) {
                     task.schedule(1000);
@@ -289,8 +296,26 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 + " Name:" + CloneableEditor.this.getName());
             }
             Task prepareTask = support.prepareDocument();
-
             // load the doc synchronously
+            if (prepareTask == null) {
+                Throwable exc = support.getPrepareDocumentRuntimeException();
+                if (exc instanceof CloneableEditorSupport.DelegateIOExc) {
+                    if ("org.openide.text.DataEditorSupport$Env$ME".equals(exc.getCause().getClass().getName())) {
+                        if (exc.getCause() instanceof UserQuestionException) {
+                            UserQuestionException e = (UserQuestionException) exc.getCause();
+                            try {
+                                e.confirmed();
+                            } catch (IOException ioe) {
+                            }
+                            prepareTask = support.prepareDocument();
+                        }
+                    }
+                }
+            }
+            if (prepareTask == null) {
+                LOG.log(Level.WARNING,"Failed to get prepareTask");
+                return;
+            }
             prepareTask.waitFinished();
 
             // Init action map: cut,copy,delete,paste actions.
@@ -480,6 +505,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     caret.setDot(cursorPosition);
                 }
             }
+            ActionMap p = getActionMap().getParent();
+            getActionMap().setParent(null);
+            getActionMap().setParent(p);
             //#134910: If editor TopComponent is already activated request focus
             //to it again to get focus to correct subcomponent eg. QuietEditorPane which
             //is added above.
@@ -508,6 +536,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * {@link org.openide.cookies.EditorCookie.Observable#PROP_OPENED_PANES}
      * property change on their own.
      */
+    @Override
     protected void componentOpened() {
         super.componentOpened();
 
@@ -523,17 +552,22 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * {@link org.openide.cookies.EditorCookie.Observable#PROP_OPENED_PANES}
      * property change on their own.
      */
+    @Override
     protected void componentClosed() {
         SwingUtilities.invokeLater(
             new Runnable() {
                 public void run() {
                     // #23486: pane could not be initialized yet.
-                    // #114608 - commenting out setting of the empty document and null kit
-//                    if (pane != null) {
+                    if (pane != null) {
+                        // #114608 - commenting out setting of the empty document
 //                        Document doc = support.createStyledDocument(pane.getEditorKit());
 //                        pane.setDocument(doc);
-//                        pane.setEditorKit(null);
-//                    }
+                        
+                        // #138611 - this calls kit.deinstall, which is what our kits expect,
+                        // calling it with null does not impact performance, because the pane
+                        // will not create new document and typically nobody listens on "editorKit" prop change
+                        pane.setEditorKit(null);
+                    }
 
                     removeAll();
                     customComponent = null;

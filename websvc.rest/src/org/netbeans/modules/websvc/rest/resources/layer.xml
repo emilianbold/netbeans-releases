@@ -85,24 +85,38 @@
             </file>
             <file name="DefaultResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/DefaultResource.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="GenericResource.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/GenericResource.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="UriResolver.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/UriResolver.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="PersistenceService.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceService.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="PersistenceServiceNoJTA.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/PersistenceServiceNoJTA.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RestConnection.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestConnection.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template">
                 <attr name="position" intvalue="0"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
             </file>
             <file name="JsProjectStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsProjectStub.template">
                 <attr name="position" intvalue="0"/>
@@ -122,7 +136,7 @@
             <file name="JsGenericStub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsGenericStub.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JsReadme.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
+            <file name="JsReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JsReadme.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="DojoRestStore.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoRestStore.template">
@@ -140,7 +154,7 @@
             <file name="DojoTestResourcesTable.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/DojoTestResourcesTable.template">
                 <attr name="position" intvalue="0"/>
             </file>
-            <file name="JmakiReadme.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
+            <file name="JmakiReadme.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiReadme.template">
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JmakiComponent.css" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiComponentCss.template">
@@ -174,6 +188,9 @@
                 <attr name="position" intvalue="0"/>
             </file>
             <file name="JmakiWidget.json" url="/org/netbeans/modules/websvc/rest/codegen/resources/JmakiWidgetJson.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="RestProxyServlet.txt" url="/org/netbeans/modules/websvc/rest/codegen/resources/RestProxyServlet.template">
                 <attr name="position" intvalue="0"/>
             </file>
         </folder>

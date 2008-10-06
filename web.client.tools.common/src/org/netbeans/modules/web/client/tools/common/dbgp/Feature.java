@@ -62,18 +62,17 @@ public class Feature {
         SUPPORTS_POSTMORTEM(false),
         SHOW_HIDDEN(true),
         NOTIFY_OK(true),
-        HTTP_MONITOR(true) { @Override public String toDBGPFeatureName() { return "http_monitor"; }},
+        HTTP_MONITOR(false) { @Override public String toDBGPFeatureName() { return "http_monitor"; }},
         
         // Javascript debugger options
-        SHOW_FUNCTIONS(true)             { @Override public String toDBGPFeatureName() { return "showFunctions"; }},
-    	SHOW_CONSTANTS(true)             { @Override public String toDBGPFeatureName() { return "showConstants"; }},
-    	BYPASS_CONSTRUCTORS(true)        { @Override public String toDBGPFeatureName() { return "bypassConstructors"; }},
-    	STEP_FILTERS_ENABLED(true)       { @Override public String toDBGPFeatureName() { return "stepFiltersEnabled"; }},
     	SUSPEND_ON_FIRST_LINE(true)      { @Override public String toDBGPFeatureName() { return "suspendOnFirstLine"; }},
     	SUSPEND_ON_EXCEPTIONS(true)      { @Override public String toDBGPFeatureName() { return "suspendOnExceptions"; }},
     	SUSPEND_ON_ERRORS(true)          { @Override public String toDBGPFeatureName() { return "suspendOnErrors"; }},
     	SUSPEND_ON_DEBUGGERKEYWORD(true) { @Override public String toDBGPFeatureName() { return "suspendOnDebuggerKeyword"; }},
-        
+        SHOW_FUNCTIONS(true)             { @Override public String toDBGPFeatureName() { return "showFunctions"; }},
+    	SHOW_CONSTANTS(true)             { @Override public String toDBGPFeatureName() { return "showConstants"; }},
+        IGNORE_QUERY_STRINGS(true)       { @Override public String toDBGPFeatureName() { return "ignoreQueryStrings"; }},
+
     	ENABLE(true)                     { @Override public String toDBGPFeatureName() { return "enable"; }}
         ;
 

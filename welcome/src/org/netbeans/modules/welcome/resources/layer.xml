@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <folder name="Menu">
         <folder name="Help">
             <file name="org-netbeans-modules-welcome-ShowWelcomeAction.instance">
-                <attr name="position" intvalue="1200"/>
+                <attr name="position" intvalue="1400"/>
             </file>
             </folder>
     </folder>
@@ -149,6 +149,11 @@ made subject to such option by the copyright holder.
             <file name="uml.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_uml.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
                 <attr name="position" intvalue="900"/>
+            </file>
+            
+            <file name="php.url" url="nbresloc:/org/netbeans/modules/welcome/resources/learn_php.url">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.welcome.resources.Bundle"/>
+                <attr name="position" intvalue="1000"/>
             </file>
 
         </folder>

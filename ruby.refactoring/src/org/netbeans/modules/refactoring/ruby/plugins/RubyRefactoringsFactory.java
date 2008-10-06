@@ -66,7 +66,7 @@ public class RubyRefactoringsFactory implements RefactoringPluginFactory {
                 return new RubyWhereUsedQueryPlugin((WhereUsedQuery) refactoring);
             }
         } else if (refactoring instanceof RenameRefactoring) {
-            if (handle!=null || ((file!=null) && RubyUtils.isRubyOrRhtmlFile(file))) {
+            if (handle!=null || ((file!=null) && RubyUtils.canContainRuby(file))) {
                 //rename java file, class, method etc..
                 return new RenameRefactoringPlugin((RenameRefactoring)refactoring);
             }

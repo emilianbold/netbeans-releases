@@ -52,6 +52,6 @@ public class ActivityJoinForkNodeFactory implements NodeWidgetFactory
 
     public Widget createNode(Scene scene)
     {
-        return new ActivityJoinForkWidget(scene);
+        return new ActivityJoinForkWidget(scene, "UML/context-palette/ActivityFork");
     }
 }

@@ -71,7 +71,7 @@ public class SortByCategoryActionTest extends JellyTestCase {
         suite.addTest(new SortByCategoryActionTest("testPerformPopup"));
         return suite;
          */
-        return createModuleTest(SortByCategoryActionTest.class, "testPerformPopup");
+        return createModuleTest(SortByCategoryActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

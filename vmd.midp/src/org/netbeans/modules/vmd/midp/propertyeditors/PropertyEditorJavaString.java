@@ -69,6 +69,7 @@ import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
 import org.netbeans.modules.vmd.midp.components.sources.SwitchCaseEventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.CodeUtils;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,9 +84,13 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     private static final String SWITCH_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_SWITCH_OPERAND_STR"); // NOI18N
     private static final String CASE_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_CASE_OPERAND_STR"); // NOI18N
     private static final String JAVA_EXPRESSION = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_JAVA_EXPRESSION_STR"); // NOI18N
+    
+    private static final String AMP   = "&";
+    private static final String COLON = ":";
+    
     protected WeakReference<DesignComponent> component;
     private TypeID typeID;
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor;
     private PropertyValue resetToDefaultValue;
 
     private PropertyEditorJavaString(TypeID typeID) {
@@ -104,6 +109,18 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     
     public static final PropertyEditorJavaString createInstance(TypeID typeID, PropertyValue resetTodefaultValue) {
         return new PropertyEditorJavaString(typeID, resetTodefaultValue);
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        typeID = null;
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        this.component = null;
+        resetToDefaultValue = null;
     }
 
     @Override
@@ -162,7 +179,10 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
     @Override
     public String getCustomEditorTitle() {
-        return getLabelName();
+        String title = getLabelName();
+        title = title.replace( AMP , "");
+        title = title.replace( COLON , "");
+        return title;
     }
 
     @Override
@@ -195,10 +215,18 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             initComponents();
         }
 
+        void cleanUp() {
+            textPane = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel(getLabelName());
+            JLabel label = new JLabel();
+
+            Mnemonics.setLocalizedText(label, getLabelName());
+
             constraints.insets = new Insets(12, 12, 3, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
@@ -209,6 +237,12 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
             add(label, constraints);
 
             textPane = new JEditorPane();
+
+            label.setLabelFor( textPane );
+            
+            textPane.getAccessibleContext().setAccessibleName( label.getText());
+            textPane.getAccessibleContext().setAccessibleDescription( label.getText());
+            
             SwingUtilities.invokeLater(new Runnable() {
 
                 //otherwise we get: java.lang.AssertionError: BaseKit.install() incorrectly called from non-AWT thread.

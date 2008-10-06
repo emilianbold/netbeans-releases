@@ -99,6 +99,12 @@ public final class JSDebuggerState {
         debuggerState.setBreakpoint(breakpoint);
         return debuggerState;
     }
+
+    public static JSDebuggerState getDebuggerState(JSErrorInfo errorInfo) {
+        JSDebuggerState debuggerState =
+                new JSDebuggerState(State.SUSPENDED, Reason.EXCEPTION);        
+        return debuggerState;
+    }
     
     public static final JSDebuggerState SUSPENDED_STEP =
             new JSDebuggerState(State.SUSPENDED, Reason.STEP);

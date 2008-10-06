@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -80,14 +81,34 @@ import org.w3c.dom.Element;
  */
 public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
+    public static enum WizardType {
+        NEW,
+        EXISTING,
+    }
+
+    private final WizardType wizardType;
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel[] panels;
     private int index;
+
+    public NewPhpProjectWizardIterator() {
+        this(WizardType.NEW);
+    }
+
+    private NewPhpProjectWizardIterator(WizardType wizardType) {
+        this.wizardType = wizardType;
+    }
+
+    public static NewPhpProjectWizardIterator existing() {
+        return new NewPhpProjectWizardIterator(WizardType.EXISTING);
+    }
 
     public void initialize(WizardDescriptor wizard) {
         descriptor = wizard;
         index = 0;
         panels = createPanels();
+        // normally we would do it in uninitialize but we have listener on ide options (=> NPE)
+        initDescriptor(wizard);
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -109,23 +130,35 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 NewPhpProjectWizardIterator.class, "LBL_NewPhpProjectWizardIterator_WizardProgress_CreatingProject");
         handle.progress(msg, 3);
 
+        // #140346
+        // first, create sources
+        FileObject sourceDir = createSourceRoot();
+        boolean existingSources = sourceDir.getChildren(false).hasMoreElements();
+
         // project
-        File projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+        File projectDirectory = null;
+        if (isProjectFolderUsed()) {
+            projectDirectory = (File) descriptor.getProperty(ConfigureProjectPanel.PROJECT_DIR);
+        } else {
+            projectDirectory = FileUtil.toFile(sourceDir);
+        }
         String projectName = (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
         AntProjectHelper helper = createProject(projectDirectory, projectName);
         resultSet.add(helper.getProjectDirectory());
 
-        // sources
-        FileObject sourceDir = createSourceRoot(helper);
         resultSet.add(sourceDir);
 
-        // UI Logging
-        logUI(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
+        // Usage Logging
+        logUsage(helper.getProjectDirectory(), sourceDir, getRunAsType(), isCopyFiles());
 
         // index file
-        if (sourceDir.getChildren(false).hasMoreElements()) {
-            // sources directory is not empty => try to find index file and open it
-            String indexName = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        if (existingSources) {
+            // we have sources => try to find index file and open it
+            String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
+            if (indexName == null) {
+                // run configuration panel not shown at all
+                indexName = RunConfigurationPanel.DEFAULT_INDEX_FILE;
+            }
             FileObject indexFile = sourceDir.getFileObject(indexName);
             if (indexFile != null && indexFile.isValid()) {
                 resultSet.add(indexFile);
@@ -138,13 +171,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
             FileObject template = null;
             RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
-            switch (runAsType) {
-                case SCRIPT:
-                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP.php"); // NOI18N
-                    break;
-                default:
-                    template = Templates.getTemplate(descriptor);
-                    break;
+            if (runAsType == null) {
+                // run configuration panel not shown at all
+                template = Templates.getTemplate(descriptor);
+            } else {
+                switch (runAsType) {
+                    case SCRIPT:
+                        template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
+                        break;
+                    default:
+                        template = Templates.getTemplate(descriptor);
+                        break;
+                }
             }
             assert template != null : "Template for Index PHP file cannot be null";
             DataObject indexDO = createIndexFile(template, sourceDir);
@@ -185,7 +223,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public WizardDescriptor.Panel current() {
         // wizard title
-        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, "TXT_PhpProject");
+        String title = NbBundle.getMessage(NewPhpProjectWizardIterator.class, wizardType == WizardType.NEW ? "TXT_PhpProject" : "TXT_ExistingPhpProject");
         descriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
         return panels[index];
     }
@@ -202,13 +240,35 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString("LBL_RunConfiguration"),
         };
 
-        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps);
+        ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(steps, wizardType);
         return new WizardDescriptor.Panel[] {
             configureProjectPanel,
-            new RunConfigurationPanel(steps, configureProjectPanel),
+            new RunConfigurationPanel(steps, configureProjectPanel, wizardType),
         };
     }
 
+    // prevent incorrect default values (empty project => back => existing project)
+    private void initDescriptor(WizardDescriptor settings) {
+        settings.putProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED, null);
+        settings.putProperty(ConfigureProjectPanel.PROJECT_DIR, null);
+        settings.putProperty(ConfigureProjectPanel.PROJECT_NAME, null);
+        settings.putProperty(ConfigureProjectPanel.SOURCES_FOLDER, null);
+        settings.putProperty(ConfigureProjectPanel.LOCAL_SERVERS, null);
+        settings.putProperty(ConfigureProjectPanel.ENCODING, null);
+        settings.putProperty(RunConfigurationPanel.RUN_AS, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
+        settings.putProperty(RunConfigurationPanel.URL, null);
+        settings.putProperty(RunConfigurationPanel.INDEX_FILE, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_DIRECTORY, null);
+        settings.putProperty(RunConfigurationPanel.REMOTE_UPLOAD, null);
+    }
+
+    private boolean isProjectFolderUsed() {
+        return (Boolean) descriptor.getProperty(ConfigureProjectPanel.IS_PROJECT_DIR_USED);
+    }
     private AntProjectHelper createProject(File dir, String name) throws IOException {
         FileObject projectFO = FileUtil.createFolder(dir);
         AntProjectHelper helper = ProjectGenerator.createProject(projectFO, PhpProjectType.TYPE);
@@ -221,15 +281,25 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);
 
-        EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        configureSources(helper, properties);
-        configureIndexFile(properties);
-        configureEncoding(properties);
-        configureIncludePath(properties);
-        configureRunConfiguration(properties);
+        configureSources(helper, projectProperties, privateProperties);
+        configureEncoding(projectProperties, privateProperties);
+        configureTags(projectProperties, privateProperties);
+        configureIncludePath(projectProperties, privateProperties);
+        // #146882
+        configureUrl(projectProperties, privateProperties);
 
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+        if (getRunAsType() != null) {
+            // run configuration panel shown
+            configureCopySources(projectProperties, privateProperties);
+            configureIndexFile(projectProperties, privateProperties);
+            configureRunConfiguration(projectProperties, privateProperties);
+        }
+
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         ProjectManager.getDefault().saveProject(project);
@@ -237,27 +307,23 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return helper;
     }
 
-    private File getSources(AntProjectHelper helper) {
+    private File getSources() {
         LocalServer localServer = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        if (ConfigureProjectPanel.isProjectFolder(localServer)) {
-            File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
-            return new File(projectDirectory, ConfigureProjectPanel.DEFAULT_SOURCES_FOLDER);
-        }
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
-    private void configureSources(AntProjectHelper helper, EditableProperties properties) {
-        File srcDir = getSources(helper);
+    private void configureSources(AntProjectHelper helper, EditableProperties projectProperties, EditableProperties privateProperties) {
+        File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        // # 132319
-        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
-            // relative path, change to absolute
-            srcPath = srcDir.getAbsolutePath();
-        }
-        properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+        assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
+        projectProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, "."); // NOI18N
+    }
+
+    private void configureCopySources(EditableProperties projectProperties, EditableProperties privateProperties) {
+        privateProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        privateProperties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
     }
 
     private String getCopySrcTarget() {
@@ -269,34 +335,47 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyTargetString;
     }
 
-    private void configureIndexFile(EditableProperties properties) {
-        String indexFile = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
-        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+    private void configureIndexFile(EditableProperties projectProperties, EditableProperties privateProperties) {
+        String indexFile = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
+        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
-    private void configureEncoding(EditableProperties properties) {
+    private void configureEncoding(EditableProperties projectPoperties, EditableProperties privateProperties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
-        properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
+        projectPoperties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
         // #136917
         FileEncodingQuery.setDefaultEncoding(charset);
     }
 
-    private void configureIncludePath(EditableProperties properties) {
-        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    private void configureTags(EditableProperties projectPoperties, EditableProperties privateProperties) {
+        projectPoperties.setProperty(PhpProjectProperties.SHORT_TAGS, String.valueOf(PhpLanguageOptions.SHORT_TAGS_ENABLED));
+        projectPoperties.setProperty(PhpProjectProperties.ASP_TAGS, String.valueOf(PhpLanguageOptions.ASP_TAGS_ENABLED));
     }
 
-    private void configureRunConfiguration(EditableProperties properties) {
+    private void configureIncludePath(EditableProperties projectProperties, EditableProperties privateProperties) {
+        projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    }
+
+    private void configureUrl(EditableProperties projectProperties, EditableProperties privateProperties) {
+        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+        if (url == null) {
+            // #146882
+            url = RunConfigurationPanel.getUrlForSources(wizardType, descriptor);
+        }
+
+        privateProperties.put(PhpProjectProperties.URL, url);
+    }
+
+    private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
-        properties.put(PhpProjectProperties.RUN_AS, runAs.name());
+        privateProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
-                configureRunAsLocalWeb(properties);
-                break;
-            case REMOTE:
-                configureRunAsRemoteWeb(properties);
-                break;
             case SCRIPT:
                 // nothing to store
+                break;
+            case REMOTE:
+                configureRunAsRemoteWeb(projectProperties, privateProperties);
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -308,30 +387,23 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
     }
 
-    private void configureRunAsLocalWeb(EditableProperties properties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
-
-        properties.put(PhpProjectProperties.URL, url);
-    }
-
-    private void configureRunAsRemoteWeb(EditableProperties properties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+    private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
-        properties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
-        properties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
+        privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
+        privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
+        privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
-    private FileObject createSourceRoot(AntProjectHelper helper) throws IOException {
-        return FileUtil.createFolder(getSources(helper));
+    private FileObject createSourceRoot() throws IOException {
+        return FileUtil.createFolder(getSources());
     }
 
     private DataObject createIndexFile(FileObject template, FileObject sourceDir) throws IOException {
         String indexFileName = getIndexFileName(template.getExt());
+        assert indexFileName != null;
 
         DataFolder dataFolder = DataFolder.findFolder(sourceDir);
         DataObject dataTemplate = DataObject.find(template);
@@ -339,7 +411,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private String getIndexFileName(String plannedExt) {
-        String name = (String) descriptor.getProperty(ConfigureProjectPanel.INDEX_FILE);
+        String name = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
+        if (name == null) {
+            // run configuration panel not shown at all
+            name = RunConfigurationPanel.DEFAULT_INDEX_FILE;
+        }
         String ext = "." + plannedExt; // NOI18N
         if (name.endsWith(ext)) {
             return name.substring(0, name.length() - ext.length());
@@ -347,9 +423,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return name;
     }
 
-    private boolean isCopyFiles() {
-        boolean copyFiles = false;
+    private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
+        if (runAs == null) {
+            return null;
+        }
+        boolean copyFiles = false;
         switch (runAs) {
             case LOCAL:
                 Boolean tmp = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
@@ -364,16 +443,21 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyFiles;
     }
 
-    // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_NEW_PHP_PROJECT"); //NOI18N
-        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, Boolean copyFiles) {
+        assert projectDir != null;
+        assert sourceDir != null;
+
+        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
+        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
+        logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir),
-            runAs.name(),
-            copyFiles
+            FileUtil.isParentOf(projectDir, sourceDir) ?  "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+            runAs != null ? runAs.name() : "", // NOI18N
+            "1", // NOI18N
+            (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
         });
-        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
+        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }
 }

@@ -120,7 +120,12 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 	}
 
 	public int getColumnCount() {
-		return this.grid[0].length;
+        if ( grid.length >0 ){
+            return this.grid[0].length;
+        }
+        else {
+            return 0;
+        }
 	}
 
 	public int getTileIndexAt(Position position) {
@@ -275,6 +280,7 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 		int right = Integer.MIN_VALUE;
 		int top = Integer.MAX_VALUE;
 		int bottom = Integer.MIN_VALUE;
+                boolean layerEmpty = true;
 		synchronized (this.grid) {
 			for (int r = 0; r < this.grid.length; r++ ) {
 				for (int c = 0; c < this.grid[r].length; c++) {
@@ -287,9 +293,16 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 						top = Math.min(top, r);
 						//find bottom boundry
 						bottom = Math.max(bottom, r);
+                                                layerEmpty = false;
 					}
 				}
 			}
+                        if (layerEmpty){
+                            left = 0;
+                            right = 0;
+                            top = 0;
+                            bottom = 0;
+                        }
 			//then remove all the rows and cols outside the boundries
 			//remove right
 			this.deleteColumns(right + 1, this.grid[0].length - right -1);
@@ -338,29 +351,38 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 
 	public void insertRows(int insRowIndex, int count) {
 		int[][] newGrid = new int[this.grid.length + count][];
-		
-		for (int rowIndex = 0, newIndex = 0; newIndex < newGrid.length; newIndex++, rowIndex++) {
-			
-			//copy first existing rows
-			if (newIndex < insRowIndex) {
-				newGrid[newIndex] = this.grid[rowIndex];
-			}
-			//insert new empty rows
-			else if (newIndex == insRowIndex) {
-				for (int i = 0; i < count; i++) {
-					newGrid[newIndex] = new int[this.grid[0].length];
-					newIndex++;
-				}
-				if (rowIndex < this.grid.length) {
-					newGrid[newIndex] = this.grid[rowIndex];
-				}
-			}
-			//copy last existing rows
-			else {
-				newGrid[newIndex] = this.grid[rowIndex];
-			}
-			
-		}
+        
+        int insertIndex = insRowIndex;
+        if ( insertIndex > grid.length ){
+            insertIndex = grid.length;
+        }
+
+        if (grid.length != 0) {
+            for (int rowIndex = 0, newIndex = 0; newIndex < newGrid.length; 
+            newIndex++, rowIndex++)
+         {
+                //copy first existing rows
+                if (newIndex < insertIndex) {
+                    newGrid[newIndex] = this.grid[rowIndex];
+                } //insert new empty rows
+                else if (newIndex == insertIndex) {
+                    for (int i = 0; i < count; i++) {
+                        newGrid[newIndex] = new int[this.grid[0].length];
+                        newIndex++;
+                    }
+                    if (rowIndex < this.grid.length) {
+                        newGrid[newIndex] = this.grid[rowIndex];
+                    }
+                } //copy last existing rows
+                else {
+                    newGrid[newIndex] = this.grid[rowIndex];
+                }
+
+            }
+        }
+        else {
+            newGrid[0] = new int[0];
+        }
 		this.grid = newGrid;
 		
 		this.fireRowsInserted(insRowIndex, count);
@@ -379,22 +401,30 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 		this.fireRowsRemoved(rowIndex, count);
 	}
 	
-	public void insertColumns(int colIndex, int count) {
-		int[] insert = new int[count];
-		for (int r = 0; r < this.grid.length; r++) {
-			int[] row = this.grid[r];
-			int[] newRow = new int[row.length + count];
-			//copy the part before insert
-			System.arraycopy(row, 0, newRow, 0, colIndex);
-			//copy the insert
-			System.arraycopy(insert, 0, newRow, colIndex, count);
-			//copy the part after insert
-			System.arraycopy(row, colIndex, newRow, colIndex + count, row.length - colIndex);
-			
-			this.grid[r] = newRow;
-		}
-		this.fireColumnsInserted(colIndex, count);
-	}
+    public void insertColumns(int colIndex, int count) {
+        for (int r = 0; r < this.grid.length; r++) {
+            int[] row = this.grid[r];
+            int[] newRow = new int[row.length + count];
+            
+            int insertIndex = colIndex;
+            if ( insertIndex > row.length  ){
+                insertIndex = row.length;
+            }
+
+            if (row.length > 0) {
+                //copy the part before insert
+                System.arraycopy(row, 0, newRow, 0, insertIndex);
+
+                //copy the part after insert
+                System.arraycopy(row, insertIndex, newRow, insertIndex + count,
+                        row.length - insertIndex);
+            }
+
+
+            this.grid[r] = newRow;
+        }
+        this.fireColumnsInserted(colIndex, count);
+    }
 	
 	public void deleteColumns(int colIndex, int count) {
 		int endIndex = colIndex + count;
@@ -414,7 +444,12 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 	}
 
 	public int getWidth() {
-		return this.grid[0].length * this.getTileWidth();
+        if ( grid.length != 0 ){
+            return this.grid[0].length * this.getTileWidth();
+        }
+        else {
+            return 0;
+        }
 	}
 
 	public List<Action> getActions() {

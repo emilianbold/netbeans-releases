@@ -3,35 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g id="list" transform="translate(20,220)" >
-	    <g>
-		<!-- Metadata information. Please don't edit. -->
-		<text display="none">type=selection</text>
-		
-		<rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" 
-                        visibility="inherit" width="80" height="0"/>
-	    </g>
-	<text  visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
-		<text display="none">type=hidden_text</text>
-	</text>
-	<g> 
-		<!-- Metadata information. Please don't edit. -->
-		<text display="none">type=content</text> 
-	</g>
-        <rect x="0" y="-5" rx="5" ry="5" width="90" height="70" fill="none" stroke="rgb(255,165,0)" 
-                      stroke-width="2" visibility="hidden">
-            <set attributeName="visibility" attributeType="XML" begin="list.focusin" fill="freeze" to="visible"/>
-            <set attributeName="visibility" attributeType="XML" begin="list.focusout" fill="freeze" to="hidden"/>
-        </rect>
-	<g>
-	        <!-- Metadata information. Please don't edit. -->
-		<text display="none">type=bound</text>
-
-		<rect  x="5.0" y="0.0" width="80" height="60" fill="none" stroke="black" stroke-width="2"/>
-	</g>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.List" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/list_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/list_32.png"/>
      

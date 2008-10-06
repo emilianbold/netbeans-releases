@@ -244,7 +244,7 @@ class EditPanel extends javax.swing.JPanel implements
             str = ((JButton)value).getText();
         else
             str = value.toString();
-	if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Send"))) {
+	if(str.equals(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_SendA11yDesc"))) {
 	 
 	    String method =
 		monitorData.getRequestData().getAttributeValue(METHOD); 
@@ -298,7 +298,7 @@ class EditPanel extends javax.swing.JPanel implements
 		DialogDisplayer.getDefault().notify(noServerDialog);
 	    }
 	}
-	else if(str.equals(NbBundle.getBundle(EditPanel.class).getString("MON_Cancel")))
+	else if(str.equals(NbBundle.getBundle(EditPanel.class).getString("ACS_MON_CancelA11yDesc")))
 	    dialog.dispose();
     }
 

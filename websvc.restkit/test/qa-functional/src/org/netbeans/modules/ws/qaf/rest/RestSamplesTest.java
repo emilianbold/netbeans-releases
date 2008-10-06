@@ -70,7 +70,7 @@ public class RestSamplesTest extends RestTestBase {
 
     @Override
     protected String getSamplesCategoryName() {
-        return Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST");
+        return Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro");
     }
 
     /**
@@ -81,7 +81,7 @@ public class RestSamplesTest extends RestTestBase {
      * @throws org.xml.sax.SAXException
      */
     public void testHelloWorldSample() throws IOException, MalformedURLException, SAXException {
-        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/HelloWorldSampleProject");
+        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/HelloWorldSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
         undeployProject(getProjectName());
@@ -93,22 +93,9 @@ public class RestSamplesTest extends RestTestBase {
      * @throws java.io.IOException
      */
     public void testCustomerDBSample() throws IOException {
-        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/CustomerDBSampleProject");
+        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/CustomerDBSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
-    }
-
-    /**
-     * Test Customer Database Client Sample
-     *
-     * @throws java.io.IOException
-     */
-    public void testCustomerDBClientSample() throws IOException {
-        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/CustomerDBClientSampleProject");
-        createProject(sampleName, getProjectType(), null);
-        deployProject(getProjectName());
-        undeployProject(getProjectName());
-        undeployProject("CustomerDBSample"); //NOI18N
     }
 
     /**
@@ -117,8 +104,7 @@ public class RestSamplesTest extends RestTestBase {
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestSamplesTest.class),
                 "testHelloWorldSample",
-                "testCustomerDBSample",
-                "testCustomerDBClientSample"
+                "testCustomerDBSample"
                 ).enableModules(".*").clusters(".*"));
     }
 }

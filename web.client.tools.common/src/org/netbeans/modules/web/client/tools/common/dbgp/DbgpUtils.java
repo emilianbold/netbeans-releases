@@ -45,34 +45,21 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
-import org.netbeans.modules.web.client.tools.common.dbgp.Breakpoint;
-import org.netbeans.modules.web.client.tools.common.dbgp.CommandFactory;
-import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerProxy;
-import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Source;
-import org.netbeans.modules.web.client.tools.common.dbgp.Extension.Window;
-import org.netbeans.modules.web.client.tools.common.dbgp.InitMessage;
-import org.netbeans.modules.web.client.tools.common.dbgp.Message;
-import org.netbeans.modules.web.client.tools.common.dbgp.OnloadMessage;
-import org.netbeans.modules.web.client.tools.common.dbgp.Property;
-import org.netbeans.modules.web.client.tools.common.dbgp.Stack;
-import org.netbeans.modules.web.client.tools.common.dbgp.Status;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.DebugMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
-import org.netbeans.modules.web.client.tools.common.dbgp.UnsufficientValueException;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue;
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSErrorInfo;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSBreakpointImpl;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSCallStackFrameImpl;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSObjectImpl;
-import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSWindowImpl;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 
 /**
  *
@@ -80,6 +67,9 @@ import org.netbeans.modules.web.client.tools.api.JSLocation;
  */
 public class DbgpUtils {
     public static JSBreakpoint getBreakpoint(StatusResponse response) {
+        if(response == null) {
+            return null;
+        }
         DebugMessage dbgMessage = response.getDebugMessage();
         JSBreakpointImpl jsBreakpoint = (JSBreakpointImpl) 
                 JSFactory.createJSBreakpoint(dbgMessage.getFileName(), dbgMessage.getLineNumber());
@@ -89,32 +79,24 @@ public class DbgpUtils {
         return jsBreakpoint;
     }
 
-    public static JSSource[] getJSSources(List<Source> sources) {
-        List<JSSource> jsSources = new ArrayList<JSSource>();
-        for (Source source : sources) {
-            jsSources.add(JSFactory.createJSSource(source.getURI()));
-        }
-        return jsSources.toArray(JSSource.EMPTY_ARRAY);
-    }
-
-    public static JSWindow[] getJSWindows(List<Window> windows) {
-        List<JSWindow> jsWindows = new ArrayList<JSWindow>();
-        for (Window window : windows) {
-            JSWindowImpl parent = (JSWindowImpl)JSFactory.createJSWindow(window.getURI(), null);
-            jsWindows.add(parent);
-            JSWindow[] kids = new JSWindow[window.getChildren().size()];
-            int i = 0;
-            for(Window childWindow : window.getChildren()) {
-                kids[i++] = JSFactory.createJSWindow(childWindow.getURI(), parent);
-            }
-            parent.setChildren(kids);
-        }
-        return jsWindows.toArray(new JSWindow[0]);
-    }
-
     public static boolean isStepSuccessfull(StatusResponse response){
-       return (response.getState() == Status.State.BREAKPOINT && 
+       return (response != null && response.getState() == Status.State.BREAKPOINT && 
                 response.getReason() == Status.Reason.OK);     
+    }
+    
+    public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 
+            JSURILocation location, boolean temprary) {
+        CommandFactory commandFactory = proxy.getCommandFactory();        
+        Breakpoint.BreakpointSetCommand bpSetCommand = 
+                commandFactory.lineBreakpointSetCommand(location.getURI(), location.getLineNumber());
+        bpSetCommand.setTemporary(true);
+        //set default values for rest
+        bpSetCommand.setType(Breakpoint.Type.LINE);
+        bpSetCommand.setState(true);
+        bpSetCommand.setHitValue(0);
+        bpSetCommand.setHitCondition(Breakpoint.HitCondition.EQUAL.name());
+        bpSetCommand.setCondition("");
+        return bpSetCommand;
     }
 
     public static Breakpoint.BreakpointSetCommand getDbgpBreakpointCommand(DebuggerProxy proxy, 
@@ -172,12 +154,14 @@ public class DbgpUtils {
                 return JSDebuggerState.SUSPENDED_FIRST_LINE;
             } else if(response.getState() == Status.State.BREAKPOINT) {
                 return JSDebuggerState.getDebuggerState(getBreakpoint((StatusResponse)message));
+            } else if(response.getState() == Status.State.EXCEPTION) {
+                return JSDebuggerState.getDebuggerState((JSErrorInfo) null);
             } else if(response.getState() == Status.State.STEP) {
                 return JSDebuggerState.SUSPENDED_STEP;
             } else if(response.getState() == Status.State.DEBUGGER) {
                 return JSDebuggerState.SUSPENDED_DEBUGGER;
             } else if(response.getState() == Status.State.STOPPED) {
-                return JSDebuggerState.DISCONNECTED;
+                return response.getReason() == Status.Reason.EXCEPTION ? JSDebuggerState.DISCONNECTED : JSDebuggerState.DISCONNECTED_USER;
             }
         }
         return null;
@@ -185,27 +169,36 @@ public class DbgpUtils {
 
     public static List<JSBreakpoint> getJSBreakpoints(List<Breakpoint> breakpoints) {
         List<JSBreakpoint> jsBreakpoints = new ArrayList<JSBreakpoint>();
-        for(Breakpoint breakpoint: breakpoints) {
-            jsBreakpoints.add(getJSBreakpoint(breakpoint));
+        if(breakpoints != null) {
+            for(Breakpoint breakpoint: breakpoints) {
+                jsBreakpoints.add(getJSBreakpoint(breakpoint));
+            }
         }
         return jsBreakpoints;
     }
 
     public static JSBreakpoint getJSBreakpoint(Breakpoint breakpoint) {
-        return JSFactory.createJSBreakpoint(breakpoint.getFileURI(), breakpoint.getLineNumber(),
-                breakpoint.getId());
+        if(breakpoint != null) {
+            JSFactory.createJSBreakpoint(breakpoint.getFileURI(), breakpoint.getLineNumber(), breakpoint.getId());
+        }
+        return null;
     }
 
     public static JSCallStackFrame getJSCallStackFrame(JSDebugger debugger, Stack callStack) {
-        return JSFactory.createJSCallStackFrame(debugger, callStack.getLevel(), 
-                JSCallStackFrameImpl.TYPE.valueOf(callStack.getType().name()), callStack.getWhere(), 
-                callStack.getFileName(), callStack.getLine());
+        if(callStack != null) {
+            return JSFactory.createJSCallStackFrame(debugger, callStack.getLevel(), 
+                    JSCallStackFrameImpl.TYPE.valueOf(callStack.getType().name()), callStack.getWhere(), 
+                    callStack.getFileName(), callStack.getLine());
+        }
+        return null;
     }
     
     public static List<JSCallStackFrame> getJSCallStackFrames(JSDebugger debugger, List<Stack> callStacks) {
         List<JSCallStackFrame> frames = new ArrayList<JSCallStackFrame>();
-        for(Stack stack: callStacks) {
-            frames.add(getJSCallStackFrame(debugger, stack));
+        if(callStacks != null) {
+            for(Stack stack: callStacks) {
+                frames.add(getJSCallStackFrame(debugger, stack));
+            }
         }
         return frames;
     }

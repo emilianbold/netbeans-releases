@@ -51,38 +51,39 @@ import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
+import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author treyspiva
  */
-public class UMLNameWidget extends Widget implements PropertyChangeListener
+public class UMLNameWidget extends Widget implements PropertyChangeListener,org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler
 {
 
-    private static final int BORDER_SIZE = 4;
+    public static final int BORDER_SIZE = 4;
     private EditableCompartmentWidget className = null;
     private ImageWidget nodeIconWidget = null;
     private UMLLabelWidget stereotypeWidget = null;
     private UMLLabelWidget staticTextWidget = null;
-    private UMLLabelWidget taggedValuesWidget = null;
-    private UMLLabelWidget namespaceWidget = null;
-    private Color startColor = null;
+    private MultiLineTaggedValueWidget taggedValuesWidget = null;
     private boolean showIcon = true;
     private boolean isAbstract = false;
     private ArrayList<String> hiddenStereotypes = new ArrayList<String>();
-    private String widgetName;
     private String nodeWidgetID;
     private String staticText = null;
     public static final String stereotypeID = "stereotype";
@@ -107,7 +108,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
 
     public void initialize(IElement data)
     {
-        setLayout(LayoutFactory.createVerticalFlowLayout());
+        setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.CENTER, 0));
         setBorder(BorderFactory.createOpaqueBorder(BORDER_SIZE,
                 BORDER_SIZE,
                 0,
@@ -123,6 +124,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
                 staticTextWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
                 staticTextWidget.setLabel(staticText);
                 staticTextWidget.setVisible(true);
+                staticTextWidget.setForeground(null);
                 addChild(staticTextWidget);
             }
 
@@ -136,23 +138,10 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
             updateStereotypes(data.getAppliedStereotypesAsString());
             addChild(stereotypeWidget);
 
-            // I want the name and icon to be centered horizontally in the 
-            // UMLNameWidget.  First I tryied to create a horizontal flow 
-            // layout that had a center ailgment.  However, for some reason that
-            // layout centered the widgets vertically ???????
-            //
-            // To solve this problem I put the icon and name widget into the 
-            // classNameContainer.  The classNamecontainer layouts the widgets
-            // horizontally.  I then put the classNameContainer in the 
-            // centerHack widget.  The centerHack widget has a vertical layout,
-            // with center alignment.  Since there is only one child in the 
-            // centerHack widget, the classNameContainer is now centering 
-            // horizontally.
-
             Widget classNameContainer = new Widget(getScene());
             classNameContainer.setForeground((Color) null);
             classNameContainer.setBackground((Paint) null);
-            classNameContainer.setLayout(LayoutFactory.createHorizontalFlowLayout());
+            classNameContainer.setLayout(LayoutFactory.createHorizontalFlowLayout(SerialAlignment.CENTER, 0));
 
             if (isShowIcon() == true)
             {
@@ -160,7 +149,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
                 if (icon != null)
                 {
                     nodeIconWidget = new ImageWidget(getScene());
-                    nodeIconWidget.setImage(Utilities.icon2Image(icon));
+                    nodeIconWidget.setImage(ImageUtilities.icon2Image(icon));
                     nodeIconWidget.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
                     classNameContainer.addChild(nodeIconWidget);
                 }
@@ -169,34 +158,17 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
             className = new EditableCompartmentWidget(getScene(),
                     nodeWidgetID + "." + nameCompartmentWidgetID,
                     loc("LBL_name"));
+            className.setCustomizableResourceTypes(new ResourceType[]{ResourceType.FOREGROUND});//name should use inherited always
             className.setLabel(namedElement.getNameWithAlias());
             classNameContainer.addChild(className);
 
-            Widget centerHack = new Widget(getScene());
-            centerHack.setBackground((Paint) null);
-            centerHack.setForeground((Color) null);
+            addChild(classNameContainer);
 
-            centerHack.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
-            centerHack.addChild(classNameContainer);
-
-            addChild(centerHack);
-
-            String taggedValues = data.getTaggedValuesAsString();
-            taggedValuesWidget = new UMLLabelWidget(getScene(),
+            List<String> taggedValues = data.getTaggedValuesAsList();
+            taggedValuesWidget = new MultiLineTaggedValueWidget(getScene(),
                     nodeWidgetID + "." + taggedValueID,
                     loc("LBL_taggedValue"));
-            taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-
-            updateTaggedValues(taggedValues);
-//            if(taggedValues.length() > 0)
-//            {
-//                taggedValuesWidget.setLabel("{" + taggedValues + "}");
-//                taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-//            }
-//            else
-//            {
-//                taggedValuesWidget.setVisible(false);
-//            }
+            taggedValuesWidget.updateTaggedValues(taggedValues);
             addChild(taggedValuesWidget);
 
             if (data instanceof IClassifier)
@@ -208,27 +180,12 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
                 IBehavioralFeature feature = (IBehavioralFeature) data;
                 isAbstract = feature.getIsAbstract();
             }
+            
+            // Set the label widgets to use the parents foreground colors.
+            className.setForeground(null);
+            stereotypeWidget.setForeground(null);
+            taggedValuesWidget.setForeground(null);
         }
-
-//        IDiagram diagram = getScene().getLookup().lookup(IDiagram.class);
-//        if(diagram != null)
-//        {
-//            INamespace space = diagram.getNamespaceForCreatedElements();
-//            INamespace owningSpace = data.getOwningPackage();
-//            
-//            if(space.isSame(owningSpace) == false)
-//            {
-//                if(space.getProject().equals(owningSpace.getProject()) == false)
-//                {
-//                    namespaceWidget
-//                }
-//                else
-//                {
-//                    
-//                }
-//            }
-//        }
-
     }
 
     public void hideStereotype(String stereotype)
@@ -267,22 +224,17 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
         staticText = text;
     }
 
-    private void updateTaggedValues(String taggedValues)
-    {
-        taggedValuesWidget.setVisible(taggedValues.length() > 0);
-        if (taggedValues.length() > 0)
-        {
-            taggedValuesWidget.setLabel("{" + taggedValues + "}");
-            taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-        }
-    }
-
     public void setNameFont(Font font)
     {
         font = updateforAbstract(font);
-        className.setFont(font);
+        if(className!=null)className.setFont(font);
     }
 
+    public void setStereotypeFont(Font font)
+    {
+        stereotypeWidget.setFont(font);
+    }
+    
     protected Icon getIcon(IElement data)
     {
         return CommonResourceManager.instance().getIconForElementType(data.getElementType());
@@ -296,40 +248,31 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
             (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
             propName.equals(ModelElementChangedKind.ALIAS_MODIFIED.toString()) ) )
         {
-            INamedElement nameElement = (INamedElement) element;
-            className.setLabel(nameElement.getNameWithAlias());
-        //revalidate();
+            if (getScene() instanceof ObjectScene)
+            {
+                ObjectScene scene = (ObjectScene) getScene();
+                Object obj = scene.findObject(getParentWidget());
+                if (obj instanceof IPresentationElement)
+                {
+                    IPresentationElement presentation = (IPresentationElement) obj;
+                    if(element.isSame(presentation.getFirstSubject()) == true)
+                    {   
+                        INamedElement nameElement = (INamedElement) element;
+                        className.setLabel(nameElement.getNameWithAlias());
+                    }
+                }
+            }
         } else if (propName.equals(ModelElementChangedKind.STEREOTYPE.toString()))
         {
             INamedElement nameElement = (INamedElement) element;
             className.setLabel(nameElement.getNameWithAlias());
             updateStereotypes(element.getAppliedStereotypesAsString());
-//            String stereotypes = element.getAppliedStereotypesAsString(true);
-//            if(stereotypes.length() > 0)
-//            {
-//                stereotypeWidget.setLabel(stereotypes);
-//                stereotypeWidget.setVisible(true);
-//            }
-//            else
-//            {
-//                stereotypeWidget.setVisible(false);
-//                stereotypeWidget.setLabel("");
-//            }
         } else if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
         {
-//            INamedElement nameElement = (INamedElement) element;
-//            className.setLabel(nameElement.getNameWithAlias());
             // There is a specific tagged value event.  Therefore we have to 
             // check everytime the element is modified.
-            String taggedValues = element.getTaggedValuesAsString();
-            if (taggedValues.length() > 0)
-            {
-                taggedValuesWidget.setLabel("{" + taggedValues + "}");
-                taggedValuesWidget.setVisible(true);
-            } else
-            {
-                taggedValuesWidget.setVisible(false);
-            }
+            List<String> taggedValues = element.getTaggedValuesAsList();
+            taggedValuesWidget.updateTaggedValues(taggedValues);
         }
 
         // If the abstract property changed, then update the font.
@@ -354,29 +297,6 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
         }
     }
 
-    @Override
-    protected void paintBackground()
-    {
-//        if(getBackground() instanceof GradientPaint)
-//        {
-//            GradientPaint oldPaint = (GradientPaint) getBackground();
-//            
-//            // Since the gradient paint requires that the start and end location
-//            // is specified when the paint is created and that we do not know
-//            // the size of the widget until now, I have to create a new gradient
-//            // now to account for the size.
-//            //
-//            // It would be nice if we got a resize event, then I could just 
-//            // calculate the size in the resize event.  Oh well.
-//            GradientPaint paint = new GradientPaint(0, 0,
-//                                                    oldPaint.getColor1(),
-//                                                    getBounds().width - 20,
-//                                                    0,
-//                                                    oldPaint.getColor2());
-//            setBackground(paint);
-//        }
-        super.paintBackground();
-    }
 
     public boolean isShowIcon()
     {
@@ -392,12 +312,15 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     {
         Font retVal = font;
 
-        if (isAbstract == true)
+        if(font!=null)
         {
-            retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
-        } else
-        {
-            retVal = font.deriveFont(Font.BOLD);
+            if (isAbstract == true)
+            {
+                retVal = font.deriveFont(Font.BOLD | Font.ITALIC);
+            } else
+            {
+                retVal = font.deriveFont(Font.BOLD);
+            }
         }
 
         return retVal;
@@ -411,6 +334,6 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener
     public void showAllWidgets()
     {
         updateStereotypes(Arrays.asList(new String[]{ "manager" }));
-        updateTaggedValues("Extend, Import");
+        taggedValuesWidget.updateTaggedValues("Extend, Import");
     }
 }

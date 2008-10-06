@@ -50,8 +50,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.jruby.ast.NewlineNode;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditorOptions;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -62,6 +63,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -302,14 +305,14 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
             StringBuilder sb = new StringBuilder();
             if (offset > afterLastNonWhite) {
                 sb.append("\n"); // XXX On Windows, do \r\n?
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
                 // I should insert the end AFTER the text on the line
                 String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
                 sb.append(restOfLine);
                 sb.append("\n");
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 doc.remove(offset, restOfLine.length());
             }
             
@@ -341,11 +344,11 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == RubyTokenId.RBRACE || id == RubyTokenId.RBRACKET) && (Utilities.getRowLastNonWhite(doc, offset) == offset)) {
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
             StringBuilder sb = new StringBuilder();
             // XXX On Windows, do \r\n?
             sb.append("\n"); // NOI18N
-            LexUtilities.indent(sb, indent);
+            sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
             doc.insertString(insertOffset, sb.toString(), null);
@@ -425,9 +428,9 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
                 
             if (continueComment) {
                 // Line comments should continue
-                int indent = LexUtilities.getLineIndent(doc, offset);
+                int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
-                LexUtilities.indent(sb, indent);
+                sb.append(IndentUtils.createIndentString(doc, indent));
                 sb.append("#"); // NOI18N
                 // Copy existing indentation
                 int afterHash = begin+1;
@@ -507,7 +510,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         if ((beginEndBalance == 1) || (braceBalance == 1)) {
             // There is one more opening token on the line than a corresponding
             // closing token.  (If there's is more than one we don't try to help.)
-            int indent = LexUtilities.getLineIndent(doc, offset);
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
             // Look for the next nonempty line, and if its indent is > indent,
             // or if its line balance is -1 (e.g. it's an end) we're done
@@ -521,7 +524,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
                     continue;
                 }
 
-                int nextIndent = LexUtilities.getLineIndent(doc, next);
+                int nextIndent = GsfUtilities.getLineIndent(doc, next);
 
                 if (nextIndent > indent) {
                     insertEnd = false;
@@ -591,7 +594,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
         }
 
         if (target.getSelectionStart() != -1) {
-            if (NbUtilities.isCodeTemplateEditing(doc)) {
+            if (GsfUtilities.isCodeTemplateEditing(doc)) {
                 int start = target.getSelectionStart();
                 int end = target.getSelectionEnd();
                 if (start < end) {
@@ -848,7 +851,7 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
                     ts.move(dotPos);
 
                     if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
                     }
                 }
             }
@@ -1147,9 +1150,9 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
 
                 if (begin != OffsetRange.NONE) {
                     int beginOffset = begin.getStart();
-                    int indent = LexUtilities.getLineIndent(doc, beginOffset);
-                    previousAdjustmentIndent = LexUtilities.getLineIndent(doc, offset);
-                    LexUtilities.setLineIndentation(doc, offset, indent);
+                    int indent = GsfUtilities.getLineIndent(doc, beginOffset);
+                    previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
+                    GsfUtilities.setLineIndentation(doc, offset, indent);
                     previousAdjustmentOffset = caret.getDot();
                 }
             }
@@ -1887,12 +1890,24 @@ public class RubyKeystrokeHandler implements org.netbeans.modules.gsf.api.Keystr
             Node node = it.next();
 
             // Filter out some uninteresting nodes
-            if (node instanceof NewlineNode) {
+            if (node.nodeId == NodeType.NEWLINENODE) {
                 continue;
             }
 
             OffsetRange range = AstUtilities.getRange(node);
-            
+
+            if (node.nodeId == NodeType.CALLNODE && ranges.size() == 0 && node == path.leaf()) {
+                // Try to handle scenarios like issue 111941 - in a call like
+                //  foo.bar.snark
+                // there's no AST node for the "bar" part - only a CallNode for "foo.bar",
+                // so add in an extra range for this case
+                Node receiver = ((CallNode)node).getReceiverNode();
+                OffsetRange receiverRange = AstUtilities.getRange(receiver);
+                if (receiver != null && astOffset > receiverRange.getEnd() && receiverRange.getEnd()+1 < range.getEnd()) {
+                   ranges.add(new OffsetRange(receiverRange.getEnd()+1, range.getEnd()));
+                }
+            }
+
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some JRuby AST nodes
             if (range.containsInclusive(astOffset) && !range.equals(previous)) {

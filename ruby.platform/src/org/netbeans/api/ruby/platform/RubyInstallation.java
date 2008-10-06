@@ -62,7 +62,7 @@ public class RubyInstallation {
     private static final Logger LOGGER = Logger.getLogger(RubyInstallation.class.getName());
     
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
-    private static final String JRUBY_RELEASE = "1.1.2"; // NOI18N
+    private static final String JRUBY_RELEASE = "1.1.4"; // NOI18N
 
     /** NOTE: Keep this in sync with ruby/jruby/nbproject/project.properties */
     private static final String JRUBY_RELEASEDIR = "jruby-" + JRUBY_RELEASE; // NOI18N
@@ -107,6 +107,10 @@ public class RubyInstallation {
             jruby = new File(jruby).getCanonicalFile().getAbsolutePath();
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        }
+
+        if (!new File(jruby).isFile()) {
+            return null;
         }
         
         return jruby;

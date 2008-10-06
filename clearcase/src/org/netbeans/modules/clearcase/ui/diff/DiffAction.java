@@ -47,6 +47,7 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 /**
  * Opens the Diff view panel.
@@ -69,6 +70,7 @@ public class DiffAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         diff(context, Setup.DIFFTYPE_LOCAL, Utils.getContextDisplayName(context));        
     }
 
@@ -78,5 +80,13 @@ public class DiffAction extends AbstractAction {
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
         tc.open();
         tc.requestActive();        
+    }
+
+    public static void diff(File file, String rev1, String rev2) {
+        MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2); // spawns bacground DiffPrepareTask
+        DiffTopComponent tc = new DiffTopComponent(panel);
+        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
+        tc.open();
+        tc.requestActive();
     }
 }

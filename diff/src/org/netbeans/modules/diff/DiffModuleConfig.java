@@ -71,12 +71,18 @@ public class DiffModuleConfig {
     private static final String PREF_ADDED_COLOR = "addedColor"; // NOI18N
     private static final String PREF_CHANGED_COLOR = "changedColor"; // NOI18N
     private static final String PREF_DELETED_COLOR = "deletedColor"; // NOI18N
+    private static final String PREF_MERGE_UNRESOLVED_COLOR = "merge.unresolvedColor"; // NOI18N
+    private static final String PREF_MERGE_APPLIED_COLOR = "merge.appliedColor"; // NOI18N
+    private static final String PREF_MERGE_NOTAPPLIED_COLOR = "merge.notappliedColor"; // NOI18N
     
     private static final DiffModuleConfig INSTANCE = new DiffModuleConfig();
     
     private final Color defaultAddedColor = new Color(180, 255, 180);
     private final Color defaultChangedColor = new Color(160, 200, 255);
     private final Color defaultDeletedColor = new Color(255, 160, 180);
+    private final Color defaultAppliedColor = new Color(180, 255, 180);
+    private final Color defaultNotAppliedColor = new Color(160, 200, 255);
+    private final Color defaultUnresolvedColor = new Color(255, 160, 180);
 
     public static DiffModuleConfig getDefault() {
         return INSTANCE;
@@ -96,6 +102,18 @@ public class DiffModuleConfig {
     public Color getDeletedColor() {
         return getColor(PREF_DELETED_COLOR, defaultDeletedColor);
     }
+
+    public Color getAppliedColor() {
+        return getColor(PREF_MERGE_APPLIED_COLOR, defaultAppliedColor);
+    }
+
+    public Color getNotAppliedColor() {
+        return getColor(PREF_MERGE_NOTAPPLIED_COLOR, defaultNotAppliedColor);
+    }
+
+    public Color getUnresolvedColor() {
+        return getColor(PREF_MERGE_UNRESOLVED_COLOR, defaultUnresolvedColor);
+    }
     
     public void setChangedColor(Color changedColor) {
         putColor(PREF_CHANGED_COLOR, changedColor);
@@ -109,6 +127,18 @@ public class DiffModuleConfig {
         putColor(PREF_DELETED_COLOR, deletedColor);
     }
 
+    public void setNotAppliedColor(Color notAppliedColor) {
+        putColor(PREF_MERGE_NOTAPPLIED_COLOR, notAppliedColor);
+    }
+    
+    public void setAppliedColor(Color appliedColor) {
+        putColor(PREF_MERGE_APPLIED_COLOR, appliedColor);
+    }
+    
+    public void setUnresolvedColor(Color unresolvedColor) {
+        putColor(PREF_MERGE_UNRESOLVED_COLOR, unresolvedColor);
+    }
+    
     private void putColor(String key, Color color) {
         getPreferences().putInt(key, color.getRGB());
     }
@@ -119,14 +149,45 @@ public class DiffModuleConfig {
     }
   
     public DiffProvider getDefaultDiffProvider() {
-        DiffProvider provider = Lookup.getDefault().lookup(DiffProvider.class);
-        if (provider instanceof BuiltInDiffProvider) {
-            ((BuiltInDiffProvider) provider).setOptions(getOptions());
-        } else if (provider instanceof CmdlineDiffProvider) {
-            ((CmdlineDiffProvider) provider).setDiffCommand(getDiffCommand());
+        Collection<? extends DiffProvider> providers = Lookup.getDefault().lookup(new Lookup.Template<DiffProvider>(DiffProvider.class)).allInstances();
+        for (DiffProvider p : providers) {
+            if (isUseInteralDiff()) {
+                if (p instanceof BuiltInDiffProvider) {
+                    ((BuiltInDiffProvider) p).setOptions(getOptions());
+                    return p;
+                }
+            } else {
+                if (p instanceof CmdlineDiffProvider) {
+                    ((CmdlineDiffProvider) p).setDiffCommand(getDiffCommand());
+                    return p;
+                }
+            }
         }
-        return provider;
+        return null;
     }
+    
+     private void setDefaultProvider(DiffProvider ds) {
+        // TODO: Diff providers are registered in the layer so that we can change the order in which they
+        // TODO: appear in the lookup programmatically during runtime
+        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
+        FileObject services = dfs.findResource("Services/DiffProviders");
+        DataFolder df = DataFolder.findFolder(services);
+        DataObject[] children = df.getChildren();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i] instanceof InstanceDataObject) {
+                InstanceDataObject ido = (InstanceDataObject) children[i];
+                if (ido.instanceOf(ds.getClass())) {
+                    try {
+                        if (ds.equals(ido.instanceCreate())) {
+                            df.setOrder(new DataObject[] { ido });
+                            break;
+                        }
+                    } catch (java.io.IOException ioex) {
+                    } catch (ClassNotFoundException cnfex) {}
+                }
+            }
+        }
+    } 
 
     private String getDiffCommand() {
         return getPreferences().get(PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}");
@@ -169,35 +230,13 @@ public class DiffModuleConfig {
                     break;
                 }
             }
-        }
+        }         
     }
 
     public boolean isUseInteralDiff() {
         return getPreferences().getBoolean(PREF_USE_INTERNAL_DIFF, true);
     }
 
-    private void setDefaultProvider(DiffProvider ds) {
-        // TODO: for compatibility with legacy diff component, think of better way
-        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
-        FileObject services = dfs.findResource("Services/DiffProviders");
-        DataFolder df = DataFolder.findFolder(services);
-        DataObject[] children = df.getChildren();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i] instanceof InstanceDataObject) {
-                InstanceDataObject ido = (InstanceDataObject) children[i];
-                if (ido.instanceOf(ds.getClass())) {
-                    try {
-                        if (ds.equals(ido.instanceCreate())) {
-                            df.setOrder(new DataObject[] { ido });
-                            break;
-                        }
-                    } catch (java.io.IOException ioex) {
-                    } catch (ClassNotFoundException cnfex) {}
-                }
-            }
-        }
-    }
-    
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public Preferences getPreferences() {

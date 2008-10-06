@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -174,16 +174,19 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>de.genomatix.graphmlsupport</friend>
                 <friend>de.genomatix.jasperreporteditor</friend>
-                <friend>org.netbeans.modules.mobility.end2end</friend>
-                <friend>org.netbeans.modules.mobility.jsr172</friend>
                 <friend>org.netbeans.modules.hibernate</friend>
+                <friend>org.netbeans.modules.hibernateweb</friend>
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <friend>org.netbeans.modules.j2ee.websphere6</friend>
+                <friend>org.netbeans.modules.mobility.end2end</friend>
+                <friend>org.netbeans.modules.mobility.jsr172</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
                 <package>org.netbeans.modules.xml.multiview</package>
                 <package>org.netbeans.modules.xml.multiview.cookies</package>

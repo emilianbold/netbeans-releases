@@ -84,7 +84,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public synchronized String getMessage() {
         if (message == null) {
             Method getMessageMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getMessage", "()Ljava/lang/String;");  // NOI8N
+                        concreteMethodByName ("getMessage", "()Ljava/lang/String;");  // NOI18N
             try {
                 StringReference sr = (StringReference) debugger.invokeMethod (
                         exeption,
@@ -93,8 +93,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     );
                 message = sr != null ? sr.value() : ""; // NOI18N
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                message = "";
+                return ex.getMessage();
             }
         }
         if (invocationMessage != null) {
@@ -108,7 +107,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public String getLocalizedMessage() {
         if (localizedMessage == null) {
             Method getMessageMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getLocalizedMessage", "()Ljava/lang/String;");  // NOI8N
+                        concreteMethodByName ("getLocalizedMessage", "()Ljava/lang/String;");  // NOI18N
             try {
                 StringReference sr = (StringReference) debugger.invokeMethod (
                         exeption,
@@ -117,8 +116,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     );
                 localizedMessage = sr == null ? "" : sr.value(); // NOI18N
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                localizedMessage = "";
+                return ex.getLocalizedMessage();
             }
         }
         if (invocationMessage != null) {
@@ -139,7 +137,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public synchronized Throwable getCause() {
         if (cause == null) {
             Method getCauseMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getCause", "()Ljava/lang/Throwable;");  // NOI8N
+                        concreteMethodByName ("getCause", "()Ljava/lang/Throwable;");  // NOI18N
             try {
                 ObjectReference or = (ObjectReference) debugger.invokeMethod (
                         exeption,
@@ -152,8 +150,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     cause = this;
                 }
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                cause = this;
+                return null;
             }
         }
         return (cause == this ? null : cause);
@@ -266,7 +263,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
         // Initialize stack trace if this is the first call to this method
         if (stackTrace == null) {
             Method getStackTraceMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getStackTrace", "()[Ljava/lang/StackTraceElement;");  // NOI8N
+                        concreteMethodByName ("getStackTrace", "()[Ljava/lang/StackTraceElement;");  // NOI18N
             try {
                 ArrayReference ar = (ArrayReference) debugger.invokeMethod (
                         exeption,
@@ -279,8 +276,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     stackTrace[i] = getStackTraceElement((ObjectReference) ar.getValue(i));
                 }
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                stackTrace = new StackTraceElement[0];
+                // Leave stackTrace unset to reload next time
+                return new StackTraceElement[0];
             }
         }
         return stackTrace;
@@ -293,7 +290,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
         int    lineNumber;
         
         Method getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getClassName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getClassName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
@@ -302,11 +299,10 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             declaringClass = sr.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            declaringClass = "";
+            declaringClass = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getMethodName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getMethodName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
@@ -315,24 +311,26 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             methodName = sr.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            methodName = "";
+            methodName = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getFileName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getFileName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
                     getMethod,
                     new Value [0]
                 );
-            fileName = sr.value();
+            if (sr == null) {
+                fileName = null;
+            } else {
+                fileName = sr.value();
+            }
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            fileName = "";
+            fileName = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getLineNumber", "()I");  // NOI8N
+                    concreteMethodByName ("getLineNumber", "()I");  // NOI18N
         try {
             IntegerValue iv = (IntegerValue) debugger.invokeMethod (
                     stElement,
@@ -341,8 +339,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             lineNumber = iv.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            lineNumber = 0;
+            lineNumber = -1;
         }
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
     }

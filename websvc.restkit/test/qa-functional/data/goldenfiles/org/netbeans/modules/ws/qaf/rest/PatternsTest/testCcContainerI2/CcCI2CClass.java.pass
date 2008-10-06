@@ -1,9 +1,5 @@
 /*
- *  CcCI2CClass
- *
- * Created on March 11, 2008, 10:43 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,7 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 
 /**
  * REST Web Service
@@ -26,7 +22,7 @@ import javax.ws.rs.ProduceMime;
 public class CcCI2CClass {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of CcCI2CClass */
     public CcCI2CClass() {
     }
@@ -36,7 +32,7 @@ public class CcCI2CClass {
      * @return an instance of java.util.prefs.Preferences
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Preferences getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();

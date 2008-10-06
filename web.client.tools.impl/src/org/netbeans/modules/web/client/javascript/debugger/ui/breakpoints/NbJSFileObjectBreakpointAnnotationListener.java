@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.openide.text.Annotation;
@@ -52,7 +52,7 @@ import org.openide.text.Line;
 public final class NbJSFileObjectBreakpointAnnotationListener extends NbJSBreakpointAnnotationListener  {
     
 
-    private final Map<Breakpoint, Annotation> breakpointToAnnotation = new HashMap<Breakpoint, Annotation>(); 
+    private final Map<Breakpoint, Annotation> breakpointToAnnotation = new ConcurrentHashMap<Breakpoint, Annotation>(); 
     
     @Override
     public String[] getProperties() {

@@ -45,17 +45,21 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Provides access to an eclipse workspace.
@@ -98,6 +102,7 @@ public final class Workspace {
             return file;
         }
         
+        @Override
         public String toString() {
             return name + " = " + location;
         }
@@ -106,6 +111,7 @@ public final class Workspace {
             return fileVar;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (!(obj instanceof Variable)) return false;
@@ -117,6 +123,7 @@ public final class Workspace {
             return true;
         }
         
+        @Override
         public int hashCode() {
             int result = 17;
             result = 37 * result + System.identityHashCode(name);
@@ -126,22 +133,22 @@ public final class Workspace {
     }
     
     private static final String RUNTIME_SETTINGS =
-            ".metadata/.plugins/org.eclipse.core.runtime/.settings/";
+            ".metadata/.plugins/org.eclipse.core.runtime/.settings/"; //NOI18N
     static final String CORE_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.core.prefs"; //NOI18N
     static final String RESOURCES_PREFERENCE =
-            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.core.resources.prefs"; //NOI18N
     static final String LAUNCHING_PREFERENCES =
-            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs";
+            RUNTIME_SETTINGS + "org.eclipse.jdt.launching.prefs"; //NOI18N
     
     static final String RESOURCE_PROJECTS_DIR =
-            ".metadata/.plugins/org.eclipse.core.resources/.projects";
+            ".metadata/.plugins/org.eclipse.core.resources/.projects"; //NOI18N
     
     static final String DEFAULT_JRE_CONTAINER =
-            "org.eclipse.jdt.launching.JRE_CONTAINER";
+            "org.eclipse.jdt.launching.JRE_CONTAINER"; //NOI18N
     
     static final String USER_JSF_LIBRARIES =
-            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml";
+            ".metadata/.plugins/org.eclipse.jst.jsf.core/JSFLibraryRegistryV2.xml"; //NOI18N
     
     private File corePrefFile;
     private File resourcesPrefFile;
@@ -153,8 +160,14 @@ public final class Workspace {
     private Set<Variable> variables = new HashSet<Variable>();
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
     private Set<EclipseProject> projects = new HashSet<EclipseProject>();
-    private Map jreContainers;
+    private Map<String,String> jreContainers;
+    // TODO: nice to have: refactor bellow three maps into a class or something
     private Map<String, List<String>> userLibraries;
+    private Map<String, List<String>> userLibraryJavadocs;
+    private Map<String, List<String>> userLibrarySources;
+    private Collection<LaunchConfiguration> launchConfigurations;
+    
+    private boolean myEclipseLibrariesLoaded;
     
     /**
      * Returns <code>Workspace</code> instance representing Eclipse Workspace
@@ -167,7 +180,7 @@ public final class Workspace {
     static Workspace createWorkspace(File workspaceDir) {
         if (!EclipseUtils.isRegularWorkSpace(workspaceDir)) {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "There is not a regular workspace in " + workspaceDir);
+                    "There is not a regular workspace in " + workspaceDir); //NOI18N
             return null;
         }
         Workspace workspace = new Workspace(workspaceDir);
@@ -229,8 +242,104 @@ public final class Workspace {
     Set<Variable> getResourcesVariables() {
         return resourcesVariables;
     }
+
+    void loadMyEclipseLibraries(List<String> importProblems) {
+        if (!myEclipseLibrariesLoaded) {
+            myEclipseLibrariesLoaded = true;
+            String path = null;
+            for (Variable v : getVariables()) {
+                if (v.getName().startsWith("MYECLIPSE_") && v.getName().endsWith("_HOME")) { //NOI18N
+                    int start = v.getLocation().replace('\\', '/').indexOf("/plugins/"); // NOI18N
+                    if (start != -1) {
+                        path = v.getLocation().substring(0, start+8);
+                        break;
+                    }
+                }
+            }
+            if (path == null) {
+                Variable v = getVariable("ECLIPSE_HOME"); //NOI18N
+                if (v == null) {
+                    importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                    return;
+                }
+                path = new File(new File(v.getLocation()), "plugins").getPath();
+            }
+            File f = new File(path); //NOI18N
+            if (!f.exists()) {
+                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotReadMyEclipseLibs"));
+                return;
+            }
+            scanForLibraries(f);
+        }
+    }
     
-    void setJREContainers(Map jreContainers) {
+    private void scanForLibraries(File dir) {
+        assert dir.isDirectory() : dir;
+        File[] kids = dir.listFiles();
+        for (File kid : kids) {
+            if (kid.isDirectory()) {
+                File f = new File(kid, "preferences.ini"); //NOI18N
+                if (f.exists()) {
+                    analyzePreferencesIniFile(f);
+                }
+            }
+        }
+    }
+    
+    private void analyzePreferencesIniFile(File f) {
+        Properties p = new Properties();
+        EclipseUtils.tryLoad(p, f);
+        for (Map.Entry e : p.entrySet()) {
+            String key = (String)e.getKey();
+            String value = (String)e.getValue();
+            if (key.startsWith("melibrary.com.genuitec.eclipse.") && key.endsWith(".classpath")) { //NOI18N
+                List<String> jars = parseLibDefinition(value);
+                int end = key.indexOf(".classpath");
+                int index = key.indexOf(".MYECLIPSE_"); // NOI18N
+                if (index == -1) {
+                    index = key.substring(0, end).lastIndexOf("."); // NOI18N
+                    if (index !=-1) {
+                        index +=1;
+                    }
+                } else {
+                    index += 11;
+                }
+                assert index != -1 : key;
+                String libName = key.substring(index, end); //NOI18N
+                addUserLibrary(libName, jars, null, null);
+            }
+        }
+    }
+    
+    private List<String> parseLibDefinition(String s) {
+        List<String> res = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(s, ";"); //NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int index = token.indexOf("("); //NOI18N
+            if (index != -1) {
+                token = token.substring(0, index);
+            }
+            String ss[] = EclipseUtils.splitVariable(token);
+            Variable var = getVariable(ss[0]);
+            if (var != null) {
+                token = var.getLocation() + ss[1];
+            }
+            res.add(token);
+        }
+        return res;
+    }
+    
+    public Workspace.Variable getVariable(String rawPath) {
+        for (Workspace.Variable variable : getVariables()) {
+            if (variable.getName().equals(rawPath)) {
+                return variable;
+            }
+        }
+        return null;
+    }
+    
+    void setJREContainers(Map<String,String> jreContainers) {
         this.jreContainers = jreContainers;
     }
     
@@ -238,11 +347,19 @@ public final class Workspace {
         projects.add(project);
     }
     
-    void addUserLibrary(String libName, List<String> jars) {
+    void addUserLibrary(String libName, List<String> jars, List<String> javadoc, List<String> sources) {
         if (userLibraries == null) {
             userLibraries = new HashMap<String, List<String>>();
+            userLibraryJavadocs = new HashMap<String, List<String>>();
+            userLibrarySources = new HashMap<String, List<String>>();
         }
         userLibraries.put(libName, jars);
+        if (javadoc != null) {
+            userLibraryJavadocs.put(libName, javadoc);
+        }
+        if (sources != null) {
+            userLibrarySources.put(libName, sources);
+        }
     }
 
     Map<String, List<String>> getUserLibraries() {
@@ -271,6 +388,78 @@ public final class Workspace {
         }
     }
     
+    private URL convertPathToURL(String path, List<String> importProblems, String libName) {
+        try {
+            File f = new File(path);
+            URL u = f.toURI().toURL();
+            boolean isFolder;
+            if (f.exists()) {
+                isFolder = f.isDirectory();
+            } else {
+                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotFindLibrarySources", path, libName)); //NOI18N
+                return null;
+            }
+            if (isFolder) {
+                if (!u.toExternalForm().endsWith("/")) { //NOI18N
+                    u = new URL(u.toExternalForm()+"/"); //NOI18N
+                }
+            } else {
+                if (!"jar".equals(u.getProtocol())) { //NOI18N
+                    u = FileUtil.getArchiveRoot(u);
+                }
+            }
+            return u;
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+    
+    List<URL> getJavadocForUserLibrary(String libRawPath, List<String> importProblems) {
+        if (userLibraryJavadocs != null && userLibraryJavadocs.get(libRawPath) != null) {
+            List<String> jars = userLibraryJavadocs.get(libRawPath);
+            List<URL> urls = new ArrayList<URL>(jars.size());
+            for (String path : jars) {
+                String resolvedPath = EclipseProject.resolveJavadocLocationAttribute(path, this, importProblems, true);
+                if (resolvedPath != null) {
+                    try {
+                        urls.add(new URL(resolvedPath));
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    URL u = convertPathToURL(path, importProblems, libRawPath);
+                    if (u != null) {
+                        urls.add(u);
+                    }
+                }
+            }
+            return urls;
+        } else {
+            return null;
+        }
+    }
+    
+    List<URL> getSourcesForUserLibrary(String libRawPath, List<String> importProblems) {
+        if (userLibrarySources != null && userLibrarySources.get(libRawPath) != null) {
+            List<String> jars = userLibrarySources.get(libRawPath);
+            List<URL> urls = new ArrayList<URL>(jars.size());
+            for (String path : jars) {
+                String resolvedPath = EclipseProject.resolveSourcePathAttribute(path, this, false);
+                if (resolvedPath != null) {
+                    path = resolvedPath;
+                }
+                URL u = convertPathToURL(path, importProblems, libRawPath);
+                if (u != null) {
+                    urls.add(u);
+                }
+            }
+            return urls;
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Tries to find an <code>EclipseProject</code> in the workspace and either
      * returns its instance or null in the case it's not found.
@@ -294,10 +483,10 @@ public final class Workspace {
         return projects;
     }
     
-    String getProjectAbsolutePath(String projectName) {
+    EclipseProject getProjectByProjectDir(File projectDir) {
         for (EclipseProject project : projects) {
-            if (project.getName().equals(projectName)) {
-                return project.getDirectory().getAbsolutePath();
+            if (project.getDirectory().equals(projectDir)) {
+                return project;
             }
         }
         return null;
@@ -322,13 +511,24 @@ public final class Workspace {
                 // JRE name seems to be after the last slash
                 jreContainer = jreContainer.substring(jreContainer.lastIndexOf('/') + 1);
             }
-            for (Iterator it = jreContainers.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) it.next();
+            for (Map.Entry<String,String> entry : jreContainers.entrySet()) {
                 if (entry.getKey().equals(jreContainer)) {
-                    return (String) entry.getValue();
+                    return entry.getValue();
                 }
             }
         }
         return null;
     }
+
+    /**
+     * Gets all launch configurations defined in the workspace.
+     * @return a possibly empty collection of launch configurations that were parsed
+     */
+    public Collection<LaunchConfiguration> getLaunchConfigurations() {
+        return launchConfigurations;
+    }
+    void setLaunchConfigurations(Collection<LaunchConfiguration> launchConfigurations) {
+        this.launchConfigurations = launchConfigurations;
+    }
+
 }

@@ -74,7 +74,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -133,8 +133,8 @@ public class TargetServer {
                 }
                 targets = tempTargets.toArray(new Target[tempTargets.size()]);
             }
-
         }
+
         incremental = instance.getIncrementalDeployment();
         if (incremental != null && !checkServiceImplementations())
             incremental = null;
@@ -165,7 +165,24 @@ public class TargetServer {
 
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
         if (targetz == null || targetz.length != 1) {
-            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+
+            if (targetz != null && LOGGER.isLoggable(Level.FINE)) {
+                StringBuilder builder = new StringBuilder("[");
+                for (int i = 0; i < targetz.length; i++) {
+                    if (i > 0) {
+                        builder.append(",");
+                    }
+                    builder.append("[")
+                            .append(targetz[i].getName())
+                                .append(",")
+                                    .append(targetz[i].getDescription())
+                                        .append("]");
+                }
+                builder.append("]");
+                LOGGER.log(Level.FINE, builder.toString());
+            }
+
             return false;
         }
 
@@ -177,7 +194,24 @@ public class TargetServer {
 
     private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) throws IOException {
         if (targetModules == null || targetModules.length != 1) {
-            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+
+            if (targetModules != null && LOGGER.isLoggable(Level.FINE)) {
+                StringBuilder builder = new StringBuilder("[");
+                for (int i = 0; i < targetModules.length; i++) {
+                    if (i > 0) {
+                        builder.append(",");
+                    }
+                    builder.append("[")
+                            .append(targetModules[i].getId())
+                                .append(",")
+                                    .append(targetModules[i].getTargetName())
+                                        .append("]");
+                }
+                builder.append("]");
+                LOGGER.log(Level.FINE, builder.toString());
+            }
+
             return false;
         }
 
@@ -199,7 +233,7 @@ public class TargetServer {
         }
     }
 
-    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<File> artifacts) throws IOException {
+    private DeploymentChangeDescriptor distributeChangesOnSave(TargetModule targetModule, Iterable<Artifact> artifacts) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
         DeploymentChangeDescriptor acd = sfd.distributeOnSave(targetModule, mcr, artifacts);
@@ -370,24 +404,6 @@ public class TargetServer {
         return availablesMap;
     }
 
-    private IncrementalDeployment isModuleImplComplete(J2eeModule deployable) throws IOException {
-        // defend against incomplete J2eeModule objects.
-        IncrementalDeployment retVal = incremental;
-        if (null != retVal && null == deployable.getContentDirectory()) {
-            retVal = null;
-        }
-        if (null != retVal && deployable instanceof J2eeApplication) {
-            // make sure all the sub modules will support directory deployment, too
-            J2eeModule[] childModules = ((J2eeApplication) deployable).getModules();
-            for (int i = 0; i < childModules.length; i++) {
-                if (null == childModules[i].getContentDirectory()) {
-                    retVal = null;
-                }
-            }
-        }
-        return retVal;
-    }
-
     /**
      * Process last deployment TargetModuleID's for undeploy, redistribute, redeploy and oldest timestamp
      */
@@ -532,7 +548,12 @@ public class TargetServer {
             // TODO more precise check
             // this is namely because of glassfish deploying EAR without EJB module
             // see gf issue #5240
-            missingModule = redeployTargetModules[0].getChildTargetModuleID().length < ((J2eeApplication) dtarget.getModule()).getModules().length;
+
+            int redeployChildrenCount = redeployTargetModules[0].getChildTargetModuleID() != null
+                    ? redeployTargetModules[0].getChildTargetModuleID().length
+                    : 0;
+
+            missingModule = redeployChildrenCount < ((J2eeApplication) dtarget.getModule()).getModules().length;
             if (missingModule) {
                 LOGGER.log(Level.INFO, "Enterprise application needs to be redeployed due to missing module");
             }
@@ -572,7 +593,7 @@ public class TargetServer {
         if (distributeTargets.size() > 0) {
             hasActivities = true;
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
-            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
             if (lincremental != null && hasDirectory && canFileDeploy(targetz, deployable)) {
                 ModuleConfiguration cfg = dtarget.getModuleConfigurationProvider().getModuleConfiguration();
                 File dir = initialDistribute(targetz[0], ui);
@@ -594,7 +615,7 @@ public class TargetServer {
         if (redeployTargetModules != null && redeployTargetModules.length > 0) {
             hasActivities = true;
             // defend against incomplete J2eeModule objects.
-            IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+            IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
             if (lincremental != null && hasDirectory && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
@@ -621,6 +642,37 @@ public class TargetServer {
             return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
         } else {
             return dtarget.getTargetModules();
+        }
+    }
+
+    public void undeploy(ProgressUI ui, boolean startServer) throws IOException, ServerException {
+
+        // TODO is this valid for multiple targets behind one server (bit theoretical) ?
+        if (!instance.isRunning() && !startServer) {
+            return;
+        }
+
+        init(ui, startServer, false);
+
+        TargetModule[] modules = getDeploymentDirectoryModules();
+        if (modules.length <= 0) {
+            return;
+        }
+
+        List<TargetModuleID> toUndeploy = new ArrayList<TargetModuleID>();
+        for (TargetModule module : modules) {
+            toUndeploy.add(module.delegate());
+            module.remove();
+        }
+
+        TargetModuleID[] tmIDs = (TargetModuleID[]) toUndeploy.toArray(new TargetModuleID[toUndeploy.size()]);
+        ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
+        ProgressObject undeployPO = instance.getDeploymentManager().undeploy(tmIDs);
+        try {
+            ProgressObjectUtil.trackProgressObject(ui, undeployPO, instance.getDeploymentTimeout()); // lets use the same timeout as for deployment
+        } catch (TimedOutException e) {
+            // undeployment failed, try to continue anyway
+            LOGGER.log(Level.INFO, "Undeploy timeouted");
         }
     }
 
@@ -651,7 +703,7 @@ public class TargetServer {
         }
 
         boolean hasDirectory = (dtarget.getModule().getContentDirectory() != null);
-        IncrementalDeployment lincremental = isModuleImplComplete(deployable);
+        IncrementalDeployment lincremental = IncrementalDeployment.getIncrementalDeploymentForModule(incremental, deployable);
         if (lincremental == null || !hasDirectory || !canFileDeploy(modules, deployable)
                 || !lincremental.isDeployOnSaveSupported()) {
             return false;
@@ -659,11 +711,15 @@ public class TargetServer {
         return true;
     }
 
-    public CompileOnSaveManager.DeploymentState notifyArtifactsUpdated(
-            J2eeModuleProvider provider, Iterable<File> artifacts) {
+    public DeployOnSaveManager.DeploymentState notifyArtifactsUpdated(
+            J2eeModuleProvider provider, Iterable<Artifact> artifacts) {
 
-        if (!dtarget.getServer().getServerInstance().isRunning()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+        if (!instance.isRunning()) {
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
+        }
+
+        if (!DeployOnSaveManager.isServerStateSupported(instance)) {
+            return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
         }
 
         try {
@@ -677,7 +733,7 @@ public class TargetServer {
 
         try {
             if (!supportsDeployOnSave(modules)) {
-                return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+                return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -686,10 +742,11 @@ public class TargetServer {
         // FIXME target
         TargetModule targetModule = dtarget.getTargetModules()[0];
         if (!targetModule.hasDelegate()) {
-            return CompileOnSaveManager.DeploymentState.NOT_DEPLOYED;
+            return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
 
-        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class, "MSG_DeployOnSave"), false);
+        ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
+                "MSG_DeployOnSave", provider.getDeploymentName()), false);
         ui.start(Integer.valueOf(0));
         try {
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
@@ -699,12 +756,12 @@ public class TargetServer {
             boolean completed = reloadArtifacts(ui, modules, changes);
             if (!completed) {
                 LOGGER.log(Level.INFO, "On save deployment failed");
-                return CompileOnSaveManager.DeploymentState.FAILED;
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
-            return CompileOnSaveManager.DeploymentState.UPDATED;
+            return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            return CompileOnSaveManager.DeploymentState.FAILED;
+            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {
             ui.finish();
         }

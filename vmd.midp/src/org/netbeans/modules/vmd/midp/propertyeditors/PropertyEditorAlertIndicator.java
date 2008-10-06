@@ -93,7 +93,30 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PropertyEditorAlertIndicator.class,
+                "ACSN_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorAlertIndicator.class,
+                "ACSD_VALUE_ALERT_INDICATOR_STR")); // NOI18N
+        
         customEditor = new CustomEditor();
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.removeAll();
+            customEditor = null;
+        }
+        radioButton = null;
+        valueState = null;
+        if (inplaceEditor != null) {
+            inplaceEditor.cleanUp();
+            inplaceEditor = null;
+        }
     }
 
     public JComponent getCustomEditorComponent() {
@@ -152,6 +175,9 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     @Override
     public void paintValue(Graphics gfx, Rectangle box) {
+        if(inplaceEditor == null) {
+            return;
+        }
         JComponent _component = inplaceEditor.getComponent();
         _component.setSize(box.width, box.height);
         _component.doLayout();
@@ -274,12 +300,23 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
             initComponents();
         }
 
+        void cleanUp() {
+            checkBox.removeActionListener(this);
+            checkBox = null;
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new BorderLayout());
             checkBox = new JCheckBox();
             if (rbLabel != null) {
                 Mnemonics.setLocalizedText(checkBox, rbLabel);
             }
+            
+            checkBox.getAccessibleContext().setAccessibleName( checkBox.getText());
+            checkBox.getAccessibleContext().setAccessibleDescription(
+                    checkBox.getText());
+            
             checkBox.addActionListener(this);
             add(checkBox, BorderLayout.CENTER);
         }

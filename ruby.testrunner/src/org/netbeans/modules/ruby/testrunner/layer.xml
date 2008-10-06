@@ -24,7 +24,7 @@
         <folder name="Modes">
             <folder name="output">        <!-- "output" is defined in core/ui -->
                 <file name="ruby-testrunner-results.wstcref" url="ui/ruby-testrunner-results.wstcref">
-                    <attr name="position" intvalue="220"/>
+                    <attr name="position" intvalue="1950"/>
                 </file>
             </folder>
         </folder>

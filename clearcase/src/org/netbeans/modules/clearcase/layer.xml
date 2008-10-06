@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="ClearcaseTopComponent.wstcref" url="ClearcaseTopComponentWstcref.xml">
-                    <attr name="position" intvalue="670"/>
+                    <attr name="position" intvalue="1700"/>
                 </file>
             </folder>
         </folder>

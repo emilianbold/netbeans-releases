@@ -125,6 +125,11 @@ public class ElementDeletePanel extends javax.swing.JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jCheckBox2))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+        jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ElementDeletePanel.class, "ElementDeletePanel.jCheckBox2.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed

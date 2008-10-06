@@ -4,9 +4,14 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
+
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance"/>
+                    <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
+                    </file>
                 </folder>
+
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/ruby/rhtml/resources/rhtml16.gif"/>
                 <folder name="Actions">
@@ -72,6 +77,7 @@
                 <attr name="position" intvalue="100"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/templatedesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
             <file name="_view.erb" url="RhtmlTemplate.rhtml">
@@ -79,6 +85,7 @@
                 <attr name="position" intvalue="102"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/templatedesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
@@ -97,7 +104,7 @@
                 </file>
 
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-gsfret-editor-completion-GsfCompletionProvider.instance"/>
                     <!-- This doesn't work right because most of the templates don't start with characters
                          that are identifiers
@@ -142,7 +149,6 @@
                     </folder>
                 </folder>
                 
-                <file name="Settings.settings" url="RhtmlOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
@@ -199,17 +205,26 @@
         </folder>
     </folder>
 
-    <folder name="Navigator">
-        <folder name="Panels">
-            <folder name="application">
-                <folder name="x-httpd-eruby">
-                    <file name="org-netbeans-modules-languages-features-LanguagesNavigator.instance"/>
+    <folder name="OptionsDialog">
+        <folder name="Editor">
+            <folder name="Formatting">
+                <folder name="application">
+                    <folder name="x-httpd-eruby">
+                        <file name="TabsAndIndents.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.editor.spi.CustomizerFactories.createDefaultTabsAndIndentsCustomizerFactory"/>
+                            <!-- Use the OptionsDialog/PreviewExamples/application/x-httpd-eruby file.
+                                 If something else is needed use the attribute below. Make sure that
+                                 the preview text file has correct mime type.
+                            <attr name="previewTextFile" stringvalue="file/with/preview/text"/>
+                            -->
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>
-    </folder>
-    
-    <folder name="OptionsDialog">
+
         <folder name="PreviewExamples">
             <folder name="application">
                 <file name="x-httpd-eruby" url="RhtmlExample"/>

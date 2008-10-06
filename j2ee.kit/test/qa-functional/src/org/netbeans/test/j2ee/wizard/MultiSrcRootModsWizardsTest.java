@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -43,34 +43,59 @@ package org.netbeans.test.j2ee.wizard;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.test.j2ee.libraries.LibraryTest;
 
 /**
  *
  * @author jungi
  */
 public class MultiSrcRootModsWizardsTest extends J2eeTestCase {
-    
+
     /** Creates a new instance of MultiSrcRootModsWizardsTest */
     public MultiSrcRootModsWizardsTest(String s) {
         super(s);
     }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
+
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(NewFileWizardsTest.class);
-        conf = addServerTests(conf,"testOpenEjbMultiRootProject","testMultiLocalSessionBean",
-        "testMultiRemoteSessionBean","testMultiLocalRemoteSessionBean","testMultiLocalStatefulSessionBean",
-        "testMultiRemoteStatefulSessionBean","testMultiLocalRemoteStatefulSessionBean",
-        "testMultiLocalEntityBean","testMultiRemoteEntityBean","testMultiLocalRemoteEntityBean",
-        "testMultiQueueMdbBean","testMultiTopicMdbBean","testMultiServiceLocatorInEjb",
-        "testMultiCachingServiceLocatorInEjb","testBuildEjbMultiRootProject","testOpenWebMultiRootProject",
-        "testMultiServletInWeb","testMultiServiceLocatorInWeb","testMultiCachingServiceLocatorInWeb",
-        "testBuildWebMultiRootProject");
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
+        addServerTests(Server.GLASSFISH, conf, new String[0]);//register server
         conf = conf.enableModules(".*").clusters(".*");
-        return NbModuleSuite.create(conf);
+        return isRegistered(Server.GLASSFISH)
+                ? NbModuleSuite.create(conf.addTest(Suite.class))
+                : NbModuleSuite.create(conf.addTest(J2eeTestCase.class));
     }
-    
+
+    public static class Suite extends NbTestSuite {
+
+        public Suite() {
+            super();
+            addTest(new NewFileWizardsTest("testOpenEjbMultiRootProject", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteStatefulSessionBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiLocalRemoteEntityBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiQueueMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiTopicMdbBean", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServiceLocatorInEjb", "1.4"));
+//            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInEjb", "1.4"));
+            addTest(new NewFileWizardsTest("testBuildEjbMultiRootProject", "1.4"));
+
+            addTest(new NewFileWizardsTest("testOpenWebMultiRootProject", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServletInWeb", "1.4"));
+            addTest(new NewFileWizardsTest("testMultiServiceLocatorInWeb", "1.4"));
+//            addTest(new NewFileWizardsTest("testMultiCachingServiceLocatorInWeb", "1.4"));
+
+            addTest(new NewFileWizardsTest("testBuildWebMultiRootProject", "1.4"));
+            
+            addTest(new LibraryTest("testDD"));
+            addTest(new LibraryTest("testDDMs"));
+        }
+    }
+
 }

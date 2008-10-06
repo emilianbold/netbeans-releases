@@ -5,7 +5,7 @@
  * Use is subject to license terms.
 -->
 <html>
-<head>
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<title>Options Window: Miscellaneous: Diff</title>
 	<link rel="StyleSheet" href="../ide.css" type="text/css">
     </head>
@@ -20,15 +20,16 @@
         
 	<p>You can select the following diff engine options:</p>
 	<ul>
-            <li><b>External Diff.</b> If selected, the IDE uses an external command-line diff executable.
+            <li><b>Internal Diff.</b> If selected, the IDE uses its internal diff engine.
+            When using the internal diff engine, you can let the engine ignore white spaces
+            and changes in case.
+            The former option is selected by default.</li>
+             <li><b>External Diff.</b> If selected, the IDE uses an external command-line diff executable.
             You can specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from a command-line executable in the IDE.
             Diff options are not availabe when using the built-in diff engine.
             <ul class="note">
                 <li>To use this option, you must have a command-line diff executable installed on your system if you want to compare revisions.</li>
             </ul></li>
-            <li><b>Internal Diff Engine.</b> If selected, the IDE uses its internal diff engine.
-            When using the internal diff engine, the only available option is to ignore white spaces.
-            This option is selected by default.</li>
         </ul>
         
         <!--</li>

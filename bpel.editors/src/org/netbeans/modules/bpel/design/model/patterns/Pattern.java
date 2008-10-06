@@ -37,6 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bpel.design.CopyPasteHandler;
 import org.netbeans.modules.bpel.design.DiagramView;
 import org.netbeans.modules.bpel.design.actions.ScrollToOperationAction;
 import org.netbeans.modules.bpel.design.geometry.FBounds;
@@ -275,6 +276,12 @@ public abstract class Pattern {
             //set menu label, used by some L&F
             JPopupMenu menu = new JPopupMenu(node.getDisplayName());
             
+            //Copy-paste section
+            CopyPasteHandler cph = getModel().getView().getCopyPasteHandler(); 
+            menu.add(new JMenuItem(cph.getCopyAction()));
+            menu.add(new JMenuItem(cph.getCutAction()));
+            menu.addSeparator();
+            
             Action collapseExpandAction = getModel().getView()
                     .getCollapseExpandDecorationProvider()
                     .createCollapseExpandAction(this);
@@ -292,6 +299,7 @@ public abstract class Pattern {
             if (scrollToOperation != null) {
                 menu.add(scrollToOperation);
             }
+            
             
             //populate a list of actions
             Action actions[] = node.getActions(true);

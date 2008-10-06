@@ -10,8 +10,7 @@
     <kind type="view" />
     <state type="joined" />
     <constraints>
-        <path orientation="vertical" number="20" weight="0.7" />
-        <path orientation="horizontal" number="20" weight="0.32" />
+        <path orientation="horizontal" number="20" weight="0.3" />
         <path orientation="vertical" number="20" weight="0.5" />
     </constraints>
     <relative-bounds x="10" y="24" width="23" height="37" />

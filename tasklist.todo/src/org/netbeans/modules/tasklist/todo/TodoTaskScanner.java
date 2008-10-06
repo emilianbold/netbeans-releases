@@ -83,7 +83,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
      * 
      */
     TodoTaskScanner( String displayName, String description ) {
-        super( displayName, description, "Advanced" ); //NOI18N
+        super( displayName, description, "Advanced/ToDo" ); //NOI18N
     }
     
     public static TodoTaskScanner create() {
@@ -152,7 +152,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 
                 index = end;
                 
-                String description = text.subSequence(begin, nonwhite+1).toString();
+                String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
                 
                 Task task = Task.create( resource, GROUP_NAME, description, lineno );
                 if( null == tasks ) {
@@ -263,7 +263,7 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
                 
                 index = end;
                 
-                String description = text.subSequence(begin, nonwhite+1).toString();
+                String description = new String( text.subSequence(begin, nonwhite+1).toString().toCharArray() );
 
                 Task task = Task.create( resource, GROUP_NAME, description, lineno );
                 if( null == tasks ) {

@@ -41,9 +41,12 @@ package org.netbeans.modules.hibernate.util;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.connection.ConnectionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -115,13 +118,21 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
                 logger.info("Got connection.. returning");
                 info = null;
             } catch (ClassNotFoundException e) {
-                Exceptions.printStackTrace(e);
+                logger.log(Level.INFO, "DB Driver class not found during connection creation.", e);
+                NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
+                DialogDisplayer.getDefault().notifyLater(ne);
             } catch (InstantiationException e) {
-                Exceptions.printStackTrace(e);
+                logger.log(Level.INFO, "Cannot instantiate driver class.", e);
+                NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
+                DialogDisplayer.getDefault().notifyLater(ne);
             } catch (IllegalAccessException e) {
-                Exceptions.printStackTrace(e);
+                logger.log(Level.INFO, "Illegal access during connection creation.", e);
+                NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
+                DialogDisplayer.getDefault().notifyLater(ne);
             } catch (SQLException e) {
-                Exceptions.printStackTrace(e);
+                logger.log(Level.INFO, "DB connection error.", e);
+                NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
+                DialogDisplayer.getDefault().notifyLater(ne);
             }
         }
         return connection;

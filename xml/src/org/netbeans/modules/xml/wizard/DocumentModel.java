@@ -40,15 +40,11 @@
  */
 package org.netbeans.modules.xml.wizard;
 
+import org.netbeans.modules.xml.wizard.XMLContentAttributes;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import org.openide.nodes.Node;
 
 /**
  * Holds state of new document wizard.

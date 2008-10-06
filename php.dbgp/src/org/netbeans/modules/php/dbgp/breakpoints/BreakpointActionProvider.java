@@ -65,7 +65,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
 {
 
     public BreakpointActionProvider() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(
                 Utils.MIME_TYPE,
                 WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));

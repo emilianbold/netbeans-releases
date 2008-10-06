@@ -87,7 +87,6 @@ import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import sun.java2d.opengl.OGLRenderer.Gradient;
 
 /**
  * Displays pseudo-tooltips for tree and list views which don't have enough

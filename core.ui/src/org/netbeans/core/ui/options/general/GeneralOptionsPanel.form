@@ -3,6 +3,7 @@
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -15,16 +16,16 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="903" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="1131" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="1058" max="32767" attributes="2"/>
+                  <Component id="jSeparator2" alignment="0" pref="1291" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lWebProxy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
@@ -39,7 +40,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="lProxyHost" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="tfProxyHost" pref="795" max="32767" attributes="2"/>
+                                      <Component id="tfProxyHost" pref="959" max="32767" attributes="2"/>
                                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="lProxyPort" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -49,8 +50,21 @@
                           </Group>
                       </Group>
                   </Group>
+                  <Component id="jSeparator3" alignment="0" pref="1291" max="32767" attributes="2"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="lUsage" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblUsageInfo" alignment="0" pref="1171" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jUsageCheck" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="691" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="lblLearnMore" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -85,7 +99,18 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="bMoreProxy" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="161" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="jSeparator3" min="-2" pref="10" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="lUsage" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jUsageCheck" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lblUsageInfo" min="-2" pref="52" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="lblLearnMore" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="24" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -194,6 +219,14 @@
           <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy.AN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy.AD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bMoreProxyActionPerformed"/>
       </Events>
@@ -204,8 +237,43 @@
           <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.AN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.AD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBrowserButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JSeparator" name="jSeparator3">
+    </Component>
+    <Component class="javax.swing.JLabel" name="lUsage">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Usage Statistics:" noResource="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jUsageCheck">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Help us improve the NetBeans IDE by providing anonymous usage data" noResource="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblUsageInfo">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;The usage statistics help us better understand user&#xa;requirements and prioritize improvements in future releases. We will never&#xa;reverse-engineer the collected data to find specific details about your projects.&lt;/html&gt;" noResource="true"/>
+        <Property name="focusable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="lblLearnMore">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;font color=&quot;#0000FF&quot; &lt;u&gt;Learn more&lt;/u&gt;&lt;/font&gt;&lt;/html&gt;" noResource="true"/>
+      </Properties>
+      <Events>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMouseEntered"/>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMousePressed"/>
       </Events>
     </Component>
   </SubComponents>

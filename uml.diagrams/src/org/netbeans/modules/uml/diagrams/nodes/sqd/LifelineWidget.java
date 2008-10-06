@@ -44,6 +44,7 @@ package org.netbeans.modules.uml.diagrams.nodes.sqd;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,7 +63,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IExecutionOccurrence;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.dynamics.Lifeline;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.diagrams.actions.sqd.ArrangeMoveWithBumping;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageWidget;
@@ -82,7 +82,6 @@ import org.openide.util.lookup.InstanceContent;
 import java.util.TreeSet;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.actions.sqd.AdjustAfterBoxChangeProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.LifelineResizeProvider;
 import org.netbeans.modules.uml.diagrams.engines.SequenceDiagramEngine;
@@ -90,8 +89,10 @@ import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
+import org.netbeans.modules.uml.drawingarea.view.Customizable;
+import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
+import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 
 /**
  *
@@ -111,7 +112,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
 
     private JTrackBar tb;
     private boolean isActorLifeline;
-    private ResourceType[] customizableResTypes;
+    private Font prevFont;
+    private ResourceType[] customizableResTypes = Customizable.DEFAULT_RESTYPES;
     
     private boolean isShowWidget;
     
@@ -119,11 +121,12 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
        this(scene,"defNM","defCL");
     }
     public LifelineWidget(Scene scene,String name,String classifier) {
-        super(scene,true);
+        super(scene,false);
         //setLayout(new LifelineLayout());
         //
         lookupContent.add(initializeContextPalette());
         lookupContent.add(new DefaultWidgetContext("Lifeline"));
+        ResourceValue.initResources(getWidgetID(), this);
     }
     
     @Override
@@ -136,13 +139,27 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     public void initializeNode(IPresentationElement presentation)
     {
         //setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY,0));
-        actorWidget=new ActorSymbolWidget(getScene(),getWidgetID()+".actorsymbol","Actor Figure");
+        
+        // The ActorSymbolWidget will override the display name.
+        actorWidget=new ActorSymbolWidget(getScene(),
+                                          getWidgetID()+".stickfigure", 
+                                          "");
+        
         actorWidget.setMinimumSize(new Dimension(10,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setMaximumSize(new Dimension(50,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setPreferredSize(new Dimension(40,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         boxWidget=new LifelineBoxWidget(getScene(),"","");
+        boxWidget.setForeground(null);
+        boxWidget.setBackground(null);
+        boxWidget.setFont(null);
         lineWidget=new LifelineLineWidget(getScene());
+        setBackground(null);
+        setForeground(null);
+        setFont(null);
         all=new Widget(getScene());
+        all.setBackground(null);
+        all.setForeground(null);
+        all.setFont(null);
         all.addChild(actorWidget);
         all.addChild(boxWidget);
         all.addChild(lineWidget,new Integer(1));
@@ -164,6 +181,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                             all.revalidate();
                             boxWidget.updateLabel();
                             revalidate();
+                            getScene().validate();
+                            prevFont=((Font)evt.getNewValue());
                         }
                     }
                     else if(evt.getNewValue() instanceof Color)
@@ -204,6 +223,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                 }
             }, getScene());
         }
+        
+        super.initializeNode(presentation);
     }
 
     @Override
@@ -490,7 +511,7 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
@@ -503,25 +524,29 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         }
         getScene().validate();
     }
-   
+
     @Override
-    public void load(NodeInfo nodeReader) {
-        super.load(nodeReader);
-        IClassifier classifier = null;
-        String stereotypes = null;
-        this.getBox().updateLabel(this.getObject());
-        IElement elt = this.getObject().getFirstSubject();
-        if (elt instanceof Lifeline) {
-            classifier = ((Lifeline)elt).getRepresentingClassifier();
-            if (classifier != null) {
-                stereotypes = classifier.getAppliedStereotypesAsString(false);
+    protected void notifyFontChanged(Font font) {
+        if(prevFont==null || prevFont.getSize()!=font.getSize())
+        {
+            // If all == null it means we are getting this event during the 
+            // initialization of the node.  We are getting it when we call
+            // setFont(null);
+            if(all != null)
+            {
+                //need to adjust messages on this lifeline
+                new AfterValidationExecutor(new AdjustAfterBoxChangeProvider(LifelineWidget.this), getScene());
+                //font size was changed, need to revalidate box sizes
+                boxWidget.revalidate();
+                all.revalidate();
+                boxWidget.updateLabel();
+                revalidate();
+                getScene().validate();
             }
-        }        
-        this.getBox().setStereotype(stereotypes);  
-       
-
+        }
+        prevFont=font;
     }
-
+   
     @Override
     protected void saveAnchorage(NodeWriter nodeWriter) {
         //write anchor info
@@ -553,5 +578,48 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         nodeWriter.writeAnchorage();
         //done writing the anchoredgemap.. now time to clear it.
         nodeWriter.clearAnchorEdgeMap();
-    }   
+    }
+
+    public String getID() {
+        return UMLWidget.UMLWidgetIDString.LIFELINEWIDGET.toString();
+    }
+
+    public String getDisplayName() {
+        return "Default";
+    }
+
+    public void update() {
+        ResourceValue.initResources(getWidgetID(), this);
+    }
+
+    public void setCustomizableResourceTypes (ResourceType[] resTypes) 
+    {
+        customizableResTypes = resTypes;
+    }
+    
+    public ResourceType[] getCustomizableResourceTypes()
+    {
+        return customizableResTypes;
+    }
+
+    @Override
+    public void setNodeBackground(Paint paint)
+    {
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.BGCOLOR , paint);
+    }
+
+    @Override
+    public void setNodeFont(Font f)
+    {   
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.FONT , f);
+    }
+
+    @Override
+    public void setNodeForeground(Color color)
+    {
+        
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.FGCOLOR , color);
+    }
+    
+    
 }

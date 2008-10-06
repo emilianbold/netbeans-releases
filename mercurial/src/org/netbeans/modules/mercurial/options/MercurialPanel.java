@@ -89,12 +89,14 @@ final class MercurialPanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
         exportFilename = new javax.swing.JLabel();
         backupOnRevertModifications = new javax.swing.JCheckBox();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jTextPane1 = new javax.swing.JTextPane();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
 
         jLabel1.setLabelFor(userNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel1.text")); // NOI18N
@@ -102,71 +104,13 @@ final class MercurialPanel extends javax.swing.JPanel {
         jLabel2.setLabelFor(executablePathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel2.text")); // NOI18N
 
+        executablePathTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                executablePathTextFieldActionPerformed(evt);
+            }
+        });
+
         org.openide.awt.Mnemonics.setLocalizedText(execPathBrowseButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.browseButton.text")); // NOI18N
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jPanel1.border.title"))); // NOI18N
-
-        jLabel3.setLabelFor(annotationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel3.text")); // NOI18N
-
-        annotationTextField.setText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.addButton.text")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 405, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 115, Short.MAX_VALUE)
-                .add(addButton)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
-                    .add(addButton)
-                    .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
-
-        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_addButton")); // NOI18N
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MecurialPanel.jPanel2.border.title"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel4.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.manageButton.text")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 175, Short.MAX_VALUE)
-                .add(manageButton)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(manageButton))
-                .addContainerGap(24, Short.MAX_VALUE))
-        );
-
-        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_manageButton")); // NOI18N
 
         exportFilename.setLabelFor(exportFilenameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(exportFilename, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.ExportFilename.text")); // NOI18N
@@ -176,58 +120,103 @@ final class MercurialPanel extends javax.swing.JPanel {
         backupOnRevertModifications.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(backupOnRevertModifications, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jCheckBox1.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel5.text")); // NOI18N
+
+        jLabel3.setLabelFor(annotationTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel3.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.addButton.text")); // NOI18N
+
+        annotationTextField.setText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jLabel6.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.manageButton.text")); // NOI18N
+
+        jTextPane1.setBackground(jLabel1.getBackground());
+        jTextPane1.setText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.jTextPane1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(backupOnRevertModifications)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(exportFilename, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(backupOnRevertModifications)
+            .add(jLabel1)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel6)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(jLabel5)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel2)
+                            .add(exportFilename))
+                        .add(30, 30, 30)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(userNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                            .add(exportFilenameBrowseButton)
+                            .add(execPathBrowseButton)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(exportFilenameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE))
+                                .add(jLabel3)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(execPathBrowseButton)
-                                    .add(exportFilenameBrowseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))))))
-                .addContainerGap())
+                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                                .add(2, 2, 2)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(userNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
-                .add(18, 18, 18)
+                    .add(jLabel1)
+                    .add(userNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(8, 8, 8)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(execPathBrowseButton)
                     .add(jLabel2)
-                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(execPathBrowseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(exportFilename)
                     .add(exportFilenameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(exportFilenameBrowseButton))
-                .add(10, 10, 10)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel5)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(8, 8, 8)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(addButton))
+                .add(12, 12, 12)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel6)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 11, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(manageButton)
+                    .add(jTextPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backupOnRevertModifications)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         userNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_userNameTextField")); // NOI18N
@@ -236,7 +225,13 @@ final class MercurialPanel extends javax.swing.JPanel {
         exportFilenameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_exportFileNameTextField")); // NOI18N
         exportFilenameBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_exportFilenameBrowseButton")); // NOI18N
         backupOnRevertModifications.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_backupOnRevertModifications")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_addButton")); // NOI18N
+        manageButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "ACSD_manageButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void executablePathTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executablePathTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_executablePathTextFieldActionPerformed
     
     private void nameChange() {
         controller.changed();
@@ -299,9 +294,11 @@ final class MercurialPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JTextPane jTextPane1;
     final javax.swing.JButton manageButton = new javax.swing.JButton();
     final javax.swing.JTextField userNameTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables

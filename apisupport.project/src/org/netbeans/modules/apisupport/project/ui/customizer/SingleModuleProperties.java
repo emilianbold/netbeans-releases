@@ -528,11 +528,11 @@ public final class SingleModuleProperties extends ModuleProperties {
                         Message.WARNING_MESSAGE));
                 return Collections.emptySet();
             }
-            String[] disableModules = SuiteProperties.getArrayProperty(
+            String[] disabledModules = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_MODULES_PROPERTY);
-            String[] enableClusters = SuiteProperties.getArrayProperty(
+            String[] enabledClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.ENABLED_CLUSTERS_PROPERTY);
-            String[] disableClusters = SuiteProperties.getArrayProperty(
+            String[] disabledClusters = SuiteProperties.getArrayProperty(
                     suite.getEvaluator(), SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
             String suiteClusterProp = getEvaluator().getProperty("cluster"); // NOI18N
             File suiteClusterDir = suiteClusterProp != null ? getHelper().resolveFile(suiteClusterProp) : null;
@@ -543,7 +543,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                     // #72124: do not filter other modules in the same suite.
                     continue;
                 }
-                if (isExcluded(me, disableModules, enableClusters, disableClusters)) {
+                if (isExcluded(me, Arrays.asList(disabledModules), Arrays.asList(enabledClusters), Arrays.asList(disabledClusters))) {
                     it.remove();
                 }
             }
@@ -568,18 +568,31 @@ public final class SingleModuleProperties extends ModuleProperties {
         return getUniverseDependencies(filterExcludedModules, false);
     }
     
-    private static boolean isExcluded(final ModuleEntry me,
-            final String[] disableModules, final String[] enableClusters, final String[] disableClusters) {
-        if (Arrays.binarySearch(disableModules, me.getCodeNameBase()) >= 0) {
+    public static boolean isExcluded(ModuleEntry me, Collection<String> disabledModules, Collection<String> enabledClusters, Collection<String> disabledClusters) {
+        if (disabledModules.contains(me.getCodeNameBase())) {
             return true;
         }
-        if (enableClusters.length != 0 && Arrays.binarySearch(enableClusters, me.getClusterDirectory().getName()) < 0) {
+        String clusterName = me.getClusterDirectory().getName();
+        if (!enabledClusters.isEmpty() && !clusterMatch(enabledClusters, clusterName)) {
             return true;
         }
-        if (enableClusters.length == 0 && Arrays.binarySearch(disableClusters, me.getClusterDirectory().getName()) >= 0) {
+        if (enabledClusters.isEmpty() && disabledClusters.contains(clusterName)) {
             return true;
         }
         return false;
+    }
+    static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
+        String baseName = clusterBaseName(clusterName);
+        for (String c : enabledClusters) {
+            if (clusterBaseName(c).equals(baseName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    static String clusterBaseName(String clusterName) {
+        // when changing, change also org.netbeans.nbbuild.ModuleSelector
+        return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
     
     /**
@@ -837,11 +850,11 @@ public final class SingleModuleProperties extends ModuleProperties {
      * really slow. The {@link AssertionError} will be thrown if you try to do
      * so.
      */
-    SortedSet getModuleCategories() {
+    SortedSet<String> getModuleCategories() {
         assert !SwingUtilities.isEventDispatchThread() :
             "SingleModuleProperties.getModuleCategories() cannot be called from EDT"; // NOI18N
         if (modCategories == null && !reloadModuleListInfo()) {
-            return new TreeSet();
+            return new TreeSet<String>();
         }
         return modCategories;
     }

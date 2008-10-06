@@ -51,6 +51,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
+import org.netbeans.modules.refactoring.java.ui.UIUtilities;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.openide.ErrorManager;
@@ -61,6 +62,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 public class WhereUsedElement extends SimpleRefactoringElementImplementation {
@@ -113,12 +115,14 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         Tree t= tree.getLeaf();
         int start;
         int end;
+        boolean anonClassNameBug128074 = false;
         TreeUtilities treeUtils = compiler.getTreeUtilities();
         if (t.getKind() == Tree.Kind.CLASS) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
             if (pos == null) {
                 //#121084 hotfix
                 //happens for anonymous innerclasses
+                anonClassNameBug128074 = true;
                 start = end = (int) sp.getStartPosition(unit, t);
             } else {
                 start = pos[0];
@@ -206,7 +210,12 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
         PositionBounds bounds = new PositionBounds(ref1, ref2);
         TreePath tr = getEnclosingTree(tree);
-        return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), tr, compiler);
+        return new WhereUsedElement(
+                bounds,
+                start==end && anonClassNameBug128074 ? NbBundle.getMessage(UIUtilities.class, "LBL_AnonymousClass"):sb.toString().trim(),
+                compiler.getFileObject(),
+                tr,
+                compiler);
     }
     
     private static String trimStart(String s) {
@@ -225,7 +234,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             if (Character.isWhitespace(s.charAt(x))) {
                 continue;
             } else {
-                return s.substring(0, x);
+                return s.substring(0, x + 1);
             }
         }
         return "";

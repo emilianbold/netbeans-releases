@@ -40,7 +40,11 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Stack;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -50,6 +54,7 @@ import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -67,6 +72,34 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         super(testName, true);
     }
 
+    protected Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile csmFile) {
+        final List<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile, doc, 
+                new Interrupter(){
+            public boolean cancelled() {
+                return false;
+            }
+        });
+        CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
+            public void addError(CsmErrorInfo info) {
+                result.add(info);
+            }
+            public void done() {
+            }
+        };
+        CsmErrorProvider.getDefault().getErrors(request, response);
+        Collections.sort(result, new Comparator<CsmErrorInfo>() {
+            public int compare(CsmErrorInfo o1, CsmErrorInfo o2) {
+                if (o1.getStartOffset() == o2.getStartOffset()) {
+                    return o1.getMessage().compareTo(o2.getMessage());
+                } else {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            }
+        });
+        return result;
+    }
+
     protected final void performStaticTest(String sourceFileName) throws Exception {
         String datafileName = sourceFileName + ".dat";
         File testSourceFile = getDataFile(sourceFileName);
@@ -75,7 +108,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         PrintStream out = new PrintStream(output);
         CsmFile csmFile = getCsmFile(testSourceFile);
         BaseDocument doc = getBaseDocument(testSourceFile);
-        Collection<CsmErrorInfo> errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
+        Collection<CsmErrorInfo> errorInfos = getErrors(doc, csmFile);
         for (CsmErrorInfo info : errorInfos) {
             String txt = String.format("%s %s [%d-%d]: %s", info.getSeverity(), sourceFileName, info.getStartOffset(), info.getEndOffset(), info.getMessage());
             out.printf("%s\n", txt);
@@ -102,7 +135,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
 
         Collection<CsmErrorInfo> errorInfos;
         
-        errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
+        errorInfos = getErrors(doc, csmFile);
         //if (TRACE) trace("INITIAL:", errorInfos, sourceFileName);
         assertTrue("The shouldn't be errors in the initial state", errorInfos.isEmpty()); //NOI18N
         
@@ -111,7 +144,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
         while (errorMaker.change()) {
             if (TRACE) trace("\n\n==========", doc);
             //parseModifiedFile((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
-            errorInfos = CsmErrorProvider.getDefault().getErrors(doc, csmFile);
+            errorInfos = getErrors(doc, csmFile);
             if (TRACE) trace("----------", errorInfos, testSourceFile.getName());
             errorMaker.analyze(errorInfos);
             if (undoer.canUndo()) {

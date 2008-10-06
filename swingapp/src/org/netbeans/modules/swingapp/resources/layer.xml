@@ -90,6 +90,7 @@ made subject to such option by the copyright holder.
             </file>
             <file name="CRUDShellApp.zip" url="CRUDShellApp.zip">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.swingapp.resources.Bundle"/>
+                <attr name="requiredClass" stringvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.form.j2ee.wizard.MasterDetailWizard.createForExisting"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/swingapp/resources/CRUDShellApp.html"/>
             </file>
@@ -112,7 +113,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="GlobalActionTable.wstcref" url="windowmanager/GlobalActionTable.wstcref">
-                    <attr name="position" intvalue="2700"/>
+                    <attr name="position" intvalue="2800"/>
                 </file>
             </folder>
         </folder>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<statuses type="array">
+    <status>
+        <created_at>Thu Aug 28 16:10:08 +0000 2008</created_at>
+        <id>901819428</id>
+        <text>xyz</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Thu Aug 28 00:53:19 +0000 2008</created_at>
+        <id>901127538</id>
+        <text>curl update</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Wed Aug 27 21:21:14 +0000 2008</created_at>
+        <id>900948239</id>
+        <text>WOW, can't believe own eyes - Twitter in NetBeans really works !!! - there has to be a mistake somewhere...</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Tue Aug 26 09:01:55 +0000 2008</created_at>
+        <id>899130433</id>
+        <text>repeating 100x: "Don't do 'rm -rf /space/hg/*' without any backup of current work"</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Sat Aug 16 15:16:51 +0000 2008</created_at>
+        <id>889466022</id>
+        <text>is still trying Twitter</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Sat Aug 16 15:14:57 +0000 2008</created_at>
+        <id>889464476</id>
+        <text>trying Twitter...</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+    <status>
+        <created_at>Thu Apr 03 09:03:57 +0000 2008</created_at>
+        <id>782022982</id>
+        <text>...</text>
+        <source>web</source>
+        <truncated>false</truncated>
+        <in_reply_to_status_id></in_reply_to_status_id>
+        <in_reply_to_user_id></in_reply_to_user_id>
+        <favorited></favorited>
+        <user>
+            <id>14276146</id>
+            <name>Lukas Jungmann</name>
+            <screen_name>jlukas</screen_name>
+            <location>Prague</location>
+            <description></description>
+            <profile_image_url>http://static.twitter.com/images/default_profile_normal.png</profile_image_url>
+            <url></url>
+            <protected>false</protected>
+            <followers_count>2</followers_count>
+        </user>
+    </status>
+</statuses>

@@ -79,6 +79,7 @@ final public class Settings {
         scanCommentsOnly = getPreferences().getBoolean( "scanCommentsOnly", true ); //NOI18N
         
         ext2comments.put( "JAVA", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "JS", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "C", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "CPP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "CXX", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
@@ -88,15 +89,25 @@ final public class Settings {
         ext2comments.put( "HTM", new CommentTags( "<!--", "-->")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "XML", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "JSP", new CommentTags( "<%--", "--%>")  ); //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "CSS", new CommentTags( "/*", "*/")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "PROPERTIES", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "SH", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "RB", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "PHP", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "SCALA", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "GROOVY", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         
         mime2comments.put( "text/x-java", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2comments.put( "text/html", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
         mime2comments.put( "application/x-httpd-eruby", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N
+        mime2comments.put( "text/x-yaml", new CommentTags("#") ); //NOI18N //NOI18N
+        mime2comments.put( "text/x-python", new CommentTags("#") ); //NOI18N //NOI18N
+
+        // Ruby, PHP, etc have file extensions listed above, but they are listed here by mime type as well
+        // because there are many other common file extensions used for them.
         mime2comments.put( "text/x-ruby", new CommentTags("#") ); //NOI18N //NOI18N
+        mime2comments.put( "text/x-php5", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        mime2comments.put( "text/sh", new CommentTags("#") ); //NOI18N //NOI18N
     }
     
     public static final Settings getDefault() {

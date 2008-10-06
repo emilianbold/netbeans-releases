@@ -39,34 +39,159 @@
 
 package org.netbeans.modules.cnd.remote.server;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord, PropertyChangeListener, PlatformTypes  {
+public class RemoteServerRecord implements ServerRecord {
     
-    private String user;
-    private String server;
-    private String name;
-    private boolean editable;
-    private boolean active;
-    private int platform;
-    private boolean inited = false;
+    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZED"; // NOI18N
+    public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
+    public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
+    public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
+    public static final Object STATE_CANCELLED = "STATE_CANCELLED"; // NOI18N
     
-    protected RemoteServerRecord(String name, boolean active) {
+    public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
+    
+    private final String user;
+    private final String server;
+    private final String name;
+    private final boolean editable;
+    private boolean deleted;
+    private Object state;
+    private final Object stateLock;
+    private String reason;
+    
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    
+    /**
+     * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
+     * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
+     * thread if called during startup from cached information.
+     * 
+     * @param name
+     */
+    protected RemoteServerRecord(final String name) {
+        this(name, false);
+    }
+    
+    protected RemoteServerRecord(final String name, boolean connect) {
         this.name = name;
-        this.active = active;
-        editable = !name.equals(CompilerSetManager.LOCALHOST);
-        //platform = getPlatform();
-        //inited = true;
+        int pos = name.indexOf('@');
+        if (pos != -1) {
+            user = name.substring(0, pos);
+            server = name.substring(pos + 1);
+        } else {
+            user="";
+            server = name;
+        }
+        stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
+        reason = null;
+        deleted = false;
+        
+        if (name.equals(CompilerSetManager.LOCALHOST)) {
+            editable = false;
+            state = STATE_ONLINE;
+        } else {
+            editable = true;
+            state = connect ? STATE_UNINITIALIZED : STATE_OFFLINE;
+        }
+    }
+    
+    public synchronized void validate(final boolean force) {
+        if (isOnline()) {
+            return;
+        }
+        log.fine("RSR.validate2: Validating " + name);
+        if (force) {
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
+            ph.start();
+            init(null);
+            ph.finish();
+        }
+        String msg;
+        if (isOnline()) {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
+        } else {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", name, getStateAsText(), getReason());// NOI18N
+        }
+        StatusDisplayer.getDefault().setStatusText(msg);        
+    }
+    
+    /**
+     * Start the initialization process. This should <b>never</b> be done from the AWT Evet
+     * thread. Parts of the initialization use this thread and will block.
+     */
+    public synchronized void init(PropertyChangeSupport pcs) {
+        assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
+        Object ostate = state;
+        state = STATE_INITIALIZING;
+        RemoteServerSetup rss = new RemoteServerSetup(name);
+        if (rss.needsSetupOrUpdate()) {
+            rss.setup();
+        }
+
+        synchronized (stateLock) {
+            if (rss.isCancelled()) {
+                state = STATE_CANCELLED;
+            } else if (rss.isFailed()) {
+                state = STATE_OFFLINE;
+                reason = rss.getReason();
+            } else {
+                state = STATE_ONLINE;
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        RemotePathMap.getMapper(name).init();
+                    }
+                });
+            }
+        }
+        if (pcs != null) {
+            pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
+        }
+    }
+    
+    public boolean resetOfflineState() {
+        synchronized (stateLock) {
+            if (this.state != STATE_INITIALIZING && state != STATE_ONLINE) {
+                state = STATE_UNINITIALIZED;
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public String getStateAsText() {
+        return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
+    }
+    
+    public boolean isOnline() {
+        return state == STATE_ONLINE;
+    }
+    
+    public boolean isOffline() {
+        return state == STATE_OFFLINE;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
     
     public boolean isEditable() {
@@ -75,17 +200,6 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
 
     public boolean isRemote() {
         return !name.equals(CompilerSetManager.LOCALHOST);
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-    
-    public void setActive(boolean active) {
-        if (this.active != active) {
-            RemoteServerList.getInstance().firePropertyChange(RemoteServerList.PROP_SET_AS_ACTIVE, this);
-            RemoteServerList.getInstance().refresh();
-        }
     }
 
     public String getName() {
@@ -100,43 +214,11 @@ public class RemoteServerRecord implements ServerRecord, PropertyChangeListener,
         return user;
     }
     
-    public int getPlatform() {
-        if (!inited) {
-            if (name.equals(CompilerSetManager.LOCALHOST)) {
-                String os = System.getProperty("os.name");
-                if (os.equals("SunOS")) { // NOI18N
-                    platform = System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
-                } else if (os.startsWith("Windows ")) { // NOI18N
-                    platform =  PLATFORM_WINDOWS;
-                } else if (os.toLowerCase().contains("linux")) { // NOI18N
-                    platform =  PLATFORM_LINUX;
-                } else if (os.toLowerCase().contains("mac")) { // NOI18N
-                    platform =  PLATFORM_MACOSX;
-                } else {
-                    platform =  PLATFORM_GENERIC;
-                }
-            } else {
-                String cmd = "PATH=/bin:/usr/bin:$PATH uname -s -m"; // NOI18N
-                RemoteCommandSupport support = new RemoteCommandSupport(name, cmd);
-                String val = support.toString().toLowerCase();
-                if (val.startsWith("linux")) { // NOI18N
-                    platform =  PLATFORM_LINUX;
-                } else if (val.startsWith("sunos")) { // NOI18N
-                    String os = val.substring(val.indexOf(' '));
-                    return os.startsWith("sun") ? PLATFORM_SOLARIS_SPARC : PLATFORM_SOLARIS_INTEL; // NOI18N
-                } else if (val.startsWith("cygwin") || val.startsWith("mingw32")) { // NOI18N
-                    platform =  PLATFORM_WINDOWS;
-                }
-            }
-            inited = true;
-        }
-        return platform;
+    public String getReason() {
+        return reason == null ? "" : reason;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RemoteServerList.PROP_SET_AS_ACTIVE)) {
-            Object n = evt.getNewValue();
-            active = n == this;
-        }
+    /*package*/void setState(Object state) {
+        this.state = state;
     }
 }

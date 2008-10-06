@@ -477,7 +477,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(boundCheckBox)
                                         .add(35, 35, 35)
-                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 546, Short.MAX_VALUE)
+                                        .add(propNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 554, Short.MAX_VALUE)
                                         .add(27, 27, 27))
                                     .add(layout.createSequentialGroup()
                                         .add(21, 21, 21)
@@ -512,7 +512,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(errorLabel)
-                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))))
+                            .add(previewScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -618,12 +618,51 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         showPreview();
     }//GEN-LAST:event_generateJavadocCheckBoxActionPerformed
 
+    private boolean generatePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+            
     private void boundCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundCheckBoxActionPerformed
         vetoableCheckBox.setEnabled(boundCheckBox.isSelected());
+        if (generatePropertyChangeSupportCheckBox.isEnabled ()) {
+            if (boundCheckBox.isSelected ()) {
+                if (!generatePropertyChangeSupportCheckBox.isSelected ()) {
+                    generatePropertyChangeSupportCheckBox.setSelected (true);
+                    generatePropertyChangeSupportCheckBoxWasSelectedAutomatically = true;
+                }
+                if (!generateVetoablePropertyChangeSupportCheckBox.isSelected () &&
+                    vetoableCheckBox.isSelected ()
+                ) {
+                    generateVetoablePropertyChangeSupportCheckBox.setSelected (true);
+                    generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = true;
+                }
+            } else {
+                if (generatePropertyChangeSupportCheckBoxWasSelectedAutomatically) {
+                    generatePropertyChangeSupportCheckBox.setSelected (false);
+                    generatePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+                }
+                if (generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically) {
+                    generateVetoablePropertyChangeSupportCheckBox.setSelected (false);
+                    generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+                }
+            }
+        }
         showPreview();
     }//GEN-LAST:event_boundCheckBoxActionPerformed
 
+    private boolean generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+    
     private void vetoableCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_vetoableCheckBoxActionPerformed
+        if (generateVetoablePropertyChangeSupportCheckBox.isEnabled ()) {
+            if (boundCheckBox.isSelected () && 
+                !generateVetoablePropertyChangeSupportCheckBox.isSelected ()
+            ) {
+                generateVetoablePropertyChangeSupportCheckBox.setSelected (true);
+                generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = true;
+            } else
+            if (generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically) {
+                generateVetoablePropertyChangeSupportCheckBox.setSelected (false);
+                generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
+            }
+        }
         showPreview();
     }//GEN-LAST:event_vetoableCheckBoxActionPerformed
 
@@ -641,11 +680,13 @@ public class AddPropertyPanel extends javax.swing.JPanel {
 
     private void generateVetoablePropertyChangeSupportCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateVetoablePropertyChangeSupportCheckBoxActionPerformed
         generateVCSModified = true;
+        generateVetoablePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
         showPreview();
     }//GEN-LAST:event_generateVetoablePropertyChangeSupportCheckBoxActionPerformed
 
     private void generatePropertyChangeSupportCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generatePropertyChangeSupportCheckBoxActionPerformed
         generatePCSModified = true;
+        generatePropertyChangeSupportCheckBoxWasSelectedAutomatically = false;
         showPreview();
     }//GEN-LAST:event_generatePropertyChangeSupportCheckBoxActionPerformed
 

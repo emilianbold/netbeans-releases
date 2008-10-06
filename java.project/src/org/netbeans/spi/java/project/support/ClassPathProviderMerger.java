@@ -40,6 +40,7 @@ package org.netbeans.spi.java.project.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * Lookup Merger implementation for ClassPathProvider
@@ -174,17 +176,6 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
                 }
             }
             synchronized (this) {
-                if (classPaths != null) {
-                    for (PathResourceImplementation old : classPaths) {
-                        old.removePropertyChangeListener(classPathsListener);
-                    }
-                }
-                for (PathResourceImplementation cpImpl : impls) {
-                    if (cpImpl == null) {
-                        continue;
-                    }
-                    cpImpl.addPropertyChangeListener(classPathsListener);
-                }
                 this.classPaths = impls.toArray(new PathResourceImplementation[impls.size()]);
             }
             PropertyChangeEvent ev = new PropertyChangeEvent(this, ClassPathImplementation.PROP_RESOURCES, null, null);
@@ -266,11 +257,15 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         return new ProxyFilteringCPI(path);
     }
     
-    private static class ProxyFilteringCPI implements FilteringPathResourceImplementation {
-        private ClassPath classpath;
+    private static class ProxyFilteringCPI implements FilteringPathResourceImplementation, PropertyChangeListener {
+        private final ClassPath classpath;
+        private final PropertyChangeSupport changeSupport;
 
-        private ProxyFilteringCPI(ClassPath path) {
+        private ProxyFilteringCPI(final ClassPath path) {
+            assert path != null;
             this.classpath = path;
+            this.changeSupport = new PropertyChangeSupport(this);
+            this.classpath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.classpath));
         }
 
         
@@ -296,11 +291,21 @@ final class ClassPathProviderMerger implements LookupMerger<ClassPathProvider> {
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            classpath.addPropertyChangeListener(listener);
+           this.changeSupport.addPropertyChangeListener(listener);
         }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
-            classpath.removePropertyChangeListener(listener);
+            this.changeSupport.removePropertyChangeListener(listener);
+        }
+
+        public void propertyChange(final PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (ClassPath.PROP_ENTRIES.equals(propName)) {
+                this.changeSupport.firePropertyChange(PROP_ROOTS, null, null);
+            }
+            else if (ClassPath.PROP_INCLUDES.equals(propName)) {
+                this.changeSupport.firePropertyChange(PROP_INCLUDES, null, null);
+            }
         }
         
     }

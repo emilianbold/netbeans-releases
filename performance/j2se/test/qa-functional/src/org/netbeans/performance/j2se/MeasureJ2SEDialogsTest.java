@@ -43,6 +43,7 @@ package org.netbeans.performance.j2se;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.dialogs.*;
 
 /**
@@ -54,62 +55,66 @@ public class MeasureJ2SEDialogsTest {
 
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Dialogs suite");
+        PerformanceTestCase.prepareForMeasurements();
 
-        suite.addTest(NbModuleSuite.create(About.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddJDBCDriverDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddProfilingPointWizard.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddServerInstanceDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AddXMLandDTDSchemaCatalog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AttachDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(AutoCommentWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CompareMemorySnapshotsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateTestsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(DeleteFileDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(DocumentsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(FavoritesWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(FilesWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(FindInProjects.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(FindInSourceEditor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(GotoClassDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(GotoLineDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(HelpContentsWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(HttpMonitorWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(InternationalizeDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(JavaPlatformManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(JavadocIndexSearch.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(LibrariesManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NetBeansPlatformManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NewBreakpointDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NewDatabaseConnectionDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NewFileDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NewProjectDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(NewWatchDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenFileDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenProjectDialog.class, ".*", ".*"));        
-        suite.addTest(NbModuleSuite.create(Options.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OutputWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OverrideMethods.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PluginManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProfilerAboutDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProfilerCalibrationDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProfilerWindows.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProjectPropertiesWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProjectsWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PropertyEditorColor.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PropertyEditorString.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PropertyEditors.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ProxyConfiguration.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RefactorFindUsagesDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RefactorMoveClassDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RefactorRenameDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(RuntimeWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SelectProfilingTaskDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ServerManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(SetDefaultServerDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(TemplateManager.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ToDoWindow.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(VersioningWindow.class, ".*", ".*"));
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEDialogsTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(About.class)
+        .addTest(AddJDBCDriverDialog.class)
+        .addTest(AddProfilingPointWizard.class)
+        .addTest(AddServerInstanceDialog.class)
+        //--.addTest(AddXMLandDTDSchemaCatalog.class)
+        .addTest(AttachDialog.class)
+        //--.addTest(AutoCommentWindow.class)
+        //--.addTest(CompareMemorySnapshotsDialog.class)
+        .addTest(CreateTestsDialog.class)
+        .addTest(DeleteFileDialog.class)
+        .addTest(DocumentsDialog.class)
+        .addTest(FavoritesWindow.class)
+        .addTest(FilesWindow.class)
+        .addTest(FindInProjects.class)
+        //--.addTest(FindInSourceEditor.class)
+        //--.addTest(GotoClassDialog.class)
+        .addTest(GotoLineDialog.class)
+        .addTest(HelpContentsWindow.class)
+        .addTest(HttpMonitorWindow.class)
+        .addTest(InternationalizeDialog.class)
+        .addTest(JavaPlatformManager.class)
+        .addTest(JavadocIndexSearch.class)
+        .addTest(LibrariesManager.class)
+        .addTest(NetBeansPlatformManager.class)
+        .addTest(NewBreakpointDialog.class)
+        .addTest(NewDatabaseConnectionDialog.class)
+        //--.addTest(NewFileDialog.class)
+        .addTest(NewProjectDialog.class)
+        .addTest(NewWatchDialog.class)
+        .addTest(OpenFileDialog.class)
+        .addTest(OpenProjectDialog.class)
+        .addTest(Options.class)
+        .addTest(OutputWindow.class)
+        //--.addTest(OverrideMethods.class)
+        .addTest(PluginManager.class)
+        //--.addTest(ProfilerAboutDialog.class)
+        //--.addTest(ProfilerCalibrationDialog.class)
+        .addTest(ProfilerWindows.class)
+        .addTest(ProjectPropertiesWindow.class)
+        .addTest(ProjectsWindow.class)
+        .addTest(PropertyEditorColor.class)
+        //--.addTest(PropertyEditors.class)
+        //--.addTest(PropertyEditorString.class)
+        .addTest(ProxyConfiguration.class)
+        .addTest(RefactorFindUsagesDialog.class)
+        .addTest(RefactorMoveClassDialog.class)
+        //--.addTest(RefactorRenameDialog.class)
+        .addTest(RuntimeWindow.class)
+        .addTest(SelectProfilingTaskDialog.class)
+        .addTest(ServerManager.class)
+        //--.addTest(SetDefaultServerDialog.class)
+        .addTest(TemplateManager.class)
+        .addTest(ToDoWindow.class)
+        .addTest(VersioningWindow.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
   
         return suite;
     }

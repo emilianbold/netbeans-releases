@@ -231,7 +231,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
             </file>
             <file name="S-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.instance"/>
             </file>
             <file name="DS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
@@ -604,7 +604,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
             </file>
             <file name="S-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.instance"/>
             </file>
             <file name="DS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
@@ -885,7 +885,7 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
             </file>
             <file name="S-F7.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoNextMethodAction.instance"/>
             </file>
             <file name="DS-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
@@ -1068,9 +1068,6 @@ made subject to such option by the copyright holder.
 <!--            <file name="AS-J.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/Correct Javadoc Action.instance"/>
             </file>-->
-            <file name="C-F5.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
-            </file>
             <file name="C-PERIOD.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
             </file>

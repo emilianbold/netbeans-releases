@@ -717,10 +717,14 @@ final public class WebApplicationPanel extends JPanel
             
         }
         
-        final FileObject rootFolder = getRootFolder();
-        final String errorMessage = canUseFileName(rootFolder, getPackageFileName(), getTargetName(), "java"); // NOI18N
-        
-        return errorMessage;
+        try {
+            final FileObject rootFolder = getRootFolder();
+            final String errorMessage = canUseFileName(rootFolder, getPackageFileName(), getTargetName(), "java"); // NOI18N
+            
+            return errorMessage;
+        } catch( NullPointerException e ) {
+            return NbBundle.getMessage( WebApplicationPanel.class, "ERR_Project_Missing_Source_Folders" ); // NOI18N
+        }
     }
     
     static boolean isValidPackageName(final String str) {

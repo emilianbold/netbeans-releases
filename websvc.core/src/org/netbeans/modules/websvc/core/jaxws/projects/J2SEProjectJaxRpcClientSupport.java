@@ -555,7 +555,8 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
                         } catch (IOException ex) {
                             
                         }
-                        assert projectProperties!=null;
+                        // this may happen when deleting client
+                        if (projectProperties == null) continue;
                         
                         String serviceName = n.getNodeValue();
                         String currentFeatures = projectProperties.getProperty("wscompile.client." + serviceName + ".features"); //NOI18N

@@ -69,12 +69,13 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         jLabel1.setLabelFor(executablePathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel1.text")); // NOI18N
@@ -87,8 +88,6 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel3.text")); // NOI18N
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel6.text")); // NOI18N
-
         jLabel4.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel4.text")); // NOI18N
 
         jLabel2.setLabelFor(annotationTextField);
@@ -100,6 +99,12 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(manageLabelsButton, org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.manageLabelsButton.text")); // NOI18N
 
+        jScrollPane2.setBorder(null);
+
+        jLabel6.setLabelFor(manageConnSettingsButton);
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel6.text")); // NOI18N
+
+        jLabel7.setLabelFor(manageLabelsButton);
         jLabel7.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel7.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -107,50 +112,61 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addContainerGap()
+                .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(213, 213, 213))
+            .add(layout.createSequentialGroup()
+                .add(73, 73, 73)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 301, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(106, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
-                                .add(7, 7, 7)))
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, manageLabelsButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .addContainerGap()
+                        .add(executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel5)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(executablePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton))))
+                        .add(browseButton))
                     .add(layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(jLabel6)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 59, Short.MAX_VALUE)
-                        .add(manageConnSettingsButton))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(24, 24, 24)
+                                        .add(jLabel2)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(annotationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE))
+                                    .add(layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 20, Short.MAX_VALUE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(manageLabelsButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(manageConnSettingsButton))
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel4)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
                     .add(browseButton)
                     .add(executablePathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -158,28 +174,35 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel3)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(manageConnSettingsButton))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(18, 18, 18)
+                        .add(manageConnSettingsButton))
+                    .add(layout.createSequentialGroup()
+                        .add(3, 3, 3)
+                        .add(jLabel6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(10, 10, 10)
                         .add(jLabel4))
                     .add(layout.createSequentialGroup()
-                        .add(24, 24, 24)
+                        .add(14, 14, 14)
                         .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(addButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel7)
-                    .add(manageLabelsButton))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel2)
+                            .add(annotationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(14, 14, 14)
+                        .add(jLabel7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 33, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(addButton)
+                        .add(18, 18, 18)
+                        .add(manageLabelsButton)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         executablePathTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.executablePathTextField.text")); // NOI18N
@@ -194,6 +217,10 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.addButton.text")); // NOI18N
         manageLabelsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSN_SvnOptionsPanel.manageLabelsButton.text")); // NOI18N
         manageLabelsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "ACSD_SvnOptionsPanel.manageLabelsButton.text")); // NOI18N
+        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel6.AccessibleContext.accessibleName")); // NOI18N
+        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel6.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel7.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel7.AccessibleContext.accessibleName")); // NOI18N
+        jLabel7.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel7.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -209,6 +236,7 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     final javax.swing.JButton manageConnSettingsButton = new javax.swing.JButton();

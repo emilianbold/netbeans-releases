@@ -94,6 +94,7 @@ import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -103,7 +104,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
-public class RSSFeed extends JPanel implements Constants, PropertyChangeListener {
+public class RSSFeed extends BackgroundPanel implements Constants, PropertyChangeListener {
     
     private String url;
     
@@ -148,7 +149,6 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
         this.url = url;
         this.showProxyButton = showProxyButton;
         setBorder(null);
-        setOpaque(false);
 
         add( buildContentLoadingLabel(), BorderLayout.CENTER );
         
@@ -195,7 +195,7 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     }
 
 
-    private String url2path( URL u ) {
+    protected final String url2path( URL u ) {
         StringBuilder pathSB = new StringBuilder(u.getHost());
         if (u.getPort() != -1) {
             pathSB.append(u.getPort());
@@ -343,14 +343,10 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 });
             } catch( Exception e ) {
                 if( isContentCached()) {
-                    try {
-                        isCached = false;
-                        NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
-                        reload();
-                        return;
-                    } catch( MalformedURLException mE ) {
-                        //ignore
-                    }
+                    isCached = false;
+                    clearCache();
+                    reload();
+                    return;
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
@@ -359,6 +355,14 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                 });
                 ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
             }
+        }
+    }
+
+    protected void clearCache() {
+        try {
+            NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
+        } catch( MalformedURLException mE ) {
+            //ignore
         }
     }
     
@@ -436,7 +440,11 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
     public void addNotify() {
         super.addNotify();
         getMaxDecsriptionLength();
-        startReloading();
+        WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
+            public void run() {
+                startReloading();
+            }
+        });
     }
 
     private boolean firstReload = true;

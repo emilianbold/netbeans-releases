@@ -43,10 +43,14 @@ package org.netbeans.modules.subversion.ui.wizards.importstep;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import javax.swing.JComponent;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.*;
+import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.commit.CommitTable;
 import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
@@ -93,10 +97,17 @@ public class ImportPreviewStep extends AbstractStep {
     }       
 
     public void validateUserInput() {
-        if(table != null && table.getCommitFiles().size() > 0) {
-            valid();
+        Collection<CommitOptions> commitOptions = table.getCommitFiles().values();
+        if(table != null && commitOptions.size() > 0) {
+            for (CommitOptions option : commitOptions) {
+                if(option != CommitOptions.EXCLUDE) {
+                    valid();
+                    return;
+                }
+            }
+            invalid(null); // NOI18N 
         } else {
-            invalid(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_NothingToImport")); // NOI18N
+            invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "CTL_Import_NothingToImport"), true)); // NOI18N
         }        
     }    
 
@@ -122,7 +133,11 @@ public class ImportPreviewStep extends AbstractStep {
         }
         nodes = nodesList.toArray(new SvnFileNode[files.length]);
         table.setNodes(nodes);
-
+        table.getTableModel().addTableModelListener(new TableModelListener() {
+            public void tableChanged(TableModelEvent e) {
+                validateUserInput();
+            }
+        });
         validateUserInput();
     }
 

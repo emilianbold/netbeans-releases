@@ -72,9 +72,7 @@ public class AddressingWsdlFactories {
         @Override
         public Set<QName> getElementQNames() {
             HashSet<QName> set = new HashSet<QName>();
-            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-                set.add(Addressing13WsdlQName.ADDRESSING.getQName(cfgVersion));
-            }
+            set.add(Addressing13WsdlQName.ADDRESSING.getQName(ConfigVersion.CONFIG_1_3));
             return Collections.unmodifiableSet(set);
         }
         @Override
@@ -87,9 +85,7 @@ public class AddressingWsdlFactories {
         @Override
         public Set<QName> getElementQNames() {
             HashSet<QName> set = new HashSet<QName>();
-            for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-                set.add(Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(cfgVersion));
-            }
+            set.add(Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(ConfigVersion.CONFIG_1_3));
             return Collections.unmodifiableSet(set);
         }
         @Override

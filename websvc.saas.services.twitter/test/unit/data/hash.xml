@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hash>
+    <request>/direct_messages/destroy/456.xml</request>
+    <error>No direct message with that ID found.</error>
+</hash>

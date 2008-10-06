@@ -24,9 +24,10 @@
     <folder name="Templates">
         <folder name="Project">
             <folder name="SOA">
+<!--                
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.project.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/project/ui/resources/iepProject.html"/>
-
+-->
                 <!-- Add template for the J2SE project -->
                 <file name="emptyIepProject.xml">
                     <attr name="position" intvalue="800"/>

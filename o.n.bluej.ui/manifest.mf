@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.bluej.ui
+OpenIDE-Module-Install: org/netbeans/bluej/ui/Installer.class
+OpenIDE-Module-Layer: org/netbeans/bluej/ui/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/bluej/ui/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.4
+AutoUpdate-Show-In-Client: false
+

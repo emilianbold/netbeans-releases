@@ -52,18 +52,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jruby.ast.CallNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.SelfNode;
-import org.jruby.ast.StrNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.SelfNode;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.jruby.util.ByteList;
 import org.netbeans.modules.ruby.elements.Element;
 import org.netbeans.modules.gsf.api.ElementKind;
@@ -74,6 +74,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
@@ -184,6 +185,7 @@ public class RubyIndexer implements Indexer {
 
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
     static final String FIELD_FIELD_NAME = "field"; //NOI18N
+    static final String FIELD_GLOBAL_NAME = "global"; //NOI18N
     static final String FIELD_ATTRIBUTE_NAME = "attribute"; //NOI18N
     static final String FIELD_CONSTANT_NAME = "constant"; //NOI18N
 
@@ -212,7 +214,7 @@ public class RubyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "6.103"; // NOI18N
+        return "6.104"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -337,18 +339,7 @@ public class RubyIndexer implements Indexer {
             FileObject fo = file.getFileObject();
 
             if (fo != null) {
-                // openide.loaders/src/org/openide/text/DataEditorSupport.java
-                // has an Env#inputStream method which posts a warning to the user
-                // if the file is greater than 1Mb...
-                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
-                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
-                // I don't want to try indexing these files... (you get an interactive
-                // warning during indexing
-                if (fo.getSize () > 1024 * 1024) {
-                    return;
-                }
-                
-                this.doc = NbUtilities.getBaseDocument(fo, true);
+                this.doc = GsfUtilities.getDocument(fo, true, true);
             } else {
                 this.doc = null;
             }
@@ -966,6 +957,7 @@ public class RubyIndexer implements Indexer {
 
         private void analyze(List<?extends AstElement> structure) {
             List<AstElement> topLevelMethods = null;
+            IndexDocument globalDoc = null;
 
             for (Element o : structure) {
                 // Todo: Iterate over the structure and index them
@@ -975,7 +967,10 @@ public class RubyIndexer implements Indexer {
                 switch (element.getKind()) {
                 case MODULE:
                 case CLASS:
-                    analyzeClassOrModule(element);
+                    IndexDocument doc = analyzeClassOrModule(element);
+                    if (globalDoc == null) {
+                        globalDoc = doc;
+                    }
 
                     break;
 
@@ -989,6 +984,17 @@ public class RubyIndexer implements Indexer {
                         topLevelMethods.add(element);
                     }
                     break;
+                    
+                case GLOBAL: {
+                    if (globalDoc == null) {
+                        globalDoc = factory.createDocument(40); // TODO Measure
+                        documents.add(globalDoc);
+                    }
+
+                    indexGlobal(element, globalDoc/*, nodoc*/);
+
+                    break;
+                }
 
                 case CONSTRUCTOR:
                 case FIELD:
@@ -1005,7 +1011,7 @@ public class RubyIndexer implements Indexer {
             
             if (topLevelMethods != null) {
                 analyzeTopLevelMethods(topLevelMethods);
-            }
+            } 
         }
         
         private boolean shouldIndexTopLevel() {
@@ -1024,8 +1030,9 @@ public class RubyIndexer implements Indexer {
             return false;
         }
 
-        private void analyzeClassOrModule(AstElement element) {
+        private IndexDocument analyzeClassOrModule(AstElement element) {
             int previousDocMode = docMode;
+            IndexDocument document = null;
             try {
                 int flags = 0;
 
@@ -1053,7 +1060,7 @@ public class RubyIndexer implements Indexer {
                 }
 
 
-                IndexDocument document = factory.createDocument(40); // TODO Measure
+                document = factory.createDocument(40); // TODO Measure
 
                 String fqn;
 
@@ -1074,7 +1081,7 @@ public class RubyIndexer implements Indexer {
                         } else {
                             // Some other weird class def, like  class << myvariable
                             // - I won't index those.
-                            return;
+                            return document;
                         }
                     } else {
                         ClassNode clz = (ClassNode)node;
@@ -1144,7 +1151,7 @@ public class RubyIndexer implements Indexer {
                     // XXX No, I might still want to recurse into the children -
                     // I may have classes with documentation in an undocumented
                     // module!!
-                    return;
+                    return document;
                 }
 
                 document.addPair(FIELD_FQN_NAME, fqn, true);
@@ -1194,6 +1201,12 @@ public class RubyIndexer implements Indexer {
                                     break;
                                 }
 
+                                case GLOBAL: {
+                                    indexGlobal(grandChild, document/*, nodoc*/);
+
+                                    break;
+                                }
+
                                 case ATTRIBUTE: {
                                     indexAttribute(grandChild, document, nodoc);
 
@@ -1227,6 +1240,12 @@ public class RubyIndexer implements Indexer {
                         break;
                     }
 
+                    case GLOBAL: {
+                        indexGlobal(child, document/*, nodoc*/);
+
+                        break;
+                    }
+                    
                     case ATTRIBUTE: {
                         indexAttribute(child, document, nodoc);
 
@@ -1245,6 +1264,8 @@ public class RubyIndexer implements Indexer {
             } finally {
                 docMode = previousDocMode;
             }
+            
+            return document;
         }
 
         private void analyzeTopLevelMethods(List<? extends AstElement> children) {
@@ -1390,6 +1411,30 @@ public class RubyIndexer implements Indexer {
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_FIELD_NAME, signature, true);
+        }
+
+        private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
+            // Don't index globals in the libraries
+            if (!file.isPlatform() && !PREINDEXING) {
+
+                String signature = child.getName();
+//            int flags = getModifiersFlag(child.getModifiers());
+//            if (nodoc) {
+//                flags |= IndexedElement.NODOC;
+//            }
+//
+//            if (flags != 0) {
+//                StringBuilder sb = new StringBuilder(signature);
+//                sb.append(';');
+//                sb.append(IndexedElement.flagToFirstChar(flags));
+//                sb.append(IndexedElement.flagToSecondChar(flags));
+//                signature = sb.toString();
+//            }
+
+                // TODO - gather documentation on globals? naeh
+
+                document.addPair(FIELD_GLOBAL_NAME, signature, true);
+            }
         }
 
         private int getDocumentSize(Node node) {

@@ -41,6 +41,7 @@ package org.netbeans.modules.languages.yaml;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,17 +97,23 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
-        addHighlights(root, highlights, 0);
+        IdentityHashMap<Object,Boolean> seen = new IdentityHashMap<Object,Boolean>(100);
+        addHighlights(ypr, root, highlights, seen, 0);
 
         this.semanticHighlights = highlights;
     }
 
-    private void addHighlights(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights, int depth) {
-        if (depth > 10) {
+    private void addHighlights(YamlParserResult ypr, Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights, IdentityHashMap<Object,Boolean> seen, int depth) {
+        if (depth > 10 || node == null) {
             // Avoid boundless recursion; some datastructures from YAML appear to be recursive
             return;
         }
         Object value = node.getValue();
+        if (seen.containsKey(value)) {
+            return;
+        }
+        seen.put(value, Boolean.TRUE);
+
         if (value instanceof Map) {
             Map map = (Map)value;
             Set<Map.Entry> entrySet = map.entrySet();
@@ -123,7 +130,7 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
                             // Circularity??
                             return;
                         }
-                        addHighlights(child, highlights, depth+1);
+                        addHighlights(ypr, child, highlights, seen, depth+1);
                     }
                     Object entryValue = entry.getValue();
                     if (entryValue instanceof PositionedSequenceNode) {
@@ -136,18 +143,17 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
                                 // Circularity??
                                 return;
                             }
-                            addHighlights(o, highlights, depth+1);
+                            addHighlights(ypr, o, highlights, seen, depth+1);
                         }
                     }
                 } else {
                     assert key instanceof PositionedScalarNode;
-                    //ScalarNode scalar = (ScalarNode)key;
                     PositionedScalarNode scalar = (PositionedScalarNode)key;
                     Range r = scalar.getRange();
-                    OffsetRange range = new OffsetRange(r.start.offset, r.end.offset);
+                    OffsetRange range = ypr.getAstRange(r);
                     highlights.put(range, ColoringAttributes.METHOD_SET);
                     Node child = (Node) entry.getValue();
-                    addHighlights(child, highlights, depth+1);
+                    addHighlights(ypr, child, highlights, seen, depth+1);
                 }
             }
         } else if (value instanceof List) {
@@ -157,7 +163,7 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
                     // Circularity??
                     return;
                 }
-                addHighlights(child, highlights, depth+1);
+                addHighlights(ypr, child, highlights, seen, depth+1);
             }
         }
     }

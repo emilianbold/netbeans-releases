@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -66,7 +65,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author treyspiva
  */
-public class AddLabelsAction extends NodeAction
+public class AddLabelsAction extends SceneNodeAction
 {
     private LabelManager lastManager = null;
     private WidgetContext context = null;
@@ -84,7 +83,7 @@ public class AddLabelsAction extends NodeAction
         
         type = LabelManager.LabelType.EDGE;
         model.reset();
-        lastManager = null;
+        lastManager = actionContext.lookup(LabelManager.class);
         
         if (context == null)
         {
@@ -119,33 +118,7 @@ public class AddLabelsAction extends NodeAction
      */
     protected boolean enable(Node[] activatedNodes)
     {
-        boolean retVal = false;
-//        if (context == null)
-//            return false;
-        
-        if(activatedNodes.length == 1)
-        {
-            Lookup lookup = activatedNodes[0].getLookup();
-            IPresentationElement presentation = lookup.lookup(IPresentationElement.class);
-            DesignerScene scene=activatedNodes[0].getLookup().lookup(DesignerScene.class);
-            
-            if(scene != null)
-            {
-                Widget widget = scene.findWidget(presentation);
-
-                if((widget != null) && (widget.getLookup() != null))
-                {
-                    Lookup widgetLookup = widget.getLookup();
-                    lastManager = widgetLookup.lookup(LabelManager.class);
-                    if(lastManager != null)
-                    {
-                        retVal = true;
-                    }
-                }
-            }
-        }
-        
-        return retVal;
+        return lastManager != null;
     }
 
     /**

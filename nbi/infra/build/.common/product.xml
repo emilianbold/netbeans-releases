@@ -457,7 +457,7 @@
                         dest="${current.temp.dir}"/>
                 </if>
 
-                <condition property="current.copy" value="true">
+                <condition property="do.copy.data.${i}" value="true">
 		    <and>
 			<not>
 				<equals arg1="${current.zip}" arg2="true"/>
@@ -468,7 +468,7 @@
 		    </and>
                 </condition>
 
-                <if property="current.copy" value="true">
+                <if property="do.copy.data.${i}" value="true">
                     <copy file="${current.download}"
                           todir="${current.temp.dir}"/>
                 </if>

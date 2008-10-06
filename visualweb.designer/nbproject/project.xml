@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.4</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -188,9 +188,13 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.decoration</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <package>org.netbeans.modules.visualweb.api.designer</package>
+                <package>org.netbeans.modules.visualweb.css2</package>
+                <package>org.netbeans.modules.visualweb.designer</package>
                 <package>org.netbeans.modules.visualweb.spi.designer</package>
+                <package>org.netbeans.modules.visualweb.text</package>
             </friend-packages>
         </data>
     </configuration>

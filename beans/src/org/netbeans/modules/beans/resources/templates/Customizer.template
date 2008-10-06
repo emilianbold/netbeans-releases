@@ -1,19 +1,24 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.Beans;
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 
 /**
- * @author __USER__
+ *
+ * @author ${user}
  */
-public class Customizer extends javax.swing.JPanel implements java.beans.Customizer {
+public class ${name} extends javax.swing.JPanel implements java.beans.Customizer {
 
     private Object bean;
 
-    /** Creates new customizer __NAME__ */
-    public Customizer() {
+    /** Creates new customizer ${name} */
+    public ${name}() {
         initComponents();
     }
 

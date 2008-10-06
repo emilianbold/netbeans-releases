@@ -46,8 +46,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 
@@ -72,7 +74,7 @@ public class ExtIcon {
                 setIcon((Icon)obj);
             }
         } catch (Exception ex) {
-            setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+            setIcon(new ImageIcon(ImageUtilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
         } finally {
             try {
                 if (objin != null) {
@@ -97,7 +99,13 @@ public class ExtIcon {
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream objOut = new ObjectOutputStream(out);
-        objOut.writeObject(getIcon());
+
+        //#138000
+        Icon icn = getIcon();
+        if (! (icn instanceof Serializable)) {
+            icn = new ImageIcon(ImageUtilities.icon2Image(icn));
+        }
+        objOut.writeObject(icn);
         objOut.close();
         return out.toByteArray();
     }

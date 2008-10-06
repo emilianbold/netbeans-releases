@@ -109,7 +109,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Petr Hrebejk
  */
-public class AppClientProjectProperties {
+final public class AppClientProjectProperties {
     
     //Hotfix of the issue #70058
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
@@ -284,7 +284,7 @@ public class AppClientProjectProperties {
     }
     
     /** Creates a new instance of J2SEUIProperties and initializes them */
-    public AppClientProjectProperties( AppClientProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper ) {
+    AppClientProjectProperties( AppClientProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper ) {
         this.project = project;
         this.updateHelper  = updateHelper;
         this.evaluator = evaluator;
@@ -384,7 +384,9 @@ public class AppClientProjectProperties {
         RUN_WORK_DIR_MODEL = privateGroup.createStringDocument( evaluator, RUN_WORK_DIR );
 
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
-                privateProperties.getProperty(J2EE_SERVER_INSTANCE), projectProperties.getProperty(J2EE_PLATFORM));
+                privateProperties.getProperty(J2EE_SERVER_INSTANCE),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.CLIENT);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty( J2EE_PLATFORM ));
     }
@@ -873,16 +875,14 @@ public class AppClientProjectProperties {
         }
     }
 
-    public static String getProperty(final String property, final AntProjectHelper helper, final String path) {
-        EditableProperties props = helper.getProperties(path);
-        return props.getProperty(property);
-    }
-    
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<File>();
         for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
-                roots.add((File) ((Vector) row).elementAt(0));
+                File d = (File) ((Vector) row).elementAt(0);
+                if (d.isDirectory()) {
+                    roots.add(d);
+                }
             }
         }
         v.setRoots(roots.toArray(new File[roots.size()]));

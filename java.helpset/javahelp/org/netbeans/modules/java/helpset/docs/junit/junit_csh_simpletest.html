@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>New Test For Existing Class Wizard: Existing Class To Test</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>New Test For Existing Class Wizard: Existing Class To Test</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+    <p>The New Test For Existing Class wizard creates a new JUnit test class in the specified test folder. 
+    When you create a test for an existing class you specify the class that you want to test
+    and the IDE generates a test class that contains skeleton methods based on the methods in the specified class. 
+    You open the New Test For Existing Class wizard by selecting Test for Existing Class in the JUnit category of the New File wizard.</p>
+    
+    <p>In the Existing Class To Test panel, you set the following properties:</p>
+<ul>
+  <li><b>Class to Test.</b> Click Browse to locate the class you want to test.</li>
+  <li><b>Created Test Class. </b>Specifies the class name of the test. 
+  The default name is based on the name of the class you are testing, with the <em>Test</em> appended to the name.</li>
+  <li><b>Project.</b> Specifies the project where the test is located. You cannot change this value. </li>
+  <li><b>Location. </b>Specifies the test folder where you want to create the test.
+  The drop-down list contains all folders specified as project test folders.</li>
+  <li><b>Created File.</b> Displays the path to the new file. The name of the file is identical to the class name.</li>
+  <li><b>Method Access Levels.</b> Select the checkbox if you want the IDE to generate test skeletons for the following types of methods: 
+  <ul>
+      <li><b>Public.</b> When selected the IDE will generate test skeletons for public member methods.</li>
+      <li><b>Protected.</b> When selected the IDE will generate test skeletons for protected member methods.</li>
+      <li><b>Package Private.</b> When selected the IDE will generate test skeletons for default member methods.</li>
+  </ul>
+  <li><b>Generated Code.</b> Select the checkbox if you want the IDE to generate the following: 
+      <ul>
+        <li><b>Test Initializer.</b> Method for tasks like initializing fields, 
+          enabling on logging, and resetting environment variables. </li>
+        <li><b>Test Finalizer.</b> Method for cleaning up after tests have finished running. </li>
+        <li><b>Default Method Bodies.</b> Sample test code and instructions for printing out information about 
+          test status to the command output.</li>
+      </ul>
+  </li>
+  <li><b>Generated Comments.</b> Select the checkbox if you want the IDE to generate the following: 
+      <ul>
+            <li><b>Javadoc Comments.</b> Javadoc comments in the generated code for the test methods.</li>
+            <li><b>Source Code Hints.</b> Hints in the generated code that suggest how to implement the test methods.</li>
+      </ul>
+  </li>
+</ul>
+
+<p>When you click Finish the IDE creates the test class based on the parameters you have specified and opens the class in the editor. 
+The test class then appears in the Projects window in the test folder.
+The IDE creates the test class under the <em>package-name </em>node</p> that replicates the package structure of the tested class. 
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="junit_creatingtests.html">Creating a JUnit Test</a></dd>
+  <dd><a href="junit_runningtests.html">Running a JUnit Test</a></dd>
+  <dd><a href="junit_about.html">About JUnit</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="50">
+  <tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

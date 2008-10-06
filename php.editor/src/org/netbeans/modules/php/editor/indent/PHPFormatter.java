@@ -41,25 +41,25 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
@@ -95,33 +95,32 @@ end
 public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
     private static final Logger LOG = Logger.getLogger(PHPFormatter.class.getName());
-    
-    private final DocSyncedCodeStyle codeStyle;
+    private static final Set<PHPTokenId> IGNORE_BREAK_IN = new HashSet<PHPTokenId>(Arrays.asList(
+            PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_DO));
     
     public PHPFormatter() {
-        LOG.fine("PHP Formatter: " + this);
-        this.codeStyle = new DocSyncedCodeStyle();
+        LOG.fine("PHP Formatter: " + this); //NOI18N
     }
     
     public boolean needsParserResult() {
         return false;
     }
 
-    public void reindent(Document document, int startOffset, int endOffset) {
+    public void reindent(Context context) {
         // Make sure we're not reindenting HTML content
-        reindent(document, startOffset, endOffset, null, true);
+        reindent(context, null, true);
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-        reindent(document, startOffset, endOffset, info, false);
+    public void reformat(Context context, CompilationInfo info) {
+        reindent(context, info, false);
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        return CodeStyle.get((Document) null).getIndentSize();
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -151,11 +150,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return ts.offset();
     }
     
-    public static int getTokenBalanceDelta(
-        Token<? extends PHPTokenId> token,
-        TokenSequence<? extends PHPTokenId> ts, 
-        boolean includeKeywords
-    ) {
+    public static int getTokenBalanceDelta(BaseDocument doc, Token<? extends PHPTokenId> token, TokenSequence<? extends PHPTokenId> ts, boolean includeKeywords) {
         if (token.id() == PHPTokenId.PHP_VARIABLE) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -173,6 +168,10 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             return 1;
         } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
             return -1;
+        } else if (token.id() == PHPTokenId.PHP_CASE || token.id() == PHPTokenId.PHP_DEFAULT) {
+            return 1;
+        } else if (token.id() == PHPTokenId.PHP_BREAK) {
+            return getIndentAfterBreak(doc, ts);
         } else if (token.id() == PHPTokenId.PHP_TOKEN) {
             if (LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
                 return 1;
@@ -189,7 +188,48 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         return 0;
     }
-    
+
+    // return indent if we are not in switch/case, otherwise return 0
+    private static int getIndentAfterBreak(BaseDocument doc, TokenSequence<? extends PHPTokenId> ts) {
+        // we are inside a block
+        final int index = ts.index();
+        final int breakOffset = ts.offset();
+        int indent = 0;
+        int balance = 0;
+        while (ts.movePrevious()) {
+            Token<? extends PHPTokenId> token = ts.token();
+            if (token.id() == PHPTokenId.PHP_CURLY_OPEN || LexUtilities.textEquals(token.text(), '(') || LexUtilities.textEquals(token.text(), '[')) {
+                // out of the block
+                balance--;
+            } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE || LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']')) {
+                // some block => ignore it
+                balance++;
+            } else if (balance == -1 && IGNORE_BREAK_IN.contains(token.id())) {
+                // out of the block
+                indent = 0;
+                break;
+            } else if (balance == 0 && token.id() == PHPTokenId.PHP_CASE) {
+                // in the same block
+                CodeStyle codeStyle = CodeStyle.get(doc);
+                int tplIndentSize = codeStyle.getIndentSize();
+                if (tplIndentSize > 0) {
+                    try {
+                        int caseIndent = Utilities.getRowIndent(doc, ts.offset());
+                        int breakIndent = Utilities.getRowIndent(doc, breakOffset);
+                        indent = (caseIndent - breakIndent) / tplIndentSize;
+                    } catch (BadLocationException ignored) {
+                        LOG.log(Level.FINE, "Incorrect offset?!", ignored);
+                    }
+                }
+                break;
+            }
+        }
+        // return to the original token
+        ts.moveIndex(index);
+        ts.moveNext();
+        return indent;
+    }
+
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
     public static int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
         int balance = 0;
@@ -207,7 +247,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         do {
             Token<?extends PHPTokenId> token = ts.token();
-            balance += getTokenBalanceDelta(token, ts, includeKeywords);
+            balance += getTokenBalanceDelta(doc, token, ts, includeKeywords);
         } while (ts.moveNext() && (ts.offset() < end));
 
         return balance;
@@ -325,7 +365,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
             return LexUtilities.isIndentEndToken(token.id()) ||
-                LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']') || 
+                LexUtilities.textEquals(token.text(), ')') || LexUtilities.textEquals(token.text(), ']') ||
                 token.id() == PHPTokenId.PHP_CURLY_CLOSE;
         }
         
@@ -383,7 +423,11 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(Document document, int startOffset, int endOffset, CompilationInfo info, boolean indentOnly) {
+    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+        Document document = context.document();
+        int startOffset = context.startOffset();
+        int endOffset = context.endOffset();
+
 //        System.out.println("~~~ PHP Formatter: " + (indentOnly ? "renidenting" : "reformatting")
 //                + " <" + startOffset + ", " + endOffset + ">");
         
@@ -391,20 +435,20 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         document.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE); //NOI18N
         
         try {
-            BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
+            final BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
             }
 
             startOffset = Utilities.getRowStart(doc, startOffset);
-            int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
+            final int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
             int initialIndent = 0;
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
                 initialOffset = getFormatStableStart(doc, prevOffset);
-                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
+                initialIndent = GsfUtilities.getLineIndent(doc, initialOffset);
             }
             
 //            System.out.println("~~~ initialIndent=" + initialIndent + ", initialOffset=" + initialOffset + ", startOffset=" + startOffset);
@@ -416,8 +460,8 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // a lot of things will work better: breakpoints and other line annotations
             // will be left in place, semantic coloring info will not be temporarily
             // damaged, and the caret will stay roughly where it belongs.
-            List<Integer> offsets = new ArrayList<Integer>();
-            List<Integer> indents = new ArrayList<Integer>();
+            final List<Integer> offsets = new ArrayList<Integer>();
+            final List<Integer> indents = new ArrayList<Integer>();
 
             // When we're formatting sections, include whitespace on empty lines; this
             // is used during live code template insertions for example. However, when
@@ -431,59 +475,60 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
             
 //            System.out.println("~~~ indents=" + indents.size() + ", offsets=" + offsets.size());
-            
-            try {
-                doc.atomicLock();
 
-                // Iterate in reverse order such that offsets are not affected by our edits
-                assert indents.size() == offsets.size();
-                org.netbeans.editor.Formatter editorFormatter = doc.getFormatter();
-                for (int i = indents.size() - 1; i >= 0; i--) {
-                    int indent = indents.get(i);
-                    int lineBegin = offsets.get(i);
-                    
-//                    System.out.println("~~~ [" + i + "]: indent=" + indent + ", offset=" + lineBegin);
-                    
-                    if (lineBegin < lineStart) {
-                        // We're now outside the region that the user wanted reformatting;
-                        // these offsets were computed to get the correct continuation context etc.
-                        // for the formatter
-//                        System.out.println("~~~ END ?! lineBegin=" + lineBegin + " < lineStart=" + lineStart);
-                        break;
-                    }
-                    
-                    if (lineBegin == lineStart && i > 0) {
-                        // Look at the previous line, and see how it's indented
-                        // in the buffer.  If it differs from the computed position,
-                        // offset my computed position (thus, I'm only going to adjust
-                        // the new line position relative to the existing editing.
-                        // This avoids the situation where you're inserting a newline
-                        // in the middle of "incorrectly" indented code (e.g. different
-                        // size than the IDE is using) and the newline position ending
-                        // up "out of sync"
-                        int prevOffset = offsets.get(i-1);
-                        int prevIndent = indents.get(i-1);
-                        int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
-                        if (actualPrevIndent != prevIndent) {
-                            // For blank lines, indentation may be 0, so don't adjust in that case
-                            if (!(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
-                                indent = actualPrevIndent + (indent-prevIndent);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        // Iterate in reverse order such that offsets are not affected by our edits
+                        assert indents.size() == offsets.size();
+                        for (int i = indents.size() - 1; i >= 0; i--) {
+                            int indent = indents.get(i);
+                            int lineBegin = offsets.get(i);
+
+        //                    System.out.println("~~~ [" + i + "]: indent=" + indent + ", offset=" + lineBegin);
+
+                            if (lineBegin < lineStart) {
+                                // We're now outside the region that the user wanted reformatting;
+                                // these offsets were computed to get the correct continuation context etc.
+                                // for the formatter
+        //                        System.out.println("~~~ END ?! lineBegin=" + lineBegin + " < lineStart=" + lineStart);
+                                break;
+                            }
+
+                            if (lineBegin == lineStart && i > 0) {
+                                // Look at the previous line, and see how it's indented
+                                // in the buffer.  If it differs from the computed position,
+                                // offset my computed position (thus, I'm only going to adjust
+                                // the new line position relative to the existing editing.
+                                // This avoids the situation where you're inserting a newline
+                                // in the middle of "incorrectly" indented code (e.g. different
+                                // size than the IDE is using) and the newline position ending
+                                // up "out of sync"
+                                int prevOffset = offsets.get(i-1);
+                                int prevIndent = indents.get(i-1);
+                                int actualPrevIndent = GsfUtilities.getLineIndent(doc, prevOffset);
+                                if (actualPrevIndent != prevIndent) {
+                                    // For blank lines, indentation may be 0, so don't adjust in that case
+                                    if (indentOnly || !(Utilities.isRowEmpty(doc, prevOffset) || Utilities.isRowWhite(doc, prevOffset))) {
+                                        indent = actualPrevIndent + (indent-prevIndent);
+                                    }
+                                }
+                            }
+
+                            // Adjust the indent at the given line (specified by offset) to the given indent
+                            int currentIndent = GsfUtilities.getLineIndent(doc, lineBegin);
+
+        //                    System.out.println("~~~ [" + i + "]: currentIndent=" + currentIndent + ", indent=" + indent);
+
+                            if (currentIndent != indent && indent >= 0) {
+                                context.modifyIndent(lineBegin, indent);
                             }
                         }
-                    }
-
-                    // Adjust the indent at the given line (specified by offset) to the given indent
-                    int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
-
-//                    System.out.println("~~~ [" + i + "]: currentIndent=" + currentIndent + ", indent=" + indent);
-                    
-                    if (currentIndent != indent) {
-                        editorFormatter.changeRowIndent(doc, lineBegin, indent);
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
                     }
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
         }
@@ -516,6 +561,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
             
+            CodeStyle codeStyle = CodeStyle.get(doc);
             int iSize = codeStyle.getIndentSize();
             int hiSize = codeStyle.getContinuationIndentSize();
 
@@ -539,7 +585,6 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // The bracket balance at the offset ( parens, bracket, brace )
             int bracketBalance = 0;
             boolean continued = false;
-            boolean indentHtml = false;
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
@@ -548,7 +593,7 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting 
-                    indent = LexUtilities.getLineIndent(doc, offset);
+                    indent = GsfUtilities.getLineIndent(doc, offset);
                 } else if (isEndIndent(doc, offset)) {
                     indent = (balance-1) * iSize + hangingIndent + initialIndent;
                 } else {
@@ -584,74 +629,4 @@ public class PHPFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-//    /**
-//     * Ensure that the editor-settings for tabs match our code style, since the
-//     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-//     * those settings
-//     */
-//    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-//        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-//        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-//            formatter.setSpacesPerTab(style.getIndentSize());
-//        }
-//    }
-    
-    private static final class DocSyncedCodeStyle extends CodeStyle {
-        private DocSyncedCodeStyle() {
-            super(null);
-        }
-        
-        private int rightMargin = 80;
-        private Class kitClass;
-        
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private Class getEditorKitClass() {
-            if(kitClass == null) {
-                EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
-                if (kit != null) {
-                    kitClass = kit.getClass();
-                } else {
-                    kitClass = BaseKit.class;
-                }
-            }
-            return kitClass;
-        }
-
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private int getSpacesPerTab() {
-            Integer sp = (Integer) Settings.getValue(getEditorKitClass(), SettingsNames.SPACES_PER_TAB);
-            int indent = 4;
-            if (sp != null && sp.intValue() >= 0) {
-                indent = sp.intValue();
-            }
-            return indent;
-        }
-        
-        @Override
-        public int getIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public int getContinuationIndentSize() {
-            return getSpacesPerTab();
-        }
-
-        @Override
-        public boolean reformatComments() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public boolean indentHtml() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public int getRightMargin() {
-            return rightMargin;
-        }
-    }
 }

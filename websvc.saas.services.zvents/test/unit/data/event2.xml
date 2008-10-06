@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1</stream_count>
+    <event id="154927">
+        <name>Sunday Jazz Series at the Improv: Aaron Lington Quintet</name>
+        <description>
+      Since his arrival to the Bay Area to take the position of Coordinator
+      of Jazz Studies at San Jose State University, Dr. Lington Has quickly
+      become a mainstay of the local jazz scene. A recent graduate of North
+      Texas State University, he has performed with several well-known artists:
+      Maria Schneider and the Temptations to name a few, and arranged and
+      composed for legendary trumpeter Maynard Ferguson and vocalist Jamie
+      Davis. Dr. Lington also serves as Director of the San Jose Jazz Society
+      Orchestra and Youth Jazz Orchestra. Listening samples online at
+      www.aaronlington.com
+      ---sanjosejazz.org
+        </description>
+        <summary></summary>
+        <url>http://sanjosejazz.org/events.html</url>
+        <starttime>200603121500</starttime>
+        <endtime>200603121700</endtime>
+        <creator_id>3</creator_id>
+        <price/>
+        <venue_id>4553</venue_id>
+    </event>
+    <venue id="4553">
+        <name>Improv Comedy Club and Restaurant</name>
+        <description></description>
+        <phone>(408) 280-7475</phone>
+        <link>http://www.zvents.com/venues/show/4553</link>
+        <url>http://improv2.com/v3/index.php?option=content&amp;task=blogcategory&amp;id=40&amp;Itemid=50</url>
+        <creator_id>2</creator_id>
+        <address>62 S. 2nd St.</address>
+        <city>San Jose</city>
+        <zipcode>95113</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <timezone>US/Pacific</timezone>
+        <latitude>37.3362</latitude>
+        <longitude>-121.889</longitude>
+    </venue>
+</rsp>

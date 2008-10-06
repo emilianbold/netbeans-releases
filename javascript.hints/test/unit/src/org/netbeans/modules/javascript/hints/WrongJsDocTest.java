@@ -39,13 +39,23 @@
 
 package org.netbeans.modules.javascript.hints;
 
+import org.netbeans.modules.javascript.hints.infrastructure.JsAstRule;
+
 public class WrongJsDocTest extends HintTestBase {
     
     public WrongJsDocTest(String testName) {
         super(testName);    
     }            
 
+    private JsAstRule createRule() {
+        return new WrongJsDoc();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
+    
     public void testHint1() throws Exception {
-        checkHints(this, new WrongJsDoc(), "testfiles/wrongdocs.js", null);
+        checkHints(this, createRule(), "testfiles/wrongdocs.js", null);
     }
 }

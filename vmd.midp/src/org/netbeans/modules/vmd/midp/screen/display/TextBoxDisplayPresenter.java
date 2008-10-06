@@ -51,6 +51,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
  *
@@ -73,8 +74,12 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-
-        String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextBoxCD.PROP_STRING));
+        String text = null;
+        if (MidpDatabindingSupport.getConnector(getComponent(), TextBoxCD.PROP_STRING) != null) {
+            text = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/screen/display/Bundle").getString("LBL_Databinding"); //NOI18N 
+        } else {
+            text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(TextBoxCD.PROP_STRING));
+        }
         this.textBox.setText(text);
     }
 

@@ -1,15 +1,8 @@
 #!/bin/sh
-# Build Ruby + xtest (I can't use the testtools cluster because it pulls in j2eeserver etc.)
-# Requires nbbuild, xtest and junit to be checked out in advance
-#rm -rf nbbuild/user.build.properties
-#echo nb.clusters.list=nb.cluster.nb,nb.cluster.platform,nb.cluster.ide,nb.cluster.ruby>> nbbuild/user.build.properties
-#echo "verify.checkout=false" >> nbbuild/user.build.properties
-ant checkout && \
-ant build-nozip all-xtest && \
-ant -f lexer/test/build.xml buildtests && \
-ant -f editor/mimelookup/test/build.xml buildtests && \
-ant -f editor/indent/test/build.xml buildtests && \
-ant -f ruby/build.xml && \
-ant -f ruby/build.xml runtests && \
-ant -f ruby/build.xml tests-junit-format
 
+# Be sure RubyGems environment of underlaying OS is ignored during build
+unset GEM_HOME GEM_PATH
+
+hg --config extensions.purge= clean --all || exit 1
+ant -Dcluster.config=ruby || exit 2
+ant -f ruby/build-ruby.xml runtests || exit 3

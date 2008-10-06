@@ -1,0 +1,5 @@
+Code completion result for source line:
+FileRea|       // java.io.FileReader
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+CLASS      FileReader                                 null

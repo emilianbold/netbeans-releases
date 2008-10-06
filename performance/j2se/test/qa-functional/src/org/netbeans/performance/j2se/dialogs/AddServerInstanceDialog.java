@@ -83,7 +83,7 @@ public class AddServerInstanceDialog extends PerformanceTestCase {
         MENU = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //"Add Server..."
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
         
-        String path = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "ACSN_ServerList"); //"Servers"
+        String path = Bundle.getStringTrimmed("org.netbeans.modules.server.ui.manager.Bundle", "ACSN_ServerList"); //"Servers"
         
         // show Runtime tab and select Servers
         thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);

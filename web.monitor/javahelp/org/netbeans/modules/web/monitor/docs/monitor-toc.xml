@@ -13,11 +13,11 @@
 
 <tocitem text="IDE Basics">
 <tocitem text="Servers and Databases">
-<tocitem text="HTTP Monitor">
+<tocitem text="HTTP Server-Side Monitor">
     <!-- ctx_monitorintro is csh for F1 on HTTP Monitor -->
-    <tocitem text="About the HTTP Monitor" target="ctx_monitorintro" />
-    <tocitem text="Working with the HTTP Monitor" target="monitor_process" /> 
-    <tocitem text="Setting Up the HTTP Monitor" target="monitor_display" />
+    <tocitem text="About" target="ctx_monitorintro" />
+    <tocitem text="Working with the HTTP Server-Side Monitor" target="monitor_process" />
+    <tocitem text="Setting Up the HTTP Server-Side Monitor" target="monitor_display" />
     <tocitem text="Analyzing Session Data" target="monitor_view" />  
     <!-- monitor_resend is csh for Help button on Edit and replay dialog -->
     <tocitem text="Saving Session Data" target="monitor_store" />

@@ -701,6 +701,15 @@ public class OperationRE implements IOperationRE
             if (cpClassifier == null) {
                 classifierName = pEvent.getFullQNameOfOwner();
                 cpClassifier = getClassifier(classifierName);
+                
+                // In the following case the declaring class (which is the actual
+                // type of the object) may be different than the object type.
+                //
+                // Example: List list = new LinkedList();
+                // 
+                // If the declaring type is not present in the model, use the 
+                // object type.  This is actually more correct any way.
+                cpClassifier = pLifeline.getRepresentingClassifier();
             }
          }
          else

@@ -129,9 +129,7 @@ End cursor position = 1593
 static
 com
 java
-javanet
 javax
-jp
 org
 sun
 sunw
@@ -145,13 +143,13 @@ int DAY_OF_YEAR
 int DECEMBER
 int DST_OFFSET
 void destroy ()
-void doDelete (HttpServletRequest arg0 , HttpS 
-void doGet (HttpServletRequest arg0 , HttpServ 
-void doHead (HttpServletRequest arg0 , HttpSer 
-void doOptions (HttpServletRequest arg0 , Http 
-void doPost (HttpServletRequest arg0 , HttpSer 
-void doPut (HttpServletRequest arg0 , HttpServ 
-void doTrace (HttpServletRequest arg0 , HttpSe 
+void doDelete (HttpServletRequest req , HttpSe 
+void doGet (HttpServletRequest req , HttpServl 
+void doHead (HttpServletRequest req , HttpServ 
+void doOptions (HttpServletRequest req , HttpS 
+void doPost (HttpServletRequest req , HttpServ 
+void doPut (HttpServletRequest req , HttpServl 
+void doTrace (HttpServletRequest req , HttpSer 
 double
 Deprecated
 Double
@@ -159,13 +157,13 @@ End cursor position = 1714
 [<% get| %>, Calendar getInstance (), <% getInstance() %>, 1770]
 Locale[] getAvailableLocales ()
 Class <?> getClass ()
-String getInitParameter (String arg0 )
+String getInitParameter (String name )
 Enumeration getInitParameterNames ()
 Calendar getInstance ()
 Calendar getInstance (Locale aLocale )
 Calendar getInstance (TimeZone zone )
 Calendar getInstance (TimeZone zone , Locale a 
-long getLastModified (HttpServletRequest arg0 )
+long getLastModified (HttpServletRequest req )
 ServletConfig getServletConfig ()
 ServletContext getServletContext ()
 String getServletInfo ()
@@ -255,9 +253,7 @@ VirtualMachineError
 Void
 com
 java
-javanet
 javax
-jp
 org
 sun
 sunw

@@ -339,7 +339,9 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
         JPopupMenu menu = context.getCanvasPopupMenu(model, item);
         
         if (menu != null) {
-            mapperMenu.addSeparator();
+            if (menu.getComponentCount() > 0) {
+                mapperMenu.addSeparator();
+            }
 
             for (int i = 0; i < menu.getComponentCount(); i++) {
                 mapperMenu.add(menu.getComponent(i));

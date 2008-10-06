@@ -1,13 +1,12 @@
-/*
- * ${name}.java
- *
- * Created on ${date}, ${time}
- */
- 
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
 <#if package?? && package != "">
 package ${package};
-</#if>
 
+</#if>
 import com.sun.rave.web.ui.appbase.AbstractRequestBean;
 import javax.faces.FacesException;
 
@@ -22,8 +21,11 @@ import javax.faces.FacesException;
  * or method binding expression that references a managed bean using
  * this class.</p>
  *
+ * @version ${name}.java
+ * @version Created on ${date}, ${time}
  * @author ${user}
  */
+
 public class ${name} extends AbstractRequestBean {
     // <editor-fold defaultstate="collapsed" desc="Managed Component Definition">
 

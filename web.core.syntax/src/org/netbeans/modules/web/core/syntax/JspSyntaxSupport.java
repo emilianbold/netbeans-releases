@@ -56,15 +56,19 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
+import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
-import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -75,15 +79,15 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
  * @author Marek.Fukala@Sun.COM
  */
-public class JspSyntaxSupport extends ExtSyntaxSupport {
+public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeListener {
     
     /** ErrorManager shared by whole module (package) for logging */
     static final Logger err =
@@ -163,7 +167,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if(sup == null) {
             sup = new JspSyntaxSupport((BaseDocument)doc);
             doc.putProperty(JspSyntaxSupport.class, sup);
-        }
+            }
         return sup;
     }
     
@@ -171,10 +175,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         super(doc);
         fobj = null;
         if (doc != null){
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
+            initFileObject();
         }
         
+    }
+    
+    private void initFileObject() {
+        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
+            if(dobj != null)  {
+                fobj = NbEditorUtilities.getDataObject(getDocument()).getPrimaryFile();
+                fobj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fobj));
+            }
     }
     
     public String[] getImports(){
@@ -183,7 +194,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             PageInfo pi = pre.getPageInfo();
             if(pi == null) {
                 //report error but do not break the entire CC
-                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null"));
                 return null;
             }
             List<String> imports = pi.getImports();
@@ -238,12 +249,21 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return prefixMapper;
     }
     
-    private Map getTagLibraries() {
+    private Map getTagLibraries(boolean requiresFresh) {
         //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
         getTagLibraryMappings();
-        //force the parser to update the parse information for the file
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, true);
-        if (result != null) return result.getPageInfo().getTagLibraries();
+        //if requiresFresh force the parser to update the parse information for the file
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, requiresFresh, requiresFresh);
+        if (result != null) {
+            PageInfo pi = result.getPageInfo();
+            if(pi == null) {
+                //report error but do not break the entire CC
+                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null"));
+                return null;
+            } else {
+                return pi.getTagLibraries();
+            }
+        }
         
         return null; //an error
     }
@@ -265,12 +285,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return tinfos;
     }
     
-    private TagLibraryInfo getTagLibrary(String prefix) {
+    private TagLibraryInfo getTagLibrary(String prefix, boolean requiresFresh) {
         Map mapper = getPrefixMapper();
         if (mapper != null) {
             Object uri = mapper.get(prefix);
             if (uri != null) {
-                Map taglibs = getTagLibraries();
+                Map taglibs = getTagLibraries(requiresFresh);
                 if (taglibs != null) {
                     return (TagLibraryInfo)taglibs.get(uri);
                 }
@@ -450,8 +470,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /** Filters list of strings so only strings starting
      * with a given prefix are returned in the new List. */
-    public final List filterList(List toFilter, String prefix) {
-        List newList = new ArrayList();
+    public static final List<Object> filterList(List<? extends Object> toFilter, String prefix) {
+        List<Object> newList = new ArrayList<Object>();
         Object item;
         for (int i = 0; i < toFilter.size(); i++) {
             item = toFilter.get(i);
@@ -470,8 +490,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return newList;
     }
     
+     /** Filters list of strings so only strings starting
+     * with a given prefix are returned in the new List. */
+    public static final List<String> filterStrings(List<String> toFilter, String prefix) {
+        List<String> newList = new ArrayList<String>();
+        for(String val : toFilter) {
+            if(val.startsWith(prefix)) {
+                newList.add(val);
+            }
+        }
+        return newList;
+    }
+    
     /** Gets all 'jsp prefixes' whose 'string prefix' matches complPrefix as a list of Strings. */
-    public final List getTagPrefixes(String complPrefix) {
+    public final List<Object> getTagPrefixes(String complPrefix) {
         return filterList(getAllTagPrefixes(), complPrefix);
     }
     
@@ -491,7 +523,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * Assumes that complPrefix does not include the 'jsp prefix'.
      */
     public final List getTags(String tagPrefix, String complPrefix) {
-        return filterList(getAllTags(tagPrefix), complPrefix);
+        return filterList(getAllTags(tagPrefix, true), complPrefix);
     }
     
     /** Gets attributes for tag whose prefix + name
@@ -597,7 +629,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /**  Returns a list of strings - tag names available for a particular prefix.
      */
-    protected List getAllTags(String prefix) {
+    protected List getAllTags(String prefix, boolean requiresFresh) {
         List items = new ArrayList();
         
         // standard JSP tags (jsp:)
@@ -609,7 +641,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, requiresFresh);
         TagInfo[] tags = null;
         if (info != null) {
             tags = getAllTagInfos(info);
@@ -656,7 +688,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, true);
         if (info != null) {
             TagInfo tagInfo = info.getTag(tag);
             if (tagInfo == null) {
@@ -689,9 +721,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     
     /** Should be overriden ny subclasses to support JSP 1.1. */
-    protected List getAllDirectives() {
+    protected List<TagInfo> getAllDirectives() {
         initCompletionData();
-        List items = new ArrayList();
+        List<TagInfo> items = new ArrayList<TagInfo>();
         
         //Is xml syntax? => return nothing.
         if (isXmlSyntax()) return items;
@@ -856,6 +888,66 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (helpMap == null)
             initHelp();
         String url = "";           // NOI18N
+        
+         if (directiveJspData == null){
+            directiveJspData = new TagInfo[] {
+                new TagInfo("include", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref209.html#1003408#8975", null, null,            // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("file", true, url + "syntaxref209.html#16836#10636", false)}),           // NOI18N
+                        new TagInfo("page", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2010.html", null, null,            // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("autoFlush", false, url+"syntaxref2010.html#15673#15675", false),           // NOI18N
+                        new TagAttributeInfo("buffer", false, url+"syntaxref2010.html#15671#15673", false),           // NOI18N
+                        new TagAttributeInfo("contentType", false, url+"syntaxref2010.html#15683#1001361", false),           // NOI18N
+                        new TagAttributeInfo("errorPage", false, url+"syntaxref2010.html#15679#15681", false),              // NOI18N
+                        new TagAttributeInfo("extends", false, url+"syntaxref2010.html#15665#16862", false),           // NOI18N
+                        new TagAttributeInfo("import", false, url+"syntaxref2010.html#16862#15669", false),           // NOI18N
+                        new TagAttributeInfo("info", false, url+"syntaxref2010.html#15677#15679", false),           // NOI18N
+                        new TagAttributeInfo("isELIgnored", false, url+"syntaxref2010.html#1011216#18865", false), // NOI18N
+                        new TagAttributeInfo("isErrorPage", false, url+"syntaxref2010.html#15681#15683", false), // NOI18N
+                        new TagAttributeInfo("isThreadSafe", false, url+"syntaxref2010.html#15675#15677", false), // NOI18N
+                        new TagAttributeInfo("language", false, url+"syntaxref2010.html#15663#15665", false), // NOI18N
+                        new TagAttributeInfo("pageEncoding", false, url+"syntaxref2010.html#1001361#1011216", false), // NOI18N
+                        new TagAttributeInfo("session", false, url+"syntaxref2010.html#15669#15671", false)}), // NOI18N
+                        new TagInfo("taglib", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2012.html#1003416#1002041", null, null,  // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("prefix", true, url+"syntaxref2012.html#1011290#1002041", false), // NOI18N
+                        new TagAttributeInfo("uri", false, url+"syntaxref2012.html#10721#1011294", false), // NOI18N
+                        new TagAttributeInfo("tagdir", false, url + "syntaxref2012.html#1011294#1011290", false)}) // NOI18N
+            };
+        }
+        
+         if (directiveTagFileData == null){
+            directiveTagFileData = new TagInfo[]{
+                new TagInfo("attribute", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref208.html", null, null,                        // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("description", false, url + "syntaxref208.html#1004672", false),                      // NOI18N
+                        new TagAttributeInfo("fragment", false, url + "syntaxref208.html#1004657#1004666", false),                         // NOI18N
+                        new TagAttributeInfo("name", true, url + "syntaxref208.html#1004648#1004655", false),                              // NOI18N
+                        new TagAttributeInfo("required", false, url + "syntaxref208.html#1004655#1004657", false),                             // NOI18N
+                        new TagAttributeInfo("rtexprvalue", false, url + "syntaxref208.html#1004666#1004669", false),                          // NOI18N
+                        new TagAttributeInfo("type", false, url + "syntaxref208.html#1004669#1004672", false)}),                                   // NOI18N
+                        directiveJspData[0],
+                        new TagInfo("tag", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2011.html", null, null,                              // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("body-content", false, url + "syntaxref2011.html#1005164#005172", false),                 // NOI18N
+                        new TagAttributeInfo("description", false, url + "syntaxref2011.html#1005196#1005198", false),                  // NOI18N
+                        new TagAttributeInfo("display-name", false, url + "syntaxref2011.html#1005161#1005164", false),                 // NOI18N
+                        new TagAttributeInfo("dynamic-attributes", false, url + "syntaxref2011.html#005172#1005190", false),           // NOI18N
+                        new TagAttributeInfo("example", false, url + "syntaxref2011.html#1005198#1005201", false),                      // NOI18N
+                        new TagAttributeInfo("import", false, url + "syntaxref2011.html#1005203#1005209", false),                       // NOI18N
+                        new TagAttributeInfo("isELIgnored", false, url + "syntaxref2011.html#1005214#1005291#1005291", false),                  // NOI18N
+                        //new TagAttributeInfo("isScriptingEnabled", false, url + "syntaxref2011.html#", false),            // NOI18N
+                        new TagAttributeInfo("large-icon", false, url + "syntaxref2011.html#1005193#1005196", false),                   // NOI18N
+                        new TagAttributeInfo("language", false, url + "syntaxref2011.html#1005201#1005203", false),                     // NOI18N
+                        new TagAttributeInfo("pageEncoding", false, url + "syntaxref2011.html#1005209#1005214", false),                  // NOI18N
+                        new TagAttributeInfo("small-icon", false, url + "syntaxref2011.html#1005190#1005193", false)}),                     // NOI18N
+                        directiveJspData[2],
+                        new TagInfo("variable", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2013.html#15694#1003563", null, null,                             // NOI18N
+                        new TagAttributeInfo[] { new TagAttributeInfo("alias", false, url + "syntaxref2013.html#1005914#1005956", false),                          // NOI18N
+                        new TagAttributeInfo("declare", false, url + "syntaxref2013.html#1006001#1006019", false),                          // NOI18N
+                        new TagAttributeInfo("description", false, url + "syntaxref2013.html#1005991#1003563", false),                      // NOI18N
+                        new TagAttributeInfo("name-given", false, url + "syntaxref2013.html#1003561#1005914", false),                       // NOI18N
+                        new TagAttributeInfo("scope", false, url + "syntaxref2013.html#1006019#1005991", false),                            // NOI18N
+                        new TagAttributeInfo("variable-class", false, url + "syntaxref2013.html#1005956#1006001", false)})                  // NOI18N
+            };
+        }
+        
         if (standardJspTagDatas == null) {
             final String helpFiles = "docs/syntaxref20.zip"; //NoI18N
             File f = InstalledFileLocator.getDefault().locate(helpFiles, null, true); //NoI18N
@@ -920,10 +1012,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("class", false, url + "syntaxref2027.html#10968#19433", false),      // NOI18N
                         new TagAttributeInfo("id", true, url + "syntaxref2027.html#10964#10966", false),         // NOI18N
                         new TagAttributeInfo("scope", true, url + "syntaxref2027.html#10966#10968", false),      // NOI18N
-                        new TagAttributeInfo("type", false, url + "syntaxref2027.html#19433#18019", false)})     // NOI18N
+                        new TagAttributeInfo("type", false, url + "syntaxref2027.html#19433#18019", false)}),     // NOI18N
+                        new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
+                        null, null, new TagAttributeInfo[] {}),
+                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
+                        null, null, new TagAttributeInfo[] {}),
+                        new TagInfo("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                        null, null, directiveJspData[1].getAttributes()),
+                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                        null, null, directiveJspData[0].getAttributes())
             };
             
-            standardTagTagDatas = new TagInfo[standardJspTagDatas.length + 2 ];
+            standardTagTagDatas = new TagInfo[standardJspTagDatas.length + 6 ];
             standardTagTagDatas[0] = standardJspTagDatas[0]; //"attribute"
             standardTagTagDatas[1] = standardJspTagDatas[1]; //"body"
             standardTagTagDatas[2] = new TagInfo("doBody", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2017.html", null, null,            // NOI18N
@@ -949,82 +1049,27 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             standardTagTagDatas[13] = standardJspTagDatas[11]; //"setProperty"
             standardTagTagDatas[14] = standardJspTagDatas[12]; //"text"
             standardTagTagDatas[15] = standardJspTagDatas[13]; //"useBean"
+            standardTagTagDatas[16] = standardJspTagDatas[14]; //"declaration"
+            standardTagTagDatas[17] = standardJspTagDatas[15]; //"expression"    
+            standardTagTagDatas[18] = new TagInfo("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[2].getAttributes());
+            standardTagTagDatas[19] = new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[0].getAttributes());
+            standardTagTagDatas[20] = new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
+                        null, null, directiveTagFileData[4].getAttributes());
+            standardTagTagDatas[21] = new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
+                        null, null, directiveJspData[0].getAttributes());
         }
-        
-        
-        if (directiveJspData == null){
-            directiveJspData = new TagInfo[] {
-                new TagInfo("include", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref209.html#1003408#8975", null, null,            // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("file", true, url + "syntaxref209.html#16836#10636", false)}),           // NOI18N
-                        new TagInfo("page", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2010.html", null, null,            // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("autoFlush", false, url+"syntaxref2010.html#15673#15675", false),           // NOI18N
-                        new TagAttributeInfo("buffer", false, url+"syntaxref2010.html#15671#15673", false),           // NOI18N
-                        new TagAttributeInfo("contentType", false, url+"syntaxref2010.html#15683#1001361", false),           // NOI18N
-                        new TagAttributeInfo("errorPage", false, url+"syntaxref2010.html#15679#15681", false),              // NOI18N
-                        new TagAttributeInfo("extends", false, url+"syntaxref2010.html#15665#16862", false),           // NOI18N
-                        new TagAttributeInfo("import", false, url+"syntaxref2010.html#16862#15669", false),           // NOI18N
-                        new TagAttributeInfo("info", false, url+"syntaxref2010.html#15677#15679", false),           // NOI18N
-                        new TagAttributeInfo("isELIgnored", false, url+"syntaxref2010.html#1011216#18865", false), // NOI18N
-                        new TagAttributeInfo("isErrorPage", false, url+"syntaxref2010.html#15681#15683", false), // NOI18N
-                        new TagAttributeInfo("isThreadSafe", false, url+"syntaxref2010.html#15675#15677", false), // NOI18N
-                        new TagAttributeInfo("language", false, url+"syntaxref2010.html#15663#15665", false), // NOI18N
-                        new TagAttributeInfo("pageEncoding", false, url+"syntaxref2010.html#1001361#1011216", false), // NOI18N
-                        new TagAttributeInfo("session", false, url+"syntaxref2010.html#15669#15671", false)}), // NOI18N
-                        new TagInfo("taglib", null, TagInfo.BODY_CONTENT_EMPTY, url+"syntaxref2012.html#1003416#1002041", null, null,  // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("prefix", true, url+"syntaxref2012.html#1011290#1002041", false), // NOI18N
-                        new TagAttributeInfo("uri", false, url+"syntaxref2012.html#10721#1011294", false), // NOI18N
-                        new TagAttributeInfo("tagdir", false, url + "syntaxref2012.html#1011294#1011290", false)}) // NOI18N
-            };
-        }
-        
-        
-        if (directiveTagFileData == null){
-            
-            directiveTagFileData = new TagInfo[]{
-                new TagInfo("attribute", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref208.html", null, null,                        // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("description", false, url + "syntaxref208.html#1004672", false),                      // NOI18N
-                        new TagAttributeInfo("fragment", false, url + "syntaxref208.html#1004657#1004666", false),                         // NOI18N
-                        new TagAttributeInfo("name", true, url + "syntaxref208.html#1004648#1004655", false),                              // NOI18N
-                        new TagAttributeInfo("required", false, url + "syntaxref208.html#1004655#1004657", false),                             // NOI18N
-                        new TagAttributeInfo("rtexprvalue", false, url + "syntaxref208.html#1004666#1004669", false),                          // NOI18N
-                        new TagAttributeInfo("type", false, url + "syntaxref208.html#1004669#1004672", false)}),                                   // NOI18N
-                        directiveJspData[0],
-                        new TagInfo("tag", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2011.html", null, null,                              // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("body-content", false, url + "syntaxref2011.html#1005164#005172", false),                 // NOI18N
-                        new TagAttributeInfo("description", false, url + "syntaxref2011.html#1005196#1005198", false),                  // NOI18N
-                        new TagAttributeInfo("display-name", false, url + "syntaxref2011.html#1005161#1005164", false),                 // NOI18N
-                        new TagAttributeInfo("dynamic-attributes", false, url + "syntaxref2011.html#005172#1005190", false),           // NOI18N
-                        new TagAttributeInfo("example", false, url + "syntaxref2011.html#1005198#1005201", false),                      // NOI18N
-                        new TagAttributeInfo("import", false, url + "syntaxref2011.html#1005203#1005209", false),                       // NOI18N
-                        new TagAttributeInfo("isELIgnored", false, url + "syntaxref2011.html#1005214#1005291#1005291", false),                  // NOI18N
-                        //new TagAttributeInfo("isScriptingEnabled", false, url + "syntaxref2011.html#", false),            // NOI18N
-                        new TagAttributeInfo("large-icon", false, url + "syntaxref2011.html#1005193#1005196", false),                   // NOI18N
-                        new TagAttributeInfo("language", false, url + "syntaxref2011.html#1005201#1005203", false),                     // NOI18N
-                        new TagAttributeInfo("pageEncoding", false, url + "syntaxref2011.html#1005209#1005214", false),                  // NOI18N
-                        new TagAttributeInfo("small-icon", false, url + "syntaxref2011.html#1005190#1005193", false)}),                     // NOI18N
-                        directiveJspData[2],
-                        new TagInfo("variable", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2013.html#15694#1003563", null, null,                             // NOI18N
-                        new TagAttributeInfo[] { new TagAttributeInfo("alias", false, url + "syntaxref2013.html#1005914#1005956", false),                          // NOI18N
-                        new TagAttributeInfo("declare", false, url + "syntaxref2013.html#1006001#1006019", false),                          // NOI18N
-                        new TagAttributeInfo("description", false, url + "syntaxref2013.html#1005991#1003563", false),                      // NOI18N
-                        new TagAttributeInfo("name-given", false, url + "syntaxref2013.html#1003561#1005914", false),                       // NOI18N
-                        new TagAttributeInfo("scope", false, url + "syntaxref2013.html#1006019#1005991", false),                            // NOI18N
-                        new TagAttributeInfo("variable-class", false, url + "syntaxref2013.html#1005956#1006001", false)})                  // NOI18N
-            };
-        }
+              
         
         if (xmlJspTagDatas == null) {
             TagInfo[] commonXMLTagDatas;
             commonXMLTagDatas = new TagInfo[]{
-                new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
-                        null, null, new TagAttributeInfo[] {}),
                         new TagInfo("output", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2022.html#1004130#1007521",                 // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("doctype-public", false, "url + syntaxref2022.html#1007534#1007521", false),  // NOI18N
                         new TagAttributeInfo("doctype-root-element", false, "url + syntaxref2022.html#1007528#1007532", false),    // NOI18N
                         new TagAttributeInfo("doctype-system", false, url + "syntaxref2022.html#1007532#1007534", false),  // NOI18N
                         new TagAttributeInfo("omit-xml-declaration", false, url + "syntaxref2022.html#1007525#1007528"   , false)}),    // NOI18N
-                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
-                        null, null, new TagAttributeInfo[] {}),
                         new TagInfo("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref2024.html#1003283#1003311",                         // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("version", false, url+"syntaxref2024.html#1003299#1003301", false),
                         new TagAttributeInfo("xmlns:jsp", false, url+"syntaxref2024.html#1003297#1003299", false),
@@ -1032,10 +1077,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             };
             
             xmlJspTagDatas = new TagInfo[] {
-                new TagInfo("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
-                        null, null, directiveJspData[1].getAttributes()),
-                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
-                        null, null, directiveJspData[0].getAttributes()),
             };
             
             ArrayList list = new ArrayList();
@@ -1057,14 +1098,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 xmlJspTagDatas[i] = (TagInfo)list.get(i);
             
             xmlTagFileTagDatas = new TagInfo[] {
-                new TagInfo("directive.tag", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[2].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[2].getAttributes()),
-                        new TagInfo("directive.attribute", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[0].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[0].getAttributes()),
-                        new TagInfo("directive.variable", null, TagInfo.BODY_CONTENT_EMPTY, directiveTagFileData[4].getInfoString(), // NOI18N
-                        null, null, directiveTagFileData[4].getAttributes()),
-                        new TagInfo("directive.include", null, TagInfo.BODY_CONTENT_EMPTY, directiveJspData[1].getInfoString(),   // NOI18N
-                        null, null, directiveJspData[0].getAttributes())
             };
             
             list = new ArrayList();
@@ -1740,15 +1773,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return elem;
     }
     
-    public List getPossibleEndTags(int offset, String pattern) throws BadLocationException {
-        return getPossibleEndTags(offset, pattern, false); //return all end tags
+    public List<JspCompletionItem> getPossibleEndTags(int offset, int anchor, String pattern) throws BadLocationException {
+        return getPossibleEndTags(offset, anchor, pattern, false); //return all end tags
     }
     
-    public List getPossibleEndTags(int offset, String pattern, boolean firstOnly) throws BadLocationException {
+    public List<JspCompletionItem> getPossibleEndTags(int offset, int anchor, String pattern, boolean firstOnly) throws BadLocationException {
         SyntaxElement elem = getElementChain( offset );
-        Stack stack = new Stack();
-        List result = new ArrayList();
-        Set found = new HashSet();
+        
+        Stack<String> stack = new Stack<String>();
+        List<JspCompletionItem> result = new ArrayList<JspCompletionItem>();
+        Set<String> found = new HashSet<String>();
         
         if( elem != null ) {
             elem = elem.getPrevious();  // we need smtg. before our </
@@ -1776,7 +1810,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 String name = image.substring(image.indexOf(':')+1);
                 TagInfo ti = null;
                 
-                TagLibraryInfo tli = getTagLibrary(prefix);
+                TagLibraryInfo tli = getTagLibrary(prefix, true);
                 if (tli != null) {
                     ti = tli.getTag(name);
                     if (ti == null) {
@@ -1808,7 +1842,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         if (ti.getBodyContent().equalsIgnoreCase(TagInfo.BODY_CONTENT_EMPTY))
                             continue;
                         
-                        result.add( new JspCompletionItem.Tag( "/"+image, ti ) );  // NOI18N
+                        result.add(JspCompletionItem.createTag("/"+image, anchor, ti ) );  // NOI18N
                         
                         if(firstOnly) break; //return only the first found not-finished start token
                     }
@@ -2188,5 +2222,25 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
             return tagNameOne.compareTo(tagNameTwo);
         }
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+    }
+
+    public void fileChanged(FileEvent fe) {
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        //refresh fileobject
+        initFileObject();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 }

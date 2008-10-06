@@ -88,10 +88,14 @@ public class PasteInJspEditor extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 100;
     }
     
-   public void testPasteInJspEditor() {
-        doMeasurement();
+    public void testPasteInJspEditor() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }    
     
+    public void testPasteInJspEditorWithLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     protected void initialize() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         EditorOperator.closeDiscardAll();

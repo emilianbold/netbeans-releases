@@ -46,6 +46,7 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 import java.util.logging.Logger;
 import java.io.*;
 import org.netbeans.modules.clearcase.client.mockup.CleartoolMockup;
+import org.netbeans.modules.versioning.util.Utils;
 
 /**
  * Encapsulates Clearcase shell process. 
@@ -212,7 +213,8 @@ class Cleartool {
     
     public synchronized void exec(ClearcaseCommand command) throws IOException, ClearcaseException {
 
-        
+        Utils.logVCSClientEvent("CC", "CLI");
+
         // read all pending output
         readAll(ctOutput);
         readAll(ctError);

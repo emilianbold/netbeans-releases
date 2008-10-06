@@ -136,12 +136,12 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
     public javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
-    public List getSelectedFrameworks() {
-	List selectedFrameworks = new LinkedList();
+    public List<WebFrameworkProvider> getSelectedFrameworks() {
+	List<WebFrameworkProvider> selectedFrameworks = new LinkedList<WebFrameworkProvider>();
 	DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
         int[] indexes = jListFrameworks.getSelectedIndices();
         for (int i = 0; i < indexes.length; i++)
-	    selectedFrameworks.add(model.get(indexes[i]));
+	    selectedFrameworks.add((WebFrameworkProvider)model.get(indexes[i]));
         
         return selectedFrameworks;
     }

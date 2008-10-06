@@ -396,6 +396,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         jButtonWebpagesLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebPageFolder")); // NOI18N
 
         jLabelWebInf.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("MNE_DeploymentDescriptorFolder").charAt(0));
+        jLabelWebInf.setLabelFor(jTextFieldWebInf);
         jLabelWebInf.setText(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_DeploymentDescriptorFolder_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -409,6 +410,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 11);
         add(jTextFieldWebInf, gridBagConstraints);
+        jTextFieldWebInf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_WebInf")); // NOI18N
 
         jButtonWebInf.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("MNE_BrowseWebInfLocation").charAt(0));
         jButtonWebInf.setText(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "PanelSourceFolderes.browseWebInf")); // NOI18N
@@ -423,6 +425,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButtonWebInf, gridBagConstraints);
+        jButtonWebInf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "ACSD_BrowseWebInf")); // NOI18N
 
         jLabelLibraries.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelSourceFolders.class, "LBL_IW_LibrariesLocation_LabelMnemonic").charAt(0));
         jLabelLibraries.setLabelFor(jTextFieldLibraries);

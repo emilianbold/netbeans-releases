@@ -11,10 +11,10 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Outer (Outer ) [1:1/0-7:3/85] lcurly=12 SCOPE: $Global$ 
+CLASS Outer (Outer ) [1:1/0-7:2/84] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS NestedClass (Outer::NestedClass ) [2:5/18-3:7/44] lcurly=36 SCOPE: Outer 
+        CLASS NestedClass (Outer::NestedClass ) [2:5/18-3:6/43] lcurly=36 SCOPE: Outer 
             BASE CLASSES:
             MEMBERS:
         ENUM NestedEnum [4:5/49-6:6/81] SCOPE: Outer 
@@ -27,10 +27,10 @@ ENUM TopLevelEnum [9:1/87-11:2/120] SCOPE: $Global$
     F
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Outer (Outer ) [1:1/0-7:3/85] lcurly=12 SCOPE: $Global$ 
+CLASS Outer (Outer ) [1:1/0-7:2/84] lcurly=12 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS NestedClass (Outer::NestedClass ) [2:5/18-3:7/44] lcurly=36 SCOPE: Outer 
+        CLASS NestedClass (Outer::NestedClass ) [2:5/18-3:6/43] lcurly=36 SCOPE: Outer 
             BASE CLASSES:
             MEMBERS:
         ENUM NestedEnum [4:5/49-6:6/81] SCOPE: Outer 

@@ -7,8 +7,8 @@ end
 def call(*foo)
 end
 call( (x<y) && true, 2)
-myvar = x < y
-if (myvar) 
+new_name = x < y
+if (new_name) 
   puts "yes"
 else 
   puts "no"

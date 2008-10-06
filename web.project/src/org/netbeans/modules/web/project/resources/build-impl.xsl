@@ -245,7 +245,7 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
-                <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
+                <available file="${{persistence.xml.dir}}/persistence.xml" property="has.persistence.xml"/>
 
                 <condition property="do.war.package.with.custom.manifest">
                     <isset property="has.custom.manifest"/>
@@ -302,19 +302,17 @@ introduced by support for multiple source roots. -jglick
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                <property name="runmain.jvmargs" value=""/>
             </target>
             
             <!-- COS feature - used in run-deploy -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
-                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
-                    <xsl:attribute name="value">
-                        <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
-                    <istrue value="${{deploy.on.save}}"/>
+                    <xsl:attribute name="property">deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">true</xsl:attribute>
+                    <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>            
             </target>
             
@@ -477,6 +475,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>
                 </macrodef>
@@ -532,7 +531,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 </macrodef>                
             </target>
             
-            <target name="-init-macrodef-nbjpda">
+            <target name="-init-macrodef-nbjpda" depends="-init-debug-args">
                 <macrodef>
                     <xsl:attribute name="name">nbjpdastart</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
@@ -545,7 +544,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         <xsl:attribute name="default">${debug.classpath}:${j2ee.platform.classpath}</xsl:attribute>
                     </attribute>
                     <sequential>
-                        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="@{{name}}">
+                        <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}">
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -604,6 +603,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                 <condition property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none" else="-Xdebug">
                     <istrue value="${{have-jdk-older-than-1.4}}"/>
                 </condition>
+                <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
+                    <os family="windows"/>
+                </condition>
+                <condition property="debug-transport" value="${{debug.transport}}" else="${{debug-transport-by-os}}">
+                    <isset property="debug.transport"/>
+                </condition>
             </target>
             
             <target name="-init-macrodef-debug" depends="-init-debug-args">
@@ -632,7 +637,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
+                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
@@ -897,7 +902,7 @@ exists or setup the property manually. For example like this:
             <target name="-copy-persistence-xml" if="has.persistence.xml">
                 <mkdir dir="${{build.web.dir}}/WEB-INF/classes/META-INF"/>
                 <copy todir="${{build.web.dir}}/WEB-INF/classes/META-INF">
-                    <fileset dir="${{conf.dir}}" includes="persistence.xml"/>
+                    <fileset dir="${{persistence.xml.dir}}" includes="persistence.xml"/>
                 </copy>
             </target>
             
@@ -1274,7 +1279,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-main">
-                <xsl:attribute name="depends">init,compile-single</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-cos,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
                 <webproject1:java classname="${{run.class}}"/>
             </target>
@@ -1295,12 +1300,24 @@ exists or setup the property manually. For example like this:
             
             <target name="connect-debugger" if="do.debug.server" unless="is.debugged">
                 <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
-                    <classpath>
-                        <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
-                    </classpath>
-                    <sourcepath>
-                        <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
-                    </sourcepath>
+                    <xsl:choose>
+                        <xsl:when test="/p:project/p:configuration/webproject3:data/webproject3:web-services/webproject3:web-service|/p:project/p:configuration/webproject3:data/webproject3:web-service-clients/webproject3:web-service-client">
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}:${{ws.debug.classpaths}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
+                            </sourcepath>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <classpath>
+                                <path path="${{debug.classpath}}:${{j2ee.platform.classpath}}"/>
+                            </classpath>
+                            <sourcepath>
+                                <path path="${{web.docbase.dir}}"/>
+                            </sourcepath>
+                        </xsl:otherwise>
+                    </xsl:choose>
                     <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                         <bootclasspath>
                             <path path="${{platform.bootcp}}"/>
@@ -1649,7 +1666,7 @@ exists or setup the property manually. For example like this:
                 <delete dir="${{build.generated.dir}}"/>
                 <delete dir="${{build.web.dir}}"/>
                 -->
-            </target>
+            </target>                      
             
             <target name="check-clean">
                 <xsl:attribute name="depends">do-clean</xsl:attribute>
@@ -1668,13 +1685,20 @@ exists or setup the property manually. For example like this:
                 -->
             </target>
             
+            <target name="undeploy-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                
+                <nbundeploy failOnError="false" startServer="false"/>
+            </target>
+            
             <target name="-post-clean">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,undeploy-clean,deps-clean,do-clean,check-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             

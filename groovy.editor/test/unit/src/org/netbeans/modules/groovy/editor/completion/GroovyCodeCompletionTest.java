@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 public class GroovyCodeCompletionTest extends GroovyTestBase {
 
     String TEST_BASE = "testfiles/completion/";
+    String CLOSURE_BASE = "testfiles/completion/closures/";
 
     public GroovyCodeCompletionTest(String testName) {
         super(testName);
@@ -142,34 +143,48 @@ public class GroovyCodeCompletionTest extends GroovyTestBase {
     // Closure items named and unnamed
 
     public void testInsideClosure1() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "(1..3).any {println ^}", false);
     }
 
     public void testInsideClosure2() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "[3,4,5].each {println i^}", false);
     }
 
     public void testInsideClosure3() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "(1..3).any {a,b -> println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "(1..3).any {aa,ab -> println a^}", false);
     }
 
     public void testInsideClosure4() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "[3,4,5].each {x,y,z -> println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "[3,4,5].each {xu1,xu2,xu3 -> println xu^}", false);
     }
 
     public void testInsideClosure5() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t1 = {println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "def t1 = {println i^}", false);
     }
 
     public void testInsideClosure6() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "def t2 = {x,y -> println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "def t2 = {test1,test2,test3 -> println test^}", false);
     }
 
     public void testInsideClosure7() throws Exception {
-        checkCompletion(TEST_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println ^}", false);
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println i^}", false);
     }
 
+    public void testInsideClosure8() throws Exception {
+        checkCompletion(CLOSURE_BASE + "InsideClosure1.groovy", "\"TestString\".eachLine {String line -> println lin^}", false);
+    }
 
+    // proper recognition of Constructor calls and the corresponding types.
+
+    public void testConstructorCall1() throws Exception {
+        checkCompletion(TEST_BASE + "ConstructorCall1.groovy", "println new URL(\"http://google.com\").getT^", false);
+    }
+
+    // Test CamelCase constructor-proposals
+
+    public void testCamelCaseConstructor1() throws Exception {
+        checkCompletion(TEST_BASE + "CamelCaseConstructor1.groovy", "SSC^", false);
+    }
 
 
     // Package completion could not be tested at the moment, since this statement returns nothing for "java.n|":

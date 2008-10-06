@@ -66,6 +66,7 @@ import java.util.Date;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -103,7 +104,8 @@ public abstract class ContextAction extends NodeAction {
         // list somehow modified file in the context and save
         // just them.
         // The same (global save) logic is in CVS, no complaint
-        LifecycleManager.getDefault().saveAll();        
+        LifecycleManager.getDefault().saveAll();
+        Utils.logVCSActionEvent("SVN");
         performContextAction(nodes);           
     }
 
@@ -346,29 +348,27 @@ public abstract class ContextAction extends NodeAction {
             ProgressHandle progress = getProgressHandle();
             progress.setInitialDelay(500);
             progressStamp = System.currentTimeMillis() + 500;
-            progress.start();            
+            progress.start();
         }
 
         protected void finnishProgress() {
             // TODO add failed and restart texts                
-
-            final ProgressHandle progress = getProgressHandle();
-            progress.switchToDeterminate(100);
-            progress.progress(NbBundle.getMessage(ContextAction.class, "MSG_Progress_Done"), 100); // NOI18N
-            if (System.currentTimeMillis() > progressStamp) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        progress.finish();
-                    }
-                }, 15 * 1000);
-            } else {
-                progress.finish();
-            }
-
-            if (isCanceled() == false) {
-                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Finished")); // NOI18N
-            } else {
+            if (isCanceled()) {
                 getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Canceled")); // NOI18N
+            } else {
+                final ProgressHandle progress = getProgressHandle();
+                progress.switchToDeterminate(100);
+                progress.progress(NbBundle.getMessage(ContextAction.class, "MSG_Progress_Done"), 100); // NOI18N
+                if (System.currentTimeMillis() > progressStamp) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            progress.finish();
+                        }
+                    }, 15 * 1000);
+                } else {
+                    progress.finish();
+                }
+                getLogger().logCommandLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + runningName + " " + NbBundle.getMessage(ContextAction.class, "MSG_Progress_Finished")); // NOI18N
             }
         }
     }

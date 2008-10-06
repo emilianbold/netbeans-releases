@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="OptionsDialog">
-        <folder name="Groovy">
-            <file name="org-netbeans-modules-groovy-grails-settings-GrailsRuntimeAdvancedOption.instance"/>
-        </folder>
-    </folder>
-    
     <folder name="Servers">
         <file name="GrailsInstanceProvider.instance">
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.grails.server.GrailsInstanceProvider.getInstance"/>

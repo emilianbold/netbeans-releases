@@ -42,8 +42,12 @@ package org.netbeans.modules.uml.diagrams.edges;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import javax.swing.Action;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 
 /**
  *
@@ -66,4 +70,53 @@ public class CommentLinkConnector extends AbstractUMLConnectionWidget
         return UMLWidgetIDString.COMMENTLINKCONNECTORWIDGET.toString();
     }
     
+    @Override
+    protected LabelManager createLabelManager()
+    {
+        return new CommentLinkLableManager(this);
+    }
+    
+    public class CommentLinkLableManager extends BasicUMLLabelManager
+    {
+        public CommentLinkLableManager(CommentLinkConnector widget)
+        {
+            super(widget);
+        }
+        
+        @Override
+        public void createInitialLabels()
+        {
+            super.createInitialLabels();
+
+            // By default I do not want to show the name label.
+            hideLabel(NAME);
+        }
+
+        @Override
+        public Action[] getContextActions(LabelType type)
+        {
+            Action[] superActions = super.getContextActions(type);
+
+            // The first action is always the name action.  Therefore remove 
+            // that action.
+            Action[] retVal = new Action[superActions.length - 1];
+            for(int index = 0; index < retVal.length; index++)
+            {
+                retVal[index] = superActions[index + 1];
+            }
+
+            return retVal;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            String propName = evt.getPropertyName();
+
+            if(propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) == false)
+            {
+                super.propertyChange(evt);
+            }
+        }
+    };
 }

@@ -62,6 +62,7 @@ import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  * YAML code completion.
@@ -132,7 +133,6 @@ public class YamlCompletion implements CodeCompletionHandler {
         if (prefix == null) {
             prefix = "";
         }
-        HtmlFormatter formatter = context.getFormatter();
         int anchor = context.getCaretOffset();
 
         // Regular expression matching.  {
@@ -141,7 +141,7 @@ public class YamlCompletion implements CodeCompletionHandler {
             String desc = YAML_KEYS[i + 1];
 
             if (startsWith(word, prefix, caseSensitive)) {
-                KeywordItem item = new KeywordItem(word, desc, formatter, anchor, Integer.toString(10000 + i));
+                KeywordItem item = new KeywordItem(word, desc, anchor, Integer.toString(10000 + i));
                 proposals.add(item);
             }
         }
@@ -152,7 +152,7 @@ public class YamlCompletion implements CodeCompletionHandler {
                 String word = YAML_KEYS[i];
                 String desc = YAML_KEYS[i + 1];
 
-                KeywordItem item = new KeywordItem(word, desc, formatter, anchor, Integer.toString(10000 + i));
+                KeywordItem item = new KeywordItem(word, desc, anchor, Integer.toString(10000 + i));
                 proposals.add(item);
             }
         }
@@ -234,17 +234,15 @@ public class YamlCompletion implements CodeCompletionHandler {
 
     private class KeywordItem implements CompletionProposal, ElementHandle {
 
-        private HtmlFormatter formatter;
         private int anchor;
         private static final String YAML_KEYWORD = "org/netbeans/modules/languages/yaml/yaml_files_16.png"; //NOI18N
         private final String keyword;
         private final String description;
         private final String sort;
 
-        KeywordItem(String keyword, String description, HtmlFormatter formatter, int anchor, String sort) {
+        KeywordItem(String keyword, String description, int anchor, String sort) {
             this.keyword = keyword;
             this.description = description;
-            this.formatter = formatter;
             this.anchor = anchor;
             this.sort = sort;
         }
@@ -269,9 +267,8 @@ public class YamlCompletion implements CodeCompletionHandler {
         //
         //    return formatter.getText();
         //}
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml(description);
 
@@ -283,7 +280,7 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(YAML_KEYWORD));
+                keywordIcon = new ImageIcon(ImageUtilities.loadImage(YAML_KEYWORD));
             }
 
             return keywordIcon;
@@ -314,8 +311,7 @@ public class YamlCompletion implements CodeCompletionHandler {
             return sort;
         }
 
-        public String getLhsHtml() {
-            formatter.reset();
+        public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(ElementKind.KEYWORD, true);
             formatter.appendText(getName());
             formatter.name(ElementKind.KEYWORD, false);
@@ -324,14 +320,6 @@ public class YamlCompletion implements CodeCompletionHandler {
         }
 
         public String getCustomInsertTemplate() {
-            return null;
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
             return null;
         }
 
@@ -349,6 +337,10 @@ public class YamlCompletion implements CodeCompletionHandler {
 
         public boolean signatureEquals(ElementHandle handle) {
             return false;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 }

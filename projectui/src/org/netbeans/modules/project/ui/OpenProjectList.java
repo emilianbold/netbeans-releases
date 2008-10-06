@@ -105,6 +105,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -360,7 +361,7 @@ public final class OpenProjectList {
 
             if (inital != null) {
                 log(createRecord("UI_INIT_PROJECTS", inital),"org.netbeans.ui.projects");
-                log(createRecordMetrics("UI_INIT_PROJECTS", inital),"org.netbeans.metrics.projects");
+                log(createRecordMetrics("USG_PROJECT_OPEN", inital),"org.netbeans.ui.metrics.projects");
             }
 
         }
@@ -628,8 +629,8 @@ public final class OpenProjectList {
         
         LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
         log(addedRec,"org.netbeans.ui.projects");
-        addedRec = createRecordMetrics("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
-        log(addedRec,"org.netbeans.metrics.projects");
+        addedRec = createRecordMetrics("USG_PROJECT_OPEN", projectsToOpen.toArray(new Project[0])); // NOI18N
+        log(addedRec,"org.netbeans.ui.metrics.projects");
         
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
@@ -717,6 +718,10 @@ public final class OpenProjectList {
         }
         // Noticed in #72006: save them, in case e.g. editor stored bookmarks when receiving PROPERTY_OPEN_PROJECTS.
         for (int i = 0; i < projects.length; i++) {
+            if (projects[i] instanceof LazyProject) {
+                //#147819 we need to ignore lazyProjects when saving, oh well.
+                continue;
+            }
             try {
                 ProjectManager.getDefault().saveProject(projects[i]);
             } catch (IOException e) {
@@ -725,8 +730,8 @@ public final class OpenProjectList {
         }
         LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
         log(removedRec,"org.netbeans.ui.projects");
-        removedRec = createRecordMetrics("UI_CLOSED_PROJECTS", projects); // NOI18N
-        log(removedRec,"org.netbeans.metrics.projects");
+        removedRec = createRecordMetrics("USG_PROJECT_CLOSE", projects); // NOI18N
+        log(removedRec,"org.netbeans.ui.metrics.projects");
         } finally {
             LOAD.exit();
     }
@@ -770,8 +775,35 @@ public final class OpenProjectList {
         logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
         synchronized ( this ) {
             if (mainProject != null && !openProjects.contains(mainProject)) {
-                logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                //#139965 the project passed in here can be different from the current one.
+                // eg when the ManProjectAction shows a list of opened projects, it lists the "non-loaded skeletons"
+                // but when the user eventually selects one, the openProjects list already might hold the 
+                // correct loaded list.
+                try {
+                    mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
+                    if (mainProject != null) {
+                        boolean fail = true;
+                        for (Project p : openProjects) {
+                            if (p.equals(mainProject)) {
+                                fail = false;
+                                break;
+                            }
+                            if (p instanceof LazyProject) {
+                                if (p.getProjectDirectory().equals(mainProject.getProjectDirectory())) {
+                                    mainProject = p;
+                                    fail = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (fail) {
+                            logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
+                            throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         
             this.mainProject = mainProject;
@@ -1180,7 +1212,7 @@ public final class OpenProjectList {
             }
         }
         
-        public void add( Project p ) {
+        public synchronized void add( Project p ) {
             int index = getIndex( p );
             
             if ( index == -1 ) {
@@ -1222,7 +1254,7 @@ public final class OpenProjectList {
             }
         }
         
-        public boolean remove( Project p ) {
+        public synchronized boolean remove( Project p ) {
             int index = getIndex( p );
             if ( index != -1 ) {
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -1235,7 +1267,7 @@ public final class OpenProjectList {
             return false;
         }
         
-        public void refresh() {
+        public synchronized void refresh() {
             assert recentProjects.size() == recentProjectsInfos.size();
             boolean refresh = false;
             Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
@@ -1305,7 +1337,7 @@ public final class OpenProjectList {
             return empty;
         }
         
-        public void load() {
+        public synchronized void load() {
             List<URL> URLs = OpenProjectListSettings.getInstance().getRecentProjectsURLs();
             List<String> names = OpenProjectListSettings.getInstance().getRecentProjectsDisplayNames();
             List<ExtIcon> icons = OpenProjectListSettings.getInstance().getRecentProjectsIcons();
@@ -1647,26 +1679,14 @@ public final class OpenProjectList {
             return null;
         }
 
-        Map<String,int[]> counts = new HashMap<String,int[]>();
-        for (Project p : projects) {
-            String n = p.getClass().getName();
-            int[] cnt = counts.get(n);
-            if (cnt == null) {
-                cnt = new int[1];
-                counts.put(n, cnt);
-            }
-            cnt[0]++;
-        }
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.projects"); // NOI18N
 
-        Logger logger = Logger.getLogger("org.netbeans.metrics.projects"); // NOI18N
-        LogRecord[] arr = new LogRecord[counts.size()];
+        LogRecord[] arr = new LogRecord[projects.length];
         int i = 0;
-        for (Map.Entry<String,int[]> entry : counts.entrySet()) {
-            LogRecord rec = new LogRecord(Level.CONFIG, msg);
-            rec.setParameters(new Object[] { entry.getKey(), afterLastDot(entry.getKey()), entry.getValue()[0] });
+        for (Project p : projects) {
+            LogRecord rec = new LogRecord(Level.INFO, msg);
+            rec.setParameters(new Object[] { p.getClass().getName() });
             rec.setLoggerName(logger.getName());
-            rec.setResourceBundle(NbBundle.getBundle(OpenProjectList.class));
-            rec.setResourceBundleName(OpenProjectList.class.getPackage().getName()+".Bundle");
 
             arr[i++] = rec;
         }

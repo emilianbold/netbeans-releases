@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-* Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+* Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Debugging: Sources Window</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -27,11 +27,15 @@
 	</tr>
 	<tr valign="top">
 		<td>Add Class Exclusion Filter</td>
-		<td>Enables you to name a class or series of classes that you want the Debugger to ignore. </td>
+		<td>Enables you to name a class or series of classes that you want the Debugger to ignore. 
+                When specifying a class or classes to exclude you must specify a fully-qualified class name
+                (for example, <tt>my.package.myclass</tt>).
+                The use of regular expressions is limited to exact matches and patterns that begin with '*' 
+                or end with '*' (for example, <tt>*.myclass</tt> or <tt>my.package.*</tt>).</td>
 	</tr>
         <tr valign="top">
 		<td>Add Source Root</td>
-		<td>Opens a dialob box enabling you to locate a source root on your system. </td>
+		<td>Opens a dialog box enabling you to locate a source root on your system. </td>
 	</tr>
         <tr valign="top">
 		<td>List Options</td>

@@ -80,33 +80,64 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
     
     public Image annotateIcon(Image icon, int iconType, Set files) {
-        if (files.size() == 0) return icon;
-        FileObject fo = (FileObject) files.iterator().next();
-        VersioningSystem vs = getOwner(FileUtil.toFile(fo));
-        
-        if (vs == null) return null;
-        VCSAnnotator an = vs.getVCSAnnotator();
-        if (an == null) return null;
+        long ft = System.currentTimeMillis();
+        VersioningManager.LOG.log(Level.FINE, "annotateIcon");
+        VCSAnnotator an = null;
+        long at = 0;
+        try {
+            if (files.isEmpty()) return icon;
+            FileObject fo = (FileObject) files.iterator().next();
+            VersioningSystem vs = getOwner(FileUtil.toFile(fo));
 
-        VCSContext context = Utils.contextForFileObjects(files);
-        return an.annotateIcon(icon, context);
+            if (vs == null) return null;
+            an = vs.getVCSAnnotator();
+            if (an == null) return null;
+
+            VCSContext context = Utils.contextForFileObjects(files);
+            at = System.currentTimeMillis();
+            return an.annotateIcon(icon, context);
+        } finally {
+            if(VersioningManager.LOG.isLoggable(Level.FINE)) {
+                long t = System.currentTimeMillis();
+                if(an != null) {
+                    VersioningManager.LOG.log(Level.FINE, " " + an.getClass().getName() + " returns in " + (t - at) + " millis");
+                }
+                VersioningManager.LOG.fine("annotateIcon returns in " + (t - ft) + " millis");
+            }
+        }
     }
 
     public String annotateNameHtml(String name, Set files) {
-        if (files.size() == 0) return name;
-        FileObject fo = (FileObject) files.iterator().next();
-        VersioningSystem vs = getOwner(FileUtil.toFile(fo));
-        
-        if (vs == null) return null;
-        VCSAnnotator an = vs.getVCSAnnotator();
-        if (an == null) return null;
+        long ft = System.currentTimeMillis();
+        VersioningManager.LOG.log(Level.FINE, "annotateNameHtml");
+        VCSAnnotator an = null;
+        long at = 0;
 
-        VCSContext context = Utils.contextForFileObjects(files);
-        return an.annotateName(name, context);
+        try {
+            if (files.isEmpty()) return name;
+            FileObject fo = (FileObject) files.iterator().next();
+            VersioningSystem vs = getOwner(FileUtil.toFile(fo));
+
+            if (vs == null) return null;
+            an = vs.getVCSAnnotator();
+            if (an == null) return null;
+
+            at = System.currentTimeMillis();
+            VCSContext context = Utils.contextForFileObjects(files);
+            return an.annotateName(name, context);
+        } finally {
+            if(VersioningManager.LOG.isLoggable(Level.FINE)) {
+                long t = System.currentTimeMillis();
+                if(an != null) {
+                    VersioningManager.LOG.log(Level.FINE, " " + an.getClass().getName() + " returns in " + (t - at) + " millis");
+                }
+                VersioningManager.LOG.fine("annotateNameHtml returns in " + (t - ft) + " millis");
+            }
+        }
     }
 
     public Action[] actions(Set files) {
-        if (files.size() == 0) return new Action[0];
+        if (files.isEmpty()) return new Action[0];
         FileObject fo = (FileObject) files.iterator().next();
         File file = FileUtil.toFile(fo);
         if (file == null) return new Action[0];
@@ -282,23 +313,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             clearMap(filesToRefresh);
             clearMap(parentsToRefresh);            
             
-            Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
-            File[] allRoots = File.listRoots();
-            for (int i = 0; i < allRoots.length; i++) {
-                File root = allRoots[i];
-                FileObject fo = FileUtil.toFileObject(root);
-                if (fo != null) {
-                    try {
-                        filesystems.add(fo.getFileSystem());
-                    } catch (FileStateInvalidException e) {
-                        // ignore invalid filesystems
-                    }
-                }
-            }
-            for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
-                FileSystem fileSystem = i.next();
-                fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));                
-            }            
+            FileSystem fileSystem = Utils.getRootFilesystem();
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
         }
     });    
     
@@ -330,7 +346,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     }        
                     set.clear();
                     if(files.size() > 0) {
-                        fileEvents.add(new FileStatusEvent(fs, files, false, true));
+                        fileEvents.add(new FileStatusEvent(fs, files, true, true));
                     }
                     if(folders.size() > 0) {
                         folderEvents.add(new FileStatusEvent(fs, folders, true,  true));

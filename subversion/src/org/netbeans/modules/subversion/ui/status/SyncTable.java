@@ -173,6 +173,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
         });
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "DeleteAction");
+        table.getActionMap().put("DeleteAction", SystemAction.get(DeleteLocalAction.class));
     }
 
     void setDefaultColumnSizes() {

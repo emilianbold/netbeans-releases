@@ -59,13 +59,14 @@ final class PhpTemplates implements RecommendedTemplates, PrivilegedTemplates {
          * See discussion about the set of templates here:
          * http://php.netbeans.org/issues/show_bug.cgi?id=122121
          */
-        "Templates/Scripting/EmptyPHP.php", // NOI18N
-        "Templates/Scripting/EmptyPHPWebPage.php", // NOI18N
-        "Templates/Scripting/PHPClass.php", // NOI18N
-        "Templates/Scripting/PHPInterface.php", // NOI18N
+        "Templates/Scripting/EmptyPHP", // NOI18N
+        "Templates/Scripting/EmptyPHPWebPage", // NOI18N
+        "Templates/Scripting/PHPClass", // NOI18N
+        "Templates/Scripting/PHPInterface", // NOI18N
         "Templates/Other/html.html", // NOI18N
         "Templates/Other/xhtml.xhtml", // NOI18N
         "Templates/Other/CascadeStyleSheet.css", // NOI18N
+        "Templates/Other/Folder" // NOI18N
     };
 
     public String[] getRecommendedTypes() {

@@ -76,6 +76,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -117,7 +118,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         handle.start(4);
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
 
         File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
@@ -179,7 +180,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             for(int i = 0; i < selectedExtenders.size(); i++) {
                 Object o = ((WebModuleExtender) selectedExtenders.get(i)).extend(apiWebModule);
                 if (o != null && o instanceof Set)
-                    resultSet.addAll((Set)o);
+                    resultSet.addAll((Set<FileObject>)o);
             }
         }
 
@@ -205,6 +206,31 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         Utils.logUI(NbBundle.getBundle(NewWebProjectWizardIterator.class),
                 "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
+
+        Object[] parameters2 = new Object[5];
+        parameters2[0] = ""; // NOI18N
+        try {
+            if (servInstID != null) {
+                parameters2[0] = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+            }
+        }
+        catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters2[1] = createData.getJavaEEVersion();
+        parameters2[2] = createData.getSourceLevel();
+        parameters2[3] = createData.getSourceStructure();
+        StringBuffer sb = new StringBuffer(50);
+        if (selectedFrameworkNames != null) {
+            for (int i = 0; i < selectedFrameworkNames.size(); i++) {
+                sb.append(selectedFrameworkNames.get(i));
+                if ((i + 1) < selectedFrameworkNames.size()) {
+                    sb.append("|"); // NOI18N
+                }
+            }
+        }
+        parameters2[4] = sb;
+        Utils.logUsage(NewWebProjectWizardIterator.class, "USG_PROJECT_CREATE_WEB", parameters2); // NOI18N
         
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main

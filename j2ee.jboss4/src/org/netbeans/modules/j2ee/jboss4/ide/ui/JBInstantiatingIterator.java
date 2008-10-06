@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide.ui;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,8 +69,10 @@ import org.openide.util.NbBundle;
  */
 public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
-    private final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
-    
+    private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
+
+    private static final String JBOSS_5_JAVA_OPTS = "-Xms128m -Xmx512m"; // NOI18N
+
     /**
      * skipServerLocationStep allow to skip Select Location step in New Instance Wizard
      * if this step allready was passed
@@ -143,15 +148,23 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         url += "&"+ installLocation;                                        // NOI18N
       
         try {
-            InstanceProperties ip = InstanceProperties.createInstanceProperties(url, userName, password, displayName);
-            ip.setProperty(JBPluginProperties.PROPERTY_SERVER, server);
-            ip.setProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
-            ip.setProperty(JBPluginProperties.PROPERTY_SERVER_DIR, serverPath);
-            ip.setProperty(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
-            
-            ip.setProperty(JBPluginProperties.PROPERTY_HOST, host);
-            ip.setProperty(JBPluginProperties.PROPERTY_PORT, port);
-            
+            JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
+
+            Map<String, String> initialProperties = new HashMap<String, String>();
+            initialProperties.put(JBPluginProperties.PROPERTY_SERVER, server);
+            initialProperties.put(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
+            initialProperties.put(JBPluginProperties.PROPERTY_SERVER_DIR, serverPath);
+            initialProperties.put(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
+            initialProperties.put(JBPluginProperties.PROPERTY_HOST, host);
+            initialProperties.put(JBPluginProperties.PROPERTY_PORT, port);
+
+            if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0) {
+                initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_5_JAVA_OPTS);
+            }
+
+            InstanceProperties ip = InstanceProperties.createInstanceProperties(url,
+                    userName, password, displayName, initialProperties);
+
             result.add(ip);
         } catch (InstanceCreationException e){
             showInformation(e.getLocalizedMessage(), NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "MSG_INSTANCE_REGISTRATION_FAILED")); //NOI18N

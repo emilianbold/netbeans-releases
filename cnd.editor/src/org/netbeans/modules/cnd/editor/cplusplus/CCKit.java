@@ -77,7 +77,7 @@ import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
 import org.netbeans.modules.editor.NbEditorKit;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
@@ -86,7 +86,8 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
     private InputAttributes lexerAttrs = null;
-    
+    private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY = "abbrev-ignore-modification"; // NOI18N
+
     @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
@@ -140,7 +141,7 @@ public class CCKit extends NbEditorKit {
         // in future we can make attributes per document based on used compiler info
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), "lexer-filter", getFilter(), true);  // NOI18N
+            lexerAttrs.setValue(getLanguage(), CndLexerUtilities.LEXER_FILTER, getFilter(), true);  // NOI18N
         }
         return lexerAttrs;
     }
@@ -252,7 +253,7 @@ public class CCKit extends NbEditorKit {
 	    putValue ("helpID", CCFormatAction.class.getName ()); // NOI18N
 	}
 
-	public void actionPerformed(ActionEvent evt, JTextComponent target) {
+	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
@@ -260,51 +261,53 @@ public class CCKit extends NbEditorKit {
 		    return;
 		}
 
-		Caret caret = target.getCaret();
-		BaseDocument doc = (BaseDocument)target.getDocument();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
                 // Set hourglass cursor
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                
+                doc.runAtomic(new Runnable() {
 
-		doc.atomicLock();
-		try {
+                    public void run() {
+                        try {
+                            Caret caret = target.getCaret();
 
-		    int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-		    int startPos;
-		    Position endPosition;
-		    //if (caret.isSelectionVisible()) {
-		    if (Utilities.isSelectionShowing(caret)){
-			startPos = target.getSelectionStart();
-			endPosition = doc.createPosition(target.getSelectionEnd());
-		    } else {
-			startPos = 0;
-			endPosition = doc.createPosition(doc.getLength());
-		    }
+                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                            int startPos;
+                            Position endPosition;
+                            //if (caret.isSelectionVisible()) {
+                            if (Utilities.isSelectionShowing(caret)) {
+                                startPos = target.getSelectionStart();
+                                endPosition = doc.createPosition(target.getSelectionEnd());
+                            } else {
+                                startPos = 0;
+                                endPosition = doc.createPosition(doc.getLength());
+                            }
 
-		    int pos = startPos;
-                    Formatter formatter = doc.getFormatter();
-                    formatter.reformatLock();
-                    try {
-                        while (pos < endPosition.getOffset()) {
-                            int stopPos = endPosition.getOffset();
-                            int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                            pos = pos + reformattedLen;
+                            int pos = startPos;
+                            Formatter formatter = doc.getFormatter();
+                            formatter.reformatLock();
+                            try {
+                                while (pos < endPosition.getOffset()) {
+                                    int stopPos = endPosition.getOffset();
+                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                                    pos = pos + reformattedLen;
+                                }
+                            } finally {
+                                formatter.reformatUnlock();
+                            }
+
+                            // Restore the line
+                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                            if (pos >= 0) {
+                                caret.setDot(pos);
+                            }
+                        } catch (BadLocationException e) {
+                            //failed to format
                         }
-                    } finally {
-                        formatter.reformatUnlock();
                     }
-
-		    // Restore the line
-		    pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-		    if (pos >= 0) {
-			caret.setDot(pos);
-		    }
-		} catch (BadLocationException e) {
-                    //failed to format
-		} finally {
-		    doc.atomicUnlock();
-                    target.setCursor(origCursor);
-		}
+                });
+                target.setCursor(origCursor);
 
 	    }
 	}
@@ -340,8 +343,10 @@ public class CCKit extends NbEditorKit {
                 // correctly over FormatWriter because it's final class for some reasons.
                 // But java editor has the same bug, so one day we may have such possibility 
                 doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE); 
+                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
                 super.checkIndentHotChars(target, typedText);
                 doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
+                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
             }
             
        	}

@@ -192,13 +192,23 @@ public final class DefinitionPropertyBuilder
       buffer.append(element.getName());
       buffer.append("]");
       properties.setName(buffer.toString());
-      properties.setDisplayName(def.getDisplayName()); 
-	  // #6266944, display expanded type for PseudoState element
-	  if (element.getElement() instanceof PseudoState)
-	  {
-		  properties.setDisplayName(
-				  ((PseudoState)element.getElement()).getExpandedElementType());
-	  }  
+      
+      if(element.getElement() instanceof IElement)
+      {
+          IElement modelElement = (IElement)element.getElement();
+          properties.setDisplayName(modelElement.getDisplayElementType());
+      }
+      else
+      {
+          properties.setDisplayName(def.getDisplayName());
+      }
+      
+//      // #6266944, display expanded type for PseudoState element
+//      if (element.getElement() instanceof PseudoState)
+//      {
+//              properties.setDisplayName(
+//                              ((PseudoState)element.getElement()).getExpandedElementType());
+//      }  
       propertySets.add(properties);       
 
       properties.put(buildProperties(element, autoCommit));      
@@ -390,6 +400,16 @@ public final class DefinitionPropertyBuilder
       }
    }
    
+   public void loadOnDemandProperties(IPropertyElement element, boolean interpret)
+   {
+       loadOnDemandProperties(element);
+       if (interpret) 
+       {
+            IPropertyElementManager manager = getPropertyElementManager();
+            manager.interpretElementValue(element);           
+       }
+   }
+
    public IPropertyDefinition loadOnDemandDefintion(IPropertyDefinition def)
    {
       return mDefFactory.getPropertyDefinitionByName(def.getName());

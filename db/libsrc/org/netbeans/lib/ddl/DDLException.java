@@ -55,6 +55,14 @@ public class DDLException extends Exception
     public DDLException(String message) {
         super (message);
     }
+
+    /** Creates new exception
+    * @param message The text describing the exception
+    * @param cause The cause of the exception
+    */
+    public DDLException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
 
 /*

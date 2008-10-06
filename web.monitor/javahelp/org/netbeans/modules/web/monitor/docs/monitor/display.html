@@ -1,53 +1,52 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2008 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright ï¿½ 2008 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 -->
 
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 
 
 
-<title>Setting Up the HTTP Monitor</title>
-<meta 
-http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Setting Up the HTTP Server-Side Monitor</title>
 <link 
 rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 
 <body>
 
-<h2>Setting Up the HTTP Monitor</h2>
+<h2>Setting Up the HTTP Server-Side Monitor</h2>
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>The HTTP Monitor is enabled and displayed by default when you deploy to the Tomcat Web Server.
- For the Sun Java System Application Server, you must enable it manually. 
-   If the HTTP Monitor does not display or if it does not show the session
+<p>The HTTP Server-Side Monitor is enabled and displayed by default when you deploy to the Tomcat Web Server.
+ For the Glassfish application server, you must enable it manually.
+   If the HTTP Server-Side Monitor does not display or if it does not show the session
    data for a running web 
    application, ensure that it is enabled as described below.</p>
-<p><b>To manually display the HTTP Monitor:</b>
-<ul><li>Choose Window &gt; HTTP 
-Monitor (Ctrl+Shift+5) from the main menu.</li></ul>
+<p><b>To manually display the HTTP Server-Side Monitor:</b>
+<ul><li>Choose Window &gt; Debugging &gt; HTTP Server-Side 
+Monitor from the main menu.</li></ul>
 
-<b>To enable the HTTP Monitor for servers that are started from the IDE:</b>
+<b>To enable the HTTP Server-Side Monitor for servers that are started from the IDE:</b>
 <ol><li>Right-click your server's node in the Services window's
 Servers node.</li>
 <li>Choose Properties.</li>
 <li>Select the Enable HTTP Monitor checkbox.</li>
 <li>If the server is running, stop and restart it.</li></ol>
-<p>The HTTP Monitor is now enabled and will appear when you deploy your application.</p>
-<p><b>To enable the HTTP Monitor for servers that are started outside the IDE:</b></p>
+<p>The HTTP Server-Side Monitor is now enabled and will appear when you deploy your application.</p>
+<p><b>To enable the HTTP Server-Side Monitor for servers that are started outside the IDE:</b></p>
 <ol>
 	<li>Copy the following two files to your web application's <tt>WEB-INF/lib</tt> folder:
 	<ul><li><i>IDE-install-directory</i><tt>/enterprise5/modules/ext/org-netbeans-modules-web-httpmonitor.jar</tt></li> 
-		<li><i>IDE-install-directory</i><tt>/ide9/modules/org-netbeans-modules-schema2beans.jar</tt></li></ul>
+		<li><i>IDE-install-directory</i><tt>/ide10/modules/org-netbeans-modules-schema2beans.jar</tt></li></ul>
 	<table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    <td>The SJS Application Server has its own <tt>schema2beans.jar</tt>.
-    Therefore, when you are using the Sun Java System Application Server, 
+    <td>The Glassfish application server has its own <tt>schema2beans.jar</tt>.
+    Therefore, when you are using the Glassfish application server,
     only copy <tt>httpmonitor.jar</tt> to your web application's <tt>WEB-INF/lib</tt> folder.</td>
   </tr>
 </table></li>
@@ -109,7 +108,6 @@ To monitor the data records from a web application using more than one
 </pre>
       </li>
 
- </li>
   </ol>
 
 
@@ -122,8 +120,8 @@ To monitor the data records from a web application using more than one
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="ctx_monitorintro.html">About the HTTP Monitor</a></dd>
-    <dd><a href="process.html">Working with the HTTP Monitor</a></dd>
+    <dd><a href="ctx_monitorintro.html">About the HTTP Server-Side Monitor</a></dd>
+    <dd><a href="process.html">Working with the HTTP Server-Side Monitor</a></dd>
     <dd><a href="view.html">Analyzing Session Data</a></dd>
     <dd><a href="store.html">Saving Session Data</a></dd>
     <dd><a href="resend.html">Replaying Session Data</a></dd>

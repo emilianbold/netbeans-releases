@@ -45,9 +45,7 @@ import java.awt.Color;
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,11 +53,11 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.IScopingNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.IScopingNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -80,8 +78,6 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
@@ -92,7 +88,6 @@ import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -111,9 +106,12 @@ import org.openide.xml.XMLUtil;
  * @author Tor Norbye
  */
 public class RetoucheUtils {
+    private RetoucheUtils() {
+    }
+
     // XXX Should this be unused now?
     public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
-        if (RubyUtils.isRubyOrRhtmlFile(fo)) {
+        if (RubyUtils.canContainRuby(fo)) {
             return Source.create(cpInfo, fo);
         }
         
@@ -254,8 +252,9 @@ public class RetoucheUtils {
     }
 
     private static String color(String string, AttributeSet set) {
-        if (set==null)
+        if (set==null) {
             return string;
+        }
         if (string.trim().length() == 0) {
             return Utilities.replaceString(Utilities.replaceString(string, " ", "&nbsp;"), "\n", "<br>"); //NOI18N
         } 
@@ -288,23 +287,14 @@ public class RetoucheUtils {
         return html_color;
     }
 
-    public static boolean isElementInOpenProject(FileObject f) {
-        Project p = FileOwnerQuery.getOwner(f);
-        Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
-                return true;
-        }
-        return false;
-    }
-
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
         Project p = FileOwnerQuery.getOwner(file);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
-            if (p==opened[i])
+            if (p==opened[i]) {
                 return true;
+            }
         }
         return false;
     }
@@ -345,61 +335,16 @@ public class RetoucheUtils {
     }
     
     public static boolean isRefactorable(FileObject file) {
-        return RubyUtils.isRubyOrRhtmlFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
+        return RubyUtils.canContainRuby(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
-    
+
     public static String getPackageName(FileObject folder) {
         assert folder.isFolder() : "argument must be folder";
         return ClassPath.getClassPath(
                 folder, ClassPath.SOURCE)
                 .getResourceName(folder, '.', false);
     }
-    
-    public static String getPackageName(URL url) {
-        File f = null;
-        try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
-            throw new IllegalArgumentException("Cannot create package name for url " + url);
-        }
-        String suffix = "";
-        
-        do {
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
-                if ("".equals(suffix))
-                    return getPackageName(fo);
-                String prefix = getPackageName(fo);
-                return prefix + ("".equals(prefix)?"":".") + suffix;
-            }
-            if (!"".equals(suffix)) {
-                suffix = "." + suffix;
-            }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
-            f = f.getParentFile();
-        } while (f!=null);
-        throw new IllegalArgumentException("Cannot create package name for url " + url);
-    }
 
-    /**
-     * creates or finds FileObject according to 
-     * @param url
-     * @return FileObject
-     */
-    public static FileObject getOrCreateFolder(URL url) throws IOException {
-        try {
-            FileObject result = URLMapper.findFileObject(url);
-            if (result != null)
-                return result;
-            File f = new File(url.toURI());
-            
-            result = FileUtil.createFolder(f);
-            return result;
-        } catch (URISyntaxException ex) {
-            throw (IOException) new IOException().initCause(ex);
-        }
-    }
-    
     public static FileObject getClassPathRoot(URL url) throws IOException {
         FileObject result = URLMapper.findFileObject(url);
         File f = FileUtil.normalizeFile(new File(url.getPath()));
@@ -419,13 +364,23 @@ public class RetoucheUtils {
         Set<URL> dependentRoots = new HashSet<URL>();
         for (FileObject fo: files) {
             Project p = null;
-            if (fo!=null)
-                p=FileOwnerQuery.getOwner(fo);
+            if (fo!=null) {
+                p = FileOwnerQuery.getOwner(fo);
+            }
             if (p!=null) {
-                URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+                if (classPath == null) {
+                    return null;
+                }
+                FileObject ownerRoot = classPath.findOwnerRoot(fo);
+                if (ownerRoot != null) {
+                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY)) {
+                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                    }
+                } else {
+                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
                 }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
@@ -440,6 +395,11 @@ public class RetoucheUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
         ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+
+        if (boot == null || compile == null) { // 146499
+            return null;
+        }
+
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
@@ -449,9 +409,12 @@ public class RetoucheUtils {
     }
     
     public static List<FileObject> getRubyFilesInProject(FileObject fileInProject) {
-        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
-        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         List<FileObject> list = new ArrayList<FileObject>(100);
+        ClasspathInfo cpInfo = RetoucheUtils.getClasspathInfoFor(fileInProject);
+        if (cpInfo == null) {
+            return list;
+        }
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         for (ClassPath.Entry entry : cp.entries()) {
             FileObject root = entry.getRoot();
             String name = root.getName();
@@ -470,7 +433,7 @@ public class RetoucheUtils {
             for (FileObject child : f.getChildren()) {
                 addRubyFiles(list, child);
             }
-        } else if (RubyUtils.isRubyOrRhtmlFile(f)) {
+        } else if (RubyUtils.canContainRuby(f)) {
             list.add(f);
         }
     }

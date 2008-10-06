@@ -97,6 +97,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
@@ -143,7 +144,7 @@ import org.w3c.dom.Node;
  */
 public final class J2MEProject implements Project, AntProjectListener {
     
-    static final Icon J2ME_PROJECT_ICON = new ImageIcon(Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
+    static final Icon J2ME_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/mobile-project.png" )); // NOI18N
     private static final URLStreamHandler COMPOSED_STREAM_HANDLER = new URLStreamHandler() {
         protected URLConnection openConnection(URL u) throws IOException {
             return new ComposedConnection(u);
@@ -168,7 +169,7 @@ public final class J2MEProject implements Project, AntProjectListener {
     private final PropertyChangeSupport pcs;
     public FileBuiltQueryImpl fileBuiltQuery;
     
-    
+    private TextSwitcher textSwitcher;
     
     /* Side effect of this methosd is modification of fo - is this correct? */
     public static boolean isJ2MEFile(FileObject fo) {
@@ -257,7 +258,6 @@ public final class J2MEProject implements Project, AntProjectListener {
         fileBuiltQuery = new FileBuiltQueryImpl(helper, configHelper);
         this.lookup = this.createLookup(aux);
         helper.addAntProjectListener(this);
-        configHelper.addPropertyChangeListener(new TextSwitcher(this, helper));
     }
     
     public void hookNewProjectCreated() {
@@ -592,6 +592,8 @@ public final class J2MEProject implements Project, AntProjectListener {
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {cpProvider.getSourcepath()});
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, new ClassPath[] {cpProvider.getCompileTimeClasspath()});
             
+            configHelper.addPropertyChangeListener(textSwitcher = new TextSwitcher(J2MEProject.this, helper));
+
             final J2MEPhysicalViewProvider phvp  = lookup.lookup(J2MEPhysicalViewProvider.class);
             if (phvp.hasBrokenLinks()) {
                 BrokenReferencesSupport.showAlert();
@@ -612,6 +614,8 @@ public final class J2MEProject implements Project, AntProjectListener {
                 ErrorManager.getDefault().notify(e);
             }
             
+            configHelper.removePropertyChangeListener(textSwitcher);
+
             // unregister project's classpaths to GlobalPathRegistry
             final J2MEClassPathProvider cpProvider = lookup.lookup(J2MEClassPathProvider.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {cpProvider.getBootClassPath()});

@@ -156,7 +156,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 : rawOffset - offsetGapLength());
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         return elementOffset(index);
     }
     
@@ -184,6 +184,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         while (lexerInputOperation != null && index >= size()) {
             AbstractToken<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
                 updateElementOffsetAdd(token);
                 add(token);
                 laState = laState.add(lexerInputOperation.lookahead(),
@@ -325,7 +327,10 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         List<TokenOrEmbedding<T>> addedTokensOrEmbeddings = change.addedTokenOrEmbeddings();
         if (addedTokensOrEmbeddings != null && addedTokensOrEmbeddings.size() > 0) {
             for (TokenOrEmbedding<T> tokenOrEmbedding : addedTokensOrEmbeddings) {
-                updateElementOffsetAdd(tokenOrEmbedding.token());
+                AbstractToken<T> token = tokenOrEmbedding.token();
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
+                updateElementOffsetAdd(token);
             }
             addAll(index, addedTokensOrEmbeddings);
             laState = laState.addAll(index, change.laState());

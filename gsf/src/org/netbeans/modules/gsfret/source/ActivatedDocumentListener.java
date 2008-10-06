@@ -42,21 +42,16 @@ package org.netbeans.modules.gsfret.source;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 import java.io.IOException;
 import javax.swing.text.Document;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -98,19 +93,12 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
             return;
         }
         
-        Object sourceProperty = active.getProperty(Document.StreamDescriptionProperty);
+        FileObject activeFile = DataLoadersBridge.getDefault().getFileObject(active);
         
-        if (!(sourceProperty instanceof DataObject)) {
+        if(activeFile==null){
+            //could be
             return;
         }
-        
-        DataObject source = (DataObject) sourceProperty;
-        
-        if (source == null) {
-            return;
-        }
-        
-        FileObject activeFile = source.getPrimaryFile();
         
         if (lastValidFile == activeFile) {
             return;

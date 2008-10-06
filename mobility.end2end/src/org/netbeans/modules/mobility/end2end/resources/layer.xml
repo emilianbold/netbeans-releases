@@ -40,7 +40,8 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
---><filesystem>
+-->
+<filesystem>
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <file name="e2e">
@@ -65,6 +66,7 @@ made subject to such option by the copyright holder.
         <!-- Javon templates -->
         <folder name="Client">
             <attr name="position" intvalue="0"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.Bundle"/>
             <file name="Client.java" url="../../e2e/templates/ClientTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>
@@ -74,6 +76,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Server">
             <attr name="position" intvalue="0"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.Bundle"/>
             <file name="Servlet.java" url="../../e2e/templates/ServletTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>
@@ -96,6 +99,7 @@ made subject to such option by the copyright holder.
             <folder name="x-wsclient">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-mobility-end2end-E2EDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.Bundle"/>
                         <attr name="position" intvalue="90131"/>
                     </file>
                 </folder>

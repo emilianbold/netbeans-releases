@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="700"/>
+                    </file>
+
+
+                    </folder>
+            </folder>
+        </folder>
+    </folder>
+        
+<!--
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-groovy">
+                <folder name="Actions">
+                    <file name="RefactoringWhereUsed.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.whereUsedAction"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file>
+                    <file name="RefactoringAll.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="RefactoringSeparator-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+-->
+    
+</filesystem>

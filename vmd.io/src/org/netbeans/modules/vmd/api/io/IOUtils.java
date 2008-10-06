@@ -76,7 +76,7 @@ public final class IOUtils {
         JPanel panel = new JPanel ();
         panel.setLayout (new GridBagLayout ());
         JLabel label = new JLabel (NbBundle.getMessage (IOUtils.class, "DISP_LoadingDocument")); // NOI18N
-        label.setFont (new Font ("Dialog", Font.BOLD, 16)); // NOI18N
+        label.setFont (new Font ("Dialog", label.getFont().getStyle() | Font.BOLD, label.getFont().getSize() + 5)); // NOI18N
         Color background = panel.getBackground ();
         Color foreground = background.darker ();
         if (foreground.equals (background))

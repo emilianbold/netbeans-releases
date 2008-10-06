@@ -38,20 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.logging.Logger;
 import javax.swing.Action;
 
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
 import org.openide.DialogDisplayer;
@@ -67,17 +69,18 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 
 /**
  * Class for creating the Multiview
  * @author Ajit Bhate
  */
 public class MultiViewSupport implements OpenCookie, EditCookie {
-    
+
     static final long serialVersionUID = 1L;
     private DataObject dataObject;
     private Service service;
-    
+    private DataObject wsdlDo;
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
     private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
 
@@ -85,6 +88,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * MultiView enum
      */
     public enum View {
+
         /**
          * Source multiview
          */
@@ -93,6 +97,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
          * Design multiview
          */
         DESIGN,
+        /**
+         * WSDL Preview multiview
+         */
+        PREVIEW,
     }
 
     /**
@@ -100,15 +108,17 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      */
     public MultiViewSupport() {
     }
+    static Logger l = Logger.getLogger(MultiViewSupport.class.getName());
 
     /**
      * Constructor
-     * @param displayName 
-     * @param dataObject 
+     * @param displayName
+     * @param dataObject
      */
     public MultiViewSupport(Service service, DataObject dataObject) {
         this.dataObject = dataObject;
         this.service = service;
+        initWsdlDO(service);
     }
 
     public void open() {
@@ -117,6 +127,10 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 
     public void edit() {
         view(View.SOURCE);
+    }
+
+    public void preview() {
+        view(View.PREVIEW);
     }
 
     DataObject getDataObject() {
@@ -140,62 +154,75 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @return CloneableTopComponent new multiview.
      */
     public CloneableTopComponent createMultiView() {
-        MultiViewDescription views[] = new MultiViewDescription[2];
-        
-        // Put the source element first so that client code can find its
-        // CloneableEditorSupport.Pane implementation.
-        views[0] = new SourceMultiViewDesc(getDataObject());
-        views[1] = new DesignMultiViewDesc(getDataObject());
-        
+        MultiViewDescription views[];
+        if (getService().getLocalWsdlFile() != null) {
+            views = new MultiViewDescription[3];
+
+            // Put the source element first so that client code can find its
+            // CloneableEditorSupport.Pane implementation.
+            views[0] = new SourceMultiViewDesc(getDataObject());
+            views[1] = new DesignMultiViewDesc(getDataObject());
+            views[2] = new PreviewMultiViewDesc(wsdlDo);
+        } else {
+             views = new MultiViewDescription[3];
+
+            // Put the source element first so that client code can find its
+            // CloneableEditorSupport.Pane implementation.
+            views[0] = new SourceMultiViewDesc(getDataObject());
+            views[1] = new DesignMultiViewDesc(getDataObject());
+            views[2] = new PreviewMultiViewDesc(getDataObject(),getService());
+        }
         
         // Make the column view the default element.
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,
-                views[0]
-                , new CloseHandler(getDataObject())
-                );
-        
+                views[0], new CloseHandler(getDataObject()));
+
         String displayName = getDataObject().getNodeDelegate().getDisplayName();
         multiview.setDisplayName(displayName);
         multiview.setName(displayName);
-        
+
         return multiview;
     }
-    
-    
+
     /**
-     * 
-     * @param view 
-     * @param param 
+     *
+     * @param view
+     * @param param
      */
     public void view(final View view, final Object... param) {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
+
                 public void run() {
-                    viewInSwingThread(view,param);
+                    viewInSwingThread(view, param);
                 }
             });
         } else {
-            viewInSwingThread(view,param);
+            viewInSwingThread(view, param);
         }
     }
-    
+
     private void viewInSwingThread(View view, Object... parameters) {
         getEditorSupport().open();
-        switch(view) {
-        case SOURCE:
-            requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
-            break;
-        case DESIGN:
-            requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
-            break;
+        switch (view) {
+            case SOURCE:
+                requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
+                break;
+            case DESIGN:
+                requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
+                break;
+            case PREVIEW:
+                requestMultiviewActive(PreviewMultiViewDesc.PREFERRED_ID);
+                break;
         }
-        if(parameters!=null&&parameters.length>0) {
+        if (parameters != null && parameters.length > 0) {
             TopComponent activeTC = TopComponent.getRegistry().getActivated();
             ShowComponentCookie cake = activeTC.getLookup().lookup(ShowComponentCookie.class);
-            if(cake!=null)
+            if (cake != null) {
                 cake.show(parameters[0]);
+            }
         }
     }
 
@@ -224,16 +251,52 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * set of cloneable windows.
      *
      * @param  tc  TopComponent.
-     * @return  -1 if not a cloneabletopcomponent 
+     * @return  -1 if not a cloneabletopcomponent
      *          otherwise number of clones including self
      */
     public static int getNumberOfClones(TopComponent tc) {
         if (!(tc instanceof CloneableTopComponent)) {
             return -1;
         }
-        return Collections.list(((CloneableTopComponent)tc).getReference().getComponents()).size();
+        return Collections.list(((CloneableTopComponent) tc).getReference().getComponents()).size();
     }
-    
+
+    /**
+     *  Method, preparing DataObject for processing by WSDL Preview element
+     * @param service - web service object, initialized by class constructor
+     */
+    private void initWsdlDO(Service service) {
+
+        if (service == null) {
+            return;
+        }
+        DataObject dataObj = null;  // DataObject created from FileObject of WSDL file - null if WSDL don't exist
+        FileObject wsdlFile = null;        // FileObject of WSDL file
+//        String tempdir = System.getProperty("java.io.tmpdir");      // Tempdir
+        FileObject primaryFile = getImplementationBean();
+        String localWSDLFilePath = service.getLocalWsdlFile();      // Local path to wsdl file,only part of path for URL wsdl
+//        String serviceName = service.getName();                     // Web service name
+
+        // Detection if this is WSDL or Java case - later sets this propery null
+        if (!(localWSDLFilePath == null)) {
+            // Process of obtaining proper path to wsdl through JAXWSSupport and its methods,
+            // which leads to desired FileObject
+            JAXWSSupport jAXWSSupport = JAXWSSupport.getJAXWSSupport(primaryFile);
+            FileObject foj = jAXWSSupport.getLocalWsdlFolderForService(getService().getName(), false);
+            wsdlFile = foj.getFileObject(localWSDLFilePath);
+            // If obtaining of WSDL file fails, empty page with error label is displayed
+            if (wsdlFile != null) {
+                try {
+                    dataObj = DataObject.find(wsdlFile);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        }           
+        wsdlDo = dataObj;
+    }
+
     /**
      * Implementation of CloseOperationHandler for multiview. Ensures the
      * editors correctly closed, data object is saved, etc. Holds a
@@ -241,22 +304,23 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * TopComponent without problems.
      */
     public static class CloseHandler implements CloseOperationHandler, Serializable {
+
         private static final long serialVersionUID = -3838395157610633251L;
         private DataObject sourceDataObject;
-        
+
         private CloseHandler() {
             super();
         }
-        
+
         public CloseHandler(DataObject sourceDataObject) {
             this.sourceDataObject = sourceDataObject;
         }
-        
+
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             StringBuffer message = new StringBuffer();
-            for(CloseOperationState state:elements) {
-                if(state.getCloseWarningID().equals(SOURCE_UNSAFE_CLOSE)) {
-                    message.append(NbBundle.getMessage(DataObject.class, 
+            for (CloseOperationState state : elements) {
+                if (state.getCloseWarningID().equals(SOURCE_UNSAFE_CLOSE)) {
+                    message.append(NbBundle.getMessage(DataObject.class,
                             "MSG_SaveFile", // NOI18N
                             sourceDataObject.getPrimaryFile().getNameExt()));
                     message.append("\n");
@@ -264,8 +328,8 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             }
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message.toString().trim());
             Object retVal = DialogDisplayer.getDefault().notify(desc);
-            for(CloseOperationState state:elements) {
-                Action act =  null;
+            for (CloseOperationState state : elements) {
+                Action act = null;
                 if (retVal == NotifyDescriptor.YES_OPTION) {
                     act = state.getProceedAction();
                 } else if (retVal == NotifyDescriptor.NO_OPTION) {
@@ -280,4 +344,5 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             return true;
         }
     }
+
 }

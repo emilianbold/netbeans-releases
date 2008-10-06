@@ -4,7 +4,7 @@
 
  <editor_palette_item version="1.0">
      <body>
-         <![CDATA[ <text x="0" y="0" fill="red" stroke="black" stroke-width="1" font-size="64">Sample Text</text>]]>
+         <![CDATA[ <text transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)" x="0" y="0" fill="red" stroke="black" stroke-width="1" font-size="64">Sample Text</text>]]>
      </body>
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/text_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/text_32.png"/>

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!--
+*     Copyright (c) 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+*
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Enabling a Java Application to Support Groovy</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Enabling a Java Application to Support Groovy</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>After you create a new Java application, you can specify that
+ you would like the application to support Groovy. You will then
+ be able to code in Groovy, compile Groovy files, and ensure that
+ the IDE excludes the Groovy source files from the JAR that it creates
+ when the project is built.</p>
+
+<p><b>To enable a Java application to support Groovy:</b></p>
+<ol>
+  <li>Create a new Java application.</li>
+  <li>In the Projects window, right-click the project node
+   and choose Properties.</li>
+  <li>In the Project Properties dialog box, choose Groovy and
+   select the Enable Groovy checkbox.
+  <li>Click OK. 
+</ol>
+<p>The IDE adds the Groovy JAR to your application, which you can
+see in the application's Libraries node. The <tt>build.xml</tt> file
+is changed and Groovy files will be excluded when you build the
+application.
+    
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="groovy_intro.html">About Working with Groovy</a></dd>
+    <dd><a href="groovy_edit.html">Editing Groovy Source Files</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+
+</html>

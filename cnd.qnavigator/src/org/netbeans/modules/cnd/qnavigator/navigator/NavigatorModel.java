@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.loaders.DataObject;
@@ -74,7 +73,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private static final int DEFAULT_PARSING_DELAY = 2000;
 
     private DataObject cdo;
-    private CsmUID<CsmFile> uid;
     private NavigatorPanelUI ui;
     private NavigatorComponent busyListener;
     private Action[] actions;
@@ -86,12 +84,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private Timer checkCursorTimer;
     private long lastCursorPos = -1;
     private long lastCursorPosWhenChecked = 0;
-    private Object lock = new Object(){
-        @Override
-        public String toString(){
-            return "NavigatorModel lock"; // NOI18N
-        }
-    };
+    private final Object lock = new String("NavigatorModel lock"); // NOI18N
     
     public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component) {
         this.cdo = cdo;
@@ -134,19 +127,8 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
     
     private CsmFile getCsmFile() {
-        CsmFile csmFile = null;
-        if (uid == null) {
-            if (cdo != null) {
-                csmFile = CsmUtilities.getCsmFile(cdo, false);
-            }
-            if (csmFile != null) {
-                uid = csmFile.getUID();
-            }
-        } else {
-            csmFile = uid.getObject();
-        }
+        CsmFile csmFile = CsmUtilities.getCsmFile(cdo, false);
         if (csmFile != null && !csmFile.isValid()) {
-            uid = null;
             csmFile = null;
         }
         return csmFile;
@@ -179,15 +161,16 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 busyListener.busyStart();
             }
             synchronized(lock) {
-                fileModel.setFile(csmFile);
-                final Children children = root.getChildren();
-                if (!Children.MUTEX.isReadAccess()){
-                     Children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(children.getNodes());
-                            children.add(fileModel.getNodes());
-                        }
-                    });
+                if (fileModel.setFile(csmFile)){
+                    final Children children = root.getChildren();
+                    if (!Children.MUTEX.isReadAccess()){
+                         Children.MUTEX.writeAccess(new Runnable(){
+                            public void run() {
+                                children.remove(children.getNodes());
+                                children.add(fileModel.getNodes());
+                            }
+                        });
+                    }
                 }
             }
         } finally {
@@ -334,6 +317,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         if (file == null || file.getProject() == project) {
             stopTimers();
             update(null);
+            restartTimers();
+        } else {
+            stopTimers();
+            update(file);
             restartTimers();
         }
     }

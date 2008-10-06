@@ -1,0 +1,3 @@
+10:             updated.each(function(|>item<|) {
+11:                 ctl.load(|>item<|, function() {
+12:                     test_func_2(|>item<|);

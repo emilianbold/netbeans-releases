@@ -105,7 +105,7 @@ final class SelectionPanel extends JPanel {
     private void projectChanged() {
         // check Eclipse project directory
         String project = getProjectDir();
-        if ("".equals(project)) {
+        if ("".equals(project)) { // NOI18N
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProject")); // NOI18N
             return;
@@ -119,13 +119,13 @@ final class SelectionPanel extends JPanel {
         
         // check destination directory
         String projectDest = projectDestDir.getText().trim();
-        if ("".equals(projectDest)) {
+        if ("".equals(projectDest)) { // NOI18N
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ChooseProjectDestination")); // NOI18N
             return;
         }
         File projectDestFile = new File(projectDest, projectDirFile.getName());
-        if (!projectDest.equals(projectDirFile) && projectDestFile.exists()) {
+        if (!projectDestFile.equals(projectDirFile) && projectDestFile.exists()) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_ProjectExist", projectDestFile.getName())); // NOI18N
             return;
@@ -138,7 +138,7 @@ final class SelectionPanel extends JPanel {
     void setErrorMessage(String newMessage) {
         String oldMessage = this.errorMessage;
         this.errorMessage = newMessage;
-        firePropertyChange("errorMessage", oldMessage, newMessage);
+        firePropertyChange("errorMessage", oldMessage, newMessage); // NOI18N
     }
     
     boolean isWorkspaceChosen() {
@@ -240,39 +240,37 @@ final class SelectionPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, note, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(note, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 509, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(workSpaceLBL)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(workspaceDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                        .add(workspaceDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(worskpaceBrowse))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, workspaceButton)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, projectButton)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(workspaceButton)
+                    .add(projectButton)
+                    .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(projectDestLBL)
                             .add(projectLBL))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(projectDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
-                            .add(projectDestDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
+                            .add(projectDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                            .add(projectDestDir, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, projectBrowse)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectDestBrowse))))
-                .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectDestBrowse)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(workspaceButton)
@@ -294,9 +292,26 @@ final class SelectionPanel extends JPanel {
                     .add(projectDestBrowse)
                     .add(projectDestDir, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(note, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                .addContainerGap())
+                .add(note, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, Short.MAX_VALUE))
         );
+
+        workspaceDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        worskpaceBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        workSpaceLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        workspaceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestLBL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        projectDestBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        note.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectionPanel.class, "ACSD_SelectionPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     private void projectDestBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectDestBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(projectDestDir.getText());
@@ -305,21 +320,21 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDestDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_projectDestBrowseActionPerformed
+        }//GEN-LAST:event_projectDestBrowseActionPerformed
+    }                                                 
             
     private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
         setWorkspaceEnabled(false);
         projectChanged();
         projectDir.requestFocusInWindow();
-        firePropertyChange("workspaceChoosen", true, false); // NOI18N
-    }//GEN-LAST:event_projectButtonActionPerformed
+        firePropertyChange("workspaceChoosen", true, false); // NOI18N//GEN-LAST:event_projectButtonActionPerformed
+    }                                             
     
     private void workspaceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workspaceButtonActionPerformed
         setWorkspaceEnabled(true);
         workspaceChanged();
-        firePropertyChange("workspaceChoosen", false, true); // NOI18N
-    }//GEN-LAST:event_workspaceButtonActionPerformed
+        firePropertyChange("workspaceChoosen", false, true); // NOI18N//GEN-LAST:event_workspaceButtonActionPerformed
+    }                                               
     
     private void setWorkspaceEnabled(boolean enabled) {
         workSpaceLBL.setEnabled(enabled);
@@ -341,8 +356,8 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             projectDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_projectBrowseActionPerformed
+        }//GEN-LAST:event_projectBrowseActionPerformed
+    }                                             
     
     private void worskpaceBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_worskpaceBrowseActionPerformed
         JFileChooser chooser = new JFileChooser(getWorkspaceDir());
@@ -351,8 +366,8 @@ final class SelectionPanel extends JPanel {
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             workspaceDir.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_worskpaceBrowseActionPerformed
+        }//GEN-LAST:event_worskpaceBrowseActionPerformed
+    }                                               
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

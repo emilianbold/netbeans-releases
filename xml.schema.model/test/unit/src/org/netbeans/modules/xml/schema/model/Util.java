@@ -87,8 +87,7 @@ public class Util {
     }
 
     public static Document loadDocument(InputStream in) throws Exception {
-//	Document sd = new PlainDocument();
-        Document sd = new BaseDocument(BaseKit.class, false);
+        Document sd = new BaseDocument(true, "text/xml"); //NOI18N
         return setDocumentContentTo(sd, in);
     }
     

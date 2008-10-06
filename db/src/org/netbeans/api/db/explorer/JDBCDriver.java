@@ -42,7 +42,10 @@
 package org.netbeans.api.db.explorer;
 
 import java.net.URL;
+import java.sql.Driver;
+import java.sql.SQLException;
 import java.util.Arrays;
+import org.netbeans.modules.db.explorer.DbDriverManager;
 
 /**
  * Encapsulates a JDBC driver.
@@ -113,6 +116,25 @@ public final class JDBCDriver {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get a reference to the underlying java.sql.Driver for this JDBCDriver.
+     * This can be useful if you want to use the registered drivers to manage
+     * your own JDBC connections independent of the Database Explorer
+     *
+     * @return an instance of the java.sql.Driver for this JDBCDriver
+     *
+     * @throws DatabaseException if there was an error trying to get the driver instance
+     * 
+     * @since 1.28
+     */
+    public Driver getDriver() throws DatabaseException {
+        try {
+            return DbDriverManager.getDefault().getDriver(this);
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
     }
     
     public String toString() {

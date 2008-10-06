@@ -90,6 +90,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.20</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -175,7 +184,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.8</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -227,7 +236,11 @@ made subject to such option by the copyright holder.
                     <name>qa-functional</name>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.projectimport.eclipse.core</friend>
+                <friend>org.netbeans.modules.projectimport.jbuilder</friend>
+                <package>org.netbeans.modules.java.j2seplatform.api</package>
+            </friend-packages>
             <extra-compilation-unit>
                 <package-root>probesrc</package-root>
                 <classpath/>

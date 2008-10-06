@@ -54,6 +54,7 @@ import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
 import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
 import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 
 /**
@@ -64,20 +65,25 @@ import org.netbeans.junit.NbTestSuite;
 
 public class VWPMeasureDialogsTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureDialogsTest");
+
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddComponentLibraryDialog.class)
         
-        suite.addTest(NbModuleSuite.create(AddComponentLibraryDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageStyleSheetDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PageFragmentBoxDialog.class, ".*", ".*"));
+        .addTest(PageStyleSheetDialog.class)
+        .addTest(PageFragmentBoxDialog.class)
         
-        suite.addTest(NbModuleSuite.create(VirtualFormsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(TableLayoutOptionsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(DataBindingDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ConfigureDefaultOptionsDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PropertyBindingDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ComponentStyleDialog.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ManageComponentLibrariesDialog.class, ".*", ".*"));
-        
+        .addTest(VirtualFormsDialog.class)
+        .addTest(TableLayoutOptionsDialog.class)
+        .addTest(DataBindingDialog.class)
+        .addTest(ConfigureDefaultOptionsDialog.class)
+        .addTest(PropertyBindingDialog.class)
+        .addTest(ComponentStyleDialog.class)
+        .addTest(ManageComponentLibrariesDialog.class)
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
     

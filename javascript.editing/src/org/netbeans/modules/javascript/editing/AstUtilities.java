@@ -44,10 +44,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node.LabelledNode;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node.LabelledNode;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -81,6 +81,9 @@ public final class AstUtilities {
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -93,6 +96,9 @@ public final class AstUtilities {
 
     public static OffsetRange getAstOffsets(CompilationInfo info, OffsetRange lexicalRange) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
         if (result != null) {
             TranslatedSource ts = result.getTranslatedSource();
             if (ts != null) {
@@ -122,9 +128,7 @@ public final class AstUtilities {
             return false;
         }
         VariableVisitor v = rpr.getVariableVisitor();
-        Map<String,List<Node>> localVars = v.getLocalVars(node);
-
-        List<Node> nodes = localVars.get(name);
+        List<Node> nodes = v.getVarOccurrences(node);
         if (nodes == null) {
             return true;
         } else {
@@ -181,11 +185,19 @@ public final class AstUtilities {
 //        }
 //
 //        return getRoot(result);
-        return getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
+        Node root = getRoot(info, JsTokenId.JAVASCRIPT_MIME_TYPE);
+        if (root == null && JsUtils.isJsonFile(info.getFileObject())) {
+            root = getRoot(info, JsTokenId.JSON_MIME_TYPE);
+        }
+
+        return root;
     }
 
     public static JsParseResult getParseResult(CompilationInfo info) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
+        if (result == null && JsUtils.isJsonFile(info.getFileObject())) {
+            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        }
 
         if (result == null) {
             return null;
@@ -292,33 +304,6 @@ public final class AstUtilities {
      */
     @SuppressWarnings("unchecked")
     public static OffsetRange getRange(CompilationInfo info, Node node) {
-        if (node.getType() == Token.STRING) {
-            // Work around difficulties with the offset
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            if (doc != null) {
-                int astOffset = node.getSourceStart();
-                int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
-                if (lexOffset != -1 && doc != null) {
-                    try {
-                        int rowStart = Utilities.getRowStart(doc, lexOffset);
-                        int rowEnd = Utilities.getRowEnd(doc, rowStart);
-                        String line = doc.getText(rowStart, rowEnd-rowStart);
-                        String s = node.getString();
-                        int lineOffset = line.indexOf(s);
-                        if (lineOffset != -1) {
-                            int start = rowStart+lineOffset;
-                            int astStart = getAstOffset(info, start);
-                            if (astStart != -1) {
-                                return new OffsetRange(astStart, astStart+s.length());
-                            }
-                        }
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-
         return new OffsetRange(node.getSourceStart(), node.getSourceEnd());
     }
 

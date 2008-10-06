@@ -83,9 +83,9 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebSpringProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf,
         "testPreconditions", "testNewSpringWebProject", "testRedeployProject", 
-                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+                "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
 //        NbTestSuite suite = new NbTestSuite();
@@ -139,7 +139,7 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         nameStep.txtProjectLocation().typeText(sFolder);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("GlassFish V2");
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
         serverStep.next();
 
@@ -176,17 +176,12 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
             // ignore when progress dialog was closed before we started to wait for it
         }
         ProjectSupport.waitScanFinished();
-    // Check project contains all needed files.
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "redirect.jsp");
-        new Node(webPages,"WEB-INF|jsp|index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|applicationContext.xml");//NOI18N
-        new Node(webPages,"WEB-INF|hhhhh-servlet.xml");//NOI18N
-        new Node(webPages,"WEB-INF|sun-web.xml");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        ProjectSupport.closeProject(PROJECT_NAME);
+        verifyWebPagesNode("redirect.jsp");
+        verifyWebPagesNode("WEB-INF|jsp|index.jsp");//NOI18N
+        verifyWebPagesNode("WEB-INF|applicationContext.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|hhhhh-servlet.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|web.xml");//NOI18N
     }
 
 }

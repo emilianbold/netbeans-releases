@@ -40,14 +40,19 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="run-snippet" default="execute" basedir=".">
-    <target name="execute">
+<project name="{0} (run)" default="run" basedir=".">
+    <target name="run">        
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
+        <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />
-        <java classpath="${classpath-translated}" classname="${classname}">
+        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true">
             <jvmarg line="${run.jvmargs}" />
             <arg line="${application.args}" />
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </java>
     </target>
 </project>

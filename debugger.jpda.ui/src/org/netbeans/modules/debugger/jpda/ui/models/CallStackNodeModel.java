@@ -53,6 +53,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -184,7 +185,23 @@ public class CallStackNodeModel implements NodeModel {
             return fileName;
         return fileName + ":" + ln;
     }
-            
+
+    public static String getCSFToolTipText(CallStackFrame stackFrame) {
+        StringBuffer buf = new StringBuffer();
+        buf.append("<html>"); // NOI18N
+        String csfName = getCSFName(null, stackFrame, true);
+        buf.append(NbBundle.getMessage(CallStackNodeModel.class, "CTL_CallStackFrame", csfName)); // NOI18N
+        This thisVariable = stackFrame.getThisVariable();
+        if (thisVariable != null && thisVariable.getClassType() != null) {
+            String thisName = thisVariable.getClassType().getName();
+            if (thisName != null && ! thisName.equals(stackFrame.getClassName())) {
+                buf.append("<br>"); // NOI18N
+                buf.append(NbBundle.getMessage(CallStackNodeModel.class, "CTL_RunType", thisName)); // NOI18N
+            }
+        }
+        buf.append("</html>"); // NOI18N
+        return buf.toString();
+    }
     
     // innerclasses ............................................................
     

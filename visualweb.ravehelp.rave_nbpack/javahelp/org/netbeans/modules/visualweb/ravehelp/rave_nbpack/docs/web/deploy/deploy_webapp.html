@@ -5,6 +5,7 @@
 > -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Deploying a Web Application</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -41,12 +42,15 @@ The welcome file specified in the Project
 <li>(Optional) Specify a different <a href="deploy_changeserver.html">target server</a> or
  <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">browser</a>.</li>
   <li>In the Projects window, right-click the project's node and choose Run.</li>
-</ol>  
+</ol> 
+<ul class="note">
+<li><b>Note: </b> The IDE redeploys a Java EE application  when a change is  made.</li>
+</ul>
 The IDE sends the web application's URL to the server. The URL is derived from 
 the server's URL, the web application's context path, and the relative URL or welcome file. The first time
 you deploy an application per session to the Tomcat Web Server, you need to
  <a href="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html">authenticate</a> yourself.
-<h3>Troubleshooting</h3>
+ <h3>Troubleshooting</h3>
 <p>The Output window displays error information and the HTTP monitor displays 
 requests, data states, and the servlet environment.</p>
 <ul><li>If you get "file not found" errors when you execute a web application, see <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/bypassproxy.html">Accessing 

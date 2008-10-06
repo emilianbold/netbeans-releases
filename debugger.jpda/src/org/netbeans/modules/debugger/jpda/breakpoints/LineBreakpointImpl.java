@@ -234,11 +234,19 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    public boolean processCondition(Event event) {
+        if (event instanceof BreakpointEvent) {
+            return processCondition(event, getBreakpoint().getCondition (),
+                    ((BreakpointEvent) event).thread (), null);
+        } else {
+            return true; // Empty condition, always satisfied.
+        }
+    }
+
     public boolean exec (Event event) {
         if (event instanceof BreakpointEvent) {
             return perform (
                 event,
-                getBreakpoint().getCondition (),
                 ((BreakpointEvent) event).thread (),
                 ((LocatableEvent) event).location ().declaringType (),
                 null

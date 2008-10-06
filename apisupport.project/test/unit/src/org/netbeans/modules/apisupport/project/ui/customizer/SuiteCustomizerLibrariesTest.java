@@ -50,36 +50,44 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries.Enabled;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.explorer.ExplorerManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  * Tests module dependencies in a suite.
  * @author Jesse Glick
  */
-public class SuiteCustomizerLibrariesTest extends NbTestCase {
+public class SuiteCustomizerLibrariesTest extends TestBase {
     
     public SuiteCustomizerLibrariesTest(String name) {
         super(name);
     }
+
+//    public static Test suite() {
+//        return new SuiteCustomizerLibrariesTest("testClusterAndModuleNodesEnablement");
+//        // return new NbTestSuite(SuiteCustomizerLibrariesTest.class);
+//    }
     
     private NbPlatform platform;
     private SuiteProject suite;
 
     protected void setUp() throws Exception {
+        noDataDir = true;   // self-contained test; prevents name clash with 'custom' platform in data dir
         super.setUp();
-        clearWorkDir();
         // PLATFORM SETUP
-        TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
         File install = new File(getWorkDir(), "install");
         TestBase.makePlatform(install);
         // MODULE foo
@@ -210,6 +218,64 @@ public class SuiteCustomizerLibrariesTest extends NbTestCase {
                 join(SuiteCustomizerLibraries.findWarning(modules, bothClusters, Collections.singleton("foo2"))));
         // XXX much more could be tested; check coverage results
     }
+    
+    public void testClusterAndModuleNodesEnablement() throws Exception {    // #70714
+        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(), suite.getEvaluator(), Collections.<NbModuleProject>emptySet());
+        Category cat = Category.create("dummy", "dummy", null);
+        SuiteCustomizerLibraries scl = new SuiteCustomizerLibraries(suiteProps, cat);
+        SuiteCustomizerLibraries.TEST = true;
+        scl.refresh();
+        
+        ExplorerManager mgr = scl.getExplorerManager();
+        assertNotNull(mgr);
+        Children clusters = mgr.getRootContext().getChildren();
+        
+        // disable 'somecluster', all its modules should be disabled
+        Enabled sc = (Enabled) clusters.findChild("somecluster");
+        sc.setEnabled(false);
+        assertFalse("Cluster \"somecluster\" is enabled!", sc.isEnabled());
+        for (Node ch : sc.getChildren().getNodes()) {
+            if (ch instanceof Enabled) {
+                Enabled en = (Enabled) ch;
+                assertFalse("Module node under disabled cluster is enabled!", en.isEnabled());
+            }
+        }
+
+        // enable one of its modules, it should enable the cluster (and keep the others disabled)
+        Enabled bar = (Enabled) sc.getChildren().findChild("bar");
+        bar.setEnabled(true);
+        assertTrue("Cluster is disabled.", sc.isEnabled());
+        for (Node ch : sc.getChildren().getNodes()) {
+            if (ch instanceof Enabled) {
+                Enabled en = (Enabled) ch;
+                if ("bar".equals(en.getName())) {
+                    assertTrue("Module \"bar\" is disabled!", en.isEnabled());
+                } else {
+                    assertFalse("Module \"" + en.getName() + "\" is enabled!", en.isEnabled());
+                }
+            }
+        }
+        
+        // disabling the only module of "anothercluster" should disable it as well
+        Enabled ac = (Enabled) clusters.findChild("anothercluster");
+        assertTrue("Cluster \"anothercluster\" is disabled!", ac.isEnabled());
+        Enabled baz = (Enabled) ac.getChildren().findChild("baz");
+        baz.setEnabled(false);
+        assertFalse("Module \"baz\" is enabled!", baz.isEnabled());
+        assertFalse("Cluster \"anothercluster\" is enabled!", ac.isEnabled());
+
+        // check stored EnabledClusters and DisabledModules
+        scl.store();
+        SuiteProperties props = scl.getProperties();
+        String[] ec = props.getEnabledClusters();
+        Arrays.sort(ec);
+        // "anothercluster" should be disabled
+        assertTrue("Wrong clusters disabled!", Arrays.deepEquals(ec, new String[] { "harness", "platform", "somecluster" }));
+        String[] dm = props.getDisabledModules();
+        Arrays.sort(dm);
+        // although "baz" has been disabled, it shouldn't appear here, as its cluster is disabled 
+        assertTrue("Wrong modules disabled!", Arrays.deepEquals(dm, new String[] { "bar2", "foo", "foo2" }));
+ }
     
     private static String join(String[] elements) {
         if (elements != null) {

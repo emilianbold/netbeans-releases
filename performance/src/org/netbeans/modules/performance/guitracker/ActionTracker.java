@@ -43,6 +43,7 @@ package org.netbeans.modules.performance.guitracker;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Toolkit;
@@ -511,11 +512,11 @@ public class ActionTracker {
                 Component c = ce.getComponent();
                 
                 if (c instanceof Frame  || c instanceof JFrame) {
-                    add(TRACK_FRAME + id, ce.paramString() + " " + c.getClass().getName());
+                    add(TRACK_FRAME + id, ce.paramString() + " " + logComponentAndItsParents(c));
                 } else if (c instanceof Dialog || c instanceof JDialog) {
-                    add(TRACK_DIALOG + id, ce.paramString() + " " + c.getClass().getName());
+                    add(TRACK_DIALOG + id, ce.paramString() + " " + logComponentAndItsParents(c));
                 } else {
-                    add(TRACK_COMPONENT +id, ce.paramString() + " " + c.getClass().getName());
+                    add(TRACK_COMPONENT +id, ce.paramString() + " " + logComponentAndItsParents(c));
                 }
             }
         } else if (event instanceof InvocationEvent) {
@@ -526,7 +527,15 @@ public class ActionTracker {
             add(TRACK_UNKNOWN, "Unknown event: " + event.paramString());
         }
     }
-    
+
+    public static String logComponentAndItsParents(Component c) {
+        if (c instanceof Container) {
+            return LoggingRepaintManager.logContainerAndItsParents((Container)c);
+        } else {
+            return LoggingRepaintManager.logComponent(c);
+        }
+    }
+
     /**
      * Notify the ActionTracker that the scenario is finishing, and is to be
      * called by the scenario, when it's <code>run</code> method is finishing.
@@ -657,7 +666,7 @@ public class ActionTracker {
         StreamResult rslt = new StreamResult(out);
         
         out.println("<?xml version=\"1.0\" ?>");
-        out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl(new File(actionTrackerXslLocation)) + "\" media=\"screen\"?>");
+        out.println("<?xml-stylesheet type=\"text/xsl\" href=\"" + getPathToXsl() + "\" media=\"screen\"?>");
         tr.transform(docSrc, rslt);
     }
 
@@ -725,7 +734,7 @@ public class ActionTracker {
      * @param xslLocation where the ActionTracker.xsl file is going to be placed
      */
     public void setXslLocation(String xslLocation){
-        this.actionTrackerXslLocation = xslLocation;
+        ActionTracker.actionTrackerXslLocation = xslLocation;
     }
     
     /**
@@ -745,12 +754,12 @@ public class ActionTracker {
     -> up test_run/
    </pre>
      */
-    private static String getPathToXsl(File file) {
+    private static String getPathToXsl() {
         StringBuilder pathToXsl = new StringBuilder();
         
             String workdir=System.getProperty("nbjunit.workdir");
             pathToXsl.append(workdir+java.io.File.separator);
-            pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources");
+            pathToXsl.append("../../../../../src/org/netbeans/modules/performance/resources/ActionTracker.xsl");
         
         return pathToXsl.toString();
     }
@@ -949,6 +958,7 @@ public class ActionTracker {
          * Convert tuple to the string
          * @return string presentation of tuple
          */
+        @Override
         public String toString() {
             return this.getCodeName() +
                     " " + this.getName() +
@@ -966,6 +976,7 @@ public class ActionTracker {
          * @param obj tuple to be compared with <i>this</i>
          * @return true if are equals, false else
          */
+        @Override
         public boolean equals(Object obj) {
             Tuple t = (Tuple) obj;
             return this.getCode()==t.getCode() &&

@@ -45,7 +45,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -75,7 +75,7 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -152,7 +152,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                     
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                        org.mozilla.javascript.Node root = AstUtilities.getRoot(co);
+                        org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
                             JsParseResult rpr = AstUtilities.getParseResult(co);
                             if (rpr != null) {
@@ -163,7 +163,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                                     // In Java, we look for a class with the name corresponding to the file.
                                     // It's not as simple in Js.
                                     AstElement element = els.get(0);
-                                    org.mozilla.javascript.Node node = element.getNode();
+                                    org.mozilla.nb.javascript.Node node = element.getNode();
                                     treePathHandle = new JsElementCtx(root, node, element, co.getFileObject(), co);
                                     refactoring.getContext().add(co);
                                 }
@@ -289,7 +289,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();
         if (oldName == null) {
-            return new Problem(true, "Cannot determine name");
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
         }
         
         if (oldName.equals(newName)) {
@@ -755,23 +755,24 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
                 
                 Node scopeNode = null;
-                if (node.getType() == org.mozilla.javascript.Token.NAME ||
-                    node.getType() == org.mozilla.javascript.Token.BINDNAME ||
-                    node.getType() == org.mozilla.javascript.Token.PARAMETER) {
+                if (workingCopy.getFileObject() == searchCtx.getFileObject()) {
+                    if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
+                        node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
+                        node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
 
-                    
-                    // TODO - map this node to our new tree.
-                    // In the mean time, just search in the old seach tree.
-                    Node searchRoot = node;
-                    while (searchRoot.getParentNode() != null) {
-                        searchRoot = searchRoot.getParentNode();
+
+                        // TODO - map this node to our new tree.
+                        // In the mean time, just search in the old seach tree.
+                        Node searchRoot = node;
+                        while (searchRoot.getParentNode() != null) {
+                            searchRoot = searchRoot.getParentNode();
+                        }
+
+                        VariableVisitor v = new VariableVisitor();
+                        new ParseTreeWalker(v).walk(searchRoot);
+                        scopeNode = v.getDefiningScope(node);
                     }
-
-                    VariableVisitor v = new VariableVisitor();
-                    new ParseTreeWalker(v).walk(searchRoot);
-                    scopeNode = v.getDefiningScope(node);
                 }
-                
 
                 if (scopeNode != null) {
                     findLocal(searchCtx, fileCtx, scopeNode, oldName);
@@ -921,17 +922,24 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 case Token.FUNCTION:
                     desc = getString("UpdateMethodDef");
                     break;
+                case Token.NEW:
                 case Token.CALL:
                     desc = getString("UpdateCall");
                     break;
                 case Token.NAME:
-                    if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL) {
+                    if (node.getParentNode() != null && 
+                            (node.getParentNode().getType() == Token.CALL ||
+                             node.getParentNode().getType() == Token.NEW)) {
                         // Ignore 
                         desc = getString("UpdateCall");
                         break;
                     }
                     // Fallthrough
                 case Token.BINDNAME:
+                    if (oldCode != null && oldCode.length() > 0 && Character.isUpperCase(oldCode.charAt(0))) {
+                        desc = getString("UpdateClass");
+                        break;
+                    }
                     desc = getString("UpdateLocalvar");
                     break;
                 case Token.PARAMETER:
@@ -1046,7 +1054,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             case Token.NAME:
-                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                if ((node.getParentNode() != null && node.getParentNode().getType() == Token.CALL ||
+                     node.getParentNode() != null && node.getParentNode().getType() == Token.NEW) &&
                         node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
@@ -1054,7 +1063,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 // Fallthrough
             case Token.BINDNAME:
                 if (node.getString().equals(name)) {
-                    rename(node, name, null, getString("UpdateLocalvar"));
+                    rename(node, name, null, Character.isUpperCase(name.charAt(0)) ? getString("UpdateClass") : getString("UpdateLocalvar"));
                 }
             }
 
@@ -1076,7 +1085,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         @SuppressWarnings("fallthrough")
         private void find(AstPath path, JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
             switch (node.getType()) {
-            case org.mozilla.javascript.Token.OBJLITNAME: {
+            case org.mozilla.nb.javascript.Token.OBJLITNAME: {
                 if (node.getString().equals(name) && AstUtilities.isLabelledFunction(node)) {
                     // TODO - implement skip semantics here, as is done for functions!
                     // AstUtilities.getLabelledFunction(node);
@@ -1087,7 +1096,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 return;
             }
             
-            case org.mozilla.javascript.Token.FUNCNAME: {
+            case org.mozilla.nb.javascript.Token.FUNCNAME: {
                 if (node.getString().equals(name)) {
                     boolean skip = false;
 //
@@ -1129,7 +1138,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             }
-            case org.mozilla.javascript.Token.CALL: {
+            case org.mozilla.nb.javascript.Token.NEW:
+            case org.mozilla.nb.javascript.Token.CALL: {
                 String s = AstUtilities.getCallName(node, false);
                 if (s.equals(name)) {
                      // TODO - if it's a call without a lhs (e.g. Call.LOCAL),
@@ -1141,21 +1151,22 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                  }
                  break;
             }
-            case org.mozilla.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.javascript.Token.CALL) {
+            case org.mozilla.nb.javascript.Token.NAME:
+                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL ||
+                        node.getParentNode().getType() == org.mozilla.nb.javascript.Token.NEW) {
                     // Skip - call name is already handled as part of parent
                     break;
                 }
                 // Fallthrough
-            case org.mozilla.javascript.Token.STRING: {
+            case org.mozilla.nb.javascript.Token.STRING: {
                 int parentType = node.getParentNode().getType();
-                if (!(parentType == org.mozilla.javascript.Token.GETPROP ||
-                        parentType == org.mozilla.javascript.Token.SETPROP)) {
+                if (!(parentType == org.mozilla.nb.javascript.Token.GETPROP ||
+                        parentType == org.mozilla.nb.javascript.Token.SETPROP)) {
                     break;
                 }
                 // Fallthrough
             }
-            case org.mozilla.javascript.Token.BINDNAME: {
+            case org.mozilla.nb.javascript.Token.BINDNAME: {
                 // Global vars
                 if (node.getString().equals(name)) {
                     rename(node, name, null, null);

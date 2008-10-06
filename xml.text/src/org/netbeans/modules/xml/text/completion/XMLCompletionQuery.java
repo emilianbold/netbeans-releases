@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.text.syntax.*;
 import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
+import org.netbeans.modules.xml.text.bracematch.XMLBraceMatcher;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.openide.util.NbBundle;
 
@@ -158,7 +159,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         SyntaxElement se = helper.getSyntaxElement();
                         if(se instanceof StartTag) {
                             String tagName = ((StartTag)se).getNodeName();
-                            if(tagName != null)
+                            if(tagName != null && !XMLBraceMatcher.hasEndTag(doc, offset, tagName))
                                 list.add(new EndTagAutocompletionResultItem(tagName));
                         }
                     }
@@ -168,7 +169,9 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     List stlist = findStartTag((SyntaxNode)helper.getSyntaxElement(), !helper.getPreText().endsWith("/") ? "/" : "");
                     if (stlist != null && !stlist.isEmpty()) {
                         ElementResultItem item = (ElementResultItem)stlist.get(0); //we always get just one item
-                        if(!item.getItemText().startsWith("/") || item.getItemText().startsWith(helper.getPreText().substring(1))) {
+                        if(!XMLBraceMatcher.hasEndTag(doc, offset, item.getItemText()) &&
+                           (!item.getItemText().startsWith("/") ||
+                            item.getItemText().startsWith(helper.getPreText().substring(1)))) {
                             String title = NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", helper.getPreText());
                             return new XMLCompletionResult(component, title,
                                     stlist, helper.getOffset(), 0);
@@ -248,7 +251,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         // nobody knows what happened...
         return noSuggestion(component, sup.requestedAutoCompletion());
     }
-    
+        
     /**
      * Contruct result indicating that grammar is not able to give
      * a hint because document is too broken or invalid. Grammar
@@ -330,8 +333,13 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     }
     
     private List queryValues(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
-        Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
-        return translateValues(res);
+        try {
+            Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
+            return translateValues(res);
+        } catch (Exception ex) {            
+            //issue #118136: just catch and return
+            return null;
+        }
     }
     
     private List queryNotations(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {  //!!! to be implemented

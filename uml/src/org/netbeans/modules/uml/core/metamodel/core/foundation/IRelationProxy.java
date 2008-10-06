@@ -113,5 +113,19 @@ public interface IRelationProxy
 	 * Retrieves the element that physically owns the Connection type. If Connection returns 0, so will this method.
 	*/
 	public IElement getRelationOwner();
+        
+        /**
+         * This flag indicates whether this relationship is a reconnected one. 
+         * This flag is useful when used with validation. It relaxes the validation process 
+         * if  it's a reconnected relationship.
+         * @param val
+         */
+        public void setReconnectionFlag (boolean val);
+        
+        /**
+         * Checks if this relationship is a connected one.
+         * @return true if this relationship is a reconnected one; false otherwise.
+         */
+        public boolean isReconnected ();
 
 }

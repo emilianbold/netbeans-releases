@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +52,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -86,6 +85,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -130,60 +130,32 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     private boolean caseSensitive;
     private static final String[] REGEXP_WORDS =
         new String[] {
-            // Dbl-space lines to keep formatter from collapsing pairs into a block
-
             // Literals
-            
             "\\0", "The NUL character (\\u0000)",
-
             "\\t", "Tab (\\u0009)",
-            
             "\\n", "Newline (\\u000A)",
-            
             "\\v", "Vertical tab (\\u000B)",
-            
             "\\f", "Form feed (\\u000C)",
-            
             "\\r", "Carriage return (\\u000D)",
-            
             "\\x", "\\x<i>nn</i>: The latin character in hex <i>nn</i>",
-            
             "\\u", "\\u<i>xxxx</i>: The Unicode character in hex <i>xxxx</i>",
-            
             "\\c", "\\c<i>X</i>: The control character ^<i>X</i>",
-            
-            
 
             // Character classes
             "[]", "Any one character between the brackets",
-            
             "[^]", "Any one character not between the brackets",
-            
-            
-            
             "\\w", "Any ASCII word character; same as [0-9A-Za-z_]",
-            
             "\\W", "Not a word character; same as [^0-9A-Za-z_]",
-            
             "\\s", "Unicode space character",
-            
             "\\S", "Non-space character",
-            
             "\\d", "Digit character; same as [0-9]",
-            
             "\\D", "Non-digit character; same as [^0-9]",
-            
             "[\\b]", "Literal backspace",
-            
-            
             
             // Match positions
             "^", "Start of line",
-            
             "$", "End of line",
-            
             "\\b", "Word boundary (if not in a range specification)",
-            
             "\\B", "Non-word boundary",
             
             // According to JavaScript The Definitive Guide, the following are not supported
@@ -195,15 +167,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             //"\\Z", "End of string (except \\n)",
             
             "*", "Zero or more repetitions of the preceding",
-            
             "+", "One or more repetitions of the preceding",
-            
             "{m,n}", "At least m and at most n repetitions of the preceding",
-            
             "?", "At most one repetition of the preceding; same as {0,1}",
-            
             "|", "Either preceding or next expression may match",
-            
             "()", "Grouping",
             
             //"[:alnum:]", "Alphanumeric character class",
@@ -223,31 +190,18 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     // Strings section 7.8
     private static final String[] STRING_ESCAPES =
         new String[] {
-        
             "\\0", "The NUL character (\\u0000)",
-
             "\\b", "Backspace (0x08)",
-            
             "\\t", "Tab (\\u0009)",
-            
             "\\n", "Newline (\\u000A)",
-            
             "\\v", "Vertical tab (\\u000B)",
-            
             "\\f", "Form feed (\\u000C)",
-            
             "\\r", "Carriage return (\\u000D)",
-            
             "\\\"", "Double Quote (\\u0022)",
-            
             "\\'", "Single Quote (\\u0027)",
-            
             "\\\\", "Backslash (\\u005C)",
-            
             "\\x", "\\x<i>nn</i>: The latin character in hex <i>nn</i>",
-            
             "\\u", "\\u<i>xxxx</i>: The Unicode character in hex <i>xxxx</i>",
-            
             "\\", "\\<i>ooo</i>: The latin character in octal <i>ooo</i>",
 
             // PENDING: Is this supported?
@@ -261,91 +215,51 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         
             // Source: http://docs.jquery.com/DOM/Traversing/Selectors
             "nth-child()", "The n-th child of its parent",
-
             "first-child",  "First child of its parent",
-
             "last-child", "Last child of its parent",
-
             "only-child", "Only child of its parent",
-
             "empty", "Has no children (including text nodes)",
-
             "enabled", "Element which is not disabled",
-
             "disabled", "Element which is disabled",
-
             "checked", "Element which is checked (checkbox, ...)",
-
             "selected", "Element which is selected (e.g. in a select)",
-        
             "link", "Not yet visited hyperlink",
-            
             "visited", "Already visited hyperlink",
-            
             "active", "",
-            
             "hover", "",
-            
             "focus", "Element during user actions",
-            
             "target", "Target of the referring URI",
-            
             "lang()", "Element in given language",
-            
             ":first-line", "The first formatted line",
-            
             ":first-letter", "The first formatted letter",
-            
             ":selection", "Portion currently highlighted by the user",
-            
             ":before", "Generated content before an element",
-
             ":after", "Generated content after an element",
             
             // Custom Selectors
             "even", "Selects every other (even) element",
-
             "odd", "Selects every other (odd) element",
-            
             "eq()", "Selects the Nth element",
-            
             "nth()", "Selects the Nth element",
-            
             "gt()", "Selects elements whose index is greater than N",
-            
             "lt()", "Selects elements whose index is less than N",
-            
             "first", "Equivalent to :eq(0)",
-            
             "last", "Selects the last matched element",
-            
             "parent", "Elements that have children (including text)",
-            
             "contains('", "Elements which contain the specified text",
-            
             "visible", "Selects all visible elements",
-            
             "hidden", "Selects all hidden elements",
             
             // Form Selectors
             "input", "All form elements",
-            
             "text", "All text fields (type=\"text\")",
-            
             "password", "All password fields (type=\"password\")",
-            
             "radio", "All radio fields (type=\"radio\")",
-            
             "checkbox", "All checkbox fields (type=\"checkbox\")",
-            
             "submit", "All submit buttons (type=\"submit\")",
-            
             "image", "All form images (type=\"image\")",
-            
             "reset", "All reset buttons (type=\"reset\")",
-            
             "button", "All other buttons (type=\"button\")",
-            
             "file", "All file uploads (type=\"file\")",
     };
     
@@ -369,11 +283,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         "@name",
         "@namespace",
         "@param",
-        "@param",
         "@private",
         "@property",
         "@return",
-        "@scope",
         "@scope",
         "@static",
         "@type",
@@ -390,7 +302,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         NameKind kind = context.getNameKind();
         QueryType queryType = context.getQueryType();
         this.caseSensitive = context.isCaseSensitive();
-        HtmlFormatter formatter = context.getFormatter();
         
         // Temporary: case insensitive matches don't work very well for JavaScript
         if (kind == NameKind.CASE_INSENSITIVE_PREFIX) {
@@ -414,9 +325,19 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         doc.readLock(); // Read-lock due to Token hierarchy use
         try {
             Node root = parseResult != null ? parseResult.getRootNode() : null;
-            final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+            int astOffset = AstUtilities.getAstOffset(info, lexOffset);
             if (astOffset == -1) {
-                return CodeCompletionResult.NONE;
+                try {
+                    if (lexOffset < doc.getLength() && lexOffset > 0 && "\"\"".equals(doc.getText(lexOffset - 1, 2))) {
+                        // Completion in HTML in something like an empty attribute
+                        astOffset = 0;
+                    } else {
+                        return CodeCompletionResult.NONE;
+                    }
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return CodeCompletionResult.NONE;
+                }
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
             final FileObject fileObject = info.getFileObject();
@@ -428,7 +349,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             CompletionRequest request = new CompletionRequest();
             request.completionResult = completionResult;
             request.result = parseResult;
-            request.formatter = formatter;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
             request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -444,7 +364,20 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
             Token<? extends TokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
-                if (JsUtils.isJsFile(fileObject)) {
+                if (JsUtils.isJsFile(fileObject) || JsUtils.isJsonFile(fileObject)) {
+                    if (doc.getLength() == 0) {
+                        // Special case: empty document - no token, but completion is valid
+                        completeKeywords(proposals, request);
+
+                        // We already know that searching with an empty prefix will
+                        // give too many matches. Rather than having completely random
+                        // stuff show up, show up things starting with "a" to give
+                        // impression that we're showing top of the list and mark truncated
+                        request.prefix = "a"; // NOI18N
+                        completionResult.setTruncated(true);
+
+                        completeFunctions(proposals, request);
+                    }
                     return completionResult;
                 }
 
@@ -466,9 +399,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     return completionResult;
                 } else if (id == JsTokenId.STRING_LITERAL || id == JsTokenId.STRING_END) {
                     completeStrings(proposals, request);
+                    completionResult.setFilterable(false);
                     return completionResult;
                 } else if (id == JsTokenId.REGEXP_LITERAL || id == JsTokenId.REGEXP_END) {
                     completeRegexps(proposals, request);
+                    completionResult.setFilterable(false);
                     return completionResult;
                 }
             }
@@ -526,9 +461,18 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             }
 
             // Try to complete methods
+            if (prefix.length() == 0 && !request.inCall) {
+                // We already know that searching with an empty prefix will
+                // give too many matches. Rather than having completely random
+                // stuff show up, show up things starting with "a" to give
+                // impression that we're showing top of the list and mark truncated
+                request.prefix = "a"; // NOI18N
+                completionResult.setTruncated(true);
+            }
             if (completeFunctions(proposals, request)) {
                 return completionResult;
             }
+            
         } finally {
             doc.readUnlock();
         }
@@ -552,7 +496,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 List<Node> nodeList = localVars.get(name);
                 if (nodeList != null && nodeList.size() > 0) {
                     AstElement element = AstElement.getElement(request.info, nodeList.get(0));
-                    proposals.add(new PlainItem(element, request));
+                    proposals.add(new JsCompletionItem(element, request));
                 }
             }
         }
@@ -563,9 +507,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         if (startsWith(ARGUMENTS, prefix)) {
             // Make sure we're in a function before adding the arguments property
             for (Node n = node; n != null; n = n.getParentNode()) {
-                if (n.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
                     KeywordElement element = new KeywordElement(ARGUMENTS, ElementKind.VARIABLE);
-                    proposals.add(new PlainItem(element, request));
+                    proposals.add(new JsCompletionItem(element, request));
                     break;
                 }
             }
@@ -826,9 +770,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                             addElementClasses(proposals, request, prefix);
                         }
                     }
+
+                    return true;
                 }
 
-                return true;
+                break tokenLoop;
             } else if (id == JsTokenId.STRING_BEGIN) {
                 stringOffset = ts.offset() + token.length();
             } else if (!(id == JsTokenId.WHITESPACE ||
@@ -1256,7 +1202,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             if (element instanceof IndexedFunction) {
                 item = new FunctionItem((IndexedFunction)element, request);
             } else {
-                item = new PlainItem(request, element);
+                item = new JsCompletionItem(request, element);
             }
             proposals.add(item);
 
@@ -1320,7 +1266,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 Node method = AstUtilities.findLocalScope(node, path);
                 if (method != null) {
                     List<Node> nodes = new ArrayList<Node>();
-                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.javascript.Token.MISSING_DOT }, nodes);
+                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.nb.javascript.Token.MISSING_DOT }, nodes);
                     if (nodes.size() > 0) {
                         Node exprNode = nodes.get(0);
                         JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
@@ -1341,9 +1287,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     Iterator<Node> it = callPath.leafToRoot();
                     while (it.hasNext()) {
                         Node callNode = it.next();
-                        if (callNode.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                        if (callNode.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
                             break;
-                        } else if (callNode.getType() == org.mozilla.javascript.Token.CALL) {
+                        } else if (callNode.getType() == org.mozilla.nb.javascript.Token.CALL) {
                             Node method = AstUtilities.findLocalScope(node, path);
 
                             if (method != null) {
@@ -1351,7 +1297,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                                 type = analyzer.getType(callNode);
                             }
                             break;
-                        } else if (callNode.getType() == org.mozilla.javascript.Token.GETELEM) {
+                        } else if (callNode.getType() == org.mozilla.nb.javascript.Token.GETELEM) {
                             Node method = AstUtilities.findLocalScope(node, path);
 
                             if (method != null) {
@@ -1488,7 +1434,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     FunctionItem item = new FunctionItem((IndexedFunction)element, request);
                     proposals.add(item);
                 } else {
-                    PlainItem item = new PlainItem(request, element);
+                    JsCompletionItem item = new JsCompletionItem(request, element);
                     proposals.add(item);
                 }
             }
@@ -1619,7 +1565,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                         if (element instanceof IndexedFunction) {
                             item = new FunctionItem((IndexedFunction)element, request);
                         } else {
-                            item = new PlainItem(request, element);
+                            item = new JsCompletionItem(request, element);
                         }
                         // Exact matches
 //                        item.setSmart(method.isSmart());
@@ -1699,8 +1645,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         AstPath path = request.path;
         Node leaf = path.leaf();
         int leafType = leaf.getType();
-        if (leafType == org.mozilla.javascript.Token.OBJECTLIT || leafType == org.mozilla.javascript.Token.OBJLITNAME) {
-            if (leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+        if (leafType == org.mozilla.nb.javascript.Token.OBJECTLIT || leafType == org.mozilla.nb.javascript.Token.OBJLITNAME) {
+            if (leafType == org.mozilla.nb.javascript.Token.OBJLITNAME) {
                 leaf = leaf.getParentNode(); // leaf still won't be null, OBJLITNAME is always below an OBJECTLIT
             }
             // We're trying to complete object literal names. These should be properties we're
@@ -1712,8 +1658,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             
             Node parent = leaf.getParentNode();
             int parentType = parent.getType();
-            if (parentType == org.mozilla.javascript.Token.CALL ||
-                    parentType == org.mozilla.javascript.Token.NEW) {
+            if (parentType == org.mozilla.nb.javascript.Token.CALL ||
+                    parentType == org.mozilla.nb.javascript.Token.NEW) {
 
                 int last = params.size()-1;
                 if (index > last) {
@@ -1872,7 +1818,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     if (element instanceof IndexedFunction) {
                         item = new FunctionItem((IndexedFunction)element, request);
                     } else {
-                        item = new PlainItem(request, element);
+                        item = new JsCompletionItem(request, element);
                     }
                     found = true;
                     proposals.add(item);
@@ -2064,8 +2010,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return ParameterInfo.NONE;
         }
         int index = paramIndexHolder[0];
-        int anchorOffset = anchorOffsetHolder[0];
-
+        int astAnchorOffset = anchorOffsetHolder[0];
+        int anchorOffset = LexUtilities.getLexerOffset(info, astAnchorOffset);
 
         // TODO: Make sure the caret offset is inside the arguments portion
         // (parameter hints shouldn't work on the method call name itself
@@ -2234,8 +2180,16 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.getType() == org.mozilla.javascript.Token.CALL ||
-                            node.getType() == org.mozilla.javascript.Token.NEW) {
+                    int nodeType = node.getType();
+                    if (nodeType == org.mozilla.nb.javascript.Token.FUNCTION) {
+                        // See for example issue 149001
+                        // If the call is outside the current function scope,
+                        // we don't want to include it!
+                        break;
+                    }
+
+                    if (nodeType == org.mozilla.nb.javascript.Token.CALL ||
+                            nodeType == org.mozilla.nb.javascript.Token.NEW) {
                         call = node;
                         index = AstUtilities.findArgumentIndex(call, astOffset, path);
                         break;
@@ -2428,13 +2382,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         private JsParseResult result;
         private QueryType queryType;
         private FileObject fileObject;
-        private HtmlFormatter formatter;
         private Call call;
         private boolean inCall;
         private String fqn;
     }
 
-    private abstract class JsCompletionItem implements CompletionProposal {
+    private class JsCompletionItem implements CompletionProposal {
         protected CompletionRequest request;
         protected Element element;
         protected IndexedElement indexedElement;
@@ -2482,10 +2435,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean emphasize = (kind != ElementKind.PACKAGE && indexedElement != null) ? !indexedElement.isInherited() : false;
             if (emphasize) {
                 formatter.emphasis(true);
@@ -2522,10 +2473,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return formatter.getText();
         }
 
-        public String getRhsHtml() {
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
-
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (element.getKind() == ElementKind.PACKAGE || element.getKind() == ElementKind.CLASS) {
                 if (element instanceof IndexedElement) {
                     String origin = ((IndexedElement)element).getOrigin();
@@ -2585,16 +2533,12 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return indexedElement != null ? indexedElement.isSmart() : true;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
-        public String[] getParamListDelimiters() {
-            return new String[] { "(", ")" }; // NOI18N
-        }
-
         public String getCustomInsertTemplate() {
             return null;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 
@@ -2612,10 +2556,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             boolean strike = !SupportedBrowsers.getInstance().isSupported(function.getCompatibility());
             if (!strike && function.isDeprecated()) {
                 strike = true;
@@ -2680,14 +2622,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public List<String> getInsertParams() {
-            return function.getParameters();
-        }
-
-        @Override
         public String getCustomInsertTemplate() {
             final String insertPrefix = getInsertPrefix();
-            List<String> params = getInsertParams();
+            List<String> params = function.getParameters();
             String startDelimiter = "(";
             String endDelimiter = ")";
             int paramCount = params.size();
@@ -2755,38 +2692,28 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return ElementKind.KEYWORD;
         }
 
-        //@Override
-        //public String getLhsHtml() {
-        //    // Override so we can put HTML contents in
-        //    ElementKind kind = getKind();
-        //    HtmlFormatter formatter = request.formatter;
-        //    formatter.reset();
-        //    formatter.name(kind, true);
-        //    //formatter.appendText(getName());
-        //    formatter.appendHtml(getName());
-        //    formatter.name(kind, false);
-        //
-        //    return formatter.getText();
-        //}
+        @Override
+        public String getRhsHtml(final HtmlFormatter formatter) {
+            return null;
+        }
 
         @Override
-        public String getRhsHtml() {
+        public String getLhsHtml(final HtmlFormatter formatter) {
+            ElementKind kind = getKind();
+            formatter.name(kind, true);
+            formatter.appendText(keyword);
+            formatter.appendText(" "); // NOI18N
+            formatter.name(kind, false);
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
-                //formatter.appendText(description);
                 formatter.appendHtml(description);
-
-                return formatter.getText();
-            } else {
-                return null;
             }
+            return formatter.getText();
         }
 
         @Override
         public ImageIcon getIcon() {
             if (keywordIcon == null) {
-                keywordIcon = new ImageIcon(org.openide.util.Utilities.loadImage(Js_KEYWORD));
+                keywordIcon = new ImageIcon(ImageUtilities.loadImage(Js_KEYWORD));
             }
 
             return keywordIcon;
@@ -2837,11 +2764,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         //@Override
-        //public String getLhsHtml() {
+        //public String getLhsHtml(HtmlFormatter formatter) {
         //    // Override so we can put HTML contents in
         //    ElementKind kind = getKind();
-        //    HtmlFormatter formatter = request.formatter;
-        //    formatter.reset();
         //    formatter.name(kind, true);
         //    //formatter.appendText(getName());
         //    formatter.appendHtml(getName());
@@ -2851,10 +2776,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         //}
 
         @Override
-        public String getRhsHtml() {
+        public String getRhsHtml(HtmlFormatter formatter) {
             if (description != null) {
-                HtmlFormatter formatter = request.formatter;
-                formatter.reset();
                 //formatter.appendText(description);
                 formatter.appendHtml("<i>"); // NOI18N
                 formatter.appendHtml(description);
@@ -2891,16 +2814,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    // Todo, make the kind flexible and move it up to the spi
-    private class PlainItem extends JsCompletionItem {
-        PlainItem(Element element, CompletionRequest request) {
-            super(element, request);
-        }
-        PlainItem(CompletionRequest request, IndexedElement element) {
-            super(request, element);
-        }
-    }
-
     public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
         if (link.indexOf(':') != -1) {
             link = link.replace(':', '.');
@@ -2928,10 +2841,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public String getLhsHtml() {
+        public String getLhsHtml(HtmlFormatter formatter) {
             ElementKind kind = getKind();
-            HtmlFormatter formatter = request.formatter;
-            formatter.reset();
             formatter.name(kind, true);
             formatter.appendText(getName());
 
@@ -2965,11 +2876,6 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             return true;
         }
 
-        @Override
-        public List<String> getInsertParams() {
-            return null;
-        }
-        
         @Override
         public String getCustomInsertTemplate() {
             return null;

@@ -87,7 +87,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
 
     // !PW FIXME Can we extract the server name from the install?  That way,
     // perhaps we can distinguish between GF V3 and Sun AS 10.0
-    public static final String GLASSFISH_SERVER_NAME = "GlassFish V3 TP2";
+    public static final String GLASSFISH_SERVER_NAME = "GlassFish V3 Prelude";
 
     // Reasonable default values for various server parameters.  Note, don't use
     // these unless the server's actual setting cannot be determined in any way.
@@ -97,6 +97,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
     
@@ -111,35 +112,39 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     // api instance
     private ServerInstance commonInstance;
     
-    GlassfishInstance(Map<String, String> ip) {
-        commonSupport = new CommonServerSupport(ip);
-
+    private GlassfishInstance(Map<String, String> ip) {
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
         ic.add(this); // Server instance in lookup (to find instance from node lookup)
+
+        commonSupport = new CommonServerSupport(lookup, ip);
         ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
         updateModuleSupport();
     }
     
     private void updateModuleSupport() {
-        // !PW FIXME this is unstable
+        // !PW FIXME should read asenv.bat on windows.
         Properties asenvProps = new Properties();
         String homeFolder = commonSupport.getGlassfishRoot();
         File asenvConf = new File(homeFolder, "config/asenv.conf");
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(asenvConf));
-            asenvProps.load(is);
-        } catch(FileNotFoundException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-        } catch(IOException ex) {
-            Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
-            asenvProps = new Properties();
-        } finally {
-            if(is != null) {
-                try { is.close(); } catch (IOException ex) { }
+        if(asenvConf.exists()) {
+            InputStream is = null;
+            try {
+                is = new BufferedInputStream(new FileInputStream(asenvConf));
+                asenvProps.load(is);
+            } catch(FileNotFoundException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+            } catch(IOException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING, null, ex);
+                asenvProps = new Properties();
+            } finally {
+                if(is != null) {
+                    try { is.close(); } catch (IOException ex) { }
+                }
             }
+        } else {
+            Logger.getLogger("glassfish").log(Level.WARNING, asenvConf.getAbsolutePath() + " does not exist");
         }
         
         // Find all modules that have NetBeans support, add them to lookup if server
@@ -164,11 +169,13 @@ public class GlassfishInstance implements ServerInstanceImplementation {
      * @return GlassfishInstance object for this server instance.
      */
     public static GlassfishInstance create(String displayName, String installRoot, 
-            String glassfishRoot, int httpPort, int adminPort) {
+            String glassfishRoot, String domainsDir, String domainName, int httpPort, int adminPort) {
         Map<String, String> ip = new HashMap<String, String>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
+        ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+        ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
         ip.put(GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
         ip.put(GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
         GlassfishInstance result = new GlassfishInstance(ip);
@@ -217,7 +224,29 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public ServerState getServerState() {
         return commonSupport.getServerState();
     }
-    
+
+    void stopIfStartedByIde(long timeout) {
+        if(commonSupport.isStartedByIde()) {
+            ServerState state = commonSupport.getServerState();
+            if(state == ServerState.STARTING ||
+                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                try {
+                    Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                    if(timeout > 0) {
+                        OperationState opState = stopServerTask.get(timeout, TimeUnit.MILLISECONDS);
+                        if(opState != OperationState.COMPLETED) {
+                            Logger.getLogger("glassfish").info("Stop server failed...");
+                        }
+                    }
+                } catch(TimeoutException ex) {
+                    Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
+                } catch(Exception ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
+                }
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
@@ -274,20 +303,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
         // !PW FIXME Remove debugger hooks, if any
 //        DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerStateListener);
 
-        // !PW FIXME Stop server, if running & started by IDE
-//        stopIfStartedByIde();
-        
-        try {
-            Future<OperationState> stopServerTask = commonSupport.stopServer(null);
-            OperationState opState = stopServerTask.get(3000, TimeUnit.MILLISECONDS);
-            if(opState != OperationState.COMPLETED) {
-                Logger.getLogger("glassfish").info("Stop server failed...");
-            }
-        } catch(TimeoutException ex) {
-            Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
-        } catch(Exception ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
-        }
+        stopIfStartedByIde(3000L);
         
         // close the server io window
         String uri = commonSupport.getDeployerUri();

@@ -65,99 +65,47 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import javax.swing.Action;
-import org.netbeans.modules.groovy.grailsproject.actions.*;
-import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.io.File;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-
 
 /**
- * 
+ *
  * @author Martin Adamek
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
 
-    private static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
+    private static Image PACKAGE_BADGE = ImageUtilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
     private final SourceGroup g;
-    private SourceCategory category = SourceCategory.NONE;
-    GrailsProject project;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
-        this(DataFolder.findFolder(g.getRootFolder()), g);
-        
-        this.project = project;
-
+        this(DataFolder.findFolder(g.getRootFolder()), g, project);
         String pathName = g.getName();
-        String dirName = getDirName(g);
-        
-        category = getCategoryForName(dirName);
-
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }
-    
-    static SourceCategory getCategoryForName(String dirName){
-        
-        SourceCategory cat = SourceCategory.NONE;
-        
-        if (dirName.startsWith("conf")) {
-            cat = SourceCategory.CONFIGURATION;
-        } else if (dirName.startsWith("controllers")) {
-            cat = SourceCategory.CONTROLLERS;
-        } else if (dirName.startsWith("domain")) {
-            cat = SourceCategory.DOMAIN;
-        } else if (dirName.startsWith("i18n")) {
-            cat = SourceCategory.MESSAGES;
-        } else if (dirName.startsWith("services")) {
-            cat = SourceCategory.SERVICES;
-        } else if (dirName.startsWith("taglib")) {
-            cat = SourceCategory.TAGLIB;
-        } else if (dirName.startsWith("util")) {
-            cat = SourceCategory.UTIL;
-        } else if (dirName.startsWith("lib")) {
-            cat = SourceCategory.LIB;
-        } else if (dirName.startsWith("test")) {
-            cat = SourceCategory.TESTS;
-        } else if (dirName.startsWith("scripts")) {
-            cat = SourceCategory.SCRIPTS;
-        } else if (dirName.startsWith("src")) {
-            cat = SourceCategory.SRC;
-        } else if (dirName.startsWith("web-app")) {
-            cat = SourceCategory.WEBAPP;
-        } else if (dirName.startsWith("views")) {
-            cat = SourceCategory.VIEWS;
-        } 
 
-        return cat;
-    }
-    
-    
     static String getDirName(SourceGroup g){
         // Source Groups always use a slash as file-separator, no matter
         // whether we are dealing with unix or windows:
-        
+
         String pathName = g.getName();
         int lastSlash = pathName.lastIndexOf("/");
         String dirName = pathName.substring(lastSlash + 1);
         return dirName;
     }
-    
-    
-    private TreeRootNode(DataFolder folder, SourceGroup g) {
-        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g);
+
+
+    private TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
+        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project);
     }
 
-    private TreeRootNode(Node originalNode, SourceGroup g) {
+    private TreeRootNode(Node originalNode, SourceGroup g, GrailsProject project) {
         super(originalNode, new PackageFilterChildren(originalNode),
                 new ProxyLookup(
                 originalNode.getLookup(),
@@ -165,8 +113,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                                 // Adding TemplatesImpl to Node's lookup to narrow-down
                                 // number of displayed templates with the NewFile action.
                                 // see # 122942
-                                new TemplatesImpl(g)
-                                ) 
+                                new TemplatesImpl(project, g)
+                                )
                 ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
@@ -176,77 +124,15 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     public PasteType getDropType(Transferable t, int action, int index) {
         return null;
     }
-    
-    
-    
-    
-    /*  Here we can customize the Actions on the different source-directories.
-    Dispatching based on the Nodes name (better type) needs to be done here.
-     */
-    public Action[] getActions(boolean context) {
-        List<Action> result = new ArrayList<Action>();
-
-        switch (category) {
-            case CONFIGURATION:
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case CONTROLLERS:
-                result.add(new NewArtifactAction(project, SourceCategory.CONTROLLERS, "Create new controller"));
-                break;
-            case DOMAIN:
-                result.add(new NewArtifactAction(project, SourceCategory.DOMAIN, "Create new Domain Class"));
-                break;
-            case MESSAGES:
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case TESTS:
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case SRC:
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case WEBAPP:
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case SCRIPTS:
-                result.add(new NewArtifactAction(project, SourceCategory.SCRIPTS, "Create a new Command Script"));
-                break;
-            case SERVICES:
-                result.add(new NewArtifactAction(project, SourceCategory.SERVICES, "Create a new Service"));
-                break;
-            case TAGLIB:
-                result.add(new NewArtifactAction(project, SourceCategory.TAGLIB, "Create new Tag Library"));
-                result.add(CommonProjectActions.newFileAction());
-                break;
-            case UTIL:          
-                break;
-            case LIB:          
-                result.add(new AddLibraryAction((Project)project, "Add Library"));
-                break;
-            case VIEWS:
-                /* Usually, you don't directly create views on the "Views and Layouts" logical view, 
-                   but select a Domain Class and invoke the action in the context-menu of the domain-class.
-                   But some users might want to be able to hand-craft what's in the views directory,
-                   therfore we add newFileAction() here (see # 131775, 131777) */
-                
-                result.add(CommonProjectActions.newFileAction());
-                break;
-        }
-
-        // LOG.log(Level.WARNING, "getActions()" );
-        // LOG.log(Level.WARNING, "category: " + category);
-        return result.toArray(new Action[result.size()]);
-    }
-
 
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);
         if (icon == null) {
             Image image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            return Utilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
+            return ImageUtilities.mergeImages(image, PACKAGE_BADGE, 7, 7);
         } else {
-            return Utilities.icon2Image(icon);
+            return ImageUtilities.icon2Image(icon);
         }
     }
 

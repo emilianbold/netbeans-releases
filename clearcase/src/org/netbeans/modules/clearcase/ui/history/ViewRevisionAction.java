@@ -91,7 +91,7 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
     }
 
     public void actionPerformed(ActionEvent e) {
-
+        Utils.logVCSActionEvent("CC");
         String title = NbBundle.getMessage(ViewRevisionAction.class, "CTL_ViewRevisionDialog_Title", Utils.getContextDisplayName(ctx)); // NOI18N
         
         settings = new ViewRevisionPanel(ctx); 

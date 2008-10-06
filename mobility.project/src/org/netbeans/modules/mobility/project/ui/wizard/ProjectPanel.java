@@ -46,11 +46,13 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard;
 
+import java.awt.Component;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -499,6 +501,11 @@ public class ProjectPanel extends javax.swing.JPanel {
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((ProjectPanel) getComponent()).readData(wizard);
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
         }
         
         public void storeSettings(final Object obj) {

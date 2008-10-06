@@ -107,6 +107,9 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     /** Use Directory Chooser rather than File Chooser */
     private boolean dirChooser;
 
+    /** Use Directory abd file Chooser */
+    private boolean dirAndFileChooser;
+
     /** Use MspFileFilter as file filter */
     private boolean mspFilter;
 
@@ -123,7 +126,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     private boolean addBeginning;
 
     /** Used to store source filters */
-    private HashSet filters;
+    private HashSet<UnixRE> filters;
 
     /** Last chooser directory the user visited */
     private File lastChooserDir;
@@ -152,6 +155,9 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
     /** Add to beginning of list */
     protected final static int ADD_BEGINNING = 0x40;
+
+    /** Use a directory and file chooser */
+    protected final static int DIR_AND_FILE_CHOOSER = 0x80;
 
     /** The nextButton is set if we are dynamically setting the default */
     private JButton nextButton;
@@ -187,6 +193,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	expandDirs = (flags & EXPAND_DIRS) == EXPAND_DIRS;
 	dirChooser = (flags & DIR_CHOOSER) == DIR_CHOOSER;
+        dirAndFileChooser = (flags & DIR_AND_FILE_CHOOSER) == DIR_AND_FILE_CHOOSER;
 	mspFilter = (flags & MSP_FILTER) == MSP_FILTER;
 	dynamicNext = (flags & DYNAMIC_DEFAULT_BUTTONS) == DYNAMIC_DEFAULT_BUTTONS;
 	dynamicLast = (flags & DYNAMIC_LAST_BUTTON) == DYNAMIC_LAST_BUTTON;
@@ -487,7 +494,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      */
     private Object[] expandFileList(String text) {
 	StringTokenizer	st = new StringTokenizer(text);
-	LinkedList	list = new LinkedList();
+	LinkedList<ListItem>	aList = new LinkedList<ListItem>();
 	TokType		type = new TokType();
 	boolean		neFileAdded = false;
 	int		tcount = 0;
@@ -526,7 +533,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 		if (tmp.size() == 0) {
 		    if (!type.isRE()) {	// add nonexistant file
-			list.add(new ListItem(tok, false));
+			aList.add(new ListItem(tok, false));
 			neFileAdded = true;
 		    }
 		} else {
@@ -536,15 +543,15 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 			File file = new File(item.getName());
 
 			if (expandDirs && file.isDirectory()) {
-			    LinkedList l = processDirectory(tok, file);
+			    LinkedList<ListItem> l = processDirectory(tok, file);
 			    if (l != null) {
-				list.addAll(l);
+				aList.addAll(l);
 			    }
 			    else {
 				tcount--; // it was cancelled
 			    }
 			} else {
-			    list.add(new ListItem(
+			    aList.add(new ListItem(
 				    file.getAbsolutePath(), file.exists()));
 			}
 		    }
@@ -556,7 +563,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	// The criterial for displaying an alert is an arbitrary decision from
 	// WorkShop's ProjectWizard.
 	//
-	if (checkErrorConditions(tcount, list, neFileAdded)) {
+	if (checkErrorConditions(tcount, aList, neFileAdded)) {
 	    ErrorInfo einfo = getErrorInfo();
 	    NotifyDescriptor nd = new NotifyDescriptor(einfo.getMsg(),
 			einfo.getTitle(), NotifyDescriptor.DEFAULT_OPTION,
@@ -566,7 +573,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    DialogDisplayer.getDefault().notify(nd);
 	}
 
-	return list.toArray(new ListItem[list.size()]);
+	return aList.toArray(new ListItem[aList.size()]);
     }
 
 
@@ -593,8 +600,8 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *  @return		A linked list of type ItemList with an entry for each
      *			item to display.
      */
-    private LinkedList expandToken(String token, TokType type) {
-	LinkedList files = new LinkedList();
+    private LinkedList<ListItem> expandToken(String token, TokType type) {
+	LinkedList<ListItem> files = new LinkedList<ListItem>();
 	REParser rep = new REParser(token);
 	String comp = rep.getFirstComponent();
 	String re = rep.getRegularExpression();
@@ -608,13 +615,13 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    }
 	} else {
 	    type.setRE(true);
-	    LinkedList list = processDir(comp, re);
+	    LinkedList<ListItem> alist = processDir(comp, re);
 	    TokType dontcare = new TokType();
-	    if (list != null) {
+	    if (alist != null) {
 		if (rem == null) {
-		    files.addAll(list);
+		    files.addAll(alist);
 		} else {
-		    ListIterator iter = list.listIterator();
+		    ListIterator iter = alist.listIterator();
 
 		    while (iter.hasNext()) {
 			ListItem item = (ListItem) iter.next();
@@ -640,8 +647,8 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *  @param dir  The directory to match the UnixRE against
      *  @return	    The LinkedList containing all matches
      */
-    private LinkedList processDir(String dir, String pattern) {
-	LinkedList list = new LinkedList();
+    private LinkedList<ListItem> processDir(String dir, String pattern) {
+	LinkedList<ListItem> aList = new LinkedList<ListItem>();
 	File[] files = getFileArray(new File(dir));
 	UnixRE re;
 
@@ -661,13 +668,13 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		String name = files[i].toString();
 		if (re.match(name)) {
 		    File file = new File(name);
-		    list.add(new ListItem(file.getAbsolutePath(),
+		    aList.add(new ListItem(file.getAbsolutePath(),
 					file.exists()));
 		}
 	    }
 	}
 
-	return list;
+	return aList;
     }
 
 
@@ -783,7 +790,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *
      *  Note: If no files are chosen an empty LinkedList is returned.
      */
-    private LinkedList processDirectory(String name, File file) {
+    private LinkedList<ListItem> processDirectory(String name, File file) {
 
 	// Ask the user what to do
 	String msg = MessageFormat.format(
@@ -828,14 +835,14 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *		       subdirectories
      *  @return A linked list containing a ListItem for each file added
      */
-    private LinkedList addDirectoryFiles(
+    private LinkedList<ListItem> addDirectoryFiles(
 			    String parent, File dir, boolean recurse) {
-	LinkedList list = new LinkedList();
+	LinkedList<ListItem> aList = new LinkedList<ListItem>();
 
 	// Add each file in the directory
 	File[] files = dir.listFiles(new SrcsFileFilter());
 	for (int i = 0; i < files.length; i++) {
-	    list.add(new ListItem(
+	    aList.add(new ListItem(
 			parent + File.separator + files[i].getName(), true));
 	}
 
@@ -843,12 +850,12 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    // Recursively call this method for each subdirectory
 	    File[] dirs = dir.listFiles(new DirFilter());
 	    for (int i = 0; i < dirs.length; i++) {
-		list.addAll(addDirectoryFiles(parent + File.separator +
+		aList.addAll(addDirectoryFiles(parent + File.separator +
 			    dirs[i].getName(), dirs[i], true));
 	    }
 	}
 
-	return list;
+	return aList;
     }
 
 
@@ -885,13 +892,29 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
 
 	    for (int i = 0; i < files.length; i++) {
-		String path = IpeUtils.getRelativePath(cwd, files[i].getPath());
-		if (!model.contains(path)) {	    // expensive! but necessary
-		    if (addBeginning)
-		        model.add(0, path);
-		    else
-		        model.addElement(path);
-		}
+                if (files[i].isDirectory()) {
+                    LinkedList<ListItem> aList = processDirectory(files[i].getPath(), files[i]);
+                    if (aList != null) {
+                        for(ListItem item : aList){
+                            String path = IpeUtils.getRelativePath(cwd, item.getName());
+                            if (!model.contains(path)) {	    // expensive! but necessary
+                                if (addBeginning) {
+                                    model.add(0, path);
+                                } else {
+                                    model.addElement(path);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    String path = IpeUtils.getRelativePath(cwd, files[i].getPath());
+                    if (!model.contains(path)) {	    // expensive! but necessary
+                        if (addBeginning)
+                            model.add(0, path);
+                        else
+                            model.addElement(path);
+                    }
+                }
 	    }
 	}
     }
@@ -920,15 +943,17 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    fc.setApproveButtonText(getString("BTN_Approve"));	// NOI18N
 		    fc.setMultiSelectionEnabled(true);
 		    fc.setFileSystemView(new IpeFileSystemView(fc.getFileSystemView()));
-		    if (mspFilter) {
-			fc.setFileFilter(new MspFileFilter());
-		    }
 		    if (dirChooser) {
 			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		        fc.setDialogTitle(getString("TITLE_DirChooser"));	// NOI18N
-		    }
-		    else {
+                    } else if (dirAndFileChooser) {
+			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		        fc.setDialogTitle(getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
+		    }  else {
+		        fc.setDialogTitle(getString("DLG_FILE_CHOOSER_TITLE"));	// NOI18N
+		    }
+		    if (mspFilter) {
+			fc.setFileFilter(new MspFileFilter());
 		    }
 		}
 
@@ -972,6 +997,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *  The validation method. This panel is valid iff a writable directory is
      *  specified.
      */
+    @Override
     public boolean isPanelValid() { 
 
 	if (itemsRequired && list.getModel().getSize() == 0) {
@@ -982,6 +1008,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     }
 
 
+    @Override
     public void addNotify() {
 
 	super.addNotify();
@@ -990,6 +1017,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	removeBtn.setEnabled(false);
 	upArrow.setEnabled(false);
 	downArrow.setEnabled(false);
+    changeBtn.setEnabled(list != null && list.getSelectedIndex() >= 0);
 
 	if (itemsRequired && list.getModel().getSize() == 0) {
 	    nextButton.setEnabled(false);
@@ -1005,6 +1033,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     }
 
 
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 
@@ -1083,7 +1112,10 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	changeBtn.addActionListener(new ActionListener() {
 	    public void actionPerformed(ActionEvent e) {
-		model.set(list.getMinSelectionIndex(), getText());
+                String path = getText();
+                if (!model.contains(path)) {	    // expensive! but necessary
+                    model.set(list.getMinSelectionIndex(), path);
+                }
 	    }
 	});
 
@@ -1254,7 +1286,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	    if (filters == null) {
 		StringTokenizer st = new StringTokenizer(filterString);
-		filters = new HashSet(15);
+		filters = new HashSet<UnixRE>(15);
 
 		synchronized (filters) {
 		    try {
@@ -1317,7 +1349,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	    if (filters == null) {
 		StringTokenizer st = new StringTokenizer(filterString);
-		filters = new HashSet(15);
+		filters = new HashSet<UnixRE>(15);
 
 		synchronized (filters) {
 		    try {

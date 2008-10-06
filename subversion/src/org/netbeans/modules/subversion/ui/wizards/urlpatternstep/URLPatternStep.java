@@ -109,15 +109,15 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
 
     private void validateUserInput() {         
         if(urlPatternPanel.repositoryPathTextField.getText().trim().equals("")) {        
-            setInvalid(NbBundle.getMessage(URLPatternStep.class, "MSG_MissingFolder"));              
+            setInvalid(new AbstractStep.WizardMessage(NbBundle.getMessage(URLPatternStep.class, "MSG_MissingFolder"), true));
             return;                        
         }        
         refreshPreview();        
         valid();
     }
     
-    private void setInvalid(String msg) {
-        invalid(msg);  
+    private void setInvalid(AbstractStep.WizardMessage msg) {
+        invalid(msg);
         urlPatternPanel.previewLabel.setText(" ");
     }
     

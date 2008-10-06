@@ -38,26 +38,39 @@
  */
 package org.netbeans.modules.hibernate.service.spi;
 
+import java.net.MalformedURLException;
 import org.netbeans.modules.hibernate.service.*;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
+import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
+import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
+import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
-import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -105,10 +118,12 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
 
         try {
-            CustomClassLoader ccl = new CustomClassLoader(
-                    getProjectClassPath(
-                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
-                    this.getClass().getClassLoader());
+//            CustomClassLoader ccl = new CustomClassLoader(
+//                    getProjectClassPath(
+//                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
+//                    this.getClass().getClassLoader());
+
+            ClassLoader ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
             ccl.loadClass(dbDriver);
             logger.info("dbDriver loaded.");
             return true;
@@ -119,8 +134,12 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         return false;
     }
 
-    public FileObject getLocation() {
-        return Util.getSourceRoot(project);
+    public FileObject getSourceLocation() {
+        SourceGroup[] sourceGroups = HibernateUtil.getSourceGroups(project);
+        if (sourceGroups != null && sourceGroups.length != 0) {
+            return sourceGroups[0].getRootFolder();
+        }
+        return null;
     }
 
     /**
@@ -166,6 +185,14 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public List<FileObject> getAllHibernateConfigFileObjects() {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
+    }
+
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    public List<FileObject> getDefaultHibernateConfigFileObjects() {
+        return HibernateUtil.getDefaultHibernateConfigFileObjects(project);
     }
 
     /**
@@ -248,16 +275,31 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
+            Library ejb3PersistenceLibrary = libraryManager.getLibrary("ejb3-persistence");  //NOI18N
 
-            ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-            addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
+            Library[] librariesToBeRegistered = null;
+
+            // Bugfix: 140811
+            project.getProjectDirectory().getFileSystem().refresh(true);
+            // Adding ejb3-persistence.jar if project classpath doesn't contain it            
+            ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+            if (cp == null) {
+                logger.info("Cannot register libraries because cannot get the classpath for created file : " + fileInProject);
+                return false;
+            }
+            if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N                
+                librariesToBeRegistered = new Library[]{hibernateLibrary, ejb3PersistenceLibrary};
+            } else {
+                librariesToBeRegistered = new Library[]{hibernateLibrary};
+            }
+
+            addLibraryResult = ProjectClassPathModifier.addLibraries(librariesToBeRegistered, fileInProject, ClassPath.COMPILE);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;
         } catch (UnsupportedOperationException ex) {
-            //TODO handle this exception gracefully.
-            // For now just report it.
-            Exceptions.printStackTrace(ex);
+            // PCPM not implemented for this project. May be a freeform project ?
+            logger.info("Library registration not possible : " + project);
         }
         return addLibraryResult;
     }
@@ -271,12 +313,38 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<String> getAllHibernateMappingsFromConfiguration(HibernateConfiguration hibernateConfiguration) {
         List<String> mappingsFromConfiguration = new ArrayList<String>();
         SessionFactory fact = hibernateConfiguration.getSessionFactory();
+        List<String> mappingsFromJavaPackage = new ArrayList<String>();
         int count = 0;
         for (boolean val : fact.getMapping()) {
             String propName = fact.getAttributeValue(SessionFactory.MAPPING,
-                    count++, "resource"); //NOI18N
+                    count, "resource"); //NOI18N
+            if (propName != null) {
+                mappingsFromConfiguration.add(propName);
+            }
+            propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                    count, "file"); //NOI18N
+            if (propName != null) {
+                mappingsFromConfiguration.add(propName);
+            }
+            propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                    count, "package"); //NOI18N
+            if (propName != null) {
+                mappingsFromJavaPackage.add(propName);
+            }
+            count++;
+        }
 
-            mappingsFromConfiguration.add(propName);
+        // Process mappings from Java Package(s).
+        if (mappingsFromJavaPackage.size() != 0) {
+            List<String> allMappingFilesRelativeToSourceRoot = HibernateUtil.getAllHibernateMappingsRelativeToSourcePath(project);
+            for (String mappingRelativeToSourceRoot : allMappingFilesRelativeToSourceRoot) {
+                for (String mappingFromPackage : mappingsFromJavaPackage) {
+                    mappingFromPackage = mappingFromPackage.replace(".", "/");
+                    if (mappingRelativeToSourceRoot.startsWith(mappingFromPackage)) {
+                        mappingsFromConfiguration.add(mappingRelativeToSourceRoot);
+                    }
+                }
+            }
         }
         return mappingsFromConfiguration;
     }
@@ -305,11 +373,166 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     }
 
     /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    public List<URL> getProjectClassPath() {
+        return HibernateUtil.getProjectClassPath(project);
+    }
+
+    /**
      * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
      *
      * @return NetBeans project.
      */
     public Project getProject() {
         return project;
+    }
+
+    /**
+     * Returns list of annotated POJO (FQN) classnames (String) found in this 
+     * Hibernate configuration.
+     * 
+     * @param configurationFO hibernate configuration FileObject.
+     * @return List of classnames (FQN) (String) of all annotated POJO classes found in this configuration or an empty list.
+     */
+    public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO) {
+        List<String> annototedPOJOClassNameList = new ArrayList<String>();
+
+        try {
+            HibernateCfgDataObject configDO = (HibernateCfgDataObject) DataObject.find(configurationFO);
+            HibernateConfiguration configuration = configDO.getHibernateConfiguration();
+            SessionFactory fact = configuration.getSessionFactory();
+            int count = 0;
+            for (boolean val : fact.getMapping()) {
+                String propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                        count++, "class"); //NOI18N
+                if (propName != null) {
+                    annototedPOJOClassNameList.add(propName);
+                }
+            }
+        } catch (DataObjectNotFoundException dataObjectNotFoundException) {
+            logger.log(Level.INFO, "DataObject not found during Annototated POJO procesing.", dataObjectNotFoundException);
+        }
+        return annototedPOJOClassNameList;
+    }
+
+    /**
+     * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 
+     * that mapping file for this configuration.
+     * 
+     * @param configFileObject the configuration FileObject.
+     * @return Map of mapping FileObject with List of POJO class names.
+     */
+    public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject) {
+        Map<FileObject, List<String>> mappingPOJOMap = new HashMap<FileObject, List<String>>();
+        try {
+            HibernateCfgDataObject hibernateCfgDO = (HibernateCfgDataObject) DataObject.find(configFileObject);
+            for (String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
+                for (FileObject mappingFO : getAllHibernateMappingFileObjects()) {
+                    if (mappingFileName.contains(mappingFO.getName())) {
+                        List<String> l = getPOJONameFromMapping(mappingFO);
+                        mappingPOJOMap.put(mappingFO, l);
+                    }
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return mappingPOJOMap;
+    }
+
+    private List<String> getPOJONameFromMapping(FileObject mappingFO) {
+        List<String> pojoNamesList = new ArrayList<String>();
+        try {
+            HibernateMappingDataObject hibernateMappingDO = (HibernateMappingDataObject) DataObject.find(mappingFO);
+            for (MyClass myClass : hibernateMappingDO.getHibernateMapping().getMyClass()) {
+                String propName = myClass.getAttributeValue("name");
+                pojoNamesList.add(propName);
+            }
+
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return pojoNamesList;
+    }
+
+    /**
+     *@return true if the given classpath contains a class with the given name.
+     */
+    private boolean containsClass(ClassPath cp, String className) {
+        String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+
+        return cp.findResource(classRelativePath) != null;
+    }
+
+    /**
+     * Registers the selected DB Driver with the project.
+     * @param driver the driver classname.
+     * @param primaryFile a file in the project. Used to extend the classpath.
+     * @return true if successfully registered the given driver or false, if there's problem with registering.
+     */
+    public boolean registerDBDriver(String driver, FileObject primaryFile) {
+        boolean registeredDBDriver = false;
+
+        JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driver);
+        List<URL> driverURLs = new ArrayList<URL>();
+        for (JDBCDriver jdbcDriver : jdbcDrivers) {
+            for (URL url : jdbcDriver.getURLs()) {
+                java.io.File file = null;
+                if (url.getProtocol().equals("nbinst")) { //NOI18N
+                    try {
+                        file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
+                        logger.info("Bundled DB Driver Jar : " + file);
+                        if (file == null) {
+                            continue;
+                        }
+                        url = file.toURI().toURL();
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    logger.info("User provided DB Driver Jar : " + url);
+                }
+                if (FileUtil.isArchiveFile(url)) {
+                    driverURLs.add(FileUtil.getArchiveRoot(url));
+                } else {
+                    driverURLs.add(url);
+                }
+            }
+        }
+
+        try {
+
+            registeredDBDriver = ProjectClassPathModifier.addRoots(
+                    driverURLs.toArray(new URL[]{}),
+                    primaryFile,
+                    ClassPath.COMPILE);
+
+        } catch (UnsupportedOperationException e) {
+            // PCPM is not defined for this project. May be freeform project ?
+            logger.info("DB Driver registration not possible : " + project);            
+            registeredDBDriver = false;
+        }catch (Exception e) {
+            registeredDBDriver = false;
+            logger.log(Level.INFO, "Problem in registering db driver.", e);
+        }
+
+        return registeredDBDriver;
+    }
+
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    public ClassLoader getProjectClassLoader(URL[] classpaths) {
+        ClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        return customClassLoader;
     }
 }

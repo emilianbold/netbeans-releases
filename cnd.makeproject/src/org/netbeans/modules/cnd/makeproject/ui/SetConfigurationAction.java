@@ -135,7 +135,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
 		ConfigurationDescriptor projectDescriptor = (ConfigurationDescriptor)jmi.getClientProperty( PROJECT_KEY );
                 if (projectDescriptor != null ) {
                     projectDescriptor.getConfs().setActive(jmi.getText());
-		    projectDescriptor.setModified();
+		    //SprojectDescriptor.setModified();
                 }
                 
             }

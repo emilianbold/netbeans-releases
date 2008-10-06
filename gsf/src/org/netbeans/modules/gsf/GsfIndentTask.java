@@ -66,7 +66,7 @@ public class GsfIndentTask implements IndentTask {
         
         
         if (f != null) {
-            f.reindent(context.document(), context.startOffset(), context.endOffset());
+            f.reindent(context);
         }
     }
     

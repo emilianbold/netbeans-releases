@@ -73,6 +73,10 @@ public class UMLSetup extends JellyTestCase {
     public void openJEditProject() {
         openProject("jEdit41");
     }
+    
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }      
 
     public void closeMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();

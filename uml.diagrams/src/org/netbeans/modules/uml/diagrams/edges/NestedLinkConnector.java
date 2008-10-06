@@ -42,11 +42,14 @@ package org.netbeans.modules.uml.diagrams.edges;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.HashMap;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
+import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 
 /**
  * Creates a nested link connection.  The nested link connection represents 
@@ -57,7 +60,7 @@ import org.netbeans.modules.uml.drawingarea.LabelManager;
  */
 public class NestedLinkConnector extends AbstractUMLConnectionWidget
 {
-
+    
     public NestedLinkConnector(Scene scene)
     {
         super(scene);
@@ -127,4 +130,14 @@ public class NestedLinkConnector extends AbstractUMLConnectionWidget
     public String getWidgetID() {
         return UMLWidgetIDString.NESTEDLINKCONNECTIONWIDGET.toString();
     }
+
+    @Override
+    public void save(EdgeWriter edgeWriter) 
+    {
+        HashMap edgeProps = edgeWriter.getEdgeProperties();
+        edgeProps.put(UMLEdgeWidget.PROXY_PRESENTATION_ELEMENT, "NESTEDLINK");
+        edgeWriter.setEdgeProperties(edgeProps);
+        super.save(edgeWriter);
+    }
+      
 }

@@ -91,6 +91,9 @@ public class UMLDiagramNode extends UMLElementNode
     private DispatchHelper dispatchHelper = null;
     private boolean bCancelSaveDialog = false;
     private boolean listenersRegistered = false;
+    //
+    public static final String ETLD_EXTENSION = "etld"; // NOI18N
+    public static final String ETLP_EXTENSION = "etlp"; // NOI18N
     
     public UMLDiagramNode(IProxyDiagram diagram)
     {
@@ -143,9 +146,21 @@ public class UMLDiagramNode extends UMLElementNode
     // enables the node to be renamed
     public boolean canRename()
     {
-        return true;
+        return !isOldDiagramFormat();
+    }
+
+    @Override
+    public boolean canCopy()
+    {
+        return !isOldDiagramFormat();
+    }
+
+    @Override
+    public boolean canCut() {
+        return !isOldDiagramFormat();
     }
     
+    @Override
     public void destroy() throws IOException
     {
         ProxyDiagramManager proxyDiagramManager = ProxyDiagramManager.instance();
@@ -206,6 +221,7 @@ public class UMLDiagramNode extends UMLElementNode
         return mDiagramType;
     }
     
+    @Override
     public Transferable clipboardCopy()
     throws IOException
     {
@@ -234,6 +250,7 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    @Override
     public Action getPreferredAction()
     {
         // disable double click open action for those unsupported diagram types for 6.5 M1
@@ -247,6 +264,7 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    @Override
     public Action[] getActions(boolean context)
     {
         ArrayList<Action> actions = new ArrayList <Action>();
@@ -263,7 +281,7 @@ public class UMLDiagramNode extends UMLElementNode
         
         // see #102294
         if ( kind != IDiagramKind.DK_SEQUENCE_DIAGRAM &&
-                kind != IDiagramKind.DK_COLLABORATION_DIAGRAM )
+                kind != IDiagramKind.DK_COLLABORATION_DIAGRAM && !isOldDiagramFormat())
         {
             actions.add(SystemAction.get(CopyDiagramAction.class));
         }
@@ -272,7 +290,7 @@ public class UMLDiagramNode extends UMLElementNode
         actions.add(null);
         addContextMenus(actions);
         actions.add(null);
-        actions.add(SystemAction.get(PropertiesAction.class));;
+        actions.add(SystemAction.get(PropertiesAction.class));
 
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
@@ -303,6 +321,7 @@ public class UMLDiagramNode extends UMLElementNode
         }
     }
     
+    @Override
     public boolean equals(Object obj)
     {
         boolean retVal = false;
@@ -364,6 +383,7 @@ public class UMLDiagramNode extends UMLElementNode
         return retVal;
     }
     
+    @Override
     public String getType()
     {
         return mDiagramType;
@@ -836,6 +856,11 @@ public class UMLDiagramNode extends UMLElementNode
         }
         
         return success;
+    }
+    private boolean isOldDiagramFormat()
+    {
+        boolean ret=mDiagram.getFilename().endsWith("."+ETLD_EXTENSION);
+        return ret;
     }
 
     

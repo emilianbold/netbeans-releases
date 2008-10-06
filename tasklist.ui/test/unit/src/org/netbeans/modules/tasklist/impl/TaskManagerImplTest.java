@@ -38,13 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.tasklist.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner.Callback;
@@ -65,6 +65,12 @@ public class TaskManagerImplTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 300000;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         
@@ -80,7 +86,7 @@ public class TaskManagerImplTest extends NbTestCase {
     
     /**IZ #100463
      */
-    public void testProviderCanStartImmediatelly() throws Exception {
+    public void testProviderCanStartImmediately() throws Exception {
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {
             public void setScope(TaskScanningScope scope, Callback callback) {
                 callback.setTasks(file1, Collections.singletonList(Task.create(file1, "unknown", "x", 2)));
@@ -116,7 +122,7 @@ public class TaskManagerImplTest extends NbTestCase {
             }
         }, TaskFilter.EMPTY);
 
-        impl.waitFinished();
+        impl._waitFinished();
         
         assertEquals(1, impl.getTasks().getTasks().size());
     }
@@ -159,7 +165,7 @@ public class TaskManagerImplTest extends NbTestCase {
             }
         }, TaskFilter.EMPTY);
         
-        impl.waitFinished();
+        impl._waitFinished();
         
         assertEquals(1, impl.getTasks().getTasks().size());
         

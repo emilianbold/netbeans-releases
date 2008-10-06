@@ -56,6 +56,11 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public class TypeFactory {
+
+    public static CsmType getVarArgType() {
+        // for now we use null
+        return null;
+    }
     
     private TypeFactory() {}
     
@@ -127,8 +132,16 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth) {
         return createType(ast, file, ptrOperator, arrayDepth, null);
     }
+
+    public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmScope scope) {
+        return createType(ast, file, ptrOperator, arrayDepth, null, scope);
+    }
     
-    private static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent) {
+    private static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope) {
+        return createType(ast, file, ptrOperator, arrayDepth, parent, scope, false);
+    }
+
+    public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters) {
         boolean refence = false;
         int pointerDepth = 0;
         while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
@@ -137,7 +150,7 @@ public class TypeFactory {
                 if (token != null) {
                     switch( token.getType() ) {
                         case CPPTokenTypes.STAR:
-                            pointerDepth++;
+                            ++pointerDepth;
                             break;
                         case CPPTokenTypes.AMPERSAND:
                             refence = true;
@@ -147,14 +160,28 @@ public class TypeFactory {
             //}
             ptrOperator = ptrOperator.getNextSibling();
         }
-        
+
+        int returnTypePointerDepth = pointerDepth;
+        AST lookahead = ptrOperator;
+        while (lookahead != null) {
+            if (lookahead.getType() == CPPTokenTypes.RPAREN) {
+                // ptrOperator relates to function pointer, not to return type
+                returnTypePointerDepth = 0;
+                break;
+            } else if (lookahead.getType() == CPPTokenTypes.LPAREN) {
+                // OK, no need to look further
+                break;
+            }
+            lookahead = lookahead.getNextSibling();
+        }
+
         TypeImpl type;
 
         if (parent != null) {
             type = new NestedType(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
-        } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast)) {
-            type = new TypeFunPtrImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
-            ((TypeFunPtrImpl)type).init(TypeFunPtrImpl.getFunctionPointerParamList(ast, true));
+        } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters)) {
+            type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
+            ((TypeFunPtrImpl)type).init(ast, inFunctionParameters);
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
         }
@@ -214,7 +241,7 @@ public class TypeFactory {
                                         // We're done here, start filling nested type
                                         type.classifierText = sb;
                                         type.qname = (String[]) l.toArray(new String[l.size()]);
-                                        type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, type);
+                                        type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
                                         break;
                                     } else {
                                         if (TraceFlags.DEBUG) {

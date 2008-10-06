@@ -191,6 +191,7 @@ public class TraceModel extends TraceModelBase {
     private boolean stopAfterAll = false;
     private boolean printTokens = false;
     private boolean dumpModelAfterCleaningCache = false; // --clean4dump
+    private boolean dumpTemplateParameters = false; // --tparm
     
     private int repeatCount = 1; // --repeat
 
@@ -337,32 +338,25 @@ public class TraceModel extends TraceModelBase {
 	if( super.processFlag(flag) ) {
 	    return true;
 	} else if ("dumplib".equals(flag)) { // NOI18N
-	    // NOI18N
 	    dumpLib = true;
 	} else if ("listfiles".equals(flag)) { // NOI18N
-	    // NOI18N
 	    listFilesAtEnd = true;
 	} else if ("raw".equals(flag)) { // NOI18N
-	    // NOI18N
 	    testRawPerformance = true;
 	    //TraceFlags.DO_NOT_RENDER = true;
 	} else if ("listfiles".equals(flag)) { // NOI18N
-	    // NOI18N
 	    printUserFileList = true;
 	} else if ("mbs".equals(flag)) { // NOI18N
-	    // NOI18N
 	    memBySize = true;
 	} else if ("cleanrepository".equals(flag)) { // NOI18N
-	    // NOI18N
 	    doCleanRepository = true;
 	} else if ("folding".equals(flag)) { // NOI18N
-	    // NOI18N
 	    testFolding = true;
 	} else if ("clean4dump".equals(flag)) { // NOI18N
-	    // NOI18N
 	    dumpModelAfterCleaningCache = true;
-	}
-	else if ( "repeat".equals(flag) || flag.startsWith("repeat:")) { // NOI18N
+	} else if ("tparm".equals(flag)) { // NOI18N
+            dumpTemplateParameters = true;
+        } else if ( "repeat".equals(flag) || flag.startsWith("repeat:")) { // NOI18N
 	    int len = "repeat".length(); // NOI18N
 	    if( flag.length() == len ) {
 		repeatCount = 2;
@@ -1058,7 +1052,7 @@ public class TraceModel extends TraceModelBase {
 	if (firstFile == null || firstFile.equalsIgnoreCase(file.getAbsolutePath())) {
 	    firstFile = file.getAbsolutePath();
 	    APTDriver.getInstance().invalidateAll();
-	    getProject().invalidateFiles();
+	    getProject().debugInvalidateFiles();
 	} else {
 	    APTDriver.getInstance().invalidateAPT(buffer);
 	}
@@ -1151,7 +1145,7 @@ public class TraceModel extends TraceModelBase {
 	FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
         waitProjectParsed(false);
         if (dumpAst || writeAst || showAstWindow) {
-            tree = fileImpl.parse(null);
+            tree = fileImpl.debugParse();
         }
 	errCount = fileImpl.getErrorCount();
 	if (dumpPPState) {
@@ -1212,6 +1206,7 @@ public class TraceModel extends TraceModelBase {
 	if (dumpModel) {
 	    if (fileImpl != null) {
 		tracer.setDeep(deep);
+                tracer.setDumpTemplateParameters(dumpTemplateParameters);
 		tracer.setTestUniqueName(testUniqueName);
 		tracer.dumpModel(fileImpl);
 		if (!dumpFileOnly) {

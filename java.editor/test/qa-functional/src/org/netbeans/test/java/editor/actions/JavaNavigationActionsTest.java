@@ -45,6 +45,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -108,7 +109,7 @@ import org.netbeans.junit.NbModuleSuite;
     }
     
     
-    private void checkActionByKeyStroke(int key, int mod, int caretPosToSet, int etalon, boolean checkSelection){
+    private void checkActionByKeyStroke(int key, int mod, int caretPosToSet, int etalon, boolean checkSelection){     
         editor.setCaretPosition(caretPosToSet);
         txtOper.pushKey(key,mod);
         waitMaxMilisForValue(1500, getResolver(txtOper, etalon), Boolean.TRUE);
@@ -119,17 +120,21 @@ import org.netbeans.junit.NbModuleSuite;
             if (selectionStart != Math.min(caretPosToSet, etalon) ||
                     selectionEnd != Math.max(caretPosToSet, etalon)){
                 String keyString = KeyStroke.getKeyStroke(key, mod).toString();
+//                System.out.println(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+
+//                        newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
                 fail(keyString+": Action failed: [etalon/newCaretOffset/selectionStart/selectionEnd]: ["+etalon+"/"+
                         newCaretOffset+"/"+selectionStart+"/"+selectionEnd+"]");
             }
         }else{
             if (etalon != newCaretOffset){
                 String keyString = KeyStroke.getKeyStroke(key, mod).toString();
+//                System.out.println(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+
+//                        newCaretOffset+"]");
                 fail(keyString+": Action failed: [etalon/newCaretOffset]: ["+etalon+"/"+
                         newCaretOffset+"]");
             }
         }
-    }
+    }    
     
     public void testStandardNavigationActions(){
         openDefaultProject();
@@ -138,49 +143,49 @@ import org.netbeans.junit.NbModuleSuite;
         
             editor = getDefaultSampleEditorOperator();
             txtOper = editor.txtEditorPane();            
-
+            new EventTool().waitNoEvent(2000);
             // -------- test  RIGHT action ---
-            checkActionByKeyStroke(KeyEvent.VK_RIGHT, 0, 20, 21, false);
+            checkActionByKeyStroke(KeyEvent.VK_RIGHT, 0, 92, 93, false);
 
             // -------- test  LEFT action ---
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, 0, 20, 19, false);            
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, 0, 93, 92, false);
             
 
             // -------- test DOWN action ---
             // set caret at 10,14
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 200, 231, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 272, 277, false);
 
             // -------- test UP action ---
             // set caret at 10,14
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 200, 170, false);
+            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 272, 266, false);
 
             // -------- test  select RIGHT action ---
-            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.SHIFT_DOWN_MASK, 20, 21, true);
+            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.SHIFT_DOWN_MASK, 92, 93, true);
 
             // -------- test  select LEFT action ---
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.SHIFT_DOWN_MASK, 20, 19, true);            
-            
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.SHIFT_DOWN_MASK, 93, 92, true);
+
             // -------- test select DOWN action ---
             // set caret at 10,14
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 200, 231, true);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 272, 277, true);
 
             // -------- test select UP action ---
             // set caret at 10,14
-            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 200, 170, true);
+            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 272, 266, true);
 
             // -------- test caret-next-word action ---
             // set caret at 1,12
-            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK, 11, 22, false);
-            
+            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK, 11, 12, false);
+
             // -------- test caret-previous-word action -----
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK, 34, 33, false);
-            
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK, 34, 31, false);
+
             // -------- test selection-next-word action ---
             // set caret at 1,12
-            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 11, 22, true);
-            
+            checkActionByKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 11, 12, true);
+
             // -------- test selection-previous-word action -----
-            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 34, 33, true);
+            checkActionByKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 34, 31, true);
 
             // -------- test page-down action -------
             editor.setCaretPosition(5,1);
@@ -192,9 +197,9 @@ import org.netbeans.junit.NbModuleSuite;
             if (pageDownEnd < caretDown){
                 fail("PAGE_DOWN failed");
             }
-            
-            
-            // -------- test page-up action ------- 
+
+
+            // -------- test page-up action -------
             editor.setCaretPosition(32,1);
             int caretUp = txtOper.getCaretPosition();
             editor.setCaretPosition(38,1);
@@ -204,31 +209,31 @@ import org.netbeans.junit.NbModuleSuite;
             if (pageUpEnd > caretUp){
                 fail("PAGE_UP failed");
             }
-            
+
             // -------- test page-down action -------
             checkActionByKeyStroke(KeyEvent.VK_PAGE_DOWN, KeyEvent.SHIFT_DOWN_MASK, pageDownStart, pageDownEnd, true);
-            
+
             // -------- test page-up action -------
             checkActionByKeyStroke(KeyEvent.VK_PAGE_UP, KeyEvent.SHIFT_DOWN_MASK, pageUpStart, pageUpEnd, true);
-            
+
             // -------- test caret-begin-line action -------
             checkActionByKeyStroke(KeyEvent.VK_HOME, 0, 18, 0, false);
-            
+
             // -------- test caret-end-line action -------
-            checkActionByKeyStroke(KeyEvent.VK_END, 0, 18, 45, false);
-            
+            checkActionByKeyStroke(KeyEvent.VK_END, 0, 18, 72, false);
+
             // -------- test selection-begin-line action -------
             checkActionByKeyStroke(KeyEvent.VK_HOME, KeyEvent.SHIFT_DOWN_MASK, 18, 0, true);
-            
+
             // -------- test selection-end-line action -------
-            checkActionByKeyStroke(KeyEvent.VK_END, KeyEvent.SHIFT_DOWN_MASK, 18, 45, true);
+            checkActionByKeyStroke(KeyEvent.VK_END, KeyEvent.SHIFT_DOWN_MASK, 18, 72, true);
 
             // -------- test caret-begin action -------
             checkActionByKeyStroke(KeyEvent.VK_HOME, KeyEvent.CTRL_DOWN_MASK, 18, 0, false);
 
             // -------- test caret-end action -------
             checkActionByKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_DOWN_MASK, 18, txtOper.getDocument().getLength(), false);
-            
+
             // -------- test selection-begin action -------
             checkActionByKeyStroke(KeyEvent.VK_HOME, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, 18, 0, true);
 
@@ -241,10 +246,10 @@ import org.netbeans.junit.NbModuleSuite;
             
     }
     
-      public static Test suite() {
-          return NbModuleSuite.create(
-                  NbModuleSuite.createConfiguration(JavaNavigationActionsTest.class).enableModules(".*").clusters(".*"));
-      }
+     public static Test suite() {
+         return NbModuleSuite.create(
+                 NbModuleSuite.createConfiguration(JavaNavigationActionsTest.class).addTest(JavaNavigationActionsTest.class,"testStandardNavigationActions").enableModules(".*").clusters(".*"));
+     }
     
     
 }

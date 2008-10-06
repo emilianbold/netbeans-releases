@@ -56,24 +56,19 @@ PLATFORM_LONG_NAMES  [5] = "Mac OS X (powerpc)";
 PLATFORM_SHORT_NAMES [5] = "Mac OS X";
 */
 
-BUNDLE_SHORT_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
-BUNDLE_SHORT_NAMES[1] = "Mobility";
-BUNDLE_SHORT_NAMES[2] = "Java&nbsp;SE";
-BUNDLE_SHORT_NAMES[3] = "Ruby";
-BUNDLE_SHORT_NAMES[4] = "C/C++";
-BUNDLE_SHORT_NAMES[5] = "PHP";
-BUNDLE_SHORT_NAMES[6] = "";
+BUNDLE_SHORT_NAMES[0] = "Java&nbsp;SE";
+BUNDLE_SHORT_NAMES[1] = "Java";
+BUNDLE_SHORT_NAMES[2] = "Ruby";
+BUNDLE_SHORT_NAMES[3] = "C/C++";
+BUNDLE_SHORT_NAMES[4] = "PHP";
+BUNDLE_SHORT_NAMES[5] = "";
 
-BUNDLE_LONG_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
-BUNDLE_LONG_NAMES[1] = "Mobility";
-BUNDLE_LONG_NAMES[2] = "Java&nbsp;SE";
-BUNDLE_LONG_NAMES[3] = "Ruby";
-BUNDLE_LONG_NAMES[4] = "C/C++";
-BUNDLE_LONG_NAMES[5] = "PHP";
-BUNDLE_LONG_NAMES[6] = "All";
+BUNDLE_LONG_NAMES[0] = "Java&nbsp;SE";
+BUNDLE_LONG_NAMES[1] = "Java";
+BUNDLE_LONG_NAMES[2] = "Ruby";
+BUNDLE_LONG_NAMES[3] = "C/C++";
+BUNDLE_LONG_NAMES[4] = "PHP";
+BUNDLE_LONG_NAMES[5] = "All";
 
-var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE {0} Download";
-var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE {0} Download";
-
-var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/relnotes.html";
-var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/61/install.html";
+var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/65/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/65/install.html";

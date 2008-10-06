@@ -41,15 +41,6 @@
 
 package org.openide.nodes;
 
-import java.beans.*;
-import java.util.*;
-
-import junit.textui.TestRunner;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-
-import org.openide.nodes.*;
-
 /** Test whether Children.Keys inherited all functionality from Children.Array.
  * @author Jesse Glick
  */
@@ -58,6 +49,7 @@ public class ChildrenKeysAsArrayTest extends ChildrenArrayTest {
         super (s);
     }
 
+    @Override
     protected Children.Array createChildren () {
         return new Children.Keys () {
             protected Node[] createNodes (Object obj) {

@@ -212,23 +212,35 @@ public class J2SEConfigurationProviderTest extends NbTestCase {
     }
 
     public void testInitialListening() throws Exception { // #84781
+        final TestListener l = new TestListener();
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
-                TestListener l = new TestListener();
+            public Void run() throws Exception {                
                 pcp.addPropertyChangeListener(l);
                 Properties props = new Properties();
                 props.setProperty("$label", "X");
                 write(props, d, "nbproject/configs/x.properties");
-                props = new Properties();
-                props.setProperty("config", "x");
-                write(props, d, "nbproject/private/config.properties");
-                assertEquals(new HashSet<String>(Arrays.asList(ProjectConfigurationProvider.PROP_CONFIGURATIONS, ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)),
-                        l.events());
-                assertEquals(2, pcp.getConfigurations().size());
-                assertEquals("X", pcp.getActiveConfiguration().getDisplayName());
                 return null;
             }
         });
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {                
+                Properties props = new Properties();
+                props.setProperty("config", "x");
+                write(props, d, "nbproject/private/config.properties");                
+                return null;
+            }
+        });
+        //todo: workaround, fix me!
+        Thread.sleep(1000);
+        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run () throws Exception {
+                    assertEquals(new HashSet<String>(Arrays.asList(ProjectConfigurationProvider.PROP_CONFIGURATIONS, ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)),
+                        l.events());
+                    assertEquals(2, pcp.getConfigurations().size());
+                    assertEquals("X", pcp.getActiveConfiguration().getDisplayName());
+                    return null;
+                }
+        });                
     }
 
     private void write(Properties p, FileObject d, String path) throws IOException {

@@ -46,27 +46,22 @@ import java.awt.Window;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import junit.framework.AssertionFailedError;
 
 import org.netbeans.jellytools.JellyTestCase;
-
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
-
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
-import org.netbeans.junit.NbTestSuite;
 /**
  * Test case with implemented Performance Tests Validation support stuff.
  * This class provide methods for QA Performance measurement.
@@ -86,6 +81,7 @@ import org.netbeans.junit.NbTestSuite;
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
     public static final String OPEN_AFTER = "OPEN - after";
     public static final String OPEN_BEFORE = "OPEN - before";
+    
 
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
 
@@ -167,13 +163,10 @@ protected static int repeat = 4
 
     static {
         if(repeat_memory == -1) {
-            // XXX load our EQ and repaint manager
             tr = ActionTracker.getInstance();
             rm = new LoggingRepaintManager(tr);
             rm.setEnabled(true);
-            //leq = new LoggingEventQueue(tr);
-            //leq.setEnabled(true);
-        }
+       }
     }
 
     /** Tested component operator. */
@@ -216,6 +209,7 @@ protected static int repeat = 4
     /**
      * SetUp test cases: redirect log/ref, initialize performance data.
      */
+    @Override
     public void setUp() {
         //checkScanFinished();
 // has to be resolved in new test model execution        
@@ -244,6 +238,7 @@ protected static int repeat = 4
      * TearDown test cases: call method <code>call()</code> and closing all modal dialogs.
      * @see close
      */
+    @Override
     public void tearDown() {
         // tr = null;
         //close();
@@ -293,13 +288,13 @@ protected static int repeat = 4
 
         // filter default button on Vista - see issue 100961
         if("Windows Vista".equalsIgnoreCase(System.getProperty("os.name",""))){
-            repaintManager().addRegionFilter(repaintManager().VISTA_FILTER);
+            repaintManager().addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
         }
         
         String performanceDataName = setPerformanceName();
 
         tr.startNewEventList(performanceDataName);
-        tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
+        tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
                 ", Repeat="+repeat+
                 ", Wait_after_prepare="+WAIT_AFTER_PREPARE+
                 ", Wait_after_open="+WAIT_AFTER_OPEN+
@@ -328,14 +323,14 @@ protected static int repeat = 4
 
                     logMemoryUsage();
 
-                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
                     testedComponentOperator = open();
-                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_AFTER);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_AFTER);
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
-                    tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
-                    Thread.currentThread().sleep(wait_time);
+                    tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
+                    Thread.sleep(wait_time);
                     waitNoEvent(wait_time/4);
 
                     logMemoryUsage();
@@ -346,7 +341,7 @@ protected static int repeat = 4
                     new QueueTool().waitEmpty();
 
                     measuredTime[i] = getMeasuredTime();
-                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
                     // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
@@ -373,7 +368,7 @@ protected static int repeat = 4
                         // Uncomment if you want to run with analyzer tool
                         // com.sun.forte.st.collector.CollectorAPI.pause ();
 
-                        tr.add(tr.TRACK_TRACE_MESSAGE, "CLOSE - before");
+                        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "CLOSE - before");
                         close();
 
                         closeAllModal();
@@ -394,7 +389,7 @@ protected static int repeat = 4
             tr.startNewEventList("shutdown hooks");
             shutdown();
             closeAllDialogs();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
+            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing: " + e);
             e.printStackTrace(getLog());
@@ -718,7 +713,7 @@ protected static int repeat = 4
             Runtime runtime = Runtime.getRuntime();
             long totalMemory = runtime.totalMemory();
             long freeMemory = runtime.freeMemory();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
+            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
         }
     }
 
@@ -731,11 +726,11 @@ protected static int repeat = 4
             try{
                 System.runFinalization();
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
             }catch(Exception exc){
                 exc.printStackTrace(System.err);
             }
@@ -794,14 +789,18 @@ protected static int repeat = 4
             ex.printStackTrace(getLog());        
         }
 
+
+        String suite_fqn="org.netbeans.performance.unknown";
+        suite_fqn=System.getProperty("suitename");
+
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
-            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "failed", expectedTime ,measuredValues, repeat);
+            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "failed", expectedTime ,measuredValues, repeat);
             captureScreen = false;
             fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
                     + " ] > expectedTime[" + expectedTime 
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
         } 
-        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, "ms", "passed", expectedTime ,measuredValues, repeat);
+        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName,this.getClass().getCanonicalName(), suite_fqn, "ms", "passed", expectedTime ,measuredValues, repeat);
     }
 
     /**
@@ -993,13 +992,15 @@ protected static int repeat = 4
      * done if your tests extend PerformanceTestCase.
      * @return testCaseName (all '|' are replaced by '#' if it was changed if not call super.getName() !
      */
+    @Override
     public String getName(){
         String originalTestCaseName = super.getName();
 
         if(renamedTestCaseName.containsKey(originalTestCaseName))
             return (renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
-        else
-            return originalTestCaseName;
+        else {
+            return this.getClass().getSimpleName() + "." + originalTestCaseName;
+        }
     }
 
     /**
@@ -1101,6 +1102,32 @@ protected static int repeat = 4
             exc.printStackTrace(getLog());
         }
 
+    }
+
+    /**
+     * Workaround for issue 145119. Disables NetBeans status bar effects
+     * Invoke this from suite() method
+     */
+    public static void disableStatusBarEffects() {
+        System.setProperty("org.openide.awt.StatusDisplayer.DISPLAY_TIME", "0");
+    }
+
+    /**
+     * Workaround for issue 148463. Disables PHP from opening readme html when
+     * PHP Sample Project is created
+     * Invoke this from suite() method
+     */
+    public static void disablePHPReadmeHTML() {
+        System.setProperty("org.netbeans.modules.php.samples.donotopenreadmehtml", "true");
+    }
+
+    /**
+     * This method should be called from suite() method to initialize 
+     * environment before performance tests are executed
+     */
+    public static void prepareForMeasurements() {
+        disableStatusBarEffects();
+        disablePHPReadmeHTML();
     }
 
 }

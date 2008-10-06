@@ -40,7 +40,7 @@
 <mapID target="debug.fix.watch" url="debug/debug_fix_watch.html" />
 <mapID target="debug.new.watch" url="debug/debug_new_watch.html" />
 <mapID target="debug.customize.watch" url="debug/debug_new_watch.html" />
-<mapID target="debug.pop" url="debug/debug_pop.html" />
+<mapID target="debug.pop" url="debug/debug_callstack.html#pop" />
 <mapID target="debug.callstack" url="debug/debug_callstack.html" />
 <mapID target="debug.variables" url="debug/debug_variables.html" />
 <mapID target="breakpoint.about" url="debug/breakpoint_about.html" />
@@ -54,7 +54,9 @@
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
 <mapID target="debug_expressionstep" url="debug/debug_expressionstep.html" />
-<mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
+<mapID target="debug.window" url="debug/CSH/debug_window.html" />
+<!-- Debugging window id -->
+<mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
@@ -161,12 +163,21 @@
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
+<!--begin Groovy section-->
+
+<mapID target="groovy_intro" url="groovy/groovy_intro.html" />
+<mapID target="groovy_enable" url="groovy/groovy_enable.html" />
+<mapID target="groovy_edit" url="groovy/groovy_edit.html" />
+
+
+
 <!--begin Spring Framework section-->
 
 <mapID target="spring.framework.about" url="spring/about.html" />
 <mapID target="spring.framework.add" url="spring/add-support.html" />
 <mapID target="spring.framework.create" url="spring/create-config-file.html" />
 <mapID target="spring.framework.organize" url="spring/organize-files.html" />
+<mapID target="spring.framework.locate.beans" url="spring/locate-beans.html" />
 
 <!--Spring CSH IDs:-->
 <mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
@@ -205,19 +216,12 @@
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
 <mapID target="internation.formed" url="internationalize/formedstrings.html" />
 <mapID target="internation.addparams" url="internationalize/addparams.html" />
-<mapID target="internation.settings" url="internationalize/custominter.html" />
 <mapID target="internation.wizard" url="internationalize/i18nwizard.html" />
-<mapID target="internation.replformat" url="internationalize/replacingformat.html" />
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
-<mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
 <mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
 <mapID target="i18n.pe.bundlestring" url="internationalize/bundleformat.html" />
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
-<mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
-<mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
-<!-- CSH Help ID : Options : Advanced Options : Editing : Internationalization -->
-<mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
 <mapID target="netbeans.optionsDialog.java.formatting" url="configure/options_javacode.html" />
 <mapID target="netbeans.optionsDialog.java.hints" url="configure/options_javacode.html" />
 <mapID target="netbeans.optionsDialog.java.tasklist" url="configure/options_javacode.html" />
@@ -463,7 +467,7 @@
 <mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>
 <mapID target="NetbeansDebuggerGoToCalledMethodAction" url="debug/debug_callstack.html"/>
 <mapID target="NetbeansDebuggerGoToCallingMethodAction" url="debug/debug_callstack.html"/>
-<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_pop.html"/>
+<mapID target="NetbeansDebuggerPopTopmostFrameAction" url="debug/debug_callstack.html#pop"/>
 
     <!-- New File Persistence CSH -->
     
@@ -471,6 +475,8 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/general/persist_jpa_fromentity.html" />
+
    
    
        <!-- Persistence Unit Visual Editor CSH -->
@@ -485,6 +491,26 @@
 
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
+
+<!-- Begin Hibernate section -->
+    <mapID target="hibernate_about" url="hibernate/hibernate_about.html" />
+    <mapID target="hibernate_add" url="hibernate/hibernate_addsupport.html" />
+    <mapID target="hibernate_cfg" url="hibernate/hibernate_cfg.html" />
+    <mapID target="hibernate_cfgedit" url="hibernate/hibernate_cfgedit.html" />
+    <mapID target="hibernate_fromdb" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="hibernate_util" url="hibernate/hibernate_util.html" />
+    <mapID target="hibernate_hql" url="hibernate/hibernate_hql.html" />
+    <mapID target="hibernate_map" url="hibernate/hibernate_mapping.html" />
+    <mapID target="hibernate_workingwith" url="hibernate/hibernate_workingwith.html" />
+
+<!-- Hibernate topics CSH -->
+    
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="hibernate/hibernate_mapping.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengNameLocationWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="hibernate/hibernate_cfg.html" />
+
 
 
 
@@ -501,6 +527,14 @@
     <mapID target="org.netbeans.modules.junit.wizards.StepProblemMessage" url="junit/junit_creatingtests.html" /> 
     <!-- Choose JUnit version dialog box -->
     <mapID target="org.netbeans.modules.junit.select_junit_version" url="junit/junit_csh_chooseversion.html" /> 
+    <!-- New JUnit Test - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.EmptyTest" url="junit/junit_csh_emptytest.html" />
+    <!-- New JUnit Test for Existing Class - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.SimpleTest" url="junit/junit_csh_simpletest.html" />  
+    <!-- New JUnit Test Suite - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.TestSuite" url="junit/junit_csh_testsuite.html" />  
+
+
 
 
 
@@ -550,16 +584,13 @@ right now the IDs don't seem towork:-->
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
 
-<!--CSH ID for Options (Advanced)| Editing | Form Editor Settings :-->
-    <mapID target="gui.configuring" url="configure/options_form_classic.html" />
+
 <!--ID for CSH in Options | Basic Options -  Miscellaneous GUI Builder Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
     
 <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
     <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
   
-<!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
-    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
 
 
     <!-- End of "CSH" section -->

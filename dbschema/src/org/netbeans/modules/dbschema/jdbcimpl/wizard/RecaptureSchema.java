@@ -379,7 +379,7 @@ public class RecaptureSchema {
         assert url != null;
         
         // Strip off connection properties
-        url = url.split("[\\?\\&;]")[0]; // NOI8N
+        url = url.split("[\\?\\&;]")[0]; // NOI18N
         
         return url;
     }

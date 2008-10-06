@@ -44,6 +44,8 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.php.project.ui.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
@@ -70,7 +72,9 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         }
         File htDocs = null;
         for (File root : fsRoots) {
+            LOGGER.fine("FS root: " + root);
             if (isFloppy(root)) {
+                LOGGER.fine("Skipping floppy: " + root);
                 continue;
             }
             // standard apache installation
@@ -96,7 +100,8 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         if (htDocs != null) {
             String documentRoot = getFolderName(htDocs, projectName);
             String url = getDefaultUrl(projectName);
-            return Arrays.asList(new DocumentRoot(documentRoot, url, htDocs.canWrite()));
+            String hint = NbBundle.getMessage(WindowsPhpEnvironment.class, "TXT_HtDocs");
+            return Arrays.asList(new DocumentRoot(documentRoot, url, hint, Utils.isFolderWritable(htDocs)));
         }
         return Collections.<DocumentRoot>emptyList();
     }
@@ -107,8 +112,9 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     }
 
     private static boolean isFloppy(File root) {
-        return root.getName().toLowerCase().startsWith("a:") // NOI18N
-                || root.getName().toLowerCase().startsWith("b:"); // NOI18N
+        String absolutePath = root.getAbsolutePath();
+        LOGGER.fine("Testing floppy on " + absolutePath);
+        return absolutePath.toLowerCase().startsWith("a:") // NOI18N
+                || absolutePath.toLowerCase().startsWith("b:"); // NOI18N
     }
-
 }

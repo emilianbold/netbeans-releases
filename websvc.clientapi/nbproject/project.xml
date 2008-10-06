@@ -158,6 +158,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.customization</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.api.client</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.client</package>

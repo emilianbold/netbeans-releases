@@ -40,27 +40,29 @@
 package org.netbeans.modules.db.sql.history;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author John Baker
  */
 public class SQLHistoryModelImpl implements SQLHistoryModel {    
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
-    public static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
+    private static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
+    private static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "10000"; // NOI18N
+    private static final int SAVE_STATEMENTS_EMPTY = 0; // NOI18N
+    private static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
+    private static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
+    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
 
-    List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+    List<SQLHistory> _sqlHistoryList = new ArrayList<SQLHistory>();
     
     public void initialize() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -74,27 +76,100 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public List<SQLHistory> getSQLHistoryList() {
+    public List<SQLHistory> getSQLHistoryList() throws SQLHistoryException {
         List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
+        _sqlHistoryList.clear();
         try {
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            boolean isRewriteSQLRequired = false;
+            FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
+            if (historyRoot == null) {
+                return new ArrayList<SQLHistory>();
+            }
+            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
+            // Read persisted SQL from  file            
+            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
+            // Remove duplicates
+            if (!isSQLUnique(retrievedSQL)) {
+                retrievedSQL = removeDuplicates(retrievedSQL);
+                isRewriteSQLRequired = true;
+            }
+            // Get saved limit
+            String savedLimit = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+            if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
+                savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
+            }
+            int limit = Integer.parseInt(savedLimit);
+            // Remove any elements if save limit is exceeded
+            if (retrievedSQL.size() > limit) {
+                retrievedSQL = removeExtraSQL(retrievedSQL, limit);
+                isRewriteSQLRequired = true;
+            }
+            if (isRewriteSQLRequired) {
+                // Remove all elements from sql_history.xml
+                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, historyRoot);
+                // Write new list;  reversing list is required for persisting the SQL
+                Collections.reverse(retrievedSQL);
+                SQLHistoryPersistenceManager.getInstance().create(historyRoot, retrievedSQL);
+                // return list to the expected order for viewing
+                Collections.reverse(retrievedSQL);
+            }
         } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new SQLHistoryException();
         }
-        
-        if (null == retrievedSQL) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryModelImpl.class, "MSG_SQLHistoryFileError"));
-            return new ArrayList<SQLHistory>();
-        } else {
-            return retrievedSQL;
+        return retrievedSQL;
+    }
+    
+    private boolean isSQLUnique(List<SQLHistory> sqlHistoryList) {
+        List<SQLHistory> revSqLHistoryList = new ArrayList<SQLHistory>();
+        boolean isUnique = true;
+
+        for (SQLHistory sqlHistory : sqlHistoryList) {
+            for (SQLHistory revHistory : revSqLHistoryList) {
+                if (revHistory.getSql().trim().equals(sqlHistory.getSql().trim())) {
+                    if (revHistory.getUrl().equals(sqlHistory.getUrl())) {
+                        isUnique = false;
+                    }
+                }
+            }
+            revSqLHistoryList.add(sqlHistory);
         }
+        return isUnique;
+    }
+    
+    private List<SQLHistory> removeDuplicates(List<SQLHistory> sqlHistoryList) {
+         List<SQLHistory> revSqLHistoryList = new ArrayList<SQLHistory>();
+         boolean canAdd = true;
+            for (SQLHistory sqlHistory : sqlHistoryList) {
+                for (SQLHistory revHistory : revSqLHistoryList) {
+                    if (revHistory.getSql().trim().equals(sqlHistory.getSql().trim())) {
+                        if (revHistory.getUrl().equals(sqlHistory.getUrl())) {
+                            canAdd = false;
+                        }
+                    }
+                }
+                if (canAdd) {
+                    revSqLHistoryList.add(sqlHistory);
+                } else {
+                    canAdd = true;
+                }
+            }
+            return revSqLHistoryList;        
+    }
+    
+    private List<SQLHistory> removeExtraSQL(List<SQLHistory> sqlHistoryList, int limit) {
+        int i = 0;
+        List<SQLHistory> revSqLHistoryList = new ArrayList<SQLHistory>();
+
+        for (SQLHistory sqlHistory : sqlHistoryList) {
+            if (i < limit) {
+                revSqLHistoryList.add(sqlHistory);
+            }
+            i++;
+        }    
+        return revSqLHistoryList;
     }
 
     public void setSQLHistoryList(List<SQLHistory> sqlHistoryList) {
-        this.sqlHistoryList = sqlHistoryList;
+        _sqlHistoryList = sqlHistoryList;
     }
 }

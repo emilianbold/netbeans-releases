@@ -121,8 +121,12 @@ public class EntityClassInfo {
                     type = packageName + "." + name;
 
                     TypeElement classElement = JavaSourceHelper.getTopLevelClassElement(controller);
-                    extractFields(classElement);
-                    extractFieldsFromMethods(classElement);
+                    
+                    if (useFieldAccess(classElement)) {
+                        extractFields(classElement);
+                    } else {
+                        extractFieldsFromMethods(classElement);
+                    }
                 }
             }, true);
         } catch (IOException ex) {
@@ -174,7 +178,7 @@ public class EntityClassInfo {
 
         for (ExecutableElement method : methods) {
             Set<Modifier> modifiers = method.getModifiers();
-            if (modifiers.contains(Modifier.STATIC)) {
+            if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE)) {
                 continue;
             }
 
@@ -184,7 +188,7 @@ public class EntityClassInfo {
                 fieldInfo.addAnnotation(annotation.toString());
             }
              
-            if (!fieldInfo.isPersistent()) continue;
+            if (!fieldInfo.isPersistent() || !fieldInfo.hasPersistenceAnnotation()) continue;
                 
             fieldInfos.add(fieldInfo);
             String name = method.getSimpleName().toString();
@@ -264,6 +268,28 @@ public class EntityClassInfo {
         }
     }
     
+    private boolean useFieldAccess(TypeElement typeElement) {
+         List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+
+        for (VariableElement field : fields) {
+            Set<Modifier> modifiers = field.getModifiers();
+            if (modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.TRANSIENT) || modifiers.contains(Modifier.VOLATILE) || modifiers.contains(Modifier.FINAL)) {
+                continue;
+            }
+
+            FieldInfo fieldInfo = new FieldInfo();
+            
+            for (AnnotationMirror annotation : field.getAnnotationMirrors()) {
+                fieldInfo.addAnnotation(annotation.toString());
+            }
+
+            if (fieldInfo.isPersistent() && fieldInfo.hasPersistenceAnnotation()) 
+                return true;
+        }
+        
+        return false;
+    }
+    
     public Entity getEntity() {
         return entity;
     }
@@ -287,7 +313,7 @@ public class EntityClassInfo {
     public Collection<FieldInfo> getFieldInfos() {
         return fieldInfos;
     }
-
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -368,9 +394,9 @@ public class EntityClassInfo {
 
         public void setType(String type) {
             Class primitiveType = Util.getPrimitiveType(type);
-            
+          
             if (primitiveType != null) {
-                this.type = primitiveType.getName();
+                this.type = primitiveType.getSimpleName();
                 this.simpleTypeName = primitiveType.getSimpleName();
             } else {
                 this.type = type;
@@ -404,7 +430,11 @@ public class EntityClassInfo {
         }
 
         public boolean isPersistent() {
-            return matchAnnotation("@javax.persistence.Column") || isRelationship() || isId();
+            return !matchAnnotation("@javax.persistence.Transient");
+        }
+        
+        public boolean hasPersistenceAnnotation() {
+            return matchAnnotation("@javax.persistence.");
         }
         
         public boolean isId() {

@@ -39,14 +39,20 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.net.URISyntaxException;
+import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -89,7 +95,7 @@ public final class VirtualSourceProviderQuery {
         return getExt2ProvMap().keySet().contains(extension);
     }
     
-    public static Iterable<FileObjects.InferableJavaFileObject> translate (final Iterable<? extends File> files, final File root) {
+    public static Iterable<Binding> translate (final Iterable<? extends File> files, final File root) throws IOException {
         Parameters.notNull("files", files);     //NOI18N
         Parameters.notNull("root", root);       //NOI18N
         final Map<String,Pair<VirtualSourceProvider,List<File>>> m = new HashMap<String,Pair<VirtualSourceProvider,List<File>>>();
@@ -115,22 +121,45 @@ public final class VirtualSourceProviderQuery {
         for (Pair<VirtualSourceProvider,List<File>> p : m.values()) {
             final VirtualSourceProvider prov = p.first;
             final List<File> tf = p.second;
+            r.setProvider(prov);
             prov.translate(tf, root,r);
         }
         return r.getResult();
     }
     
-    private static synchronized Map<String,VirtualSourceProvider> getExt2ProvMap () {
-        if (ext2prov == null) {
-            Collection<? extends VirtualSourceProvider> allInstances = new LinkedList<VirtualSourceProvider>(result.allInstances());
-            ext2prov = new HashMap<String, VirtualSourceProvider>();
-            for (VirtualSourceProvider vsp : allInstances) {
-                for (String ext : vsp.getSupportedExtensions()) {
-                    ext2prov.put(ext, vsp);
-                }
+    public static final class Binding {
+        public final FileObjects.InferableJavaFileObject virtual;
+        public final File original;
+        public final boolean index;
+        
+        public Binding (final File original, final FileObjects.InferableJavaFileObject virtual, final VirtualSourceProvider provider) {
+            assert virtual != null;
+            assert original != null;
+            assert provider != null;
+            this.virtual = virtual;
+            this.original = original;
+            this.index = provider.index();
+        }
+    }
+    
+    private static Map<String,VirtualSourceProvider> getExt2ProvMap () {
+        synchronized (VirtualSourceProviderQuery.class) {
+            if (ext2prov != null) {
+                return ext2prov;
             }
         }
-        return ext2prov;
+        final Collection<? extends VirtualSourceProvider> allInstances = new LinkedList<VirtualSourceProvider>(result.allInstances());
+        synchronized (VirtualSourceProviderQuery.class) {
+            if (ext2prov == null) {            
+                ext2prov = new HashMap<String, VirtualSourceProvider>();
+                for (VirtualSourceProvider vsp : allInstances) {
+                    for (String ext : vsp.getSupportedExtensions()) {
+                        ext2prov.put(ext, vsp);
+                    }
+                }
+            }
+            return ext2prov;
+        }
     }
     
     private static synchronized void reset () {
@@ -140,19 +169,39 @@ public final class VirtualSourceProviderQuery {
     private static class R implements VirtualSourceProvider.Result {
         
         private final File root;
-        final List<FileObjects.InferableJavaFileObject> res = new LinkedList<FileObjects.InferableJavaFileObject>();
+        private String rootURL;
+        private VirtualSourceProvider currentProvider;
+        final List<Binding> res = new LinkedList<Binding>();
         
-        public R (final File root) {
+        public R (final File root) throws IOException {
             assert root != null;
             this.root = root;
+            this.rootURL = root.toURI().toURL().toString();
+            if (!rootURL.endsWith("/")) {   //NOI18N
+                rootURL = rootURL + '/';    //NOI18N
+            }
         }
         
-        public List<FileObjects.InferableJavaFileObject> getResult () {
+        public List<Binding> getResult () {
+            this.currentProvider = null;
             return res;
         }
+        
+        void setProvider (final VirtualSourceProvider provider) {
+            assert provider != null;
+            this.currentProvider = provider;
+        }                
 
         public void add(final File source, final String packageName, final String relativeName, final CharSequence content) {
-            res.add(FileObjects.memoryFileObject(packageName, relativeName, source.toURI(), System.currentTimeMillis(), content));
+            try {
+                final String baseName = relativeName + JavaFileObject.Kind.SOURCE.extension; 
+                res.add(new Binding(source,
+                        FileObjects.memoryFileObject(packageName, baseName,
+                    new URI(rootURL + FileObjects.convertPackage2Folder(packageName) + '/' + baseName),
+                    System.currentTimeMillis(), content),this.currentProvider));
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }                
     }
 }

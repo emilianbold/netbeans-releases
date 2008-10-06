@@ -141,7 +141,9 @@ public class AcceptanceTestCase  extends JellyTestCase {
     
     public void createWSDL() {
         startTest();
-        
+    
+	pause(5000);
+    
         final String JTABLE_CLASS = "javax.swing.JTable";
         
         final String strWSDLDocument = "XML";
@@ -171,22 +173,28 @@ public class AcceptanceTestCase  extends JellyTestCase {
         table = (JTable) opComponent.getSource();
         JTableOperator opOutputTable = new JTableOperator(table);
         
+	pause(5000);
+
         Rectangle r = opInputTable.getCellRect(0, 1, false);
         new MouseEventDriver().clickMouse(opInputTable, r.x + r.width - 5, r.y + r.height - 5, 1, InputEvent.BUTTON1_MASK, 0, new Timeout("timeout", 500));
         
         JDialogOperator opSelectElementOrType = new JDialogOperator("Select Element Or Type");
         
         JTreeOperator opTree = new JTreeOperator(opSelectElementOrType);
+        opTree.selectRow(0);
         TreePath treePath = opTree.findPath("By File|" + TEST_PROJECT_NAME + "|src/schema0.xsd|Elements|purchaseOrder");
         opTree.selectPath(treePath);
         new JButtonOperator(opSelectElementOrType, "OK").pushNoBlock();
         opSelectElementOrType.waitClosed();
         
+	pause(5000);
+
         r = opOutputTable.getCellRect(0, 1, false);
         new MouseEventDriver().clickMouse(opOutputTable, r.x + r.width - 5, r.y + r.height - 5, 1, InputEvent.BUTTON1_MASK, 0, new Timeout("timeout", 500));
         
         opSelectElementOrType = new JDialogOperator("Select Element Or Type");
         opTree = new JTreeOperator(opSelectElementOrType);
+        opTree.selectRow(0);
         treePath = opTree.findPath("By File|" + TEST_PROJECT_NAME + "|src/schema1.xsd|Elements|purchaseOrder");
         opTree.selectPath(treePath);
         new JButtonOperator(opSelectElementOrType, "OK").pushNoBlock();
@@ -274,6 +282,16 @@ public class AcceptanceTestCase  extends JellyTestCase {
         endTest();
     }
     
+
+    public static void pause(int milliseconds) {
+        //System.out.println("Paused for " + milliseconds);
+        try {
+            Thread.currentThread().sleep(milliseconds);
+        } catch (Exception e) {
+            
+        }
+    }
+ 
     
     public void tearDown() {
         new SaveAllAction().performAPI();

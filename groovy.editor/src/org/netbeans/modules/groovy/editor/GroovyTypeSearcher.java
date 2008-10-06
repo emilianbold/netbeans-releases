@@ -58,25 +58,28 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Adamek
  */
-public class GroovyTypeSearcher implements TypeSearcher {
+public class GroovyTypeSearcher implements IndexSearcher {
 
-    public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         GroovyIndex index = new GroovyIndex(gsfIndex);
 
         kind = adjustKind(kind, textForQuery);
@@ -97,10 +100,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
         }
         
         return result;
-    }
-
-    public String getMimetype() {
-        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     private static boolean isAllUpper( String text ) {
@@ -137,14 +136,20 @@ public class GroovyTypeSearcher implements TypeSearcher {
         cachedKind = kind;
         return kind;
     }
+
+    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+        // TODO - search for methods too!!
+
+        // For now, just at a minimum do the types
+        return getTypes(gsfIndex, textForQuery, kind, scope, helper);
+    }
     
-    private class GroovyTypeDescriptor extends GsfTypeDescriptor {
+    private class GroovyTypeDescriptor extends Descriptor {
         private final IndexedElement element;
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
         private boolean isLibrary;
-        private static final String ICON_PATH = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         
         public GroovyTypeDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
@@ -186,7 +191,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 }
             } else {
                 isLibrary = true;
-                Logger.getLogger(GroovyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFilenameUrl());
+                Logger.getLogger(GroovyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFileUrl());
             }
             if (projectName == null) {
                 projectName = "";
@@ -198,7 +203,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+                return new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
             return projectIcon;
         }
@@ -214,7 +219,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 // TODO - embedding context?
                 try {
                     int offset = AstUtilities.getRange(node, (BaseDocument) element.getDocument()).getStart();
-                    NbUtilities.open(element.getFileObject(), offset, element.getName());
+                    GsfUtilities.open(element.getFileObject(), offset, element.getName());
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -247,7 +252,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 fqn = null;
             }
             if (fqn != null/* || require != null*/) {
-                sb.append(" (");
                 if (fqn != null) {
                     sb.append(fqn);
                 }
@@ -259,7 +263,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
 //                    sb.append(require);
 //                    sb.append(".rb");
 //                }
-                sb.append(")");
                 return sb.toString();
             } else {
                 return null;

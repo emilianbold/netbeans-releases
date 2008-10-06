@@ -101,6 +101,7 @@ public class DatabaseConfigPanel implements
 
     public boolean isFinishPanel() {
         RubyPlatform platform = (RubyPlatform) wizardDescriptor.getProperty("platform");
-        return RailsInstallationValidator.getRailsInstallation(platform).isValid();
+        return RailsInstallationValidator.getRailsInstallation(platform).isValid()
+                && WizardUtil.checkWarbler(wizardDescriptor);
     }
 }

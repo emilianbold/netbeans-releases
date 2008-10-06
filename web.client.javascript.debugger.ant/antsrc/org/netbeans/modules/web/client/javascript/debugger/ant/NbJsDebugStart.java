@@ -105,7 +105,7 @@ public class NbJsDebugStart extends Task {
 
             WebApp app = DDProvider.getDefault().getDDRoot(wm.getDeploymentDescriptor());
             WelcomeFileList list = app.getSingleWelcomeFileList();
-            String[] welcomeFiles = list.getWelcomeFile();
+            String[] welcomeFiles = list != null ? list.getWelcomeFile() : null;
 
             String welcomeFile = null;
 

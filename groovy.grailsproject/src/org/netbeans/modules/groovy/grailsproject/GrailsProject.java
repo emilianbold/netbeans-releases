@@ -45,7 +45,6 @@ import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
@@ -57,21 +56,24 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
+import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.w3c.dom.Element;
 
 
@@ -113,15 +115,15 @@ public final class GrailsProject implements Project {
                 projectState, //allow outside code to mark the project as needing saving
                 new Info(), //Project information implementation
                 new GrailsActionProvider(this),
-                new GrailsSources(projectDir),
+                GrailsSources.create(projectDir),
                 new GrailsServerState(this, getProjectDirectory().getName()),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectOperations(this),
                 new GrailsProjectEncodingQueryImpl(),
                 new OpenHook(),
                 new AuxiliaryConfigurationImpl(),
-                getSearchInfo(projectDir),
-                // new TemplatesImpl(),
+                new RecommendedTemplatesImpl(),
+                new GroovyFeatureImpl(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );
@@ -129,44 +131,6 @@ public final class GrailsProject implements Project {
         return lookup;
     }
     
-    SearchInfo getSearchInfo(FileObject projectDir) {
-        
-        // LOG.setLevel(Level.FINEST);
-        
-        assert projectDir != null;
-        
-        String[] dirlist =  {   "test",
-                                "src",
-                                "grails-app",
-                                "scripts" } ;
-        
-        List<FileObject> foList = new ArrayList<FileObject>();
-        
-        String basedir = FileUtil.getFileDisplayName(projectDir) + File.separatorChar;
-        LOG.log(Level.FINEST, "basedir = " + basedir);    
-        
-        for (String dir : dirlist) {
-            LOG.log(Level.FINEST, "dir = " + dir);
-            File f = new File(basedir + dir);
-            if (f != null) {
-                if (f.isDirectory()) {
-                    foList.add(FileUtil.toFileObject(f));
-                }
-
-            } else {
-                LOG.log(Level.FINEST, "Problem creating file = " + basedir + dir);
-            }
-        }
-        
-        LOG.log(Level.FINEST, "foList: " + foList);
-        
-        FileObject[] folder = foList.toArray(new FileObject[foList.size()]);
-        
-        assert folder.length == foList.size();
-        
-        return SearchInfoFactory.createSearchInfo(folder, true, null);                                         
-    }
-
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
             this.sourceRoots = new SourceRoots(projectDir); //NOI18N
@@ -184,8 +148,8 @@ public final class GrailsProject implements Project {
     private final class Info implements ProjectInformation {
 
         public Icon getIcon() {
-            Image image = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
-            return new ImageIcon(image);
+            Image image = ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
+            return image == null ? null : new ImageIcon(image);
         }
 
         public String getName() {
@@ -263,4 +227,47 @@ public final class GrailsProject implements Project {
         
     }
             
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        
+        // List of primarily supported templates
+        
+        private static final String[] RECOMMENDED_TYPES = new String[] {
+            "groovy",               // NOI18N
+            "java-classes",         // NOI18N
+            "XML",                  // NOI18N
+            "simple-files"          // NOI18N        
+        };
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            TemplatesImpl.DOMAIN_CLASS,
+            TemplatesImpl.CONTROLLER,
+            TemplatesImpl.INTEGRATION_TEST,
+            TemplatesImpl.GANT_SCRIPT,
+            TemplatesImpl.SERVICE,
+            TemplatesImpl.TAG_LIB,
+            TemplatesImpl.UNIT_TEST,
+            "Templates/Other/Folder",
+            "Templates/Other/properties.properties",
+            "simple-files"
+        };
+        
+        public String[] getRecommendedTypes() {
+            return RECOMMENDED_TYPES;
+        }
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+        
+    }
+
+    private static final class GroovyFeatureImpl implements GroovyFeature {
+
+        public boolean isGroovyEnabled() {
+            return true;
+        }
+        
+    }
+
+
 }

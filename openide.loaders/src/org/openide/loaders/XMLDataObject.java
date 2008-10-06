@@ -452,7 +452,7 @@ public class XMLDataObject extends MultiDataObject {
         synchronized (this) {
             DelDoc d = doc;
             if (d == null) {
-                d = new DelDoc ();
+                d = new DelDoc(this);
                 doc = d;
             }
             return d.getProxyDocument();
@@ -1081,6 +1081,7 @@ public class XMLDataObject extends MultiDataObject {
             iconBase = null;
         }
 
+        @Override
         public Object clone () {
             Info ii = new Info();
             for (Class<?> proc: processors) {
@@ -1413,17 +1414,30 @@ public class XMLDataObject extends MultiDataObject {
         }
     } // end of ICDel    
     
-    /** Delegating DOM document that provides fast implementation of
+    static final Constructor<?> cnstr;
+    static {
+        try {
+            Class<?> proxy = Proxy.getProxyClass(XMLDataObject.class.getClassLoader(), Document.class, DocumentType.class);
+            cnstr = proxy.getConstructor(InvocationHandler.class);
+            new DelDoc(null);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }    /** Delegating DOM document that provides fast implementation of
      * getDocumentType and getPublicID methods.
      */
-    private final class DelDoc implements InvocationHandler {
-        
+    private static final class DelDoc implements InvocationHandler {
+        private final XMLDataObject obj;
         private Reference<Document> xmlDocument;
         private final Document proxyDocument;
         
-        DelDoc() {
-            proxyDocument = (Document)Proxy.newProxyInstance(
-                DelDoc.class.getClassLoader(), new Class[] {Document.class}, this);
+        DelDoc(XMLDataObject obj) {
+            this.obj = obj;
+            try {
+                proxyDocument = (Document) cnstr.newInstance(this);
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
         }
 
         /** Creates w3c's document for the xml file. Either returns cached reference
@@ -1443,9 +1457,9 @@ public class XMLDataObject extends MultiDataObject {
                     return null;
                 }
 
-                status = STATUS_OK;
+                obj.status = STATUS_OK;
                 try {
-                    Document d = parsePrimaryFile ();
+                    Document d = obj.parsePrimaryFile();
                     xmlDocument = new SoftReference<Document> (d);
                     return d;
                 } catch (SAXException e) {
@@ -1454,13 +1468,13 @@ public class XMLDataObject extends MultiDataObject {
                     ERR.log(Level.WARNING, null, e);
                 }
                 
-                status = STATUS_ERROR;
+                obj.status = STATUS_ERROR;
                 Document d = XMLUtil.createDocument("brokenDocument", null, null, null); // NOI18N
                 
                 xmlDocument = new SoftReference<Document> (d);
                 
                 // fire property change, because the document is errornous
-                firePropertyChange (PROP_DOCUMENT, null, null);
+                obj.firePropertyChange (PROP_DOCUMENT, null, null);
                 
                 return d;
             }
@@ -1478,14 +1492,14 @@ public class XMLDataObject extends MultiDataObject {
         
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (method.getName().equals("getDoctype") && args == null) { // NOI18N
-                return Proxy.newProxyInstance(DelDoc.class.getClassLoader(), new Class[] {DocumentType.class}, this);
+                return (DocumentType)proxyDocument;
             } else if (method.getName().equals("getPublicId") && args == null) { // NOI18N
                 Document d = getDocumentImpl(false);
                 if (d != null) {
                     DocumentType doctype = d.getDoctype();
                     return doctype == null ? null : doctype.getPublicId();
                 } else {
-                    return getIP().getPublicId();
+                    return obj.getIP().getPublicId();
                 }
             } else {
                 return method.invoke(getDocumentImpl(true), args);

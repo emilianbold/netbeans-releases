@@ -1,23 +1,18 @@
 /*
- *  PersonConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
 package converter;
 
+import entity.Person;
 import java.net.URI;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import entity.Person;
-import service.PersistenceService;
-
+import javax.persistence.EntityManager;
 
 /**
  *
@@ -29,9 +24,10 @@ public class PersonConverter {
     private Person entity;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of PersonConverter */
     public PersonConverter() {
+        entity = new Person();
     }
 
     /**
@@ -65,7 +61,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getId() {
-        return (expandLevel > 0) ? getEntity().getId() : null;
+        return (expandLevel > 0) ? entity.getId() : null;
     }
 
     /**
@@ -74,7 +70,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setId(String value) {
-        getEntity().setId(value);
+        entity.setId(value);
     }
 
     /**
@@ -84,7 +80,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getLastName() {
-        return (expandLevel > 0) ? getEntity().getLastName() : null;
+        return (expandLevel > 0) ? entity.getLastName() : null;
     }
 
     /**
@@ -93,7 +89,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setLastName(String value) {
-        getEntity().setLastName(value);
+        entity.setLastName(value);
     }
 
     /**
@@ -103,7 +99,7 @@ public class PersonConverter {
      */
     @XmlElement
     public String getFirstName() {
-        return (expandLevel > 0) ? getEntity().getFirstName() : null;
+        return (expandLevel > 0) ? entity.getFirstName() : null;
     }
 
     /**
@@ -112,7 +108,7 @@ public class PersonConverter {
      * @param value the value to set
      */
     public void setFirstName(String value) {
-        getEntity().setFirstName(value);
+        entity.setFirstName(value);
     }
 
     /**
@@ -140,8 +136,11 @@ public class PersonConverter {
      */
     @XmlTransient
     public Person getEntity() {
-        if (entity == null) {
-            entity = new Person();
+        if (entity.getId() == null) {
+            PersonConverter converter = UriResolver.getInstance().resolve(PersonConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -151,11 +150,7 @@ public class PersonConverter {
      *
      * @return an resolved entity
      */
-    public Person resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(Person.class, entity.getId());
-        } else {
-            return (Person) UriResolver.getInstance().resolve(PersonConverter.class, uri);
-        }
+    public Person resolveEntity(EntityManager em) {
+        return entity;
     }
 }

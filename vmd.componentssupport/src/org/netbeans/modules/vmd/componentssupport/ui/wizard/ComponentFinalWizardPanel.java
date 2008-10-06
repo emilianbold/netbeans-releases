@@ -76,6 +76,11 @@ class ComponentFinalWizardPanel implements Panel, FinishablePanel,
             myComponent.setName(
                     NbBundle.getMessage(NewComponentDescriptor.class, 
                             NewComponentDescriptor.FINAL_STEP));
+
+            myComponent.getAccessibleContext().setAccessibleName(
+                    myComponent.getName());
+            myComponent.getAccessibleContext().setAccessibleDescription(
+                    myComponent.getName() );
         }
         return myComponent;    
     }

@@ -4,37 +4,31 @@
  *     Use is subject to license terms.
 -->
 <html>
-<head>
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Accessing Files Outside of a Project</title>
 <link rel="stylesheet" href="../ide.css" type="text/css"></head>
 <body>
 <h2>Accessing Files Outside of a Project</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>When developing applications, you must create a project within which
-	to house your source code and related files. If you need to access a file
-	outside of your projects, you can do so using the Favorites window. </p>
-<p><b>To access a file or folder outside of an IDE project:</b></p>
+<p>When developing applications, you must create a project for
+your source code and related files. If you need to access a file
+outside of your projects, you can do one of the following things:</p>
+<ul>
+    <li>Choose File &gt; Open File.</li>
+    <li>Use the Favorites window to access the file.</li>
+</ul>
+<p><b>To use the Favorites window:</b></p>
 <ol>
   <li>Choose Window &gt; Favorites 
     (Ctrl-3).</li>
-  <li>Right-click in the Favorites wndow and choose Add to Favorites.</li>
+  <li>Right-click in the Favorites window and choose Add to Favorites.</li>
   <li>Select the folder that you want to access and click OK.</li>
 </ol>
 <ul class="note">
-    <li>Although the Favorites window enables you to open and edit source files 
-  from anywhere on your system, the IDE knows nothing about the classpath and 
-  other project settings belonging to those source files. If you are working in
-  a programming language, you cannot run, compile, or debug source files from 
-  the Favorites window.</li>
+    <li>Project-level commands, such as Run Project, are not available from 
+    the Favorites window. For such commands to be available, you need to 
+    have a project open in the Projects window.</li>
 </ul>
-
-<!-- following is Java-specific.  eventually could be moved to Java module 
-
-  You therefore cannot 
-  run, compile, or debug any Java source files from the Favorites window. </p>
-<p>You can, however, run Ant scripts that do not belong to any project from the 
-  Favorites window. You can also use the Favorites window to access an Ant script 
-  and create a shortcut to the targets in that Ant script.</p>  --> 
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

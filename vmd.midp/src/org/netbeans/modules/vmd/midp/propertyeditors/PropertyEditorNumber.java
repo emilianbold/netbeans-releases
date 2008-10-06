@@ -41,11 +41,15 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -54,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
@@ -90,6 +95,16 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
         initComponents(useSpinner);
         this.positiveNumersOnly = positiveNumbersOnly;
         initElements(Collections.<PropertyEditorElement>singleton(this));
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
     }
 
     /**
@@ -289,6 +304,12 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     private void initComponents(boolean useSpinner) {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( 
+                radioButton.getText());
+        
         customEditor = new CustomEditor(useSpinner);
     }
 
@@ -452,6 +473,56 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             this.useSpinner = useSpinner;
             radioButton.addFocusListener(this);
             initComponents();
+            
+            /* 
+             * Fix for #140843. I don't know why but
+             * setting A11Y properties to <code>this</code> component
+             * doesn't propagated to NbDialog.
+             * It seems this is due presence on more JPanel between
+             * Dialog content pane and this component.
+             * Mentioned JPanel doesn't use A11Y from here.   
+             */
+            addHierarchyListener( new HierarchyListener(){
+
+                public void hierarchyChanged( HierarchyEvent evt ) {
+                    JDialog dialog = getDialog();
+                    if( dialog == null ){
+                        return;
+                    }
+                    else {
+                        dialog.getAccessibleContext().setAccessibleName(
+                                radioButton.getAccessibleContext().
+                                getAccessibleName());
+                        dialog.getAccessibleContext().setAccessibleDescription(
+                                radioButton.getAccessibleContext().
+                                getAccessibleDescription());
+                    }
+                }
+                
+            });
+        }
+        
+        void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            spinner = null;
+            this.removeAll();
+        }
+
+        private JDialog getDialog(){
+            Component comp = this;
+            while ( true ) {
+                comp = comp.getParent();
+                if ( comp == null ){
+                    break;
+                }
+                if ( comp instanceof JDialog ){
+                    return (JDialog)comp;
+                }
+            }
+            return null;
         }
 
         private void initComponents() {
@@ -461,11 +532,21 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                 spinner.getModel().addChangeListener(this);
                 spinner.addFocusListener(this);
                 add(spinner, BorderLayout.CENTER);
+                
+                spinner.getAccessibleContext().setAccessibleName( 
+                        radioButton.getAccessibleContext().getAccessibleName());
+                spinner.getAccessibleContext().setAccessibleDescription( 
+                        radioButton.getAccessibleContext().getAccessibleDescription());
             } else {
                 textField = new JTextField();
                 textField.getDocument().addDocumentListener(this);
                 textField.addFocusListener(this);
                 add(textField, BorderLayout.CENTER);
+                
+                textField.getAccessibleContext().setAccessibleName( 
+                        radioButton.getAccessibleContext().getAccessibleName());
+                textField.getAccessibleContext().setAccessibleDescription( 
+                        radioButton.getAccessibleContext().getAccessibleDescription());
             }
         }
 
@@ -503,13 +584,14 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
                     int number = Integer.valueOf(textField.getText());
                     if (number < 0) {
                         displayWarning(NbBundle.getMessage(PropertyEditorPreferredSize.class, "MSG_POSITIVE_CHARS")); //NOI18N
-                    } else {
-                        clearErrorStatus();
+                        return;
                     }
                 } catch (NumberFormatException ex) {
                     displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
+                    return;
                 }
             }
+            clearErrorStatus();
         }
 
         public void focusGained(FocusEvent e) {

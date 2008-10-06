@@ -45,8 +45,13 @@ import java.util.ArrayList;
 import java.util.List;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-import org.openide.ErrorManager;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Lookup;
 
 /**
  * Utility calls of methods defined in JDK 1.6 and newer, through reflection.
@@ -71,7 +76,7 @@ public class Java6Methods {
             Object instanceCounts = method.invoke(vm, new Object[] { refTypes });
             return (long[]) instanceCounts;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new long[refTypes.size()];
     }
@@ -82,7 +87,7 @@ public class Java6Methods {
             Object instances = method.invoke(refType, new Object[] { maxInstances });
             return (List<ObjectReference>) instances;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new ArrayList<ObjectReference>();
     }
@@ -94,9 +99,41 @@ public class Java6Methods {
             Object referringObjects = method.invoke(ref, new Object[] { maxReferrers });
             return (List<ObjectReference>) referringObjects;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new ArrayList<ObjectReference>();
+    }
+
+    public static boolean canRequestMonitorEvents(VirtualMachine vm) {
+        try {
+            java.lang.reflect.Method method = VirtualMachine.class.getMethod("canRequestMonitorEvents", new Class[] {});
+            Boolean can = (Boolean) method.invoke(vm, new Object[] {});
+            return can;
+        } catch (Exception ex) {
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
+            return false;
+        }
+    }
+
+    public static EventRequest createMonitorContendedEnteredRequest(EventRequestManager erm) {
+        try {
+            java.lang.reflect.Method method = EventRequestManager.class.getMethod("createMonitorContendedEnteredRequest", new Class[] {});
+            EventRequest request = (EventRequest) method.invoke(erm, new Object[] {});
+            return request;
+        } catch (Exception ex) {
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
+            return null;
+        }
+    }
+
+    public static void addThreadFilter2MonitorContendedEnteredRequest(EventRequest monitorContendedEnteredRequest, ThreadReference thread) {
+        try {
+            Class monitorContendedEnteredRequestClass = Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorContendedEnteredRequest");
+            java.lang.reflect.Method method = monitorContendedEnteredRequestClass.getMethod("addThreadFilter", ThreadReference.class);
+            method.invoke(monitorContendedEnteredRequest, thread);
+        } catch (Exception ex) {
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
+        }
     }
     
 }

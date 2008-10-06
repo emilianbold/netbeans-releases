@@ -45,7 +45,9 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -123,7 +125,11 @@ public final class ElementHandle<T extends Element> {
     @SuppressWarnings ("unchecked")     // NOI18N
     public T resolve (final CompilationInfo compilationInfo) {
         Parameters.notNull("compilationInfo", compilationInfo);
-        return resolveImpl (compilationInfo.impl.getJavacTask());
+        T result = resolveImpl (compilationInfo.impl.getJavacTask());
+        if (result == null) {
+            Logger.getLogger(ElementHandle.class.getName()).info("Cannot resolve: "+toString());    //NOI18N
+        }
+        return result;
     }
         
     

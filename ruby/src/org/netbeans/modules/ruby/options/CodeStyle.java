@@ -42,8 +42,9 @@
 package org.netbeans.modules.ruby.options;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.ruby.options.FmtOptions.*;
 
 /** 
@@ -56,12 +57,6 @@ import static org.netbeans.modules.ruby.options.FmtOptions.*;
  */
 public final class CodeStyle {
     
-    private static CodeStyle INSTANCE;
-
-    static {
-        FmtOptions.codeStyleProducer = new Producer();
-    }
-    
     private Preferences preferences;
     
     private CodeStyle(Preferences preferences) {
@@ -69,30 +64,37 @@ public final class CodeStyle {
     }
 
     /** For testing purposes only */
-    public static CodeStyle getTestStyle(Preferences prefs) {
+    public static CodeStyle get(Preferences prefs) {
         return new CodeStyle(prefs);
     }
-    
-    public synchronized static CodeStyle getDefault(Project project) {
-        
-        if ( FmtOptions.codeStyleProducer == null ) {
-            FmtOptions.codeStyleProducer = new Producer();
-        }
-        
-        if (INSTANCE == null) {
-            INSTANCE = create();
-        }
-        return INSTANCE;
+
+    public static CodeStyle get(Document doc) {
+        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
     }
-    
-    static CodeStyle create() {
-        return new CodeStyle(FmtOptions.getPreferences(FmtOptions.getCurrentProfileId()));
-    }
-    
+
     // General tabs and indents ------------------------------------------------
     
+    public boolean expandTabToSpaces() {
+        return preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
+    }
+
+    public int getTabSize() {
+        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+    }
+
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
+        int indentLevel = preferences.getInt(indentSize, getDefaultAsInt(indentSize));
+
+        if (indentLevel <= 0) {
+            boolean expandTabs = preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
+            if (expandTabs) {
+                indentLevel = preferences.getInt(spacesPerTab, getDefaultAsInt(spacesPerTab));
+            } else {
+                indentLevel = preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+            }
+        }
+        
+        return indentLevel;
     }
 
     public int getContinuationIndentSize() {
@@ -108,16 +110,7 @@ public final class CodeStyle {
     }
     
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getGlobalRightMargin());
+        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
     }
 
-    // Communication with non public packages ----------------------------------
-    
-    private static class Producer implements FmtOptions.CodeStyleProducer {
-
-        public CodeStyle create(Preferences preferences) {
-            return new CodeStyle(preferences);
-        }
-        
-    } 
 }

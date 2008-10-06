@@ -53,6 +53,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -71,7 +72,7 @@ public class PaletteItemDataNode extends DataNode {
     private boolean isValid = true;
     private boolean needCheck = true;
     static {
-        errorBadge = Utilities.loadImage("org/netbeans/modules/vmd/palette/resources/error-badge.gif"); // NOI18N
+        errorBadge = ImageUtilities.loadImage("org/netbeans/modules/vmd/palette/resources/error-badge.gif"); // NOI18N
     }
 
     public PaletteItemDataNode(PaletteItemDataObject obj) {
@@ -106,13 +107,13 @@ public class PaletteItemDataNode extends DataNode {
             String iconPath = obj.getIcon();
             Image icon = null;
             if (iconPath != null) {
-                icon = Utilities.loadImage(iconPath);
+                icon = ImageUtilities.loadImage(iconPath);
             }
             if (icon == null) {
                 icon = super.getIcon(type);
             }
             if (!isValid) {
-                icon = Utilities.mergeImages(icon, errorBadge, errorBadge.getWidth(null), errorBadge.getHeight(null));
+                icon = ImageUtilities.mergeImages(icon, errorBadge, errorBadge.getWidth(null), errorBadge.getHeight(null));
             }
             return icon;
         }
@@ -120,13 +121,13 @@ public class PaletteItemDataNode extends DataNode {
         String iconPath = obj.getBigIcon();
         Image icon = null;
         if (iconPath != null) {
-            icon = Utilities.loadImage(iconPath);
+            icon = ImageUtilities.loadImage(iconPath);
         }
         if (icon == null) {
             icon = super.getIcon(type);
         }
         if (!isValid) {
-            icon = Utilities.mergeImages(icon, errorBadge, errorBadge.getWidth(null), errorBadge.getHeight(null));
+            icon = ImageUtilities.mergeImages(icon, errorBadge, errorBadge.getWidth(null), errorBadge.getHeight(null));
         }
         return icon;
     }

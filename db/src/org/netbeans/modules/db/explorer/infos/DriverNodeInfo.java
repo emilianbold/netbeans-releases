@@ -152,4 +152,27 @@ public class DriverNodeInfo extends DatabaseNodeInfo
         return getJDBCDriver().getDisplayName();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DatabaseNodeInfo other = (DatabaseNodeInfo) obj;
+        if (this.getName() != other.getName() && (this.getName() == null || !this.getName().equals(other.getName()))) {
+            return false;
+        }
+        return true;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 19 * hash + (getName() != null ? getName().hashCode() : 0);
+        return hash;
+    }
+
 }

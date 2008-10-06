@@ -10,14 +10,14 @@
                      class="mypkg.MyLocales"/>
         
         <%
-            switch (Integer.MAX_INT) {
-                case 10:
-                    break;
-                case 20:
-                    break;
-                default:
+        switch (Integer.MAX_INT) {
+            case 10:
+                break;
+            case 20:
+                break;
+            default:
 
-            }
+        }
 
         %>
         <form name="localeForm" action="index.jsp" method="post">
@@ -63,13 +63,13 @@
         %>
         
         <%
-            if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && (Boolean.TRUE == Boolean.FALSE)) {
-                for (int i = 0; i < Integer.MAX_VALUE; ++i) {
-                    if (i > Byte.SIZE) {
-                        out.println("i:" + i);
-                    }
+        if ((Integer.MAX_VALUE == Integer.MIN_VALUE) && (Boolean.TRUE == Boolean.FALSE)) {
+            for (int i = 0; i < Integer.MAX_VALUE; ++i) {
+                if (i > Byte.SIZE) {
+                    out.println("i:" + i);
                 }
             }
+        }
         %>
     </body>
 </html> 

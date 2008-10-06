@@ -60,11 +60,14 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -89,7 +92,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private boolean ignoreNull;
     private boolean ignoreCombo;
 
-    private Icon packageIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/form/resources/package.gif")); // NOI18N
+    private Icon packageIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/package.gif")); // NOI18N
 
     public CustomIconEditor(IconEditor prEd) {
         propertyEditor = prEd;
@@ -189,6 +192,27 @@ public class CustomIconEditor extends javax.swing.JPanel {
             execCP = ClassPath.getClassPath(sourceFile, ClassPath.EXECUTE);
             cp = execCP;
             fo = cp.findResource(resName);
+            if (fo != null) {
+                FileObject[] roots = findSourceRoots(fo);
+                if ((roots == null) || (roots.length == 0)) {
+                    // icon is on execution path only
+                    // e.g. in some jar that is not built by the IDE
+                } else {
+                    // icon comes from some source path
+                    FileObject fob = findSourceRootOf(roots, resName);
+                    if (fob == null) {
+                        // the icon is on execution path, but no longer
+                        // on source path - it was probably deleted recently
+                        // but the corresponding artifact wasn't rebuilt
+                        fo = null;
+                        cp = sourceCP;
+                    } else {
+                        // the icon was found on source path of its corresponding project
+                        fo = fob;
+                        cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+                    }
+                }
+            }
         }
         if (fo != null) {
             setPackageRoot(cp.findOwnerRoot(fo));
@@ -198,27 +222,63 @@ public class CustomIconEditor extends javax.swing.JPanel {
         else if (setDefaultIfInvalid) {
             FileObject folder = null;
             String pkgName;
-            String fileName;
             int i = resName.lastIndexOf('/');
             if (i < 0) {
                 pkgName = null; // NOI18N
-                fileName = resName;
             }
             else {
                 pkgName = resName.substring(0, i);
-                fileName = resName.substring(i + 1);
                 cp = sourceCP;
                 folder = cp.findResource(pkgName);
                 if (folder == null) {
                     cp = execCP;
                     folder = cp.findResource(pkgName);
+                    if (folder != null) {
+                        FileObject[] roots = findSourceRoots(folder);
+                        if ((roots != null) && (roots.length > 0)) {
+                            FileObject fob = findSourceRootOf(roots, pkgName);
+                            if (fob == null) {
+                                folder = null;
+                                cp = sourceCP;
+                            } else {
+                                folder = fob;
+                                cp = ClassPath.getClassPath(fob, ClassPath.SOURCE);
+                            }
+                        }
+                    }
                 }
             }
             if (folder == null)
                 folder = propertyEditor.getDefaultResourceFolder();
-            setPackageRoot(cp.findOwnerRoot(folder));
+            FileObject root = cp.findOwnerRoot(folder);
+            if (root == null) {
+                setPackageRoot(sourceCP.findOwnerRoot(sourceFile));
+            } else {
+                setPackageRoot(root);
+            }
             setPackage(folder);
         }
+    }
+
+    private FileObject[] findSourceRoots(FileObject fo) {
+        try {
+            ClassPath cp = ClassPath.getClassPath(propertyEditor.getSourceFile(), ClassPath.EXECUTE);
+            return SourceForBinaryQuery.findSourceRoots(cp.findOwnerRoot(fo).getURL()).getRoots();
+        } catch (FileStateInvalidException fsiex) {
+            Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, fsiex);
+        }
+        return null;
+    }
+
+    private FileObject findSourceRootOf(FileObject[] roots, String resName) {
+        for (FileObject root : roots) {
+            ClassPath resCP = ClassPath.getClassPath(root, ClassPath.SOURCE);
+            FileObject res = resCP.findResource(resName);
+            if (res != null) {
+                return res;
+            }
+        }
+        return null;
     }
 
     private void setFromFileName(String fileName) {
@@ -598,7 +658,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
                         }
                     },
                     false, true);
-        chooser.setSelectedFile(selectedCPFile);
+        try {
+            chooser.setSelectedFile(selectedCPFile);
+        } catch (IllegalArgumentException iaex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, iaex);
+        }
         chooser.getDialog(NbBundle.getMessage(CustomIconEditor.class, "CTL_OpenDialogName"), null)// NOI18N
             .setVisible(true);
 

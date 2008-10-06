@@ -50,9 +50,9 @@ import org.openide.util.NbBundle;
  */
 public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private static final String SOURCES = "Sources"; // NOI18N
-    public static final String RUN = "Run"; // NOI18N        
-    private static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
+    public static final String SOURCES = "Sources"; // NOI18N
+    public static final String RUN = "Run"; // NOI18N
+    public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
 
     private final String name;
 

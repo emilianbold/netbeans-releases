@@ -1,9 +1,5 @@
 /*
- *  ManufacturerResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -13,18 +9,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
-import javax.ws.rs.core.UriInfo;
+import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import o.n.m.ws.qaf.rest.crud.Product;
 import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
-
 
 /**
  *
@@ -32,21 +30,18 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
  */
 
 public class ManufacturerResource {
-    private Integer id;
-    private UriInfo context;
-    
+    @Context
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+    protected Integer id;
+  
     /** Creates a new instance of ManufacturerResource */
     public ManufacturerResource() {
     }
 
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public ManufacturerResource(Integer id, UriInfo context) {
+    public void setId(Integer id) {
         this.id = id;
-        this.context = context;
     }
 
     /**
@@ -56,12 +51,14 @@ public class ManufacturerResource {
      * @return an instance of ManufacturerConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public ManufacturerConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            return new ManufacturerConverter(getEntity(), context.getAbsolutePath(), expandLevel);
+            persistenceSvc.beginTx();
+            return new ManufacturerConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -74,12 +71,13 @@ public class ManufacturerResource {
      * @param data an ManufacturerConverter entity that is deserialized from a XML stream
      */
     @PUT
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public void put(ManufacturerConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            updateEntity(getEntity(), data.getEntity());
+            EntityManager em = persistenceSvc.getEntityManager();
+            updateEntity(getEntity(), data.resolveEntity(em));
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
@@ -96,44 +94,11 @@ public class ManufacturerResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Manufacturer entity = getEntity();
-            deleteEntity(entity);
+            deleteEntity(getEntity());
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
         }
-    }
-
-    /**
-     * Returns a dynamic instance of ProductsResource used for entity navigation.
-     *
-     * @param id identifier for the parent entity
-     * @return an instance of ProductsResource
-     */
-    @Path("productCollection/")
-    public ProductsResource getProductCollectionResource() {
-        final Manufacturer parent = getEntity();
-        return new ProductsResource(context) {
-
-            @Override
-            protected Collection<Product> getEntities(int start, int max, String query) {
-                Collection<Product> result = new java.util.ArrayList<Product>();
-                int index = 0;
-                for (Product e : parent.getProductCollection()) {
-                    if (index >= start && (index - start) < max) {
-                        result.add(e);
-                    }
-                    index++;
-                }
-                return result;
-            }
-
-            @Override
-            protected void createEntity(Product entity) {
-                super.createEntity(entity);
-                entity.setManufacturerId(parent);
-            }
-        };
     }
 
     /**
@@ -143,10 +108,11 @@ public class ManufacturerResource {
      * @return an instance of Manufacturer
      */
     protected Manufacturer getEntity() {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         try {
-            return (Manufacturer) PersistenceService.getInstance().createQuery("SELECT e FROM Manufacturer e where e.manufacturerId = :manufacturerId").setParameter("manufacturerId", id).getSingleResult();
+            return (Manufacturer) em.createQuery("SELECT e FROM Manufacturer e where e.manufacturerId = :manufacturerId").setParameter("manufacturerId", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
         }
     }
 
@@ -158,9 +124,10 @@ public class ManufacturerResource {
      * @return the updated entity
      */
     protected Manufacturer updateEntity(Manufacturer entity, Manufacturer newEntity) {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         Collection<Product> productCollection = entity.getProductCollection();
         Collection<Product> productCollectionNew = newEntity.getProductCollection();
-        entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        entity = em.merge(newEntity);
         for (Product value : productCollection) {
             if (!productCollectionNew.contains(value)) {
                 throw new WebApplicationException(new Throwable("Cannot remove items from productCollection"));
@@ -184,9 +151,45 @@ public class ManufacturerResource {
      * @param entity the entity to deletle
      */
     protected void deleteEntity(Manufacturer entity) {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         if (!entity.getProductCollection().isEmpty()) {
             throw new WebApplicationException(new Throwable("Cannot delete entity because productCollection is not empty."));
         }
-        PersistenceService.getInstance().removeEntity(entity);
+        em.remove(entity);
+    }
+
+    /**
+     * Returns a dynamic instance of ProductsResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of ProductsResource
+     */
+    @Path("productCollection/")
+    public ProductsResource getProductCollectionResource() {
+        ProductCollectionResourceSub resource = resourceContext.getResource(ProductCollectionResourceSub.class);
+        resource.setParent(getEntity());
+        return resource;
+    }
+
+    public static class ProductCollectionResourceSub extends ProductsResource {
+
+        private Manufacturer parent;
+
+        public void setParent(Manufacturer parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        protected Collection<Product> getEntities(int start, int max, String query) {
+            Collection<Product> result = new java.util.ArrayList<Product>();
+            int index = 0;
+            for (Product e : parent.getProductCollection()) {
+                if (index >= start && (index - start) < max) {
+                    result.add(e);
+                }
+                index++;
+            }
+            return result;
+        }
     }
 }

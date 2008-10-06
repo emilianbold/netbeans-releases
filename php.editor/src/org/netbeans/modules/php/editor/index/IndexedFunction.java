@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;
+import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 
 /**
  *
@@ -54,7 +55,9 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
     private String arguments;
     private String[] args;
     private List<String> parameters;
-    private int defaultParameterCount;
+    private int[] optionalArgs;
+    private String returnType;
+    private boolean includeIn;
     
     public IndexedFunction(String name, String in, PHPIndex index, String fileUrl, String arguments, int offset, int flags, ElementKind kind) {
         super(name, in, index, fileUrl, offset, flags, kind);
@@ -68,9 +71,18 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public String getSignature() {
-        if (textSignature == null) {
+        return getSignatureImpl(true);
+    }
+
+    public String getFunctionSignature() {
+        return getSignatureImpl(false);
+    }
+
+    private String getSignatureImpl(boolean includeIn) {
+        if (textSignature == null || this.includeIn != includeIn) {
+            this.includeIn = includeIn;
             StringBuilder sb = new StringBuilder();
-            if (in != null) {
+            if (in != null && includeIn) {
                 sb.append(in);
                 sb.append('.');
             }
@@ -134,17 +146,27 @@ public class IndexedFunction extends IndexedElement implements FunctionElement {
 
     @Override
     public Set<Modifier> getModifiers() {
-        
-        
-        
         return super.getModifiers();
     }
 
-    public int getDefaultParameterCount() {
-        return defaultParameterCount;
+    public int[] getOptionalArgs() {
+        return optionalArgs;
     }
 
-    public void setDefaultParameterCount(int defaultParameterCount) {
-        this.defaultParameterCount = defaultParameterCount;
+    public void setOptionalArgs(int[] optionalArgs) {
+        this.optionalArgs = optionalArgs;
+    }
+
+    @CheckForNull
+    public String getReturnType() {
+        return returnType;
+    }
+
+    void setReturnType(String returnType) {
+        // empty string causes a serious performance problem
+        if (returnType != null && returnType.length() == 0){
+            throw new IllegalArgumentException("returnType cannot be empty string!");
+        }
+        this.returnType = returnType;
     }
 }

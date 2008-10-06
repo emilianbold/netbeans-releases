@@ -43,19 +43,25 @@ package org.netbeans.modules.xml.wsdl.ui.api.property;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.ui.ProjectConstants;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
@@ -178,19 +184,16 @@ public class MessagePartChooserHelper extends ChooserHelper<WSDLComponent>{
 
         private void resetKeys() {
             ArrayList<FileObject> keys = new ArrayList<FileObject>();
-            LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
-            Node node = viewProvider.createLogicalView();
-            org.openide.nodes.Children children = node.getChildren();
-            for (Node child : children.getNodes()) {
-                DataObject dobj = child.getCookie(DataObject.class);
-                if (dobj != null) {
-                    File[] files = recursiveListFiles(FileUtil.toFile(dobj.getPrimaryFile()), new WSDLFileFilter());
-                    for (File file : files) {
-                        FileObject fo = FileUtil.toFileObject(file);
-                        keys.add(fo);
-                    }
+            List<SourceGroup> sourceRoots = Utility.getSourceRoots(project);
+            for (SourceGroup srcGrp : sourceRoots) {
+                FileObject rootFolder = srcGrp.getRootFolder();
+                File[] files = recursiveListFiles(FileUtil.toFile(rootFolder), new WSDLFileFilter());
+                for (File file : files) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    keys.add(fo);
                 }
             }
+
             this.setKeys(keys);
         }
 

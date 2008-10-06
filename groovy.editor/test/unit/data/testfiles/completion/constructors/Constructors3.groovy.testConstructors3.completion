@@ -1,0 +1,8 @@
+Code completion result for source line:
+FileOutputStream fos = new fileoutputstr|
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTRUCTO FileOutputStream(File)                     null
+CONSTRUCTO FileOutputStream(File, boolean             null
+CONSTRUCTO FileOutputStream(FileDescripto             null
+CONSTRUCTO FileOutputStream(String)                   null
+CONSTRUCTO FileOutputStream(String, boole             null

@@ -102,7 +102,7 @@ public class CleartoolMockup extends Process implements Runnable {
         outputStream = new ByteArrayOutputStream(200);            
         inputStream = new DelegateInputStream();        
         errorStream = new DelegateInputStream();
-        this.vobRoot = vobRoot;
+        this.vobRoot = vobRoot.endsWith(File.separator) ? vobRoot.substring(0, vobRoot.length() - 1) : vobRoot;
         if(counter++ == 0) {
             init();
         }

@@ -193,6 +193,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="0"/>
             <attr name="simple" boolvalue="false"/>
             <file name="callableSystemAction.java" url="../wizard/action/callableSystemAction.javx"/>
+            <file name="actionListener.java" url="../wizard/action/actionListener.javx"/>
             <file name="cookieAction.java" url="../wizard/action/cookieAction.javx"/>
             <file name="codeGenerator.java" url="../wizard/codegenerator/codeGenerator.javx"/>
 			<file name="quickSearch.java" url="../wizard/quicksearch/quickSearch.javx"/>
@@ -215,8 +216,6 @@ made subject to such option by the copyright holder.
             <file name="templateNew2" url="../wizard/loader/templateNew2"/>
             <file name="templateresolver.xml" url="../wizard/loader/templateresolver.xml"/>
             <file name="moduleInstall.java" url="../wizard/moduleinstall/moduleInstall.javx"/>
-            <file name="template_mypluginAdvancedOption.java" url="../wizard/options/template_mypluginAdvancedOption"/>
-            <file name="template_mypluginOptionsCategory.java" url="../wizard/options/template_mypluginOptionsCategory"/>
             <file name="template_mypluginOptionsPanelController.java" url="../wizard/options/template_mypluginOptionsPanelController"/>
             <file name="template_mypluginPanel.java" url="../wizard/options/template_mypluginPanel"/>
             <file name="template_myplugin_formPanel.form" url="../wizard/options/template_myplugin_formPanel"/>
@@ -282,6 +281,21 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="ProjectXMLCatalog">
+        <folder name="nb-module-project">
+            <file name="2.xsd" url="../../resources/nb-module-project2.xsd"/>
+            <file name="3.xsd" url="../../resources/nb-module-project3.xsd"/>
+        </folder>
+        <folder name="nb-module-project-private">
+            <file name="1.xsd" url="../../resources/nb-module-project-private.xsd"/>
+        </folder>
+        <folder name="nb-module-suite-project">
+            <file name="1.xsd" url="../../suite/resources/nb-module-suite-project.xsd"/>
+        </folder>
+        <folder name="nb-module-suite-project-private">
+            <file name="1.xsd" url="../../suite/resources/nb-module-suite-project-private.xsd"/>
+        </folder>
+    </folder>
     <folder name="Projects">
         <folder name="org-netbeans-modules-apisupport-project">
             <folder name="Lookup"/>
@@ -322,6 +336,12 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="200"/>
                     </file>
                 </folder>
+                <file name="Formatting.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel.createCategoryProvider"/>
+                    <attr name="allowedMimeTypes" stringvalue="text/x-java"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
         </folder>
         <folder name="org-netbeans-modules-apisupport-project-suite">
@@ -351,12 +371,6 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-apisupport-project-ui-customizer-SuiteCustomizerWindowSystemBrandingFactory.instance"/>
                 </folder>
             </folder>
-        </folder>
-        <folder name="Actions">
-            <!-- Adds XTest sub menu to project root node -->
-            <file name="org-netbeans-modules-apisupport-project-ui-XTestProjectMenuItem.instance">
-                <attr name="position" intvalue="200"/>
-            </file>
         </folder>
     </folder>
     <folder name="xml">

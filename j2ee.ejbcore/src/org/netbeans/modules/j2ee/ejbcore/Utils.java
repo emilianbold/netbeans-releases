@@ -289,6 +289,9 @@ public class Utils {
             return true;
         }
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if (javaSource == null) {
+            return false;
+        }
         final boolean[] result = new boolean[] { false };
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
@@ -367,6 +370,9 @@ public class Utils {
             }
         });
 
+        if (ejbReferenceEjbClassFO == null) {
+            return null;
+        }
         Project project = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(project, JavaProjectConstants.ARTIFACT_TYPE_JAR);
         boolean hasArtifact = (antArtifacts != null && antArtifacts.length > 0);

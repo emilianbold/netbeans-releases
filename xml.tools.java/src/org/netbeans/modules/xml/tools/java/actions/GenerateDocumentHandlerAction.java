@@ -39,9 +39,18 @@
 
 package org.netbeans.modules.xml.tools.java.actions;
 
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.xml.actions.CollectDTDAction;
 import org.netbeans.modules.xml.tools.generator.XMLGenerateAction;
 import org.netbeans.modules.xml.tools.java.generator.SAXGeneratorSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -71,5 +80,26 @@ public class GenerateDocumentHandlerAction extends XMLGenerateAction implements 
         protected Class getOwnCookieClass () {
             return SAXGeneratorSupport.class;
         }
+        
+        protected boolean enable(Node[] node) {
+        if (node.length == 0) {
+            return false;
+        }
+        DataObject dobj = (DataObject) node[0].getLookup().lookup(DataObject.class);
+        if (dobj == null) {
+            return false;
+        }
+        FileObject fo = dobj.getPrimaryFile();
+        Project project = FileOwnerQuery.getOwner(fo);
+        if(project == null)
+            return false;
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] srcGrps = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (srcGrps == null || srcGrps.length == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } 
 } 
 

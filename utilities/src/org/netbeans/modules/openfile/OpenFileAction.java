@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,16 +41,15 @@
 
 package org.netbeans.modules.openfile;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.utilities.Manager;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -61,22 +60,13 @@ import org.openide.windows.WindowManager;
  * @author Jesse Glick
  * @author Marian Petras
  */
-public class OpenFileAction extends CallableSystemAction {
+public class OpenFileAction implements ActionListener {
 
     public OpenFileAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(OpenFileAction.class, "LBL_openFile");
     }
 
-    public HelpCtx getHelpCtx() {
+    private HelpCtx getHelpCtx() {
         return new HelpCtx(OpenFileAction.class);
-    }
-
-    protected String iconResource() {
-        return "org/netbeans/modules/openfile/openFile.png"; // NOI18N
     }
 
     /**
@@ -115,16 +105,18 @@ public class OpenFileAction extends CallableSystemAction {
         } while (files.length == 0);
         return files;
     }
-    
+
+    private static boolean running;
     /**
      * {@inheritDoc} Displays a file chooser dialog
      * and opens the selected files.
      */
-    public void performAction() {
-        if (!Manager.actionActivated(this)) {
+    public void actionPerformed(ActionEvent e) {
+        if (running) {
             return;
         }
         try {
+            running = true;
             JFileChooser chooser = prepareFileChooser();
             File[] files;
             try {
@@ -136,14 +128,10 @@ public class OpenFileAction extends CallableSystemAction {
                 OpenFile.openFile(files[i], -1);
             }
         } finally {
-            Manager.actionFinished(this);
+            running = false;
         }
     }
     
-    protected boolean asynchronous() {
-        return false;
-    }
-
     /**
      * Try to find a directory to open the chooser open.
      * If there is a file among selected nodes (e.g. open editor windows),
@@ -152,7 +140,7 @@ public class OpenFileAction extends CallableSystemAction {
     private static File findStartingDirectory() {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < nodes.length; i++) {
-            DataObject d = (DataObject) nodes[i].getCookie(DataObject.class);
+            DataObject d = nodes[i].getCookie(DataObject.class);
             if (d != null) {
                 File f = FileUtil.toFile(d.getPrimaryFile());
                 if (f != null) {

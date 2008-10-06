@@ -105,6 +105,28 @@ is the proper place.
 
     <changes>
 
+        <change id="document.locking.changed">
+            <summary>Document locking changed</summary>
+            <version major="1" minor="6"/>
+            <date day="27" month="8" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" modification="yes" addition="no"/>
+            <description>
+                <p>
+                The infrastructure does not lock the document prior calling the
+                <code>BracesMatcher</code> methods. This change was done in order to
+                support <code>BracesMatcher</code> implementations that need parser
+                results and have to lock the parser first.
+                </p>
+                <p>
+                From now on it's up to <code>BracesMatcher</code> implementations
+                to readlock the document when directly searching through it
+                for the origin or matching areas.
+                </p>
+            </description>
+            <issue number="131284"/>
+        </change>
+
         <change id="MatcherContext.isTastCanceled-added">
             <summary>Added MatcherContext.isTastCanceled()</summary>
             <version major="1" minor="3"/>

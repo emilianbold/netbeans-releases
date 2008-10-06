@@ -161,6 +161,7 @@ import org.dom4j.Node;
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewElementUI;
@@ -468,9 +469,10 @@ public class ADProjectTreeEngine
       {
          // Don't add relationships.
       }
-      else if(elementType.equals("UseCaseDetail") == true)
+      else if(elementType.equals("UseCaseDetail") ||       // NO I18N
+              elementType.equals("ActivityPartition"))          // NO I18N
       {
-         // Use case details can appear in their own folder so we need to have
+         // Use case details and sub partitions can appear in their own folder so we need to have
          // a more complicated update process similar to attributes and
          // operations which are in their own folder if their number is greater
          // then that specified in the project tree builder etc file.
@@ -3213,6 +3215,8 @@ public class ADProjectTreeEngine
             IProjectTreeModel treeModel = getTreeModel();
             String diagramName = proxy.getNameWithAlias();
             IProject project = proxy.getProject();
+            if (project == null)
+                return;
             long diagramSortPriority = m_TreeBuilder.getSortPriority(proxy.getDiagramKindName());
             
             // 1st, add the diagram node under Diagrams root node if the node 

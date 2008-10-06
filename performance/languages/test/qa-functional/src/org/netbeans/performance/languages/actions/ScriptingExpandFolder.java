@@ -41,11 +41,13 @@
 
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
@@ -124,43 +126,69 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RUBY_PROJECT;
         pathToFolderNode = "";
+        expectedTime = 1000;
         doMeasurement();          
     }
+
     public void testExpandFolderWith100RubyFiles() {
         WAIT_AFTER_OPEN = 3000;
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RUBY_PROJECT;
-        pathToFolderNode = "Source Files"+"|"+"100RbFiles";
+        pathToFolderNode = "Source Files" + "|" + "100RbFiles";
+        expectedTime = 1000;
         doMeasurement();        
     }
+
     public void testExpandRailsProjectNode() {
         WAIT_AFTER_OPEN = 3000;
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RAILS_PROJECT;
         pathToFolderNode = "";
+        expectedTime = 1000;
         doMeasurement();          
     }
+
+    public void testExpandPHPProjectNode() {
+        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_PREPARE = 2000;
+        project = Projects.PHP_PROJECT;
+        pathToFolderNode = "";
+        expectedTime = 1000;
+        doMeasurement();
+    }
+
     public void testExpandFolderWith100RailsFiles() {
         WAIT_AFTER_OPEN = 3000;
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.RAILS_PROJECT;
-        pathToFolderNode = "Views"+"|"+"100RhtmlFiles";
+        pathToFolderNode = "Views" + "|" + "100RhtmlFiles";
+        expectedTime = 1000;
         doMeasurement();        
     }
     public void testExpandFolderWith100JSFiles() {
         WAIT_AFTER_OPEN = 3000;
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.SCRIPTING_PROJECT;
-        pathToFolderNode = "Web Pages"+"|"+"100JsFiles";
+        pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
+        expectedTime = 1000;
         doMeasurement();           
     }
     public void testExpandFolderWith100CssFiles() {
         WAIT_AFTER_OPEN = 3000;
         WAIT_AFTER_PREPARE = 2000;
         project = Projects.SCRIPTING_PROJECT;
-        pathToFolderNode = "Web Pages"+"|"+"100CssFiles";
+        pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
+        expectedTime = 1000;
         doMeasurement();           
     }  
+    public void testExpandFolderWith100PhpFiles() {
+        WAIT_AFTER_OPEN = 3000;
+        WAIT_AFTER_PREPARE = 2000;
+        project = Projects.PHP_PROJECT;
+        pathToFolderNode = "Source Files" + "|" + "100PhpFiles";
+        expectedTime = 1000;
+        doMeasurement();
+    }
     
     /**
      * turn badges off
@@ -176,4 +204,14 @@ public class ScriptingExpandFolder extends PerformanceTestCase {
         System.setProperty("perf.dont.resolve.java.badges", "false");
     }    
 
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(ScriptingExpandFolder.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );
+    }
 }

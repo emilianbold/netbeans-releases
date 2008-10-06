@@ -5,59 +5,67 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Running a JUnit Test</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 <h2>Running a JUnit Test</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp;</small>
+<p><small><a href="#seealso">See Also</a>&nbsp;</small></p>
 <p>Once you have created a test or test suite, you can use the Run Test command
-  to initiate execution of the test. Run Test commands are available on source
-  nodes only.</p>
-<p><b>To run  tests for an entire project:</b></p>
+  to initiate execution of the test. Run Test commands are available on source nodes only. 
+  After you run a test, you can choose to rerun individual test methods 
+  executed during the test and displayed in the JUnit Test Results window.</p>
+<p><b>To run tests for an entire project:</b></p>
 <ol>
   <li>Select any node or file in the project you want to test in the Projects 
     or Files window.</li>
   <li>From the main menu, choose Run &gt; Test <i>project_name</i> (Alt-F6). 
-    <p>The IDE executes each of the project's tests.</p>
+    <p>The IDE executes all of the project's tests.</p>
   </li>
 </ol>
 <ul class="note">
-  <li>Alternatively, you can run tests for an entire project by right-clicking the 
-    node of the project you wish to test in the Projects window and choosing Test 
-    Project (Alt-F6) from the popup menu. 
+  <li>If you want to run a subset of the project's tests or run the tests in a specific order,
+  you can create test suites that specify the tests to run as part of that suite.
+  After creating a test suite you run the suite in the same way you run a single test class. 
 </ul>
 <p><b>To run a test for a single class:</b></p>
 <ol>
   <li>Select the node of the class for which you want to run a test in the Projects 
     or Files window. </li>
   <li>From the main menu, choose Run &gt; Run File &gt; Test <tt><i>classname</i></tt> 
-    (Ctrl-F6). 
-    <p>The IDE executes the test using. 
-      <!--<p>The test is executed using the executor and test runner specified in the JUnit Module 
-	Settings. For more information, see <a href="junit_configuring.html">Configuring JUnit Settings</a>.</p>-->
-    </p>
-  </li>
+    (Ctrl-F6).</li>
 </ol>
 <ul class="note">
   <li>You can also run a class's test by selecting the test class node itself 
     and choosing Run &gt; Run File &gt; Run <tt><i>testclassname</i></tt> (Shift-F6). 
 </ul>
+
+<p><b>To run a single test method:</b></p>
+<ol>
+  <li>Run the test class or suite containing the test method.</li>
+  <li>In the JUnit Test Results window, right-click the test method and choose Run Again. </li>
+</ol>
+
+<ul class="note">
+    <li>To run a single test method the method must be listed in the JUnit Test Results window.</li>
+</ul>
+
 <h3>Working with JUnit Test Output</h3>
-<p>When you run a test, the IDE shows output into two tabs:</p>
+<p>When you run a test, the IDE shows the test results in two tabs in the JUnit Test Results window:</p>
 <ul>
   <li>A summary of the passed and failed tests and the description of failed tests 
-    are displayed in the JUnit Test Results window. </li>
-  <li>The output from the JUnit tests themselves is displayed in the Output window.</li>
+    are displayed in the left pane of the window. 
+    Click the filter button (&nbsp;<img src="../images/junit_filter.gif" width="20" height="18">&nbsp;) 
+     to switch between viewing all test results and viewing only the failed tests.</li>
+  <li>The textual output from the JUnit tests themselves is displayed in the right pane of the window.</li>
 </ul>
-<p><b>To work with the JUnit test window:</b></p>
-<ul>
-  <li>Double-click any error to jump to the line in the code where the error occurred.</li>
-  <li>Click the Output button to view the textual JUnit output.</li>
-  <li>Click the <img src="../images/junit_filter.gif" width="20" height="18"> 
-    button to filter switch between viewing all test results and viewing only 
-    failures.</li>
+
+<ul class="note">
+  <li>The output from the Ant process that builds and runs the test is displayed in the Output window.
+    Double-click any error to jump to the line in the code where the error occurred.</li>
 </ul>
+
 <dl> 
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="junit_creatingtests.html">Creating a JUnit Test</a></dd>
@@ -65,16 +73,8 @@
 </dl> 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
+<table border="0" cellpadding="50">
+  <tr><td>&nbsp;</td></tr>
 </table>
 </body>
 </html>

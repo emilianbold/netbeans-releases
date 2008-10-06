@@ -46,17 +46,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Collection;
 import java.util.GregorianCalendar;
-import java.util.LinkedHashSet;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -64,9 +60,9 @@ import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -107,6 +103,9 @@ final class JUnitOutputReader {
     /** */
     private static final String XML_FORMATTER_CLASS_NAME
             = "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
+
+    /** */
+    private final NumberFormat numberFormat = NumberFormat.getInstance();
     
     /**
      * Does Ant provide detailed information about the currently running test
@@ -446,7 +445,7 @@ final class JUnitOutputReader {
                 troubleParser = null;
                 
                 if ((trouble.stackTrace != null) && (trouble.stackTrace.length != 0)) {
-                    setClasspathSourceRoots();
+                    report.setClasspathSourceRoots();
                 }
 
                 if (trouble.isFakeError()) {
@@ -529,12 +528,11 @@ final class JUnitOutputReader {
                     report.totalTests = Integer.parseInt(matcher.group(1));
                     report.failures = Integer.parseInt(matcher.group(2));
                     report.errors = Integer.parseInt(matcher.group(3));
-                    report.elapsedTimeMillis
-                            = regexp.parseTimeMillis(matcher.group(4));
                 } catch (NumberFormatException ex) {
                     //if the string matches the pattern, this should not happen
                     assert false;
                 }
+                report.elapsedTimeMillis = parseTime(matcher.group(4));
             }
             testsuiteStatsKnown = true;
         }//</editor-fold>
@@ -555,6 +553,19 @@ final class JUnitOutputReader {
         }
         //</editor-fold>
     }
+
+    /**
+     */
+    private int parseTime(String timeString) {
+        int timeMillis;
+        try {
+            double seconds = numberFormat.parse(timeString).doubleValue();
+            timeMillis = Math.round((float) (seconds * 1000.0));
+        } catch (ParseException ex) {
+            timeMillis = Report.Testcase.TIME_UNKNOWN;
+        }
+        return timeMillis;
+    }
     
     /**
      * Tries to determine test results directory.
@@ -566,53 +577,39 @@ final class JUnitOutputReader {
      */
     private static File determineResultsDir(final AntEvent event) {
         File resultsDir = null;
-        String dirName = null;
         
         final String taskName = event.getTaskName();
         if (taskName != null) {
             if (taskName.equals("junit")) {                             //NOI18N
-                dirName = determineJunitTaskResultsDir(event);
+                resultsDir = determineJunitTaskResultsDir(event);
             } else if (taskName.equals("java")) {                       //NOI18N
-                dirName = determineJavaTaskResultsDir(event);
+                resultsDir = determineJavaTaskResultsDir(event);
             }
         }
         
-        if (dirName != null) {
-            resultsDir = new File(dirName);
-            if (!resultsDir.isAbsolute()) {
-                resultsDir = new File(event.getProperty("basedir"),     //NOI18N
-                                      dirName);
-            }
-            if (!resultsDir.exists() || !resultsDir.isDirectory()) {
-                resultsDir = null;
-            }
+        if ((resultsDir != null) && resultsDir.exists() && resultsDir.isDirectory()) {
+            return resultsDir;
         } else {
-            resultsDir = null;
+            return null;
         }
-        
-        return resultsDir;
     }
     
     /**
      */
-    private static String determineJunitTaskResultsDir(final AntEvent event) {
+    private static File determineJunitTaskResultsDir(final AntEvent event) {
         final TaskStructure taskStruct = event.getTaskStructure();
         if (taskStruct == null) {
             return null;
         }
         
-        String dirName = null;
+        String todirAttr = null;
         boolean hasXmlFileOutput = false;
         
         for (TaskStructure taskChild : taskStruct.getChildren()) {
             String taskChildName = taskChild.getName();
             if (taskChildName.equals("batchtest")                       //NOI18N
                     || taskChildName.equals("test")) {                  //NOI18N
-                String dirAttr = taskChild.getAttribute("todir");       //NOI18N
-                dirName = (dirAttr != null)
-                          ? event.evaluate(dirAttr)
-                          : ".";                                        //NOI18N
-                            /* default is the current directory (Ant manual) */
+                todirAttr = taskChild.getAttribute("todir");            //NOI18N
                 
             } else if (taskChildName.equals("formatter")) {             //NOI18N
                 if (hasXmlFileOutput) {
@@ -624,23 +621,31 @@ final class JUnitOutputReader {
                     String useFileAttr
                             = taskChild.getAttribute("usefile");        //NOI18N
                     if ((useFileAttr == null)
-                        || "true".equals(event.evaluate(useFileAttr))) {//NOI18N
+                        || AntProject.toBoolean(event.evaluate(useFileAttr))) {
                         hasXmlFileOutput = true;
                     }
                 }
             }
         }
-        
-        return hasXmlFileOutput ? dirName : null;
+
+        if (!hasXmlFileOutput) {
+            return null;
+        }
+
+        File resultsDir = (todirAttr != null) ? getFile(todirAttr, event)
+                                              : getBaseDir(event);
+        return findAbsolutePath(resultsDir, taskStruct, event);
     }
-    
+
     /**
      */
-    private static String determineJavaTaskResultsDir(final AntEvent event) {
+    private static File determineJavaTaskResultsDir(final AntEvent event) {
         final TaskStructure taskStruct = event.getTaskStructure();
         if (taskStruct == null) {
             return null;
         }
+
+        String todirPath = null;
         
         for (TaskStructure taskChild : taskStruct.getChildren()) {
             String taskChildName = taskChild.getName();
@@ -657,12 +662,9 @@ final class JUnitOutputReader {
                         if ((commaIndex != -1)
                                 && formatter.substring(0, commaIndex).equals(XML_FORMATTER_CLASS_NAME)) {
                             String fullReportFileName = formatter.substring(commaIndex + 1);
-                            int lastSlashIndex = fullReportFileName.lastIndexOf(File.separatorChar);
-                            String dirName = (lastSlashIndex != -1)
-                                              ? fullReportFileName.substring(0, lastSlashIndex)
-                                              : ".";                    //NOI18N
-                            if (dirName.length() != 0) {
-                                return dirName;
+                            todirPath = new File(fullReportFileName).getParent();
+                            if (todirPath == null) {
+                                todirPath = ".";                        //NOI18N
                             }
                         }
                     }
@@ -670,9 +672,51 @@ final class JUnitOutputReader {
             }
         }
             
-        return null;
+        if (todirPath == null) {
+            return null;
+        }
+
+        File resultsDir = (todirPath != ".") ? new File(todirPath)      //NOI18N
+                                             : null;
+        return findAbsolutePath(resultsDir, taskStruct, event);
+    }
+
+    private static File findAbsolutePath(File path, TaskStructure taskStruct, AntEvent event) {
+        if (isAbsolute(path)) {
+            return path;
+        }
+
+        String forkAttr = taskStruct.getAttribute("fork");              //NOI18N
+        if ((forkAttr != null) && AntProject.toBoolean(event.evaluate(forkAttr))) {
+            String dirAttr = taskStruct.getAttribute("dir");            //NOI18N
+            if (dirAttr != null) {
+                path = combine(getFile(dirAttr, event), path);
+                if (isAbsolute(path)) {
+                    return path;
+                }
+            }
+        }
+
+        return combine(getBaseDir(event), path);
     }
     
+    private static File combine(File parentPath, File path) {
+        return (path != null) ? new File(parentPath, path.getPath())
+                              : parentPath;
+    }
+
+    private static boolean isAbsolute(File path) {
+        return (path != null) && path.isAbsolute();
+    }
+
+    private static File getFile(String attrValue, AntEvent event) {
+        return new File(event.evaluate(attrValue));
+    }
+
+    private static File getBaseDir(AntEvent event) {
+        return new File(event.getProperty("basedir"));                  //NOI18N
+    }
+
     /**
      */
     private Report createReport(final String suiteName) {
@@ -706,73 +750,6 @@ final class JUnitOutputReader {
             }
         }
         return null;
-    }
-    
-    /**
-     * Finds source roots corresponding to the apparently active classpath
-     * (as reported by logging from Ant when it runs the Java launcher
-     * with -cp) and stores it in the current report.
-     * <!-- copied from JavaAntLogger -->
-     * <!-- XXX: move to class Report -->
-     */
-    private void setClasspathSourceRoots() {
-        
-        /* Copied from JavaAntLogger */
-        
-        if (report == null) {
-            return;
-        }
-        
-        if (report.classpathSourceRoots != null) {      //already set
-            return;
-        }
-        
-        if (report.classpath == null) {
-            return;
-        }
-        
-        Collection<FileObject> sourceRoots = new LinkedHashSet<FileObject>();
-        final StringTokenizer tok = new StringTokenizer(report.classpath,
-                                                        File.pathSeparator);
-        while (tok.hasMoreTokens()) {
-            String binrootS = tok.nextToken();
-            File f = FileUtil.normalizeFile(new File(binrootS));
-            URL binroot;
-            try {
-                binroot = f.toURI().toURL();
-            } catch (MalformedURLException e) {
-                throw new AssertionError(e);
-            }
-            if (FileUtil.isArchiveFile(binroot)) {
-                URL root = FileUtil.getArchiveRoot(binroot);
-                if (root != null) {
-                    binroot = root;
-                }
-            }
-            FileObject[] someRoots = SourceForBinaryQuery
-                                     .findSourceRoots(binroot).getRoots();
-            sourceRoots.addAll(Arrays.asList(someRoots));
-        }
-
-        if (report.platformSources != null) {
-            sourceRoots.addAll(Arrays.asList(report.platformSources.getRoots()));
-        } else {
-            // no platform found. use default one:
-            JavaPlatform platform = JavaPlatform.getDefault();
-            // in unit tests the default platform may be null:
-            if (platform != null) {
-                sourceRoots.addAll(
-                        Arrays.asList(platform.getSourceFolders().getRoots()));
-            }
-        }
-        report.classpathSourceRoots = sourceRoots;
-        
-        /*
-         * The following fields are no longer necessary
-         * once the source classpath is defined:
-         */
-        report.classpath = null;
-        report.platformSources = null;
     }
     
     /**
@@ -1052,11 +1029,11 @@ final class JUnitOutputReader {
                                 .matcher(testcaseHeader);
         if (matcher.matches()) {
             String methodName = matcher.group(1);
-            int timeMillis = regexp.parseTimeMillisNoNFE(matcher.group(2));
+            String timeString = matcher.group(2);
             
             testcase = report.findTest(methodName);
             testcase.className = null;
-            testcase.timeMillis = timeMillis;
+            testcase.timeMillis = parseTime(timeString);
             
             trouble = null;
             troubleParser = null;

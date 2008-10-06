@@ -1,0 +1,122 @@
+Code completion result for source line:
+ss.|sing # is completed
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     new(name)                       [STATIC,   Song
+METHOD     sing(text)                                 Song
+ATTRIBUTE  age                                        Song
+ATTRIBUTE  name                                       Song
+------------------------------------
+METHOD     abort                                      Kernel
+METHOD     allocate                                   Class
+METHOD     at_exit { }                                Kernel
+METHOD     autoload(module_, filename)                Kernel
+METHOD     binding                                    Kernel
+METHOD     block_given?                               Kernel
+METHOD     callcc { }                                 Kernel
+METHOD     caller(start)                              Kernel
+METHOD     catch(symbol) { }                          Kernel
+METHOD     chomp!(string)                             Kernel
+METHOD     chomp(string)                              Kernel
+METHOD     chop                                       Kernel
+METHOD     chop!                                      Kernel
+METHOD     class                                      Object
+METHOD     clone                                      Object
+METHOD     display(port)                              Object
+METHOD     dup                                        Object
+METHOD     enum_for(method, *args)                    Object
+METHOD     eval(string, binding, filename             Kernel
+METHOD     exec(command, arg)                         Kernel
+METHOD     exit!(fixnum)                              Kernel
+METHOD     exit(integer)                              Kernel
+METHOD     extend(module_)                            Object
+METHOD     fail(exception, string, array)             Kernel
+METHOD     fail(string)                               Kernel
+METHOD     fork { }                                   Kernel
+METHOD     format(format_string, argument             Kernel
+METHOD     frozen?                                    Object
+METHOD     getc                                       Kernel
+METHOD     gets(separator)                            Kernel
+METHOD     global_variables                           Kernel
+METHOD     gsub!(pattern)                             Kernel
+METHOD     gsub!(pattern, replacement)                Kernel
+METHOD     gsub(pattern)                              Kernel
+METHOD     gsub(pattern, replacement)                 Kernel
+METHOD     hash                                       Object
+METHOD     id                                         Object
+METHOD     inherited(subclass)                        Class
+METHOD     inspect                                    Object
+METHOD     instance_eval(string, filename             Object
+METHOD     instance_exec(arg) { }                     Object
+METHOD     instance_of?(class_name)                   Object
+METHOD     instance_variable_defined?(sym             Object
+METHOD     instance_variable_get(symbol)              Object
+METHOD     instance_variable_set(symbol,              Object
+METHOD     instance_variables                         Object
+METHOD     is_a?(class_name)                          Object
+METHOD     iterator?                                  Kernel
+METHOD     kind_of?(class_name)                       Object
+METHOD     lambda { }                                 Kernel
+METHOD     load(filename, wrap)                       Kernel
+METHOD     local_variables                            Kernel
+METHOD     loop { }                                   Kernel
+METHOD     method(sym)                                Object
+METHOD     method_missing(symbol, *args)              Kernel
+METHOD     methods                                    Object
+METHOD     new                             [STATIC]   Object
+METHOD     new(args)                                  Class
+METHOD     new(super_class)                [STATIC]   Class
+METHOD     nil?                                       Object
+METHOD     object_id                                  Object
+METHOD     open(path, mode, perm)                     Kernel
+METHOD     p(obj)                                     Kernel
+METHOD     print(obj)                                 Kernel
+METHOD     printf(io, string, obj)                    Kernel
+METHOD     printf(string, obj)                        Kernel
+METHOD     private_methods(all)                       Object
+METHOD     proc { }                                   Kernel
+METHOD     protected_methods(all)                     Object
+METHOD     public_methods(all)                        Object
+METHOD     putc(int)                                  Kernel
+METHOD     puts(obj)                                  Kernel
+METHOD     raise(exception, string, array             Kernel
+METHOD     raise(string)                              Kernel
+METHOD     rand(max)                                  Kernel
+METHOD     readline(separator)                        Kernel
+METHOD     readlines(separator)                       Kernel
+METHOD     remove_instance_variable(symbo             Object
+METHOD     require(string)                            Kernel
+METHOD     respond_to?(symbol, include_pr             Object
+METHOD     scan(pattern)                              Kernel
+METHOD     select                                     Kernel
+METHOD     send(symbol, args)                         Object
+METHOD     set_trace_func(proc)                       Kernel
+METHOD     singleton_method_added(symbol)             Object
+METHOD     singleton_method_removed(symbo             Object
+METHOD     singleton_method_undefined(sym             Object
+METHOD     singleton_methods(all)                     Object
+METHOD     sleep(duration)                            Kernel
+METHOD     split(pattern, limit)                      Kernel
+METHOD     sprintf(format_string, argumen             Kernel
+METHOD     srand(number)                              Kernel
+METHOD     sub!(pattern)                              Kernel
+METHOD     sub!(pattern, replacement)                 Kernel
+METHOD     sub(pattern)                               Kernel
+METHOD     sub(pattern, replacement)                  Kernel
+METHOD     superclass                                 Class
+METHOD     syscall(fixnum, args)                      Kernel
+METHOD     system(cmd, arg)                           Kernel
+METHOD     taint                                      Object
+METHOD     tainted?                                   Object
+METHOD     tap { }                                    Object
+METHOD     test(int_cmd, file1, file2)                Kernel
+METHOD     throw(symbol, obj)                         Kernel
+METHOD     to_a                                       Object
+METHOD     to_enum(method, *args)                     Object
+METHOD     trace_var(symbol)                          Kernel
+METHOD     trace_var(symbol, cmd)                     Kernel
+METHOD     trap(signal)                               Kernel
+METHOD     trap(signal, proc)                         Kernel
+METHOD     type                                       Object
+METHOD     untaint                                    Object
+METHOD     untrace_var(symbol, cmd)                   Kernel
+METHOD     warn(msg)                                  Kernel

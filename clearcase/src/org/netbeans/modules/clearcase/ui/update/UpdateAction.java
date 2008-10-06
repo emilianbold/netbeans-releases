@@ -53,6 +53,7 @@ import java.io.FileFilter;
 import java.util.*;
 
 import org.netbeans.modules.clearcase.util.ClearcaseUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,6 +87,7 @@ public class UpdateAction extends AbstractAction {
     }    
     
     public void actionPerformed(ActionEvent e) {
+        Utils.logVCSActionEvent("CC");
         Set<File> files = context.computeFiles(updateFileFilter);        
 
         // the whole tree for every root has to be refeshed as

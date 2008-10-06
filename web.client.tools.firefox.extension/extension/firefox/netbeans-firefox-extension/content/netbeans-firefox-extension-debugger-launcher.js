@@ -85,17 +85,21 @@
                     // found port and sessin id
                     if (port && sessionId) {
                         // this is the relaunched new window or the very first browser window
-                        if (NetBeans.windowArguments && NetBeans.windowArguments.length > 0 && NetBeans.windowArguments[0] == href) {
+                        if (window.getBrowser().browsers.length == 1 &&  window.getBrowser().getBrowserAtIndex(0).currentURI.spec == href) {
                             window.setTimeout(
                             function() {
-                                var shellService = NetBeans.Utils.CCSV(
-                                NetBeans.Constants.ShellServiceCID,
-                                NetBeans.Constants.ShellServiceIF);
-                                if ( shellService && shellService.shouldCheckDefaultBrowser ) {
-                                    /* do check to get subsequest calls to
-                                     * nsIShellService.shouldCheckDefaultBrowser return false
-                                     */
-                                    shellService.isDefaultBrowser(true);
+                                try {
+                                  var shellService = NetBeans.Utils.CCSV(
+                                  NetBeans.Constants.ShellServiceCID,
+                                  NetBeans.Constants.ShellServiceIF);
+                                  if ( shellService && shellService.shouldCheckDefaultBrowser ) {
+                                      /* do check to get subsequest calls to
+                                       * nsIShellService.shouldCheckDefaultBrowser return false
+                                       */
+                                      shellService.isDefaultBrowser(true);
+                                  }
+                                } catch (ex) {
+                                    NetBeans.Logger.logMessage(ex.message);
                                 }
                                 NetBeans.Debugger.initDebugger(port, sessionId);
                             }
@@ -107,16 +111,31 @@
                             "_blank",                               // new Browser window
                             "chrome,centerscreen,dialog=0,menubar=1,location=1,toolbar=1,directories=1,status=1,resizable=1,scrollbars=1",
                             href);
-                            window.getBrowser().removeCurrentTab();
+                            
+                            closeTabForURL(window.getBrowser(), href);
                         }
                     }
                 }
             }
         }
     }
-    
-    NetBeans.windowArguments = window.arguments;
 
+    // Based off example code in: http://developer.mozilla.org/en/Code_snippets/Tabbed_browser
+    function closeTabForURL(tabbrowser, url) {
+            var numTabs = tabbrowser.browsers.length;
+            for(var index=0; index<numTabs; index++) {
+                var currentBrowser = tabbrowser.getBrowserAtIndex(index);
+                if (url == currentBrowser.currentURI.spec) {
+                    var tabForURL = tabbrowser.mTabs[index];
+                    tabbrowser.removeTab(tabForURL);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+    
     // Listen on loading of chrome window
     window.addEventListener("load", onChromeLoad, false);
 }).apply(NetBeans.DebuggerLauncher);

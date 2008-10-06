@@ -147,7 +147,7 @@ public final class FilterRepository {
     }
     
     public TaskFilter getActive() {
-        return (active == -1) ? null : filters.get( active );
+        return (active == -1 || filters.isEmpty()) ? null : filters.get( active );
     }
     
     public void setActive( TaskFilter newactive ) {

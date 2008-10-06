@@ -42,6 +42,7 @@ package org.netbeans.modules.j2ee.jpa.verification;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.api.java.source.JavaSource;
@@ -67,7 +68,15 @@ public class JPAVerificationTaskProvider extends FileTaskScanner {
     }
     
     public List<? extends Task> scan(FileObject file) {
-        JavaSource javaSrc = JavaSource.forFileObject(file);
+        JavaSource javaSrc = null;
+        try {
+            javaSrc = JavaSource.forFileObject(file);
+        } catch (IllegalArgumentException ie) {
+            // Do not try to process an invalid FileObject
+            JPAProblemFinder.LOG.log(Level.WARNING, ie.getMessage(), ie);
+            return null;
+        }
+        
         ProblemFinderCompControl compControl = new ProblemFinderCompControl(file);
         
         if (javaSrc != null){

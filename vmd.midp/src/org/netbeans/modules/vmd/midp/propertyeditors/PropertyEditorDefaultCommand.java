@@ -78,11 +78,11 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  * @author Anton Chechel
  */
-public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode implements PropertyEditorElement {
+public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode implements PropertyEditorElement,CleanUp {
 
     private static final String NONE_ITEM = NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
-    private final List<String> tags = new ArrayList<String>();
-    private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
+    private List<String> tags = new ArrayList<String>();
+    private Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID parentTypeID;
@@ -106,9 +106,25 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return new PropertyEditorDefaultCommand(parentTypeID);
     }
 
+    public void clean(DesignComponent component) {
+        super.cleanUp(component);
+        tags = null;
+        values = null;
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        parentTypeID = null;
+    }
+    
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName( radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription( radioButton.getText());
+        
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
     }
@@ -329,9 +345,16 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         return true;
     }
 
+
     private class CustomEditor extends JPanel implements ActionListener {
 
         private JComboBox combobox;
+
+        void cleanUp() {
+            combobox.removeActionListener(this);
+            combobox = null;
+            this.removeAll();
+        }
 
         public CustomEditor() {
             initComponents();
@@ -340,6 +363,14 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
+                            "ACSN_DefaultCommandChooser"));
+            combobox.getAccessibleContext().setAccessibleDescription( 
+                    NbBundle.getMessage(PropertyEditorDefaultCommand.class, 
+                            "ACSD_DefaultCommandChooser"));
+            
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);

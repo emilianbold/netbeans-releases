@@ -49,10 +49,13 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -66,6 +69,8 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 
+    private CsmType defaultValue = null;
+    
     public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope) {
         super(ast, file);
         // TODO what about explicite type in ast?
@@ -74,11 +79,20 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
             this.scope = UIDCsmConverter.scopeToUID(scope);
         }
     }
+
+    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, AST defaultValue) {
+        this(ast, name, file, scope);
+        this.defaultValue = TypeFactory.createType(defaultValue, file, null, 0);
+    }
     
     public CharSequence getName() {
         return name;
     }
 
+    public CsmObject getDefaultValue() {
+        return defaultValue;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof TemplateParameterImpl) {
@@ -101,17 +115,19 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     public void write(DataOutput output) throws IOException {
         super.write(output); 
         output.writeUTF(name.toString());
-        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);        
+        UIDObjectFactory.getDefaultFactory().writeUID(scope, output);
+        PersistentUtils.writeType(defaultValue, output);
     }
     
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());
         this.scope = UIDObjectFactory.getDefaultFactory().readUID(input);
+        this.defaultValue = PersistentUtils.readType(input);
     }
     
     public CsmScope getScope() {
-        return scope.getObject();
+        return scope == null? null : scope.getObject();
     }
 
     public CsmDeclaration.Kind getKind() {
@@ -119,7 +135,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     }
 
     public CharSequence getQualifiedName() {
-        CsmScope s = scope.getObject();
+        CsmScope s = getScope();
         if (CsmKindUtilities.isFunction(s)) {
             return ((CsmFunction)s).getQualifiedName()+"::"+name; // NOI18N
         } else if (CsmKindUtilities.isClass(s)) {

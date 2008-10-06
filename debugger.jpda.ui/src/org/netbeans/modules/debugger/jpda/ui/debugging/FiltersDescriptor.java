@@ -41,19 +41,34 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JToggleButton;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingMonitorModel;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import javax.swing.Action;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
+
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingMonitorModel;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import org.openide.util.actions.Presenter;
+
 
 public final class FiltersDescriptor {
 
@@ -67,14 +82,45 @@ public final class FiltersDescriptor {
     public static final String SHOW_THREAD_GROUPS = "thread_group";
     public static final String SHOW_SUSPENDED_THREADS_ONLY = "suspended_threads_only";
 
+    private static FiltersDescriptor instance;
+
     /** List of <Item> describing filters properties */
     private List<Item> filters;
 
+    private Action[] filterActions;
+
     /** Creates a new instance of FiltersDescriptor */
-    public FiltersDescriptor() {
+    private FiltersDescriptor() {
         filters = new ArrayList<Item>();
     }
+
+    public synchronized static FiltersDescriptor getInstance() {
+        if (instance == null) {
+            instance = createDebuggingViewFilters();
+        }
+        return instance;
+    }
     
+    public synchronized Action[] getFilterActions() {
+        if (filterActions == null) {
+            List<Action> list = new ArrayList<Action>();
+            for (Item item : filters) {
+                if (item.getGroup() != null) {
+                    SortAction action = new SortAction(item);
+                    list.add(action);
+                }
+            } // for
+            int size = list.size();
+            filterActions = new Action[size + 2];
+            for (int x = 0; x < size; x++) {
+                filterActions[x] = list.get(x);
+            }
+            filterActions[size] = null; // separator
+            filterActions[size + 1] = new FilterSubmenuAction(this);
+        } // if
+        return filterActions;
+    }
+
     public int getFilterCount() {
         return filters.size();
     }
@@ -103,44 +149,53 @@ public final class FiltersDescriptor {
         filters.get(index).setSelected(selected);
     }
     
+    public void setSelected(String filterName, boolean selected) {
+        for (Item item : filters) {
+            if (item.getName().equals(filterName)) {
+                item.setSelected(selected);
+                break;
+            }
+        }
+    }
+    
     public void connectToggleButton(int index, JToggleButton button) {
         filters.get(index).setToggleButton(button);
     }
     
     // **************************************************************************
     
-    static FiltersDescriptor createDebuggingViewFilters() {
+    private static FiltersDescriptor createDebuggingViewFilters() {
         FiltersDescriptor desc = new FiltersDescriptor();
-        desc.addItem(new Item(SHOW_THREAD_GROUPS, SHOW_THREAD_GROUPS, getString("LBL_THREAD_GROUPS_TIP"),
-                false, loadIcon("thread_group_mixed_16.png")));
-        desc.addItem(new Item(SHOW_SUSPEND_TABLE, SHOW_SUSPEND_TABLE, getString("LBL_SUSPEND_TABLE_TIP"),
-                false, loadIcon("show_suspend_table_option_16.png")));
-        desc.addItem(new Item(SHOW_SYSTEM_THREADS, SHOW_SYSTEM_THREADS, getString("LBL_SYSTEM_THREADS_TIP"),
-                false, loadIcon("show_system_threads_option_16.png")));
-        desc.addItem(new Item(SHOW_SUSPENDED_THREADS_ONLY, SHOW_SUSPENDED_THREADS_ONLY, getString("LBL_SUPSENDED_THREADS_ONLY_TIP"),
+        desc.addItem(new Item(SHOW_SUSPENDED_THREADS_ONLY, getString("LBL_SUPSENDED_THREADS_ONLY"), getString("LBL_SUPSENDED_THREADS_ONLY_TIP"),
                 false, loadIcon("show_suspended_threads_option_16.png")));
-        desc.addItem(new Item(SHOW_MONITORS, SHOW_MONITORS, getString("LBL_MONITORS_TIP"),
+        desc.addItem(new Item(SHOW_THREAD_GROUPS, getString("LBL_THREAD_GROUPS"), getString("LBL_THREAD_GROUPS_TIP"),
+                false, loadIcon("thread_group_mixed_16.png")));
+        desc.addItem(new Item(SHOW_SUSPEND_TABLE, getString("LBL_SUSPEND_TABLE"), getString("LBL_SUSPEND_TABLE_TIP"),
+                false, loadIcon("show_suspend_table_option_16.png")));
+        desc.addItem(new Item(SHOW_SYSTEM_THREADS, getString("LBL_SYSTEM_THREADS"), getString("LBL_SYSTEM_THREADS_TIP"),
+                false, loadIcon("show_system_threads_option_16.png")));
+        desc.addItem(new Item(SHOW_MONITORS, getString("LBL_MONITORS"), getString("LBL_MONITORS_TIP"),
                 false, loadIcon("monitor_acquired_16.png")));
-        desc.addItem(new Item(SHOW_QUALIFIED_NAMES, SHOW_QUALIFIED_NAMES, getString("LBL_QUALIFIED_NAMES_TIP"),
+        desc.addItem(new Item(SHOW_QUALIFIED_NAMES, getString("LBL_QUALIFIED_NAMES"), getString("LBL_QUALIFIED_NAMES_TIP"),
                 false, loadIcon("show_fqn_option_16.png")));
         
         List<Item> groupMembers = new ArrayList<Item>();
         Group group = new Group();
         Item item;
         
-        item = new Item(SUSPEND_SORT, SUSPEND_SORT, getString("LBL_SUSPEND_SORT_TIP"),
+        item = new Item(SUSPEND_SORT, getString("LBL_SUSPEND_SORT"), getString("LBL_SUSPEND_SORT_TIP"),
                 false, loadIcon("suspend_property_sort_order_16.png"));
         groupMembers.add(item);
         desc.addItem(item);
         item.setGroup(group);
         
-        item = new Item(ALPHABETIC_SORT, ALPHABETIC_SORT, getString("LBL_ALPHABETIC_SORT_TIP"),
+        item = new Item(ALPHABETIC_SORT, getString("LBL_ALPHABETIC_SORT"), getString("LBL_ALPHABETIC_SORT_TIP"),
                 false, loadIcon("alphabetic_sort_order_16.png"));
         groupMembers.add(item);
         desc.addItem(item);
         item.setGroup(group);
         
-        item = new Item(NATURAL_SORT, NATURAL_SORT, getString("LBL_NATURAL_SORT_TIP"),
+        item = new Item(NATURAL_SORT, getString("LBL_NATURAL_SORT"), getString("LBL_NATURAL_SORT_TIP"),
                 true, loadIcon("natural_sort_order_16.png"));
         groupMembers.add(item);
         desc.addItem(item);
@@ -187,9 +242,25 @@ public final class FiltersDescriptor {
             
             readValue();
         }
+
+        private Group getGroup() {
+            return group;
+        }
         
         public void setGroup(Group group) {
             this.group = group;
+        }
+
+        public String getName() {
+            return name;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public Icon getIcon() {
+            return selectedIcon;
         }
 
         public boolean isSelected() {
@@ -200,16 +271,13 @@ public final class FiltersDescriptor {
             if (isSelected == state) {
                 return;
             }
-            if (isSelected && group != null) {
-                toggleButton.setSelected(true);
-                return;
-            }
             isSelected = state;
+            toggleButton.setSelected(state);
             if (state && group != null) {
                 for (Item item : group.getItems()) {
-                    if (item != this) {
+                    if (item != this && item.isSelected()) {
                         JToggleButton tb = item.getToggleButton();
-                        item.isSelected = false; // do not use item.setSelected() here
+                        item.isSelected = false; // do not call item.setSelected() here
                         item.writeValue();
                         tb.setSelected(false);
                     } // if
@@ -299,6 +367,106 @@ public final class FiltersDescriptor {
             return items;
         }
         
+    }
+    
+    // **************************************************************************
+    //     Filter Actions Support
+    // **************************************************************************
+    
+    private static final class SortAction extends AbstractAction implements Presenter.Popup {
+    
+        private Item filterItem;
+
+        /** Creates a new instance of SortByNameAction */
+        SortAction (Item item) {
+            this.filterItem = item;
+            putValue(Action.NAME, item.getDisplayName());
+            putValue(Action.SMALL_ICON, item.getIcon());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            JMenuItem result = obtainMenuItem();
+            return result;
+        }
+
+        protected final JRadioButtonMenuItem obtainMenuItem () {
+            JRadioButtonMenuItem menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME));
+            menuItem.setAction(this);
+            menuItem.addHierarchyListener(new ParentChangeListener(menuItem));
+            menuItem.setSelected(filterItem.isSelected);
+            return menuItem;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            filterItem.setSelected(!filterItem.isSelected);
+        }
+
+        private class ParentChangeListener implements HierarchyListener {
+
+            private JRadioButtonMenuItem menuItem;
+
+            public ParentChangeListener(JRadioButtonMenuItem menuItem) {
+                this.menuItem = menuItem;
+            }
+
+            public void hierarchyChanged(HierarchyEvent e) {
+                JComponent parent = (JComponent) e.getChangedParent();
+                if (parent == null) {
+                    return ;
+                }
+                ButtonGroup group = (ButtonGroup) parent.getClientProperty(getClass().getName()+" buttonGroup");
+                if (group == null) {
+                    group = new ButtonGroup();
+                }
+                group.add(menuItem);
+                menuItem.removeHierarchyListener(this);
+            }
+
+        }
+
+    }
+
+    static final class FilterSubmenuAction extends AbstractAction implements Presenter.Popup {
+    
+        private static final String PROP_FILTER_NAME = "nbFilterName";
+
+        private FiltersDescriptor filtersDesc;
+
+        public FilterSubmenuAction(FiltersDescriptor filters) {
+            this.filtersDesc = filters;
+        }
+
+        public void actionPerformed(ActionEvent ev) {
+            Object source = ev.getSource();
+            // react just on submenu items, not on submenu click itself
+            if (source instanceof JCheckBoxMenuItem) {
+                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)source;
+                String filterName = (String)(menuItem.getClientProperty(PROP_FILTER_NAME));
+                filtersDesc.setSelected(filterName, menuItem.isSelected());
+            }
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            return createSubmenu();
+        }
+
+        private JMenuItem createSubmenu () {
+            JMenuItem menu = new JMenu(NbBundle.getMessage(FiltersDescriptor.class, "LBL_FilterSubmenu")); //NOI18N
+            JMenuItem menuItem;
+            String filterName;
+            for (Item item : filtersDesc.filters) {
+                if (item.getGroup() != null) {
+                    continue;
+                }
+                filterName = item.getName();
+                menuItem = new JCheckBoxMenuItem(item.getDisplayName(), item.isSelected());
+                menuItem.addActionListener(this);
+                menuItem.putClientProperty(PROP_FILTER_NAME, filterName);
+                menu.add(menuItem);
+            }
+            return menu;
+        }
+
     }
     
 }

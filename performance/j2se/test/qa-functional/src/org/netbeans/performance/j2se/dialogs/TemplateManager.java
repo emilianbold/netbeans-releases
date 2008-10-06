@@ -81,7 +81,7 @@ public class TemplateManager extends PerformanceTestCase {
     }
     
     public ComponentOperator open(){
-        String menu = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") +
+        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") +
         "|" +
         Bundle.getStringTrimmed("org.netbeans.modules.favorites.templates.Bundle","LBL_TemplatesAction_Name");
 

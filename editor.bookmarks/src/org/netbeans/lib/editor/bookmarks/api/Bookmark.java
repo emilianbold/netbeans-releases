@@ -41,8 +41,25 @@
 
 package org.netbeans.lib.editor.bookmarks.api;
 
-import javax.swing.text.Document;
-import org.netbeans.lib.editor.bookmarks.spi.BookmarkImplementation;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+import javax.swing.text.StyledDocument;
+
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.loaders.DataObject;
+import org.openide.text.Annotation;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
+
 
 /**
  * Interface to a bookmark.
@@ -52,20 +69,25 @@ import org.netbeans.lib.editor.bookmarks.spi.BookmarkImplementation;
 
 public final class Bookmark {
 
+    public static final String BOOKMARK_ANNOTATION_TYPE = "editor-bookmark"; // NOI18N
+
+    // cary mary fuk!
+    private static Map<Line,AAnnotation> lineToAnnotation = new WeakHashMap<Line,AAnnotation> ();
+
     /**
      * Bookmark list to which this bookmark belongs.
      */
-    private BookmarkList bookmarkList;
-
-    /**
-     * Implementation to which this bookmark delegates.
-     */
-    private BookmarkImplementation impl;
+    private BookmarkList    bookmarkList;
 
     /**
      * Whether this mark was released or not.
      */
-    private boolean released;
+    private boolean         released;
+    
+    private Line            line;
+    private AAnnotation     annotation;
+    private Map<BookmarkList,LineListener>
+                            bookmarkListToLineListener = new WeakHashMap<BookmarkList,LineListener> ();
     
     /**
      * Construct new instance of bookmark.
@@ -74,9 +96,30 @@ public final class Bookmark {
      * The constructor is not public intentionally.
      * Please see <code>BookmarksApiPackageAccessor</code> for details.
      */
-    Bookmark(BookmarkList bookmarkList, BookmarkImplementation impl) {
+    Bookmark (BookmarkList bookmarkList, int offset) {
         this.bookmarkList = bookmarkList;
-        this.impl = impl;
+        StyledDocument document = (StyledDocument) bookmarkList.getDocument ();
+        int lineNumber = NbDocument.findLineNumber (document, offset);
+        DataObject dataObject = NbEditorUtilities.getDataObject (document);
+        for (Line line : lineToAnnotation.keySet ()) {
+            if (line.getLineNumber () == lineNumber &&
+                line.getLookup().lookup (DataObject.class).equals (dataObject)
+            ) {
+                this.line = line;
+                this.annotation = lineToAnnotation.get (line);
+                return;
+            }
+        }
+        annotation = new AAnnotation ();
+        line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
+        lineToAnnotation.put (line, annotation);
+        annotation.attach (line);
+        LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
+        if (lineListener == null) {
+            lineListener = new LineListener (bookmarkList);
+            bookmarkListToLineListener.put (bookmarkList, lineListener);
+        }
+        line.addPropertyChangeListener (lineListener);
     }
 
     /**
@@ -85,15 +128,18 @@ public final class Bookmark {
      * Offsets behave like {@link javax.swing.text.Position}s (they track
      * inserts/removals).
      */
-    public int getOffset() {
-        return impl.getOffset();
+    public int getOffset () {
+        return NbDocument.findLineOffset (
+            (StyledDocument) bookmarkList.getDocument (), 
+            line.getLineNumber ()
+        );
     }
 
     /**
      * Get the index of the line at which this bookmark resides.
      */
-    public int getLineIndex() {
-        return getDocument().getDefaultRootElement().getElementIndex(impl.getOffset());
+    public int getLineNumber () {
+        return line.getLineNumber ();
     }
     
     /**
@@ -114,25 +160,54 @@ public final class Bookmark {
     /**
      * Mark the current bookmark as invalid.
      */
-    void release() {
+    void release () {
         assert (!released);
         released = true;
-        impl.release();
-    }
-
-    /**
-     * Get bookmark's implementation. For API accessor only.
-     */
-    BookmarkImplementation getImplementation() {
-        return impl;
-    }
-
-    /**
-     * Get document to which this bookmark belongs.
-     */
-    private Document getDocument() {
-        return bookmarkList.getDocument();
+        annotation.detach ();
+        lineToAnnotation.remove (line);
     }
     
+    
+    // innerclasses ............................................................
+    
+    public final class AAnnotation extends Annotation {
+
+        public String getAnnotationType () {
+            return BOOKMARK_ANNOTATION_TYPE;
+        }
+
+        public String getShortDescription () {
+            String fmt = NbBundle.getBundle (Bookmark.class).getString ("Bookmark_Tooltip"); // NOI18N
+            int lineIndex = getLineNumber ();
+            return MessageFormat.format (fmt, new Object[] {new Integer (lineIndex + 1)});
+        }
+
+        public String toString() {
+            return getShortDescription();
+        }
+    }
+
+    private static class LineListener implements PropertyChangeListener {
+
+        private WeakReference<BookmarkList> bookmarkListReference;
+
+        LineListener (BookmarkList bookmarkList) {
+            bookmarkListReference = new WeakReference (bookmarkList);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            BookmarkList bookmarkList = bookmarkListReference.get ();
+            if (bookmarkList == null)
+                return;
+            List<Bookmark> bookmarks = new ArrayList<Bookmark> (bookmarkList.getBookmarks ());
+            int lineNumber = -1;
+            for (Bookmark bookmark : bookmarks) {
+                if (bookmark.getLineNumber () == lineNumber) {
+                    bookmarkList.removeBookmark (bookmark);
+                }
+                lineNumber = bookmark.getLineNumber ();
+            }
+        }
+    };
 }
 

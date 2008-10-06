@@ -44,9 +44,9 @@ package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.visualweb.actions.CSSRuleAdd;
 import org.netbeans.performance.visualweb.actions.ComponentAdd;
-import org.netbeans.performance.visualweb.actions.CreateWebPackFiles;
 import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
 import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
 import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
@@ -64,30 +64,34 @@ import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
  */
 public class VWPMeasureActionsTest  {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
+        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureActionsTest");
+
 	
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));
 //TODO do Open project through UI        suite.addTest(new OpenHugeWebPackProject("testOpenWebPackProject","Open Huge Web Project"));
-        
-        suite.addTest(NbModuleSuite.create(OpenProjectFirstPage.class, ".*", ".*"));
 
-        suite.addTest(NbModuleSuite.create(CSSRuleAdd.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(PasteCSSText.class, ".*", ".*"));
-        
-        suite.addTest(NbModuleSuite.create(OpenBeanFiles.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(OpenNavigationPage.class, ".*", ".*"));
-        
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenProjectFirstPage.class)
 
-        suite.addTest(NbModuleSuite.create(CreateWebPackFiles.class, ".*", ".*"));	
+        .addTest(CSSRuleAdd.class)
+        .addTest(PasteCSSText.class)
+        
+        .addTest(OpenBeanFiles.class)
+        .addTest(OpenNavigationPage.class)
+
+
+        //.addTest(CreateWebPackFiles.class)	
 
      
-	suite.addTest(NbModuleSuite.create(ComponentAdd.class, ".*", ".*"));        
-        suite.addTest(NbModuleSuite.create(DatabaseTableDrop.class, ".*", ".*"));         
+	.addTest(ComponentAdd.class)      
+        .addTest(DatabaseTableDrop.class)      
 
-        suite.addTest(NbModuleSuite.create(PageSwitch.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(ViewSwitch.class, ".*", ".*"));
-        suite.addTest(NbModuleSuite.create(CreateWebPackProject.class, ".*", ".*")); 
-        
+        .addTest(PageSwitch.class)
+        .addTest(ViewSwitch.class)
+        .addTest(CreateWebPackProject.class)
+  
 //      manual results differ from automated        
 //      suite.addTest(NbModuleSuite.create(TypingInCSSEditor.class, ".*", ".*"));
         
@@ -98,7 +102,9 @@ public class VWPMeasureActionsTest  {
 //        
 //      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
 //      suite.addTest(NbModuleSuite.create(CleanAndBuildProject.class, ".*", ".*"));
-     
+
+        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+
         return suite;
     }
 }

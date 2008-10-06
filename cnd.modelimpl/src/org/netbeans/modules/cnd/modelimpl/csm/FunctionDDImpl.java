@@ -48,6 +48,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -79,10 +82,15 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         return body;
     }
 
+    @Override
     public CsmFunction getDeclaration() {
         if( isCStyleStatic() ) {
             CharSequence name = getName();
-            for( CsmFunction fun : ((FileImpl) getContainingFile()).getStaticFunctionDeclarations() ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               name.toString(), true, true, false);
+            Iterator<CsmFunction> it = CsmSelect.getDefault().getStaticFunctions(getContainingFile(), filter);
+            while(it.hasNext()){
+                CsmFunction fun = it.next();
                 if( name.equals(fun.getName()) ) {
                     return fun;
                 }
@@ -103,7 +111,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         }
         return this;
     }
-    
+
+    public boolean isPureDefinition() {
+        return false;
+    }
+
     private CsmFunction findDeclaration(CsmProject prj, String uname){
         CsmDeclaration decl = prj.findDeclaration(uname);
         if( decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION ) {

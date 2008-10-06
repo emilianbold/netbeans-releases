@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.indent;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -63,10 +64,21 @@ public final class FormatterImpl extends ExtFormatter {
     private final Formatter defaultFormatter;
     private final IndentImpl indentImpl;
     
+    private final boolean tabSizeOverriden;
+    private final boolean shiftWidthOverriden;
+    private final boolean expandTabsOverriden;
+    
     FormatterImpl(Formatter defaultFormatter, Document doc) {
         super(defaultFormatter.getKitClass());
+        
         this.defaultFormatter = defaultFormatter;
+        this.tabSizeOverriden = isOverriden(defaultFormatter.getClass(), "getTabSize"); //NOI18N
+        this.shiftWidthOverriden = isOverriden(defaultFormatter.getClass(), "getShiftWidth"); //NOI18N
+        this.expandTabsOverriden = isOverriden(defaultFormatter.getClass(), "expandTabs"); //NOI18N
+
         this.doc = doc;
+        assert doc != null;
+        
         this.indentImpl = IndentImpl.get(doc);
         indentImpl.setDefaultFormatter(defaultFormatter);
     }
@@ -100,7 +112,11 @@ public final class FormatterImpl extends ExtFormatter {
 
     @Override
     public int getTabSize() {
-        return IndentUtils.tabSize(doc);
+        if (tabSizeOverriden) {
+            return defaultFormatter.getTabSize();
+        } else {
+            return IndentUtils.tabSize(doc);
+        }
     }
 
     @Override
@@ -110,12 +126,20 @@ public final class FormatterImpl extends ExtFormatter {
 
     @Override
     public int getShiftWidth() {
-        return IndentUtils.indentLevelSize(doc);
+        if (shiftWidthOverriden) {
+            return defaultFormatter.getShiftWidth();
+        } else {
+            return IndentUtils.indentLevelSize(doc);
+        }
     }
 
     @Override
     public boolean expandTabs() {
-        return IndentUtils.isExpandTabs(doc);
+        if (expandTabsOverriden) {
+            return defaultFormatter.expandTabs();
+        } else {
+            return IndentUtils.isExpandTabs(doc);
+        }
     }
 
     @Override
@@ -170,9 +194,22 @@ public final class FormatterImpl extends ExtFormatter {
     @Override
     public Writer createWriter(Document doc, int offset, Writer writer) {
         if (doc != indentImpl.document()) {
-            throw new IllegalStateException("Unexpected document doc=" + doc);
+            throw new IllegalStateException("Unexpected document doc=" + doc); //NOI18N
         }
         return new FormatterWriterImpl(indentImpl, offset, writer);
     }
 
+    private static boolean isOverriden(Class clazz, String methodName) {
+        while (clazz != Formatter.class && clazz != ExtFormatter.class) {
+            for(Method m : clazz.getDeclaredMethods()) {
+                if (m.getName().equals(methodName) && m.getParameterTypes().length == 0) {
+                    return true;
+                }
+            }
+
+            clazz = clazz.getSuperclass();
+        }
+
+        return false;
+    }
 }

@@ -185,9 +185,10 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         
         private Properties prepareSharedProps() {
             Properties props = new Properties();
-            props.setProperty("$label", NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
-            props.setProperty("$target.run", "jws-run"); // NOI18N
-            props.setProperty("$target.debug", "jws-debug"); // NOI18N
+            props.setProperty(JWSProjectProperties.CONFIG_LABEL_PROPNAME, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
+            props.setProperty(JWSProjectProperties.CONFIG_TARGET_RUN_PROPNAME, JWSProjectProperties.CONFIG_TARGET_RUN);
+            props.setProperty(JWSProjectProperties.CONFIG_TARGET_DEBUG_PROPNAME, JWSProjectProperties.CONFIG_TARGET_DEBUG);
+            props.setProperty(JWSProjectProperties.COS_UNSUPPORTED_PROPNAME, "true"); // NOI18N
             return props;
         }
         
@@ -262,10 +263,29 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
                     writer.println("        <applet width=\"${JNLP.APPLET.WIDTH}\" height=\"${JNLP.APPLET.HEIGHT}\">");
                     writer.println("            <param name=\"jnlp_href\" value=\"${JNLP.FILE}\"/>");
                     writer.println("        </applet>");
+                    writer.println("        <!-- Or use the following script element to launch with the Deployment Toolkit -->");
+                    writer.println("        <!-- Open the deployJava.js script to view its documentation -->");
+                    writer.println("        <!--");
+                    writer.println("        <script src=\"http://java.com/js/deployJava.js\"></script>");
+                    writer.println("        <script>");
+                    writer.println("            var attributes = {");
+                    writer.println("                codebase:   [applet codebase],");
+                    writer.println("                code:       [class to launch],");
+                    writer.println("                archive:    [JAR file with the applet],");
+                    writer.println("                width:      [applet width],");
+                    writer.println("                height:     [applet height]");
+                    writer.println("            };");
+                    writer.println("            var parameters = { [applet parameters] };");
+                    writer.println("            var version = [JDK version];");
+                    writer.println("            deployJava.runApplet(attributes, parameters, version);");
+                    writer.println("        </script>");
+                    writer.println("        -->");
                 } else if (JWSProjectProperties.DescType.application.equals(descType)) {
                     writer.println("        <h3>Test page for launching the application via JNLP</h3>");
                     writer.println("        <a href=\"${JNLP.FILE}\">Launch the application</a>");
-                    writer.println("        <!-- or use following script element to launch via Deployment Toolkit");
+                    writer.println("        <!-- Or use the following script element to launch with the Deployment Toolkit -->");
+                    writer.println("        <!-- Open the deployJava.js script to view its documentation -->");
+                    writer.println("        <!--");
                     writer.println("        <script src=\"http://java.com/js/deployJava.js\"></script>");
                     writer.println("        <script>");
                     writer.println("            var url=\"http://[fill in your URL]/${JNLP.FILE}\"");

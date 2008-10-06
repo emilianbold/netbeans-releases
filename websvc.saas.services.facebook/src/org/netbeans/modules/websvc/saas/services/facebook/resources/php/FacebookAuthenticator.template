@@ -1,24 +1,30 @@
 <?php
 
-    require_once "org_netbeans_saas/RestConnection.php";
-    require_once "__NAME__AuthenticatorProfile.php";
+    include_once "../org_netbeans_saas/RestConnection.php";
+    include_once "FacebookSocialNetworkingServiceAuthenticatorProfile.php";
 
-    class  __NAME__Authenticator {
+    define("_ATTR_PREFIX", "FacebookSocialNetworkingServiceAuthenticator");
+    define("_SAAS", "org_netbeans_saas_");
+    define("_RETURN_URL", "facebook_return_url");
+    define("_AUTH_TOKEN", "facebook_auth_token");
+    define("_SESSION_KEY", "facebook_session_key");
+    define("_SESSION_KEY_PARAM", "fsk");
+    define("_EXPIRE", "3600");
+    
+    class  FacebookSocialNetworkingServiceAuthenticator {
 
         private static $inited = false;
-        private static $ATTR_PREFIX = "__NAME__Authenticator";
-        private static $RETURN_URL = "facebook_return_url";
         private static $LOGIN_URL;
 
         public static function init() {
             if(self::$inited)
               return;
-            self::$LOGIN_URL = "org_netbeans_saas_facebook/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
+            self::$LOGIN_URL = "org_netbeans_saas_facebook/".str_replace("Authenticator", "Login", _ATTR_PREFIX).".php";
             self::$inited = true;
         }
 
         public static function getApiKey() {
-            $apiKey = __NAME__AuthenticatorProfile::getApiKey();
+            $apiKey = FacebookSocialNetworkingServiceAuthenticatorProfile::getApiKey();
             if ($apiKey == null || $apiKey == "") {
                 throw new Exception("Please specify your api key in the Profile file.");
             }
@@ -26,80 +32,147 @@
         }
 
         public static function getSecret() {
-            $secret = __NAME__AuthenticatorProfile::getSecret();
+            $secret = FacebookSocialNetworkingServiceAuthenticatorProfile::getSecret();
             if ($secret == null || $secret == "") {
                 throw new Exception("Please specify your secret key in the Profile file.");
             }
             return $secret;
         }
+        
+        public static function getSessionKey() {
+            return self::getSession(_SESSION_KEY);
+        }
+        
+        public static function login($authToken) {
+            self::init();
 
-        public static function login() {
-            $sessionKey = $_SESSION["facebook_session_key"];
-
-            // If there is already a session key, we are already logged in.
-            // Simply return.
-            if ($sessionKey != null) {
-                return;
+            $rUrl = self::ensureSession($authToken);
+            if($rUrl) {
+                if($rUrl != "-1") {
+                    self::doRedirect($rUrl);
+                    exit(0);
+                } else {
+                    return;
+                }
             }
-
-            $authToken = $_SESSION["facebook_auth_token"];
 
             // If there is an auth token instead of a session key, we need to
             // obtain the session key using the auth token.  If there is no
             // auth token, we redirect to the login page.
-            if ($authToken != null) {
-                $_SESSION["facebook_auth_token"] = null;
+            if ($authToken) {
                 $method = "facebook.auth.getSession";
                 $v = "1.0";
                 $sig = array();
                 $sig["method"] = $method;
-                $sig["v"] = v;
+                $sig["v"] = $v;
                 $sig["api_key"] = self::getApiKey();
                 $sig["auth_token"] = $authToken;
 
                 $params = array();
                 $params["method"] = $method;
                 $params["api_key"] = self::getApiKey();
-                $params["sig"] = $sig;
+                $params["sig"] = self::sign($sig);
                 $params["v"] = $v;
                 $params["auth_token"] = $authToken;
                 $conn = new RestConnection("http://api.facebook.com/restserver.php", $params);
-
                 $res = $conn->get();
-                $result = $res->getResponseBody();
 
                 try {
-                    $sessionKey = substr($result, strpos($result, "<session_key>") + 13,
-                        strpos($result, "</session_key>"));
-                    $_SESSION["facebook_session_key"] = $sessionKey;
+                    $xml = $res->getDataAsXml();
+                    if(!($xml->session_key))
+                      throw new Exception("Invalid xml: ".$res->getResponseBody());
+                    $sessionKey = self::findSessionKey($res->getResponseBody());
+                    self::saveSession(_SESSION_KEY, $sessionKey);
                 } catch (Exception $ex) {
-                    throw new Exception("Failed to get session key and secret: " + result);
+                    throw new Exception("Failed to get session key and secret: ".$ex);
                 }
 
-                $returnUrl = $_SESSION[];
+                $returnUrl = self::getSession(_RETURN_URL);
 
                 if ($returnUrl != null) {
-                    $_SESSION[self::$RETURN_URL] = null;
-                    header('Location: '.$returnUrl);
+                    self::doRedirect($returnUrl);
                     exit(0);
                 }
             } else {
+                self::sessionInit();
                 self::doRedirect(self::$LOGIN_URL."?rUrl=".$_SERVER['REQUEST_URI']);
                 exit(0);
             }
+        }
+        
+        private static function ensureSession($authToken) {
+            $sessionKey = self::getSession(_SESSION_KEY);
+            if(!$sessionKey) {
+                $sessionKey = $_GET[_SESSION_KEY_PARAM];
+                if($sessionKey)
+                  self::saveSession(_SESSION_KEY, $sessionKey);
+            }
+            if ($sessionKey) {
+                if($authToken && $sessionKey) {
+                    $rUrl = self::getSession(_RETURN_URL);
+                    if ($rUrl != null) {
+                        self::saveSession(_SESSION_KEY, $sessionKey);
+                        self::deleteSession(_RETURN_URL);
+                        if(strpos($rUrl, '?'))
+                          $rUrl.='&'._SESSION_KEY_PARAM.'='.$sessionKey;
+                        else
+                          $rUrl.='?'._SESSION_KEY_PARAM.'='.$sessionKey;
+                        return $rUrl;
+                    }
+                }
+                return "-1";
+            }
+        }
+        
+        private static function findSessionKey($result) {
+            $result = str_replace("<", "&lt;", $result);
+            $result = str_replace(">", "&gt;", $result);
+            $ts = strpos($result, "&lt;session_key&gt;") + 19;
+            $te = strpos($result, "&lt;", $ts);
+            $len = $te - $ts;
+            $sessionKey = substr($result, $ts, $len);
+            return $sessionKey;
         }
 
         private static function logout() {
         }
 
-        public static function sign($params) {
-            $sig = '';
+        public static function sign($params)
+        {
+            $sign = '';
+            $values = array();
             ksort($params);
-            foreach ($params as $k=>$v) {
-                $sig .= "$k=$v";
+            foreach($params as $k => $v) {
+                $sign .= $k ."=". $v;
             }
-            $sig .= self::getSecret();
-            return md5($sig);
+            $sign .= self::getSecret();
+            return  md5($sign);
+        }
+        
+        private static function sessionInit() {
+            session_start();
+            $_SESSION = array();
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time()-42000, '/');
+            }
+            session_destroy();
+        }
+        
+        public static function getSession($name) {
+            if($_SESSION[$name] != null)
+              return $_SESSION[$name];
+            else
+              return $_COOKIE[_SAAS.$name];
+        }
+
+        public static function saveSession($name, $value) {
+            setcookie(_SAAS.$name, $value, time() + _EXPIRE, "/");
+            $_SESSION[$name] = $value;
+        }
+        
+        public static function deleteSession($name) {
+            setcookie(_SAAS.$name, "", time() - _EXPIRE, "/");
+            $_SESSION[$name] = null;
         }
         
         public static function doRedirect($url) {

@@ -22,7 +22,6 @@ package org.netbeans.modules.soa.mappercore;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import javax.swing.JComponent;
-import org.netbeans.modules.soa.mappercore.dnd.*;
 
 /**
  *

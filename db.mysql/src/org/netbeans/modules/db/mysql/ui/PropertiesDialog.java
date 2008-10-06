@@ -84,7 +84,7 @@ public class PropertiesDialog  {
     public boolean displayDialog() {
         return displayDialog(Tab.BASIC);
     }
-    
+
     /**
      * Display the properties dialog, choosing which tab you want to have
      * initial focus
@@ -160,8 +160,6 @@ public class PropertiesDialog  {
     }
 
     private void updateServer() {
-        boolean needsReconnect = needsReconnect();
-        
         server.setHost(basePanel.getHost());
         server.setPort(basePanel.getPort());
         server.setUser(basePanel.getUser());
@@ -180,23 +178,10 @@ public class PropertiesDialog  {
             // setRegistered will connect the server
             provider.setRegistered(true);
             
-        } else if ( needsReconnect ) {
-            server.reconnectAsync();
-        }
+        } 
     }
-
-    public boolean needsReconnect() {
-        return ( ! Utils.stringEquals(server.getHost(), basePanel.getHost()) ||
-                 ! Utils.stringEquals(server.getPort(), basePanel.getPort()) ||
-                 ! Utils.stringEquals(server.getUser(), basePanel.getUser()) ||
-                 ! Utils.stringEquals(server.getPassword(), 
-                                        basePanel.getPassword()) );
-    }
-
         
     private static String getMessage(String id) {
         return NbBundle.getMessage(PropertiesDialog.class, id);
     }
-
-
 }

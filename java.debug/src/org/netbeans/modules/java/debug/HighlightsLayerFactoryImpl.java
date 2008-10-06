@@ -83,6 +83,10 @@ public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
             return new ErrorNavigatorProviderImpl();
         }
         
+        if ("org-netbeans-modules-java-debug-ClasspathNavigatorProviderImpl".equals(f.getName())) {
+            return new ClasspathNavigatorProviderImpl();
+        }
+
         //unknown:
         return new Object();
     }

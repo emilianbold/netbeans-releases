@@ -49,6 +49,7 @@ import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -117,9 +118,16 @@ public class UpdateAction extends ContextAction {
                
         File[] roots = ctx.getRootFiles();
         
-        final SVNUrl repositoryUrl; 
+        SVNUrl repositoryUrl = null;
         try {
-            repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
+            for (File root : roots) {
+                repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
+                if(repositoryUrl != null) {
+                    break;
+                } else {
+                    Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{root});
+                }
+            }
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
@@ -197,13 +205,13 @@ public class UpdateAction extends ContextAction {
             if(support.isCanceled()) {
                 break;
             }
-            client.update(root, SVNRevision.HEAD, recursive);
-            revisionUpdateWorkaround(recursive, root, client);
+            long rev = client.update(root, SVNRevision.HEAD, recursive);
+            revisionUpdateWorkaround(recursive, root, client, rev);
         }
         return;
     }
 
-    private static void revisionUpdateWorkaround(final boolean recursive, final File root, final SvnClient client) throws SVNClientException {
+    private static void revisionUpdateWorkaround(final boolean recursive, final File root, final SvnClient client, final long revision) throws SVNClientException {
         Utils.post(new Runnable() {
             public void run() {
                 // this isn't clean - the client notifies only files which realy were updated.
@@ -223,13 +231,24 @@ public class UpdateAction extends ContextAction {
                 }
                 File[] fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
 
-                ISVNInfo info = null;
-                try {
-                    info = client.getInfoFromWorkingCopy(root);
-                } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, true); 
+                SVNRevision.Number svnRevision = null;
+                if(revision < -1) {
+                    ISVNInfo info = null;
+                    try {
+                        info = client.getInfoFromWorkingCopy(root); // try to retrieve from local WC first
+                        svnRevision = info.getRevision();
+                        if(svnRevision == null) {
+                            info = client.getInfo(root); // contacts the server
+                            svnRevision = info.getRevision();
+                        }
+                    } catch (SVNClientException ex) {
+                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                    }
+                } else {
+                    svnRevision = new SVNRevision.Number(revision);
                 }
-                Subversion.getInstance().getStatusCache().patchRevision(fileArray, info.getRevision());
+
+                Subversion.getInstance().getStatusCache().patchRevision(fileArray, svnRevision);
 
                 // the cache fires status change events to trigger the annotation refresh.
                 // unfortunatelly, we have to call the refresh explicitly for each file from this place

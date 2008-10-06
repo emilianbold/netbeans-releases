@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -107,6 +108,13 @@ public abstract class CsmFileInfoQuery {
      */
     public abstract NativeFileItem getNativeFileItem(CsmFile file);
     
+    /**
+     * 
+     * @param file header file (for sourse file result is empty list)
+     * @return list of include directives from source file to header file
+     */
+    public abstract List<CsmInclude> getIncludeStack(CsmFile file);
+
     //
     // Implementation of the default query
     //
@@ -137,6 +145,11 @@ public abstract class CsmFileInfoQuery {
         @Override
         public NativeFileItem getNativeFileItem(CsmFile file) {
             return null;
-        }                
+        }
+
+        @Override
+        public List<CsmInclude> getIncludeStack(CsmFile file) {
+            return Collections.<CsmInclude>emptyList();
+        }
     } 
 }

@@ -39,9 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,7 +53,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -62,36 +65,92 @@ import org.openide.util.NbBundle;
 public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     
     private static Map<String, RemoteUserInfo> map;
-  
+    private static final String REMOTE_USER_INFO = "remote.user.info"; // NOI18N
     private String passwd;
     private JTextField passwordField = (JTextField) new JPasswordField(20);
     private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
                          GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0);
     private Container panel;
     private boolean cancelled = false;
+    private final static Object DLGLOCK = new Object();
+    private Component parent;
+    private final String host;
+    private final Encrypter crypter;
     
-    public static synchronized RemoteUserInfo getUserInfo(String key) {
+    private RemoteUserInfo(String host) {
+        this.host = host;
+        this.crypter = new Encrypter(host);
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
+        this.passwd = decrypt(NbPreferences.forModule(RemoteUserInfo.class).get(hostKey, null));
+        setParentComponent(this);
+    }
+    /**
+     * Get the UserInfo for the remote host.
+     * 
+     * @param key The host key to look for
+     * @param reset Reset password information if true
+     * @return The RemoteHostInfo instance for this key
+     */
+    public static synchronized RemoteUserInfo getUserInfo(String key, boolean retry) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
         
         RemoteUserInfo ui = map.get(key);
         if (ui == null) {
-            ui = new RemoteUserInfo();
+            ui = new RemoteUserInfo(key);
             map.put(key, ui);
+            retry = false;
+        }
+        if (retry) {
+            ui.cancelled = false;
+            ui.reset();
         }
         return ui;
+    }
+
+    private String encrypt(String pwd) {
+        return crypter.encrypt(pwd);
+    }
+
+    private String decrypt(String pwd) {
+        return crypter.decrypt(pwd);
+    }
+    
+    private void reset() {
+        setPassword(null, false);
+        passwordField.setText(""); // clear textfield
+        cancelled = false;
     }
 
     public String getPassword() {
         return passwd;
     }
 
-    public boolean promptYesNo(String str) {
+    /**
+     *
+     * @param pwd password or null to reset password
+     * @param rememberPassword
+     */
+    public void setPassword(String pwd, boolean rememberPassword) {
+        this.passwd = pwd;
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
+        if (rememberPassword && pwd != null) {
+            NbPreferences.forModule(RemoteUserInfo.class).put(hostKey, encrypt(pwd));
+        } else {
+            NbPreferences.forModule(RemoteUserInfo.class).remove(hostKey);
+        }
+    }
+    
+    public synchronized boolean promptYesNo(String str) {
         Object[] options = { "yes", "no" }; // NOI18N
-        int foo = JOptionPane.showOptionDialog(null, str,
+        int foo;
+        
+        synchronized (DLGLOCK) {
+            foo = JOptionPane.showOptionDialog(parent, str,
                 NbBundle.getMessage(RemoteUserInfo.class, "TITLE_YN_Warning"), JOptionPane.DEFAULT_OPTION, 
              JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+        }
        return foo == 0;
     }
 
@@ -105,17 +164,20 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     public synchronized boolean promptPassword(String message) {
         if (!isCancelled()) {
-            if (passwd != null && passwd.length() > 0) {
+            if (passwd != null) {
                 return true;
             } else {
-                Object[] ob = { passwordField }; 
-                int result = JOptionPane.showConfirmDialog(null, ob, message, JOptionPane.OK_CANCEL_OPTION);
+                boolean result;
+                PasswordDlg pwdDlg = new PasswordDlg();
+                synchronized (DLGLOCK) {
+                    result = pwdDlg.askPassword(host);
+                }
 
-                if (result == JOptionPane.OK_OPTION) {
-                    passwd = passwordField.getText();
+                if (result) {
+                    setPassword(pwdDlg.getPassword(), pwdDlg.isRememberPassword());
                     return true;
                 } else {
-                    System.err.println("RUI.promptPassword: Password cancelled on " + Thread.currentThread().getName());
+                    setPassword(null, false);
                     cancelled = true;
                     return false; 
                 }
@@ -130,52 +192,77 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     public void showMessage(String message){
-        JOptionPane.showMessageDialog(null, message);
+        synchronized (DLGLOCK) {
+            JOptionPane.showMessageDialog(parent, message);
+        }
     }
 
-    public String[] promptKeyboardInteractive(String destination, String name,
+    public synchronized String[] promptKeyboardInteractive(String destination, String name,
                           String instruction, String[] prompt, boolean[] echo) {
-        panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        if (prompt.length == 1 && !echo[0]) {
+            // this is password request
+            if (!promptPassword(NbBundle.getMessage(RemoteUserInfo.class, "MSG_PasswordInteractive", destination, prompt[0]))) {
+                return null;
+            } else {
+                return new String[] { getPassword() };
+            }
+        } else {        
+            panel = new JPanel();
+            panel.setLayout(new GridBagLayout());
 
-        gbc.weightx = 1.0;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-        gbc.gridx = 0;
-        panel.add(new JLabel(instruction), gbc);
-        gbc.gridy++;
-
-        gbc.gridwidth = GridBagConstraints.RELATIVE;
-
-        JTextField[] texts = new JTextField[prompt.length];
-        for (int i = 0; i < prompt.length; i++) {
-            gbc.fill = GridBagConstraints.NONE;
+            gbc.weightx = 1.0;
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
             gbc.gridx = 0;
-            gbc.weightx = 1;
-            panel.add(new JLabel(prompt[i]), gbc);
-
-            gbc.gridx = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weighty = 1;
-            if(echo[i]){
-                texts[i]=new JTextField(20);
-            } else{
-                texts[i]=new JPasswordField(20);
-            }
-            panel.add(texts[i], gbc);
+            panel.add(new JLabel(instruction), gbc);
             gbc.gridy++;
-        }
 
-        if (!isCancelled() && JOptionPane.showConfirmDialog(null, panel,
-                    NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
-            String[] response = new String[prompt.length];
+            gbc.gridwidth = GridBagConstraints.RELATIVE;
+
+            JTextField[] texts = new JTextField[prompt.length];
             for (int i = 0; i < prompt.length; i++) {
-                response[i] = texts[i].getText();
+                gbc.fill = GridBagConstraints.NONE;
+                gbc.gridx = 0;
+                gbc.weightx = 1;
+                panel.add(new JLabel(prompt[i]), gbc);
+
+                gbc.gridx = 1;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weighty = 1;
+                if(echo[i]){
+                    texts[i]=new JTextField(20);
+                } else{
+                    texts[i]=new JPasswordField(20);
+                }
+                panel.add(texts[i], gbc);
+                gbc.gridy++;
             }
-            return response;
+
+            synchronized (DLGLOCK) {
+                if (!isCancelled() && JOptionPane.showConfirmDialog(parent, panel,
+                            NbBundle.getMessage(RemoteUserInfo.class, "TITLE_KeyboardInteractive", destination, name),
+                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                    String[] response = new String[prompt.length];
+                    for (int i = 0; i < prompt.length; i++) {
+                        response[i] = texts[i].getText();
+                    }
+                    return response;
+                } else {
+                    cancelled = true;
+                    return null;  // cancel
+                }
+            }
+        }
+    }
+    
+    private static void setParentComponent(final RemoteUserInfo info) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            info.parent = WindowManager.getDefault().getMainWindow();
         } else {
-            cancelled = true;
-            return null;  // cancel
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        info.parent = WindowManager.getDefault().getMainWindow();
+                    }
+                });
         }
     }
 }

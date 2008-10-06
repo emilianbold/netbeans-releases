@@ -58,6 +58,7 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.openide.actions.PropertiesAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -140,6 +141,11 @@ public final class EventSourceSupport {
 
         public String getEditableName (DesignComponent component) {
             DesignComponent refComponent = component.readProperty(PROP_COMMAND).getComponent();
+            if (refComponent == null || refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME) == null) {
+                Debug.warning("EventSource referenced " + component.toString() + " is null "); //NOI18N
+                return null;
+            }
+            
             String name = (String) refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
             
             return name;
@@ -152,7 +158,7 @@ public final class EventSourceSupport {
         }
 
         public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
-            return Utilities.loadImage (CommandCD.ICON_PATH);
+            return ImageUtilities.loadImage (CommandCD.ICON_PATH);
         }
 
     }

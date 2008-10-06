@@ -91,7 +91,7 @@ public class HttpMonitorHelper {
     private static final String MONITOR_FILTER_PATTERN = "/*"; //NOI18N
     private static final String MONITOR_INTERNALPORT_PARAM_NAME = "netbeans.monitor.ide"; //NOI18N
     
-    public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag) throws IOException, SAXException {
+    public static boolean synchronizeMonitor(String domainLoc, String domainName, boolean monitorFlag, String... others) throws IOException, SAXException {
         boolean monitorModuleAvailable = isMonitorEnabled();
         boolean shouldInstall = monitorModuleAvailable && monitorFlag;
         // find the web.xml file
@@ -106,15 +106,15 @@ public class HttpMonitorHelper {
             return false;
         }
         boolean needsSave = false;
+        boolean needRestart = false;
         boolean result;
         try {
             if (shouldInstall) {
-                addMonitorJars(domainLoc,domainName);
+                needRestart = addMonitorJars(domainLoc,domainName,others);
                 result = changeFilterMonitor(webApp, true);
                 needsSave = needsSave || result;
                 result = specifyFilterPortParameter(webApp);
-                needsSave = needsSave || result;
-                
+                needsSave = needsSave || result;                
             } else {
                 result = changeFilterMonitor(webApp, false);
                 needsSave = needsSave || result;
@@ -131,7 +131,7 @@ public class HttpMonitorHelper {
                 os.close();
             }
         }
-        return needsSave;
+        return needRestart;
     }
     
     private static File getDefaultWebXML(String domainLoc, String domainName) {
@@ -143,13 +143,21 @@ public class HttpMonitorHelper {
         return null;
     }
     
-    private static void addMonitorJars(String domainLoc, String domainName) throws IOException {
+    private static boolean addMonitorJars(String domainLoc, String domainName, String... others) throws IOException {
         String loc = domainLoc+"/"+domainName;
         File instDir = new File(loc);
-        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N        
+        boolean retVal = copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N  
+        for (String anOther : others) {
+            int lastSlash = anOther.lastIndexOf("/");
+            if (lastSlash > -1) {
+                String jarName = anOther.substring(lastSlash+1);
+                retVal = retVal && copyFromIDEInstToDir(anOther , instDir, "lib/"+jarName);  // NOI18N                  
+            }
+        }
+        return retVal;
     }
     
-    private static boolean changeFilterMonitor(WebApp webApp,boolean full) throws ClassNotFoundException {
+    private static boolean changeFilterMonitor(WebApp webApp,boolean full)  throws ClassNotFoundException {
         boolean filterWasChanged=false;
         if (full) { // adding monitor filter/filter-mapping element
             boolean isFilter=false;
@@ -231,15 +239,20 @@ public class HttpMonitorHelper {
         return InstalledFileLocator.getDefault().locate(instRelPath, null, false);
     }
     
-    private static void copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
+    private static boolean copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
         File targetFile = findFileUnderBase(copyTo, targetRelPath);
         File sourceFile = findInstallationFile(sourceRelPath);
         if (sourceFile != null && sourceFile.exists()) {
-            if (!targetFile.exists() 
-                || sourceFile.length() != targetFile.length()) {
-                copy(sourceFile,targetFile);
+            File targetParent = targetFile.getParentFile();
+            if (!targetParent.exists()) {
+                targetParent.mkdirs();
+            }
+            if (!targetFile.exists() || sourceFile.length() != targetFile.length()) {
+                copy(sourceFile, targetFile);
+                return true;
             }
         }
+        return false;
     }
     
     private static void copy(File file1, File file2) throws IOException {

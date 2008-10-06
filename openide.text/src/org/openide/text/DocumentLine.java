@@ -131,7 +131,9 @@ public abstract class DocumentLine extends Line {
     /* Shows the line.
     * @param kind one of SHOW_XXX constants.
     * @column the column of this line which should be selected
+    * @deprecated Deprecated since 6.21. Use {@link #show(ShowOpenType, ShowVisibilityType, int)} instead.
     */
+    @Deprecated
     public abstract void show(int kind, int column);
 
     /* Sets the breakpoint. */

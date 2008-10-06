@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/jdbc2_0-stdext.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/jta.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate3.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-tools.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-annotations.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-commons-annotations.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-entitymanager.jar!/</resource>

@@ -156,6 +156,10 @@ public abstract class Group {
         if (nue != null) {
             NODE.put(KEY_ACTIVE, nue.id);
         } else {
+            if (old == null) {
+                //#141403
+                return;
+            }
             NODE.remove(KEY_ACTIVE);
         }
         // OK if g == old; still want to fix open projects.

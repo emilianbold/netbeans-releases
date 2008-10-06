@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
@@ -105,7 +104,9 @@ public class LockForFile extends FileLock {
             namesakes = oldNamesakes;
         }
         if (namesakes.putInstance(file, result) == null) {
-            throw new FileAlreadyLockedException(file.getAbsolutePath());
+            FileAlreadyLockedException alreadyLockedException = new FileAlreadyLockedException(file.getAbsolutePath());
+            alreadyLockedException.initCause(namesakes.getInstance(file).lockedBy);
+            throw alreadyLockedException;
         }
         result.valid = true;
         return result;
@@ -274,7 +275,7 @@ public class LockForFile extends FileLock {
     public void releaseLock() {
         LockForFile.deregisterLock(this);
         super.releaseLock();
-        BaseFileObj fo = (BaseFileObj) FileUtil.toFileObject(file);
+        BaseFileObj fo = (BaseFileObj) FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fo != null) {
             fo.getProvidedExtensions().fileUnlocked(fo);
         }

@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import org.openide.*;
 import org.openide.filesystems.*;
 
 /** Loader for any kind of <code>MultiDataObject</code>. It provides
@@ -142,6 +141,9 @@ public abstract class MultiFileLoader extends DataLoader {
             obj = createMultiObject (primary);
             if (willLog) {
                 ERR.fine(getClass().getName() + " created object for: " + fo + " obj: " + obj); // NOI18N
+            }
+            if (obj == null) {
+                throw new IOException("Loader: " + this + " returned null from createMultiObject(" + primary + ")"); // NOI18N
             }
         } catch (DataObjectExistsException ex) {
             // object already exists
@@ -329,9 +331,15 @@ public abstract class MultiFileLoader extends DataLoader {
 
         FileObject[] arr = parent.getChildren ();
         for (int i = 0; i < arr.length; i++) {
+            if (obj.getSecondary().get(arr[i]) != null) {
+                // ok, already assigned to us
+                continue;
+            }
+            
             FileObject pf = findPrimaryFileImpl (arr[i]);
 
             if (pf == primary) {
+
                 // this object could belong to this loader
                 try {
                     // this will go thru regular process of looking for

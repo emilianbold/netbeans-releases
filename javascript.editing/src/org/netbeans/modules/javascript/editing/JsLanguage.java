@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
@@ -213,5 +214,10 @@ public class JsLanguage extends DefaultLanguageConfig {
     @Override
     public InstantRenamer getInstantRenamer() {
         return new JsRenameHandler();
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
+        return new JsTypeSearcher();
     }
 }

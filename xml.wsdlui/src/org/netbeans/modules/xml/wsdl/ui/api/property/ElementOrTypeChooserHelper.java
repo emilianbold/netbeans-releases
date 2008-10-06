@@ -52,6 +52,7 @@ import javax.xml.XMLConstants;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
@@ -64,15 +65,16 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.nodes.BuiltInTypeFolderNode;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode.Children;
@@ -105,29 +107,39 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
         filters.add(GlobalSimpleType.class);
         filters.add(GlobalComplexType.class);
         filters.add(GlobalElement.class);
-     
-        if (project == null) {
+        Project wsdlProject = null;
+        DefaultProjectCatalogSupport catalogSupport = null;
+        if (project != null) {
+            wsdlProject = project;
+            //Fix for IZ 147816
+            SubprojectProvider provider = wsdlProject.getLookup().lookup(SubprojectProvider.class);
+            if (provider != null) {
+                catalogSupport = new DefaultProjectCatalogSupport(wsdlProject);
+            }
+        } else {
             FileObject wsdlFile = model.getModelSource().getLookup().lookup(FileObject.class);
             if(wsdlFile != null) {
-                project = FileOwnerQuery.getOwner(wsdlFile);
+                catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFile);
+                wsdlProject = FileOwnerQuery.getOwner(wsdlFile);
             }
         }
-        if (project != null) {
+        if (wsdlProject != null) {
             projectsFolderNode = new FolderNode(new Children.Array()); 
             projectsFolderNode.setDisplayName(NbBundle.getMessage(ElementOrTypeChooserHelper.class, "LBL_ByFile_DisplayName"));
-            LogicalViewProvider viewProvider = project.getLookup().lookup(LogicalViewProvider.class);
+            LogicalViewProvider viewProvider = wsdlProject.getLookup().lookup(LogicalViewProvider.class);
 
 
             ArrayList<Node> nodes = new ArrayList<Node>();
-            nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), project, filters)));
-
-            DefaultProjectCatalogSupport catalogSupport = new DefaultProjectCatalogSupport(project);
-            Set refProjects = catalogSupport.getProjectReferences();
-            if (refProjects != null && refProjects.size() > 0) {
-                for (Object o : refProjects) {
-                    Project refPrj = (Project) o;
-                    viewProvider = refPrj.getLookup().lookup(LogicalViewProvider.class);
-                    nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), refPrj, filters)));
+            nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), wsdlProject, filters)));
+            
+            if (catalogSupport != null) {
+                Set refProjects = catalogSupport.getProjectReferences();
+                if (refProjects != null && refProjects.size() > 0) {
+                    for (Object o : refProjects) {
+                        Project refPrj = (Project) o;
+                        viewProvider = refPrj.getLookup().lookup(LogicalViewProvider.class);
+                        nodes.add(new EnabledNode(new SchemaProjectFolderNode(viewProvider.createLogicalView(), refPrj, filters)));
+                    }
                 }
             }
             projectsFolderNode.getChildren().add(nodes.toArray(new Node[nodes.size()]));
@@ -269,20 +281,17 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent>{
 
         private void resetKeys() {
             ArrayList<FileObject> keys = new ArrayList<FileObject>();
-            LogicalViewProvider viewProvider = wsdlProject.getLookup().lookup(LogicalViewProvider.class);
-            Node node = viewProvider.createLogicalView();
-            org.openide.nodes.Children children = node.getChildren();
-            for (Node child : children.getNodes()) {
-                DataObject dobj = child.getCookie(DataObject.class);
-                if (dobj != null) {
-                    File[] files = recursiveListFiles(FileUtil.toFile(dobj.getPrimaryFile()), new SchemaFileFilter());
-                    for (File file : files) {
-                        FileObject fo = FileUtil.toFileObject(file);
-                        ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false); 
-                        SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
-                        if (schemaModel != null && schemaModel.getState() == Model.State.VALID && schemaModel.getSchema().getTargetNamespace() != null) {
-                            keys.add(fo);
-                        }
+
+            List<SourceGroup> roots = Utility.getSourceRoots(wsdlProject);
+            for (SourceGroup srcGrp : roots) {
+                FileObject rootFolder = srcGrp.getRootFolder();
+                File[] files = recursiveListFiles(FileUtil.toFile(rootFolder), new SchemaFileFilter());
+                for (File file : files) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    ModelSource modelSource = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(fo, false);
+                    SchemaModel schemaModel = SchemaModelFactory.getDefault().getModel(modelSource);
+                    if (schemaModel != null && schemaModel.getState() == Model.State.VALID && schemaModel.getSchema().getTargetNamespace() != null) {
+                        keys.add(fo);
                     }
                 }
             }

@@ -68,6 +68,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -77,8 +78,8 @@ import org.openide.util.Utilities;
  */
 public class GoToPanel extends javax.swing.JPanel {
             
-    private static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
-    private static Icon WARN_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/resources/warning.png") ); // NOI18N
+    private static Icon WAIT_ICON = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/jumpto/resources/wait.gif") ); // NOI18N
+    private static Icon WARN_ICON = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/jumpto/resources/warning.png") ); // NOI18N
         
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
@@ -220,6 +221,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jLabelText, gridBagConstraints);
+        jLabelText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.jLabelText.AccessibleContext.accessibleDescription")); // NOI18N
 
         nameField.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         nameField.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -245,7 +247,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(nameField, gridBagConstraints);
 
-        jLabelList.setLabelFor(matchesScrollPane1);
+        jLabelList.setLabelFor(matchesList);
         jLabelList.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "TXT_GoToType_MatchesList_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -268,6 +270,8 @@ public class GoToPanel extends javax.swing.JPanel {
             }
         });
         matchesScrollPane1.setViewportView(matchesList);
+        matchesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GoToPanel.class, "ACSD_GoToListName")); // NOI18N
+        matchesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.matchesList.AccessibleContext.accessibleDescription")); // NOI18N
 
         listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -288,6 +292,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(caseSensitive, gridBagConstraints);
+        caseSensitive.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.caseSensitive.AccessibleContext.accessibleDescription")); // NOI18N
 
         jLabelLocation.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "LBL_GoToType_LocationJLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

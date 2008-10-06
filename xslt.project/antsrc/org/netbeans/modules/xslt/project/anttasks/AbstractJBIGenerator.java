@@ -41,15 +41,15 @@ import org.netbeans.modules.xslt.project.anttasks.jbi.ServiceEntry;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
-import org.netbeans.modules.xslt.tmap.model.api.Nameable;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.PortTypeReference;
+import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
-import org.netbeans.modules.xslt.tmap.model.api.TransformMap;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 
 /**
@@ -239,62 +239,73 @@ public abstract class AbstractJBIGenerator {
 ////        }
     }
     
-    private ServiceEntry createServiceEntry(String targetNs, PortTypeReference portTypeRefComponent) 
+    private ServiceEntry createServiceEntry(PartnerLinkTypeReference pltRefComponent) 
     {
-        assert portTypeRefComponent instanceof Nameable;
-        if (targetNs == null || portTypeRefComponent == null) {
+        if (pltRefComponent == null) {
             return null;
         }
         
-        String name = ((Nameable)portTypeRefComponent).getName();
-        if (name == null) {
-            logger.log(Level.WARNING, "TransformMap Component: "+portTypeRefComponent+" MUST have non empty name attribute");
+        WSDLReference<PartnerLinkType> pltRef = pltRefComponent.getPartnerLinkType();
+        WSDLReference<Role> roleRef = pltRefComponent.getRole();
+
+        if (pltRef == null || roleRef == null) {
             return null;
         }
-        
-        WSDLReference<PortType> wsdlPortRef = portTypeRefComponent.getPortType();
-        if (wsdlPortRef == null) {
-            return null;
-        }
-        
         ServiceEntry entry = null;
         
         // TODO m
-//        PortType plt = pltRef.get();
+        QName pltQname = pltRef.getQName();
+        if (pltQname == null) {
+            return null;
+        }
+        
+        String pltNS = pltQname.getNamespaceURI();
+        String pltName = pltQname.getLocalPart();
+        String pltNSPrefix = populateNamespace(pltNS);
+
+//        PartnerLinkType plt = pltRef.get();
 //        if (plt == null) {
-//            logger.log(Level.SEVERE, "Problem encountered while processing PortType of   \""+pltName+"\"");
+//            logger.log(Level.SEVERE, "Problem encountered while processing partnerLinkType of   \""+pltName+"\"");
 //            throw new RuntimeException("PartnerLink Type is Null!");
 //        }
         
         String portName = null;
         String portNameNS = null;
         String portNameNSPrefix = null;
-  //      QName portNameQname = null;
-        QName portNameQname = wsdlPortRef.getQName();
-  
+        QName portNameQname = null;
         
-//        PortType pt = resolveReference(wsdlPortRef);
-//        if (pt != null) {
-//            portName = pt.getName();
-            portName = portNameQname.getLocalPart();
- //           portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
-            portNameNS = portNameQname.getNamespaceURI();
-            portNameNSPrefix = populateNamespace(portNameNS);
-            portNameQname = wsdlPortRef.getQName();
- //       }
+        String roleName = null;
+        
+        Role role = resolveReference(roleRef);
+        if (role == null) {
+            return null;
+        }
+        
+        roleName = role.getName();
+        NamedComponentReference<PortType> portTypeRef = role.getPortType();
+        
+        if (portTypeRef != null ) {
+            PortType pt = resolveReference(portTypeRef);
+            if (pt != null) {
+                portName = pt.getName();
+                portNameNS = pt.getModel().getDefinitions().getTargetNamespace();
+                portNameNSPrefix = populateNamespace(portNameNS);
+                portNameQname = portTypeRef.getQName();
+            }
+        }
         
         if (portName == null) {
-            logger.log(Level.SEVERE, "Problem encountered while processing portType   portTypeRefComponent =  \""+portTypeRefComponent+"\"");
+            logger.log(Level.SEVERE, "Problem encountered while processing portType   PartnerLink =  \""+pltName+"\"");
             throw new RuntimeException("Problem encountered while processing portType !");
         }
         
         String displayName = "";
         String processName = "";
         String filePath = "";
-        if (portTypeRefComponent instanceof Service) {
-            Service service = (Service) portTypeRefComponent;
+        if (pltRefComponent instanceof Service) {
+            Service service = (Service) pltRefComponent;
             
-            displayName = service.getPortType().getQName().getLocalPart();
+            displayName = service.getPartnerLinkType().getQName().getLocalPart();
             processName = displayName;
             
             for (Operation operation: service.getOperations()) {
@@ -308,22 +319,21 @@ public abstract class AbstractJBIGenerator {
             }
         }
         
-        try {
-            entry = new ServiceEntry(
-                targetNs,
-                name,
+        entry = new ServiceEntry(
+                pltName,
                 portName,
+                pltNS,
                 portNameNS,
+                roleName,
+                pltNSPrefix,
                 portNameNSPrefix,
+                pltQname,
                 portNameQname,
                 displayName,
                 processName,
                 filePath
                 );
-        } catch (IllegalStateException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new RuntimeException(ex);
-        }
+        
         
         return entry;
     }
@@ -335,25 +345,13 @@ public abstract class AbstractJBIGenerator {
         ServiceEntry provider = null;
         ServiceEntry consumer = null;
         
-        TransformMap root = tMapModel.getTransformMap();
-        if (root == null) {
-            logger.log(Level.WARNING, "couldn't get root element TransformMap");
-            return;
-        }
-        String targetNs = root.getTargetNamespace();
-        if (targetNs == null) {
-            logger.log(Level.WARNING, "targetNamespace of transformMap is null");
-            return;
-        }
-        populateNamespace(targetNs);
-        
-        List<Service> services = root.getServices();
+        List<Service> services = tMapModel.getTransformMap().getServices();
         if (services == null) {
             return;
         }
         
         for (Service service : services) {
-            provider = createServiceEntry(targetNs, service);
+            provider = createServiceEntry(service);
             if (provider != null && !mProviders.contains(provider)) {
                 mProviders.add(provider);
             }
@@ -371,7 +369,7 @@ public abstract class AbstractJBIGenerator {
                 System.out.println("invokes.size(): "+invokes.size());
                 for (Invoke invoke : invokes) {
                     if (invoke != null) {
-                        consumer = createServiceEntry(targetNs, invoke);
+                        consumer = createServiceEntry(invoke);
                         System.out.println("created consumer "+consumer+" for invoke: "+invoke);
                         if (consumer != null && !mConsumers.contains(consumer)) {
                             mConsumers.add(consumer);
@@ -380,13 +378,6 @@ public abstract class AbstractJBIGenerator {
                 }
             }
         }
-    }
-    
-    private String getServiceName(ServiceEntry service) {
-        assert service != null;
-        String serviceName = mNameSpacePrefix.get(service.getTargetNamespace())+COLON_SEPARATOR+"xsltse";
-        System.out.println("tmpService.getTargetNamespace():"+service.getTargetNamespace()+"; prefix:"+mNameSpacePrefix.get(service.getTargetNamespace())+";  serviceName: "+serviceName);                    
-        return serviceName;
     }
     
     private void generateJBIDescriptor() throws IOException {
@@ -424,12 +415,9 @@ public abstract class AbstractJBIGenerator {
             if (mProviders != null) {
                 for (int j = 0; j < mProviders.size(); j++) {
                     ServiceEntry tmpService = mProviders.get(j); 
-            
                     sb.append("        <provides interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
-//                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getTargetNamespace(), mNameSpacePrefix));
-//                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
-                    sb.append("\" service-name=\"" + getServiceName(tmpService));
-                    sb.append("\" endpoint-name=\"" + tmpService.getName());
+                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getPartnerLinkNameQname(), mNameSpacePrefix));
+                    sb.append("\" endpoint-name=\"" + tmpService.getRoleName());
                     sb.append("\">\n");
                     sb.append("            <" + extDnElem + ">" + escapeXml(tmpService.getDisplayName()) + "</" + extDnElem + ">\n");
                     sb.append("            <" + extPnElem + ">" + escapeXml(tmpService.getProcessName()) + "</" + extPnElem + ">\n");
@@ -441,12 +429,9 @@ public abstract class AbstractJBIGenerator {
             if (mConsumers != null) {
                 for (int j = 0; j < mConsumers.size(); j++) {
                     ServiceEntry tmpService = mConsumers.get(j); 
-            
                     sb.append("        <consumes interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
-//                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getTargetNamespace(), mNameSpacePrefix));
-//                    sb.append("\" service-name=\"" + tmpService.getTargetNamespace());
-                    sb.append("\" service-name=\"" + getServiceName(tmpService));
-                    sb.append("\" endpoint-name=\"" + tmpService.getName());
+                    sb.append("\" service-name=\"" + getColonedQName(tmpService.getPartnerLinkNameQname(), mNameSpacePrefix));
+                    sb.append("\" endpoint-name=\"" + tmpService.getRoleName());
 //                    sb.append("\" link-type=\"standard\"/>\n");
                     sb.append("\">\n");
                     sb.append("            <" + extDnElem + ">" + escapeXml(tmpService.getDisplayName()) + "</" + extDnElem + ">\n");
@@ -544,15 +529,6 @@ public abstract class AbstractJBIGenerator {
             return qn.getLocalPart();
         else
             return prefix + COLON_SEPARATOR + qn.getLocalPart();
-    }
-
-    private static String getColonedQName(String namespace, Map nsTable)
-    {
-        String prefix = (String)nsTable.get(namespace);
-        if(prefix == null)
-            return namespace;
-        else
-            return prefix + COLON_SEPARATOR + namespace;
     }
 
     private static QName getQName(String qname)

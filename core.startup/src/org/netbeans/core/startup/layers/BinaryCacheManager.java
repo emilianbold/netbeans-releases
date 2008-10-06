@@ -42,17 +42,15 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.netbeans.Stamps;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
 
 /**
  * Partial implementation of the cache manager using BinaryFS as the layer
@@ -71,8 +69,12 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
     
     @Override
     public FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException {
-        FileSystem fs = new BinaryFS(cacheLocation(), bb);
-        return fs;
+        try {
+            FileSystem fs = new BinaryFS(cacheLocation(), bb);
+            return fs;
+        } catch (BufferUnderflowException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
     }
 
     @Override
@@ -184,16 +186,19 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         "methodvalue", // NOI18N
         "newvalue", // NOI18N
         "serialvalue", // NOI18N
+        "bundlevalue", // NOI18N
     };
 
     private void writeAttribute(BinaryWriter bw, MemAttr attr) throws IOException {
         bw.writeString(attr.name);
-        int i = 0;
-        for(; i < ATTR_TYPES.length; i++) {
-            if(ATTR_TYPES[i].equals(attr.type)) break;
+        for (int i = 0; i < ATTR_TYPES.length; i++) {
+            if(ATTR_TYPES[i].equals(attr.type)) {
+                bw.writeByte((byte)i);
+                bw.writeString(attr.data);
+                return;
+            }
         }
-        bw.writeByte((byte)i); // XXX - may write wrong value if unknown type!
-        bw.writeString(attr.data);
+        throw new IOException("Wrong type: " + attr);
     }
     
     // this map is actually valid only during BFS regeneration, null otherwise

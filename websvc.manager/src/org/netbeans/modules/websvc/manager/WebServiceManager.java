@@ -51,15 +51,16 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.manager.codegen.Wsdl2Java;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModel;
+import org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel.WsdlModelProvider;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.model.WebServiceGroup;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
+
 import org.netbeans.modules.xml.retriever.Retriever;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -69,13 +70,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 public final class WebServiceManager {
 
     private static WebServiceManager wsMgr;
     public static String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
-    private RequestProcessor modeler;
+    private int mutatorCount;
 
     private WebServiceManager() {
     }
@@ -99,124 +99,159 @@ public final class WebServiceManager {
      * @throws java.io.IOException 
      */
     public void addWebService(WebServiceData wsData, boolean compile) throws IOException {
-        WebServiceListModel listModel = WebServiceListModel.getInstance();
+        try {
+            incrementMutatorCount();
+            WebServiceListModel listModel = WebServiceListModel.getInstance();
 
-        if (wsData.getState().equals(WebServiceData.State.WSDL_UNRETRIEVED) ||
-                (wsData.getState().equals(WebServiceData.State.WSDL_RETRIEVING) &&
-                !wsData.isResolved())) {
-            wsData.setState(WebServiceData.State.WSDL_RETRIEVING);
+            if (wsData.getState().equals(WebServiceData.State.WSDL_UNRETRIEVED) ||
+                    (wsData.getState().equals(WebServiceData.State.WSDL_RETRIEVING) &&
+                    !wsData.isResolved())) {
+                wsData.setState(WebServiceData.State.WSDL_RETRIEVING);
 
-            File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdlUrl());
-            File catalogFile = new File(WEBSVC_HOME, WsdlUtil.getCatalogForWsdl(wsData.getOriginalWsdlUrl()));
+                File localWsdlFile = null;
+                try {
+                    localWsdlFile = copyWsdlResources(wsData.getOriginalWsdlUrl());
+                } catch (IOException ex) {
+                    wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
+                    throw ex;
+                }
+                File catalogFile = new File(WEBSVC_HOME, WsdlUtil.getCatalogForWsdl(wsData.getOriginalWsdlUrl()));
 
-            wsData.setWsdlFile(localWsdlFile.getAbsolutePath());
-            wsData.setCatalog(catalogFile.getAbsolutePath());
-            wsData.setState(WebServiceData.State.WSDL_RETRIEVED);
+                wsData.setWsdlFile(localWsdlFile.getAbsolutePath());
+                wsData.setCatalog(catalogFile.getAbsolutePath());
+                wsData.setState(WebServiceData.State.WSDL_RETRIEVED);
+            }
+
+            assert wsData.getWsdlFile() != null;
+
+            WsdlModel wsdlModel = getWsdlModel(wsData);
+            boolean dataInModel = listModel.webServiceExists(wsData);
+
+            if (wsdlModel == null) {
+                wsData.setResolved(false);
+                removeWebService(wsData, true, false);
+                return;
+            } else if (wsdlModel.getServices().isEmpty()) {
+                // If there are no services in the WSDL, warn the user
+                removeWebService(wsData);
+                String message = NbBundle.getMessage(WebServiceManager.class, "WS_NO_METHODS_ERROR");
+                NotifyDescriptor d = new NotifyDescriptor.Message(message);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            } else if (dataInModel) {
+                // for adding of services already in the model, only add a single service
+                boolean assigned = false;
+                for (WSService service : wsdlModel.getServices()) {
+                    if (service.getName().equals(wsData.getName())) {
+                        assigned = true;
+                        wsData.setWsdlService(service);
+                        wsData.setResolved(true);
+                    }
+                }
+
+                if (!assigned) {
+                    WSService defaultService = wsdlModel.getServices().get(0);
+                    wsData.setWsdlService(defaultService);
+                    wsData.setName(defaultService.getName());
+                    wsData.setResolved(true);
+                }
+
+                listModel.getWebServiceGroup(wsData.getGroupId()).modify(wsData.getId());
+
+                try {
+                    if (compile && !wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
+                        compileService(wsData);
+                    }
+                } finally {
+                    if (wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILE_FAILED)) {
+                        wsData.setResolved(false);
+                    }
+                }
+            } else {
+                // Create WebServiceData for each service and add to the model
+                boolean first = true;
+                for (WSService service : wsdlModel.getServices()) {
+                    WebServiceData newData;
+                    if (first) {
+                        first = false;
+                        newData = wsData;
+                    } else {
+                        newData = new WebServiceData(wsData.getWsdlFile(), wsData.getOriginalWsdlUrl(), wsData.getGroupId());
+                    }
+
+                    newData.setWsdlService(service);
+                    newData.setResolved(true);
+                    newData.setName(service.getName());
+
+
+                    listModel.addWebService(newData);
+                    WebServiceGroup group = listModel.getWebServiceGroup(newData.getGroupId());
+                    if (group != null) {
+                        group.add(newData.getId());
+                    }
+
+                    try {
+                        if (compile && !newData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
+                            compileService(newData);
+                        }
+                    } finally {
+                        if (newData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILE_FAILED)) {
+                            removeWebService(newData);
+                        }
+                    }
+                }
+            }
+        } finally {
+            save();
         }
+    }
 
-        assert wsData.getWsdlFile() != null;
-
+    public WsdlModel getWsdlModel(WebServiceData wsData) throws IOException {
         File localWsdlFile = new File(wsData.getWsdlFile());
         URL wsdlUrl = localWsdlFile.toURI().toURL();
 
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-        if (wsData.getPackageName() != null && wsData.getPackageName().trim().length() > 0) {
-            wsdlModeler.setPackageName(wsData.getPackageName());
+        WsdlModelProvider wsdlModelProvider = null;
+        Collection<? extends WsdlModelProvider> providers = Lookup.getDefault().lookupAll(WsdlModelProvider.class);
+        if (providers != null) {
+            for (WsdlModelProvider provider : providers) {
+                if (provider.canAccept(wsdlUrl)) {
+                    wsdlModelProvider = provider;
+                    break;
+                }
+            }
         }
-        WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
-
-        boolean dataInModel = listModel.webServiceExists(wsData);
-
-        if (model == null) {
+        WsdlModel wsdlModel = null;
+        if (wsdlModelProvider != null) {
+            String packageName = wsdlModelProvider.getEffectivePackageName();
+            File catalogFile = new File(wsData.getCatalog());
+            URL catalogUrl = catalogFile.toURI().toURL();
+            wsdlModel = wsdlModelProvider.getWsdlModel(wsdlUrl, packageName, catalogUrl);
+        }
+       
+        if (wsdlModel == null) {
             wsData.setResolved(false);
             removeWebService(wsData, true, false);
 
-            Throwable exc = wsdlModeler.getCreationException();
+            Throwable exc = wsdlModelProvider.getCreationException();//wsdlModeler.getCreationException();
             String message = NbBundle.getMessage(WebServiceManager.class, "WS_MODELER_ERROR");
             if (exc != null) {
                 String cause = exc.getLocalizedMessage();
                 String excString = exc.getClass().getName() + " - " + cause;
                 message += "\n\n" + excString; // NOI18N
+
                 Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(exc, message));
             } else {
                 exc = new IllegalStateException(message);
                 Exceptions.printStackTrace(exc);
             }
-            
-            return;
-        } else if (model.getServices().isEmpty()) {
-            // If there are no services in the WSDL, warn the user
-            removeWebService(wsData);
-            String message = NbBundle.getMessage(WebServiceManager.class, "WS_NO_METHODS_ERROR");
-            NotifyDescriptor d = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(d);
-            return;
-        } else if (dataInModel) {
-            // for adding of services already in the model, only add a single service
-            boolean assigned = false;
-            for (WsdlService service : model.getServices()) {
-                if (service.getName().equals(wsData.getName())) {
-                    assigned = true;
-                    wsData.setWsdlService(service);
-                    wsData.setResolved(true);
-                }
-            }
-
-            if (!assigned) {
-                WsdlService defaultService = model.getServices().get(0);
-                wsData.setWsdlService(defaultService);
-                wsData.setName(defaultService.getName());
-                wsData.setResolved(true);
-            }
-
-            listModel.getWebServiceGroup(wsData.getGroupId()).modify(wsData.getId());
-
-            try {
-                if (compile && !wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
-                    compileService(wsData);
-                }
-            } finally {
-                if (wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILE_FAILED)) {
-                    wsData.setResolved(false);
-                }
-            }
-        } else {
-            // Create WebServiceData for each service and add to the model
-            boolean first = true;
-            for (WsdlService service : model.getServices()) {
-                WebServiceData newData;
-                if (first) {
-                    first = false;
-                    newData = wsData;
-                }else {
-                    newData = new WebServiceData(wsData.getWsdlFile(), wsData.getOriginalWsdlUrl(), wsData.getGroupId());
-                }
-                
-                newData.setWsdlService(service);
-                newData.setResolved(true);
-                newData.setName(service.getName());
-
-
-                listModel.addWebService(newData);
-                WebServiceGroup group = listModel.getWebServiceGroup(newData.getGroupId());
-                if (group != null) {
-                    group.add(newData.getId());
-                }
-
-                try {
-                    if (compile && !newData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED)) {
-                        compileService(newData);
-                    }
-                } finally {
-                    if (newData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILE_FAILED)) {
-                        removeWebService(newData);
-                    }
-                }
-            }
         }
+        
+        return wsdlModel;
     }
+    
+    public
 
-    public void refreshWebService(WebServiceData wsData) throws IOException {
+     void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false, true);
         wsData.setWsdlFile(null);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
@@ -272,65 +307,63 @@ public final class WebServiceManager {
     }
 
     private void removeWebService(WebServiceData wsData, boolean removeFromModel, boolean deleteWsdl) {
-        if (removeFromModel) {
-            WebServiceListModel.getInstance().removeWebService(wsData.getId());
-        }
-        Collection<? extends WebServiceManagerExt> extensions = Lookup.getDefault().lookupAll(WebServiceManagerExt.class);
-        WebServiceDescriptor jaxRpcDescriptor = wsData.getJaxRpcDescriptor();
-        WebServiceDescriptor jaxWsDescriptor = wsData.getJaxWsDescriptor();
+        try {
+            incrementMutatorCount();
 
-        for (WebServiceManagerExt extension : extensions) {
-            if (jaxRpcDescriptor != null) {
-                extension.wsServiceRemovedExt(jaxRpcDescriptor);
+            if (removeFromModel) {
+                WebServiceListModel.getInstance().removeWebService(wsData.getId());
             }
-            if (jaxWsDescriptor != null) {
-                extension.wsServiceRemovedExt(jaxWsDescriptor);
-            }
-        }
+            Collection<? extends WebServiceManagerExt> extensions = Lookup.getDefault().lookupAll(WebServiceManagerExt.class);
+            WebServiceDescriptor jaxRpcDescriptor = wsData.getJaxRpcDescriptor();
+            WebServiceDescriptor jaxWsDescriptor = wsData.getJaxWsDescriptor();
 
-        deleteWsArtifacts(jaxRpcDescriptor);
-        deleteWsArtifacts(jaxWsDescriptor);
-
-        // remove w/s directory
-        if (wsData.getName() != null) {
-            new File(WEBSVC_HOME, wsData.getName()).delete();
-        }
-
-        if (wsData.getWsdlFile() == null) {
-            return;
-        }
-
-        if (! deleteWsdl) {
-            return;
-        }
-        
-        WebServiceListModel model = WebServiceListModel.getInstance();
-        for (WebServiceData data : model.getWebServiceSet()) {
-            if (data != wsData && wsData.getWsdlFile().equals(data.getWsdlFile())) {
-                deleteWsdl = false;
-                break;
-            }
-        }
-
-        if (deleteWsdl) {
-            // remove the top-level wsdl file
-            rmDir(new File(wsData.getWsdlFile()));
-
-            if (wsData.getCatalog() != null) {
-                File catalogFile = new File(wsData.getCatalog());
-                if (catalogFile.exists()) {
-                    rmDir(catalogFile.getParentFile());
+            for (WebServiceManagerExt extension : extensions) {
+                if (jaxRpcDescriptor != null) {
+                    extension.wsServiceRemovedExt(jaxRpcDescriptor);
+                }
+                if (jaxWsDescriptor != null) {
+                    extension.wsServiceRemovedExt(jaxWsDescriptor);
                 }
             }
-        }
-    }
 
-    public RequestProcessor getRequestProcessor() {
-        if (modeler == null) {
-            modeler = new RequestProcessor("Services/Web services-modeler"); // NOI18N
-        }
+            deleteWsArtifacts(jaxRpcDescriptor);
+            deleteWsArtifacts(jaxWsDescriptor);
 
-        return modeler;
+            // remove w/s directory
+            if (wsData.getName() != null) {
+                new File(WEBSVC_HOME, wsData.getName()).delete();
+            }
+
+            if (wsData.getWsdlFile() == null) {
+                return;
+            }
+
+            if (!deleteWsdl) {
+                return;
+            }
+
+            WebServiceListModel model = WebServiceListModel.getInstance();
+            for (WebServiceData data : model.getWebServiceSet()) {
+                if (data != wsData && wsData.getWsdlFile().equals(data.getWsdlFile())) {
+                    deleteWsdl = false;
+                    break;
+                }
+            }
+
+            if (deleteWsdl) {
+                // remove the top-level wsdl file
+                rmDir(new File(wsData.getWsdlFile()));
+
+                if (wsData.getCatalog() != null) {
+                    File catalogFile = new File(wsData.getCatalog());
+                    if (catalogFile.exists()) {
+                        rmDir(catalogFile.getParentFile());
+                    }
+                }
+            }
+        } finally {
+            save();
+        }
     }
 
     /**
@@ -407,8 +440,8 @@ public final class WebServiceManager {
         } finally {
             if (catalogFile.exists() && !success) {
                 rmDir(catalogFile.getParentFile());
+            }
         }
-    }
     }
 
     public static synchronized void compileService(WebServiceData wsData) {
@@ -423,7 +456,7 @@ public final class WebServiceManager {
             compileAttempted = true;
 
             Collection<? extends WebServiceManagerExt> extensions = Lookup.getDefault().lookupAll(WebServiceManagerExt.class);
-            WsdlService svc = wsData.getWsdlService();
+            WSService svc = wsData.getWsdlService();
 
             // compile the WSDL and create the proxy jars
             Wsdl2Java wsdl2Java = new Wsdl2Java(wsData);
@@ -490,7 +523,40 @@ public final class WebServiceManager {
         } finally {
             if (!wsData.getState().equals(WebServiceData.State.WSDL_SERVICE_COMPILED) && compileAttempted) {
                 wsData.setState(WebServiceData.State.WSDL_SERVICE_COMPILE_FAILED);
+            } else {
+                saveDescriptor(wsData);
             }
+        }
+    }
+
+    private synchronized void incrementMutatorCount() {
+        mutatorCount++;
+    //System.out.println("incrementMutatorCount() mutatorCount = " + mutatorCount);
+    }
+
+    private synchronized void save() {
+        if (--mutatorCount <= 0) {
+            if (WebServiceListModel.getInstance().isDirty()) {
+                //System.out.println("saving ws model");
+                new WebServicePersistenceManager().save();
+                WebServiceListModel.getInstance().setDirty(false);
+            }
+        }
+    //System.out.println("save() mutatorCount = " + mutatorCount);
+    }
+
+    private static void saveDescriptor(WebServiceData data) {
+        WebServicePersistenceManager mgr = new WebServicePersistenceManager();
+        try {
+            WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveDescriptor((WebServiceDescriptor) desc);
+            }
+            desc = data.getJaxRpcDescriptor();
+            if (desc instanceof WebServiceDescriptor) {
+                mgr.saveDescriptor((WebServiceDescriptor) desc);
+            }
+        } catch (Exception ex) {
         }
     }
 }

@@ -67,7 +67,7 @@ public final class EditorPreferencesDefaults {
     // -----------------------------------------------------------------------
     
     public static final int defaultCaretBlinkRate = 300;
-    public static final int defaultTabSize = 8;
+    public static final int defaultTabSize = 4;
     public static final int defaultSpacesPerTab = 4;
     public static final int defaultShiftWidth = 4; // usually
     // not used as there's a Evaluator for shift width

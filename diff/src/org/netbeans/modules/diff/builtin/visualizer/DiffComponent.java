@@ -48,6 +48,7 @@ import javax.swing.text.*;
 import java.awt.BorderLayout;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.windows.*;
 
 import org.netbeans.api.diff.Difference;
@@ -144,7 +145,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         } else {
             setName(mainTitle);
         }
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif", true));
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/diff/diffSettingsIcon.gif", true));
         initContent(mimeType, sourceName1, sourceName2, title1, title2, r1, r2);
         //HelpCtx.setHelpIDString (getRootPane (), DiffComponent.class.getName ());
         putClientProperty("PersistenceType", "Never");

@@ -468,6 +468,9 @@ public class PanelProjectLocationVisual extends SettingsPanel
         if ( doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument() ) {
             String projectName = projectNameTextField.getText().trim();
             String projectFolder = projectLocationTextField.getText().trim();
+            while (projectFolder.endsWith("/")) { // NOI18N
+                projectFolder = projectFolder.substring(0, projectFolder.length()-1);
+            }
             createdFolderTextField.setText( projectFolder + File.separatorChar + projectName );
             
             if (!makefileNameChanged) {

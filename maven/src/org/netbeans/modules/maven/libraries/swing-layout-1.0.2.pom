@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.java.dev.swing-layout</groupId>
+    <artifactId>swing-layout</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0.2</version>
+    <url>https://swing-layout.dev.java.net/</url>
+    <name>Extensions to Swing to create professional cross platform layout</name>
+    <description>Swing Layout Extensions goal is to make it easy to create professional cross platform layouts with Swing. This project has an eye towards the needs of GUI builders, such as NetBeans. 
+    This project consists of the following pieces:
+        * Ability to get the baseline for components.
+        * Ability to get the preferred gap between components.
+        * A new LayoutManager that utilizes both of these concepts and is tuned toward a free-form drag and drop layout model as can be provided by GUI builders. 
+    </description>
+    <licenses>
+        <license>
+            <name>Lesser General Public License (LGPL), Version 2.1</name>
+            <url>http://www.gnu.org/copyleft/lesser.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://swing-layout.dev.java.net/source/browse/swing-layout/</url>
+    </scm>    
+    <dependencies/>
+</project>

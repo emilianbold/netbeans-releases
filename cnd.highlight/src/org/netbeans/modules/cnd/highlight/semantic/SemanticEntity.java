@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -49,9 +50,9 @@ import org.netbeans.modules.cnd.modelutil.FontColorProvider;
  *
  * @author Sergey Grinev
  */
-public interface SemanticEntity {
-    String getName();
+public interface SemanticEntity extends NamedEntity {
     List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
+    ReferenceCollector getCollector();
     void updateFontColors(FontColorProvider provider);
-    public AttributeSet getColor(CsmOffsetable obj);
+    public AttributeSet getAttributes(CsmOffsetable obj);
 }

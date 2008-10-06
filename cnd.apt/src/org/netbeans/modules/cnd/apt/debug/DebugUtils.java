@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.apt.debug;
  * @author Vladimir Voskresensky
  */
 public class DebugUtils {
-    
+
     private DebugUtils() {
     }
 

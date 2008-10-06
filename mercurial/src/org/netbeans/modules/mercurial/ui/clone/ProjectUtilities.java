@@ -52,6 +52,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.netbeans.modules.mercurial.Mercurial;
 
 import javax.swing.*;
@@ -82,6 +84,10 @@ final class ProjectUtilities {
             final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
 
             public void run () {
+                if (ptLogial == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.FINE, "Cannot find Project widnow, aborting.");
+                    return;
+                }
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
                 Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );

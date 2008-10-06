@@ -41,21 +41,16 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.railsprojects.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.Exceptions;
 
@@ -75,40 +70,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         this.firer = panel;
         initComponents();
 
-//        this.projectName.getDocument().addDocumentListener (new DocumentListener (){
-//            public void changedUpdate(DocumentEvent e) {
-//                calculateProjectFolder ();
-//                dataChanged ();
-//            }
-//
-//            public void insertUpdate(DocumentEvent e) {
-//                calculateProjectFolder ();
-//                dataChanged ();
-//            }
-//
-//            public void removeUpdate(DocumentEvent e) {
-//                calculateProjectFolder ();
-//                dataChanged ();
-//            }
-//        });        
-//        this.projectLocation.getDocument().addDocumentListener(new DocumentListener () {
-//            public void changedUpdate(DocumentEvent e) {             
-//                setCalculateProjectFolder (false);
-//                dataChanged ();
-//            }
-//
-//            public void insertUpdate(DocumentEvent e) {
-//                setCalculateProjectFolder (false);
-//                dataChanged ();
-//            }
-//
-//            public void removeUpdate(DocumentEvent e) {
-//                setCalculateProjectFolder (false);
-//                dataChanged ();
-//            }
-//        });
-
-    
         this.projectName.getDocument().addDocumentListener (new DocumentListener (){
             public void changedUpdate(DocumentEvent e) {             
                 setCalculateProjectName (false);
@@ -261,21 +222,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
                 else if ("config".equals(childName)) {
                     foundRails = true;
                 }
-                // Only the nbproject file will be rewritten by Rails project - other files can conflict
-//                else if ("build".equals(childName)) {    //NOI18N
-//                    file = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"TXT_BuildFolder");
-//                }
-//                else if ("dist".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"TXT_DistFolder");
-//                }
-//                else if ("build.xml".equals(childName)) {   //NOI18N
-//                    file = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"TXT_BuildXML");
-//                }
-//                else if ("manifest.mf".equals(childName)) { //NOI18N
-//                    file = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"TXT_Manifest");
-//                }
-                
-                
                 
                 if (file != null) {
                     String format = NbBundle.getMessage (PanelProjectLocationExtSrc.class,"MSG_ProjectFolderInvalid");
@@ -288,21 +234,6 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
             return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "TXT_NoRails");
         }
 
-        // For now I'm creating NetBeans Rails application in place
-//        // #47611: if there is a live project still residing here, forbid project creation.
-//        if (destFolder.isDirectory()) {
-//            FileObject destFO = FileUtil.toFileObject(destFolder);
-//            assert destFO != null : "No FileObject for " + destFolder;
-//            boolean clear = false;
-//            try {
-//                clear = ProjectManager.getDefault().findProject(destFO) == null;
-//            } catch (IOException e) {
-//                // need not report here; clear remains false -> error
-//            }
-//            if (!clear) {
-//                return NbBundle.getMessage(PanelProjectLocationExtSrc.class, "MSG_ProjectFolderHasDeletedProject");
-//            }
-//        }
         return null;
     }        
 

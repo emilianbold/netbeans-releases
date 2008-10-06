@@ -157,7 +157,7 @@ public class ETableColumnModel extends DefaultTableColumnModel {
     }
 
     /**
-     * @returns a comparator for sorting the rows of the table. The comparator
+     * @return a comparator for sorting the rows of the table. The comparator
      * operates over ETable.RowMappings objects.
      */
     public Comparator<RowMapping> getComparator() {

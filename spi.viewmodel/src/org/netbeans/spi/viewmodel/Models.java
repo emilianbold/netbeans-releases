@@ -537,8 +537,7 @@ public final class Models {
         }
         
         public boolean isEnabled () {
-            if (multiselectionType == MULTISELECTION_TYPE_ANY)
-                return true;
+            boolean any = multiselectionType == MULTISELECTION_TYPE_ANY;
             Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
             if (multiselectionType == MULTISELECTION_TYPE_EXACTLY_ONE) {
                 if (ns.length != 1) return false;
@@ -547,10 +546,21 @@ public final class Models {
                 );
             }
             int i, k = ns.length;
-            for (i = 0; i < k; i++)
-                if (!performer.isEnabled (
-                    ns[i].getLookup().lookup(Object.class)
-                 )) return false;
+            if (k == 0) {
+                if (!performer.isEnabled(TreeModel.ROOT)) {
+                    return false;
+                }
+            } else {
+                for (i = 0; i < k; i++)
+                    if (!performer.isEnabled(ns[i].getLookup().lookup(Object.class))) {
+                        if (!any) {
+                            return false;
+                        }
+                    } else if (any) {
+                        return true;
+                    }
+                if (any) return false;
+            }
             return true;
         }
 
@@ -572,12 +582,16 @@ public final class Models {
                         l.add (node);
                     }
             }
-            Iterator<Action> it = h.keySet ().iterator ();
-            while (it.hasNext ()) {
-                ActionSupport a = (ActionSupport) it.next ();
-                a.performer.perform (
-                    ((ArrayList) h.get (a)).toArray ()
-                );
+            if (k == 0) {
+                performer.perform(new Object[]{});
+            } else {
+                Iterator<Action> it = h.keySet ().iterator ();
+                while (it.hasNext ()) {
+                    ActionSupport a = (ActionSupport) it.next ();
+                    a.performer.perform (
+                        ((ArrayList) h.get (a)).toArray ()
+                    );
+                }
             }
         }
         

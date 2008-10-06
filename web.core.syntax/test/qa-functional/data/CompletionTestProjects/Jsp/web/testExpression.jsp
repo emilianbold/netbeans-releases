@@ -26,7 +26,7 @@ on Libraries node in Projects view can be used to add the JSTL 1.1 library.
 
 <%--CC
 ${|
-integer Integer
+Integer integer
 ${integer
 --%>
 
@@ -38,7 +38,7 @@ ${date
 
 <%--CC
 ${i|
-initParam
+initParam[]
 ${initParam[]
 --%>
 
@@ -50,31 +50,31 @@ ${pageContext
 
 <%--CC
 ${pageContext.|
-request ServletRequest
+ServletRequest request
 ${pageContext.request
 --%>
 
 <%--CC
 #{|
-sessionScope
+sessionScope[]
 #{sessionScope[]
 --%>
 
 <%--CC
 #{c
-calendar Calendar
+Calendar calendar
 #{calendar
 --%>
 
 <%--CC
 #{calendar.
-time Date
+Date time
 #{calendar.time
 --%>
 
 <%--CC
 #{calendar.
-toString 
+toString
 #{calendar.toString
 --%>
 

@@ -38,92 +38,82 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.jsf.editor.jspel;
 
 import java.awt.Component;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletionItem;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Petr Pisl
+ * @author Marek Fukala
  */
 public class JSFResultItem {
-    
+
     public static class JSFBean extends JspCompletionItem.ELBean {
-        
-        private static JSFResultItemPaintComponent.JSFBeanPaintComponent paintComponent = null;
-        
-        JSFBean( String text, String type ) {
-            super(text, type);
+
+        private static final String BEAN_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/jsf_bean_16.png";  //NOI18N
+
+        JSFBean(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset, type);
         }
-        
+
+        @Override
         public int getSortPriority() {
             return 5;
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new JSFResultItemPaintComponent.JSFBeanPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            return paintComponent;
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(BEAN_PATH));
         }
     }
-    
+
     public static class JSFMethod extends JspCompletionItem.ELBean {
-        
-        private static JSFResultItemPaintComponent.JSFMethodPaintComponent paintComponent = null;
-        
-        JSFMethod( String text, String type ) {
-            super(text, type);
+
+        private static final String METHOD_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/method_16.png";      //NOI18N
+
+        JSFMethod(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset, type);
         }
-        
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new JSFResultItemPaintComponent.JSFMethodPaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            return paintComponent;
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(METHOD_PATH));
         }
     }
-    
+
     public static class JSFResourceBundle extends JspCompletionItem.ELBean {
-        
-        private static JSFResultItemPaintComponent.JSFResourceBundlePaintComponent paintComponent = null;
-        
-        JSFResourceBundle( String text, String type ) {
-            super(text, type);
+
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesLocale.gif";  //NOI18N
+
+        JSFResourceBundle(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset, type);
         }
-        
+
         public int getSortPriority() {
             return 10;
         }
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new JSFResultItemPaintComponent.JSFResourceBundlePaintComponent();
-            paintComponent.setString(text);
-            paintComponent.setTypeName(type);
-            return paintComponent;
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
         }
     }
-    
-    public static class JSFResourceItem extends JspCompletionItem.JspResultItem {
-        
-        private static JSFResultItemPaintComponent.JSFResourceItemPaintComponent paintComponent = null;
-        
-        JSFResourceItem( String text, String type ) {
-            super(text, type);
+
+    public static class JSFResourceItem extends JspCompletionItem {
+
+        private static final String BUNDLE_ICON_PATH = "org/netbeans/modules/web/jsf/editor/jspel/resources/propertiesKey.gif";  //NOI18N
+
+        JSFResourceItem(String text, int substitutionOffset, String type) {
+            super(text, substitutionOffset, type);
         }
-        
-        
-        public Component getPaintComponent(boolean isSelected) {
-            if (paintComponent == null)
-                paintComponent = new JSFResultItemPaintComponent.JSFResourceItemPaintComponent();
-            paintComponent.setString(text);
-            return paintComponent;
+
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(ImageUtilities.loadImage(BUNDLE_ICON_PATH));
         }
     }
 }

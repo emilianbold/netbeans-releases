@@ -165,6 +165,27 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
     
     private static class CharSequenceComparator implements Comparator<CharSequence> {
         public int compare(CharSequence o1, CharSequence o2) {
+            if ((o1 instanceof CharSequenceKey) &&
+                (o2 instanceof CharSequenceKey)){
+                CharSequenceKey csk1 = (CharSequenceKey) o1;
+                CharSequenceKey csk2 = (CharSequenceKey) o2;
+                if ((csk1.value instanceof byte[]) &&
+                    (csk2.value instanceof byte[])){
+                    byte[] b1 = (byte[]) csk1.value; 
+                    byte[] b2 = (byte[]) csk2.value;
+                    int len1 = b1.length;
+                    int len2 = b2.length;
+                    int n = Math.min(len1, len2);
+                    int k = 0;
+                    while (k < n) {
+                        if (b1[k] != b2[k]) {
+                            return (b1[k] & 0xFF) - (b2[k] & 0xFF);
+                        }
+                        k++;
+                    }
+                    return len1 - len2;
+                }
+            }
             int len1 = o1.length();
             int len2 = o2.length();
             int n = Math.min(len1, len2);

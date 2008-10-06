@@ -148,7 +148,11 @@ class ActivityPartitionReader implements GraphNodeReader {
                 //there is nothing to add.. so return..
                 return;
             }
-            IPresentationElement pE = Util.createNodePresentationElement();
+            IPresentationElement pE = elt.getPresentationElementById(nodeInfo.getPEID());
+            if (pE == null)
+            {
+                pE = Util.createNodePresentationElement();
+            }
             pE.setXMIID(nodeInfo.getPEID());
             pE.addSubject(elt);
             nodeInfo.setPresentationElement(pE);
@@ -169,7 +173,7 @@ class ActivityPartitionReader implements GraphNodeReader {
             }
             else
             {
-                System.out.println("  engine.createWidget is returning null.... ");
+//                System.out.println("  engine.createWidget is returning null.... ");
             }
         }
         catch (Exception e)

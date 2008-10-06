@@ -42,7 +42,7 @@ package org.netbeans.modules.uml.drawingarea.engines;
 import java.awt.BasicStroke;
 import java.awt.Cursor;
 import java.awt.Point;
-import java.lang.reflect.Constructor;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,14 +52,21 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
+import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.animator.AnimatorEvent;
+import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.drawingarea.actions.CycleObjectSceneSelectProvider;
+import org.netbeans.modules.uml.drawingarea.actions.LockSelectionAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.api.visual.layout.Layout;
@@ -75,7 +82,6 @@ import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.ZoomManager;
-import org.netbeans.modules.uml.drawingarea.actions.BirdToggleViewAction;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSceneAcceptAction;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSelectToolAction;
@@ -83,7 +89,6 @@ import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.ExportImageAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.InteractiveZoomAction;
-//import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.PanAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;
@@ -99,10 +104,10 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -115,6 +120,9 @@ abstract public class DiagramEngine {
                                                                BasicStroke.CAP_BUTT, 
                                                                5.0f, 
                                                                new float[] { 6.0f, 3.0f }, 0.0f);
+    
+    public final static LockSelectionAction lockSelectionAction = new LockSelectionAction();
+    
     // Actions
     protected WidgetAction mouseHoverAction;
     //
@@ -148,14 +156,19 @@ abstract public class DiagramEngine {
      */
     public void setActions(DesignerScene scene)
     {
+        INamespace diagramNamespace = scene.getDiagram().getNamespaceForCreatedElements();
+        AcceptProvider provider = new SceneAcceptProvider(diagramNamespace, false);
+        WidgetAction acceptAction = new DiagramSceneAcceptAction(provider);
+                
         WidgetAction.Chain selectTool = scene.createActions(DesignerTools.SELECT);
+        selectTool.addAction(lockSelectionAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(scene.createRectangularSelectAction());
         selectTool.addAction(ActionFactory.createZoomAction());
         selectTool.addAction(scene.createWidgetHoverAction());
-        selectTool.addAction(new DiagramSceneAcceptAction(new SceneAcceptProvider(scene.getDiagram().getNamespaceForCreatedElements(), false)));
-        selectTool.addAction(ActionFactory.createCycleObjectSceneFocusAction());
+        selectTool.addAction(acceptAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        selectTool.addAction(ActionFactory.createCycleFocusAction(new CycleObjectSceneSelectProvider()));
 
         WidgetAction.Chain panTool = scene.createActions(DesignerTools.PAN);
         panTool.addAction(new PanAction());
@@ -172,6 +185,16 @@ abstract public class DiagramEngine {
         interactiveZoomTool.addAction(ActionFactory.createZoomAction());
         interactiveZoomTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         
+        WidgetAction.Chain contextPalette = scene.createActions(DesignerTools.CONTEXT_PALETTE);
+        contextPalette.addAction(acceptAction);
+        
+        WidgetAction.Chain readOnly = scene.createActions(DesignerTools.READ_ONLY);
+        readOnly.addAction(sceneSelectAction);
+        readOnly.addAction(scene.createRectangularSelectAction());
+        readOnly.addAction(ActionFactory.createZoomAction());
+        readOnly.addAction(scene.createWidgetHoverAction());
+        readOnly.addAction(ActionFactory.createPopupMenuAction(menuProvider));
+        readOnly.addAction(ActionFactory.createCycleFocusAction(new CycleObjectSceneSelectProvider()));
     }
     /**
      * Add set of coomon actions to edges except scene, maty be specific to edge type 
@@ -268,9 +291,12 @@ abstract public class DiagramEngine {
     {
         ZoomManager manager = lookup.lookup(ZoomManager.class);
         
-        BirdToggleViewAction birdAction = new BirdToggleViewAction(getScene(), manager);
-        JToggleButton birdsEyeViewBtn = new JToggleButton(birdAction);
-        bar.add(birdsEyeViewBtn);
+        // The current API does not allow use to listen to keystrokes when the 
+        // Bird Eye view is open.  Therefore we can not make the escape key work.
+        // So, I am removing this feature for now.
+//        BirdToggleViewAction birdAction = new BirdToggleViewAction(getScene(), manager);
+//        JToggleButton birdsEyeViewBtn = new JToggleButton(birdAction);
+//        bar.add(birdsEyeViewBtn);
         
         ButtonGroup selectToolBtnGroup = new ButtonGroup();
         
@@ -278,7 +304,9 @@ abstract public class DiagramEngine {
                 new DiagramSelectToolAction(getScene(), DesignerTools.SELECT, 
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
-                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),
+                    KeyStroke.getKeyStroke("ctrl alt shift S"),
+                    KeyStroke.getKeyStroke("meta ctrl shift S")));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
@@ -286,33 +314,40 @@ abstract public class DiagramEngine {
                     DesignerTools.PAN, ImageUtil.instance().getIcon("pan.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_HandToolAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand")));
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
+                    KeyStroke.getKeyStroke("ctrl alt shift N"),
+                    KeyStroke.getKeyStroke("meta ctrl shift N")));
+        handToolButton.setName(DesignerTools.PAN);
         
         JToggleButton marqueeZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.MARQUEE_ZOOM, ImageUtil.instance().getIcon("magnify.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_MarqueeZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom")));
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom"),
+                    KeyStroke.getKeyStroke("ctrl alt shift Z"),
+                     KeyStroke.getKeyStroke("meta ctrl shift Z")));
+        marqueeZoomButton.setName(DesignerTools.MARQUEE_ZOOM);
         
         JToggleButton interactiveZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.INTERACTIVE_ZOOM, ImageUtil.instance().getIcon("interactive-zoom.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_InteractiveZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom")));
-        
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom"),
+                    KeyStroke.getKeyStroke("ctrl alt shift I"),
+                    KeyStroke.getKeyStroke("meta ctrl shift I")));
+        interactiveZoomButton.setName(DesignerTools.INTERACTIVE_ZOOM);
+                    
         JToggleButton navigateLinkButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.NAVIGATE_LINK, ImageUtil.instance().getIcon("navigate-link.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_NavigateLinkAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink")));
-        
-        JButton moveForward = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveForward.class));
-        JButton moveBackward = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveBackward.class));
-        JButton moveToFront = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveToFront.class));
-        JButton moveToBack = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveToBack.class));
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink"),
+                    KeyStroke.getKeyStroke("ctrl alt shift L"),
+                    KeyStroke.getKeyStroke("meta ctrl shift L")));
+        navigateLinkButton.setName(DesignerTools.NAVIGATE_LINK);
         
         selectToolBtnGroup.add(selectToolButton);
         selectToolBtnGroup.add(handToolButton);
@@ -328,7 +363,6 @@ abstract public class DiagramEngine {
         //Kris - out until layout is better
         //JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         
-        bar.add(new JToolBar.Separator());
         bar.add(selectToolButton);
         bar.add(handToolButton);
         bar.add(marqueeZoomButton);
@@ -346,10 +380,11 @@ abstract public class DiagramEngine {
         manager.addToolbarActions(bar);
         
         bar.add(new JToolBar.Separator());
-        bar.add(moveForward);
-        bar.add(moveBackward);
-        bar.add(moveToFront);
-        bar.add(moveToBack);
+        bar.add(new WidgetMoveActionMenu.MoveForward(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveBackward(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveToFront(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveToBack(getScene()));
+
         bar.add(new JToolBar.Separator());
         
         bar.add(hierarchicalLayoutButton) ;
@@ -565,11 +600,64 @@ abstract public class DiagramEngine {
         return retVal;
     }
     
-    public void layout()
+    public void layout(boolean save)
     {
         DesignerScene diagramScene = getScene();
         GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(diagramScene, true);
 //        GraphLayout gLayout = GraphLayoutFactory.createOrthogonalGraphLayout(scene, true);
+        if (save)
+        {
+            diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
+        }
         gLayout.layoutGraph(diagramScene);
+
+    }
+
+    private class MyAnimatorListener implements AnimatorListener
+    {
+
+        public void animatorStarted(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorReset(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorFinished(AnimatorEvent event)
+        {
+            saveDiagram();
+            scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
+        }
+
+        public void animatorPreTick(AnimatorEvent event)
+        {            
+        }
+
+        public void animatorPostTick(AnimatorEvent event)
+        {           
+        }
+
+    }
+
+    private void saveDiagram()
+    {
+        DesignerScene scene = getScene();
+        if (scene != null)
+        {
+            IDiagram diagram = scene.getDiagram();
+            if (diagram != null)
+            {
+                try
+                {
+                    diagram.setDirty(true);
+                    diagram.save();
+                }
+                catch (IOException ex)
+                {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }

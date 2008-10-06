@@ -51,7 +51,6 @@ import org.w3c.dom.Node;
  */
 public class SourcesMessage extends Message {
     private static final String SOURCE = "source";        // NOI18N
-    private static final String FILE_URI = "fileuri";
 
     SourcesMessage(Node node) {
         super(node);
@@ -66,19 +65,29 @@ public class SourcesMessage extends Message {
     public List<Source> getSources() {
         List<Node> nodes = getChildren(getNode(), SOURCE);
         List<Source> result = new ArrayList<Source>(nodes.size());
+        Encoding enc = getEncoding();
         for (Node node : nodes) {
-            result.add(new Source(node));
+            result.add(new Source(node, enc));
         }
         return result;
     }
+    
+    public Encoding getEncoding(){
+        String enc = getAttribute(getNode(), Property.ENCODING);
+        return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
+    }     
 
     public static class Source extends BaseMessageChildElement {
-        public Source(Node node) {
+        private Encoding enc;        
+        public Source(Node node, Encoding enc) {
             super(node);
+            this.enc = enc;
         }
-
+        
         public String getURI() {
-            return getAttribute(FILE_URI);
-        }
+            String uri = getAttribute(FILE_URI);
+            byte[] result = Message.getDecodedBytes(enc, uri);
+            return new String(result).trim();  
+        }        
     }
 }

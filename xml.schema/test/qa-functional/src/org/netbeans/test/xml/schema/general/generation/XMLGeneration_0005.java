@@ -41,48 +41,12 @@
 
 package org.netbeans.test.xml.schema.general.generation;
 
-import java.awt.Point;
-import java.util.zip.CRC32;
-import javax.swing.tree.TreePath;
-import junit.framework.TestSuite;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-//import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-//import org.netbeans.test.xml.schema.lib.util.Helpers;
-
-import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
-import java.io.File;
 import org.netbeans.jellytools.MainWindowOperator;
-import java.awt.event.KeyEvent;
-//import java.awt.Robot;
-import org.netbeans.jellytools.FilesTabOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.*;
-import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.test.xml.schema.lib.SchemaMultiView;
-import java.util.List;
-
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -94,33 +58,15 @@ import junit.framework.Test;
 // XML document creation from multiple schemas
 // 
 
-public class XMLGeneration_0005 extends XMLGeneration {
-    
-    static final String TEST_JAVA_APP_NAME = "java4xmlgeneration_0005";
-
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "CreateSchema1",
-        "CreateSchema2",
-        "CreateConstrained",
-        "CheckAndValidate"
-    };
+public class XMLGeneration_0005 extends XMLGeneration
+{
+  static final String TEST_JAVA_APP_NAME = "java4xmlgeneration_0005";
+  static final String SCHEMA_NAME_A = "newXmlSchema";
+  static final String SCHEMA_NAME_B = "newXmlSchema1";
 
     public XMLGeneration_0005(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0005.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0005(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -128,7 +74,9 @@ public class XMLGeneration_0005 extends XMLGeneration {
           NbModuleSuite.createConfiguration( XMLGeneration_0005.class ).addTest(
               "CreateJavaApplication",
               "CreateSchema1",
+              "AddElement1",
               "CreateSchema2",
+              "AddElement2",
               "CreateConstrained",
               "CheckAndValidate"
            )
@@ -155,8 +103,17 @@ public class XMLGeneration_0005 extends XMLGeneration {
           TEST_JAVA_APP_NAME,
           TEST_JAVA_APP_NAME,
           "XML Schema",
-          "newXmlSchema"
+          SCHEMA_NAME_A
         );
+
+      endTest( );
+    }
+
+    public void AddElement1( )
+    {
+      startTest( );
+
+      AddElementInternal( SCHEMA_NAME_A + SCHEMA_EXTENSION, "A" );
 
       endTest( );
     }
@@ -169,8 +126,17 @@ public class XMLGeneration_0005 extends XMLGeneration {
           TEST_JAVA_APP_NAME,
           TEST_JAVA_APP_NAME,
           "XML Schema",
-          "newXmlSchema1"
+          SCHEMA_NAME_B
         );
+
+      endTest( );
+    }
+
+    public void AddElement2( )
+    {
+      startTest( );
+
+      AddElementInternal( SCHEMA_NAME_B + SCHEMA_EXTENSION, "B" );
 
       endTest( );
     }
@@ -189,7 +155,9 @@ public class XMLGeneration_0005 extends XMLGeneration {
         new CImportClickData( true, 5, 1, 1, 8, "Unknown to click on checkbox. #", null )
       };
 
-      CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, "hello", 0, 0 );
+      // TODO : real creation can not be done
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("File|Save All");
+      CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, null, 0, 0 );
 
       endTest( );
     }
@@ -199,8 +167,10 @@ public class XMLGeneration_0005 extends XMLGeneration {
       startTest( );
 
       // TODO : CHECKING
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
-      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Check XML");
+      //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Validate XML");
+
+      CheckInternal( );
 
       endTest( );
     }

@@ -60,7 +60,7 @@ import org.netbeans.modules.uml.ui.swing.preferencedialog.ISwingPreferenceTableM
  */
 public class AssociateTableModel extends AbstractTableModel implements ISwingPreferenceTableModel
 {
-    private AssociateDlgGUI m_AssociateControl = null;
+    private AssociateDialogUI m_AssociateControl = null;
     private ETList< Object > m_collection = null;
     
     private Hashtable <Integer, String> m_ColNameMap = new Hashtable <Integer, String>();
@@ -70,13 +70,13 @@ public class AssociateTableModel extends AbstractTableModel implements ISwingPre
         super();
     }
     
-    public AssociateTableModel(AssociateDlgGUI control)
+    public AssociateTableModel(AssociateDialogUI control)
     {
         super();
         m_AssociateControl = control;
         buildColumnMap();
     }
-    public AssociateTableModel(AssociateDlgGUI control, ETList<Object> values)
+    public AssociateTableModel(AssociateDialogUI control, ETList<Object> values)
     {
         super();
         m_AssociateControl = control;

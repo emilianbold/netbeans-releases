@@ -41,6 +41,8 @@
 
 package org.netbeans.core.output2;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,6 +51,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -62,7 +65,7 @@ import org.openide.windows.OutputListener;
 /**
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
  */
-abstract class AbstractLines implements Lines, Runnable {
+abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
     /** Maps output listeners to the lines they are associated with */
@@ -200,6 +203,35 @@ abstract class AbstractLines implements Lines, Runnable {
     public void removeChangeListener (ChangeListener cl) {
         if (listener == cl) {
             listener = null;
+        }
+    }
+
+    private javax.swing.Timer timer = null;
+    private AtomicBoolean newEvent = new AtomicBoolean(false);
+
+    public void actionPerformed(ActionEvent e) {
+        newEvent.set(false);
+        fire();
+        synchronized (newEvent) {
+            if (!newEvent.get()) {
+                timer.stop();
+            }
+        }
+    }
+    
+    void delayedFire() {
+        newEvent.set(true);
+        if (listener == null) {
+            return;
+        }
+        if (timer == null) {
+            timer = new javax.swing.Timer(200, this);
+        }
+        
+        synchronized (newEvent) {
+            if (newEvent.get() && !timer.isRunning()) {
+                timer.start();
+            }
         }
     }
 
@@ -580,7 +612,7 @@ abstract class AbstractLines implements Lines, Runnable {
             lastLineFinished = isFinished;
             lastLineLength = isFinished ? -1 : charLineLength;
         }
-        fire();
+        markDirty();
     }
     
     /** Convert an index from chars to byte count (*2).  Simple math, but it

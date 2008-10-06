@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>3</stream_count>
+    <category id="2">
+        <id>2</id>
+        <name>community</name>
+        <parent_id/>
+        <depth>0</depth>
+    </category>
+    <category id="4">
+        <id>4</id>
+        <name>dance</name>
+        <parent_id/>
+        <depth>0</depth>
+    </category>
+    <category id="6">
+        <id>6</id>
+        <name>food &amp; dining</name>
+        <parent_id/>
+        <depth>0</depth>
+    </category>
+    <category id="33">
+        <id>33</id>
+        <name>wine</name>
+        <parent_id>6</parent_id>
+        <depth>1</depth>
+    </category>
+</rsp>

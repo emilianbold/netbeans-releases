@@ -4,8 +4,8 @@
 
 <map version="1.0">
 	<mapID target="me.welcome" url="getstarted/welcome.html"/>
-	<mapID target="netbeans.optionsDialog.advanced.svg=" url="ui/dialog_miscoptions_svg.html"/>
-        <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
+	<mapID target="org.netbeans.optionsDialog.advanced.svg=" url="ui/dialog_miscoptions_svg.html"/>
+    <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" url="ui/wizard_importwtk_specifysource.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" url="ui/wizard_newproject_installplatform.html"/>
 	<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="ui/wizard_addplatform_choosefolder.html"/>
@@ -37,9 +37,13 @@
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" url="ui/projectprop_running.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="ui/node_project.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="ui/dialog_addconfiguration.html"/>
-       	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
+     	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
         <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog" url="games/games_about.html"/>
-<mapID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.analyzer.AnalyzerEditorView" url="mvd/mvd_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.flow.FlowEditorView" url="mvd/mvd_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.screen.ScreenEditorView" url="mvd/mvd_about.html"/> 
+        <mapID target="org.netbeans.modules.vmd.game.GameEditorView" url="games/games_about.html"/>
+    ID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog" url="games/games_about.html"/>
@@ -51,6 +55,16 @@
 <mapID target="org.netbeans.modules.vmd.game.nbdialog.SpriteDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSceneDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.BasicModuleConfWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.JavaMELibsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.DescriptorsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.SelectLibraryWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.NameAndLocationWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentDescriptorWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentProducerWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentFinalWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.options.ComponentssupportOptionsPanelController" url="ui/mvd_debugview.html"/>
 	<mapID target="me.gloss_cldc" url="glossary/gloss_cldc.html"/>
 	<mapID target="me.gloss_attributes" url="glossary/gloss_attributes.html"/>
 	<mapID target="me.gloss_configuration" url="glossary/gloss_configuration.html"/>
@@ -66,26 +80,20 @@
 	<mapID target="me.gloss_project" url="glossary/gloss_project.html"/>
 	<mapID target="me.gloss_appmgmtsoftware" url="glossary/gloss_appmgmtsoftware.html"/>
 	<mapID target="me.importprojects" url="getstarted/importprojects.html"/>
-	<mapID target="me.guides" url="getstarted/guides.html"/>
 	<mapID target="me.gloss_profile" url="glossary/gloss_profile.html"/>
 	<mapID target="me.config_working" url="configuration/config_working.html"/>
-	<mapID target="me.config_add" url="configuration/config_add.html"/>
 	<mapID target="me.config_about" url="configuration/config_about.html"/>
 	<mapID target="me.proj_working" url="projects/proj_working.html"/>
 	<mapID target="me.proj_working_top" url="projects/proj_working.html"/>
         <mapID target="me.proj_templates" url="projects/proj_templates.html"/>
-	<mapID target="me.proj_creating" url="projects/proj_creating.html"/>
 	<mapID target="me.preprocess_about" url="configuration/preprocess_about.html"/>
-	<mapID target="me.config_setdefault" url="configuration/config_setdefault.html"/>
 	<mapID target="me.preprocess_manage" url="configuration/preprocess_manage.html"/>
 	<mapID target="me.emulator_adding" url="emulator/emulator_adding.html"/>
 	<mapID target="me.emulator_about" url="emulator/emulator_about.html"/>
 	<mapID target="me.config_customizing" url="configuration/config_customizing.html"/>
-	<mapID target="me.prop_viewgeneral" url="properties/prop_viewgeneral.html"/>
 	<mapID target="me.prop_set_jad" url="properties/prop_set_jad.html"/>
 	<mapID target="me.jad_about" url="properties/jad_about.html"/>
 	<mapID target="me.prop_setplatform" url="properties/prop_setplatform.html"/>
-	<mapID target="me.prop_setMIDlet" url="properties/prop_setMIDlet.html"/>
 	<mapID target="me.prop_setpushregistry" url="properties/prop_setpushregistry.html"/>
 	<mapID target="me.prop_customize_build" url="properties/prop_customize_build.html"/>
 	<mapID target="me.prop_addAPI" url="properties/prop_addAPI.html"/>
@@ -156,7 +164,6 @@
 	<mapID target="me.mvd_addcustomcomponent" url="mvd/mvd_addcustomcomponent.html"/>
 	<mapID target="me.mvd_stringeditor" url="ui/mvd_stringeditor.html"/>
 	<mapID target="me.deploy_increment" url="deploy/deploy_increment.html"/>
-	<mapID target="me.midlet_addproj" url="midlets/midlet_addproj.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanel" url="ui/wizard_newproject_moreconfigurations.html"/>
 	<mapID target="org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" url="ui/wizard_addplatform_platforms.html"/>
 	<mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" url="ui/wizard_addplatform_gi.html"/>

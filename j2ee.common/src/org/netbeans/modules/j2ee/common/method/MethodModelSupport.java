@@ -51,6 +51,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -58,9 +59,15 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.util.Parameters;
@@ -73,6 +80,8 @@ import org.openide.util.Parameters;
 public final class MethodModelSupport {
     
     private static final Logger LOG = Logger.getLogger(MethodModelSupport.class.getName());
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
     
     private MethodModelSupport() {}
     
@@ -90,17 +99,17 @@ public final class MethodModelSupport {
         Parameters.notNull("method", method); // NOI18N
         List<MethodModel.Variable> parameters = new ArrayList<MethodModel.Variable>();
         for (VariableElement variableElement : method.getParameters()) {
-            String type = getTypeName(controller, variableElement.asType());
+            String type = getTypeName(variableElement.asType());
             String name = variableElement.getSimpleName().toString();
             parameters.add(MethodModel.Variable.create(type, name));
         }
         List<String> exceptions = new ArrayList<String>();
         for (TypeMirror typeMirror : method.getThrownTypes()) {
-            exceptions.add(getTypeName(controller, typeMirror));
+            exceptions.add(getTypeName(typeMirror));
         }
         return MethodModel.create(
                 method.getSimpleName().toString(),
-                getTypeName(controller, method.getReturnType()),
+                getTypeName(method.getReturnType()),
                 //TODO: RETOUCHE get body of method
                 "",
                 parameters,
@@ -122,7 +131,7 @@ public final class MethodModelSupport {
         Parameters.notNull("controller", controller); //NOI18N
         Parameters.notNull("variableElement", variableElement); //NOI18N
         return MethodModel.Variable.create(
-                getTypeName(controller, variableElement.asType()),
+                getTypeName(variableElement.asType()),
                 variableElement.getSimpleName().toString(),
                 variableElement.getModifiers().contains(Modifier.FINAL)
                 );
@@ -226,7 +235,7 @@ public final class MethodModelSupport {
         }
         for (int i = 0; i < methodParams.size(); i++) {
             VariableElement variableElement = methodParams.get(i);
-            String variableElementType = getTypeName(controller, variableElement.asType());
+            String variableElementType = getTypeName(variableElement.asType());
             MethodModel.Variable variable = methodModel.getParameters().get(i);
             if (!variableElementType.equals(variable.getType())) {
                 return false;
@@ -310,40 +319,127 @@ public final class MethodModelSupport {
         return workingCopy.getTreeMaker().QualIdent(typeElement);
     }
     
-    //TODO: RETOUCHE move/reuse in SourceUtil, or best - get from java/source!
-    // package private only for unit test
-    // see #90968
-    static String getTypeName(CompilationController controller, TypeMirror typeMirror) {
-        TypeKind typeKind = typeMirror.getKind();
-        switch (typeKind) {
-            case BOOLEAN : return "boolean"; // NOI18N
-            case BYTE : return "byte"; // NOI18N
-            case CHAR : return "char"; // NOI18N
-            case DOUBLE : return "double"; // NOI18N
-            case FLOAT : return "float"; // NOI18N
-            case INT : return "int"; // NOI18N
-            case LONG : return "long"; // NOI18N
-            case SHORT : return "short"; // NOI18N
-            case VOID : return "void"; // NOI18N
-            case DECLARED : 
-                Element element = controller.getTypes().asElement(typeMirror);
-                return ((TypeElement) element).getQualifiedName().toString();
-            case ARRAY : 
-                ArrayType arrayType = (ArrayType) typeMirror;
-                TypeMirror componentType = arrayType.getComponentType();
-                return getTypeName(controller, componentType) + "[]";
-            case ERROR :
-            case EXECUTABLE :
-            case NONE :
-            case NULL :
-            case OTHER :
-            case PACKAGE :
-            case TYPEVAR :
-            case WILDCARD :
-            default:break;
-        }
-        LOG.warning("Type cannot be recognized for " + typeMirror.getClass().getName() + " of kind " + typeKind);
-        return null;
+    static String getTypeName(TypeMirror typeMirror) {
+        CharSequence name = getTypeName(typeMirror, true, false);
+        return name.toString();
     }
-    
+
+    // from org.netbeans.modules.java.source.ui.JavaSymbolProvider
+    private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
+    	if (type == null)
+            return ""; //NOI18N
+        return new TypeNameVisitor(varArg).visit(type, fqn);
+    }
+
+    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
+
+        private boolean varArg;
+        private boolean insideCapturedWildcard = false;
+
+        private TypeNameVisitor(boolean varArg) {
+            super(new StringBuilder());
+            this.varArg = varArg;
+        }
+
+        @Override
+        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
+            return DEFAULT_VALUE.append(t);
+        }
+
+        @Override
+        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
+                if (it.hasNext()) {
+                    DEFAULT_VALUE.append("<"); //NOI18N
+                    while(it.hasNext()) {
+                        visit(it.next(), p);
+                        if (it.hasNext())
+                            DEFAULT_VALUE.append(", "); //NOI18N
+                    }
+                    DEFAULT_VALUE.append(">"); //NOI18N
+                }
+                return DEFAULT_VALUE;
+            } else {
+                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
+            }
+        }
+
+        @Override
+        public StringBuilder visitArray(ArrayType t, Boolean p) {
+            boolean isVarArg = varArg;
+            varArg = false;
+            visit(t.getComponentType(), p);
+            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
+        }
+
+        @Override
+        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
+            Element e = t.asElement();
+            if (e != null) {
+                String name = e.getSimpleName().toString();
+                if (!CAPTURED_WILDCARD.equals(name))
+                    return DEFAULT_VALUE.append(name);
+            }
+            DEFAULT_VALUE.append("?"); //NOI18N
+            if (!insideCapturedWildcard) {
+                insideCapturedWildcard = true;
+                TypeMirror bound = t.getLowerBound();
+                if (bound != null && bound.getKind() != TypeKind.NULL) {
+                    DEFAULT_VALUE.append(" super "); //NOI18N
+                    visit(bound, p);
+                } else {
+                    bound = t.getUpperBound();
+                    if (bound != null && bound.getKind() != TypeKind.NULL) {
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        if (bound.getKind() == TypeKind.TYPEVAR)
+                            bound = ((TypeVariable)bound).getLowerBound();
+                        visit(bound, p);
+                    }
+                }
+                insideCapturedWildcard = false;
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
+            int len = DEFAULT_VALUE.length();
+            DEFAULT_VALUE.append("?"); //NOI18N
+            TypeMirror bound = t.getSuperBound();
+            if (bound == null) {
+                bound = t.getExtendsBound();
+                if (bound != null) {
+                    DEFAULT_VALUE.append(" extends "); //NOI18N
+                    if (bound.getKind() == TypeKind.WILDCARD)
+                        bound = ((WildcardType)bound).getSuperBound();
+                    visit(bound, p);
+                } else if (len == 0) {
+                    bound = SourceUtils.getBound(t);
+                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
+                        DEFAULT_VALUE.append(" extends "); //NOI18N
+                        visit(bound, p);
+                    }
+                }
+            } else {
+                DEFAULT_VALUE.append(" super "); //NOI18N
+                visit(bound, p);
+            }
+            return DEFAULT_VALUE;
+        }
+
+        @Override
+        public StringBuilder visitError(ErrorType t, Boolean p) {
+            Element e = t.asElement();
+            if (e instanceof TypeElement) {
+                TypeElement te = (TypeElement)e;
+                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
+            }
+            return DEFAULT_VALUE;
+        }
+    }
+
 }

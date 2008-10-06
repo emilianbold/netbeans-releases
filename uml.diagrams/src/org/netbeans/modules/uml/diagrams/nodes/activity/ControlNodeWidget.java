@@ -40,8 +40,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
@@ -49,7 +47,6 @@ import org.netbeans.modules.uml.diagrams.nodes.UMLLabelNodeWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
-import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,26 +55,11 @@ import org.openide.util.NbBundle;
  */
 public abstract class ControlNodeWidget extends UMLLabelNodeWidget
 {
-    protected static int DEFAULT_OUTER_RADIUS = 14;
-    protected static int DEFAULT_INNER_RADIUS = 8;
-    private String contextPaletteRes = "UML/context-palette/ActivityControl";
+    protected static int DEFAULT_OUTER_RADIUS = 10;
+    protected static int DEFAULT_INNER_RADIUS = 5;
+    private String contextPaletteRes;
     protected static ResourceBundle bundle = NbBundle.getBundle(UMLLabelNodeWidget.class);
-
-    public ControlNodeWidget(Scene scene)
-    {
-        // Context palette is on, customizable Default node is off by default.
-        this(scene, true);
-    }
-
-    public ControlNodeWidget(Scene scene, boolean contextPalette)
-    {
-        super(scene);
-        if (contextPalette)
-        {
-            addToLookup(initializeContextPalette());
-        }
-    }
-
+    
     public ControlNodeWidget(Scene scene, String contextPaletteRes)
     {
         super(scene);
@@ -95,24 +77,6 @@ public abstract class ControlNodeWidget extends UMLLabelNodeWidget
         return paletteModel;
     }
     
-    protected void processStateChange(ObjectState previousState,
-                                       ObjectState state)
-    {
-        boolean select = state.isSelected();
-        boolean wasSelected = previousState.isSelected();
-
-        if (select && !wasSelected)
-        {
-            setBorder(UMLWidget.NON_RESIZABLE_BORDER);
-        }
-        else
-        {
-            if (!select && wasSelected)
-            {
-                setBorder(BorderFactory.createEmptyBorder());
-            }
-        }
-    }
     
     @Override
     public void propertyChange(PropertyChangeEvent event)

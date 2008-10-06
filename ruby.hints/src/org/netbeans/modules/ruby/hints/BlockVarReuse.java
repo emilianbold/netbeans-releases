@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.jruby.ast.IterNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.IterNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditRegions;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -164,13 +164,21 @@ public class BlockVarReuse extends RubyAstRule {
             EditRegions.getInstance().edit(context.compilationInfo.getFileObject(), ranges, caretOffset);
         }
 
-        private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
+        private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges, boolean isParameter) {
             if ((node.nodeId == NodeType.LOCALASGNNODE || node.nodeId == NodeType.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 OffsetRange range = AstUtilities.getNameRange(node);
                 range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
                 if (range != OffsetRange.NONE) {
                     ranges.add(range);
                 }
+            } else if (isParameter && (node.nodeId == NodeType.ARGUMENTNODE && name.equals(((INameNode)node).getName()))) {
+                OffsetRange range = AstUtilities.getNameRange(node);
+                range = LexUtilities.getLexerOffsets(context.compilationInfo, range);
+                if (range != OffsetRange.NONE) {
+                    ranges.add(range);
+                }
+            } else if (node.nodeId == NodeType.ARGSNODE) {
+                isParameter = true;
             }
 
             List<Node> list = node.childNodes();
@@ -196,7 +204,7 @@ public class BlockVarReuse extends RubyAstRule {
                     }
                 }
 
-                addNonBlockRefs(child, name, ranges);
+                addNonBlockRefs(child, name, ranges, isParameter);
             }
         }
 
@@ -208,11 +216,11 @@ public class BlockVarReuse extends RubyAstRule {
 
             if (renameLocal) {
                 Node scope = AstUtilities.findLocalScope(path.leaf(), path);
-                addNonBlockRefs(scope, name, ranges);
+                addNonBlockRefs(scope, name, ranges, false);
             } else {
                 Node parent = path.leafParent();
                 assert parent instanceof IterNode;
-                addNonBlockRefs(parent, name, ranges);
+                addNonBlockRefs(parent, name, ranges, false);
             }
 
             return ranges;

@@ -1,0 +1,4 @@
+Code completion result for source line:
+self::|ParentClassConst;
+(QueryType=COMPLETION, NameKind=PREFIX)
+CONSTANT   ? ParentClassConst                         ParentClass

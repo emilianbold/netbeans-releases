@@ -77,7 +77,7 @@ public class InitMessage extends Message {
         Feature.FeatureGetCommand command = new Feature.FeatureGetCommand( 
                 proxy.getTransactionId(), Feature.Name.MAX_DATA );
         ResponseMessage response = proxy.sendCommand(command);
-        assert response instanceof Feature.FeatureGetResponse;
+        assert response != null && response instanceof Feature.FeatureGetResponse;
         Feature.FeatureGetResponse featureGetResponse = (Feature.FeatureGetResponse)response;
         String size = featureGetResponse.getDetails();
         Integer maxSize = 0;
@@ -91,7 +91,7 @@ public class InitMessage extends Message {
             Feature.FeatureSetCommand setCommand = new Feature.FeatureSetCommand( 
                     proxy.getTransactionId(), Feature.Name.MAX_DATA, current+"");
             response = proxy.sendCommand(setCommand);
-            assert response instanceof Feature.FeatureSetResponse;
+            assert response != null && response instanceof Feature.FeatureSetResponse;
             Feature.FeatureSetResponse setResponse = (Feature.FeatureSetResponse) response;
             if ( !setResponse.isSuccess() ) {
                 Message.setMaxDataSize( maxSize );

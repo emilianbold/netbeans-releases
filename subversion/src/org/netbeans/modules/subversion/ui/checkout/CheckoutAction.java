@@ -48,6 +48,7 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.wizards.*;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -67,6 +68,8 @@ public final class CheckoutAction extends CallableSystemAction {
             return;
         }
         
+        Utils.logVCSActionEvent("SVN");
+
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) return;
         
@@ -91,6 +94,8 @@ public final class CheckoutAction extends CallableSystemAction {
                 } catch (SVNClientException ex) {
                     annotate(ex);
                     return;
+                } finally {
+                    Subversion.getInstance().versionedFilesChanged();
                 }
                 if(isCanceled()) {
                     return;

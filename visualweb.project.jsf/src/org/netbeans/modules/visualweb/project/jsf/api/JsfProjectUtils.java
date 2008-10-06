@@ -64,7 +64,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.WeakHashMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
@@ -165,7 +167,11 @@ public class JsfProjectUtils {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup group : groups) {
-            wm = WebModule.getWebModule(group.getRootFolder());
+            FileObject root = group.getRootFolder();
+            if (root == null) {
+                continue;
+            }
+            wm = WebModule.getWebModule(root);
             if (wm != null) {
                 return wm;
             }
@@ -226,7 +232,8 @@ public class JsfProjectUtils {
         return wm != null;
     }
 
-    private static final Map<String,Boolean> JsfProjectDir = new HashMap();
+    // Cache for storing NetBeans Ant/Maven/... project root folder
+    private static final Map<String,Boolean> JsfProjectDir = new HashMap<String,Boolean>();
 
     public static Boolean isUnderJsfProjectDir(FileObject file) {
         String path = file.getPath();
@@ -247,6 +254,33 @@ public class JsfProjectUtils {
         JsfProjectDir.put(projDir.getPath() + "/", set); // NOI18N
     }
 
+    // Cache for storing visited folder
+    private static final Set<String> checkedDir = new HashSet<String>();
+
+    public static boolean isCheckedDir(FileObject file) {
+        String path = file.getPath();
+        if (!file.isFolder()) {
+            int last = path.lastIndexOf("/");
+            if (last != -1) {
+                path = path.substring(0, last);
+            }
+        }
+
+        for (String dir : checkedDir) {
+            if (path.equals(dir)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void setCheckedDir(ArrayList<FileObject> folders) {
+        for (FileObject folder : folders) {
+            checkedDir.add(folder.getPath()); // NOI18N
+        }
+    }
+
     /**
      * Check for Creator project file. Note: For DataLoader only when 'Project' is not available.
      * @param fo FileObject to be checked
@@ -257,31 +291,42 @@ public class JsfProjectUtils {
             return ret.booleanValue();
         }
 
+        ArrayList<FileObject> folders = new ArrayList<FileObject>();
+
         while (fo != null) {
+            if (isCheckedDir(fo)) {
+                setCheckedDir(folders);
+                return false;
+            }
+
             if (fo.isFolder()) {
-                final FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
+                folders.add(fo);
+
+                FileObject projXml = fo.getFileObject("nbproject/project.xml"); // NOI18N
                 // Found the project root directory and got the project.xml file
                 if (projXml != null) {
                     if (fileContains(projXml, RAVE_AUX_NAMESPACE)) {
                         setJsfProjectDir(fo, Boolean.TRUE);
                         return true;
                     }
-                }
 
-                final FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
-                // Found the project root directory and got the Maven nb-configuration.xml file
-                if (projMaven != null) {
-                    if (fileContains(projMaven, RAVE_AUX_NAMESPACE)) {
-                        setJsfProjectDir(fo, Boolean.TRUE);
-                        return true;
+                    // The project.properties file should be found in the same directory
+                    FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (propFile == null) {
+                        setJsfProjectDir(fo, Boolean.FALSE);
+                        return false;
                     }
-                }
 
-                final FileObject propFile = fo.getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                // Found the project root directory and got the project.properties file
-                if (propFile != null) {
                     // Check Creator property
                     boolean isJsf = fileContains(propFile, "jsf.pagebean.package"); // NOI18N
+                    setJsfProjectDir(fo, Boolean.valueOf(isJsf));
+                    return isJsf;
+                }
+
+                FileObject projMaven = fo.getFileObject("nb-configuration.xml"); // NOI18N
+                // Found the project root directory and got the Maven nb-configuration.xml file
+                if (projMaven != null) {
+                    boolean isJsf = fileContains(projMaven, RAVE_AUX_NAMESPACE);
                     setJsfProjectDir(fo, Boolean.valueOf(isJsf));
                     return isJsf;
                 }
@@ -290,6 +335,7 @@ public class JsfProjectUtils {
             fo = fo.getParent();
         }
 
+        setCheckedDir(folders);
         return false;
     }
 
@@ -560,6 +606,10 @@ public class JsfProjectUtils {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
                     String facesMapping = getFacesURLPattern(ddRoot);
+                    if (facesMapping == null) {
+                        return newStartPage;
+                    }
+
                     if (oldStartPage != null) {
                         removeWelcomeFile(ddRoot, facesMapping, oldStartPage);
                     }

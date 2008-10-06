@@ -88,6 +88,13 @@ public class PropertiesDataNode extends DataNode {
      */
     private final transient PropertyChangeListener dataObjectListener;
     
+    private boolean multiLocale;
+
+    PropertiesDataNode(PropertiesDataObject propDO) {
+        this(propDO, createChildren(propDO));
+        multiLocale = propDO.isMultiLocale();
+    }
+
     /** Creates data node for a given data object.
      * The provided children object will be used to hold all child nodes.
      * @param obj object to work with
@@ -100,6 +107,14 @@ public class PropertiesDataNode extends DataNode {
         dataObjectListener = new NameUpdater();
         dataObject.addPropertyChangeListener(
                 WeakListeners.propertyChange(dataObjectListener, dataObject));
+    }
+
+    private static Children createChildren(PropertiesDataObject propDO) {
+        if (propDO.isMultiLocale()) {
+            return propDO.getChildren();
+        } else {
+            return ((PropertiesFileEntry)propDO.getPrimaryEntry()).getChildren();
+        }
     }
 
     /**
@@ -116,8 +131,17 @@ public class PropertiesDataNode extends DataNode {
          */
         public void propertyChange(PropertyChangeEvent e) {
             if (DataObject.PROP_FILES.equals(e.getPropertyName())) {
-                ((PropertiesDataObject) getDataObject()).fireNameChange();
+                PropertiesDataObject propDO = (PropertiesDataObject) getDataObject();
+                propDO.fireNameChange();
+
+                // If the number of locales changes to more than one or down to
+                // one, we must exchange the children.
+                boolean newMultiLocale = propDO.isMultiLocale();
+                if (newMultiLocale != multiLocale) {
+                    multiLocale = newMultiLocale;
+                    setChildren(createChildren(propDO));
             }
+        }
         }
         
     }
@@ -126,7 +150,14 @@ public class PropertiesDataNode extends DataNode {
      * @return array with <code>NewLocaleType</code> */
     @Override
     public NewType[] getNewTypes() {
+        PropertiesDataObject propDO = (PropertiesDataObject) getDataObject();
+        if (propDO.isMultiLocale()) {
         return new NewType[] {new NewLocaleType()};
+        } else {
+            PropertiesFileEntry pfEntry = (PropertiesFileEntry) propDO.getPrimaryEntry();
+            return new NewType[] { new NewLocaleType(),
+                                   new PropertiesLocaleNode.NewPropertyType(pfEntry) };
+    }
     }
     
     /** Indicates whether this node has customizer. Overrides superclass method.

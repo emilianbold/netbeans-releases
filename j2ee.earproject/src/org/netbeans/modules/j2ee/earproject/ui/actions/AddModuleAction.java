@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 
 /**
  * Action that allows selection and assembly of J2EE module projects.
@@ -120,8 +121,7 @@ public class AddModuleAction extends CookieAction {
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
         List<Node> moduleProjectNodes = new LinkedList<Node>();
         for (int i = 0; i < allProjects.length; i++) {
-            if (allProjects[i].getLookup().lookup(J2eeModuleProvider.class) != null &&
-                allProjects[i].getLookup().lookup(J2eeApplicationProvider.class) == null) {
+            if (EarProjectUtil.isJavaEEModule(allProjects[i])) {
                 LogicalViewProvider lvp = allProjects[i].getLookup().lookup(LogicalViewProvider.class);
                 Node mn = lvp.createLogicalView();
                 Node n = new FilterNode(mn, new FilterNode.Children(mn), Lookups.singleton(allProjects[i]));

@@ -74,6 +74,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
@@ -305,7 +306,7 @@ static class ProjCfgNode extends ActionNode implements AntProjectListener, Prope
     
     public Image getIcon( final int type ) {
         final Image icon=super.getIcon(type);
-        return broken ? Utilities.mergeImages(icon, Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
+        return broken ? ImageUtilities.mergeImages(icon, ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
     }
     
     public Image getOpenedIcon( final int type ) {
@@ -523,7 +524,7 @@ static class ProjCfgNode extends ActionNode implements AntProjectListener, Prope
 
 static class ResourcesNode extends ActionNode
 {
-    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/libraries-badge.png");    //NOI18N
+    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/mobility/project/ui/resources/libraries-badge.png");    //NOI18N
 
     protected ResourcesNode(Children ch,Lookup lookup,String name,String dName,String icon, Action act[])
     {
@@ -638,13 +639,13 @@ static class ResourcesNode extends ActionNode
     
     public Image getIcon( int type ) {        
         Image image = super.getIcon(type);
-        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, ICON_BADGE, 7, 7 );
         return image;        
     }
     
     public Image getOpenedIcon( int type ) {        
         Image image = super.getOpenedIcon(type);
-        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        image = ImageUtilities.mergeImages(image, ICON_BADGE, 7, 7 );
         return image;        
     }
 
@@ -762,7 +763,7 @@ static class CfgNode extends ActionNode implements AntProjectListener, PropertyC
     
     public Image getIcon( final int type ) {
         final Image icon=super.getIcon(type);
-        return broken ? Utilities.mergeImages(icon, Utilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
+        return broken ? ImageUtilities.mergeImages(icon, ImageUtilities.loadImage( "org/netbeans/modules/mobility/project/ui/resources/brokenProjectBadge.gif" ), 8, 0) : icon; //NOI18N
     }
     
     public Image getOpenedIcon( final int type ) {

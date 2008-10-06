@@ -40,7 +40,6 @@ package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,7 +47,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.graph.GraphScene;
-import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -101,8 +99,8 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     @Override
     public void initializeNode(IPresentationElement element)
     {
-        switchTo(DEFAULT, element);
-        setIsInitialized(true);
+        super.initializeNode(element);
+        switchTo(getDefaultViewName(), element);
     }
 
     
@@ -112,15 +110,7 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     
     public void switchTo(String view)
     {
-        if(getScene() instanceof ObjectScene)
-        {
-            ObjectScene scene = (ObjectScene)getScene();
-            Object data = scene.findObject(this);
-            if(data instanceof IPresentationElement)
-            {
-                switchTo(view, (IPresentationElement)data);
-            }
-        }
+        switchTo(view, getObject());
     }
     
     public void switchTo(String view, IPresentationElement element)
@@ -297,10 +287,34 @@ public abstract class SwitchableWidget extends UMLNodeWidget
             }
         }
     }
+    
+    
+    protected String getDefaultViewName()
+    {
+        FileSystem system = Repository.getDefault().getDefaultFileSystem();
+        
+        if (system != null)
+        {
+            FileObject fo = system.findResource("UML/Nodes/" + getMetaType() + "/Views");
+            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+            if (df != null)
+            {
+                DataObject[] views = df.getChildren();
+                for (DataObject view: views)
+                {
+                    if (this.getObject().getFirstSubject().getAppliedStereotypesList().equals(view.getPrimaryFile().getAttribute("stereotypes")))
+                    {
+                        return (String)view.getPrimaryFile().getAttribute("id");
+                    }
+                }
+            }   
+        }
+        return DEFAULT;
+    }
+    
 
     @Override
     public void save(NodeWriter nodeWriter) {
-//        nodeWriter.setViewName(this.viewName);
         HashMap map = nodeWriter.getProperties();
         map.put(NodeInfo.VIEW_NAME, this.viewName);
         nodeWriter.setProperties(map);
@@ -406,15 +420,6 @@ public abstract class SwitchableWidget extends UMLNodeWidget
                         NodeWidgetFactory factory = (NodeWidgetFactory) instance;
                         retVal = factory.createNode(scene);
                     }
-//                    Class cl = cookie.instanceClass();
-//                    if(cl != null)
-//                    {
-//                        Constructor constructor = cl.getConstructor(Scene.class);
-//                        if(constructor != null)
-//                        {
-//                            retVal = (Widget) constructor.newInstance(getScene());
-//                        }
-//                    }
                 }
                 catch (Exception e)
                 {
@@ -438,7 +443,8 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         
     }
     
-    public void refresh()
+    @Override
+    public void refresh(boolean resizetocontent)
     {
         String oldViewName = viewName;
         
@@ -450,6 +456,25 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         switchTo(oldViewName);
         setPreferredBounds(bounds);
         scene.validate();
-        Util.resizeNodeToContents(this);
+        if(resizetocontent)Util.resizeNodeToContents(this);
     }
+    
+    @Override
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        super.duplicate(setBounds, target);        
+        if (target instanceof SwitchableWidget)
+        {
+            IPresentationElement pElt = (IPresentationElement) scene.findObject(target);
+            if (pElt == null)
+            {
+                pElt = (IPresentationElement) ((GraphScene) target.getScene()).findObject(target);
+            }
+            if (pElt != null)
+            {
+                ((SwitchableWidget)target).switchTo(viewName,pElt);
+            }            
+        }
+    }
+        
 }

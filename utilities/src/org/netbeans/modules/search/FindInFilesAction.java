@@ -128,6 +128,10 @@ public class FindInFilesAction extends CallableSystemAction
      * action &quot;find in files&quot; to &quot;replace in files&quot;.
      */
     protected static final String REPLACING = "replacing";              //NOI18N
+
+    /** name of property &quot;type Id of the last used search scope&quot; */
+    private static final String VAR_LAST_SEARCH_SCOPE_TYPE
+                                = "lastScopeType";                      //NOI18N
     
     @Override
     protected void initialize() {
@@ -145,6 +149,11 @@ public class FindInFilesAction extends CallableSystemAction
         return new LookupSensitive(this, lookup);
     }
 
+    /**
+     * @param  searchSelection  if {@code true}, radio-button "Node Selection"
+     *                          will be preferred (pre-selected) in the Find
+     *                          in Files dialogue
+     */
     public Action createContextAwareInstance(Lookup lookup,
                                              boolean searchSelection) {
         if (shouldLog(LOG)) {
@@ -307,7 +316,7 @@ public class FindInFilesAction extends CallableSystemAction
     /** Perform this action. */
     public void performAction() {
         performAction(SearchScopeRegistry.getDefault().getSearchScopes(),
-                      null);    //no preferred search scope
+                      getLastSearchScope());
     }
 
     private void performAction(Map<SearchScope, Boolean> searchScopes,
@@ -342,6 +351,7 @@ public class FindInFilesAction extends CallableSystemAction
         }
         
         SearchScope searchScope = searchPanel.getSearchScope();
+        storeLastSearchScope(searchScope.getTypeId());
 	BasicSearchCriteria basicSearchCriteria = searchPanel.getBasicSearchCriteria();
 	List<SearchType> extraSearchTypes = searchPanel.getSearchTypes();
         
@@ -356,6 +366,26 @@ public class FindInFilesAction extends CallableSystemAction
                 new SearchTask(searchScope,
                                basicSearchCriteria,
 			       searchPanel.getCustomizedSearchTypes()));
+    }
+
+    /**
+     * Returns the type Id of the last used search scope.
+     * @return  type-identifier of the last used search scope, or {@code null}
+     *          if no information about last used search scope is available
+     * @see  #storeLastSearchScope
+     */
+    private String getLastSearchScope() {
+        Object o = getProperty(VAR_LAST_SEARCH_SCOPE_TYPE);
+        return (o instanceof String) ? (String) o : null;
+    }
+
+    /**
+     * Stores the given type Id of a search scope as the last used search scope.
+     * @param  typeId  type Id to be stored
+     * @see  #getLastSearchScope
+     */
+    private void storeLastSearchScope(String typeId) {
+        putProperty(VAR_LAST_SEARCH_SCOPE_TYPE, typeId, false);
     }
 
     /**
@@ -435,7 +465,7 @@ public class FindInFilesAction extends CallableSystemAction
                     searchScopeRegistry.getSearchScopes(),
                     searchSelection
                         ? searchScopeRegistry.getNodeSelectionSearchScope().getTypeId()
-                        : null);
+                        : delegate.getLastSearchScope());
         }
 
         public void setEnabled(boolean b) {

@@ -79,18 +79,21 @@ public class InputKeyResources extends ListResourceBundle
         {"key.1.keyCode", String.valueOf(KeyEvent.VK_ESCAPE)}, 
         {"key.1.modifiers", NO_MODIFIER},
         {"key.1.command", DiagramInputkeyMapper.CANCEL_ACTION }, 
-        {"key.1.focus", WHEN_IN_FOCUSED_WINDOW}
+        {"key.1.focus", WHEN_IN_FOCUSED_WINDOW},
         
-//        {"key.2.keyCode", String.valueOf(KeyEvent.VK_LEFT)},
-//        {"key.2.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
-//        {"key.2.command", DiagramInputkeyMapper.MOVE_LEFT },
-//        {"key.2.focus", WHEN_ANCESTOR_OF_FOCUSED_COMPONENT},
-//
-//        {"key.3.keyCode", String.valueOf(KeyEvent.VK_RIGHT)},
-//        {"key.3.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
-//        {"key.3.command", DiagramInputkeyMapper.MOVE_RIGHT },
-//        {"key.3.focus", WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}, 
-//
+        {"key.2.keyCode", String.valueOf(KeyEvent.VK_P)}, 
+        {"key.2.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
+        {"key.2.mac_modifiers", String.valueOf(KeyEvent.META_DOWN_MASK)},
+        {"key.2.command", DiagramInputkeyMapper.CONTEXT_PALETTE_FOCUS }, 
+        {"key.2.focus", WHEN_IN_FOCUSED_WINDOW},
+        
+        {"key.3.keyCode", String.valueOf(KeyEvent.VK_ENTER)}, 
+        {"key.3.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
+        {"key.3.mac_modifiers", String.valueOf(KeyEvent.META_DOWN_MASK)},
+        {"key.3.command", DiagramInputkeyMapper.ADD_TO_DIAGRAM }, 
+        {"key.3.focus", WHEN_IN_FOCUSED_WINDOW}
+        
+//     more examples:
 //        {"key.4.keyCode", String.valueOf(KeyEvent.VK_UP)},
 //        {"key.4.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
 //        {"key.4.command", DiagramInputkeyMapper.MOVE_UP }, 

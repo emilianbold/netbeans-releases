@@ -58,8 +58,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -94,6 +96,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -110,6 +113,7 @@ import org.openide.util.lookup.ProxyLookup;
 final class LibrariesNode extends AbstractNode {
 
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
+    private static final String ARCHIVE_ICON = "org/netbeans/modules/apisupport/project/ui/resources/jar.gif"; //NOI18N
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
     /** Package private for unit tests only. */
     static final RequestProcessor RP = new RequestProcessor();
@@ -140,8 +144,8 @@ final class LibrariesNode extends AbstractNode {
     }
 
     private Image getIcon(boolean opened) {
-        Image badge = Utilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries-badge.png", true);
-        return Utilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
+        Image badge = ImageUtilities.loadImage("org/netbeans/modules/apisupport/project/ui/resources/libraries-badge.png", true);
+        return ImageUtilities.mergeImages(UIUtil.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
     public Action[] getActions(boolean context) {
@@ -213,6 +217,11 @@ final class LibrariesNode extends AbstractNode {
                                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                                 final List<Object> keys = new ArrayList<Object>();
                                 keys.add(JDK_PLATFORM_NAME);
+                                
+                                SortedSet<String> binOrigs = new TreeSet<String>();
+                                binOrigs.addAll(Arrays.asList(pxm.getBinaryOrigins()));
+                                keys.addAll(binOrigs);
+  
                                 SortedSet<ModuleDependency> deps = new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR);
                                 deps.addAll(pxm.getDirectDependencies());
                                 keys.addAll(deps);
@@ -239,7 +248,7 @@ final class LibrariesNode extends AbstractNode {
             Node node;
             if (key == JDK_PLATFORM_NAME) {
                 node = PlatformNode.create(project.evaluator(), "nbjdk.home"); // NOI18N
-            } else {
+            } else if (key instanceof ModuleDependency) {
                 ModuleDependency dep = (ModuleDependency) key;
                 File srcF = dep.getModuleEntry().getSourceLocation();
                 if (srcF == null) {
@@ -256,6 +265,17 @@ final class LibrariesNode extends AbstractNode {
                 } else {
                     node = new ProjectDependencyNode(dep, project);
                 }
+            } else {
+                // binary origin path
+                File jarFile = project.getHelper().resolveFile((String) key);
+                FileObject jfo = FileUtil.toFileObject(jarFile);
+                if (jfo == null)
+                    return null;
+                Icon icon = getLibrariesIcon();
+                FileObject root = FileUtil.getArchiveRoot(jfo);
+                String name = String.format(getMessage("LBL_WrappedLibraryFmt"), FileUtil.toFile(jfo).getName());
+                node = ActionFilterNode.create(
+                        PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
             }
             assert node != null;
             return new Node[]{node};
@@ -264,7 +284,7 @@ final class LibrariesNode extends AbstractNode {
         public void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
-            if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
+            if (! project.isRunInAtomicAction() && project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
                 refreshKeys();
             }
         }
@@ -294,7 +314,7 @@ final class LibrariesNode extends AbstractNode {
          */
         private Icon getLibrariesIcon() {
             if (librariesIcon == null) {
-                librariesIcon = new ImageIcon(Utilities.loadImage(LIBRARIES_ICON, true));
+                librariesIcon = new ImageIcon(ImageUtilities.loadImage(LIBRARIES_ICON, true));
             }
             return librariesIcon;
         }

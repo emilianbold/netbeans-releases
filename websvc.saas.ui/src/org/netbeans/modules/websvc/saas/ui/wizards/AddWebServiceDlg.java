@@ -38,12 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
-
 import java.awt.Color;
-import java.awt.Component;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,8 +58,10 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel.State;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -70,90 +69,90 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Enables searching for Web Services, via an URL, on the local file system
  * or in some uddiRegistry (UDDI)
  * @author Winston Prakash, cao
  */
-public class AddWebServiceDlg extends JPanel  implements ActionListener {
-    
+public class AddWebServiceDlg extends JPanel implements ActionListener {
+
     public static final String DEFAULT_PACKAGE_HOLDER = NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"); // NOI18N
 
     private DialogDescriptor dlg = null;
-    private String addString =  NbBundle.getMessage(AddWebServiceDlg.class, "Add");
-    private String cancelString =  NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
-    
+    private String addString = NbBundle.getMessage(AddWebServiceDlg.class, "Add");
+    private String cancelString = NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
     private Dialog dialog;
-    
     private static String previousDirectory = null;
     private static JFileChooser wsdlFileChooser;
-    
-    private  final FileFilter WSDL_FILE_FILTER = new ServiceFileFilter();
- 
-    private JButton cancelButton = new JButton();
-    private JButton addButton = new JButton();
-    
+    private final FileFilter WSDL_FILE_FILTER = new ServiceFileFilter();
     private SaasGroup group;
     private final boolean jaxRPCAvailable;
-
-    private static final String[] KEYWORDS = 
-    {
-      "abstract", "continue", "for",        "new",       "switch",  // NOI18N
-      "assert",   "default",  "if",         "package",   "synchronized", // NOI18N
-      "boolean",  "do",       "goto",       "private",   "this", // NOI18N
-      "break",    "double",   "implements", "protected", "throw", // NOI18N
-      "byte",     "else",     "import",     "public",    "throws", // NOI18N
-      "case",     "enum",     "instanceof", "return",    "transient", // NOI18N
-      "catch",    "extends",  "int",        "short",     "try", // NOI18N
-      "char",     "final",    "interface",  "static",    "void", // NOI18N
-      "class",    "finally",  "long",       "strictfp",  "volatile", // NOI18N
-      "const",    "float",    "native",     "super",     "while", // NOI18N
-      
-      "true",     "false",    "null" // NOI18N
-    };
+    private String defaultMsg;
+    private boolean allControlsDisabled;
     
+    private static final String[] KEYWORDS = {
+        "abstract", "continue", "for", "new", "switch", // NOI18N
+        "assert", "default", "if", "package", "synchronized", // NOI18N
+        "boolean", "do", "goto", "private", "this", // NOI18N
+        "break", "double", "implements", "protected", "throw", // NOI18N
+        "byte", "else", "import", "public", "throws", // NOI18N
+        "case", "enum", "instanceof", "return", "transient", // NOI18N
+        "catch", "extends", "int", "short", "try", // NOI18N
+        "char", "final", "interface", "static", "void", // NOI18N
+        "class", "finally", "long", "strictfp", "volatile", // NOI18N
+        "const", "float", "native", "super", "while", // NOI18N
+
+        "true", "false", "null" // NOI18N
+
+    };
     private static final Set<String> KEYWORD_SET = new HashSet<String>(KEYWORDS.length * 2);
     
+
     static {
         for (int i = 0; i < KEYWORDS.length; i++) {
             KEYWORD_SET.add(KEYWORDS[i]);
         }
     }
-    
-    
+
     public AddWebServiceDlg(SaasGroup group) {
         initComponents();
         myInitComponents();
         this.group = group;
         jaxRPCAvailable = WsdlUtil.isJAXRPCAvailable();
+        defaultMsg = jaxRPCAvailable ? "" : NbBundle.getMessage(AddWebServiceDlg.class, "WARNING_JAXRPC_UNAVAILABLE");
+
+        checkServicesModel();
     }
-    
+
     private static boolean isValidPackageName(String packageName) {
         if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
+
             return true;
         } else if (!Character.isJavaIdentifierStart(packageName.charAt(0))) {
             return false;
-        }else {
+        } else {
             java.util.StringTokenizer pkgIds = new java.util.StringTokenizer(packageName, "."); // NOI18N
+
             while (pkgIds.hasMoreTokens()) {
                 String nextIdStr = pkgIds.nextToken();
                 if (KEYWORD_SET.contains(nextIdStr)) {
                     return false;
                 }
-                
+
                 char[] nextId = nextIdStr.toCharArray();
                 if (!Character.isJavaIdentifierStart(nextId[0])) {
                     return false;
                 }
-                
+
                 for (int i = 1; i < nextId.length; i++) {
                     if (!Character.isJavaIdentifierPart(nextId[i])) {
                         return false;
                     }
                 }
             }
-            
+
             boolean lastDot = false;
             for (int i = 0; i < packageName.length(); i++) {
                 boolean isDot = packageName.charAt(i) == '.';
@@ -162,185 +161,220 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 }
                 lastDot = isDot;
             }
-            
+
             if (packageName.endsWith(".")) { // NOI18N
+
                 return false;
             }
-            
+
             return true;
         }
     }
-    
+
     private void setErrorMessage(String msg) {
         if (msg == null || msg.length() == 0) {
             errorLabel.setVisible(false);
-        }else {
+            
+            if (dlg != null) {
+                dlg.setValid(true);
+            }
+        } else {
             errorLabel.setVisible(true);
             errorLabel.setText(msg);
+            
+            if (dlg != null) {
+                if (msg.equals(defaultMsg)) {
+                    dlg.setValid(true);
+                } else {
+                    dlg.setValid(false);
+                }
+            }
         }
     }
-    
-    private void updateAddButtonState(Component changedComponent) {
-        String defaultMsg = jaxRPCAvailable ? "" : NbBundle.getMessage(AddWebServiceDlg.class, "WARNING_JAXRPC_UNAVAILABLE");
-        
+
+    private void checkValues() {
         // Check the package name
         final String packageName = jTxtpackageName.getText().trim();
         boolean defaultPackage = DEFAULT_PACKAGE_HOLDER.equals(packageName) || packageName.length() == 0;
         if (!defaultPackage && !isValidPackageName(packageName)) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_PACKAGE"));
-            addButton.setEnabled(false);
-        }else if (jTxtLocalFilename.isEnabled()) {
+        } else if (jTxtLocalFilename.isEnabled()) {
             String localText = jTxtLocalFilename.getText().trim();
             if (localText.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_FILE"));
-                addButton.setEnabled(false);
                 return;
             }
-            
+
             File f = new File(localText);
             if (!f.exists()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FOUND"));
-                addButton.setEnabled(false);
                 return;
-            }else if (!f.isFile()) {
+            } else if (!f.isFile()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FILE"));
-                addButton.setEnabled(false);
-                return; 
-            }else {
+                return;
+            } else if (group.serviceExists(localText)) {
+                setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "SERVICE_ALREADY_EXISTS_FOR_FILE"));
+                return;
+            } else {
                 setErrorMessage(defaultMsg);
-                addButton.setEnabled(true);
             }
-        }else if (jTxServiceURL.isEnabled()) {
+        } else if (jTxServiceURL.isEnabled()) {
             String urlText = jTxServiceURL.getText().trim();
             if (urlText.length() == 0) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "EMPTY_URL"));
-                addButton.setEnabled(false);
-                return;                
+                return;
             }
 
             try {
                 URL url = new URL(urlText);
-                setErrorMessage(defaultMsg);
-                addButton.setEnabled(true);
-            }catch (MalformedURLException ex) {
+
+                if (group.serviceExists(urlText)) {
+                    setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "SERVICE_ALREADY_EXISTS_FOR_URL"));
+                } else {
+                    setErrorMessage(defaultMsg);
+                }
+            } catch (MalformedURLException ex) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_URL"));
-                addButton.setEnabled(false);
             }
-        }else {
+        } else {
             setErrorMessage(defaultMsg);
-            addButton.setEnabled(true);
         }
     }
-    
-    
+
     private void myInitComponents() {
-        
         wsdlFileChooser = new JFileChooser();
         ServiceFileFilter myFilter = new ServiceFileFilter();
         wsdlFileChooser.setFileFilter(myFilter);
-        addButton.setText(NbBundle.getMessage(this.getClass(), "Add"));
-        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_name"));
-        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_desc"));
-        addButton.setMnemonic(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.addButton.ACC_mnemonic").charAt(0));
-        cancelButton.setText(NbBundle.getMessage(this.getClass(), "CANCEL"));
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_name"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_desc"));
-        cancelButton.setMnemonic(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.cancelButton.ACC_mnemonic").charAt(0));
-        
+
         jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
-            
+
             public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
-            
+
             public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtLocalFilename);
+                checkValues();
             }
         });
-        
-        
+
+
         jTxServiceURL.getDocument().addDocumentListener(new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxServiceURL);
+                checkValues();
             }
         });
         
+         jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                checkValues();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                checkValues();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                checkValues();
+            }
+        });
+
         enableControls();
-        
+
         setDefaults();
-        
+
         jTxtpackageName.setText(DEFAULT_PACKAGE_HOLDER);
         jTxtpackageName.setForeground(Color.GRAY);
     }
-    
-    public void displayDialog(){
-        
+
+    public void displayDialog() {
+
         dlg = new DialogDescriptor(this, NbBundle.getMessage(AddWebServiceDlg.class, "ADD_WEB_SERVICE"),
-                true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.CANCEL_OPTION,
+                true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
-        addButton.setEnabled(false);
-        dlg.setOptions(new Object[] { addButton, cancelButton });
+ 
+        //dlg.setOptions(new Object[]{addButton, cancelButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
+        dlg.setValid(false);
         dialog.setVisible(true);
-    }
-    
-    private void cancelButtonAction(ActionEvent evt) {
-        closeDialog();
-    }
-    
-    private void closeDialog() {
         
-        dialog.dispose();
-        
+        if (dlg.getValue() == DialogDescriptor.OK_OPTION) {
+            createService();
+        }
     }
-    
-    
+
     /** XXX once we implement context sensitive help, change the return */
     public HelpCtx getHelpCtx() {
         return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
     }
-    
-    
+
     private void setDefaults() {
         jRbnUrl.setSelected(true);
         jRbnFilesystem.setSelected(false);
 //        displayInfo("<BR><BR><BR><BR><B>" +NbBundle.getMessage(AddWebServiceDlg.class, "INSTRUCTIONS") + "</B>");
         enableControls();
     }
-    
-    private void enableControls(){
+
+    private void enableControls() {
+        if (allControlsDisabled) return;
+        
         if (jRbnUrl.isSelected()) {
             jTxServiceURL.setEnabled(true);
+            jTxServiceURL.requestFocusInWindow();
             jTxtLocalFilename.setEnabled(false);
-            updateAddButtonState(jTxServiceURL);
             jLblChooseSource.setLabelFor(jTxServiceURL);
-        }else if (jRbnFilesystem.isSelected()) {
+        } else if (jRbnFilesystem.isSelected()) {
             jTxtLocalFilename.setEnabled(true);
+            jTxtLocalFilename.requestFocusInWindow();
             jTxServiceURL.setEnabled(false);
-            updateAddButtonState(jTxtLocalFilename);
             jLblChooseSource.setLabelFor(jTxtLocalFilename);
         }
     }
-    
-    
+
+    private void disableAllControls() {
+        allControlsDisabled = true;
+        jBtnBrowse.setEnabled(false);
+        jBtnProxy.setEnabled(false);
+        jRbnFilesystem.setEnabled(false);
+        jRbnUrl.setEnabled(false);
+        jTxServiceURL.setEnabled(false);
+        jTxtLocalFilename.setEnabled(false);
+        jTxtpackageName.setEnabled(false);
+        pkgNameLbl.setEnabled(false);
+    }
+
+    private void enableAllControls() {
+        allControlsDisabled = false;
+        jBtnBrowse.setEnabled(true);
+        jBtnProxy.setEnabled(true);
+        jRbnFilesystem.setEnabled(true);
+        jRbnUrl.setEnabled(true);
+        jTxServiceURL.setEnabled(true);
+        jTxtLocalFilename.setEnabled(true);
+        jTxtpackageName.setEnabled(true);
+        pkgNameLbl.setEnabled(true);
+    }
+
     private String fixFileURL(String inFileURL) {
         String returnFileURL = inFileURL;
-        
+
         try {
             File f = new File(returnFileURL);
             return f.toURI().toURL().toString();
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             if (returnFileURL.substring(0, 1).equalsIgnoreCase("/")) {
                 returnFileURL = "file://" + returnFileURL;
             } else {
@@ -349,14 +383,14 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         }
         return returnFileURL;
     }
-    
+
     /**
      * This represents the event on the "Add" button
      */
-    private void addButtonAction(ActionEvent evt) {
-        if ( (jTxServiceURL.getText() == null ) && (jTxtLocalFilename.getText() == null))
+    private void createService() {
+        if ((jTxServiceURL.getText() == null) && (jTxtLocalFilename.getText() == null)) {
             return;
-        
+        }
         final String url;
         if (jRbnUrl.isSelected()) {
             url = jTxServiceURL.getText().trim();
@@ -366,32 +400,44 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         String packageName = jTxtpackageName.getText().trim();
         if (packageName.equals(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"))) {
             packageName = ""; //NOI18N
+
         }
 
         dialog.setVisible(false);
         dialog.dispose();
         dialog = null;
-        
-        // Run the add W/S asynchronously
-        String checking = url.toLowerCase();
-        if (checking.endsWith("wsdl")) { //NOI18N
-            SaasServicesModel.getInstance().createWsdlService(group, url, packageName);
-        } else if (checking.endsWith("wadl")) { //NOI18N
-            SaasServicesModel.getInstance().createWadlService(group, url, packageName);
-        }
-    }    
-    
-    public void actionPerformed(ActionEvent evt) {
-        String actionCommand = evt.getActionCommand();
-        if(actionCommand.equalsIgnoreCase(addString)) {
-            addButtonAction(evt);
-        } else if(actionCommand.equalsIgnoreCase(cancelString)) {
-            cancelButtonAction(evt);
-        }
-        
+
+        try {
+            SaasServicesModel.getInstance().createSaasService(group, url, packageName);
+        } catch (Exception ex) {
+             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(msg);
+        }   
     }
-    
-    
+
+    private void checkServicesModel() {
+        if (SaasServicesModel.getInstance().getState() != State.READY) {
+            setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INIT_WEB_SERVICES_MANAGER"));
+            disableAllControls();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    SaasServicesModel.getInstance().initRootGroup();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            enableAllControls();
+                            enableControls();
+                            checkValues();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    public void actionPerformed(ActionEvent evt) {
+  
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -412,6 +458,16 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         jTxtpackageName = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
         errorLabel.setVisible(false);
+
+        addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                formAncestorAdded(evt);
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
 
         jLblChooseSource.setLabelFor(jTxServiceURL);
         org.openide.awt.Mnemonics.setLocalizedText(jLblChooseSource, NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlSource")); // NOI18N
@@ -460,19 +516,6 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                 jTxtpackageNameMouseClicked(evt);
             }
         });
-        jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                updateAddButtonState(jTxtpackageName);
-            }
-        });
 
         errorLabel.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
 
@@ -503,10 +546,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
                                     .add(jBtnBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .add(14, 14, 14))
                             .add(layout.createSequentialGroup()
-                                .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
+                                .add(jTxtpackageName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                                 .add(136, 136, 136))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 754, Short.MAX_VALUE)
+                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 769, Short.MAX_VALUE)
                         .addContainerGap())))
         );
 
@@ -553,15 +596,15 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         getAccessibleContext().setAccessibleName("null");
         getAccessibleContext().setAccessibleDescription("null");
     }// </editor-fold>//GEN-END:initComponents
-    
+
 private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnUrlActionPerformed
     // TODO add your handling code here:
     enableControls();
-    
+
 }//GEN-LAST:event_jRbnUrlActionPerformed
 
 private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
-        OptionsDisplayer.getDefault().open( "General" );//NOI18N
+    OptionsDisplayer.getDefault().open("General");//NOI18N
 }//GEN-LAST:event_jBtnProxyActionPerformed
 
 private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
@@ -569,14 +612,14 @@ private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     jRbnFilesystem.setSelected(false);
     jRbnFilesystem.setSelected(true);
     enableControls();
-    
+
     JFileChooser chooser = new JFileChooser(previousDirectory);
     chooser.setMultiSelectionEnabled(false);
     chooser.setAcceptAllFileFilterUsed(false);
     chooser.addChoosableFileFilter(WSDL_FILE_FILTER);
     chooser.setFileFilter(WSDL_FILE_FILTER);
-    
-    if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+
+    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
         File wsdlFile = chooser.getSelectedFile();
         jTxtLocalFilename.setText(wsdlFile.getAbsolutePath());
         previousDirectory = wsdlFile.getPath();
@@ -584,7 +627,7 @@ private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_jBtnBrowseActionPerformed
 
 private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRbnFilesystemActionPerformed
-    
+
     enableControls();
 }//GEN-LAST:event_jRbnFilesystemActionPerformed
 
@@ -593,7 +636,10 @@ private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-F
     jTxtpackageName.setForeground(Color.BLACK);
 }//GEN-LAST:event_jTxtpackageNameMouseClicked
 
-
+private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_formAncestorAdded
+// TODO add your handling code here:
+    enableControls();
+}//GEN-LAST:event_formAncestorAdded
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
@@ -608,25 +654,27 @@ private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-F
     private javax.swing.JTextField jTxtpackageName;
     private javax.swing.JLabel pkgNameLbl;
     // End of variables declaration//GEN-END:variables
-    
-    
-    
-    private static class ServiceFileFilter extends  javax.swing.filechooser.FileFilter {
+
+    private static class ServiceFileFilter extends javax.swing.filechooser.FileFilter {
+
         public boolean accept(File f) {
-            boolean result;
-            if(f.isDirectory() || 
-               "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName())) ||
-               "wadl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))
-               ) { // NOI18N
-                result = true;
-            } else {
-                result = false;
+            if (f.isDirectory()) {
+                return true;
             }
-            return result;
+            
+            String ext = FileUtil.getExtension(f.getName());
+            for (int i = 0; i < Saas.SUPPORTED_EXTENSIONS.length; i++) {
+                if (Saas.SUPPORTED_EXTENSIONS[i].equalsIgnoreCase(ext)) {
+                    return true;
+                }
+            }
+             
+            return false;
         }
+
         public String getDescription() {
             return NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlFilterDescription"); // NOI18N
+
         }
-        
     }
 }

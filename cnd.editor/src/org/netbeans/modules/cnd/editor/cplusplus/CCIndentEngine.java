@@ -43,11 +43,17 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /** C++ indentation engine that delegates to C++ formatter */
 public class CCIndentEngine extends BaseIndentEngine {
 
+    private static final CCIndentEngine instance = new CCIndentEngine();
+    
+    public static final CCIndentEngine getIndentEngine(){
+        return instance;
+    }
+    
     public CCIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
     }

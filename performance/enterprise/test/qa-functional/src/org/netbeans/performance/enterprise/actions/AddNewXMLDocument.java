@@ -48,6 +48,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -95,7 +96,10 @@ public class AddNewXMLDocument extends PerformanceTestCase {
         new EventTool().waitNoEvent(2500);
         new EPUtilities().getProcessFilesNode("BPELTestProject").select();
         
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("XML"); //NOI18N
         wizard.selectFileType("XML Document"); //NOI18N
         
@@ -114,7 +118,6 @@ public class AddNewXMLDocument extends PerformanceTestCase {
     
     @Override
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static Test suite() {
@@ -123,6 +126,7 @@ public class AddNewXMLDocument extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

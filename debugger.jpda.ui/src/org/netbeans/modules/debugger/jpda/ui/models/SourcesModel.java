@@ -50,9 +50,9 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -75,12 +75,12 @@ import org.openide.util.NbBundle;
  */
 public class SourcesModel implements TreeModel, TableModel,
 NodeActionsProvider {
-    
+
     private static final String     FILTER_PREFIX = "Do not stop in: ";
     private static final String     DISP_FILTER_PREFIX = NbBundle.getBundle
         (SourcesModel.class).getString ("CTL_SourcesModel_Name_DoNotStopIn");
-    
-    
+
+
     private Listener                listener;
     private SourcePath              sourcePath;
     private JPDADebugger            debugger;
@@ -93,26 +93,32 @@ NodeActionsProvider {
     private List<String>            additionalSourceRoots = new ArrayList<String>();
     private Properties              filterProperties = Properties.
         getDefault ().getProperties ("debugger").getProperties ("sources");
-    
-    
+    private final Set<String>       sourceRootsSet = new HashSet<String>();
+
+
     public SourcesModel (ContextProvider lookupProvider) {
         sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        loadFilters (); 
+        loadFilters ();
+        updateCachedRoots();
+        DELETE_ACTION.putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
     }
-    
-    
+
+
     // TreeModel ...............................................................
-    
-    /** 
+
+    /**
      *
      * @return threads contained in this group of threads
      */
     public Object getRoot () {
         return ROOT;
     }
-    
-    /** 
+
+    /**
      *
      * @return threads contained in this group of threads
      */
@@ -121,7 +127,7 @@ NodeActionsProvider {
         if (parent == ROOT) {
             // 1) get source roots
             String[] sourceRoots = sourcePath.getOriginalSourceRoots ();
-            
+
             // 2) get filters
             String[] ep = new String [filters.size ()];
             ep = filters.toArray (ep);
@@ -129,7 +135,7 @@ NodeActionsProvider {
             for (i = 0; i < k; i++) {
                 ep [i] = DISP_FILTER_PREFIX + ep [i];
             }
-            
+
             // 3) find additional disabled source roots (enabled are in sourceRoots)
             List<String> addSrcRoots;
             synchronized (this) {
@@ -144,7 +150,7 @@ NodeActionsProvider {
                     addSrcRoots = Collections.emptyList();
                 }
             }
-            
+
             // 3) join them
             Object[] os = new Object [sourceRoots.length + addSrcRoots.size() + ep.length];
             System.arraycopy (sourceRoots, 0, os, 0, sourceRoots.length);
@@ -160,10 +166,10 @@ NodeActionsProvider {
         } else
         throw new UnknownTypeException (parent);
     }
-    
+
     /**
      * Returns number of children for given node.
-     * 
+     *
      * @param   node the parent node
      * @throws  UnknownTypeException if this TreeModel implementation is not
      *          able to resolve children for given node type
@@ -176,12 +182,12 @@ NodeActionsProvider {
                 listener = new Listener (this);
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
-            //return sourcePath.getOriginalSourceRoots ().length + 
+            //return sourcePath.getOriginalSourceRoots ().length +
             //    filters.size ();
         } else
         throw new UnknownTypeException (node);
     }
-    
+
     public boolean isLeaf (Object node) throws UnknownTypeException {
         if (node == ROOT) return false;
         if (node instanceof String) return true;
@@ -195,50 +201,50 @@ NodeActionsProvider {
     public void removeModelListener (ModelListener l) {
         listeners.remove (l);
     }
-    
+
     public void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (null);
     }
-    
-     
+
+
     // TableModel ..............................................................
-    
-    public Object getValueAt (Object node, String columnID) throws 
+
+    public Object getValueAt (Object node, String columnID) throws
     UnknownTypeException {
         if ("use".equals (columnID)) {
             if (node instanceof String)
                 return Boolean.valueOf (
                     isEnabled ((String) node)
                 );
-        } 
+        }
         throw new UnknownTypeException (node);
     }
-    
-    public boolean isReadOnly (Object node, String columnID) throws 
+
+    public boolean isReadOnly (Object node, String columnID) throws
     UnknownTypeException {
         if ( "use".equals (columnID) &&
              (node instanceof String))
             return false;
         throw new UnknownTypeException (node);
     }
-    
-    public void setValueAt (Object node, String columnID, Object value) 
+
+    public void setValueAt (Object node, String columnID, Object value)
     throws UnknownTypeException {
         if ("use".equals (columnID)) {
             if (node instanceof String) {
                 setEnabled ((String) node, ((Boolean) value).booleanValue ());
                 return;
             }
-        } 
+        }
         throw new UnknownTypeException (node);
     }
-    
-    
+
+
     // NodeActionsProvider .....................................................
-    
+
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
             if (((String) node).startsWith (DISP_FILTER_PREFIX) || additionalSourceRoots.contains(node)) {
@@ -255,29 +261,27 @@ NodeActionsProvider {
             }
         } else
         throw new UnknownTypeException (node);
-    }    
-    
-    public void performDefaultAction (Object node) 
+    }
+
+    public void performDefaultAction (Object node)
     throws UnknownTypeException {
         if (node instanceof String) {
             return;
         } else
         throw new UnknownTypeException (node);
     }
-    
+
     // other methods ...........................................................
-    
+
     private boolean isEnabled (String root) {
         if (root.startsWith (DISP_FILTER_PREFIX)) {
             return enabledFilters.contains (root.substring (
                 DISP_FILTER_PREFIX.length ()
             ));
         }
-        String[] sourceRoots = sourcePath.getSourceRoots ();
-        int i, k = sourceRoots.length;
-        for (i = 0; i < k; i++)
-            if (sourceRoots [i].equals (root)) return true;
-        return false;
+        synchronized(this) {
+            return sourceRootsSet.contains(root);
+        }
     }
 
     private void setEnabled (String root, boolean enabled) {
@@ -299,9 +303,7 @@ NodeActionsProvider {
                 );
             }
         } else {
-            List<String> sourceRoots = new ArrayList<String>(Arrays.asList(
-                sourcePath.getSourceRoots ()
-            ));
+            List<String> sourceRoots = new ArrayList<String>(sourceRootsSet);
             synchronized (this) {
                 if (enabled) {
                     enabledSourceRoots.add (root);
@@ -315,7 +317,7 @@ NodeActionsProvider {
             }
             String[] ss = new String [sourceRoots.size ()];
             sourcePath.setSourceRoots (sourceRoots.toArray (ss));
-            
+
         }
         saveFilters ();
     }
@@ -323,25 +325,25 @@ NodeActionsProvider {
     private void loadFilters () {
         filters = new HashSet (
             filterProperties.getProperties ("class_filters").getCollection (
-                "all", 
+                "all",
                 Collections.EMPTY_SET
             )
         );
         enabledFilters = new HashSet (
             filterProperties.getProperties ("class_filters").getCollection (
-                "enabled", 
+                "enabled",
                 Collections.EMPTY_SET
             )
         );
         enabledSourceRoots = new HashSet (
             filterProperties.getProperties ("source_roots").getCollection (
-                "enabled", 
+                "enabled",
                 Collections.EMPTY_SET
             )
         );
         disabledSourceRoots = new HashSet (
             filterProperties.getProperties ("source_roots").getCollection (
-                "disabled", 
+                "disabled",
                 Collections.EMPTY_SET
             )
         );
@@ -368,19 +370,26 @@ NodeActionsProvider {
             setCollection ("all", filters);
         filterProperties.getProperties ("class_filters").
             setCollection ("enabled", enabledFilters);
-        filterProperties.getProperties ("source_roots").setCollection 
+        filterProperties.getProperties ("source_roots").setCollection
             ("enabled", enabledSourceRoots);
-        filterProperties.getProperties ("source_roots").setCollection 
+        filterProperties.getProperties ("source_roots").setCollection
             ("disabled", disabledSourceRoots);
         filterProperties.getProperties("additional_source_roots").
             setCollection("src_roots", additionalSourceRoots);
     }
 
-    
+    private synchronized void updateCachedRoots() {
+        String[] roots = sourcePath.getSourceRoots();
+        sourceRootsSet.clear();
+        for (int x = 0; x < roots.length; x++) {
+            sourceRootsSet.add(roots[x]);
+        }
+    }
+
     // innerclasses ............................................................
-    
+
     /**
-     * Defines model for one table view column. Can be used together with 
+     * Defines model for one table view column. Can be used together with
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
     public static class DefaultSourcesColumn extends AbstractColumn {
@@ -394,7 +403,7 @@ NodeActionsProvider {
             return "DefaultSourcesColumn";
         }
 
-        /** 
+        /**
          * Returns display name of this column.
          *
          * @return display name of this column
@@ -405,7 +414,7 @@ NodeActionsProvider {
         }
 
         public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(SourcesModel.class).getString 
+            return new Character(NbBundle.getBundle(SourcesModel.class).getString
                 ("CTL_SourcesModel_Column_Name_Name_Mnc").charAt(0));
         }
 
@@ -428,9 +437,9 @@ NodeActionsProvider {
             return null;
         }
     }
-    
+
     /**
-     * Defines model for one table view column. Can be used together with 
+     * Defines model for one table view column. Can be used together with
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
     public static class SourcesUsedColumn extends AbstractColumn {
@@ -444,18 +453,18 @@ NodeActionsProvider {
             return "use";
         }
 
-        /** 
+        /**
          * Returns display name of this column.
          *
          * @return display name of this column
          */
         public String getDisplayName () {
-            return NbBundle.getBundle (SourcesModel.class).getString 
+            return NbBundle.getBundle (SourcesModel.class).getString
                 ("CTL_SourcesModel_Column_Debugging_Name");
         }
 
         public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(SourcesModel.class).getString 
+            return new Character(NbBundle.getBundle(SourcesModel.class).getString
                 ("CTL_SourcesModel_Column_Debugging_Name_Mnc").charAt(0));
         }
 
@@ -469,18 +478,18 @@ NodeActionsProvider {
         }
 
         /**
-         * Returns tooltip for given column. Default implementation returns 
+         * Returns tooltip for given column. Default implementation returns
          * <code>null</code> - do not use tooltip.
          *
          * @return  tooltip for given node or <code>null</code>
          */
         public String getShortDescription () {
-            return NbBundle.getBundle (SourcesModel.class).getString 
+            return NbBundle.getBundle (SourcesModel.class).getString
                 ("CTL_SourcesModel_Column_Debugging_Desc");
         }
 
         /**
-         * True if column should be visible by default. Default implementation 
+         * True if column should be visible by default. Default implementation
          * returns <code>true</code>.
          *
          * @return <code>true</code> if column should be visible by default
@@ -489,9 +498,9 @@ NodeActionsProvider {
             return true;
         }
     }
-    
+
     private JFileChooser newSourceFileChooser;
-    
+
     private final Action NEW_SOURCE_ROOT_ACTION = new AbstractAction(
             NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_Action_AddSrc")) {
         public void actionPerformed (ActionEvent e) {
@@ -530,7 +539,7 @@ NodeActionsProvider {
                     System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
                     newSourceRoots[l] = d;
                     sourcePath.setSourceRoots(newSourceRoots);
-                    
+
                     saveFilters();
                     fireTreeChanged ();
                 } catch (java.io.IOException ioex) {
@@ -539,19 +548,19 @@ NodeActionsProvider {
             }
         }
     };
-    
+
     private final Action NEW_FILTER_ACTION = new AbstractAction
-        (NbBundle.getBundle (SourcesModel.class).getString 
+        (NbBundle.getBundle (SourcesModel.class).getString
             ("CTL_SourcesModel_Action_AddFilter")) {
             public void actionPerformed (ActionEvent e) {
-                NotifyDescriptor.InputLine descriptor = new 
+                NotifyDescriptor.InputLine descriptor = new
                     NotifyDescriptor.InputLine (
-                        NbBundle.getBundle (SourcesModel.class).getString 
+                        NbBundle.getBundle (SourcesModel.class).getString
                             ("CTL_SourcesModel_NewFilter_Filter_Label"),
-                        NbBundle.getBundle (SourcesModel.class).getString 
+                        NbBundle.getBundle (SourcesModel.class).getString
                             ("CTL_SourcesModel_NewFilter_Title")
                     );
-                if (DialogDisplayer.getDefault ().notify (descriptor) == 
+                if (DialogDisplayer.getDefault ().notify (descriptor) ==
                     NotifyDescriptor.OK_OPTION
                 ) {
                     String filter = descriptor.getInputText ();
@@ -584,6 +593,9 @@ NodeActionsProvider {
                             filters.remove (node);
                             enabledFilters.remove (node);
                         }
+                        debugger.getSmartSteppingFilter ().removeExclusionPatterns (
+                            Collections.singleton (node)
+                        );
                     } else {
                         synchronized (SourcesModel.this) {
                             additionalSourceRoots.remove(node);
@@ -614,11 +626,11 @@ NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
-    
+
     private static class Listener implements PropertyChangeListener {
-        
+
         private WeakReference<SourcesModel> model;
-        
+
         private Listener (
             SourcesModel tm
         ) {
@@ -627,7 +639,7 @@ NodeActionsProvider {
             tm.debugger.getSmartSteppingFilter ().
                 addPropertyChangeListener (this);
         }
-        
+
         private SourcesModel getModel () {
             SourcesModel tm = model.get ();
             if (tm == null) {
@@ -637,24 +649,25 @@ NodeActionsProvider {
             }
             return tm;
         }
-    
+
         public void propertyChange (PropertyChangeEvent evt) {
             SourcesModel m = getModel ();
             if (m == null) return;
+            m.updateCachedRoots();
             m.fireTreeChanged ();
         }
     }
-    
+
     /**
-     * Defines model for one table view column. Can be used together with 
+     * Defines model for one table view column. Can be used together with
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
     public abstract static class AbstractColumn extends ColumnModel {
-        
+
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("views");
 
-        
+
         /**
          * Set true if column is visible.
          *
@@ -667,7 +680,7 @@ NodeActionsProvider {
         /**
          * Set true if column should be sorted by default.
          *
-         * @param sorted set true if column should be sorted by default 
+         * @param sorted set true if column should be sorted by default
          */
         public void setSorted (boolean sorted) {
             properties.setBoolean (getID () + ".sorted", sorted);
@@ -676,13 +689,13 @@ NodeActionsProvider {
         /**
          * Set true if column should be sorted by default in descending order.
          *
-         * @param sortedDescending set true if column should be sorted by default 
+         * @param sortedDescending set true if column should be sorted by default
          *        in descending order
          */
         public void setSortedDescending (boolean sortedDescending) {
             properties.setBoolean (getID () + ".sortedDescending", sortedDescending);
         }
-    
+
         /**
          * Should return current order number of this column.
          *
@@ -746,4 +759,5 @@ NodeActionsProvider {
             return properties.getBoolean (getID () + ".sortedDescending", false);
         }
     }
+
 }

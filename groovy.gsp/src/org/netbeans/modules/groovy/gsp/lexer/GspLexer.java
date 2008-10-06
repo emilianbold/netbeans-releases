@@ -75,8 +75,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
     private static final int GSCRIPT = 12; // %{ ... }%
     private static final int GDIRECT = 13; // @{ ... }
     private static final int GDECLAR = 14; // !{ ... }!
-    private static final int GSTART_TAG = 15; // <g:..>
-    private static final int GEND_TAG = 16; // </g:..>
+//    private static final int GSTART_TAG = 15; // <g:..>
+//    private static final int GEND_TAG = 16; // </g:..>
     private static final int GTAG_EXPR = 17; // ${..}
 
     private static final int ISA_LT                   = 21; // after '<' char
@@ -86,10 +86,10 @@ public final class GspLexer implements Lexer<GspTokenId> {
     private static final int ISA_EX                   = 25; // after '!' char
     
     private static final int ISA_LT_PC                = 31; // after '<%'
-    private static final int ISA_LT_G                 = 32; // after '<g'
+//    private static final int ISA_LT_G                 = 32; // after '<g'
     private static final int ISA_LT_BS                = 33; // after '</'
 
-    private static final int ISA_LT_BS_G              = 41; // after '</g'
+//    private static final int ISA_LT_BS_G              = 41; // after '</g'
     
     private static final int JEXPR_PC = 101;
     private static final int JSCRIPT_PC = 102;
@@ -159,7 +159,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case ISA_LT: // after <
                     switch (actChar) {
                         case '%': state = ISA_LT_PC; break; // after <%
-                        case 'g': state = ISA_LT_G; break; // after <g
+//                        case 'g': state = ISA_LT_G; break; // after <g
                         case '/': state = ISA_LT_BS; break; // after </
                         default:
                             input.backup(2);
@@ -265,50 +265,50 @@ public final class GspLexer implements Lexer<GspTokenId> {
                                 return token(GspTokenId.HTML); //return CL token
                             }
                     }
-                case ISA_LT_G: // after <g
-                    switch (actChar) {
-                        case ':':
-                            if (input.readLength() == 3) {
-                                state = GSTART_TAG;
-                                break;
-                            } else {
-                                // GSP symbol, but we also have content language in the buffer
-                                input.backup(3); //backup <g:
-                                state = INIT;
-                                return token(GspTokenId.HTML); //return CL token
-                            }
-                        default:
-                            input.backup(3); // return back <g:
-                            state = INIT;
-                            stateBackup = true;
-                    }
-                    break;
+//                case ISA_LT_G: // after <g
+//                    switch (actChar) {
+//                        case ':':
+//                            if (input.readLength() == 3) {
+//                                state = GSTART_TAG;
+//                                break;
+//                            } else {
+//                                // GSP symbol, but we also have content language in the buffer
+//                                input.backup(3); //backup <g:
+//                                state = INIT;
+//                                return token(GspTokenId.HTML); //return CL token
+//                            }
+//                        default:
+//                            input.backup(3); // return back <g:
+//                            state = INIT;
+//                            stateBackup = true;
+//                    }
+//                    break;
                 case ISA_LT_BS : // after </
                     switch (actChar) {
-                        case 'g': state = ISA_LT_BS_G; break; // after </g
+//                        case 'g': state = ISA_LT_BS_G; break; // after </g
                         default:
                             input.backup(3);
                             state = INIT;
                             stateBackup = true;
                     }
                     break;
-                case ISA_LT_BS_G: // after </g:
-                    switch (actChar) {
-                        case ':':
-                            if (input.readLength() == 4) {
-                                state = GEND_TAG;
-                                break;
-                            } else {
-                                input.backup(4); // return back </g:
-                                state = INIT;
-                                return token(GspTokenId.HTML);
-                            }
-                        default:
-                            input.backup(4);
-                            state = INIT;
-                            stateBackup = true;
-                    }
-                    break;
+//                case ISA_LT_BS_G: // after </g:
+//                    switch (actChar) {
+//                        case ':':
+//                            if (input.readLength() == 4) {
+//                                state = GEND_TAG;
+//                                break;
+//                            } else {
+//                                input.backup(4); // return back </g:
+//                                state = INIT;
+//                                return token(GspTokenId.HTML);
+//                            }
+//                        default:
+//                            input.backup(4);
+//                            state = INIT;
+//                            stateBackup = true;
+//                    }
+//                    break;
                 case GEXPR: // after ${
                     switch(actChar) {
                         case '}':
@@ -430,7 +430,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GSCRIPT: // %{ ... }%
                     switch(actChar) {
                         case '}':
-                            state = JDECLAR_PC;
+                            state = GSCRIPT_PC;
                             break;
                     }
                     break;
@@ -495,28 +495,28 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             break;
                     }
                     break;
-                case GSTART_TAG: // <g:..>
-                    switch(actChar) {
-                        case '>':
-                                //just the '>' symbol read
-                                state = INIT;
-                                return token(GspTokenId.GTAG);
-                        default:
-                            state = GSTART_TAG;
-                            break;
-                    }
-                    break;
-                case GEND_TAG: // </g:..>
-                    switch(actChar) {
-                        case '>':
-                                //just the '>' symbol read
-                                state = INIT;
-                                return token(GspTokenId.GTAG);
-                        default:
-                            state = GEND_TAG;
-                            break;
-                    }
-                    break;
+//                case GSTART_TAG: // <g:..>
+//                    switch(actChar) {
+//                        case '>':
+//                                //just the '>' symbol read
+//                                state = INIT;
+//                                return token(GspTokenId.GTAG);
+//                        default:
+//                            state = GSTART_TAG;
+//                            break;
+//                    }
+//                    break;
+//                case GEND_TAG: // </g:..>
+//                    switch(actChar) {
+//                        case '>':
+//                                //just the '>' symbol read
+//                                state = INIT;
+//                                return token(GspTokenId.GTAG);
+//                        default:
+//                            state = GEND_TAG;
+//                            break;
+//                    }
+//                    break;
             }
         }
             
@@ -545,8 +545,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
             case GSCRIPT: return token(GspTokenId.GROOVY); // %{ ... }%
             case GDIRECT: return token(GspTokenId.GROOVY); // @{ ... }
             case GDECLAR: return token(GspTokenId.GROOVY); // !{ ... }!
-            case GSTART_TAG: return token(GspTokenId.GTAG); // <g:..>
-            case GEND_TAG: return token(GspTokenId.GTAG); // </g:..>
+//            case GSTART_TAG: return token(GspTokenId.GTAG); // <g:..>
+//            case GEND_TAG: return token(GspTokenId.GTAG); // </g:..>
             case GTAG_EXPR: return token(GspTokenId.GROOVY); // ${..}
             case ISA_LT: return token(GspTokenId.DELIMITER);
             case ISA_DL: return token(GspTokenId.DELIMITER);
@@ -554,9 +554,9 @@ public final class GspLexer implements Lexer<GspTokenId> {
             case ISA_AT: return token(GspTokenId.DELIMITER);
             case ISA_EX: return token(GspTokenId.DELIMITER);
             case ISA_LT_PC: return token(GspTokenId.DELIMITER);
-            case ISA_LT_G: return token(GspTokenId.DELIMITER);
+//            case ISA_LT_G: return token(GspTokenId.DELIMITER);
             case ISA_LT_BS: return token(GspTokenId.DELIMITER);
-            case ISA_LT_BS_G: return token(GspTokenId.DELIMITER);
+//            case ISA_LT_BS_G: return token(GspTokenId.DELIMITER);
             case JEXPR_PC: return token(GspTokenId.DELIMITER);
             case JSCRIPT_PC: return token(GspTokenId.DELIMITER);
             case JDIRECT_PC: return token(GspTokenId.DELIMITER);

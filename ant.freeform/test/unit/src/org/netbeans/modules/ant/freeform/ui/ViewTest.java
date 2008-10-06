@@ -87,6 +87,7 @@ public class ViewTest extends TestBase {
     
     private LogicalViewProvider lvp;
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         ModuleInfo info = Lookup.getDefault().lookup(ModuleInfo.class);
@@ -107,7 +108,8 @@ public class ViewTest extends TestBase {
                 DataObject.find(egdirFO.getFileObject("extsrcroot/proj/nbproject/project.xml")),
                 kids[1].getLookup().lookup(DataObject.class));
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1012
     public void testViewItemChanges() throws Exception {
         Node root = lvp.createLogicalView();
         Children ch = root.getChildren();

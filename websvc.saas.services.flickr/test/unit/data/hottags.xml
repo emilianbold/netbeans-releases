@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <hottags period="day" count="6">
+        <tag score="20">northerncalifornia</tag>
+        <tag score="18">top20</tag>
+        <tag score="15">keychain</tag>
+        <tag score="10">zb</tag>
+        <tag score="9">selfportraittuesday</tag>
+        <tag score="4">jan06</tag>
+    </hottags>
+</rsp>

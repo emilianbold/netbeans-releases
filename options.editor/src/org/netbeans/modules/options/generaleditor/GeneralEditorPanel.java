@@ -65,8 +65,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
      */
     public GeneralEditorPanel () {
         initComponents ();
-        
-        setName(loc ("General_Tab"));
                 
         loc (lCodeFolding, "Code_Folding");
         loc (lUseCodeFolding, "Code_Folding_Section");
@@ -127,6 +125,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         lCamelCaseBehaviorExample = new javax.swing.JLabel();
         cbDocsAutoPopup = new javax.swing.JCheckBox();
         cbGuessMethodArgs = new javax.swing.JCheckBox();
+        cbJavadocNextToCC = new javax.swing.JCheckBox();
 
         setForeground(new java.awt.Color(99, 130, 191));
 
@@ -177,14 +176,16 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
         cbCamelCaseBehavior.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        lCamelCaseBehaviorExample.setText("(Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions)");
-        lCamelCaseBehaviorExample.setEnabled(false);
+        lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
 
         cbDocsAutoPopup.setText("Auto Popup Documentation Window");
         cbDocsAutoPopup.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         cbGuessMethodArgs.setText("Guess Filled Method Arguments");
         cbGuessMethodArgs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+        cbJavadocNextToCC.setText(org.openide.util.NbBundle.getMessage(GeneralEditorPanel.class, "CTL_Javadoc_Next_To_CC")); // NOI18N
+        cbJavadocNextToCC.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -203,7 +204,6 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                             .add(cbCamelCaseBehavior)
                             .add(cbInsertClosingBracketsAutomatically)
                             .add(cbShowDeprecated)
-                            .add(cbCaseSensitive)
                             .add(cbFoldInitialComments)
                             .add(cbFoldJavadocComments)
                             .add(cbFoldImports)
@@ -213,28 +213,31 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(cbAutoPopup)
-                                    .add(cbInsertSingleProposalsAutomatically))
+                                    .add(cbInsertSingleProposalsAutomatically)
+                                    .add(cbCaseSensitive))
                                 .add(91, 91, 91)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(cbJavadocNextToCC)
                                     .add(cbGuessMethodArgs)
-                                    .add(cbDocsAutoPopup)))))
+                                    .add(cbDocsAutoPopup)))
+                            .add(lCamelCaseBehaviorExample)))
                     .add(lCamelCaseBehavior))
-                .addContainerGap(133, Short.MAX_VALUE))
+                .addContainerGap(98, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(138, 138, 138)
                 .add(lCamelCaseBehaviorExample)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addContainerGap(196, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(116, 116, 116)
-                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 774, Short.MAX_VALUE))
+                .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCodeCompletion)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 768, Short.MAX_VALUE))
+                .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(lCodeFolding)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 796, Short.MAX_VALUE))
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 826, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -274,7 +277,9 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .add(cbInsertSingleProposalsAutomatically)
                     .add(cbGuessMethodArgs))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cbCaseSensitive)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbCaseSensitive)
+                    .add(cbJavadocNextToCC))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbShowDeprecated)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -287,8 +292,11 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .add(cbCamelCaseBehavior)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lCamelCaseBehaviorExample)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
+
+        cbJavadocNextToCC.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralEditorPanel.class, "AN_Javadoc_Next_To_CC")); // NOI18N
+        cbJavadocNextToCC.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralEditorPanel.class, "AD_Javadoc_Next_To_CC")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -305,6 +313,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JCheckBox cbGuessMethodArgs;
     private javax.swing.JCheckBox cbInsertClosingBracketsAutomatically;
     private javax.swing.JCheckBox cbInsertSingleProposalsAutomatically;
+    private javax.swing.JCheckBox cbJavadocNextToCC;
     private javax.swing.JCheckBox cbShowDeprecated;
     private javax.swing.JCheckBox cbUseCodeFolding;
     private javax.swing.JSeparator jSeparator1;
@@ -355,6 +364,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbFoldJavadocComments.addActionListener (this);
             cbFoldInitialComments.addActionListener (this);
             cbAutoPopup.addActionListener (this);
+            cbJavadocNextToCC.addActionListener(this);
             cbDocsAutoPopup.addActionListener (this);
             cbInsertSingleProposalsAutomatically.addActionListener (this);
             cbCaseSensitive.addActionListener (this);
@@ -377,6 +387,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             (model.isPairCharacterCompletion ());
         cbAutoPopup.setSelected 
             (model.isCompletionAutoPopup ());
+        cbJavadocNextToCC.setSelected
+                (model.isDocumentationNextToCC());
         cbDocsAutoPopup.setSelected 
             (model.isDocumentationAutoPopup ());
         cbShowDeprecated.setSelected 
@@ -423,6 +435,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
             cbInsertClosingBracketsAutomatically.isSelected (),
             cbAutoPopup.isSelected (),
             cbDocsAutoPopup.isSelected (),
+            cbJavadocNextToCC.isSelected(),
             cbShowDeprecated.isSelected (),
             cbInsertSingleProposalsAutomatically.isSelected (),
             cbCaseSensitive.isSelected (),

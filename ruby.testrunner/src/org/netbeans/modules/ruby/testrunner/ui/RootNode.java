@@ -44,6 +44,7 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -76,9 +77,11 @@ final class RootNode extends AbstractNode {
     private volatile int failures = 0;
     private volatile int errors = 0;
     private volatile int pending = 0;
-    private volatile int elapsedTimeMillis = 0;
+    private volatile long elapsedTimeMillis = 0;
     private volatile int detectedPassedTests = 0;
     private boolean sessionFinished;
+
+    private static final Logger LOGGER = Logger.getLogger(RootNode.class.getName());
 
     /**
      * Creates a new instance of RootNode
@@ -265,7 +268,7 @@ final class RootNode extends AbstractNode {
         }
 
         if (msg != null) {
-            msg += NbBundle.getMessage(bundleRefClass, "MSG_TestSuiteElapsedTime", new Float(elapsedTimeMillis / 1000f));
+            msg += NbBundle.getMessage(bundleRefClass, "MSG_TestSuiteElapsedTime", new Double(elapsedTimeMillis / 1000d));
         }
 
         if (this.message != null) {
@@ -275,6 +278,9 @@ final class RootNode extends AbstractNode {
                 msg = msg + ' ' + message;
             }
         }
+
+        // #143508
+        LOGGER.fine("Setting display name to: '" + msg + "'. Total tests run: " + totalTests + ". Session finished: " + sessionFinished);
 
         setDisplayName(msg);
     }

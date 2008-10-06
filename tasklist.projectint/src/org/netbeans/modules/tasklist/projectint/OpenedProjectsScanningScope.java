@@ -45,7 +45,9 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -55,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -82,7 +85,11 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
      * @param icon 
      */
     private OpenedProjectsScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon );
+        super( displayName, description, icon, true );
+        Map<String,String> labels = new HashMap<String,String>(1);
+        labels.put( Utils.KEY_STATUS_BAR_LABEL, 
+                NbBundle.getMessage(OpenedProjectsScanningScope.class, "LBL_OpenedProjectsStatusBar") ); //NOI18N
+        lookupContent.add( labels );
     }
         
     /**
@@ -92,7 +99,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
         return new OpenedProjectsScanningScope( 
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "LBL_OpenedProjectsScope" ), //NOI18N
                 NbBundle.getBundle( MainProjectScanningScope.class ).getString( "HINT_OpenedProjectsScope" ), //NOI18N
-                Utilities.loadImage( "org/netbeans/modules/tasklist/projectint/opened_projects_scope.png" ) //NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/tasklist/projectint/opened_projects_scope.png" ) //NOI18N
                 );
     }
     
@@ -125,29 +132,33 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
     }
     
     public void attach( Callback newCallback ) {
-        if( null != newCallback && null == callback ) {
-            OpenProjects.getDefault().addPropertyChangeListener( this );
-            TopComponent.getRegistry().addPropertyChangeListener( this );
-            setLookupContent( OpenProjects.getDefault().getOpenProjects() );
-            if( SwingUtilities.isEventDispatchThread() ) {
-                run();
-            } else {
-                SwingUtilities.invokeLater( this );
+        synchronized( this ) {
+            if( null != newCallback && null == callback ) {
+                OpenProjects.getDefault().addPropertyChangeListener( this );
+                TopComponent.getRegistry().addPropertyChangeListener( this );
+                setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                if( SwingUtilities.isEventDispatchThread() ) {
+                    run();
+                } else {
+                    SwingUtilities.invokeLater( this );
+                }
+            } else if( null == newCallback && null != callback ) {
+                OpenProjects.getDefault().removePropertyChangeListener( this );
+                TopComponent.getRegistry().removePropertyChangeListener( this );
+                editedFiles = null;
+                setLookupContent( null );
             }
-        } else if( null == newCallback && null != callback ) {
-            OpenProjects.getDefault().removePropertyChangeListener( this );
-            TopComponent.getRegistry().removePropertyChangeListener( this );
-            editedFiles = null;
-            setLookupContent( null );
+            this.callback = newCallback;
         }
-        this.callback = newCallback;
     }
     
-    public void propertyChange( PropertyChangeEvent e ) {
+    public synchronized void propertyChange( PropertyChangeEvent e ) {
         if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-            if( null != callback ) {
-                setLookupContent( OpenProjects.getDefault().getOpenProjects() );
-                callback.refresh();
+            synchronized( this ) {
+                if( null != callback ) {
+                    setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                    callback.refresh();
+                }
             }
         } else if( TopComponent.Registry.PROP_OPENED.equals( e.getPropertyName() ) ) {
             //remember which files are opened so that they can be scanned first

@@ -51,8 +51,6 @@ package org.netbeans.modules.xml.schema.abe;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.dnd.Autoscroll;
-import javax.swing.JPanel;
 
 /**
  *

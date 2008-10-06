@@ -44,7 +44,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.Utils;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,6 +57,8 @@ import org.openide.windows.TopComponent;
  * @author Radek Matous
  */
 public class CommandUtils {
+    // XXX maybe can be obtained somewhere
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
     private PhpProject project;
 
@@ -67,26 +69,16 @@ public class CommandUtils {
     /**
      * @return The file objects in the sources folder
      */
-    public FileObject[] phpFilesForContext(Lookup context) {
-        FileObject[] retval = null;
-        for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            retval = filter(filesForContext(context), srcRoot);
-            if (retval != null) {
-                break;
-            }
-        }
-        return retval;
+    public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript) {
+        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
+            ProjectPropertiesSupport.getWebRootDirectory(getProject());
+        return filter(filesForContext(context), dir);
     }
 
-    public FileObject[] phpFilesForSelectedNodes() {
-        FileObject[] retval = null;
-        for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-            retval = filter(Arrays.asList(filesForSelectedNodes()), srcRoot);
-            if (retval != null) {
-                break;
-            }
-        }
-        return retval;
+    public FileObject[] phpFilesForSelectedNodes(boolean runAsScript) {
+        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
+            ProjectPropertiesSupport.getWebRootDirectory(getProject());
+        return filter(Arrays.asList(filesForSelectedNodes()), dir);
     }
 
     public Collection<? extends FileObject> filesForContext(Lookup context) {
@@ -119,34 +111,44 @@ public class CommandUtils {
     }
 
     public String getRelativeSrcPath(FileObject fileObject) {
-        if (fileObject != null) {
-            if (fileObject.equals(getProject().getProjectDirectory())) {
-                return ""; //NOI18N
-            }
-            for (FileObject srcRoot : Utils.getSourceObjects(getProject())) {
-                if (FileUtil.isParentOf(srcRoot, fileObject)) {
-                    return FileUtil.getRelativePath(srcRoot, fileObject);
-                } else if (srcRoot.equals(fileObject)) {
-                    return ""; //NOI18N
+        return getRelativePhpPath(ProjectPropertiesSupport.getSourcesDirectory(getProject()), fileObject);
+    }
 
-                }
+    public String getRelativeWebRootPath(FileObject fileObject) {
+        return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
+    }
+
+    private String getRelativePhpPath(FileObject folder, FileObject fileObject) {
+        if (fileObject != null) {
+            if (FileUtil.isParentOf(folder, fileObject)) {
+                return FileUtil.getRelativePath(folder, fileObject);
+            } else if (folder.equals(fileObject)) {
+                return ""; //NOI18N
             }
         }
         return null;
     }
 
+
     private static boolean isUnderSourceRoot(FileObject sourceRoot, FileObject file) {
         return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;
     }
 
-    private static boolean isPhpFile(FileObject file) {
-        return file.getMIMEType().equals(PhpSourcePath.MIME_TYPE);
+    public static boolean isPhpFile(FileObject file) {
+        assert file != null;
+        return PhpSourcePath.MIME_TYPE.equals(FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE));
+    }
+
+    public static boolean isPhpOrHtmlFile(FileObject file) {
+        assert file != null;
+        String mimeType = FileUtil.getMIMEType(file, PhpSourcePath.MIME_TYPE, HTML_MIME_TYPE);
+        return PhpSourcePath.MIME_TYPE.equals(mimeType) || HTML_MIME_TYPE.equals(mimeType);
     }
 
     private static FileObject[] filter(Collection<? extends FileObject> files, FileObject dir) {
         Collection<FileObject> retval = new LinkedHashSet<FileObject>();
         for (FileObject file : files) {
-            if (!isUnderSourceRoot(dir, file) || !isPhpFile(file)) {
+            if (!isUnderSourceRoot(dir, file)) {
                 return null;
             }
             retval.add(file);

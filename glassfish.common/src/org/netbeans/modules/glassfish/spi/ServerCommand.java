@@ -41,10 +41,10 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.jar.Attributes;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,16 +57,35 @@ import java.util.logging.Logger;
  */
 public abstract class ServerCommand {
 
-    public ServerCommand() {
+    public static final char QUERY_SEPARATOR = '?'; // NOI18N
+    public static final char PARAM_SEPARATOR = '&'; // NOI18N
+
+    protected final String command;
+    protected String query = null;
+    protected boolean retry = false;
+
+    public ServerCommand(String command) {
+        this.command = command;
     }
     
     /**
-     * Override to provide the server command represented by this object.  Caller
-     * will prefix with http://host:port/__asadmin/ and open the server connection.
+     * Returns server command represented by this object.  Set in constructor.
+     * e.g. "deploy", "list-applications", etc.
      * 
-     * @return suffix to append to [host]/__asadmin/ for server command.
+     * @return command string represented by this object.
      */
-    public abstract String getCommand();
+    public String getCommand() {
+        return command;
+    }
+
+    /**
+     * Returns the query string for this command.  Set in constructor.
+     * 
+     * @return query string for this command.
+     */
+    public String getQuery() {
+        return query;
+    }
 
     /**
      * Override to change the type of HTTP method used for this command.
@@ -109,6 +128,19 @@ public abstract class ServerCommand {
     public InputStream getInputStream() {
         return null;
     }
+
+    /**
+     * Sometimes (e.g. during startup), the server does not accept commands.  In
+     * such cases, it will block for 20 seconds and then return with the message
+     * " V3 cannot process this command at this time, please wait".
+     *
+     * In such cases, we set a flag and have the option to reissue the command.
+     *
+     * @return true if server responded with it's "please wait" message.
+     */
+    public boolean retry() {
+        return retry;
+    }
     
     /**
      * Override for command specific failure checking.
@@ -145,6 +177,12 @@ public abstract class ServerCommand {
         } else {
             // !PW FIXME Need to pass this message back.  Need <Result> object?
             String message = m.getMainAttributes().getValue("message"); // NOI18N
+
+            // If server is not currently available for processing commands,
+            // set the retry flag.
+            if(message != null && message.contains("please wait")) {
+                retry = true;
+            }
             Logger.getLogger("glassfish").log(Level.WARNING, message);
         }
 
@@ -181,7 +219,81 @@ public abstract class ServerCommand {
      */
     @Override
     public String toString() {
-        return getCommand();
+        return (query == null) ? command : command + QUERY_SEPARATOR + query;
     }
     
+    /**
+     * Command to get property information for a dotted name.
+     */
+    public static final class GetPropertyCommand extends ServerCommand {
+
+        private Manifest info;
+        private Map<String,String> propertyMap;
+
+        public GetPropertyCommand(final String property) {
+            super("get"); // NOI18N
+            
+            this.query = "pattern=" + property; // NOI18N
+            this.propertyMap = new HashMap<String, String>();
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+
+            for (String key : info.getEntries().keySet()) {
+                int equalsIndex = key.indexOf('=');
+                if(equalsIndex >= 0) {
+                    try {
+                        propertyMap.put(key.substring(0, equalsIndex), URLDecoder.decode(URLDecoder.decode(key.substring(equalsIndex + 1), "UTF-8"),"UTF-8"));
+                    } catch (UnsupportedEncodingException ex) {
+                        ///Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    propertyMap.put(key, "");
+                }
+            }
+
+            return true;
+        }
+
+        public Map<String, String> getData() {
+            return propertyMap;
+        }
+    }
+
+    /**
+     * Command to set the value of a dotted name property.
+     */
+    public static final class SetPropertyCommand extends ServerCommand {
+
+        private Manifest info;
+
+        public SetPropertyCommand(final String property, final String value) {
+            super("set"); // NOI18N
+            query = "target=" + property + PARAM_SEPARATOR + "value=" + value; // NOI18N
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
 }

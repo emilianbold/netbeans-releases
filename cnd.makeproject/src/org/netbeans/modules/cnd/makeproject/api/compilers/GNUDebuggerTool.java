@@ -43,17 +43,24 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescriptor;
 
 public class GNUDebuggerTool extends Tool {
-    
+
     public GNUDebuggerTool(String hkey, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
         super(hkey, flavor, DebuggerTool, name, displayName, path); // NOI18N
     }
-    
+
     @Override
     public GNUDebuggerTool createCopy() {
         GNUDebuggerTool copy = new GNUDebuggerTool(getHostKey(), getFlavor(), "", getDisplayName(), getPath());
         copy.setName(getName());
         return copy;
     }
+
+    @Override
+    public DebuggerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getDebugger();
+    }
+
 }

@@ -178,7 +178,8 @@ public abstract class DragAndDropHandler {
                 return true;
             }
             if( isTextDnDEnabled && null != DataFlavor.selectBestTextFlavor(item.getTransferDataFlavors()) ) {
-                return importTextIntoPalette( targetCategory, item, dropIndex );
+                importTextIntoPalette( targetCategory, item, dropIndex );
+                return false; //return false to retain the original dragged text in its source
             }
         } catch( IOException ioE ) {
             Logger.getLogger( DragAndDropHandler.class.getName() ).log( Level.INFO, null, ioE );

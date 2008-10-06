@@ -329,11 +329,13 @@ public class Utilities {
     }
     
     
-    
+    private static boolean firstRoot = true;
     public static List<File> getFilesWithExtension(File startFile, String fileExtension, List<File> curList) {
-        if(Thread.currentThread().isInterrupted())
-            //if interrupted by the client dump the result and immediately return
+        //if interrupted by the client dump the result and immediately return
+        if(Thread.currentThread().isInterrupted()) {
+            firstRoot = true; //reset before returning
             return curList;
+        }
         if(curList == null)
             curList = new ArrayList<File>();
         if(startFile.isFile()){
@@ -348,10 +350,17 @@ public class Utilities {
             File[] children = startFile.listFiles();
             if(children != null){
                 for(File child: children){
+                    //exclude "build" dir since that is generated one.
+                    //cannot think of a better solution.
+                    if(firstRoot && child.getName().endsWith("build")) //NOI18N
+                        continue;
+                    firstRoot = false;
                     getFilesWithExtension(child, fileExtension, curList);
                 }
             }
         }
+        //reset before returning.
+        firstRoot = true;
         return curList;
     }
     
@@ -427,7 +436,6 @@ public class Utilities {
             return null;
         ucn.connect();
         
-        int fileLen = ucn.getContentLength();
         byte buffer[] = new byte[1024];
         BufferedInputStream bis = new BufferedInputStream(ucn.getInputStream());
         saveFile.getParentFile().mkdirs();
@@ -438,19 +446,17 @@ public class Utilities {
             bis.close();
             throw ex;
         }
-        int curLen = 0;
-        while( curLen < fileLen){
+        
+        int len = 1024;
+        while((len = bis.read(buffer, 0, 1024)) > 0) {
             try {
                 if(Thread.currentThread().isInterrupted())
                     break;
-                Thread.sleep(100);
+                Thread.sleep(10);
             } catch (InterruptedException ex) {}
             try{
-                int readLen = bis.available();
-                int len = bis.read(buffer, 0, (readLen>buffer.length)?buffer.length:readLen);
                 bos.write(buffer, 0, len);
-                curLen += len;
-            }catch (IOException e){
+            } catch (IOException e){
                 expn = e;
                 break;
             }

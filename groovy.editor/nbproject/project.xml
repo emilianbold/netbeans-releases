@@ -59,12 +59,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.editor.deprecated.pre61settings</code-name-base>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>0-1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -95,6 +95,24 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.25</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.groovy.support</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -107,8 +125,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -121,11 +139,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.preprocessorbridge</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.source</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>0.38</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -135,15 +161,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -252,7 +269,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.10</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -295,6 +312,11 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -310,10 +332,18 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
+                <friend>org.netbeans.modules.groovy.refactoring</friend>
+                <package>org.codehaus.groovy.ast</package>
+                <package>org.codehaus.groovy.ast.expr</package>
+                <package>org.codehaus.groovy.ast.stmt</package>
+                <package>org.codehaus.groovy.control</package>
                 <package>org.netbeans.modules.groovy.editor</package>
                 <package>org.netbeans.modules.groovy.editor.completion</package>
+                <package>org.netbeans.modules.groovy.editor.elements</package>
                 <package>org.netbeans.modules.groovy.editor.lexer</package>
+                <package>org.netbeans.modules.groovy.editor.parser</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/groovy-all.jar</runtime-relative-path>

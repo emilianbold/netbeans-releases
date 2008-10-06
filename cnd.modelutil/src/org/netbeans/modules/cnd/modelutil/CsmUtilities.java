@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelutil;
 
 import java.io.IOException;
@@ -71,6 +70,7 @@ import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JEditorPane;
@@ -98,7 +98,6 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
-        
 
 /**
  *
@@ -107,115 +106,106 @@ import org.openide.text.PositionRef;
 public class CsmUtilities {
 
     /* ------------------ MODIFIERS ---------------------- */
-     
     /**
-     * The <code>int</code> value representing the <code>public</code> 
+     * The <code>int</code> value representing the <code>public</code>
      * modifier.
-     */   
-    public static final int PUBLIC           = 0x00000001;
-
+     */
+    public static final int PUBLIC = 0x00000001;
     /**
-     * The <code>int</code> value representing the <code>private</code> 
+     * The <code>int</code> value representing the <code>private</code>
      * modifier.
-     */    
-    public static final int PRIVATE          = 0x00000002;
-
+     */
+    public static final int PRIVATE = 0x00000002;
     /**
-     * The <code>int</code> value representing the <code>protected</code> 
+     * The <code>int</code> value representing the <code>protected</code>
      * modifier.
-     */    
-    public static final int PROTECTED        = 0x00000004;    
-
+     */
+    public static final int PROTECTED = 0x00000004;
     /**
-     * The <code>int</code> value representing the <code>static</code> 
+     * The <code>int</code> value representing the <code>static</code>
      * modifier.
-     */    
-    public static final int STATIC           = 0x00000008;
-    
+     */
+    public static final int STATIC = 0x00000008;
     // the bit for local member. the modificator is not saved within this bit.
     public static final int LOCAL_MEMBER_BIT = 0x00000100;
 
     // the bit for local member. the modificator is not saved within this bit.
     public static final int CONST_MEMBER_BIT = 0x00000200;
-    
     public static final int PUBLIC_LEVEL = 2;
     public static final int PROTECTED_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
+    public static final int GLOBAL = 0x00001000;
+    public static final int LOCAL = 0x00002000;
+    public static final int FILE_LOCAL = 0x00004000;
+    public static final int MEMBER = 0x00008000;
+    public static final int ENUMERATOR = 0x00000400;
+    public static final int CONSTRUCTOR = 0x00000800;
+    public static final int DESTRUCTOR = 0x00020000;
+    public static final int OPERATOR = 0x00040000;
+    public static final int MACRO = 0x00010000;
+    public static final int EXTERN = 0x00080000;
+    public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") ||
+            Boolean.getBoolean("csm.utilities.trace");
 
-    public static final int GLOBAL           = 0x00001000;
-    public static final int LOCAL            = 0x00002000;
-    public static final int FILE_LOCAL       = 0x00004000;
-    public static final int MEMBER           = 0x00008000;
-    public static final int ENUMERATOR       = 0x00000400;
-    public static final int CONSTRUCTOR      = 0x00000800;
-    public static final int DESTRUCTOR       = 0x00020000;
-    public static final int OPERATOR         = 0x00040000;
-    public static final int MACRO            = 0x00010000;
-    public static final int EXTERN           = 0x00080000;
-
-    public static final boolean DEBUG = Boolean.getBoolean("csm.utilities.trace.summary") || 
-                                        Boolean.getBoolean("csm.utilities.trace");
-    
     public static int getModifiers(CsmObject obj) {
-	int mod = 0;
+        int mod = 0;
         if (CsmKindUtilities.isClassMember(obj)) {
-            mod |= CsmUtilities.getMemberModifiers((CsmMember)obj);
+            mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
         } else if (CsmKindUtilities.isFunctionDefinition(obj)) {
-            CsmFunctionDefinition fun = (CsmFunctionDefinition)obj;
+            CsmFunctionDefinition fun = (CsmFunctionDefinition) obj;
             if (CsmKindUtilities.isClassMember(fun.getDeclaration())) {
-                mod |= CsmUtilities.getMemberModifiers((CsmMember)fun.getDeclaration());
-            }            
+                mod |= CsmUtilities.getMemberModifiers((CsmMember) fun.getDeclaration());
+            }
         } else {
-            if (CsmKindUtilities.isGlobalVariable(obj)||CsmKindUtilities.isGlobalVariable(obj)){
+            if (CsmKindUtilities.isGlobalVariable(obj) || CsmKindUtilities.isGlobalVariable(obj)) {
                 mod |= GLOBAL;
             }
-            if (CsmKindUtilities.isFileLocalVariable(obj)){
+            if (CsmKindUtilities.isFileLocalVariable(obj)) {
                 mod |= FILE_LOCAL;
             }
-            if (CsmKindUtilities.isEnumerator(obj)){
+            if (CsmKindUtilities.isEnumerator(obj)) {
                 mod |= ENUMERATOR;
             }
-        } 
+        }
         if (CsmKindUtilities.isOperator(obj)) {
             mod |= OPERATOR;
         }
         // add contst info for variables
         if (CsmKindUtilities.isVariable(obj)) {
-            CsmVariable var = (CsmVariable)obj;
+            CsmVariable var = (CsmVariable) obj;
             // parameters could be with null type if it's varagrs "..."
             mod |= (var.getType() != null && var.getType().isConst()) ? CONST_MEMBER_BIT : 0;
-            if (var.isExtern()){
+            if (var.isExtern()) {
                 mod |= EXTERN;
             }
         }
         return mod;
     }
-    
+
     public static int getMemberModifiers(CsmMember member) {
-	int mod = 0;
-	CsmVisibility visibility = member.getVisibility();
-	if (CsmVisibility.PRIVATE == visibility) {
-	    mod = PRIVATE;
-	} else if (CsmVisibility.PROTECTED == visibility) {
-	    mod = PROTECTED;
-	} else if (CsmVisibility.PUBLIC == visibility) {
-	    mod = PUBLIC;
-	}
-	
-	if (member.isStatic()) {
-	    mod |= STATIC;
-	}
+        int mod = 0;
+        CsmVisibility visibility = member.getVisibility();
+        if (CsmVisibility.PRIVATE == visibility) {
+            mod = PRIVATE;
+        } else if (CsmVisibility.PROTECTED == visibility) {
+            mod = PROTECTED;
+        } else if (CsmVisibility.PUBLIC == visibility) {
+            mod = PUBLIC;
+        }
+        if (member.isStatic()) {
+            mod |= STATIC;
+        }
         mod |= MEMBER;
-        if (CsmKindUtilities.isConstructor(member)){
+        if (CsmKindUtilities.isConstructor(member)) {
             mod |= CONSTRUCTOR;
-        } else if (CsmKindUtilities.isDestructor(member)){
+        } else if (CsmKindUtilities.isDestructor(member)) {
             mod |= DESTRUCTOR;
         }
-	return mod;
+        return mod;
     }
-    
-    /** Get level from modifiers. 
-     * @param modifiers 
+
+    /** Get level from modifiers.
+     * @param modifiers
      * @return one of correspond constant (PUBLIC_LEVEL, PROTECTED_LEVEL, PRIVATE_LEVEL)
      */
     public static int getLevel(int modifiers) {
@@ -226,16 +216,15 @@ public class CsmUtilities {
         } else {
             return PRIVATE_LEVEL;
         }
-    }   
-    
+    }
+
     public static boolean isPrimitiveClassName(String s) {
-	return CCTokenContext.isTypeOrVoid(s);
+        return CCTokenContext.isTypeOrVoid(s);
     }
-    
+
     public static boolean isPrimitiveClass(CsmClassifier c) {
-	return c.getKind() == CsmDeclaration.Kind.BUILT_IN;
+        return c.getKind() == CsmDeclaration.Kind.BUILT_IN;
     }
-    
     //====================
 
     public static CsmFile getCsmFile(Node node, boolean waitParsing) {
@@ -250,6 +239,7 @@ public class CsmUtilities {
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+
                     public void run() {
                         panes[0] = ec.getOpenedPanes();
                     }
@@ -262,7 +252,7 @@ public class CsmUtilities {
         }
         return panes[0];
     }
-    
+
     public static File getFile(Document bDoc) {
         DataObject dobj = NbEditorUtilities.getDataObject(bDoc);
         if (dobj != null && dobj.isValid()) {
@@ -274,46 +264,46 @@ public class CsmUtilities {
         }
         return null;
     }
-    
+
     public static CsmFile getCsmFile(JTextComponent comp, boolean waitParsing) {
         return comp == null ? null : getCsmFile(comp.getDocument(), waitParsing);
     }
-    
+
     public static CsmFile getCsmFile(Document bDoc, boolean waitParsing) {
-	CsmFile csmFile = null;
-	try {
-	    csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
-	} catch (NullPointerException exc) {
-	    exc.printStackTrace();
-	}
-	return csmFile;
+        CsmFile csmFile = null;
+        try {
+            csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing);
+        } catch (NullPointerException exc) {
+            exc.printStackTrace();
+        }
+        return csmFile;
     }
-    
+
     public static CsmProject getCsmProject(Document bDoc) {
-	CsmProject csmProject = null;
-	try {
-	    csmProject = getCsmFile(bDoc, false).getProject();
-	} catch (NullPointerException exc) {
-	    exc.printStackTrace();
-	}
-	return csmProject;
+        CsmProject csmProject = null;
+        try {
+            csmProject = getCsmFile(bDoc, false).getProject();
+        } catch (NullPointerException exc) {
+            exc.printStackTrace();
+        }
+        return csmProject;
     }
-    
+
     public static boolean isAnyNativeProjectOpened() {
-	Project[] projects = OpenProjects.getDefault().getOpenProjects();
-	for (int i = 0; i < projects.length; i++) {
-	    if( projects[i].getLookup().lookup(NativeProject.class) != null) {
-		return true;
-	    }
-	}
-	return false;
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        for (int i = 0; i < projects.length; i++) {
+            if (projects[i].getLookup().lookup(NativeProject.class) != null) {
+                return true;
+            }
+        }
+        return false;
     }
-    
+
     public static CsmFile[] getCsmFiles(DataObject dobj) {
-	if( dobj != null && dobj.isValid()) {
+        if (dobj != null && dobj.isValid()) {
             try {
-                NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
-                if (set == null) {
+                Collection< ? extends NativeFileItemSet> sets = dobj.getLookup().lookupAll(NativeFileItemSet.class);
+                if (sets.size() == 0 ) {
                     FileObject fo = dobj.getPrimaryFile();
                     if (fo != null) {
                         File file = FileUtil.toFile(fo);
@@ -327,64 +317,65 @@ public class CsmUtilities {
                         }
                     }
                 } else {
-                    List<CsmFile> l = new ArrayList<CsmFile>(set.getItems().size());
-                    for (NativeFileItem item : set.getItems()) {
-                        CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
-                        if (csmProject != null) {
-                            CsmFile file = csmProject.findFile(item.getFile().getAbsolutePath());
-                            if (file != null) {
-                                l.add(file);
+
+                    List<CsmFile> l = new ArrayList<CsmFile>();
+                    for (NativeFileItemSet set : sets) {
+                        for (NativeFileItem item : set.getItems()) {
+                            CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
+                            if (csmProject != null) {
+                                CsmFile file = csmProject.findFile(item);
+                                if (file != null) {
+                                    l.add(file);
+                                }
                             }
                         }
                     }
                     return l.toArray(new CsmFile[l.size()]);
                 }
-            } catch (IllegalStateException ex){
+            } catch (BufferUnderflowException ex) {
+                // FIXUP: IZ#148840
+            } catch (IllegalStateException ex) {
                 // dobj can be invalid
             }
-	}
-	return new CsmFile[0];
+        }
+        return new CsmFile[0];
     }
-    
+
     public static CsmFile[] getCsmFiles(FileObject fo) {
-	try {
-	    return getCsmFiles(DataObject.find(fo));
-	} catch (DataObjectNotFoundException ex) {
-	    return new CsmFile[0];
-	}
+        try {
+            return getCsmFiles(DataObject.find(fo));
+        } catch (DataObjectNotFoundException ex) {
+            return new CsmFile[0];
+        }
     }
-    
-    
+
     public static CsmFile getCsmFile(DataObject dobj, boolean waitParsing) {
-	CsmFile[] files = getCsmFiles(dobj);
-	if( files == null || files.length == 0 ) {
-	    return null;
-	}
-	else {
-	    if( waitParsing ) {
-		try {
-		    files[0].scheduleParsing(true);
-		} catch (InterruptedException ex) {		    
-		    // ignore
-		}
-	    }
-	    return files[0];
-	}
+        CsmFile[] files = getCsmFiles(dobj);
+        if (files == null || files.length == 0) {
+            return null;
+        } else {
+            if (waitParsing) {
+                try {
+                    files[0].scheduleParsing(true);
+                } catch (InterruptedException ex) {                       // ignore
+
+                }
+            }
+            return files[0];
+        }
     }
-    
+
     public static CsmFile getCsmFile(FileObject fo, boolean waitParsing) {
-	if( fo == null ) {
-	    return null;
-	}
-	else {
-	    try {
-		return getCsmFile(DataObject.find(fo), waitParsing);
-	    } catch (DataObjectNotFoundException ex) {
-		return null;
-	    }
-	}
+        if (fo == null) {
+            return null;
+        } else {
+            try {
+                return getCsmFile(DataObject.find(fo), waitParsing);
+            } catch (DataObjectNotFoundException ex) {
+                return null;
+            }
+        }
     }
-    
 
     public static FileObject getFileObject(CsmFile csmFile) {
         FileObject fo = null;
@@ -416,7 +407,7 @@ public class CsmUtilities {
         }
         return dob;
     }
-    
+
     public static PositionBounds createPositionBounds(CsmOffsetable csmObj) {
         if (csmObj == null) {
             return null;
@@ -429,179 +420,89 @@ public class CsmUtilities {
         }
         return null;
     }
-    
+
     public static CloneableEditorSupport findCloneableEditorSupport(CsmFile csmFile) {
         DataObject dob = getDataObject(csmFile);
         return findCloneableEditorSupport(dob);
     }
-    
+
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
         Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
-            return (CloneableEditorSupport)obj;
+            return (CloneableEditorSupport) obj;
         }
         obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
-            return (CloneableEditorSupport)obj;
+            return (CloneableEditorSupport) obj;
         }
         return null;
-    }    
-    //====================================
-
-    public static CsmFile findHeaderFile(CsmFile file) {
-        return findCsmFile(file, true);
     }
-
-    public static CsmFile findSourceFile(CsmFile file) {
-        return findCsmFile(file, false);
-    }
-    
-    public static CsmFile toggleFileKind(CsmFile file) {
-        assert (file != null) : "can't be null file";
-        boolean header = isHeaderFile(file);
-        CsmFile toggledFile = findCsmFile(file, !header);
-        return toggledFile == null ? file : toggledFile;
-    }
-    
-    public static boolean isHeaderFile(CsmFile file) {
-        assert (file != null) : "can't be null file";
-        String path = file.getAbsolutePath().toString();
-        String ext = FileUtil.getExtension(path);
-        return isHeaderExt(ext);
-    }
-    
-    public static boolean isSourceFile(CsmFile file) {
-        assert (file != null) : "can't be null file";
-        return !isHeaderFile(file);
-    }
-    
-    //====================================
-    
-    //====================================
-    
-    private static String headerExts[] = {"h", "hh", "hpp"}; //NOI18N
-    private static String sourceExts[] = {"c", "cc", "cpp"}; //NOI18N
-   /** default extension separator */
-    private static final char EXT_SEP = '.';
-    
-    protected static CsmFile findCsmFile(CsmFile file, boolean header) {
-        String path = file.getAbsolutePath().toString();
-        String ext = FileUtil.getExtension(path);
-        CsmFile outFile = null;
-        if (ext.length() > 0) {
-            String pathWoExt = path.substring(0, path.length() - ext.length() - 1);
-            String toggledFileName;
-            if (header) {
-                toggledFileName = findHeaderFileName(pathWoExt);
-            } else {
-                toggledFileName = findSourceFileName(pathWoExt);
-            }
-            if (toggledFileName != null && toggledFileName.length() > 0) {
-                outFile = file.getProject().findFile(toggledFileName);
-            }
-        }
-        return outFile;
-    }
-    
-    protected static String findHeaderFileName(String pathWoExt) {
-        for (int i = 0; i < headerExts.length; i++) {
-            String path = new StringBuilder(pathWoExt).append(EXT_SEP).append(headerExts[i]).toString();
-            File test = new File(path);
-            if (test.exists()) {
-                return path;
-            }
-        }
-        return "";
-    }
-    
-    protected static String findSourceFileName(String pathWoExt) {
-        for (int i = 0; i < sourceExts.length; i++) {
-            String path = new StringBuilder(pathWoExt).append(EXT_SEP).append(sourceExts[i]).toString();
-            File test = new File(path);
-            if (test.exists()) {
-                return path;
-            }
-        }
-        return "";
-    }   
-    
-    protected static boolean isHeaderExt(String ext) {
-        for (int i = 0; i < headerExts.length; i++) {
-            if (ext.compareToIgnoreCase(headerExts[i]) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    protected static boolean isSourcesExt(String ext) {
-        for (int i = 0; i < sourceExts.length; i++) {
-            if (ext.compareToIgnoreCase(sourceExts[i]) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }    
-
     //==================== open elemen's definition/declaration ================
 
     private static class Point {
+
         public final int line;
         public final int column;
+
         public Point(int line, int column) {
             this.line = line;
             this.column = column;
         }
     }
-    
+
     private static class PointOrOffsetable {
+
         private final Object content;
+
         public PointOrOffsetable(Point point) {
             content = point;
         }
+
         public PointOrOffsetable(CsmOffsetable offsetable) {
             content = offsetable;
         }
+
         public Point getPoint() {
             return (content instanceof Point) ? (Point) content : null;
         }
+
         public CsmOffsetable getOffsetable() {
             return (content instanceof CsmOffsetable) ? (CsmOffsetable) content : null;
         }
     }
 
-    /* 
+    /*
      * opens source file correspond to input object and set caret on
      * start offset position
      */
     public static boolean openSource(CsmObject element) {
         if (CsmKindUtilities.isOffsetable(element)) {
-            return openAtElement((CsmOffsetable)element, false);
+            return openAtElement((CsmOffsetable) element, false);
         } else if (CsmKindUtilities.isFile(element)) {
-            final CsmFile file = (CsmFile)element;
+            final CsmFile file = (CsmFile) element;
             CsmOffsetable fileTarget = new FileTarget(file);
             return openAtElement(fileTarget, false);
         }
         return false;
     }
-    
+
     public static boolean openSource(CsmFile file, int line, int column) {
         return openAtElement(getDataObject(file), new PointOrOffsetable(new Point(line, column)), false);
     }
-//    
-//    public static boolean openSource(DataObject dob, int line, int column) {
+//    //    public static boolean openSource(DataObject dob, int line, int column) {
 //        return false;
 //    }
 
     private static boolean openAtElement(final CsmOffsetable element, final boolean jumpLineStart) {
         return openAtElement(getDataObject(element.getContainingFile()), new PointOrOffsetable(element), jumpLineStart);
     }
-    
+
     private static boolean openAtElement(final DataObject dob, final PointOrOffsetable element, final boolean jumpLineStart) {
         if (dob != null) {
             final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         NbEditorUtilities.addJumpListEntry(dob);
                         JEditorPane[] panes = ec.getOpenedPanes();
@@ -611,7 +512,6 @@ public class CsmUtilities {
                             opened = true;
                         } else {
                             // editor not yet opened
-                            
                             // XXX: vv159170 commented out the ollowing code, because on the time
                             // of firing even no chance to get opened panes yet...
 //                            ec.addPropertyChangeListener(new PropertyChangeListener() {
@@ -632,33 +532,34 @@ public class CsmUtilities {
                         }
                         if (panes != null && panes.length > 0) {
                             selectElementInPane(panes[0], element, !opened, jumpLineStart);
-                        }                        
+                        }
                     }
-                    
                 });
             }
             return true;
         }
         return false;
     }
-    
+
     /** Jumps to element in given editor pane. When delayProcessing is
      * specified, waits for real visible open before jump
      */
-    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element, 
-                                            boolean delayProcessing, final boolean jumpLineStart) {
+    private static void selectElementInPane(final JEditorPane pane, final PointOrOffsetable element,
+            boolean delayProcessing, final boolean jumpLineStart) {
         //final Cursor editCursor = pane.getCursor();
         //pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (false && delayProcessing) {
-            // [AS] Comment branch because it does not work when 
+            // [AS] Comment branch because it does not work when
             // method is called from action in undock view.
             // See IZ#135610:*CallGraph*: GoTo Caller works incorrectly in undock window
             // [dafe] I don't know why, but editor guys are waiting for focus
             // in delay processing, so I will do the same
             pane.addFocusListener(new FocusAdapter() {
+
                 @Override
                 public void focusGained(FocusEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+
                         public void run() {
                             jumpToElement(pane, element, jumpLineStart);
                         }
@@ -669,6 +570,7 @@ public class CsmUtilities {
         } else {
             // immediate processing
             RequestProcessor.getDefault().post(new Runnable() {
+
                 public void run() {
                     jumpToElement(pane, element, jumpLineStart);
                 }
@@ -679,16 +581,14 @@ public class CsmUtilities {
                 temp = temp.getParent();
             }
             ((TopComponent) temp).requestActive();
-       }
+        }
     }
-    
-    
-//    /** Jumps to element on given editor pane. Call only outside AWT thread!
+    //    /** Jumps to element on given editor pane. Call only outside AWT thread!
 //     */
 //    private static void jumpToElement(JEditorPane pane, CsmOffsetable element) {
 //        jumpToElement(pane, element, false);
 //    }
-    
+
     private static void jumpToElement(JEditorPane pane, PointOrOffsetable pointOrOffsetable, boolean jumpLineStart) {
         //start = jumpLineStart ? lineToPosition(pane, element.getStartPosition().getLine()-1) : element.getStartOffset();
         int start;
@@ -696,41 +596,43 @@ public class CsmUtilities {
         Point point = pointOrOffsetable.getPoint();
         if (jumpLineStart) {
             int line = (element == null) ? point.line : element.getStartPosition().getLine();
-            start = lineToPosition(pane, line-1);
+            start = lineToPosition(pane, line - 1);
         } else {
-            if( element == null ) {
-                start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line-1);
+            if (element == null) {
+                start = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), point.line - 1);
                 start += point.column;
             } else {
                 start = element.getStartOffset();
             }
         }
-        
-        if(pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
+        if (pane.getDocument() != null && start >= 0 && start < pane.getDocument().getLength()) {
             pane.setCaretPosition(start);
-            if (DEBUG) System.err.println("I'm going to "+start+" for element"+getElementJumpName(pointOrOffsetable));
+            if (DEBUG) {
+                System.err.println("I'm going to " + start + " for element" + getElementJumpName(pointOrOffsetable));
+            }
         }
         StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+
     }
-    
     // NB document independent method
+
     private static int lineToPosition(JEditorPane pane, int docLine) {
         Document doc = pane.getDocument();
         int lineSt = 0;
         if (doc instanceof BaseDocument) {
             // use NB utilities for NB documents
-            lineSt = Utilities.getRowStartFromLineOffset((BaseDocument)doc, docLine);
+            lineSt = Utilities.getRowStartFromLineOffset((BaseDocument) doc, docLine);
         } else {
             // not NB document, count lines
             int len = doc.getLength();
             try {
                 String text = doc.getText(0, len);
                 boolean afterEOL = false;
-                for( int i = 0; i < len; i++ ) {
+                for (int i = 0; i < len; i++) {
                     char c = text.charAt(i);
-                    if( c == '\n') {
+                    if (c == '\n') {
                         docLine--;
-                        if( docLine == 0 ) {
+                        if (docLine == 0) {
                             return lineSt;
                         }
                         afterEOL = true;
@@ -739,18 +641,18 @@ public class CsmUtilities {
                         afterEOL = false;
                     }
                 }
-            }
-            catch( BadLocationException e ) {
+            } catch (BadLocationException e) {
             }
         }
         return lineSt;
-    } 
-    
+    }
+
     private static String getElementJumpName(PointOrOffsetable pointOrOffsetable) {
-        if( pointOrOffsetable.getOffsetable() != null ) {
+        if (pointOrOffsetable.getOffsetable() != null) {
             return getElementJumpName(pointOrOffsetable.getOffsetable());
         } else {
-            return String.format("[%i:%i]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column);
+            return String.format("[%i:%i]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column); // NOI18N
+
         }
     }
 
@@ -760,17 +662,17 @@ public class CsmUtilities {
             if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName().toString();
             } else if (CsmKindUtilities.isStatement(element)) {
-                text = ((CsmStatement)element).getText().toString();
-            } else if (CsmKindUtilities.isOffsetable(element) ) {
-                text = ((CsmOffsetable)element).getText().toString();
+                text = ((CsmStatement) element).getText().toString();
+            } else if (CsmKindUtilities.isOffsetable(element)) {
+                text = ((CsmOffsetable) element).getText().toString();
             }
             if (text.length() > 0) {
                 text = "\"" + text + "\""; // NOI18N
+
             }
-            }
+        }
         return text;
-    }    
-    
+    }
 
     public static <T> Collection<T> merge(Collection<T> orig, Collection<T> newList) {
         orig = orig != null ? orig : new ArrayList<T>();
@@ -779,42 +681,45 @@ public class CsmUtilities {
         }
         return orig;
     }
-    
+
     public static <T> boolean removeAll(Collection<T> dest, Collection<T> removeItems) {
         if (dest != null && removeItems != null) {
             return dest.removeAll(removeItems);
         }
         return false;
     }
-    
+
     public static String getCsmName(CsmObject obj) {
         StringBuilder buf = new StringBuilder();
         if (CsmKindUtilities.isNamedElement(obj)) {
-            CsmNamedElement named = (CsmNamedElement)obj;
+            CsmNamedElement named = (CsmNamedElement) obj;
             buf.append(" [name] ").append(named.getName()); // NOI18N
+
         } else {
             String simpleName = obj.getClass().getName();
-            simpleName = simpleName.substring(simpleName.lastIndexOf(".")+1); // NOI18N
+            simpleName = simpleName.substring(simpleName.lastIndexOf(".") + 1); // NOI18N
+
             buf.append(" [class] ").append(simpleName); // NOI18N
+
         }
         if (CsmKindUtilities.isDeclaration(obj)) {
-            CsmDeclaration decl = (CsmDeclaration)obj;
+            CsmDeclaration decl = (CsmDeclaration) obj;
             buf.append(" [kind] ").append(decl.getKind()); // NOI18N
-        }  
+
+        }
         return buf.toString();
-    }    
-    
-    //-------------------------------------------------------------------------
-    
+    }          //-------------------------------------------------------------------------
+
+
     /**
      * Gets function signature in the form that is shown to client
      * @param fun function, which signature should be returned
      * @return signature of the function
      */
     public static String getSignature(CsmFunction fun) {
-	return getSignature(fun, true);
+        return getSignature(fun, true);
     }
-    
+
     /**
      * Gets function signature in the form that is shown to client
      * @param fun function, which signature should be returned
@@ -822,80 +727,81 @@ public class CsmUtilities {
      * @return signature of the function
      */
     public static String getSignature(CsmFunction fun, boolean showParamNames) {
-        StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate)fun).getDisplayName() : fun.getName());
+        StringBuilder sb = new StringBuilder(CsmKindUtilities.isTemplate(fun) ? ((CsmTemplate) fun).getDisplayName() : fun.getName());
         sb.append('(');
         boolean addComma = false;
-        for( Iterator iter = fun.getParameters().iterator(); iter.hasNext(); ) {
+        for (Iterator iter = fun.getParameters().iterator(); iter.hasNext();) {
             CsmParameter par = (CsmParameter) iter.next();
-            if( addComma ) {
+            if (addComma) {
                 sb.append(", "); // NOI18N
+
             } else {
                 addComma = true;
             }
-	    if (showParamNames) {
-		sb.append(par.getDisplayText());
-	    }
-	    else {
-		CsmType type = par.getType();
-		if( type != null ) {
-		    sb.append(type.getText());
-		    //sb.append(' ');
-		} else if (par.isVarArgs()){
-		    sb.append("..."); // NOI18N
-		}
-	    }
-        }        
-        sb.append(')');
-        if (CsmKindUtilities.isMethodDeclaration(fun)){
-            if( ((CsmMethod) fun).isConst() ) {
-                sb.append(" const"); // NOI18N
+            if (showParamNames) {
+                sb.append(par.getDisplayText());
+            } else {
+                CsmType type = par.getType();
+                if (type != null) {
+                    sb.append(type.getText());
+                //sb.append(' ');
+                } else if (par.isVarArgs()) {
+                    sb.append("..."); // NOI18N
+
+                }
             }
         }
-	// TODO: as soon as we extract APTStringManager into a separate module,
-	// use string manager here.
-	// For now it's client responsibility to do this
+        sb.append(')');
+        if (CsmKindUtilities.isMethodDeclaration(fun)) {
+            if (((CsmMethod) fun).isConst()) {
+                sb.append(" const"); // NOI18N
+
+            }
+        }
+        // TODO: as soon as we extract APTStringManager into a separate module,
+        // use string manager here.
+        // For now it's client responsibility to do this
         //return NameCache.getString(sb.toString());
-	return sb.toString();
+        return sb.toString();
     }
-    
     //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {
+
         private CsmFile file;
-        
+
         public FileTarget(CsmFile file) {
             this.file = file;
         }
-        
+
         public CsmFile getContainingFile() {
             return file;
         }
-        
+
         public int getStartOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
-        
+
         public int getEndOffset() {
             // start of the file
             return DUMMY_POSITION.getOffset();
         }
-        
+
         public CsmOffsetable.Position getStartPosition() {
             return DUMMY_POSITION;
         }
-        
+
         public CsmOffsetable.Position getEndPosition() {
             return DUMMY_POSITION;
         }
-        
+
         public String getText() {
             return "";
         }
-        
     }
-    
     private static final CsmOffsetable.Position DUMMY_POSITION = new CsmOffsetable.Position() {
+
         public int getOffset() {
             return -1;
         }
@@ -911,8 +817,8 @@ public class CsmUtilities {
 
     private CsmUtilities() {
     }
-    
     /* package */ static boolean isUnitTestsMode() {
         return Boolean.getBoolean("cnd.mode.unittest");
     }
 }
+

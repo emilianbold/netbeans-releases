@@ -41,10 +41,17 @@ package org.netbeans.modules.javascript.editing.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanel;
+import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanelProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,9 +63,10 @@ import org.openide.util.Lookup;
 public class JsOptionsController extends OptionsPanelController {
 
     private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+    private List<JSPreferencesPanel> preferencesPanels = new LinkedList<JSPreferencesPanel>();
 
     /** <i>GuardedBy("this")</i> */
-    private BrowserPanel panel;
+    private JPanel panel;
 
     private boolean changed;
 
@@ -69,12 +77,16 @@ public class JsOptionsController extends OptionsPanelController {
 
     @Override
     public void update() {
-        getComponent().load();
+        for( JSPreferencesPanel panel : preferencesPanels ){
+            panel.load();
+        }
     }
 
     @Override
     public void applyChanges() {
-        getComponent().store();
+        for( JSPreferencesPanel panel : preferencesPanels ){
+            panel.store();
+        }
         changed = false;
     }
 
@@ -85,7 +97,7 @@ public class JsOptionsController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return null;
     }
 
     @Override
@@ -116,9 +128,17 @@ public class JsOptionsController extends OptionsPanelController {
         propertySupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private synchronized BrowserPanel getComponent() {
+    private synchronized JPanel getComponent() {
         if (panel == null) {
-            panel = new BrowserPanel(this);
+            panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel,javax.swing.BoxLayout.Y_AXIS));
+            preferencesPanels.add(new BrowserPanel(this));
+            for ( JSPreferencesPanelProvider provider : getJSPreferencesPanelProviders() ) {
+                preferencesPanels.add(provider.getPanel());
+            }
+            for( JSPreferencesPanel prefPanel : preferencesPanels ){
+                panel.add(prefPanel);
+            }
         }
         return panel;
     }
@@ -145,5 +165,17 @@ public class JsOptionsController extends OptionsPanelController {
         public abstract void setSupported(SupportedBrowsers supported, EnumSet<BrowserVersion> versions);
 
         public abstract void setLanguageVersion(SupportedBrowsers supported, int version);
+    }
+    
+        /**
+     * Moved this out of Page.java so that WebFolderListener also has an opportunity  to
+     * access the providers so that it can listen and decide wether or not to update
+     * contents should be updated given a page.
+     **/
+    public static final Collection<? extends JSPreferencesPanelProvider> getJSPreferencesPanelProviders() {
+        Lookup.Template<JSPreferencesPanelProvider> templ = new Lookup.Template<JSPreferencesPanelProvider>(JSPreferencesPanelProvider.class);
+        final Lookup.Result<JSPreferencesPanelProvider> result = Lookup.getDefault().lookup(templ);
+        Collection<? extends JSPreferencesPanelProvider> impls = result.allInstances();
+        return impls;
     }
 }

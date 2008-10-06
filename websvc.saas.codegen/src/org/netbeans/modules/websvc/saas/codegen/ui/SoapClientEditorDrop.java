@@ -41,7 +41,6 @@
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
 import org.netbeans.modules.websvc.saas.codegen.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
@@ -49,14 +48,11 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -89,7 +85,7 @@ public class SoapClientEditorDrop implements ActiveEditorDrop {
         final Document targetDoc = targetComponent.getDocument();
         FileObject targetSource = NbEditorUtilities.getFileObject(targetComponent.getDocument());
         Project targetProject = FileOwnerQuery.getOwner(targetSource);
-        WsdlOperation op = method.getWsdlOperation();
+        WSOperation op = method.getWsdlOperation();
         final String displayName = op.getName();
         
         targetFO = getTargetFile(targetComponent);
@@ -117,27 +113,9 @@ public class SoapClientEditorDrop implements ActiveEditorDrop {
                     if (bean.getInputParameters() != null) {
                         allParams.addAll(bean.getInputParameters());
                     }
-                    if(!allParams.isEmpty()) {
-                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
-
-                        DialogDescriptor desc = new DialogDescriptor(panel, 
-                                NbBundle.getMessage(SoapClientEditorDrop.class,
-                                "LBL_CustomizeSaasService", displayName));
-                        Object response = DialogDisplayer.getDefault().notify(desc);
-
-                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
-                            // cancel
-                            return;
-                        }
-                    }
-
-                    try {
-                        codegen.initProgressReporting(dialog.getProgressHandle());
-                        codegen.generate();
-                    } catch(IOException ex) {
-                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
-                            errors.add(ex);
-                    }
+                    boolean response = Util.showDialog(displayName, allParams, targetDoc);
+                    if(response)
+                        Util.doGenerateCode(codegen, dialog, errors);
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

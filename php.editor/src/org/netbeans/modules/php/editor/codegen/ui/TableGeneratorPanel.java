@@ -92,6 +92,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(TableGeneratorPanel.class, "MSG_SelectTableAndColumns"));
         panel.initialize(desc, connVariable);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionGeneratorPanel.class, "ACSD_SelectColumns"));
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -118,7 +119,6 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
                 updateErrorState();
             }
         });
-        errorLabel.setForeground(UIUtils.getErrorForeground());
     }
 
     private void initialize(DialogDescriptor descriptor, String connVariable) {
@@ -302,8 +302,8 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
     }
 
     private void setErrorMessage(String message) {
-        errorLabel.setText(message != null ? message : " "); // NOI18N
-         descriptor.setValid(message == null);
+        errorLabel.setText(message);
+        descriptor.setValid(message == null);
     }
 
     private static <T> T doWithProgress(String message, final Callable<? extends T> run) {
@@ -357,7 +357,7 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
         columnList = new javax.swing.JList();
         connVariableLabel = new javax.swing.JLabel();
         connVariableTextField = new javax.swing.JTextField();
-        errorLabel = new javax.swing.JLabel();
+        errorLabel = new ErrorLabel();
 
         dbconnLabel.setLabelFor(dbconnComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(dbconnLabel, org.openide.util.NbBundle.getMessage(TableGeneratorPanel.class, "ConnectionGeneratorPanel.dbconnLabel.text")); // NOI18N
@@ -400,12 +400,12 @@ public class TableGeneratorPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, columnScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, columnScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, dbconnLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, dbconnComboBox, 0, 301, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, dbconnComboBox, 0, 437, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, tableLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, tableComboBox, 0, 301, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, tableComboBox, 0, 437, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, columnLabel)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, connVariableTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, connVariableLabel))

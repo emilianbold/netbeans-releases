@@ -42,12 +42,13 @@ package org.netbeans.modules.uml.drawingarea.image;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.IIOImage;
@@ -57,8 +58,6 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,82 +112,103 @@ public class DiagramImageWriter
                                 int width, 
                                 int height)
     {
+        // unselect widgest so that the exported image does not have resize border
+        HashSet selected = new HashSet();
+        selected.addAll(scene.getSelectedObjects());
+        scene.userSelectionSuggested(Collections.emptySet(), false);
+        
         double scale = scene.getZoomFactor();
   
-        Rectangle sceneRec = scene.getPreferredBounds();
+        Rectangle sceneRec = scene.getClientArea();
         Rectangle viewRect = scene.getView().getVisibleRect();
 
         BufferedImage bufferedImage;
         Graphics2D g;
-        ArrayList<Widget> hiddenWidgets = new ArrayList<Widget>();
         
         int imageWidth = sceneRec.width;
         int imageHeight = sceneRec.height;
 
+        switch (zoomType)
+        {
+            case CUSTOM_SIZE:
+                imageWidth = width;
+                imageHeight = height;
+                scale = Math.min((double)width / (double)sceneRec.width, 
+                        (double)height / (double)sceneRec.height);
+                break;
+            case FIT_IN_WINDOW:
+                scale = Math.min((double)viewRect.width / (double)sceneRec.width, 
+                        (double)viewRect.height / (double)sceneRec.height);
+                imageWidth = (int)((double)sceneRec.width * scale);
+                imageHeight = (int)((double)sceneRec.height * scale);
+                break;
+            case CURRENT_ZOOM_LEVEL:
+                imageWidth = (int) (sceneRec.width * scene.getZoomFactor());
+                imageHeight = (int) (sceneRec.height * scene.getZoomFactor());
+                break;
+            case ACTUAL_SIZE:
+                imageWidth = sceneRec.width;
+                imageHeight = sceneRec.height;
+                scale = 1.0;
+                break;
+        }
+  
+        bufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        g = bufferedImage.createGraphics();
+        g.setPaint(scene.getBackground());
+        g.fillRect(0, 0, imageWidth, imageHeight);
+                
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        
+        g.scale(scale, scale);
+        
         if (selectedOnly)
         {
-            // hide unselected widget
-            HashSet<Object> invisible = new HashSet<Object>();
-            invisible.addAll(scene.getObjects());
-            Set selected = scene.getSelectedObjects();
-            invisible.removeAll(selected);
+            Area area = new Area();
+            for (Object o : selected)
+            {
+                Widget w = scene.findWidget(o);
+                if (w != null)
+                {
+                    Rectangle rec = w.convertLocalToScene(w.getClientArea());
+                    rec.translate(-sceneRec.x, -sceneRec.y);
+                    area.add(new Area(rec));
+                }
+            }
+            g.clip(area);
+            scene.paint(g);
+            if (visibleAreaOnly)
+            {
+                bufferedImage = bufferedImage.getSubimage((int) (viewRect.x), (int) (viewRect.y),
+                        (int) (viewRect.width), (int) (viewRect.height));
+            } else
+            {
+                if (area.getBounds().width > 0 && area.getBounds().height > 0)
+                {
+                    bufferedImage = bufferedImage.getSubimage((int) (area.getBounds().x * scale), (int) (area.getBounds().y * scale),
+                            (int) (area.getBounds().width * scale), (int) (area.getBounds().height * scale));
+                }
+            }
+        }
+        else
+        {
+            scene.paint(g);
             
-            for (Object o : invisible)
-            {
-               Widget widget = scene.findWidget(o);
-               if (widget != null && widget.isVisible())
-               {
-                   if (widget instanceof UMLNodeWidget || widget instanceof UMLEdgeWidget)
-                   {
-                       widget.setVisible(false);
-                       hiddenWidgets.add(widget);
-                   }
-               }
-            }
+            if (visibleAreaOnly && imageWidth >= viewRect.width && imageHeight >= viewRect.height)
+                bufferedImage = bufferedImage.getSubimage((int) (viewRect.x), (int) (viewRect.y),
+                        (int) (viewRect.width), (int) (viewRect.height));
         }
-        if (visibleAreaOnly)
-        {
-            imageWidth = viewRect.width;
-            imageHeight = viewRect.height;
-        } else
-        {
-            switch (zoomType)
-            {
-                case CUSTOM_SIZE:
-                    imageWidth = width;
-                    imageHeight = height;
-                    scale = Math.min((double)width / (double)sceneRec.width, 
-                            (double)height / (double)sceneRec.height);
-                    break;
-                case FIT_IN_WINDOW:
-                    scale = Math.min((double)viewRect.width / (double)sceneRec.width, 
-                            (double)viewRect.height / (double)sceneRec.height);
-                    imageWidth = (int)((double)sceneRec.width * scale);
-                    imageHeight = (int)((double)sceneRec.height * scale);
-                    break;
-                case CURRENT_ZOOM_LEVEL:
-                    imageWidth = (int) (sceneRec.width * scene.getZoomFactor());
-                    imageHeight = (int) (sceneRec.height * scene.getZoomFactor());
-                    break;
-                case ACTUAL_SIZE:
-                    imageWidth = sceneRec.width;
-                    imageHeight = sceneRec.height;
-                    scale = 1.0;
-                    break;
-            }
-        }
-        
-        bufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-        g = bufferedImage.createGraphics();       
-        g.translate (0,0);
-        g.scale (scale, scale);
-        scene.paint (g);
-        
-        // restore widget visibility
-        for (Widget w: hiddenWidgets)
-        {
-            w.setVisible(true);
-        }
+              
+        // now restore the selected objects 
+        scene.userSelectionSuggested(selected, false);
         
         try
         {
@@ -224,4 +244,15 @@ public class DiagramImageWriter
             }
         }
     }
+    
+    
+    public static void write(   DesignerScene scene,
+                                ImageOutputStream fo, 
+                                double scale )
+    {
+        int width = (int) (scene.getClientArea().width * scale);
+        int height = (int) (scene.getClientArea().height * scale);
+        write(scene, ImageType.png, fo, false, CUSTOM_SIZE, false, 100, width, height);
+    }
+            
 }

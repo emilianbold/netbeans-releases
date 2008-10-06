@@ -160,6 +160,7 @@
                 <package>org.netbeans.modules.bpel.model.api.references</package>
                 <package>org.netbeans.modules.bpel.model.api.resources</package>
                 <package>org.netbeans.modules.bpel.model.api.support</package>
+                <package>org.netbeans.modules.bpel.model.ext</package>
                 <package>org.netbeans.modules.bpel.model.ext.editor.api</package>
                 <package>org.netbeans.modules.bpel.model.ext.logging.api</package>
                 <package>org.netbeans.modules.bpel.model.spi</package>

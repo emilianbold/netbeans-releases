@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml;
 
 import java.beans.*;
+import java.io.IOException;
 import javax.xml.transform.Source;
 import org.xml.sax.*;
 import org.openide.awt.HtmlBrowser;
@@ -55,6 +56,7 @@ import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.xml.text.TextEditorSupport;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
+import org.netbeans.modules.xml.util.Util;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.spi.xml.cookies.*;
 
@@ -96,18 +98,24 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         if (fo.getMIMEType().indexOf("xml") == -1) { // NOI18N
             mimetype = XMLKit.MIME_TYPE;
         }
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
+        final TextEditorSupport.TextEditorSupportFactory editorFactory =
             TextEditorSupport.findEditorSupportFactory (this, mimetype);
         editorFactory.registerCookies (set);
         CookieSet.Factory viewCookieFactory = new ViewCookieFactory();
         set.add (ViewCookie.class, viewCookieFactory);
         InputSource is = DataObjectAdapters.inputSource (this);
+        //enable "Save As"
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                editorFactory.createEditor().saveAs( folder, fileName );
+            }
+        });
         // add check and validate cookies
         set.add (new CheckXMLSupport (is));
         set.add (new ValidateXMLSupport (is));        
         // add TransformableCookie
         Source source = DataObjectAdapters.source (this);
-        set.add (new TransformableSupport (source));        
+        set.add (new TransformableSupport (source));
         new CookieManager (this, set, XMLCookieFactoryCreator.class);
         this.addPropertyChangeListener (this);  //??? - strange be aware of firing cycles
     }
@@ -263,14 +271,13 @@ public final class XMLDataObject extends org.openide.loaders.XMLDataObject
         /** Create new XMLDataNode. */
         public XMLDataNode (XMLDataObject obj) {
             super (obj, Children.LEAF);
-
             setIconBaseWithExtension ("org/netbeans/modules/xml/resources/xmlObject.gif"); // NOI18N
-            setShortDescription (Util.THIS.getString ("PROP_XMLDataNode_description"));
+            setShortDescription (Util.THIS.getString (XMLDataObject.class, "PROP_XMLDataNode_description"));
         }
 
         @Override
         public SystemAction getDefaultAction() {
-            return SystemAction.get (EditAction.class);
+            return SystemAction.get (OpenAction.class);
         }
     
     } // end of class XMLDataNode

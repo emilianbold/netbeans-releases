@@ -24,6 +24,7 @@ import java.awt.Image;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -42,10 +43,10 @@ public final class PackageDisplayUtils {
     private static final boolean TRUNCATE_PACKAGE_NAMES =
         Boolean.getBoolean("org.netbeans.spi.java.project.support.ui.packageView.TRUNCATE_PACKAGE_NAMES"); // NOI18N
 
-    private static final Image PACKAGE = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
-    private static final Image PACKAGE_EMPTY = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packageEmpty.gif"); // NOI18N
-    private static final Image PACKAGE_PRIVATE = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePrivate.gif"); // NOI18N
-    private static final Image PACKAGE_PUBLIC = Utilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePublic.gif"); // NOI18N
+    private static final Image PACKAGE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/package.gif"); // NOI18N
+    private static final Image PACKAGE_EMPTY = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packageEmpty.gif"); // NOI18N
+    private static final Image PACKAGE_PRIVATE = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePrivate.gif"); // NOI18N
+    private static final Image PACKAGE_PUBLIC = ImageUtilities.loadImage("org/netbeans/spi/java/project/support/ui/packagePublic.gif"); // NOI18N
 
     /**
      * Find the proper display label for a package.

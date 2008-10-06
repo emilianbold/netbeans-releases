@@ -38,8 +38,12 @@
  */
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.Saas.State;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
@@ -61,9 +65,20 @@ public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
     }
 
     protected void updateKeys() {
-        if (getSaas().getState() == Saas.State.READY) {
-            setKeys(getSaas().getPortsOrMethods());
-        } else if (needsWaiting()) {
+        State state = getSaas().getState();
+    
+        if (state == Saas.State.READY) {
+            ArrayList<Object> keys = new ArrayList<Object>();
+            List<WsdlSaasPort> ports = getSaas().getPorts();
+            Collections.sort(ports);
+            keys.addAll(ports);
+            
+            List<SaasMethod> methods = getSaas().getMethods();
+            Collections.sort(methods);
+            keys.addAll(methods);
+            
+            setKeys(keys);
+        } else if (state == Saas.State.INITIALIZING) {
             setKeys(WAIT_HOLDER);
         } else {
             setKeys(Collections.EMPTY_LIST);
@@ -72,7 +87,7 @@ public class WsdlSaasNodeChildren extends SaasNodeChildren<Object> {
 
     @Override
     protected Node[] createNodes(Object key) {
-        if (needsWaiting()) {
+        if (key == WAIT_HOLDER[0]) {
             return getWaitNode();
         }
 

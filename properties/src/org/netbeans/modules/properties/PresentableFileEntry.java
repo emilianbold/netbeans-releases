@@ -333,7 +333,7 @@ public abstract class PresentableFileEntry extends FileEntry
         }
         return changeSupport;
     }
-    
+
     /** Set the set of cookies.
      * To the provided cookie set a listener is attached,
      * and any change to the set is propagated by
@@ -345,11 +345,11 @@ public abstract class PresentableFileEntry extends FileEntry
     protected final synchronized void setCookieSet (CookieSet s) {
         if (cookieSet != null) {
             cookieSet.removeChangeListener (cookieL);
-        }
-        
+    }
+
         s.addChangeListener (cookieL);
         cookieSet = s;
-        
+
         firePropertyChange (Node.PROP_COOKIE, null, null);
     }
     
@@ -371,7 +371,8 @@ public abstract class PresentableFileEntry extends FileEntry
                 return cookieSet;
             }
             // sets an empty sheet and adds a listener to it
-            setCookieSet (new CookieSet ());
+            setCookieSet (CookieSet.createGeneric(null));
+            cookieSet.assign(FileObject.class, getFile());
             return cookieSet;
         }
     }

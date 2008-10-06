@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ejb-jar version="2.1" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
-    <description>test New description</description>
-    <display-name>testDisplayName</display-name>
-    <icon>
-        <small-icon>/tmp/test/small</small-icon>
-        <large-icon>/tmp/test/large</large-icon>
-        </icon>
-    <enterprise-beans>
+  <display-name>TestCMP</display-name>
+  <enterprise-beans>
     <entity>
       <description>jdbc:mysql://localhost:3306/users [blaha on Default schema]</description>
             <display-name>testBeanName</display-name>

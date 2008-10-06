@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.beansbinding.Converter;
@@ -129,6 +130,36 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
                 }
             }
         }
+        if ((val != null) && !bindingComponent.equals(val.getTarget())) {
+            // Issue 141494 - component multiselection
+            MetaBinding clone = new MetaBinding(val.getSource(), val.getSourcePath(), bindingComponent, val.getTargetPath());
+            clone.setBindImmediately(val.isBindImmediately());
+            clone.setIncompletePathValueSpecified(val.isIncompletePathValueSpecified());
+            clone.setNullValueSpecified(val.isNullValueSpecified());
+            clone.setUpdateStrategy(val.getUpdateStrategy());
+            Map<String,String> params = val.getParameters();
+            for (Map.Entry<String,String> entry : params.entrySet()) {
+                clone.setParameter(entry.getKey(), entry.getValue());
+            }
+            Collection<MetaBinding> subs = val.getSubBindings();
+            if (subs != null) {
+                for (MetaBinding sub : subs) {
+                    clone.addSubBinding(sub.getSourcePath(), sub.getTargetPath());
+                }
+            }
+            RADComponent comp = val.getTarget();
+            BindingProperty original = comp.getBindingProperty(getName());
+            copy(original.getNameProperty(), getNameProperty());
+            copy(original.getConverterProperty(), getConverterProperty());
+            copy(original.getValidatorProperty(), getValidatorProperty());
+            if (val.isNullValueSpecified()) {
+                copy(original.getNullValueProperty(), getNullValueProperty());
+            }
+            if (val.isIncompletePathValueSpecified()) {
+                copy(original.getIncompleteValueProperty(), getIncompleteValueProperty());
+            }
+            val = clone;
+        }
         binding = val;
         FormEditor.getBindingSupport(getFormModel()).changeBindingInModel(old, binding);
 
@@ -138,6 +169,16 @@ public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
         if (node != null) {
             node.firePropertyChangeHelper(
                 null, null, null); // this will cause resetting the bean property (e.g. JTable.model)
+        }
+    }
+
+    private void copy(FormProperty src, FormProperty dst) {
+        try {
+            PropertyEditor propEd = src.getCurrentEditor();
+            Object value = src.getValue();
+            dst.setValue(new FormProperty.ValueWithEditor(value, propEd));
+        } catch (Exception ex) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 

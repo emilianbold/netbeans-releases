@@ -40,6 +40,7 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.Saas;
@@ -63,7 +64,9 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
     @Override
     protected void updateKeys() {
         if (getSaas().getState() == Saas.State.READY) {
-            setKeys(getSaas().getMethods());
+            List<SaasMethod> methods = getSaas().getMethods();
+            Collections.sort(methods);
+            setKeys(methods);
         } else {
             java.util.List<SaasMethod> emptyList = Collections.emptyList();
             setKeys(emptyList);
@@ -85,9 +88,6 @@ public class CustomSaasNodeChildren extends SaasNodeChildren<SaasMethod> {
 
     @Override
     protected Node[] createNodes(SaasMethod key) {
-        if (needsWaiting()) {
-            return getWaitNode();
-        }
         return new Node[] { new CustomMethodNode((CustomSaasMethod) key) };
     }
 

@@ -69,7 +69,7 @@ public class XDMAccessProvider implements DocumentModelAccessProvider {
     }
     
     public Document loadSwingDocument(InputStream in) throws IOException, BadLocationException {
-        Document sd = new BaseDocument(BaseKit.class, false);
+        Document sd = new BaseDocument(true, "text/xml"); //NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         try {
             String line = null;

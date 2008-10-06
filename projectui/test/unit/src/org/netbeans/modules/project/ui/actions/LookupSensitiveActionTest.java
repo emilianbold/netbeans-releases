@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
@@ -58,10 +59,21 @@ public class LookupSensitiveActionTest extends NbTestCase {
     public LookupSensitiveActionTest(String name) {
         super( name );
     }
+
+    protected boolean isEnabled(Action action) {
+        assertTrue("Is AWT thread", EventQueue.isDispatchThread());
+        return action.isEnabled();
+    }
+    
+    protected Object getValue(Action action, String key) {
+        assertTrue("Is AWT thread", EventQueue.isDispatchThread());
+        return action.getValue(key);
+    }
             
     private FileObject dir, f1, f2, f3, f4;
     private DataObject d1, d2, d3, d4;
         
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -76,6 +88,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         d4 = DataObject.find(f4);
     }
     
+    @Override
     public boolean runInEQ () {
         return true;
     }
@@ -88,7 +101,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         TestLSA tlsa = new TestLSA( lookup );
-	assertFalse("TestLSA has no DataObject and is disabled", tlsa.isEnabled ());
+	assertFalse("TestLSA has no DataObject and is disabled", isEnabled(tlsa));
 	tlsa.refreshCounter = 0;
 	
         lookup.change(d1);
@@ -96,7 +109,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         lookup.change(d2);
         lookup.change(d1);
         assertEquals( "No refresh should be called ", 0, tlsa.refreshCounter );
-	assertTrue("TestLSA action is enabled.", tlsa.isEnabled ());
+	assertTrue("TestLSA action is enabled.", isEnabled(tlsa));
         assertEquals( "One check is needed", 1, tlsa.refreshCounter );
         
                 
@@ -109,7 +122,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         assertEquals( "Refresh should be called once more", 1, tlsa.refreshCounter );
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );
         
-        assertTrue("Enabled2", tlsa.isEnabled());
+        assertTrue("Enabled2", isEnabled(tlsa));
         
         tlsa.clear();
         tpcl.clear();
@@ -118,9 +131,9 @@ public class LookupSensitiveActionTest extends NbTestCase {
         assertEquals( "One event should be fired", 1, tpcl.getEvents().size() );        
         
         lookup.change();
-        assertFalse("Enabled3.1", tlsa.isEnabled());
+        assertFalse("Enabled3.1", isEnabled(tlsa));
         tlsa.removePropertyChangeListener( tpcl );
-        assertFalse("Enabled3.2", tlsa.isEnabled());
+        assertFalse("Enabled3.2", isEnabled(tlsa));
 
         tlsa.clear();
         tpcl.clear();
@@ -128,7 +141,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         assertEquals( "Refresh should not be called", 0, tlsa.refreshCounter );
         assertEquals( "No One event should be fired", 0, tpcl.getEvents().size() );        
 
-        assertTrue("Enabled4", tlsa.isEnabled());
+        assertTrue("Enabled4", isEnabled(tlsa));
         
         assertEquals( "Refresh should be called now", 1, tlsa.refreshCounter );
         assertEquals( "No listener no event", 0, tpcl.getEvents().size() );        
@@ -141,11 +154,11 @@ public class LookupSensitiveActionTest extends NbTestCase {
         TestLSA tlsa = new TestLSA( lookup );
         
         lookup.change(d1);
-        assertEquals( "Action should return correct name ", d1.getName(), tlsa.getValue( Action.NAME ) );
+        assertEquals( "Action should return correct name ", d1.getName(), getValue(tlsa, Action.NAME ) );
         
         assertEquals( "Refresh should be called once", 1, tlsa.refreshCounter );
         
-        assertEquals( "Action should return correct name ", d1.getName(), tlsa.getValue( Action.NAME ) );        
+        assertEquals( "Action should return correct name ", d1.getName(), getValue(tlsa, Action.NAME ) );        
         assertEquals( "Refresh should still be called only once", 1, tlsa.refreshCounter );
         
     }
@@ -203,6 +216,7 @@ public class LookupSensitiveActionTest extends NbTestCase {
         List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
         public void propertyChange( PropertyChangeEvent e ) {
+            assertTrue("Changes in action state need to be notified in AWT thread", EventQueue.isDispatchThread());
             events.add( e );
         }
         

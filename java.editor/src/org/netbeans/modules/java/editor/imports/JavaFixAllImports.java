@@ -70,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -163,7 +164,7 @@ public class JavaFixAllImports {
                             variants[index][0] = NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_CannotResolve"); //NOI18N
                             defaults[index] = variants[index][0];
                             icons[index] = new Icon[1];
-                            icons[index][0] = new ImageIcon( org.openide.util.Utilities.loadImage("org/netbeans/modules/java/editor/resources/error-glyph.gif") );//NOI18N
+                            icons[index][0] = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/java/editor/resources/error-glyph.gif") );//NOI18N
                         }
 
                         index++;
@@ -254,7 +255,11 @@ public class JavaFixAllImports {
         };
         try {
             JavaSource javaSource = JavaSource.forFileObject(fo);
-            javaSource.runModificationTask(task).commit();
+            if (javaSource==null) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaFixAllImports.class, "MSG_CannotFixImports" ));
+            } else {
+                javaSource.runModificationTask(task).commit();
+            }
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }

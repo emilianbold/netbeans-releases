@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -128,9 +128,11 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
         assertNotNull(copiedTemplate);
         FileObject licenses = dataFolder.getParent().getFileObject("Licenses/license-default.txt");
         if (licenses == null) {
-            FileObject projectXml = FileUtil.createData(dataFolder.getParent(), "Licenses/license-default.txt");
+            FileObject licensesFO = FileUtil.createData(dataFolder.getParent(), "Licenses/license-default.txt");
             String license =
+"<#if licenseFirst??>\n" +
 "${licenseFirst}\n" +
+"</#if>\n" +
 "${licensePrefix}${name}.rb\n" +
 "${licensePrefix}\n" +
  // Modified to remove ${date} and ${time} to make the test stable
@@ -138,8 +140,10 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
 "${licensePrefix}\n" +
 "${licensePrefix}To change this template, choose Tools | Templates\n" +
 "${licensePrefix}and open the template in the editor.\n" +
-"${licenseLast}\n";
-            OutputStream os = projectXml.getOutputStream();
+"<#if licenseLast??>\n" +
+"${licenseLast}\n" +
+"</#if>";
+            OutputStream os = licensesFO.getOutputStream();
             Writer writer = new BufferedWriter(new OutputStreamWriter(os));
             writer.write(license);
             writer.close();
@@ -161,7 +165,6 @@ public class NewRubyFileWizardIteratorTest extends RubyProjectTestBase {
             }
         }
         
-        @SuppressWarnings("unchecked")
         Set<FileObject> files = it.instantiate();
         assertTrue(files.size() == 1);
         FileObject created = files.iterator().next();

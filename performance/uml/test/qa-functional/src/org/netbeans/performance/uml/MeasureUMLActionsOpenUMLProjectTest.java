@@ -46,6 +46,7 @@ package org.netbeans.performance.uml;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.uml.actions.*;
 
 /**
@@ -56,7 +57,11 @@ import org.netbeans.performance.uml.actions.*;
 public class MeasureUMLActionsOpenUMLProjectTest  {
 
     public static Test suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Actions suite - Open UML Project testcase");
+        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLActionsOpenUMLProjectTest");
+
 
         // EPMeasureActions1
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OpenUMLProject.class)

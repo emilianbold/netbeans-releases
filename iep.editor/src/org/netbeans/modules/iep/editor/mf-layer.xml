@@ -127,13 +127,29 @@
         </folder>
     </folder>
     
+    <folder name="Services">
+        <!-- Recognize text/x-iep+xml -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-iep-editor-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/>
+                <attr name="position" intvalue="888"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Loaders">
-        <folder name="content">
-            <folder name="unknown">
+        <folder name="text">
+            <folder name="x-iep+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance"/>
+                    <file name="org-netbeans-modules-iep-editor-PlanDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
     </folder>
+    
+    
+    
 </filesystem>

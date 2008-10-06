@@ -41,31 +41,23 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
-import org.netbeans.api.java.source.BuildArtifactMapper;
-import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.CompileOnSaveManager;
+import org.netbeans.modules.j2ee.deployment.impl.DeployOnSaveManager;
 import org.netbeans.modules.j2ee.deployment.impl.ProgressObjectUtil;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
@@ -77,9 +69,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -90,13 +79,11 @@ import org.openide.util.Parameters;
 public final class Deployment {
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
-            
+    
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
     
-    private static WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
-
     public static synchronized Deployment getDefault () {
         if (instance == null) {
             instance = new Deployment ();
@@ -178,19 +165,82 @@ public final class Deployment {
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
             if (targetserver.supportsDeployOnSave(modules)) {
-                startListening(jmp);
+                DeployOnSaveManager.getDefault().notifyInitialDeployment(jmp);
             }
 
             if (modules != null && modules.length > 0) {
+                // this write modules to files too
                 deploymentTarget.setTargetModules(modules);
             } else {
                 String msg = NbBundle.getMessage(Deployment.class, "MSG_ModuleNotDeployed");
-                throw new DeploymentException (msg);
+                throw new DeploymentException(msg);
             }
             return deploymentTarget.getClientUrl(clientUrlPart);
-        } catch (Exception ex) {            
+        } catch (ServerException ex) {
+            // The thrower is expected to provide a useful message. If the throwing
+            // code provides a cause, this will forward it to the next level and
+            // the ant output.
+            //
             String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
             java.util.logging.Logger.getLogger("global").log(Level.INFO, null, ex);
+            if (null != ex.getCause()) {
+                throw new DeploymentException(msg, ex);
+            } else {
+                throw new DeploymentException(msg);
+            }
+        } catch (DeploymentException de) {
+            throw de;
+        } catch (Exception ex) {
+            // Don't know where this came from, so we send as much info as possible
+            // to the ant output.
+            String msg = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
+            LOGGER.log(Level.INFO, null, ex);
+            throw new DeploymentException(msg, ex);
+        } finally {
+            if (progress != null) {
+                progress.finish();
+            }
+        }
+    }
+
+    /**
+     * Undeploys the project (if it is deployed and available).
+     *
+     * @param jmp provider representing the project
+     * @param startServer if <code>true</code> server may be started while
+     *            trying to determine whether the project is deployed
+     * @param logger logger for undeploy related events
+     * @throws org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException
+     * @since 1.52
+     */
+    public void undeploy(J2eeModuleProvider jmp, boolean startServer, Logger logger) throws DeploymentException {
+        DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(jmp, null);
+        final J2eeModule module = deploymentTarget.getModule();
+
+        String title = NbBundle.getMessage(Deployment.class, "LBL_Undeploying", jmp.getDeploymentName());
+        ProgressUI progress = new ProgressUI(title, false, logger);
+
+        try {
+            progress.start();
+
+            ServerString server = deploymentTarget.getServer(); //will throw exception if bad server id
+
+            if (module == null) {
+                String msg = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule");
+                throw new DeploymentException(msg);
+            }
+            ServerInstance serverInstance = server.getServerInstance();
+            if (server == null || serverInstance == null) {
+                String msg = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer");
+                throw new DeploymentException(msg);
+            }
+
+            TargetServer targetserver = new TargetServer(deploymentTarget);
+
+            targetserver.undeploy(progress, startServer);
+        } catch (Exception ex) {
+            String msg = NbBundle.getMessage (Deployment.class, "MSG_UndeployFailed", ex.getLocalizedMessage ());
+            LOGGER.log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
         } finally {
             if (progress != null) {
@@ -200,11 +250,11 @@ public final class Deployment {
     }
 
     public void enableCompileOnSaveSupport(J2eeModuleProvider provider) {
-        startListening(provider);
+        DeployOnSaveManager.getDefault().startListening(provider);
     }
 
     public void disableCompileOnSaveSupport(J2eeModuleProvider provider) {
-        stopListening(provider);
+        DeployOnSaveManager.getDefault().stopListening(provider);
     }
 
     private static void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
@@ -228,11 +278,13 @@ public final class Deployment {
         private DeploymentException (String s, Throwable t) {
             super (s, t);
         }
+
         /**
          * Returns a short description of this DeploymentException.
          * overwrite the one from Exception to avoid showing the class name that does nto provide any real value.
          * @return a string representation of this DeploymentException.
          */
+        @Override
         public String toString() {
             String s = getClass().getName();
             String message = getLocalizedMessage();
@@ -386,9 +438,9 @@ public final class Deployment {
      */
     public boolean canFileDeploy(String instanceId, J2eeModule mod) {
         boolean retVal = false;
-        ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceId);
-        if (null != instance) {
-            IncrementalDeployment incr = instance.getIncrementalDeployment();
+        ServerInstance localInstance = ServerRegistry.getInstance().getServerInstance(instanceId);
+        if (null != localInstance) {
+            IncrementalDeployment incr = localInstance.getIncrementalDeployment();
             try {
                 if (null != incr && null != mod.getContentDirectory()) {
                     retVal = incr.canFileDeploy(null, mod);
@@ -522,108 +574,5 @@ public final class Deployment {
     
     public static interface Logger {
         public void log(String message);
-    }
-
-    private static void startListening(J2eeModuleProvider j2eeProvider) {
-        synchronized (compileListeners) {
-            if (compileListeners.containsKey(j2eeProvider)) {
-                LOGGER.log(Level.FINE, "Already listening on {0}", j2eeProvider);
-                return;
-            }
-
-            List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
-            providers.add(j2eeProvider);
-
-            if (j2eeProvider instanceof J2eeApplicationProvider) {
-                Collections.addAll(providers,
-                        ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
-            }
-
-            // get all binary urls
-            List<URL> urls = new ArrayList<URL>();
-            for (J2eeModuleProvider provider : providers) {
-                for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {
-                    URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
-                    if (url != null) {
-                        urls.add(url);
-                    }
-                }
-            }
-
-            // register CLASS listener
-            CompileOnSaveListener listener = new CompileOnSaveListener(j2eeProvider, urls);
-            for (URL url :urls) {
-                BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
-            }
-
-            // register WEB listener
-            J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
-            if (support != null) {
-                support.addArtifactListener(listener);
-            }
-
-            compileListeners.put(j2eeProvider, listener);
-        }
-    }
-
-    private static void stopListening(J2eeModuleProvider j2eeProvider) {
-        synchronized (compileListeners) {
-            CompileOnSaveListener removed = compileListeners.remove(j2eeProvider);
-            if (removed == null) {
-                LOGGER.log(Level.FINE, "Not listening on {0}", j2eeProvider);
-            } else {
-                for (URL url : removed.getRegistered()) {
-                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, removed);
-                }
-
-                J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
-                if (support != null) {
-                    support.removeArtifactListener(removed);
-                }
-            }
-        }
-    }
-
-    private static final class CompileOnSaveListener implements ArtifactsUpdated, ArtifactListener {
-
-        private final J2eeModuleProvider provider;
-
-        private final List<URL> registered;
-
-        public CompileOnSaveListener(J2eeModuleProvider provider, List<URL> registered) {
-            this.provider = provider;
-            this.registered = registered;
-        }
-
-        public List<URL> getRegistered() {
-            return registered;
-        }
-
-        public void artifactsUpdated(Iterable<File> artifacts) {
-            CompileOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
-//            if (LOGGER.isLoggable(Level.FINEST)) {
-//                StringBuilder builder = new StringBuilder("Artifacts updated: [");
-//                for (File file : artifacts) {
-//                    builder.append(file.getAbsolutePath()).append(",");
-//                }
-//                builder.setLength(builder.length() - 1);
-//                builder.append("]");
-//                LOGGER.log(Level.FINEST, builder.toString());
-//            }
-//
-//            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
-//            TargetServer server = new TargetServer(deploymentTarget);
-//            boolean keep = server.notifyArtifactsUpdated(artifacts);
-////            if (!keep) {
-////                for (URL url : registered) {
-////                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
-////                }
-////
-////                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-////                if (support != null) {
-////                    support.removeArtifactListener(this);
-////                }
-////            }
-        }
     }
 }

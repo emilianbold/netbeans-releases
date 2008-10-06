@@ -132,6 +132,9 @@ public class SVGTextArea extends SVGComponent {
     }
     
     public void setText(String text) {
+        if (text == null) {
+            text = "";
+        }
         StringBuffer buffer = new StringBuffer();
         char ch = ' ';
         myLines = new Vector();
@@ -209,7 +212,7 @@ public class SVGTextArea extends SVGComponent {
     
     private void showCaret(final boolean showCaret) {
         if ( myCaret != null) {
-            form.invokeAndWaitSafely(new Runnable() {
+            form.invokeLaterSafely(new Runnable() {
                public void run() {
                     myCaret.setTrait(TRAIT_VISIBILITY, showCaret ? "visible" : "hidden");
                }
@@ -300,7 +303,7 @@ public class SVGTextArea extends SVGComponent {
             if ( bBox != null) {
                 width = bBox.getWidth();
             } else {
-                System.out.println("Error: Null BBox #1");
+                //System.out.println("Error: Null BBox #1");
             }
         }
         return width;

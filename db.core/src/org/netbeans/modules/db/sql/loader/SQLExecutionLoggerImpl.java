@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
@@ -75,8 +76,12 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         inputOutput = IOProvider.getDefault().getIO(ioName, true);
     }
 
+    public SQLExecutionLoggerImpl(String displayName) {
+        this(displayName, null);
+    }
+
     public void log(SQLExecutionResult result) {
-        if (result.getException() != null) {
+        if (result.hasExceptions()) {
             logException(result);
         } else {
             logSuccess(result);
@@ -111,12 +116,27 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         OutputWriter writer = inputOutput.getErr();
 
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
-                String.valueOf(result.getException().getErrorCode()),
-                result.getException().getSQLState(),
-                result.getException().getMessage()));
+        for(Throwable e: result.getExceptions()) {
+            if (e instanceof SQLException) {
+                writeSQLException((SQLException)e, writer);
+            } else {
+                Exceptions.printStackTrace(e);
+            }
+        }
+        
         printLineColumn(writer, result.getStatementInfo(), true);
         writer.println(""); // NOI18N
+    }
+
+    private void writeSQLException(SQLException e, OutputWriter writer) {
+        while (e != null) {
+            writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
+                    String.valueOf(e.getErrorCode()),
+                    e.getSQLState(),
+                    e.getMessage()));
+
+            e = e.getNextException();
+        }
     }
 
     private void logSuccess(SQLExecutionResult result) {
@@ -124,10 +144,10 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         String executionTimeStr = millisecondsToSeconds(result.getExecutionTime());
         String successLine = null;
-        if (result.getRowCount() >= 0) {
+        if (result.getUpdateCount() >= 0) {
             successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTimeRows",
                     String.valueOf(executionTimeStr),
-                    String.valueOf(result.getRowCount()));
+                    String.valueOf(result.getUpdateCount()));
         } else {
             successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTime",
                     String.valueOf(executionTimeStr));
@@ -156,14 +176,6 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         NumberFormat fmt = NumberFormat.getInstance();
         fmt.setMaximumFractionDigits(3);
         return fmt.format(ms / 1000.0);
-    }
-
-    public void logResultSetException(Exception e) {
-        inputOutput.select();
-        OutputWriter writer = inputOutput.getErr();
-
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetErrorDetailed",
-                e.getMessage()));
     }
 
     /**

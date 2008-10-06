@@ -160,7 +160,7 @@ public class GdbContext implements PropertyChangeListener {
         return instance;
     }
     
-    private static GdbProxy getCurrentGdb() {
+    public static GdbProxy getCurrentGdb() {
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine == null) {
             return null;

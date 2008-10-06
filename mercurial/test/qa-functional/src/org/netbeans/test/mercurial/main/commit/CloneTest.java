@@ -40,16 +40,18 @@ package org.netbeans.test.mercurial.main.commit;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
 
 /**
@@ -62,9 +64,22 @@ public class CloneTest extends JellyTestCase {
     public PrintStream stream;
     String os_name;
     static File f;
+    static Logger log;
 
     public CloneTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### "+getName()+" ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
     }
 
     public static Test suite() {
@@ -75,25 +90,27 @@ public class CloneTest extends JellyTestCase {
     public void testCloneProject() throws Exception {
         System.out.println("DEBUG: testCloneProject - start");
         long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 15000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        }
+//        try {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 15000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
+//        }
+//
+//        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
+//        try {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 15000);
+//        } finally {
+//            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
+//        }
 
-        timeout = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
         try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 15000);
-        } finally {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout);
-        }
-
-        try {
+            MessageHandler mh = new MessageHandler("Cloning");
+            log.addHandler(mh);
+            
             Node nodeFile;
             NbDialogOperator ndo;
             JButtonOperator bo;
             JTextFieldOperator tfo;
-            OutputTabOperator oto;
             TestKit.loadOpenProject(TestKit.PROJECT_NAME, getDataDir());
             String s = TestKit.getProjectAbsolutePath(TestKit.PROJECT_NAME);
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
@@ -103,8 +120,13 @@ public class CloneTest extends JellyTestCase {
             bo.push();
             String outputTabName = s;
             System.out.println(outputTabName);
-            oto = new OutputTabOperator(outputTabName);
-            oto.waitText("INFO: End of Clone"); 
+
+            TestKit.waitText(mh);
+
+            mh = new MessageHandler("Cloning");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             nodeFile = new ProjectsTabOperator().getProjectRootNode(TestKit.PROJECT_NAME);
             nodeFile.performMenuActionNoBlock("Versioning|Clone Other...");
             ndo = new NbDialogOperator("Clone External Repository");
@@ -125,8 +147,8 @@ public class CloneTest extends JellyTestCase {
             bo.push();
             outputTabName=repoPath;
             System.out.println(outputTabName);
-            oto = new OutputTabOperator(outputTabName);
-            oto.waitText("INFO: End of Clone");
+            
+            TestKit.waitText(mh);
 
             TestKit.closeProject(TestKit.PROJECT_NAME);
             TestKit.closeProject(TestKit.PROJECT_NAME);

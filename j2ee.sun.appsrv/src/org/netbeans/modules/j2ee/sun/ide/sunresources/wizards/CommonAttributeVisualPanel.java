@@ -54,8 +54,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 
 //import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
@@ -187,8 +186,7 @@ public class CommonAttributeVisualPanel extends javax.swing.JPanel implements Ch
         for (int k = 0; k < size; k++) {
             fields[i] = flds[k];
             JLabel jLabel = new JLabel();
-            jLabel.setText(bundle.getString("LBL_" + fields[i].getName()));  //NOI18N
-            jLabel.setDisplayedMnemonic(bundle.getString("LBL_" + fields[i].getName() + "_Mnemonic").charAt(0)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel, bundle.getString("LBL_" + fields[i].getName())); //NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = k;
@@ -331,9 +329,9 @@ public class CommonAttributeVisualPanel extends javax.swing.JPanel implements Ch
 
         jPanel0.setBorder(new javax.swing.border.EtchedBorder());
         existingResourceRadioButton.setSelected(true);
-        existingResourceRadioButton.setText(bundle.getString("ExistingResource" + getPanelType())); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(existingResourceRadioButton, bundle.getString("ExistingResource" + getPanelType())); //NOI18N
         existingResourceRadioButton.setToolTipText(bundle.getString("ACS_ExistingResourceA11yDesc" + getPanelType())); //NOI18N
-        existingResourceRadioButton.setMnemonic(bundle.getString("ExistingResource_Default_Mnemonic").charAt(0)); //NOI18N
+                
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -357,9 +355,9 @@ public class CommonAttributeVisualPanel extends javax.swing.JPanel implements Ch
         gridBagConstraints.insets = new java.awt.Insets(12, 24, 5, 11);
         jPanel0.add(existingResourceComboBox, gridBagConstraints);
 
-        newResourceRadioButton.setText(bundle.getString("NewResource" + getPanelType())); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(newResourceRadioButton, bundle.getString("NewResource" + getPanelType())); //NOI18N
         newResourceRadioButton.setToolTipText(bundle.getString("ACS_NewResourceA11yDesc" + getPanelType())); //NOI18N
-        newResourceRadioButton.setMnemonic(bundle.getString("NewResource_Default_Mnemonic").charAt(0)); //NOI18N
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

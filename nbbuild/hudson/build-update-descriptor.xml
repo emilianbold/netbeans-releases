@@ -5,6 +5,9 @@
             <fileset dir="nbbuild/nbms">
                 <include name="**/*.nbm"/>
             </fileset>
+            <updaterjar>
+                <fileset dir="nbbuild/netbeans" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makeupdatedesc>
         <gzip src="nbbuild/nbms/updates.xml" destfile="nbbuild/nbms/updates.xml.gz"/>
         <taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="nbbuild/nbantext.jar"/>
@@ -12,13 +15,16 @@
         <!-- branding in build just for installed files, modules are dummy -->
         <!-- org.netbeans.lib.terminalemulator is really unused in cnd cluster, yet apparently has to be in the build anyway; contact Thomas Preisler -->
         <!-- lexer/editor bridge really unused, yet kept in build for tutorials -->
+        <!-- deprecated modules may also need to be listed because although ConsistencyVerifier would ignore them, <makenbm> skips OpenIDE-Module-Deprecated as of #427a127b88b7 -->
         <property name="disabled.autoloads" value="
             org.netbeans.lib.terminalemulator
             org.netbeans.modules.ide.branding
             org.netbeans.modules.jellytools
             org.netbeans.modules.lexer.editorbridge
             org.netbeans.modules.nbjunit
+            org.netbeans.modules.visualweb.gravy
             org.netbeans.spi.actions.support
+            org.openide.util.enumerations
         "/>
         <vuc updates="nbbuild/nbms/updates.xml" oldupdates="../lastSuccessful/archive/nbbuild/nbms/updates.xml" disabledautoloads="${disabled.autoloads}" checkautoupdatevisibility="true" report="nbbuild/nbms/vuc-report.xml">
             <classpath>

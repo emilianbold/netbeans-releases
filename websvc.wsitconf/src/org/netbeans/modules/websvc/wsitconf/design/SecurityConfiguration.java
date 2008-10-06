@@ -65,6 +65,7 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
@@ -76,6 +77,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -161,7 +163,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
 
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/wsitconf/resources/designer-security.gif");
     }
 
     public String getDisplayName() {
@@ -218,8 +220,10 @@ public class SecurityConfiguration implements WSConfiguration {
                             // default profile with the easiest setup
                             SecurityProfile secProf = SecurityProfileRegistry.getDefault().getProfile(ComboConstants.PROF_MUTUALCERT);
                             secProf.profileSelected(binding, true, ConfigVersion.getDefault());
-                            if (secProf instanceof SecureConversationFeature) {
-                                ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
+                            if (!RMModelHelper.getInstance(ConfigVersion.getDefault()).isRMEnabled(binding)) {
+                                if (secProf instanceof SecureConversationFeature) {
+                                    ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
+                                }
                             }
                             Util.fillDefaults(project, false,true);
                             ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);

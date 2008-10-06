@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS B (B ) [1:1/0-7:3/81] lcurly=8 SCOPE: $Global$ 
+CLASS B (B ) [1:1/0-7:2/80] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION B [3:9/26-3:13/30] ConstructorImpl SCOPE: B 
@@ -57,7 +57,7 @@ FUNCTION DEFINITION B  [12:1/95-13:2/105] ConstructorDefinitionImpl SCOPE: const
     STATEMENT COMPOUND  [12:8/102-13:2/105] SCOPE: B 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS B (B ) [1:1/0-7:3/81] lcurly=8 SCOPE: $Global$ 
+CLASS B (B ) [1:1/0-7:2/80] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION B [3:9/26-3:13/30] ConstructorImpl SCOPE: B 

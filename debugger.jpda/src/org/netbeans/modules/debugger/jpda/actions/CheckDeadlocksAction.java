@@ -43,9 +43,9 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
+
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -60,33 +61,49 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Daniel Prusa
  */
 public class CheckDeadlocksAction extends AbstractAction
-                            implements PropertyChangeListener, Runnable {
+                                  implements Runnable {
 
     private EnableListener listener;
-    private transient Reference lastDebuggerRef = new WeakReference(null);
     
     public CheckDeadlocksAction () {
         listener = new EnableListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_ENGINE,
                 listener);
-        putValue (NAME, NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks")); // NOI18N
+        putValue (NAME, getDisplayName());
         checkEnabled();
+    }
+
+    public static String getDisplayName() {
+        return NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks"); // NOI18N
     }
     
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return;
-        JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
+        final JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return;
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                checkForDeadlock(debugger);
+            }
+        });
+    }
+
+    public static void checkForDeadlock(JPDADebuggerImpl debugger) {
+        if (debugger.getState() == JPDADebuggerImpl.STATE_DISCONNECTED) {
+            return;
+        }
         VirtualMachine vm = debugger.getVirtualMachine();
         vm.suspend();
         List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();
@@ -100,36 +117,21 @@ public class CheckDeadlocksAction extends AbstractAction
         DeadlockDetector detector = debugger.getThreadsCollector().getDeadlockDetector();
         Set dealocks = detector.getDeadlocks();
         if (dealocks == null || dealocks.size() == 0) {
-            String msg = NbBundle.getMessage(this.getClass(), "CTL_No_Deadlock"); // NOI18N
+            String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            for (JPDAThreadImpl thread : threadsToNotify) {
+                thread.notifyToBeResumed();
+            }
+            vm.resume();
         }
-        for (JPDAThreadImpl thread : threadsToNotify) {
-            thread.notifyToBeResumed();
-        }
-        vm.resume();
     }
     
     private synchronized boolean canBeEnabled() {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return false;
         JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
-        JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
-        if (lastDebugger != null && debugger != lastDebugger) {
-            lastDebugger.removePropertyChangeListener(
-                    JPDADebugger.PROP_CURRENT_THREAD,
-                    this);
-            lastDebuggerRef = new WeakReference(null);
-        }
-        if (debugger != null) {
-            lastDebuggerRef = new WeakReference(debugger);
-            debugger.addPropertyChangeListener(
-                    JPDADebugger.PROP_CURRENT_THREAD,
-                    this);
-            return (debugger.getCurrentThread() != null);
-        } else {
-            return false;
-        }
+        return debugger != null;
     }
     
     private void checkEnabled() {
@@ -138,19 +140,6 @@ public class CheckDeadlocksAction extends AbstractAction
     
     public void run() {
         setEnabled(canBeEnabled());
-    }
-    
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                synchronized (this) {
-                    JPDADebugger lastDebugger = (JPDADebugger) lastDebuggerRef.get();
-                    if (lastDebugger != null) {
-                        setEnabled(lastDebugger.getCurrentThread() != null);
-                    }
-                }
-            }
-        });
     }
     
     @Override

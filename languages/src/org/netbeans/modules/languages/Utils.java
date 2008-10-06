@@ -43,6 +43,8 @@ package org.netbeans.modules.languages;
 
 import java.awt.Point;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,6 +58,9 @@ import org.netbeans.api.lexer.TokenSequence;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 
@@ -186,5 +191,60 @@ public class Utils {
             if (tokenSequence2 == null) return tokenSequence;
             tokenSequence = tokenSequence2;
         }
+    }
+    
+    public static boolean isOfProjectType(FileObject projectFile, String projectType) {
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class foqClz= cl.loadClass("org.netbeans.api.project.FileOwnerQuery"); // NOI18N
+            Class apClz = cl.loadClass("org.netbeans.api.project.ActionProvider"); // NOI18N
+
+            Method getOwnerMethod = foqClz.getMethod("getOwner", FileObject.class); // NOI18N
+            Lookup.Provider project = (Lookup.Provider)getOwnerMethod.invoke(foqClz, projectFile);
+            Object apInst = project.getLookup().lookup(apClz);
+            if (apInst != null) {
+                return apInst.getClass().getName().contains(projectType);
+            }
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (InvocationTargetException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (SecurityException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        }
+        return false;
+    }
+    
+    public static FileObject getProjectRoot(FileObject projectFile) {
+        try {
+            ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
+            Class foqClz= cl.loadClass("org.netbeans.api.project.FileOwnerQuery"); // NOI18N
+            Class projectClz = cl.loadClass("org.netbeans.api.project.Project"); // NOI18N
+
+            Method getOwnerMethod = foqClz.getMethod("getOwner", FileObject.class); // NOI18N
+            Object project = (Lookup.Provider)getOwnerMethod.invoke(foqClz, projectFile);
+            Method getProjDirMethod = projectClz.getMethod("getProjectDirectory");
+            if (project == null) return null;
+            return (FileObject)getProjDirMethod.invoke(project);
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (InvocationTargetException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (SecurityException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.FINE, "Accessing project by reflection", ex); // NOI18N
+        }
+        return null;
     }
 }

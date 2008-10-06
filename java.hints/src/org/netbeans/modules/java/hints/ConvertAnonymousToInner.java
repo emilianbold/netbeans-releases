@@ -72,7 +72,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -350,19 +349,14 @@ public class ConvertAnonymousToInner extends AbstractHint {
         Element superTypeElement = copy.getTrees().getElement(new TreePath(newClassToConvert, nct.getIdentifier()));
         
         boolean isStaticContext = true;
-        FileObject source = SourceUtils.getFile(superTypeElement, copy.getClasspathInfo());
-        
-        if (source == copy.getFileObject() /*&& copy.getElementUtilities().outermostTypeElement(superTypeElement) != superTypeElement*/) {
-            Element currentElement = superTypeElement;
-            
-            while (currentElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
-                if (!currentElement.getModifiers().contains(Modifier.STATIC)) {
-                    isStaticContext = false;
-                    break;
-                }
-                
-                currentElement = currentElement.getEnclosingElement();
+        Element currElement = superTypeElement;
+        while (currElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+            if (!currElement.getModifiers().contains(Modifier.STATIC)) {
+                isStaticContext = false;
+                break;
             }
+
+            currElement = currElement.getEnclosingElement();
         }
         
         if (isStaticContext) {
@@ -381,7 +375,17 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
         
-        boolean isEnclosedByStaticElem = copy.getTrees().getElement(newClassToConvert).getEnclosingElement().getModifiers().contains(Modifier.STATIC);
+        Element currentElement = copy.getTrees().getElement(newClassToConvert);
+        boolean isEnclosedByStaticElem = false;
+        while (currentElement != null && currentElement.getEnclosingElement() != null && currentElement.getEnclosingElement().getKind() != ElementKind.METHOD) {
+            if (currentElement.getModifiers().contains(Modifier.STATIC)) {
+                isEnclosedByStaticElem = true; //enclosing method is static
+                break;
+            }
+
+            currentElement = currentElement.getEnclosingElement();
+        }
+
         Set<Modifier> modifset = null;
         if (isInAnonymousClass) {
             if ((isStaticContext && !usesNonStaticMembers) || isEnclosedByStaticElem) {

@@ -42,20 +42,19 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 
-import java.awt.Color;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,10 +62,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -84,13 +80,10 @@ import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
+import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.modules.debugger.jpda.util.ThreadInfoPanel;
 
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -98,7 +91,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author   Jan Jancura
  */
-public abstract class BreakpointImpl implements Executor, PropertyChangeListener {
+abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeListener {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
@@ -177,7 +170,16 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     protected abstract void setRequests ();
     
     protected void remove () {
-        removeAllEventRequests ();
+        if (SwingUtilities.isEventDispatchThread()) {
+            // One can not want to access the requests in AWT EQ
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    removeAllEventRequests ();
+                }
+            });
+        } else {
+            removeAllEventRequests ();
+        }
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
     }
@@ -277,16 +279,15 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
      */
     protected abstract EventRequest createEventRequest(EventRequest oldRequest);
 
-    protected boolean perform (
-        Event event,
-        String condition,
-        ThreadReference threadReference,
-        ReferenceType referenceType,
-        Value value
-    ) {
-        //S ystem.out.println("BreakpointImpl.perform");
-        boolean resume;
-        
+    private Variable processedReturnVariable;
+    private Throwable conditionException;
+
+    public boolean processCondition(
+            Event event,
+            String condition,
+            ThreadReference threadReference,
+            Value value) {
+
         if (hitCountFilter > 0) {
             event.request().disable();
             //event.request().addCountFilter(hitCountFilter);
@@ -298,61 +299,88 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             removeEventRequest(event.request());
             addEventRequest(createEventRequest(event.request()), true);
         }
-        //PATCH 48174
-        try {
-            getDebugger().setAltCSF(threadReference.frame(0));
-        } catch (com.sun.jdi.IncompatibleThreadStateException e) {
-            String msg = "Thread '" + threadReference.name() +
-                    "': status = " + threadReference.status() +
-                    ", is suspended = " + threadReference.isSuspended() +
-                    ", suspend count = " + threadReference.suspendCount() +
-                    ", is at breakpoint = " + threadReference.isAtBreakpoint();
-            Logger.getLogger(BreakpointImpl.class.getName()).log(Level.INFO, msg, e);
-        } catch (java.lang.IndexOutOfBoundsException e) {
-            // No frame in case of Thread and "Main" class breakpoints, PATCH 56540 
-        } 
+
         Variable variable = null;
         if (getBreakpoint() instanceof MethodBreakpoint &&
                 (((MethodBreakpoint) getBreakpoint()).getBreakpointType()
                  & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
-            JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
             if (value != null) {
+                JPDAThreadImpl jt = (JPDAThreadImpl) getDebugger().getThread(threadReference);
                 ReturnVariableImpl retVariable = new ReturnVariableImpl(getDebugger(), value, "", jt.getMethodName());
                 jt.setReturnVariable(retVariable);
                 variable = retVariable;
             }
         }
+        boolean success;
+        if (condition != null && condition.length() > 0) {
+            //PATCH 48174
+            try {
+                getDebugger().setAltCSF(threadReference.frame(0));
+            } catch (com.sun.jdi.IncompatibleThreadStateException e) {
+                String msg = "Thread '" + threadReference.name() +
+                        "': status = " + threadReference.status() +
+                        ", is suspended = " + threadReference.isSuspended() +
+                        ", suspend count = " + threadReference.suspendCount() +
+                        ", is at breakpoint = " + threadReference.isAtBreakpoint();
+                Logger.getLogger(BreakpointImpl.class.getName()).log(Level.INFO, msg, e);
+            } catch (java.lang.IndexOutOfBoundsException e) {
+                // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
+            }
+            success = evaluateCondition (
+                    condition,
+                    threadReference
+                );
+            getDebugger().setAltCSF(null);
+        } else {
+            success = true;
+        }
+        if (success) { // perform() will be called, store the data
+            processedReturnVariable = variable;
+        }
+        return success;
+    }
+
+    protected boolean perform (
+        Event event,
+        ThreadReference threadReference,
+        ReferenceType referenceType,
+        Value value
+    ) {
+        //S ystem.out.println("BreakpointImpl.perform");
+        boolean resume;
+        
+        Variable variable = processedReturnVariable;
+        processedReturnVariable = null;
         if (variable == null) {
             variable = debugger.getVariable(value);
         }
-        
-        
-        if ((condition == null) || condition.equals ("")) {
-            JPDABreakpointEvent e = new JPDABreakpointEvent (
+        JPDABreakpointEvent e;
+        if (conditionException == null) {
+            e = new JPDABreakpointEvent (
                 getBreakpoint (),
                 debugger,
-                JPDABreakpointEvent.CONDITION_NONE,
+                JPDABreakpointEvent.CONDITION_TRUE,
                 debugger.getThread (threadReference), 
                 referenceType, 
                 variable
             );
-            getDebugger ().fireBreakpointEvent (
-                getBreakpoint (),
-                e
-            );
-            resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
-            logger.fine("BreakpointImpl: perform breakpoint (no condition): " + this + " resume: " + resume);
         } else {
-            resume = evaluateCondition (
-                condition, 
-                threadReference,
+            e = new JPDABreakpointEvent (
+                getBreakpoint (),
+                debugger,
+                conditionException,
+                debugger.getThread (threadReference),
                 referenceType,
                 variable
             );
-            //PATCH 48174
-            resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || resume;
+            conditionException = null;
         }
-        getDebugger().setAltCSF(null);
+        getDebugger ().fireBreakpointEvent (
+            getBreakpoint (),
+            e
+        );
+        resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
+        logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
         if (!resume) {
             resume = checkWhetherResumeToFinishStep(threadReference);
         }
@@ -379,7 +407,13 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         activeStepRequests.remove(i);
                         continue;
                     }
-                    if (step.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                    int stepThreadStatus;
+                    try {
+                        stepThreadStatus = step.thread().status();
+                    } catch (ObjectCollectedException ocex) {
+                        stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
+                    }
+                    if (stepThreadStatus == ThreadReference.THREAD_STATUS_ZOMBIE) {
                         thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
                         debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);
@@ -397,7 +431,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     if (resumeDecision != null) {
                         return resumeDecision.booleanValue();
                     }
-                    final String message;
+                    JPDAThreadImpl tr = (JPDAThreadImpl) debugger.getThread(thread);
+                    tr.setStepSuspendedBy(breakpoint);
+
+                    /*final String message;
                     if (thisThreadHasStep) {
                         message = NbBundle.getMessage(BreakpointImpl.class,
                                 "MSG_StepThreadInterruptedByBR",
@@ -445,7 +482,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                                 }
                             }
                         }
-                    });
+                    });*/
                     return false;
                     
                     /*
@@ -516,6 +553,37 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
     
     private boolean evaluateCondition (
         String condition, 
+        ThreadReference thread
+    ) {
+        try {
+            try {
+                boolean success;
+                synchronized (debugger.LOCK) {
+                    StackFrame sf = thread.frame (0);
+                    success = evaluateConditionIn (condition, sf, 0);
+                }
+                // condition true => stop here (do not resume)
+                // condition false => resume
+                logger.fine("BreakpointImpl: perform breakpoint (condition = " + success + "): " + this + " resume: " + (!success));
+                return success;
+            } catch (ParseException ex) {
+                conditionException = ex;
+                logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
+                return true; // Act as if the condition was satisfied when it's invalid
+            } catch (InvalidExpressionException ex) {
+                conditionException = ex;
+                logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
+                return true; // Act as if the condition was satisfied when it's invalid
+            }
+        } catch (IncompatibleThreadStateException ex) {
+            // should not occurre
+            Exceptions.printStackTrace(ex);
+            return true; // Act as if the condition was satisfied when an error occurs
+        }
+    }
+
+    /*private boolean evaluateCondition (
+        String condition,
         ThreadReference thread,
         ReferenceType referenceType,
         Variable variable
@@ -530,11 +598,11 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     ev = new JPDABreakpointEvent (
                         getBreakpoint (),
                         debugger,
-                        result ? 
-                            JPDABreakpointEvent.CONDITION_TRUE : 
+                        result ?
+                            JPDABreakpointEvent.CONDITION_TRUE :
                             JPDABreakpointEvent.CONDITION_FALSE,
-                        debugger.getThread (thread), 
-                        referenceType, 
+                        debugger.getThread (thread),
+                        referenceType,
                         variable
                     );
                 }
@@ -542,7 +610,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     getBreakpoint (),
                     ev
                 );
-                            
+
                 // condition true => stop here (do not resume)
                 // condition false => resume
                 logger.fine("BreakpointImpl: perform breakpoint (condition = " + result + "): " + this + " resume: " + (!result || ev.getResume ()));
@@ -552,8 +620,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     getBreakpoint (),
                     debugger,
                     ex,
-                    debugger.getThread (thread), 
-                    referenceType, 
+                    debugger.getThread (thread),
+                    referenceType,
                     variable
                 );
                 getDebugger ().fireBreakpointEvent (
@@ -567,8 +635,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     getBreakpoint (),
                     debugger,
                     ex,
-                    debugger.getThread (thread), 
-                    referenceType, 
+                    debugger.getThread (thread),
+                    referenceType,
                     variable
                 );
                 getDebugger ().fireBreakpointEvent (
@@ -584,7 +652,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         }
         // some error occured during evaluation of expression => do not resume
         return false; // do not resume
-    }
+    }*/
 
     /**
      * Evaluates given condition. Returns value of condition evaluation. 
@@ -614,7 +682,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
         try {
             return ((com.sun.jdi.BooleanValue) value).booleanValue ();
         } catch (ClassCastException e) {
-            throw new InvalidExpressionException (e);
+            throw new InvalidExpressionException ("Expecting boolean value instead of "+value.type());
         } catch (NullPointerException npe) {
             throw new InvalidExpressionException (npe);
         }

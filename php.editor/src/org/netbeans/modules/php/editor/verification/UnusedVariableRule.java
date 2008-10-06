@@ -57,12 +57,12 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class UnusedVariableRule implements AstRule, UserConfigurableRule {
+public class UnusedVariableRule implements AstRule, UserConfigurableRule, VarStackReadingRule {
     public void check (PHPRuleContext context, List<Hint> hints){
         for (ASTNode node : context.variableStack.getUnreferencedVars()){
             OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             
-            Hint hint = new Hint(UnusedVariableRule.this, getDescription(),
+            Hint hint = new Hint(UnusedVariableRule.this, getDisplayName(),
                         context.compilationInfo.getFileObject(), range, null, 500);
             
             hints.add(hint);
@@ -82,7 +82,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule {
     }
 
     public boolean getDefaultEnabled() {
-        return true;
+        return false;
     }
 
     public JComponent getCustomizer(Preferences node) {
@@ -94,7 +94,7 @@ public class UnusedVariableRule implements AstRule, UserConfigurableRule {
     }
 
     public String getDisplayName() {
-        return getDescription();
+        return NbBundle.getMessage(UnusedVariableRule.class, "UnusedVariableDispName");
     }
 
     public boolean showInTasklist() {

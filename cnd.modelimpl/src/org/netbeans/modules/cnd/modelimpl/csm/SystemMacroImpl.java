@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -56,16 +57,16 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class SystemMacroImpl implements CsmMacro {
     
-    private String macroName;
-    private String macroBody;
-    private boolean isUserDefined;
+    private final CharSequence macroName;
+    private final CharSequence macroBody;
+    private final boolean isUserDefined;
     private final List<? extends CharSequence> params;
     private CsmFile containingFile;
     private CsmUID<CsmMacro> uid;
 
     public SystemMacroImpl(String macroName, String macroBody, List<String> macroParams, CsmFile containingFile, boolean isUserDefined) {
-        this.macroName = macroName;
-        this.macroBody = macroBody;
+        this.macroName = QualifiedNameCache.getManager().getString(macroName);
+        this.macroBody = QualifiedNameCache.getManager().getString(macroBody);
         this.isUserDefined = isUserDefined;
         if (macroParams != null) {
             this.params = Collections.unmodifiableList(macroParams);
@@ -106,15 +107,15 @@ public class SystemMacroImpl implements CsmMacro {
     }
 
     public Position getStartPosition() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public Position getEndPosition() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public CharSequence getText() {
-        return ""; //NOI18N
+        return "#define " + macroName + " " + macroBody; // NOI18N
     }
 
     public CsmUID<CsmMacro> getUID() {

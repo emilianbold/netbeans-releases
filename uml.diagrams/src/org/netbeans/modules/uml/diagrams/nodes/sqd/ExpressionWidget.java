@@ -92,12 +92,22 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
                 //
                 getScene().validate();
             }
+            else if(label.getParentWidget()!=cf.getParentWidget())
+            {
+                label.removeFromParent();
+                cf.getParentWidget().addChild(label,cf.getParentWidget().getChildren().indexOf(cf)+1);
+            }
             label.setLabel(formatElement());
         }
         
         setBorder(BorderFactory.createEmptyBorder(1));
     }
-    
+
+    @Override
+    protected boolean canSelect()
+    {
+        return false;
+    }    
     
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -105,7 +115,7 @@ public class ExpressionWidget extends FeatureWidget implements PropertyChangeLis
     }
 
     @Override
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
         updateUI();
     }

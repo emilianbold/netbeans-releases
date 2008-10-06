@@ -57,16 +57,17 @@ public class XMLTokenIdTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new XMLTokenIdTest("testTokens"));
-        //two regression tests
+        //regression tests on XMLLexer
         suite.addTest(new XMLTokenIdTest("testParse1"));
         suite.addTest(new XMLTokenIdTest("testParse2"));
+        suite.addTest(new XMLTokenIdTest("testParse3"));
         //measure performace
         suite.addTest(new XMLTokenIdTest("testParsePerformance"));
         return suite;
     }
     
     /**
-     * This test parses a particular schema that was earlier failing.
+     * This test parses a xml/schema that was earlier failing.
      * See http://www.netbeans.org/issues/show_bug.cgi?id=124731
      * See http://hg.netbeans.org/main?cmd=changeset;node=34612be91839
      */
@@ -76,12 +77,21 @@ public class XMLTokenIdTest extends AbstractTestCase {
     }
     
     /**
-     * This test parses a particular schema that was earlier failing.
+     * This test parses a xml/schema that was earlier failing.
      * See http://www.netbeans.org/issues/show_bug.cgi?id=125005
      * See http://hg.netbeans.org/main?cmd=changeset;node=dcd138bddc6c
      */
     public void testParse2() throws Exception {
         javax.swing.text.Document document = getDocument("resources/wsdl.xml");
+        parse(document);
+    }
+    
+    /**
+     * This test parses a xml/schema that was earlier failing.
+     * See http://www.netbeans.org/issues/show_bug.cgi?id=139184
+     */
+    public void testParse3() throws Exception {
+        javax.swing.text.Document document = getDocument("resources/test1.xml");
         parse(document);
     }
     

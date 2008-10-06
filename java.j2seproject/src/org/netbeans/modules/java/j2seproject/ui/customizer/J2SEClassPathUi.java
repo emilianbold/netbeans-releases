@@ -94,6 +94,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -123,14 +124,14 @@ public class J2SEClassPathUi {
         private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/java/j2seproject/ui/resources/jarJavadocBadge.png"; //NOI18N
         
         
-        private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
+        private static ImageIcon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
         private static ImageIcon ICON_FOLDER = null; 
-        private static ImageIcon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
-        private static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
-        private static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
+        private static ImageIcon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
+        private static ImageIcon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
+        private static ImageIcon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+        private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+        private static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
+        private static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
@@ -221,7 +222,7 @@ public class J2SEClassPathUi {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_LIBRARY == null ) {
-                            ICON_BROKEN_LIBRARY = new ImageIcon( Utilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_LIBRARY = new ImageIcon( ImageUtilities.mergeImages( ICON_LIBRARY.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_LIBRARY;
                     }
@@ -231,7 +232,7 @@ public class J2SEClassPathUi {
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_ARTIFACT == null ) {
-                            ICON_BROKEN_ARTIFACT = new ImageIcon( Utilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_ARTIFACT = new ImageIcon( ImageUtilities.mergeImages( ICON_ARTIFACT.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_ARTIFACT;
                     }
@@ -246,7 +247,7 @@ public class J2SEClassPathUi {
                 case ClassPathSupport.Item.TYPE_JAR:
                     if ( item.isBroken() ) {
                         if ( ICON_BROKEN_JAR == null ) {
-                            ICON_BROKEN_JAR = new ImageIcon( Utilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
+                            ICON_BROKEN_JAR = new ImageIcon( ImageUtilities.mergeImages( ICON_JAR.getImage(), ICON_BROKEN_BADGE.getImage(), 7, 7 ) );
                         }
                         return ICON_BROKEN_JAR;
                     }
@@ -256,10 +257,10 @@ public class J2SEClassPathUi {
                         
                         ImageIcon icn = /*TODO f.isDirectory()*/ false ? getFolderIcon() : ICON_JAR;
                         if (item.getSourceFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                            icn =  new ImageIcon( ImageUtilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
                         if (item.getJavadocFilePath() != null) {
-                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                            icn =  new ImageIcon( ImageUtilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
                     }
@@ -458,6 +459,7 @@ public class J2SEClassPathUi {
                     new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N 
                 File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
+                chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( J2SEClassPathUi.class, "LBL_AddJar_DialogTitle" ));
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
@@ -504,7 +506,12 @@ public class J2SEClassPathUi {
                 }
                 
                 Set<Library> added = LibraryChooser.showDialog(manager,
-                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                        new LibraryChooser.Filter() {
+                            public boolean accept(Library library) {
+                                return "j2se".equals(library.getType());    //NOI18N
+                            }
+                        },
+                        project.getReferenceHelper().getLibraryChooserImportHandler());
                 if (added != null) {
                     Set<Library> includedLibraries = new HashSet<Library>();
                     for (int i=0; i< listModel.getSize(); i++) {

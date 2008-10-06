@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -104,13 +105,16 @@ class LuceneIndex extends Index {
     
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     
-    private final Directory directory;
+    private final File refCacheRoot;
+    //@GuardedBy(this)
+    private Directory directory;
     private Long rootTimeStamp;
     
     //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     private Analyzer analyzer;  //Analyzer used to store documents
+    private volatile boolean closed;
     
     static Index create (final File cacheRoot) throws IOException {        
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
@@ -120,7 +124,8 @@ class LuceneIndex extends Index {
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+        this.refCacheRoot = refCacheRoot;
+        this.directory = FSDirectory.getDirectory(this.refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
         PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
         _analyzer.addAnalyzer(DocumentUtil.identTerm("").field(), new WhitespaceAnalyzer());
         _analyzer.addAnalyzer(DocumentUtil.featureIdentTerm("").field(), new WhitespaceAnalyzer());
@@ -131,6 +136,7 @@ class LuceneIndex extends Index {
 
     @SuppressWarnings ("unchecked")     // NOI18N, unchecked - lucene has source 1.4
     public List<String> getUsagesFQN(final String resourceName, final Set<ClassIndexImpl.UsageType>mask, final BooleanOperator operator) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             return null;
         }
@@ -179,6 +185,7 @@ class LuceneIndex extends Index {
 
         
     public String getSourceName (final String resourceName) throws IOException {
+        checkPreconditions();
         if (!isValid(false)) {
             return null;
         }
@@ -199,6 +206,7 @@ class LuceneIndex extends Index {
         
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
@@ -352,6 +360,7 @@ class LuceneIndex extends Index {
     }
     
     public <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException {
+        checkPreconditions();
         if (!isValid(false)) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
@@ -587,6 +596,7 @@ class LuceneIndex extends Index {
     
     
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {        
+        checkPreconditions();
         if (directOnly && this.rootPkgCache != null && prefix.length() == 0) {
                 result.addAll(this.rootPkgCache);
                 return;
@@ -655,6 +665,7 @@ class LuceneIndex extends Index {
     }
 
     public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {        
+        checkPreconditions();
         if (!isValid(false)) {
             return false;
         }
@@ -673,9 +684,8 @@ class LuceneIndex extends Index {
                 else {
                     hits = searcher.search(DocumentUtil.binaryNameQuery(resourceName));
                 }
-
-                assert hits.length() <= 1;
-                if (hits.length() == 0) {
+                
+                if (hits.length() != 1) {   //0 = not present, 1 = present and has timestamp, >1 means broken index, probably killed IDE, treat it as not up to date and store will fix it.
                     return false;
                 }
                 else {                    
@@ -705,6 +715,7 @@ class LuceneIndex extends Index {
     }
     
     public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
+        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);
@@ -728,6 +739,7 @@ class LuceneIndex extends Index {
     }
 
     public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
+        checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid (false);        
@@ -837,7 +849,13 @@ class LuceneIndex extends Index {
     }
 
     public boolean isValid (boolean tryOpen) throws IOException {  
-        boolean res = IndexReader.indexExists(this.directory);
+        checkPreconditions();
+        boolean res = false;
+        try {
+            res = IndexReader.indexExists(this.directory);
+        } catch (IOException e) {
+            return res;
+        }
         if (res && tryOpen) {
             try {
                 getReader();
@@ -850,14 +868,56 @@ class LuceneIndex extends Index {
     }    
     
     public synchronized void clear () throws IOException {
+        checkPreconditions();
         this.rootPkgCache = null;
         this.close ();
-        final String[] content = this.directory.list();
-        for (String file : content) {
-            directory.deleteFile(file);
+        try {
+            final String[] content = this.directory.list();
+            boolean dirty = false;
+            for (String file : content) {
+                try {
+                    directory.deleteFile(file);
+                } catch (IOException e) {
+                    //Some temporary files
+                    if (directory.fileExists(file)) {
+                        dirty = true;
+                    }
+                }
+            }
+            if (dirty) {
+                //Try to delete dirty files and log what's wrong
+                final File cacheDir = ((FSDirectory)this.directory).getFile();
+                final File[] children = cacheDir.listFiles();
+                if (children != null) {
+                    for (final File child : children) {
+                        if (!child.delete()) {
+                            final Class c = this.directory.getClass();
+                            int refCount = -1;
+                            try {
+                                final Field field = c.getDeclaredField("refCount"); 
+                                field.setAccessible(true);
+                                refCount = field.getInt(this.directory);                            
+                            } catch (NoSuchFieldException e) {/*Not important*/}
+                              catch (IllegalAccessException e) {/*Not important*/}
+
+                            throw new IOException("Cannot delete: " + child.getAbsolutePath() + "(" +   //NOI18N
+                                    child.exists()  +","+                                               //NOI18N
+                                    child.canRead() +","+                                               //NOI18N
+                                    child.canWrite() +","+                                              //NOI18N
+                                    cacheDir.canRead() +","+                                            //NOI18N
+                                    cacheDir.canWrite() +","+                                           //NOI18N
+                                    refCount+")");                                                      //NOI18N
+                        }
+                    }
+                }
+            }
+        } finally {
+            //Need to recreate directory, see issue: #148374
+            this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
+            closed = false;
         }
     }
-    
+        
     public synchronized void close () throws IOException {
         try {
             if (this.reader != null) {
@@ -866,11 +926,12 @@ class LuceneIndex extends Index {
             }
         } finally {
            this.directory.close();
+           this.closed = true;
         }
     }
     
     public @Override String toString () {
-        return this.directory.toString();
+        return getClass().getSimpleName()+"["+this.refCacheRoot.getAbsolutePath()+"]";  //NOI18N
     }
     
     private synchronized IndexReader getReader () throws IOException {
@@ -898,6 +959,12 @@ class LuceneIndex extends Index {
             refRoot.mkdir();
         }
         return refRoot;
+    }
+    
+    private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
+        if (closed) {
+            throw new ClassIndexImpl.IndexAlreadyClosedException();
+        }
     }
     
     private static class LMListener implements LowMemoryListener {        

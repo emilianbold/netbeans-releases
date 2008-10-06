@@ -47,14 +47,9 @@ import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetCD;
 import org.netbeans.modules.vmd.midp.palette.DatabindingPaletteProvider;
-import org.netbeans.modules.vmd.midp.components.databinding.AddressDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.ContactsDataSetCD;
 import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetConnectorCD;
 import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataSetCD;
-import org.netbeans.modules.vmd.midp.components.databinding.NameDataSetCD;
-import org.netbeans.modules.vmd.midp.components.databinding.PIMDataSetCD;
-import org.netbeans.modules.vmd.midp.components.databinding.ToDoDataSetCD;
 import org.netbeans.modules.vmd.midp.java.MidpJavaSupport;
 import org.openide.util.NbBundle;
 
@@ -84,32 +79,33 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
         return isValid;
     }
 
-    @Override
-    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
-        mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(true));
-        return super.postInitialize(document, mainComponent);
-    }
-
     public static final class DataSetProducer extends DataSetAbstractProducer {
 
         public DataSetProducer() {
-            super("javax.microedition.lcdui.Canvas", DataSetCD.TYPEID.toString(), DataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "DataSet", "DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
+            super("javax.microedition.lcdui.Canvas", //NOI18N
+                    DataSetCD.TYPEID.toString(),
+                    DataSetCD.TYPEID,
+                    new PaletteDescriptor(DATABINDING_CATEGORY,
+                                          NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_DataSet"),//NOI18N
+                                          NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_DataSet"), //NOI18N
+                                          DataSetAbstractCD.ICON_PATH,
+                                          null)); 
         }
-        
-        public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
-        mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(false));
-        return super.postInitialize(document, mainComponent);
-    }
-    }
 
+        @Override
+        public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
+            MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
+            mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(false));
+            return new Result (mainComponent);
+        }
+    }
+    /*
     public static final class AddressDataSetProducer extends IndexableDataSetAbstractProducer {
 
         public AddressDataSetProducer() {
             super("javax.microedition.lcdui.Canvas", AddressDataSetCD.TYPEID.toString(), AddressDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Address DataSet", "Address DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
         }
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             mainComponent.writeProperty(AddressDataSetCD.PROP_INDEX, MidpTypes.createIntegerValue(0));
@@ -119,27 +115,34 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             return super.postInitialize(document, mainComponent);
         }
     }
-
+    */
     public static final class ContactsDataSetProducer extends IndexableDataSetAbstractProducer {
 
         public ContactsDataSetProducer() {
-            super("javax.microedition.lcdui.Canvas", ContactsDataSetCD.TYPEID.toString(), ContactsDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Contacts DataSet", "Contacts DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
+            super("javax.microedition.lcdui.Canvas", //NOI18N
+                    ContactsDataSetCD.TYPEID.toString(),
+                    ContactsDataSetCD.TYPEID,
+                    new PaletteDescriptor(DATABINDING_CATEGORY,
+                                          NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_ContactsDataSet"), //NOI18N
+                                          NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_ContactsDataSet"), //NOI18N
+                                          DataSetAbstractCD.ICON_PATH,
+                                          null));
         }
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME", "DataBindingME-PIM"); //NOI18N
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(true));
-            return super.postInitialize(document, mainComponent);
+            return new Result (mainComponent);
         }
     }
-
+    /*
     public static final class NameDataSetProducer extends IndexableDataSetAbstractProducer {
 
         public NameDataSetProducer() {
             super("javax.microedition.lcdui.Canvas", NameDataSetCD.TYPEID.toString(), NameDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Name DataSet", "Name DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
         }
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             mainComponent.writeProperty(NameDataSetCD.PROP_INDEX, MidpTypes.createIntegerValue(0));
@@ -148,13 +151,13 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             return super.postInitialize(document, mainComponent);
         }
     }
-
+    
     public static final class PIMDataSetProducer extends DataSetAbstractProducer {
 
         public PIMDataSetProducer() {
             super("javax.microedition.lcdui.Canvas", PIMDataSetCD.TYPEID.toString(), PIMDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "PIM DataSet", "PIM DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
         }
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             mainComponent.writeProperty(ToDoDataSetCD.PROP_INDEX, MidpTypes.createIntegerValue(0));
@@ -162,7 +165,6 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(true));
             return super.postInitialize(document, mainComponent);
         }
-        
     }
 
     public static final class ToDoDataSetProducer extends IndexableDataSetAbstractProducer {
@@ -170,7 +172,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
         public ToDoDataSetProducer() {
             super("javax.microedition.lcdui.Canvas", ToDoDataSetCD.TYPEID.toString(), ToDoDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "ToDo DataSet", "ToDo DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
         }
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             mainComponent.writeProperty(ToDoDataSetCD.PROP_INDEX, MidpTypes.createIntegerValue(0));
@@ -179,26 +181,32 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
             return super.postInitialize(document, mainComponent);
         }
     }
-
+    */
     public static final class IndexableDataSetProducer extends DataSetAbstractProducer {
 
         public IndexableDataSetProducer() {
-            super("javax.microedition.lcdui.Canvas", IndexableDataSetCD.TYPEID.toString(), IndexableDataSetCD.TYPEID, new PaletteDescriptor(DATABINDING_CATEGORY, "Indexable DataSet", "Indexable DataSet", DataSetAbstractCD.ICON_PATH, null)); //NOI18N
+            super("javax.microedition.lcdui.Canvas", //NOI18N
+                  IndexableDataSetCD.TYPEID.toString(),
+                  IndexableDataSetCD.TYPEID,
+                  new PaletteDescriptor(DATABINDING_CATEGORY,
+                                        NbBundle.getMessage(DataSetAbstractProducer.class, "DISP_IndexableDataSet"), //NOI18N
+                                        NbBundle.getMessage(DataSetAbstractProducer.class, "TTIP_IndexableDataSet"), //NOI18N,
+                                        DataSetAbstractCD.ICON_PATH,
+                                        null)); 
         }
     }
-    
+
     protected static class IndexableDataSetAbstractProducer extends DataSetAbstractProducer {
-        
+
         public IndexableDataSetAbstractProducer(String fqnNameCheck, String producerID, TypeID typeID, PaletteDescriptor paletteDescriptor) {
             super(fqnNameCheck, producerID, typeID, paletteDescriptor);
         }
-        
-        
+
         @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME", "DataBindingME-PIM"); //NOI18N
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(false));
-            return super.postInitialize(document, mainComponent);
+            return new Result (mainComponent);
         }
     }
 }

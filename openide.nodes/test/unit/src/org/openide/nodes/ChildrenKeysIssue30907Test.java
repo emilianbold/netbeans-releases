@@ -41,9 +41,9 @@
 
 package org.openide.nodes;
 
-import java.lang.ref.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
-import org.openide.ErrorManager;
 import junit.framework.*;
 import org.netbeans.junit.*;
 
@@ -53,6 +53,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp () throws Exception {
         System.setProperty("org.openide.util.Lookup", "org.openide.nodes.ChildrenKeysIssue30907Test$Lkp");
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
@@ -60,6 +61,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     }
     
 
+    @Override
     protected void runTest () throws Throwable {
         try {
             super.runTest();
@@ -77,7 +79,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     protected void doRemoveNotify () {
         synchronized (FINAL_LOCK) {
             removeNotified = true;
-            notifyAll ();
+            FINAL_LOCK.notifyAll ();
         }
     }
 
@@ -190,6 +192,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         
         class K extends Children.Keys implements Runnable {
             private String[] arr;
+            final Set<Reference<Node>> toClear = new HashSet<Reference<Node>>();
             
             public K (String[] arr) {
                 this.arr = arr;
@@ -200,9 +203,11 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 an.setName (key.toString ());
                 ErrManager.messages.append (" creating node: " + key.toString () + " by thread: " + Thread.currentThread ().getName () + "\n");
 
+                toClear.add(new WeakReference<Node>(an));
                 return new Node[] { an };
             }
             
+            @Override
             public void addNotify () {                
                 if (slowAddNotify) {
                     try {
@@ -233,11 +238,11 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
             Node[] result;
             public void run () {
                 // forces initialization
-                Node[] arr = new Node[]{};
+                Node[] tmpArr = new Node[]{};
                 try {
                     ErrManager.messages.append ("Run: computing nodes\n");
-                    arr = node[0].getChildren ().getNodes ();
-                    ErrManager.messages.append ("Run: nodes computed" + Arrays.asList (arr) + "\n");
+                    tmpArr = node[0].getChildren ().getNodes ();
+                    ErrManager.messages.append ("Run: nodes computed" + Arrays.asList (tmpArr) + "\n");
                 }
                 catch ( IllegalStateException e ) {
                     // Our exception
@@ -254,12 +259,13 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
                 }
                 
                 synchronized (LOCK) {
-                    ErrManager.messages.append ("Run: Assigning result: " + Arrays.asList (arr) + "\n");
-                    result = arr;
+                    ErrManager.messages.append ("Run: Assigning result: " + Arrays.asList (tmpArr) + "\n");
+                    result = tmpArr;
                     LOCK.notify (); // to N2
                 }
             }
             
+            @Override
             protected void removeNotify () {
                 super.removeNotify();
                 doRemoveNotify ();
@@ -314,7 +320,16 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
             }
         }
         assertEquals ("Two children there even in the initialization thread", threadCount, k.result.length);
+
+        k.result = null;
+        result = null;
+        HOLDER = node[0];
+        for (Reference<Node> ref : k.toClear) {
+            assertGC("Cleaning nodes: " + ref.get(), ref);
+        }
+        ChildrenKeysTest.waitActiveReferenceQueue();
     }
+    static Object HOLDER;
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
         public Lkp () {

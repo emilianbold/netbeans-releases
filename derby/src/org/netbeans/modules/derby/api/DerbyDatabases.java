@@ -317,7 +317,7 @@ public final class DerbyDatabases {
      *
      * <p>Not public because used in tests.</p>
      */
-    static void extractSampleDatabase(String databaseName) throws IOException{
+    static synchronized void extractSampleDatabase(String databaseName) throws IOException{
         File systemHomeFile = ensureSystemHome();
         File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
@@ -356,13 +356,15 @@ public final class DerbyDatabases {
      * Registers in the Database Explorer the specified database
      * on the local Derby server.
      */
-    private static DatabaseConnection registerDatabase(String databaseName, String user, String schema, String password, boolean rememberPassword) throws DatabaseException {
+    private static synchronized DatabaseConnection registerDatabase(String databaseName, String user, String schema, String password, boolean rememberPassword) throws DatabaseException {
         JDBCDriver drivers[] = JDBCDriverManager.getDefault().getDrivers(DerbyOptions.DRIVER_CLASS_NET);
         if (drivers.length == 0) {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
         DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
-        ConnectionManager.getDefault().addConnection(dbconn);
+        if (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
+            ConnectionManager.getDefault().addConnection(dbconn);
+        }
         return dbconn;
     }
 

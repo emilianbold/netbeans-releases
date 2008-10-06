@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
@@ -56,13 +55,14 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 
 /**
  *
  * @author Anton Chechel
  */
-public class FontEditorElement extends PropertyEditorResourceElement {
+public class FontEditorElement extends PropertyEditorResourceElement implements CleanUp {
 
     private FontStub currentStub;
     private Font defaultFont;
@@ -72,6 +72,36 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         attachListeners();
 
         this.defaultFont = sampleLabel.getFont();
+    }
+
+    public void clean(DesignComponent component) {
+        currentStub = null;
+        defaultFont = null;
+        boldCheckBox = null;
+        customRadioButton = null;
+        defaultRadioButton = null;
+        faceButtonGroup = null;
+        faceLabel = null;
+        inputRadioButton = null;
+        italicCheckBox = null;
+        jPanel1 = null;
+        jPanel2 = null;
+        kindButtonGroup = null;
+        kindLabel = null;
+        largeRadioButton = null;
+        mediumRadioButton = null;
+        monospaceRadioButton = null;
+        plainCheckBox = null;
+        proportionalRadioButton = null;
+        sampleLabel = null;
+        sizeButtonGroup = null;
+        sizeLabel = null;
+        smallRadioButton = null;
+        staticRadioButton = null;
+        styleLabel = null;
+        systemRadioButton = null;
+        underlinedCheckBox = null;
+        this.removeAll();
     }
 
     public JComponent getJComponent() {
@@ -85,7 +115,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     public List<String> getPropertyValueNames() {
         return Arrays.asList(FontCD.PROP_FONT_KIND, FontCD.PROP_FACE, FontCD.PROP_STYLE, FontCD.PROP_SIZE);
     }
-    
+
     private void attachListeners() {
         ActionListener kindActionListener = new KindActionListener();
         defaultRadioButton.addActionListener(kindActionListener);
@@ -260,10 +290,10 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         }
 
         long componentID = wrapper.getComponentID();
-        final int[] kindCode = new int[] {FontCD.VALUE_KIND_DEFAULT};
-        final int[] faceCode = new int[] {FontCD.VALUE_FACE_SYSTEM};
-        final int[] styleCode = new int[] {FontCD.VALUE_STYLE_PLAIN};
-        final int[] sizeCode = new int[] {FontCD.VALUE_SIZE_MEDIUM};
+        final int[] kindCode = new int[]{FontCD.VALUE_KIND_DEFAULT};
+        final int[] faceCode = new int[]{FontCD.VALUE_FACE_SYSTEM};
+        final int[] styleCode = new int[]{FontCD.VALUE_STYLE_PLAIN};
+        final int[] sizeCode = new int[]{FontCD.VALUE_SIZE_MEDIUM};
 
         final DesignComponent component = wrapper.getComponent();
         if (component != null) { // existing component
@@ -273,6 +303,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
             componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     PropertyValue propertyValue = component.readProperty(FontCD.PROP_FONT_KIND);
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
@@ -320,6 +351,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private static class FontStub {
+
         private long componentID;
         private int kind;
         private int face;
@@ -398,6 +430,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class KindActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_KIND_DEFAULT;
@@ -423,6 +456,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class SizeActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_SIZE_MEDIUM;
@@ -431,7 +465,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 code = FontCD.VALUE_SIZE_SMALL;
             } else if (src == largeRadioButton) {
                 code = FontCD.VALUE_SIZE_LARGE;
-            } 
+            }
 
             currentStub.setSize(code);
             setSampleFont(false);
@@ -440,6 +474,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class FaceActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_FACE_SYSTEM;
@@ -448,7 +483,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 code = FontCD.VALUE_FACE_MONOSPACE;
             } else if (src == proportionalRadioButton) {
                 code = FontCD.VALUE_FACE_PROPORTIONAL;
-            } 
+            }
 
             currentStub.setFace(code);
             setSampleFont(false);
@@ -457,6 +492,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private class StyleActionListener implements ActionListener {
+
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
             int code = FontCD.VALUE_STYLE_PLAIN;
@@ -468,7 +504,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 }
             } else {
                 plainCheckBox.setSelected(!(boldCheckBox.isSelected() || italicCheckBox.isSelected() || underlinedCheckBox.isSelected()));
-                
+
                 if (boldCheckBox.isSelected()) {
                     code |= FontCD.VALUE_STYLE_BOLD;
                 }
@@ -479,19 +515,19 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                     code |= FontCD.VALUE_STYLE_UNDERLINED;
                 }
             }
-            
+
             currentStub.setStyle(code);
             setSampleFont(false);
             fireElementChanged(currentStub.getComponentID(), FontCD.PROP_STYLE, MidpTypes.createIntegerValue(code));
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         kindButtonGroup = new javax.swing.ButtonGroup();
@@ -551,6 +587,8 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         sampleLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.sampleLabel.text")); // NOI18N
         jPanel1.add(sampleLabel);
         sampleLabel.setBounds(0, 0, 310, 16);
+        sampleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_Preview")); // NOI18N
+        sampleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_Preview")); // NOI18N
 
         jPanel2.add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -703,6 +741,35 @@ public class FontEditorElement extends PropertyEditorResourceElement {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
         );
+
+        defaultRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontKindDefault")); // NOI18N
+        defaultRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_DefaultFontKind")); // NOI18N
+        staticRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontKindStatic")); // NOI18N
+        staticRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontKindStatic")); // NOI18N
+        inputRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontKindInput")); // NOI18N
+        inputRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontKindInput")); // NOI18N
+        customRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontKindCustom")); // NOI18N
+        customRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontKindCustom")); // NOI18N
+        systemRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontFaceSystem")); // NOI18N
+        systemRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontFaceSystem")); // NOI18N
+        monospaceRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontFaceMonospace")); // NOI18N
+        monospaceRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontFaceMonospace")); // NOI18N
+        proportionalRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontFaceProportional")); // NOI18N
+        proportionalRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontFaceProportional")); // NOI18N
+        smallRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontSize")); // NOI18N
+        smallRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontSizeSmall")); // NOI18N
+        mediumRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontSizeMedium")); // NOI18N
+        mediumRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontSizeMedium")); // NOI18N
+        largeRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontSizeLarge")); // NOI18N
+        largeRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontSizeLarge")); // NOI18N
+        plainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontStylePlain")); // NOI18N
+        plainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontStylePlain")); // NOI18N
+        boldCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontStyleBold")); // NOI18N
+        boldCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontStyleBold")); // NOI18N
+        italicCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontStyleItalic")); // NOI18N
+        italicCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontStyleItalic")); // NOI18N
+        underlinedCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSN_FontStyleUnderlined")); // NOI18N
+        underlinedCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "ACSD_FontStyleUnderlined")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox boldCheckBox;

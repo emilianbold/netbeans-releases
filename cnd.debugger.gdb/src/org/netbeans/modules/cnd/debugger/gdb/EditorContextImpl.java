@@ -55,7 +55,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -442,7 +442,7 @@ public class EditorContextImpl extends EditorContext {
     public void addPropertyChangeListener(PropertyChangeListener l) {
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.C_MIME_TYPE, l);
         EditorContextDispatcher.getDefault().addPropertyChangeListener(MIMENames.CPLUSPLUS_MIME_TYPE, l);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-asm", l);
+        EditorContextDispatcher.getDefault().addPropertyChangeListener("text/x-asm", l); // NOI18N
     }
     
     /**

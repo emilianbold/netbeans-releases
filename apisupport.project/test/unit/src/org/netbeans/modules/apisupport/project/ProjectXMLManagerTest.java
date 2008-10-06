@@ -54,8 +54,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -63,7 +61,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
-import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,8 +71,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.DefaultHandler;
 import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.UNIT;
 import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.QA_FUNCTIONAL;
 
@@ -101,6 +96,7 @@ public class ProjectXMLManagerTest extends TestBase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
@@ -110,11 +106,6 @@ public class ProjectXMLManagerTest extends TestBase {
         NbModuleProject xercesPrj = (NbModuleProject) ProjectManager.getDefault().
                 findProject(nbRoot().getFileObject("libs.xerces"));
         return new ProjectXMLManager(xercesPrj);
-    }
-    
-    // sanity check
-    public void testGeneratedProject() throws Exception {
-        validate(generateTestingProject(), false); // false - original project.xml is unordered
     }
     
     public void testGetCodeNameBase() throws Exception {
@@ -178,7 +169,7 @@ public class ProjectXMLManagerTest extends TestBase {
             assertTrue("unknown dependency: " + cnbToRemove, newCNBs.remove(cnbToRemove));
         }
         assertTrue("following dependencies were found: " + newCNBs, newCNBs.isEmpty());
-        validate(testingProject, true);
+        checkDependenciesOrder(testingProject);
     }
     
     public void testEditDependency() throws Exception {
@@ -222,7 +213,6 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         }
         assertTrue("org.openide.dialogs dependency tested", tested);
-        validate(testingProject, false); // false - order is not touched after editing
     }
     
     public void testAddDependencies() throws Exception {
@@ -270,7 +260,7 @@ public class ProjectXMLManagerTest extends TestBase {
             }
         }
         assertTrue("following dependencies were found: " + assumedCNBs, assumedCNBs.isEmpty());
-        validate(testingProject, true);
+        checkDependenciesOrder(testingProject);
     }
     
     public void testExceptionWhenAddingTheSameModuleDependencyTwice() throws Exception {
@@ -297,7 +287,6 @@ public class ProjectXMLManagerTest extends TestBase {
         } catch (IllegalStateException ise) {
             // OK, expected exception was thrown
         }
-        validate(testingProject, false); // false - we are not using regular way for adding
     }
     
     public void testFindPublicPackages() throws Exception {
@@ -326,7 +315,6 @@ public class ProjectXMLManagerTest extends TestBase {
         ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
         assertEquals("number of public packages", 1, pp.length);
         assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
-        validate(testingProject, false); // false - just looking around
     }
     
     public void testReplaceDependencies() throws Exception {
@@ -361,7 +349,7 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("project successfully saved", result);
         ProjectManager.getDefault().saveProject(testingProject);
-        validate(testingProject, true);
+        checkDependenciesOrder(testingProject);
         
         final ProjectXMLManager newTestingPXM = new ProjectXMLManager(testingProject);
         final Set<ModuleDependency> newDeps = newTestingPXM.getDirectDependencies();
@@ -394,7 +382,7 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         ManifestManager.PackageExport[] publicPackages = testingPXM.getPublicPackages();
         assertEquals("number of public packages", 1, publicPackages.length);
-        final String[] newPP = new String[] { publicPackages[0].getPackage(), "org.netbeans.examples.modules" };
+        final String[] newPP = {publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99"};
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
@@ -407,11 +395,10 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         ManifestManager.PackageExport[] newPublicPackages = testingPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
-        Collection newPPs = Arrays.asList(new String[] {"org.netbeans.examples.modules", "org.netbeans.examples.modules.misc"});
+        Collection newPPs = Arrays.asList(newPP);
         assertTrue(newPPs.contains(newPublicPackages[0].getPackage()));
         assertTrue(newPPs.contains(newPublicPackages[1].getPackage()));
         assertNull("there must not be friend", testingPXM.getFriends());
-        validate(testingProject, false); // false - just replacing public packages
     }
     
     public void testReplaceFriends() throws Exception {
@@ -442,7 +429,6 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue(newFriendsCNBs.contains(newFriends[0]));
         assertTrue(newFriendsCNBs.contains(newFriends[1]));
         assertEquals("public packages", 1, newTestingPXM.getPublicPackages().length);
-        validate(testingProject, false); // false - just replacing friends
     }
     
     public void testGetBinaryOrigins() throws Exception {
@@ -473,7 +459,7 @@ public class ProjectXMLManagerTest extends TestBase {
                 "</project>\n";
         TestBase.dump(projectXMLFO, xml);
         NbModuleProject project = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
-        validate(project, true);
+        checkDependenciesOrder(project);
     }
     
     public void testDependenciesOrder() throws Exception { // #62003
@@ -490,7 +476,7 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("adding dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
-        validate(testingProject, true);
+        checkDependenciesOrder(testingProject);
     }
     
   
@@ -576,7 +562,6 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("set with unit TD has still three TD", 3, unitTD.size());
         assertEquals("set with qafunc TD has one TD", 1, qafuncTD.size());
         //TODO: rewrite order checking method to be able to check properly test dependencies order
-        validate(testingProject, false);
     }
 
     
@@ -606,14 +591,12 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("map has already unit test type", 1, testDeps.size());
         setUnit = testDeps.get(UNIT);
         assertEquals("contains two dependencies now", 2, setUnit.size());
-        validate(testingProject, false);
     }
 
     /** add dependency from newDepProj to testingProject
-     * Used in core/tasklist/.../TodoTest.java
+     * @see org.netbeans.modules.tasklist.todo.ToDoTest
      */
-    public static void addDependecy(final NbModuleProject testingProject, NbModuleProject newDepPrj) throws IOException, MutexException, Exception {
-        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+    public static void addDependency(final NbModuleProject testingProject, NbModuleProject newDepPrj) throws IOException, MutexException, Exception {
         ModuleEntry me = testingProject.getModuleList().getEntry(
                 newDepPrj.getCodeNameBase());
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
@@ -629,7 +612,6 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("adding dependencies", result);
         ProjectManager.getDefault().saveProject(testingProject);
-        validate(testingProject, false); // false - we are not using regular way for adding
     }
 
     private NbModuleProject generateTestingProject() throws Exception {
@@ -681,40 +663,6 @@ public class ProjectXMLManagerTest extends TestBase {
         return (NbModuleProject) ProjectManager.getDefault().findProject(fo);
     }
     
-    // below is stolen from ant/freeform
-    private static String[] getSchemas() throws Exception {
-        String[] URIs = new String[3];
-        URIs[0] = ProjectXMLManager.class.getResource("resources/nb-module-project2.xsd").toExternalForm();
-        URIs[1] = ProjectXMLManager.class.getResource("resources/nb-module-project3.xsd").toExternalForm();
-        URIs[2] = AntBasedProjectFactorySingleton.class.getResource("project.xsd").toExternalForm();
-        return URIs;
-    }
-    
-    public static void validate(final Project proj, final boolean checkOrder) throws Exception {
-        File projF = FileUtil.toFile(proj.getProjectDirectory());
-        File xml = new File(new File(projF, "nbproject"), "project.xml");
-        SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
-        f.setNamespaceAware(true);
-        f.setValidating(true);
-        SAXParser p = f.newSAXParser();
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage",
-                "http://www.w3.org/2001/XMLSchema");
-        p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", getSchemas());
-        try {
-            p.parse(xml.toURI().toString(), new Handler());
-        } catch (SAXParseException e) {
-            fail("Validation of XML document " + xml + " against schema failed. Details: " +
-                    e.getSystemId() + ":" + e.getLineNumber() + ": " + e.getLocalizedMessage());
-        }
-        if (checkOrder) {
-            checkDependenciesOrder(proj);
-        }
-    }
-    
     private static void checkDependenciesOrder(final Project proj) throws Exception {
         FileObject projectXML = proj.getProjectDirectory().getFileObject("nbproject/project.xml");
         BufferedReader r = new BufferedReader(new InputStreamReader(projectXML.getInputStream()));
@@ -735,17 +683,4 @@ public class ProjectXMLManagerTest extends TestBase {
         }
     }
     
-    private static final class Handler extends DefaultHandler {
-        public void warning(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void error(SAXParseException e) throws SAXException {
-            throw e;
-        }
-        public void fatalError(SAXParseException e) throws SAXException {
-            throw e;
-        }
-    }
-        
 }
-

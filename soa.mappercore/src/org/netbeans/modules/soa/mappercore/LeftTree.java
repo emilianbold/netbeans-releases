@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class LeftTree extends JTree implements
         AdjustmentListener, TreeExpansionListener,
-        Autoscroll 
+        Autoscroll, Searchable 
 {
 
     private Mapper mapper;
@@ -84,7 +84,7 @@ public class LeftTree extends JTree implements
 
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
-        putClientProperty("print.weight", new Integer(0)); // NOI18N
+        putClientProperty("print.order", new Integer(0)); // NOI18N
 
         scrollPane = new JScrollPane(this,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -610,6 +610,10 @@ public class LeftTree extends JTree implements
     }
     private static final int EDGE_CONNECTED = 1;
     private static final int EDGE_CONNECTED_TO_CHILD = 2;
+
+    public JComponent getSearchableComponent() {
+        return this;
+    }
 
     private class RightControlAction extends AbstractAction {
         public void actionPerformed(ActionEvent event) {

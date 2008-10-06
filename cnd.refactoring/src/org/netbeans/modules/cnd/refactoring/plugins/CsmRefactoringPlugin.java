@@ -264,7 +264,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
             if (referencedObject == null) {
                 return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_ElementNotResolved"));
             }
-            if (CsmKindUtilities.isValidable(referencedObject) && !((CsmValidable)referencedObject).isValid()) {
+            if (!CsmBaseUtilities.isValid(referencedObject)) {
                 return new Problem(true, NbBundle.getMessage(CsmRefactoringPlugin.class, "DSC_ElementNotResolved"));
             }            
             // element is still available

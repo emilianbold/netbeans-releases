@@ -54,6 +54,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,11 +68,16 @@ public class JavaMELibsVisualPanel extends JPanel {
     private static final String AUTO_WIZARD_STYLE = WizardDescriptor.PROP_AUTO_WIZARD_STYLE;  // NOI18N
 
     private static final String DLD_DELETE_TITLE = "MSG_LibraryDeleteTitle";  // NOI18N
-    private static final String DLD_DELETE_MSG = "MSG_LibraryDeleteMsg";  // NOI18N
-    
+    private static final String DLD_DELETE_MSG   = "MSG_LibraryDeleteMsg";  // NOI18N
+
+    private static final String ACSN_LIB_PANEL   = "ACSN_LibPanel";         // NOI18N
+    private static final String ACSD_LIB_PANEL   = "ACSD_LibPanel";         // NOI18N
+
     /** Creates new form JavaMELibsVisualPanel */
     public JavaMELibsVisualPanel() {
         initComponents();
+
+        initAccessibility();
         
         myLibDescList.setModel( new LibraryListModel() );
         myLibDescList.getSelectionModel().setSelectionMode(
@@ -85,6 +91,10 @@ public class JavaMELibsVisualPanel extends JPanel {
         updateRemoveButton();
     }
 
+    protected HelpCtx getHelp() {
+        return new HelpCtx(JavaMELibsVisualPanel.class);
+    }
+    
     private void updateRemoveButton(){
         if (myLibDescList.isSelectionEmpty()) {
             myRemoveButton.setEnabled(false);
@@ -201,11 +211,11 @@ private void addPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPr
     myInnerDescriptor = new WizardDescriptor( iterator );
     myInnerDescriptor.putProperty( AUTO_WIZARD_STYLE, true );
     myInnerDescriptor.putProperty( CONTENT_DISPLAYED, true );
-    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );
+    myInnerDescriptor.putProperty( CONTENT_NUMBERED, true );//GEN-LAST:event_addPressed
     Dialog dialog = DialogDisplayer.getDefault().createDialog( myInnerDescriptor );
     dialog.setVisible( true );
     readData(myWizardDescriptor);
-}//GEN-LAST:event_addPressed
+}                           
 
 private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removePressed
     int index = myLibDescList.getSelectedIndex();
@@ -219,7 +229,7 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     
     String title = getMessage(DLD_DELETE_TITLE);
     String msg = getMessage(DLD_DELETE_MSG, name);
-    if (!UIUtils.userConfirmOkCancel(title, msg)){
+    if (!UIUtils.userConfirmOkCancel(title, msg)){//GEN-LAST:event_removePressed
         return;
     }
     
@@ -228,8 +238,14 @@ private void removePressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_re
     libNames.remove(index);
     libDisplayNames.remove(index);
     
-}//GEN-LAST:event_removePressed
+}                              
 
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSN_LIB_PANEL));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                CustomComponentVisualPanel.class, ACSD_LIB_PANEL));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;

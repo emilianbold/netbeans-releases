@@ -64,6 +64,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.ElvisOperatorExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.codehaus.groovy.ast.expr.GStringExpression;
 import org.codehaus.groovy.ast.expr.ListExpression;
@@ -150,8 +151,20 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     public void visitBlockStatement(BlockStatement node) {
-        if (isInside(node, line, column)) {
-            super.visitBlockStatement(node);
+        if (isInside(node, line, column, false)) {
+            path.add(node);
+        } else {
+            for (Object object : node.getStatements()) {
+                if (isInside((ASTNode) object, line, column, false)) {
+                    path.add(node);
+                    break;
+                }
+            }
+        }
+
+        for (Object object : node.getStatements()) {
+            Statement statement = (Statement) object;
+            statement.visit(this);
         }
     }
 
@@ -336,9 +349,32 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     public void visitPropertyExpression(PropertyExpression node) {
-        if (isInside(node, line, column)) {
-            super.visitPropertyExpression(node);
+
+        // XXX PropertyExpression has wrong offsets, e.g. 4-4 for 'this.field1 = 77'
+        // and was never added to path,
+        // therefore let's check if its children are wraping given position
+        // and add it then
+
+        Expression objectExpression = node.getObjectExpression();
+        Expression property = node.getProperty();
+        
+        if (isInside(node, line, column, false)) {
+            path.add(node);
+        } else {
+            boolean nodeAdded = false;
+            if (isInside(objectExpression, line, column, false)) {
+                path.add(node);
+                nodeAdded = true;
+            }
+            if (isInside(property, line, column, false)) {
+                if (!nodeAdded) {
+                    path.add(node);
+                }
+            }
         }
+
+        objectExpression.visit(this);
+        property.visit(this);
     }
 
     public void visitAttributeExpression(AttributeExpression node) {
@@ -487,6 +523,10 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private boolean isInside(ASTNode node, int line, int column) {
+        return isInside(node, line, column, true);
+    }
+    
+    private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
 
         // for now just always returns true, it means whole tree is visited
         // I wanted to drop visits of subtrees which don't include given offset,
@@ -506,7 +546,8 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 //            // and so it was preventing me from visiting expression deeper
 //            return true;
 //        }
-        
+
+        fixCoordinates(node);
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
@@ -517,7 +558,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         if (beginLine == -1 || beginColumn == -1 || endLine == -1 || endColumn == -1) {
             // this node doesn't provide its coordinates, some wrappers do that
             // let's say yes and visit its children
-            return true;
+            return addToPath ? true : false;
         }
         
         boolean result = false;
@@ -540,15 +581,50 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
             result = false;
         }
         
-        if (result) {
+        if (result && addToPath) {
             path.add(node);
-            LOG.finest("Path:");
-            for (ASTNode astNode : path) {
-                LOG.finest(astNode.toString());
+            LOG.finest("Path:" + path);
+        }
+
+        // if addToPath is false, return result, we want to know real state of affairs
+        // and not to continue traversing
+        return addToPath ? true : result;
+    }
+
+    private void fixCoordinates(ASTNode node) {
+        // see http://jira.codehaus.org/browse/GROOVY-3052
+        if (node instanceof RangeExpression) {
+            RangeExpression range = (RangeExpression) node;
+            Expression from = range.getFrom();
+            Expression to = range.getTo();
+            if (to.getLastLineNumber() == 0 && to.getLastColumnNumber() == 0
+                    || to.getLastLineNumber() > range.getLastLineNumber()
+                    || to.getLastColumnNumber() > range.getLastColumnNumber()) {
+                if (from.getLastLineNumber() == to.getLineNumber()
+                        && from.getLastColumnNumber() == to.getColumnNumber()) {
+                    // we need to do our best to fix it
+                    from.setLastColumnNumber(from.getColumnNumber() + from.getText().length());
+                    to.setLastColumnNumber(to.getColumnNumber() + to.getText().length());
+                    to.setLastLineNumber(to.getLineNumber());
+                }
+            }
+        // see http://jira.codehaus.org/browse/GROOVY-3049
+        } else if (node instanceof PropertyExpression) {
+            // bit suspucious, try to fix the data
+            if (node.getLineNumber() == node.getLastLineNumber()
+                    && node.getColumnNumber() == node.getLastColumnNumber()) {
+                PropertyExpression propertyExpression = (PropertyExpression) node;
+                Expression expression = propertyExpression.getProperty();
+                if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
+                    if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
+                        node.setLastColumnNumber(node.getLastColumnNumber() + expression.getText().length());
+                    }
+                } else {
+                    node.setLastLineNumber(expression.getLastLineNumber());
+                    node.setLastColumnNumber(expression.getLastColumnNumber());
+                }
             }
         }
-        
-        return true;
     }
 
 }

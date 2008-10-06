@@ -10,8 +10,10 @@
 ..+ context.xml
 ..+ web.xml
 .+ Server Resources
-.+ Source Packages
-.+ Test Packages
+.+ Source Packages 
+..+ <default package>
+.+ Test Packages 
+..+ <default package>
 .+ Libraries 
 ..+ JDK 1.6 (Default)
 .+ Test Libraries 

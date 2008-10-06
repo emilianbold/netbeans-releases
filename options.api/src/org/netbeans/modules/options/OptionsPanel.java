@@ -42,20 +42,29 @@
 package org.netbeans.modules.options;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
@@ -70,6 +79,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -89,7 +99,9 @@ public class OptionsPanel extends JPanel {
     private CardLayout cLayout;
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
-    private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");    
+    private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
+    private final boolean isNimbus = UIManager.getLookAndFeel ().getID ().equals ("Nimbus");
+    private final boolean isGTK = UIManager.getLookAndFeel ().getID ().equals ("GTK");
     private Color selected = isMac ? new Color(221, 221, 221) : new Color (193, 210, 238);
     private Color selectedB = isMac ? new Color(183, 183, 183) : new Color (149, 106, 197);
     private Color highlighted = isMac ? new Color(221, 221, 221) : new Color (224, 232, 246);
@@ -279,9 +291,11 @@ public class OptionsPanel extends JPanel {
             CategoryModel.Category category = CategoryModel.getInstance().getCategory(names[i]);
             CategoryButton button = addButton (category);            
             Dimension d = button.getPreferredSize();
-            maxSize.setSize(Math.max(maxSize.getWidth(), d.getWidth()), 
-                    Math.max(maxSize.getHeight(), d.getHeight()));
-            
+            maxSize.width = Math.max(maxSize.width, d.width);
+            // #141121 - ignore big height which can appear for uknown reason
+            if(d.height < d.width*10) {
+                maxSize.height = Math.max(maxSize.height, d.height);
+            }
         }        
         it = buttons.values().iterator ();
         while (it.hasNext ()) {
@@ -293,7 +307,9 @@ public class OptionsPanel extends JPanel {
                 
     private CategoryButton addButton (CategoryModel.Category category) {
         int index = buttons.size ();
-        CategoryButton button = new CategoryButton (category);
+        CategoryButton button = isNimbus || isGTK 
+                ? new NimbusCategoryButton(category)
+                : new CategoryButton(category);
 
         // add shortcut
         KeyStroke keyStroke = KeyStroke.getKeyStroke 
@@ -516,5 +532,132 @@ public class OptionsPanel extends JPanel {
                 setNormal ();
             }
         }
-    }    
+    }
+
+
+    private static final int BORDER_WIDTH = 4;
+    private static final Border selBorder = new CompoundBorder( 
+            new CompoundBorder(BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH),
+                new NimbusBorder() ),
+                BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH));
+    private static final Border normalBorder = BorderFactory.createEmptyBorder(2*BORDER_WIDTH+1, 2*BORDER_WIDTH+1, 2*BORDER_WIDTH+3, 2*BORDER_WIDTH+3);
+
+    private static final short STATUS_NORMAL = 0;
+    private static final short STATUS_SELECTED = 1;
+    private static final short STATUS_HIGHLIGHTED = 2;
+
+    private static final Color COL_GRADIENT1 = new Color(244,245,249);
+    private static final Color COL_GRADIENT2 = new Color(163,184,203);
+    private static final Color COL_GRADIENT3 = new Color(206,227,246);
+
+    private static final Color COL_OVER_GRADIENT1 = new Color(244,245,249,128);
+    private static final Color COL_OVER_GRADIENT2 = new Color(163,184,203,128);
+    private static final Color COL_OVER_GRADIENT3 = new Color(206,227,246,128);
+
+    private class NimbusCategoryButton extends CategoryButton {
+
+        private short status = STATUS_NORMAL;
+
+        public NimbusCategoryButton( final CategoryModel.Category category ) {
+            super( category );
+            setOpaque(false);
+            setBorder( normalBorder );
+        }
+
+        @Override
+        protected void paintChildren(Graphics g) {
+            super.paintChildren(g);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if( status == STATUS_SELECTED || status == STATUS_HIGHLIGHTED ) {
+                Insets in = getInsets();
+                in.top -= BORDER_WIDTH;
+                in.left -= BORDER_WIDTH;
+                in.bottom -= BORDER_WIDTH;
+                in.right -= BORDER_WIDTH;
+                Graphics2D g2d = (Graphics2D) g.create();
+
+                int width = getWidth()-in.left-in.right+1;
+                int height = getHeight()-in.top-in.bottom+1;
+                int topGradient = (int)(0.7*height);
+                int bottomGradient = height-topGradient;
+                Color c1 = (status == STATUS_HIGHLIGHTED ? COL_OVER_GRADIENT1 : COL_GRADIENT1);
+                Color c2 = (status == STATUS_HIGHLIGHTED ? COL_OVER_GRADIENT2 : COL_GRADIENT2);
+                Color c3 = (status == STATUS_HIGHLIGHTED ? COL_OVER_GRADIENT3 : COL_GRADIENT3);
+                g2d.setPaint( new GradientPaint(in.left, in.top, c1, in.left, in.top+topGradient, c2));
+                g2d.fillRect(in.left,in.top, width, topGradient );
+
+                g2d.setPaint( new GradientPaint(in.left, in.top+topGradient, c2, in.left, in.top+topGradient+bottomGradient, c3));
+                g2d.fillRect(in.left,in.top+topGradient, width, bottomGradient  );
+
+                g2d.dispose();
+            }
+            super.paintComponent(g);
+        }
+
+        @Override
+        void setHighlighted() {
+            super.setHighlighted();
+            status = STATUS_HIGHLIGHTED;
+            setBorder(selBorder);
+            repaint();
+        }
+
+
+        @Override
+        void setNormal() {
+            setBorder(normalBorder);
+            status = STATUS_NORMAL;
+            repaint();
+        }
+
+        @Override
+        void setSelected() {
+            setBorder(selBorder);
+            status = STATUS_SELECTED;
+            repaint();
+        }
+    }
+
+    private static class NimbusBorder implements Border {
+
+        private static final Color COLOR_BORDER = new Color(72,93,112, 255);
+        private static final Color COLOR_SHADOW1 = new Color(72,93,112, 100);
+        private static final Color COLOR_SHADOW2 = new Color(72,93,112, 60) ;
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2d = (Graphics2D)g;
+
+            g2d.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
+            Area rect = new Area(new RoundRectangle2D.Float(x, y, width-3, height-2, 4, 4));
+            g2d.setColor( COLOR_BORDER );
+            g2d.draw( rect );
+
+            Area shadow = new Area( rect );
+            AffineTransform tx = new AffineTransform();
+            tx.translate(1, 1);
+            shadow.transform(tx);
+            shadow.subtract(rect);
+            g2d.setColor( COLOR_SHADOW1 );
+            g2d.draw( shadow );
+
+            shadow = new Area( rect );
+            tx = new AffineTransform();
+            tx.translate(2, 2);
+            shadow.transform(tx);
+            shadow.subtract(rect);
+            g2d.setColor( COLOR_SHADOW2 );
+            g2d.draw( shadow );
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets( 1,1,3,3 );
+        }
+
+        public boolean isBorderOpaque() {
+            return false;
+        }
+    }
 }

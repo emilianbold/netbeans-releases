@@ -529,7 +529,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         optCode.setAlignmentX(0.0f);
         optComments.setAlignmentX(0.0f);
         
-        result.setName(bundle.getString("LBL_panel_ChooseClass"));
+        result.setName(bundle.getString("LBL_panel_ChooseClass"));      //NOI18N
         
         addAccessibilityDescriptions(result);
         setUpInteraction();
@@ -1165,7 +1165,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
      */
     private void setErrorMsg(String message) {
         if (wizard != null) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);    //NOI18N
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
     }
     
@@ -1343,8 +1343,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
     }
     
     public HelpCtx getHelp() {
-        //PENDINGg
-        return null;
+        return new HelpCtx("org.netbeans.modules.junit.wizards.SimpleTest");//NOI18N
     }
     
     public void readSettings(WizardDescriptor settings) {

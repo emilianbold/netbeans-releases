@@ -100,6 +100,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.glassfish.eecommon</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -251,7 +260,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -265,6 +274,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.portalpack.servers.base_psframework</friend>
                 <friend>org.netbeans.modules.portalpack.servers.opensourcepc</friend>
                 <package>org.netbeans.modules.j2ee.sun.api</package>
+                <package>org.netbeans.modules.j2ee.sun.api.restricted</package>
                 <package>org.netbeans.modules.j2ee.sun.appsrvapi</package>
                 <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
                 <package>org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping</package>

@@ -51,7 +51,7 @@ public interface JSHttpMessage extends JSDebuggerBase {
         GET, POST;
 
         public String toString() {
-            return name().toLowerCase();
+            return name().toUpperCase();
         }
     }
 
@@ -63,7 +63,6 @@ public interface JSHttpMessage extends JSDebuggerBase {
         public String toString() {
             return name().toLowerCase();
         }
-
     }
 
     String getId();

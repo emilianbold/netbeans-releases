@@ -132,17 +132,27 @@ public class SourceAnalyser {
     public boolean isValid () throws IOException {
         return this.index.isValid(true);
     }
-
-    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
+    
+    public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
+        boolean virtual, boolean storeIndex, javax.tools.JavaFileObject sibling,
+        Set<? super ElementHandle<TypeElement>> newTypes, /*out*/boolean[] mainMethod) throws IOException {
         final Map<Pair<String, String>,Data> usages = new HashMap<Pair<String,String>,Data>();
         for (CompilationUnitTree cu : data) {
-            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes);
+            UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, sibling, newTypes, virtual, storeIndex);
             uv.scan(cu,usages);
             mainMethod[0] |= uv.mainMethod;
             if (uv.sourceName != null && uv.rsList != null && uv.rsList.size()>0) {
                 final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
                 final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
-                final String rsName = (index == -1 ? uv.sourceName : uv.sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
+                final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
+                String ext;
+                if (virtual) {
+                    ext = ((FileObjects.Base)sibling).getExt() +'.'+ FileObjects.RX;    //NOI18N
+                }
+                else {
+                    ext = FileObjects.RS;
+                }
+                final String rsName = simpleName + '.' + ext;   //NOI18N
                 javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, sibling);
                 assert fo != null;
                 try {
@@ -172,10 +182,14 @@ public class SourceAnalyser {
                 }
             }
         }
-        for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
-            final Pair<String,String> key = oe.getKey();
-            final Data value = oe.getValue();            
-            addClassReferences (key,value);
+        //Ideally not even usegas will be calculated but it will propagate the storeIndex
+        //through the UsagesVisitor
+        if (storeIndex) {
+            for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
+                final Pair<String,String> key = oe.getKey();
+                final Data value = oe.getValue();            
+                addClassReferences (key,value);
+            }
         }
     }
     
@@ -281,15 +295,19 @@ public class SourceAnalyser {
         private final Set<String> imports;
         private final Set<String> staticImports;
         private final Set<CharSequence> importIdents;
+        private final boolean virtual;
+        private final boolean storeIndex;
         private boolean isStaticImport;
         private State state;        
         private Element enclosingElement = null;
-        private Set<String> rsList;        
+        private Set<String> rsList;         //List of references from source in case when the source has more top levels or is wrongly packaged
+        private boolean crossedTopLevel;    //True when the visitor already reached the correctly packaged top level
         private boolean mainMethod;
         
         
         
-        public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes) {
+        public UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, Set<? super ElementHandle<TypeElement>> newTypes,
+                boolean virtual, boolean storeIndex) {
             assert jt != null;
             assert cu != null;
             assert manager != null;
@@ -310,6 +328,8 @@ public class SourceAnalyser {
             this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);            
             this.topLevels = null;
             this.newTypes = newTypes;            
+            this.virtual = virtual;
+            this.storeIndex = storeIndex;
         }
                 
         protected UsagesVisitor (JavacTaskImpl jt, CompilationUnitTree cu, JavaFileManager manager, javax.tools.JavaFileObject sibling, List<? super Pair<String,String>> topLevels) {
@@ -334,6 +354,8 @@ public class SourceAnalyser {
             this.sourceName = this.manager.inferBinaryName(StandardLocation.SOURCE_PATH, this.sibling);
             this.topLevels = topLevels;
             this.newTypes = null;
+            this.virtual = false;
+            this.storeIndex = true;
         }
         
         final Types getTypes() {
@@ -530,9 +552,12 @@ public class SourceAnalyser {
                     final String classNameType = classNameBuilder.toString();
                     String resourceName = null;
                     if (activeClass.isEmpty()) {
-                        if (!className.equals(sourceName)) {
-                            if (signatureFiles) {
+                        if (virtual || !className.equals(sourceName)) {
+                            if (signatureFiles && rsList == null) {
                                 rsList = new HashSet<String>();
+                                if (crossedTopLevel) {
+                                    rsList.add(sourceName);
+                                }
                             }
                             try {
                                 FileObject fo = URLMapper.findFileObject(this.sibling.toUri().toURL());
@@ -545,6 +570,9 @@ public class SourceAnalyser {
                             } catch (MalformedURLException e) {
                                 Exceptions.printStackTrace(e);
                             }
+                        }
+                        else {
+                            crossedTopLevel = true;
                         }
                     }
                     else {

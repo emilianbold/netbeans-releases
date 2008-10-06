@@ -52,6 +52,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -101,6 +102,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     public void applyChanges() {                                 
         // executable
+        if(!panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath())) {
+            SvnClientFactory.reset();
+        }
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());            
         

@@ -82,7 +82,8 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     private java.util.Map<PersistentKey,SortedName> myKeys ;
     private java.util.Map<PersistentKey,ChangeListener> myChanges;
     private boolean isInited = false;
-    
+    private boolean isDisposed = false;
+
     public HostKeyArray(ChildrenUpdater childrenUpdater, CsmProject project, PersistentKey id) {
         this.childrenUpdater = childrenUpdater;
         this.myProject = project;
@@ -95,6 +96,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     }
     
     protected void dispose(){
+        this.isDisposed = true;
         if (isInited) {
             isInited = false;
             myKeys.clear();
@@ -497,7 +499,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     
     private void addNotify(boolean force) {
         synchronized (childrenUpdater.getLock(getProject())) {
-            if (isInited) return;
+            if (isInited || isDisposed) return;
             if (isNamespace() && !force){ //isGlobalNamespace()) {
                 myKeys = new HashMap<PersistentKey,SortedName>();
                 myKeys.put(PersistentKey.createKey(getProject()), new SortedName(0,"",0)); // NOI18N

@@ -3,6 +3,7 @@
   <persistence-unit name="webPu" transaction-type="JTA">
     <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <jta-data-source>jdbc/__default</jta-data-source>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
       <property name="toplink.ddl-generation" value="create-tables"/>
     </properties>

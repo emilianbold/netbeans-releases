@@ -72,6 +72,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
@@ -83,14 +84,33 @@ public final class JaxWsDataObject extends MultiDataObject {
     
     public JaxWsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        CookieSet set = getCookieSet();
-        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
+        getCookieSet().add(JaxWsJavaEditorSupport.class, new CookieSet.Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(createEditorSupport());
+            }
+        });
+        getCookieSet().add(MultiViewSupport.class, new CookieSet.Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                Cookie cake = createMultiViewCookie ();
+                if (cake != null) {
+                    return klass.cast(cake);
+                } else {
+                    return null;
+                }
+            }
+        });
     }
-
+    
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+    
     private void lazyInitialize() {
         if(service==null) {
             service = findService();
@@ -122,72 +142,63 @@ public final class JaxWsDataObject extends MultiDataObject {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (service!=null && wss != null) {
             String serviceName = service.getName();
-            FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
-            if (localWsdlFolder != null) {
-                // removing local wsdl and xml artifacts
-                FileLock lock = null;
-                FileObject clientArtifactsFolder = localWsdlFolder.getParent();
-                try {
-                    lock = clientArtifactsFolder.lock();
-                    clientArtifactsFolder.delete(lock);
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
+            if (serviceName != null) {
+                FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
+                if (localWsdlFolder != null) {
+                    // removing local wsdl and xml artifacts
+                    FileLock lock = null;
+                    FileObject clientArtifactsFolder = localWsdlFolder.getParent();
+                    try {
+                        lock = clientArtifactsFolder.lock();
+                        clientArtifactsFolder.delete(lock);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
                     }
-                }
-                // removing wsdl and xml artifacts from WEB-INF/wsdl
-                FileObject wsdlFolder = wss.getWsdlFolder(false);
-                if (wsdlFolder != null) {
-                    FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
-                    if (serviceWsdlFolder != null) {
-                        try {
-                            lock = serviceWsdlFolder.lock();
-                            serviceWsdlFolder.delete(lock);
-                        } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
+                    // removing wsdl and xml artifacts from WEB-INF/wsdl
+                    FileObject wsdlFolder = wss.getWsdlFolder(false);
+                    if (wsdlFolder != null) {
+                        FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
+                        if (serviceWsdlFolder != null) {
+                            try {
+                                lock = serviceWsdlFolder.lock();
+                                serviceWsdlFolder.delete(lock);
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
                             }
                         }
                     }
+                    // cleaning java artifacts
+                    FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
+                    try {
+                        ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
+                        wsimportTask.waitFinished();
+                    } catch (java.io.IOException ex) {
+                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    } catch (IllegalArgumentException ex) {
+                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    }
                 }
-                // cleaning java artifacts
-                FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
-                try {
-                    ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
-                    wsimportTask.waitFinished();
-                } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                }
-            }
 
-            // removing service from jax-ws.xml
-            wss.removeService(serviceName);
+                // removing service from jax-ws.xml
+                wss.removeService(serviceName);
 
-            // remove non JSR109 entries
-            Boolean isJsr109 = project.getLookup().lookup(JaxWsModel.class).getJsr109();
-            if (isJsr109 != null && !isJsr109.booleanValue()) {
-                if (service.getWsdlUrl() != null) {
-                    //if coming from wsdl
-                    serviceName = service.getServiceName();
+                // remove non JSR109 entries
+                Boolean isJsr109 = project.getLookup().lookup(JaxWsModel.class).getJsr109();
+                if (isJsr109 != null && !isJsr109.booleanValue()) {
+                    if (service.getWsdlUrl() != null) {
+                        //if coming from wsdl
+                        serviceName = service.getServiceName();
+                    }
+                    wss.removeNonJsr109Entries(serviceName);
                 }
-                wss.removeNonJsr109Entries(serviceName);
             }
         }
     }
 
-    public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(MultiViewSupport.class)) {
-            Cookie cake = createMultiViewCookie ();
-            if(cake!=null) return type.cast(cake);
-        }
-        if (type.isAssignableFrom(JaxWsJavaEditorSupport.class)) {
-            return type.cast(createEditorSupport ());
-        }
-        return super.getCookie(type);
-    }
-    
     @Override
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
         FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);

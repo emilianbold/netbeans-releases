@@ -461,7 +461,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -550,11 +550,12 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <friend>org.netbeans.modules.visualweb.designer.decoration</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.outline</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
-                <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.removebindings</friend>
+                <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <package>org.netbeans.modules.visualweb.insync</package>
                 <package>org.netbeans.modules.visualweb.insync.action</package>
                 <package>org.netbeans.modules.visualweb.insync.beans</package>

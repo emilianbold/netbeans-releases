@@ -49,8 +49,8 @@ import javax.swing.JRadioButtonMenuItem;
  */
 public class NbMenuItem implements Comparable {
 
-    private String name;
-    private char mnemo;
+    private String name = "NONE";
+    private char mnemo = 0;
     private String accelerator = null;
     private boolean enabled = false;
     private boolean radiobutton = false;
@@ -59,14 +59,18 @@ public class NbMenuItem implements Comparable {
     private boolean checked = false;
     ArrayList<NbMenuItem> submenu = null;
 
-    public NbMenuItem() {
+    public NbMenuItem() {        
+    }
+    
+    public NbMenuItem(String name) {
+        this.name = name;
     }
 
     /**
      * @param it
      * @return instance of NbMenuItem constructed from parameter it */
     public NbMenuItem(JMenuItem it) {
-        this.name = it.getText();//getLabel();
+        setName(it.getText());//getLabel();
         this.accelerator = (it.getAccelerator() == null) ? null : it.getAccelerator().toString();
         this.mnemo = (char) it.getMnemonic();
 //        System.out.println("NbMenuItem ["+name+"] - mnemo: ["+it.getMnemonic()+"]"); why are the mnemonic always in capital?
@@ -98,7 +102,7 @@ public class NbMenuItem implements Comparable {
     }
 
     public void setMnemo(char mnemo) {
-        this.mnemo = mnemo;
+        this.mnemo = Character.toUpperCase(mnemo); //all the mnemonic returned by JMenuItem.getMnemonic() are upper case
     }
 
     public String getAccelerator() {

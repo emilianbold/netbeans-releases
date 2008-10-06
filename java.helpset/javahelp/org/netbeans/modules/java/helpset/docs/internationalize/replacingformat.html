@@ -6,6 +6,7 @@
 -->
 <html>
 <head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>Code Formats for Internationalized Strings</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -13,11 +14,12 @@
 
 <h2>Code Formats for Internationalized Strings</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>When inserting internationalized strings, the IDE uses the default code format 
-  specified in the Internationalization settings. To set an alternate code format 
-  choose Tools&nbsp; &gt; Options and click Advanced Options,  
-  then in the left pane of the Options window expand the Editing node and select Internationalization. Then click the ellipsis (...) 
-  in the I18n String Format combo box.
+<p>If you use the IDE's Internationalization dialog box or Internationalization
+wizard to internationalize your strings, you can customize the formats
+for those strings. You open the Internationalization wizard by choosing
+Tools &gt; Internationalization &gt; Internationalization Wizard. You open
+the Internationize dialog box by choosing
+Tools &gt; Internationalization &gt; Internationalize.</p>
   <p>You can choose from the following code formats:</p>
 <ul>
   <li>Use the <tt>identifier</tt> format when you want to cache the bundle in 
@@ -33,7 +35,7 @@
     constructed dynamically at runtime. You can add arguments to specify the dynamically 
     added elements of the string.</li>
   <li>Use <tt>org.openide.util.NbBundle.getMessage</tt> or <tt>org.openide.util.NbBundle.getBundle</tt> 
-    if you want to use the NetBeans<small><sup>TM</sup></small> APIs to build 
+    if you want to use the NetBeans APIs to build 
     modules for use by the IDE.</li>
 </ul>
 <p>If none of these formats suits your purpose, you can enter your own code format. 

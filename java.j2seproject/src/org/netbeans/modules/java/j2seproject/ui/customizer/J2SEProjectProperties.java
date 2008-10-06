@@ -75,6 +75,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -91,6 +92,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Petr Hrebejk
@@ -102,6 +104,7 @@ public class J2SEProjectProperties {
     private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
     private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
     private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private static final String COS_MARK = ".netbeans_automatic_build";     //NOI18N
     private Integer javacDebugBooleanKind;
     private Integer doJarBooleanKind;
     private Integer javadocPreviewBooleanKind;
@@ -144,6 +147,13 @@ public class J2SEProjectProperties {
     public static final String DO_DEPEND = "do.depend"; // NOI18N
     /** @since org.netbeans.modules.java.j2seproject/1 1.12 */
     public static final String DO_JAR = "do.jar"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.17 */
+    public static final String DISABLE_COMPILE_ON_SAVE = "disable.compile.on.save"; // NOI18N
+    /** @since org.netbeans.modules.java.j2seproject/1 1.19 */
+    public static final String COMPILE_ON_SAVE_UNSUPPORTED_PREFIX = "compile.on.save.unsupported"; // NOI18N
+    
+    public static final String SYSTEM_PROPERTIES_RUN_PREFIX = "run-sys-prop."; // NOI18N
+    public static final String SYSTEM_PROPERTIES_TEST_PREFIX = "test-sys-prop."; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
@@ -163,15 +173,14 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
     public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
     
-    public static final String QUICK_RUN ="quick.run"; // NOI18N
-    public static final String QUICK_RUN_SINGLE ="quick.run.single"; // NOI18N
-    public static final String QUICK_TEST_SINGLE ="quick.test.single"; // NOI18N
-    
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    
+    //NB 6.1 tracking of files modifications
+    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
 
     
     // Well known paths
@@ -216,6 +225,7 @@ public class J2SEProjectProperties {
     ButtonModel JAVAC_DEPRECATION_MODEL; 
     ButtonModel JAVAC_DEBUG_MODEL;
     ButtonModel DO_DEPEND_MODEL;
+    ButtonModel COMPILE_ON_SAVE_MODEL;
     ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
@@ -335,6 +345,8 @@ public class J2SEProjectProperties {
 
         DO_DEPEND_MODEL = privateGroup.createToggleButtonModel(evaluator, DO_DEPEND);
 
+        COMPILE_ON_SAVE_MODEL = privateGroup.createInverseToggleButtonModel(evaluator, DISABLE_COMPILE_ON_SAVE);
+
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel( evaluator, NO_DEPENDENCIES );
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
         
@@ -392,32 +404,29 @@ public class J2SEProjectProperties {
     }
     
     public void save() {
-        try {                        
-            saveLibrariesLocation();
-            // Store properties 
-            boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                public Boolean run() throws IOException {
-                    if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
-                        & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
-                        if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
-                            //Delete user modified build-impl.xml
-                            FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                            if (fo != null) {
-                                fo.delete();
+        try {                   
+            if (regenerateBuild) {
+                saveLibrariesLocation();
+                // Store properties 
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public Void run() throws IOException {
+                        storeProperties();
+                        //Delete COS mark
+                        if (!COMPILE_ON_SAVE_MODEL.isSelected()) {
+                            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(evaluator.getProperty(BUILD_CLASSES_DIR));
+                            if (buildClasses != null) {
+                                FileObject mark = buildClasses.getFileObject(COS_MARK);
+                                if (mark != null) {
+                                    final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+                                    assert ap != null;
+                                    ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
+                                }
                             }
                         }
-                        else {
-                            return false;
-                        }
+                        return null;
                     }
-                    storeProperties();
-                    return true;
-                }
-            });
-            // and save the project
-            if (result) {
+                });
+                // and save the project
                 ProjectManager.getDefault().saveProject(project);
             }
         } 
@@ -428,6 +437,31 @@ public class J2SEProjectProperties {
             ErrorManager.getDefault().notify( ex );
         }
     }
+
+    void checkModified () {
+        regenerateBuild = true;
+        if ((genFileHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+            J2SEProject.class.getResource("resources/build-impl.xsl")) //NOI18N
+            & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) {  //NOI18N
+            if (showModifiedMessage (NbBundle.getMessage(J2SEProjectProperties.class,"TXT_ModifiedTitle"))) {
+                //Delete user modified build-impl.xml
+                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
+                final FileObject fo = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
+                if (fo != null) {
+                    try {
+                        fo.delete();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            else {
+                regenerateBuild = false;
+            }
+        }
+    }
+    //where
+    private volatile boolean regenerateBuild;
 
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
         try {
@@ -670,7 +704,7 @@ public class J2SEProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, QUICK_RUN, QUICK_RUN_SINGLE, QUICK_TEST_SINGLE}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
             String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -713,7 +747,7 @@ public class J2SEProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR, QUICK_RUN, QUICK_RUN_SINGLE, QUICK_TEST_SINGLE}) {
+        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS, RUN_WORK_DIR}) {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR)) ?
                 privateProperties : projectProperties;

@@ -61,7 +61,7 @@ public class JsCodeCompletionTest extends JsTestBase {
     }
     
     @Override
-    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String param, boolean expectSuccess) {
+    protected void checkCall(GsfTestCompilationInfo info, int caretOffset, String expectedParameter, boolean expectSuccess) {
         IndexedFunction[] methodHolder = new IndexedFunction[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
@@ -71,18 +71,26 @@ public class JsCodeCompletionTest extends JsTestBase {
 
         if (expectSuccess) {
             assertTrue(ok);
-        } else {
+        } else if (!ok) {
             return;
         }
         IndexedFunction method = methodHolder[0];
         assertNotNull(method);
         int index = paramIndexHolder[0];
         assertTrue(index >= 0);
-        
-        // The index doesn't work right at test time - not sure why
-        // it doesn't have all of the gems...
-        //assertEquals(fqn, method.getFqn());
-        assertEquals(param, method.getParameters().get(index));
+        if (expectedParameter != null) {
+            assert method.getParameters().size() > 0;
+            String parameter = method.getParameters().get(index);
+            int typeDef = parameter.indexOf(':');
+            if (typeDef != -1) {
+                parameter = parameter.substring(0,typeDef);
+            }
+
+            // The index doesn't work right at test time - not sure why
+            // it doesn't have all of the gems...
+            //assertEquals(fqn, method.getFqn());
+            assertEquals(expectedParameter, parameter);
+        }
     }
     
     public void testPrefix1() throws Exception {
@@ -187,7 +195,11 @@ public class JsCodeCompletionTest extends JsTestBase {
     public void testLocalCompletion2() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.js", "^alert('foo2", false);
     }
-    
+
+    public void testLocalCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.js", "^var declaredglobal;", false);
+    }
+
     public void test129036() throws Exception {
         checkCompletion("testfiles/completion/lib/test129036.js", "my^ //Foo", false);
     }
@@ -200,12 +212,20 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/test1.js", "\"f\\^oo\"", false);
     }
     
+    public void testCompletionStringCompletion3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test2.js", "alert('^foo1", false);
+    }
+
     public void testCompletionRegexpCompletion1() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "/re^g/", false);
     }
 
     public void testCompletionRegexpCompletion2() throws Exception {
         checkCompletion("testfiles/completion/lib/test1.js", "/b\\^ar/", false);
+    }
+
+    public void testEmpty() throws Exception {
+        checkCompletion("testfiles/completion/lib/empty.js", "^", false);
     }
 
     public void testExpression1() throws Exception {
@@ -281,26 +301,43 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/completion/lib/domproperties.js", ".s^", true);
     }
 
+    public void testCall1() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call1.js", "x.addEventListener(type, ^listener, useCapture)", "listener", true);
+    }
+
+    public void testCall2() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call1.js", "foo2(^x);", "a", true);
+    }
+
+    public void testCall3() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call1.js", "foo3(x^,y)",
+                "a", true);
+    }
+    public void testCall4() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call2.js", "foo3(x,^)",
+                "b", true);
+    }
+
+    public void testCall5() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call1.js", "foo4(x,y,^z);",
+                "c", true);
+    }
+
+    public void testCall6() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call3.js", "^bar: {'foo': 1, 'bar': 2},",
+                null, true);
+    }
+
+    public void testCall7() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call3.js", "^jQ // 2",
+                null, false);
+    }
+
+    public void testCall8() throws Exception {
+        checkComputeMethodCall("testfiles/calls/call3.js", "^jQ // 3",
+                null, false);
+    }
+
     // TODO: Test open classes, class inheritance, relative symbols, finding classes, superclasses, def completion, ...
 
-// The call tests don't work yet because I don't have a preindexed database for jsstubs
-// (and the test infrastructure refuses to update the index for test files themselves)
-//    public void testCall1() throws Exception {
-//        //checkComputeMethodCall("testfiles/calls/call1.js", "foo2(^x);", "Foo#bar", "name", true);
-//        checkComputeMethodCall("testfiles/calls/call1.js", "x.addEventListener(type, ^listener, useCapture)", "Foo#bar", "listener", true);
-//    }
-//
-//    public void testCall2() throws Exception {
-//        checkComputeMethodCall("testfiles/calls/call1.js", "foo1(^);",
-//                "Foo#bar", "name", true);
-//    }
-//
-//    public void testCall3() throws Exception {
-//        checkComputeMethodCall("testfiles/calls/call1.js", "foo3(x^,y)",
-//                "Foo#bar", "name", false);
-//    }
-//    public void testCall4() throws Exception {
-//        checkComputeMethodCall("testfiles/calls/call2.js", "foo3(x,^)",
-//                "Foo#bar", "name", false);
-//    }
 }

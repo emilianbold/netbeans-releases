@@ -194,8 +194,8 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                 Reference<FileObject> foRef = this.sourceRootsCache.get (file);
                 FileObject execRoot = null;
                 if (foRef == null || (execRoot = foRef.get()) == null ) {
-                    execRoot = getRootForFile (file, TYPE_CLASS);
-                    if (execRoot == null) {
+                    execRoot = execRoot = getRootForFile (file, TYPE_CLASS);
+                    if (execRoot == null || !execRoot.isFolder()) {
                         return null;
                     }
                     this.sourceRootsCache.put (file, new WeakReference<FileObject>(execRoot));
@@ -204,12 +204,21 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                     this.sourceClasPathsCache.remove (execRoot);
                 }
                 else {
-                    Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
-                    if (cpRef == null || (cp = cpRef.get()) == null ) {
-                        cp = ClassPathSupport.createClassPath(new FileObject[] {execRoot});
-                        this.sourceClasPathsCache.put (execRoot, new WeakReference<ClassPath>(cp));
+                    try {
+                        Reference<ClassPath> cpRef = this.sourceClasPathsCache.get(execRoot);
+                        if (cpRef == null || (cp = cpRef.get()) == null ) {
+                            final URL url = execRoot.getURL();
+                            if (!execRoot.isValid()) {
+                                //The root is not valid, URL may be broken
+                                return null;
+                            }
+                            cp = ClassPathSupport.createClassPath(url);
+                            this.sourceClasPathsCache.put (execRoot, new WeakReference<ClassPath>(cp));
+                        }
+                        return cp;
+                    } catch (FileStateInvalidException e) {
+                        //Handled by return null;
                     }
-                    return cp;
                 }
             }
         }

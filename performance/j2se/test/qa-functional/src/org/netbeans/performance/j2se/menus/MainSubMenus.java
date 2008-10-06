@@ -49,6 +49,7 @@ import javax.swing.JMenuItem;
 
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 import org.netbeans.jemmy.drivers.MouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -66,6 +67,8 @@ public class MainSubMenus extends PerformanceTestCase {
     protected static String mainMenuPath;
     protected static JMenuOperator testedMainMenu;
     protected static String subMenuPath;
+
+    private JMenuBarOperator menuBar;
     
     private TopComponentOperator editor;
     
@@ -94,16 +97,24 @@ public class MainSubMenus extends PerformanceTestCase {
    
     public void testFileOpenRecentFileMenu(){
         editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-        testSubMenu("org.netbeans.core.Bundle","Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
+        if(editor != null){
+            editor.close();
+            editor=null;
+        }        
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/File", "org.netbeans.modules.openfile.Bundle", "LBL_RecentFileAction_Name");
     }
-    
+
     public void testViewCodeFoldsMenu(){
         editor = CommonUtilities.openFile("PerformanceTestData","org.netbeans.test.performance", "Main20kB.java", true);
-        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
+        if(editor != null){
+            editor.close();
+            editor=null;
+        }        
     }
     
     public void testViewToolbarsMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/View", "org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction");
     }
     
     public void testRunRunFileMenu(){
@@ -123,41 +134,41 @@ public class MainSubMenus extends PerformanceTestCase {
     }
        
     public void testToolsI18nMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
 
     public void testToolsPaletteMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
     }
 
     public void testWindowOutputMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.core.output2.Bundle", "Menu/Window/Output");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.core.output2.Bundle", "Menu/Window/Output");
     }
 
     public void testWindowNavigatingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.navigator.Bundle", "Menu/Window/Navigator");
     }
     
     public void testWinDebuggingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
 
         public void testWinProfilingMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.profiler.actions.Bundle","Menu/Window/Profile");
     }
 
     public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning");
     }
 
         public void testWindowOtherMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Window", "org.netbeans.modules.java.navigation.Bundle", "Menu/Window/Other");
+        testSubMenu("org.netbeans.modules.editor.Bundle","Menu/Window", "org.netbeans.modules.java.navigation.Bundle", "Menu/Window/Other");
     }
 
     public void testHelpJavadoc(){
-        testSubMenu("org.netbeans.core.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
+        testSubMenu("org.netbeans.core.ui.resources.Bundle","Menu/Help", "org.netbeans.modules.javadoc.search.Bundle", "CTL_INDICES_MenuItem");
     }
-    
+  
     
     private void testSubMenu(String mainMenu, String subMenu){
         mainMenuPath = mainMenu;
@@ -174,21 +185,26 @@ public class MainSubMenus extends PerformanceTestCase {
     }
     
     public void prepare(){
-        JMenuItem submenu = testedMainMenu.findJMenuItem(testedMainMenu.getContainers()[0], subMenuPath, false, false);
+        
+/*        JMenuItem submenu = testedMainMenu.findJMenuItem(testedMainMenu.getContainers()[0], subMenuPath, false, false);
         mio = new JMenuItemOperator (submenu);
-        mdriver = org.netbeans.jemmy.drivers.DriverManager.getMouseDriver(mio);
-
+        mdriver = org.netbeans.jemmy.drivers.DriverManager.getMouseDriver(mio);*/
   }
     
     public ComponentOperator open(){
-        mdriver.moveMouse(mio, mio.getCenterXForClick(), mio.getCenterYForClick());
+          JMenuItem jmi=menuBar.pushMenu(mainMenuPath+"|"+subMenuPath);
+
+          //jmi.doClick();
+//        menuBar.pushMenu(mainMenuPath+"|"+subMenuPath,"|");
+//        mdriver.moveMouse(mio, mio.getCenterXForClick(), mio.getCenterYForClick());
         return mio;
     }
     
     @Override
     public void close() {
-        testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        //menuBar.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        //menuBar.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        menuBar.closeSubmenus();
     }
     
     @Override
@@ -201,9 +217,8 @@ public class MainSubMenus extends PerformanceTestCase {
         
     @Override
     protected void initialize() {
-        MainWindowOperator.getDefault().menuBar().pushMenu(mainMenuPath,"|");
+        menuBar=MainWindowOperator.getDefault().menuBar();//menuBar.pushMenu(mainMenuPath,"|");
         testedMainMenu = new JMenuOperator(MainWindowOperator.getDefault());
-     
     }
     
 }

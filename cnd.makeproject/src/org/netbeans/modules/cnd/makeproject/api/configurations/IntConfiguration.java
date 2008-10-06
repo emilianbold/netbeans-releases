@@ -52,93 +52,97 @@ public class IntConfiguration {
     private boolean dirty = false;
 
     public IntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
-	this.master = master;
-	this.def = def;
-	this.names = names;
-	this.options = options;
-	reset();
+        this.master = master;
+        this.def = def;
+        this.names = names;
+        this.options = options;
+        reset();
     }
     
     /** Needed for CompilerSetConfiguration to maintain compatibility */
     protected IntConfiguration() {}
 
     public void setValue(int value) {
-	this.value = value;
-	if (master != null)
-	    setModified(true);
-	else
-	    setModified(value != getDefault());
+        this.value = value;
+        if (master != null) {
+            setModified(true);
+        } else {
+            setModified(value != getDefault());
+        }
     }
 
     public void setValue(String s) {
-	if (s != null) {
-	    for (int i = 0; i < names.length; i++) {
-		if (s.equals(names[i])) {
-		    setValue(i);
-		    break;
-		}
-	    }
-	}
+        if (s != null) {
+            for (int i = 0; i < names.length; i++) {
+                if (s.equals(names[i])) {
+                    setValue(i);
+                    break;
+                }
+            }
+        }
     }
     
     public int getValue() {
-	if (master != null && !getModified())
-	    return master.getValue();
-	else
-	    return value;
+        if (master != null && !getModified()) {
+            return master.getValue();
+        } else {
+            return value;
+        }
     }
 
     public void setModified(boolean b) {
-	this.modified = b;
+        this.modified = b;
     }
 
     public boolean getModified() {
-	return modified;
+        return modified;
     }
 
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
+
     public boolean getDirty() {
         return dirty;
     }
     
     public int getDefault() {
-	return def;
+        return def;
     }
 
     public void reset() {
-	value = getDefault();
-	setModified(false);
+        value = getDefault();
+        setModified(false);
     }
 
     public String getName() {
-	if (getValue() < names.length)
-	    return names[getValue()];
-	else
-	    return "???"; // FIXUP // NOI18N
+        if (getValue() < names.length) {
+            return names[getValue()];
+        } else {
+            return "???"; // FIXUP // NOI18N
+        }
     }
 
     public String[] getNames() {
-	return names;
+        return names;
     }
 
     public String getOption() {
-	return options[getValue()] + " "; // NOI18N
+        return options[getValue()] + " "; // NOI18N
     }
 
     // Clone and Assign
     public void assign(IntConfiguration conf) {
         dirty = getValue() != conf.getValue();
-	setValue(conf.getValue());
-	setModified(conf.getModified());
+        setValue(conf.getValue());
+        setModified(conf.getModified());
     }
 
     @Override
     public Object clone() {
-	IntConfiguration clone = new IntConfiguration(master, def, names, options);
-	clone.setValue(getValue());
-	clone.setModified(getModified());
-	return clone;
+        IntConfiguration clone = new IntConfiguration(master, def, names, options);
+        clone.setValue(getValue());
+        clone.setModified(getModified());
+        return clone;
     }
 }

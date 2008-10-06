@@ -80,12 +80,18 @@ import static org.openide.util.NbBundle.getMessage;
  * @author Jan Lahoda
  */
 public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusListener*/ {
+
+    private static final String ERROR_BADGE_URL = "org/netbeans/modules/java/source/resources/icons/error-badge.gif";
     
-    private static final Image ERROR_BADGE;
+    private static final Image ERROR_BADGE_SINGLE;
+    private static final Image ERROR_BADGE_FOLDER;
     
     static {
-        String errorBadgeTP = getMessage(ErrorAnnotator.class, "TP_ErrorBadge");
-        ERROR_BADGE = assignToolTipToImage(loadImage("org/netbeans/modules/java/source/resources/icons/error-badge.gif"), errorBadgeTP); // NOI18N
+        URL errorBadgeIconURL = ErrorAnnotator.class.getClassLoader().getResource(ERROR_BADGE_URL);
+        String errorBadgeSingleTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeSingle");
+        ERROR_BADGE_SINGLE = assignToolTipToImage(loadImage(ERROR_BADGE_URL), errorBadgeSingleTP); // NOI18N
+        String errorBadgeFolderTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + getMessage(ErrorAnnotator.class, "TP_ErrorBadgeFolder");
+        ERROR_BADGE_FOLDER = assignToolTipToImage(loadImage(ERROR_BADGE_URL), errorBadgeFolderTP); // NOI18N
     }
     
     public ErrorAnnotator() {
@@ -101,23 +107,26 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
             return null;
         
         boolean inError = false;
+        boolean singleFile = files.size() == 1;
         
         if (files instanceof NonRecursiveFolder) {
             FileObject folder = ((NonRecursiveFolder) files).getFolder();
             inError = isInError(folder, false, true);
+            singleFile = false;
         } else {
             for (Object o : files) {
                 if (o instanceof FileObject) {
                     FileObject f = (FileObject) o;
                     
                     if (f.isFolder()) {
+                        singleFile = false;
                         if (isInError(f, true, !inError)) {
                             inError = true;
                             continue;
                         }
                         if (inError)
                             continue;
-                    }else {
+                    } else {
                         if (f.isData() && "java".equals(f.getExt())) {
                             if (isInError(f, true, !inError)) {
                                 inError = true;
@@ -132,7 +141,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
         
         if (inError) {
             //badge:
-            Image i = mergeImages(icon, ERROR_BADGE, 0, 8);
+            Image i = mergeImages(icon, singleFile ? ERROR_BADGE_SINGLE : ERROR_BADGE_FOLDER, 0, 8);
             Iterator<? extends AnnotationProvider> it = Lookup.getDefault().lookupAll(AnnotationProvider.class).iterator();
             boolean found = false;
             
@@ -287,6 +296,10 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
                             FileObject sgRoot = sg.getRootFolder();
 
+                            if (sgRoot==null) {
+                                Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.WARNING, "SourceGroup[" + sg.getDisplayName() + "].getRootFolder() returned null");
+                                continue;
+                            }
                             if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && TaskCache.getDefault().isInError(sgRoot, true)) {
                                 recError = true;
                                 nonRecError = false;

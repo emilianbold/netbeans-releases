@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,6 +44,7 @@ package org.netbeans.modules.updatecenters.resources;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,7 +52,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
+import org.openide.util.Utilities;
 
 
 /** Modifies the etc/netbeans.conf if necessary.
@@ -62,7 +66,7 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
     protected File findCluster(String clusterName) {
         File[] parent = new File[1];
         File conf = findConf(parent, new ArrayList<File>());
-        return conf != null && conf.isFile() && conf.canWrite() ? new File(parent[0], clusterName) : null;
+        return conf != null && conf.isFile() && canWrite (conf) ? new File(parent[0], clusterName) : null;
     }
     
     private static File findConf(File[] parent, List<? super File> clusters) {
@@ -112,4 +116,31 @@ public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
         }
         return clusters.toArray(new File[0]);
     }
+    
+    public static boolean canWrite (File f) {
+        // workaround the bug: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4420020
+        if (Utilities.isWindows ()) {
+            FileWriter fw = null;
+            try {
+                fw = new FileWriter (f, true);
+                Logger.getLogger (NetBeansClusterCreator.class.getName ()).log (Level.FINE, f + " has write permission");
+            } catch (IOException ioe) {
+                // just check of write permission
+                Logger.getLogger (NetBeansClusterCreator.class.getName ()).log (Level.FINE, f + " has no write permission", ioe);
+                return false;
+            } finally {
+                try {
+                    if (fw != null) {
+                        fw.close ();
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger (NetBeansClusterCreator.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                }
+            }
+            return true;
+        } else {
+            return f.canWrite ();
+        }
+    }
+    
 }

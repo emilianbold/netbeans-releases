@@ -94,7 +94,7 @@ public class BrkpntCommandBuilder {
         
         BrkpntSetCommand command =  buildLineBreakpoint(id, transactionId, 
                 fileObject , line.getLineNumber() );
-        command.setBreakpoint( breakpoint );
+        if (command != null) command.setBreakpoint( breakpoint );
         return command;
     }
     

@@ -27,7 +27,6 @@
             </folder>
         </folder>
     </folder>
-    
     <folder name="org-netbeans-api-project-libraries">
         <folder name="LibraryTypeProviders">
             <file name="javascript_library_provider.instance">

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -539,7 +539,7 @@ final class HardStringWizardPanel extends JPanel {
                     I18nString clone = (I18nString) i18nString.clone();
                     panel.setI18nString(i18nString);
 
-                    String title = Util.getString("PROP_cust_dialog_name");
+                    String title = Util.getString("PROP_cust_dialog_name"); //NOI18N
                     DialogDescriptor dd = new DialogDescriptor(panel, title);
                     dd.setModal(true);
                     dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
@@ -642,10 +642,10 @@ final class HardStringWizardPanel extends JPanel {
         protected Component createComponent() {
             JPanel panel = new JPanel(new CardLayout());
             
-            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));            
+            panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(HardStringWizardPanel.class).getString("ACS_HardStringWizardPanel"));//NOI18N
             
-            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(3)); // NOI18N
-            panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));
+            panel.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(3));
+            panel.setName(NbBundle.getBundle(HardStringWizardPanel.class).getString("TXT_ModifyStrings"));//NOI18N
             panel.setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);        
 
             return panel;

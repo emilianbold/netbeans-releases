@@ -38,53 +38,22 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.diagrams.nodes.activity.ActivityJoinForkWidget;
 
 /**
  *
  * @author Sheryl Su
  */
-public class JoinForkStateWidget extends CustomizableWidget
+public class JoinForkStateWidget extends ActivityJoinForkWidget
 {
-    public JoinForkStateWidget(Scene scene, String id, String displayName)
+    public JoinForkStateWidget(Scene scene, String path)
     {
-        super(scene, id, displayName);
+        super(scene, path);
     }
 
-    protected void paintWidget()
+    public String getWidgetID()
     {
-        Graphics2D gr = getGraphics();
-        Paint bgColor = getBackground();
-        Rectangle bounds = getBounds();
-
-//        if (UMLNodeWidget.useGradient())
-//        {
-//            Color bg = (Color) getBackground();
-//            int x1, x2, y1, y2;
-//
-//            x1 = bounds.x;
-//            y1 = bounds.y;
-//
-//            if (bounds.width < bounds.height)
-//            {
-//                x2 = x1 + bounds.width;
-//                y2 = y1;
-//            } else
-//            {
-//                x2 = x1;
-//                y2 = y1 + bounds.height;
-//            }
-//            bgColor = new GradientPaint(x1, y1, Color.WHITE, x2, y2, bg);
-//        }
-        gr.setPaint(bgColor);
-        
-        gr.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        gr.setPaint(Color.BLACK);
-        gr.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    }   
+        return UMLWidgetIDString.FORKSTATEWIDGET.toString();
+    }
 }

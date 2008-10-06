@@ -45,10 +45,13 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
@@ -59,13 +62,16 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.openide.util.Lookup;
+import javax.xml.validation.Schema;
+import javax.xml.validation.Validator;
+import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -73,6 +79,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -169,7 +176,6 @@ public final class XMLUtil extends Object {
     private static final char[] DEC2HEX = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
-    private static Class fastParserFactoryClass = null;
 
     /** Forbids creating new XMLUtil */
     private XMLUtil() {
@@ -193,6 +199,7 @@ public final class XMLUtil extends Object {
         return createXMLReader(validate, false);
     }
 
+    private static SAXParserFactory[][] saxes  = new SAXParserFactory[2][2];
     /** Create a SAX parser from the JAXP factory.
      * The result can be used to parse XML files.
      *
@@ -209,11 +216,13 @@ public final class XMLUtil extends Object {
      */
     public static XMLReader createXMLReader(boolean validate, boolean namespaceAware)
     throws SAXException {
-        SAXParserFactory factory;
-        factory = SAXParserFactory.newInstance();
-
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);
+        SAXParserFactory factory = saxes[validate ? 0 : 1][namespaceAware ? 0 : 1];
+        if (factory == null) {
+            factory = SAXParserFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
+            saxes[validate ? 0 : 1][namespaceAware ? 0 : 1] = factory;
+        }
 
         try {
             return factory.newSAXParser().getXMLReader();
@@ -272,7 +281,7 @@ public final class XMLUtil extends Object {
     private static DOMImplementation getDOMImplementation()
     throws DOMException { //can be made public
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = getFactory(false, false);
 
         try {
             return factory.newDocumentBuilder().getDOMImplementation();
@@ -284,6 +293,18 @@ public final class XMLUtil extends Object {
             // E.g. #36578, IllegalArgumentException. Try to recover gracefully.
             throw (DOMException) new DOMException(DOMException.NOT_SUPPORTED_ERR, e.toString()).initCause(e);
         }
+    }
+
+    private static DocumentBuilderFactory[][] doms = new DocumentBuilderFactory[2][2];
+    private static DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
+        DocumentBuilderFactory factory = doms[validate ? 0 : 1][namespaceAware ? 0 : 1];
+        if (factory == null) {
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
+            doms[validate ? 0 : 1][namespaceAware ? 0 : 1] = factory;
+        }
+        return factory;
     }
 
     /**
@@ -308,9 +329,7 @@ public final class XMLUtil extends Object {
     ) throws IOException, SAXException {
         
         DocumentBuilder builder = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);
+        DocumentBuilderFactory factory = getFactory(validate, namespaceAware);
 
         try {
             builder = factory.newDocumentBuilder();
@@ -387,22 +406,6 @@ public final class XMLUtil extends Object {
         }
         ser.write(doc2, output);
          */
-        // XXX #66563 workaround
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
-        ClassLoader target = XMLUtil.class.getClassLoader();
-        if (global == null) {
-            global = target;
-        }
-        try {
-            Class clazz = global.loadClass("org.netbeans.core.startup.SAXFactoryImpl");
-            if (clazz != null) target = clazz.getClassLoader();
-        } catch (Exception e) {
-            //Ignore...
-            //ErrorManager.getDefault().notify(e);
-        } 
-        Thread.currentThread().setContextClassLoader(target);
-        
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
@@ -432,8 +435,6 @@ public final class XMLUtil extends Object {
             t.transform(source, result);
         } catch (Exception e) {
             throw (IOException) new IOException(e.toString()).initCause(e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 
@@ -455,7 +456,77 @@ public final class XMLUtil extends Object {
             collectCDATASections(children.item(i), cdataQNames);
         }
     }
-    
+
+    /**
+     * Check whether a DOM tree is valid according to a schema.
+     * Example of usage:
+     * <pre>
+     * Element fragment = ...;
+     * SchemaFactory f = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+     * Schema s = f.newSchema(This.class.getResource("something.xsd"));
+     * try {
+     *     XMLUtil.validate(fragment, s);
+     *     // valid
+     * } catch (SAXException x) {
+     *     // invalid
+     * }
+     * </pre>
+     * @param data a DOM tree
+     * @param schema a parsed schema
+     * @throws SAXException if validation failed
+     * @since org.openide.util 7.17
+     */
+    public static void validate(Element data, Schema schema) throws SAXException {
+        Validator v = schema.newValidator();
+        final SAXException[] error = {null};
+        v.setErrorHandler(new ErrorHandler() {
+            public void warning(SAXParseException x) throws SAXException {}
+            public void error(SAXParseException x) throws SAXException {
+                // Just rethrowing it is bad because it will also print it to stderr.
+                error[0] = x;
+            }
+            public void fatalError(SAXParseException x) throws SAXException {
+                error[0] = x;
+            }
+        });
+        try {
+            v.validate(new DOMSource(fixupAttrs(data)));
+        } catch (IOException x) {
+            assert false : x;
+        }
+        if (error[0] != null) {
+            throw error[0];
+        }
+    }
+    private static Element fixupAttrs(Element root) { // #140905
+        // #6529766/#6531160: some versions of JAXP reject attributes set using setAttribute
+        // (rather than setAttributeNS) even though the schema calls for no-NS attrs!
+        // JDK 5 is fine; JDK 6 broken; JDK 6u2+ fixed
+        // #146081: xml:base attributes mess up validation too.
+        Element copy = (Element) root.cloneNode(true);
+        fixupAttrsSingle(copy);
+        NodeList nl = copy.getElementsByTagName("*"); // NOI18N
+        for (int i = 0; i < nl.getLength(); i++) {
+            fixupAttrsSingle((Element) nl.item(i));
+        }
+        return copy;
+    }
+    private static void fixupAttrsSingle(Element e) throws DOMException {
+        e.removeAttributeNS("http://www.w3.org/XML/1998/namespace", "base"); // NOI18N
+        Map<String, String> replace = new HashMap<String, String>();
+        NamedNodeMap attrs = e.getAttributes();
+        for (int j = 0; j < attrs.getLength(); j++) {
+            Attr attr = (Attr) attrs.item(j);
+            if (attr.getNamespaceURI() == null && !attr.getName().equals("xmlns")) { // NOI18N
+                replace.put(attr.getName(), attr.getValue());
+            }
+        }
+        for (Map.Entry<String, String> entry : replace.entrySet()) {
+            e.removeAttribute(entry.getKey());
+            e.setAttributeNS(null, entry.getKey(), entry.getValue());
+        }
+    }
+
     /**
      * Escape passed string as XML attibute value
      * (<code>&lt;</code>, <code>&amp;</code>, <code>'</code> and <code>"</code>
@@ -708,9 +779,7 @@ public final class XMLUtil extends Object {
      */
     private static Document normalize(Document orig) throws IOException {
         DocumentBuilder builder = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
+        DocumentBuilderFactory factory = getFactory(false, false);
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {

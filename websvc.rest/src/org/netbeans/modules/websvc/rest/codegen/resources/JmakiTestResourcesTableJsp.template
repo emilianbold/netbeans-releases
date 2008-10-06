@@ -1,14 +1,16 @@
 <%@ taglib prefix="a" uri="http://jmaki/v1.0/jsp" %>
 <%@page contentType="text/html"%>
-<%@page pageEncoding="UTF-8"%>
+<%@page pageEncoding="__FILE_ENCODING__"%>
 
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
    "http://www.w3.org/TR/html4/loose.dtd">
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Resource table jMaki widget</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <link rel="stylesheet" href="./rjs/css/clientstubs.css" type="text/css"/>
+        <link rel="stylesheet" href="./rjs/css/css_master-all.css" type="text/css"/>
+        <title>TTL_JMakiWidget_Stubs - MSG_TestPage</title>
 	<!--<script type="text/javascript">
             //dojo debug, uncomment to enable debugging
             var djConfig = {
@@ -24,29 +26,37 @@
 	</script>-->
     </head>
     <body>
-        <% 
-            String p = request.getParameter("r"); 
-            if(p == null) 
+        <div class="outerBorder">
+            <div class="header">
+                <div id="subheader" class="subheader"></div> <!-- sub-header -->
+                <div class="banner"><img src="./rjs/css/images/pname-clientstubs.png"/></div>
+            </div> <!-- header -->
+            <div id="main" class="main">
+                <%
+                    String p = request.getParameter("r");
+                    if(p == null)
                 p = "__CONTAINER_NAME__";
-        %>
-        <h2><%=p%> table jMaki widget</h2>
-        <script language="JavaScript">
-            function submitForm()
-            {
-              document.resourceForm.submit();
-            }
-        </script>
-        <form name="resourceForm" action="./TestResourcesTable.jsp" method="post">
-            Select Resource:
-            <select name=r  onchange='javascript:submitForm();'>
+                %>
+                <h2><%=p%> table jMaki widget</h2>
+                <script language="JavaScript">
+                    function submitForm()
+                    {
+                      document.resourceForm.submit();
+                    }
+                </script>
+                <form name="resourceForm" action="./TestResourcesTable.jsp" method="post">
+                    Select Resource:
+                    <select name=r  onchange='javascript:submitForm();'>
 <!--Do not remove - Begin -->
 <!-- __JMAKI_RESOURCE_SELECT_LIST__ -->
-<!--Do not remove - Begin -->
-            </select>
-        </form>
-        <br/><br/>
+<!--Do not remove - End -->
+                    </select>
+                </form>
+                <br/><br/>
 <!--Do not remove - Begin -->
 <!-- __JMAKI_RESOURCE_TAG_LIST__ -->
-<!--Do not remove - Begin -->
+<!--Do not remove - End -->
+            </div> <!-- main -->
+        </div> <!-- outerborder -->
     </body>
 </html>

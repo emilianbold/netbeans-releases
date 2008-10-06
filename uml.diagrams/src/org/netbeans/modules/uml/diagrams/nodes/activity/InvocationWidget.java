@@ -39,10 +39,10 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IInvocationNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.MultilineEditableCompartmentWidget;
@@ -57,10 +57,12 @@ import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 public class InvocationWidget extends ActivityNodeWidget
 {
     private static final int MIN_NODE_WIDTH = 80;
+    private static final int MIN_NODE_HEIGHT = 60;
 
     public InvocationWidget(Scene scene)
     {
-        super(scene, true, false);  // context palette is on, Default part is off
+        super(scene, true, false);
+        setMinimumSize(new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
     }
 
     @Override
@@ -73,11 +75,8 @@ public class InvocationWidget extends ActivityNodeWidget
 
             //create main view 
             RoundedRectWidget mainView = new RoundedRectWidget(scene,
-                                                               getWidgetID(),
+                                                               getResourcePath(),
                                                                bundle.getString("LBL_body"));
-
-            mainView.setMinimumSize(new Dimension(
-                                      MIN_NODE_WIDTH, MIN_NODE_WIDTH));
 
             mainView.setLayout(
                     LayoutFactory.createVerticalFlowLayout(
@@ -86,55 +85,49 @@ public class InvocationWidget extends ActivityNodeWidget
             mainView.setUseGradient(useGradient);
             mainView.setCustomizableResourceTypes(
                     new ResourceType[]{ResourceType.BACKGROUND});
+            mainView.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
             mainView.setOpaque(true);
-            mainView.setCheckClipping(true);
 
             // stereotype widget
-            mainView.addChild(createStereoTypeWidget(), 20);
+            mainView.addChild(createStereoTypeWidget());
             enableStereoTypeWidget(invocationElem);
 
-            // create multiline editable widget
-            Widget editorPanel = new Widget(scene);
-            editorPanel.setLayout(
-                    LayoutFactory.createHorizontalFlowLayout(
-                    LayoutFactory.SerialAlignment.JUSTIFY, 0));
-            
+            // create multiline editable widget     
             nameWidget = new MultilineEditableCompartmentWidget(scene, "", null,
                                                                  mainView,
-                                                                 getWidgetID()+".name",
-                                                                 bundle.getString("LBL_text"));
-            nameWidget.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
+                                                                 getResourcePath(),
+                                                                 bundle.getString("LBL_text"));           
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
             String labelStr = invocationElem.getNameWithAlias();
             nameWidget.setLabel(labelStr != null && labelStr.trim().length() > 0 ? labelStr : "");
-            editorPanel.addChild(nameWidget,80);
-            mainView.addChild(editorPanel, 60);
+            mainView.addChild(nameWidget, 1);
             
             // tagged value widget
-            mainView.addChild(createTaggedValueWidget(), 20); 
+            mainView.addChild(createTaggedValueWidget()); 
             enableTaggedValueWidget(invocationElem);
 
             setCurrentView(mainView);
+            setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
-//    @Override
-//    public void propertyChange(PropertyChangeEvent event)
-//    {
-//        IElement element = (IElement) event.getSource();
-//        String propName = event.getPropertyName();
-//        if (element != null && element instanceof IInvocationNode)
-//        {
-//            IInvocationNode invocationElem = (IInvocationNode) element;
-//            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
-//            {
-//                nameWidget.setLabel(invocationElem.getNameWithAlias());
-//            }
-//        }
-//    }
-
+    @Override
+    public Dimension getDefaultMinimumSize()
+    {
+        return new Dimension(MIN_NODE_WIDTH, MIN_NODE_HEIGHT);
+    }
+ 
     public String getWidgetID()
     {
         return UMLWidgetIDString.INVOCATIONWIDGET.toString();
     }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        if(nameWidget!=null)nameWidget.setFont(font);
+        revalidate();
+    }
+    
+    
 }

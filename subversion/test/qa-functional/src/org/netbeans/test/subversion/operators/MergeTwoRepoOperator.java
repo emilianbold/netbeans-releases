@@ -6,7 +6,6 @@
 package org.netbeans.test.subversion.operators;
 
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.jemmy.util.NameComponentChooser;
 
 /** Class implementing all necessary methods for handling "Merge AnagramGame to..." NbDialog.
  *

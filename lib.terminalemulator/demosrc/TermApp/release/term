@@ -56,7 +56,7 @@ case $fromwhere in
 	fi
 
 	PTYTEST="$INSTALLDIR/build/classes"
-	JNA=$NETBEANS/platform8/modules/ext/jna-3.0.2.jar
+	JNA=$NETBEANS/platform9/modules/ext/jna-3.0.2.jar
 	TERM=$NETBEANS/cnd2/modules/org-netbeans-lib-terminalemulator.jar
 
 	export CLASSPATH="$PTYTEST":"$JNA":"$TERM"

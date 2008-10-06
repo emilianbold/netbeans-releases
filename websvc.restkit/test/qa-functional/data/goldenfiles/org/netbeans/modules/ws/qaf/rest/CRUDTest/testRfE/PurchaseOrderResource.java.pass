@@ -1,9 +1,5 @@
 /*
- *  PurchaseOrderResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -13,18 +9,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
-import javax.ws.rs.core.UriInfo;
-import o.n.m.ws.qaf.rest.crud.Product;
+import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Customer;
+import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
-
 
 /**
  *
@@ -32,21 +30,18 @@ import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
  */
 
 public class PurchaseOrderResource {
-    private Integer id;
-    private UriInfo context;
-    
+    @Context
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+    protected Integer id;
+  
     /** Creates a new instance of PurchaseOrderResource */
     public PurchaseOrderResource() {
     }
 
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public PurchaseOrderResource(Integer id, UriInfo context) {
+    public void setId(Integer id) {
         this.id = id;
-        this.context = context;
     }
 
     /**
@@ -56,12 +51,14 @@ public class PurchaseOrderResource {
      * @return an instance of PurchaseOrderConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public PurchaseOrderConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
-            return new PurchaseOrderConverter(getEntity(), context.getAbsolutePath(), expandLevel);
+            persistenceSvc.beginTx();
+            return new PurchaseOrderConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -74,12 +71,13 @@ public class PurchaseOrderResource {
      * @param data an PurchaseOrderConverter entity that is deserialized from a XML stream
      */
     @PUT
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public void put(PurchaseOrderConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            updateEntity(getEntity(), data.getEntity());
+            EntityManager em = persistenceSvc.getEntityManager();
+            updateEntity(getEntity(), data.resolveEntity(em));
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
@@ -96,56 +94,11 @@ public class PurchaseOrderResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            PurchaseOrder entity = getEntity();
-            deleteEntity(entity);
+            deleteEntity(getEntity());
             persistenceSvc.commitTx();
         } finally {
             persistenceSvc.close();
         }
-    }
-
-    /**
-     * Returns a dynamic instance of CustomerResource used for entity navigation.
-     *
-     * @param id identifier for the parent entity
-     * @return an instance of CustomerResource
-     */
-    @Path("customerId/")
-    public CustomerResource getCustomerIdResource() {
-        final PurchaseOrder parent = getEntity();
-        return new CustomerResource(null, context) {
-
-            @Override
-            protected Customer getEntity() {
-                Customer entity = parent.getCustomerId();
-                if (entity == null) {
-                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
-                }
-                return entity;
-            }
-        };
-    }
-
-    /**
-     * Returns a dynamic instance of ProductResource used for entity navigation.
-     *
-     * @param id identifier for the parent entity
-     * @return an instance of ProductResource
-     */
-    @Path("productId/")
-    public ProductResource getProductIdResource() {
-        final PurchaseOrder parent = getEntity();
-        return new ProductResource(null, context) {
-
-            @Override
-            protected Product getEntity() {
-                Product entity = parent.getProductId();
-                if (entity == null) {
-                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
-                }
-                return entity;
-            }
-        };
     }
 
     /**
@@ -155,10 +108,11 @@ public class PurchaseOrderResource {
      * @return an instance of PurchaseOrder
      */
     protected PurchaseOrder getEntity() {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         try {
-            return (PurchaseOrder) PersistenceService.getInstance().createQuery("SELECT e FROM PurchaseOrder e where e.orderNum = :orderNum").setParameter("orderNum", id).getSingleResult();
+            return (PurchaseOrder) em.createQuery("SELECT e FROM PurchaseOrder e where e.orderNum = :orderNum").setParameter("orderNum", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
         }
     }
 
@@ -170,11 +124,12 @@ public class PurchaseOrderResource {
      * @return the updated entity
      */
     protected PurchaseOrder updateEntity(PurchaseOrder entity, PurchaseOrder newEntity) {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         Customer customerId = entity.getCustomerId();
         Customer customerIdNew = newEntity.getCustomerId();
         Product productId = entity.getProductId();
         Product productIdNew = newEntity.getProductId();
-        entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        entity = em.merge(newEntity);
         if (customerId != null && !customerId.equals(customerIdNew)) {
             customerId.getPurchaseOrderCollection().remove(entity);
         }
@@ -196,6 +151,7 @@ public class PurchaseOrderResource {
      * @param entity the entity to deletle
      */
     protected void deleteEntity(PurchaseOrder entity) {
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
         Customer customerId = entity.getCustomerId();
         if (customerId != null) {
             customerId.getPurchaseOrderCollection().remove(entity);
@@ -204,6 +160,68 @@ public class PurchaseOrderResource {
         if (productId != null) {
             productId.getPurchaseOrderCollection().remove(entity);
         }
-        PersistenceService.getInstance().removeEntity(entity);
+        em.remove(entity);
+    }
+
+    /**
+     * Returns a dynamic instance of CustomerResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of CustomerResource
+     */
+    @Path("customerId/")
+    public CustomerResource getCustomerIdResource() {
+        CustomerIdResourceSub resource = resourceContext.getResource(CustomerIdResourceSub.class);
+        resource.setParent(getEntity());
+        return resource;
+    }
+
+    /**
+     * Returns a dynamic instance of ProductResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of ProductResource
+     */
+    @Path("productId/")
+    public ProductResource getProductIdResource() {
+        ProductIdResourceSub resource = resourceContext.getResource(ProductIdResourceSub.class);
+        resource.setParent(getEntity());
+        return resource;
+    }
+
+    public static class CustomerIdResourceSub extends CustomerResource {
+
+        private PurchaseOrder parent;
+
+        public void setParent(PurchaseOrder parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        protected Customer getEntity() {
+            Customer entity = parent.getCustomerId();
+            if (entity == null) {
+                throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
+            }
+            return entity;
+        }
+    }
+
+    public static class ProductIdResourceSub extends ProductResource {
+
+        private PurchaseOrder parent;
+
+        public void setParent(PurchaseOrder parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        protected Product getEntity() {
+            Product entity = parent.getProductId();
+            if (entity == null) {
+                throw new WebApplicationException(new Throwable("Resource for " + uriInfo.getAbsolutePath() + " does not exist."), 404);
+            }
+            return entity;
+        }
     }
 }

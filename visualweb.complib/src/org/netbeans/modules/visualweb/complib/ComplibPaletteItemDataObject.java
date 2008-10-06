@@ -67,6 +67,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -121,6 +122,11 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
 
     public Node createNodeDelegate() {
         return new ItemNode();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 
     /**
@@ -269,7 +275,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
             ExtensionList ext = new ExtensionList();
             //ext.addExtension(ITEM_EXT);
             //setExtensions(ext);
-            getExtensions().addMimeType("text/x-comp-palette+xml");
+            getExtensions().addMimeType("text/x-complib-palette+xml");
         }
 
         /** Gets default display name. Overides superclass method. */
@@ -299,7 +305,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public java.awt.Image getIcon(final int type) {
-            return Utilities.loadImage(iconURL);
+            return ImageUtilities.loadImage(iconURL);
         }
 
     }
@@ -333,7 +339,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
             Image icon = componentInfo == null ? null : componentInfo
                     .getIcon(type);
             if (icon == null) {
-                icon = Utilities
+                icon = ImageUtilities
                         .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
             }
             return icon;
@@ -452,7 +458,7 @@ class ComplibPaletteItemDataObject extends MultiDataObject {
         }
 
         public Image getIcon(int iconKind) {
-            return Utilities
+            return ImageUtilities
                     .loadImage("org/netbeans/modules/visualweb/palette/resources/custom_component.png"); // NOI18N
         }
     }

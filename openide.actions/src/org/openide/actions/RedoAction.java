@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -58,6 +58,7 @@ import org.openide.util.Exceptions;
 public class RedoAction extends CallableSystemAction {
     private static String SWING_DEFAULT_LABEL = UIManager.getString("AbstractUndoableEdit.redoText"); //NOI18N
 
+    @Override
     public boolean isEnabled() {
         UndoAction.initializeUndoRedo();
 
@@ -74,13 +75,18 @@ public class RedoAction extends CallableSystemAction {
             redo = redo.substring(SWING_DEFAULT_LABEL.length()).trim();
         }
 
-        return NbBundle.getMessage(RedoAction.class, "Redo", redo);
+        if (redo == null || redo.trim ().length () == 0) {
+            return NbBundle.getMessage(RedoAction.class, "RedoSimple");
+        } else {
+            return NbBundle.getMessage(RedoAction.class, "RedoWithParameter", redo);
+        }
     }
 
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RedoAction.class);
     }
 
+    @Override
     protected String iconResource() {
         return "org/openide/resources/actions/redo.gif"; // NOI18N
     }
@@ -99,6 +105,7 @@ public class RedoAction extends CallableSystemAction {
         UndoAction.updateStatus();
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

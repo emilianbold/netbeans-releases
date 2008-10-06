@@ -67,7 +67,14 @@ public class InstanceOfExpression extends Expression {
     public Expression getExpression() {
         return expression;
     }
-    
+
+    /**
+     * @return class name
+     */
+    public final ClassName getClassName() {
+        return className;
+    }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

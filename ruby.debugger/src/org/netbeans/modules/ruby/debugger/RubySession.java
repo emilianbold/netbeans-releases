@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
+import org.rubyforge.debugcommons.model.RubyDebugTarget;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 import org.rubyforge.debugcommons.model.RubyFrame;
@@ -79,6 +80,7 @@ public final class RubySession {
     private final RubyFrame[] EMPTY_FRAMES = new RubyFrame[0];
     private final RubyVariable[] EMPTY_VARIABLES = new RubyVariable[0];
     
+    private Session session;
     private final RubyDebuggerProxy proxy;
     private RubyDebuggerActionProvider actionProvider;
     private final FileLocator fileLocator;
@@ -91,6 +93,7 @@ public final class RubySession {
     File runningToFile;
     int runningToLine;
 
+
     public enum State { STARTING, RUNNING, STOPPED };
 
     RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
@@ -101,6 +104,10 @@ public final class RubySession {
         this.runningToLine = -1;
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
+    }
+
+    public void setSession(final Session session) {
+        this.session = session;
     }
 
     void setActionProvider(RubyDebuggerActionProvider actionProvider) {
@@ -137,11 +144,19 @@ public final class RubySession {
     
     void stepOver() {
         try {
+            stepOver(forceNewLine());
+        } catch (RubyDebuggerException e) {
+            Util.severe("Cannot step over", e); // NOI18N
+        }
+    }
+
+    void stepOver(boolean forceNewLine) {
+        try {
             beforeProceed();
             if (!activeThread.canStepOver()) {
                 return;
             }
-            activeThread.stepOver(forceNewLine());
+            activeThread.stepOver(forceNewLine);
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step over", e); // NOI18N
@@ -202,7 +217,15 @@ public final class RubySession {
     }
 
     String getName() {
-        return "localhost:" + proxy.getDebugTarged().getPort(); // NOI18N
+        RubyDebugTarget debugTarged = proxy.getDebugTarged();
+        File f = new File(debugTarged.getDebuggedFile());
+        String path;
+        if (f.isAbsolute()) {
+            path = f.getAbsolutePath();
+        } else {
+            path = new File(debugTarged.getBaseDir(), debugTarged.getDebuggedFile()).getAbsolutePath();
+        }
+        return path + " (localhost:" + proxy.getDebugTarged().getPort() + ')'; // NOI18N
     }
     
     /**
@@ -299,7 +322,7 @@ public final class RubySession {
             RubyFrame frame = getSelectedFrame();
             return frame == null ? null : frame.inspectExpression(expression);
         } catch (RubyDebuggerException e) {
-            Util.finest("Unable to inspect expression [" + expression + ']'); // NOI18N
+            Util.finer("Unable to inspect expression [" + expression + ']'); // NOI18N
             return null;
         }
     }
@@ -319,6 +342,7 @@ public final class RubySession {
                 if (frame == null) {
                     return;
                 }
+                DebuggerManager.getDebuggerManager().setCurrentSession(session);
                 EditorUtil.markCurrent(resolveAbsolutePath(frame.getFile()), frame.getLine() - 1);
                 annotateCallStack(thread);
                 if (contextProvider != null) {
@@ -328,7 +352,7 @@ public final class RubySession {
                 Util.severe("Cannot switch thread", e); // NOI18N
             }
         } else {
-            Util.finest("Cannot switch to thread which is not suspended [" + thread + "]");
+            Util.finer("Cannot switch to thread which is not suspended [" + thread + "]");
         }
     }
     
@@ -361,7 +385,7 @@ public final class RubySession {
             }
         }
         if (result == null) {
-            Util.finest("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
+            Util.finer("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
         }
         return result;
     }

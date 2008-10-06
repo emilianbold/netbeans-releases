@@ -41,7 +41,6 @@
 
 package org.openide.explorer.view;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -70,10 +69,12 @@ public class ContextTreeViewModelTest extends NbTestCase {
         super(name);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
 
+    @Override
     protected Level logLevel() {
         return Level.ALL;
     }

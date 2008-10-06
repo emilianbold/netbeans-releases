@@ -143,32 +143,35 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** Sets as text. Overrides superclass method to be dummy -> don't throw
      * <code>IllegalArgumentException</code> . */
+    @Override
     public void setAsText(String text) {}
         
     
     /** Overrides superclass method. 
      * @return text for the current value */
+    @Override
     public String getAsText() {
-        FormI18nMnemonic formI18nMnemonic = (FormI18nMnemonic)getValue();        
-        DataObject dataObject = formI18nMnemonic.getSupport().getResourceHolder().getResource();
+        FormI18nMnemonic mnemonic = (FormI18nMnemonic)getValue();
+        DataObject dataObject = mnemonic.getSupport().getResourceHolder().getResource();
         
-        if (dataObject == null || formI18nMnemonic.getKey() == null) {
+        if (dataObject == null || mnemonic.getKey() == null) {
             return bundle.getString("TXT_InvalidValue");
         } else {
             String resourceName = org.netbeans.modules.i18n.Util.
-                getResourceName(formI18nMnemonic.getSupport().getSourceDataObject().getPrimaryFile(),
+                getResourceName(mnemonic.getSupport().getSourceDataObject().getPrimaryFile(),
                                 dataObject.getPrimaryFile(),
                                 '/', false);// NOI18N
             return MessageFormat.format(
                 bundle.getString("TXT_Key"),
                 new Object[] {
-                    formI18nMnemonic.getKey(),
+                    mnemonic.getKey(),
                     resourceName , 
                 }
             );
@@ -183,24 +186,28 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
      * <p>
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
+    @Override
     public String getJavaInitializationString() {
         return ((FormI18nMnemonic)getValue()).getReplaceString();
     }
     
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nMnemonic</code> value. */
+    @Override
     public Component getCustomEditor() {
         return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
     /** Overrides superclass method. 
      * @return true since we support this feature */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
     /** Overrides superclass method.
      * @return <code>formI18nMnemonic</code> */
+    @Override
     public Object getValue() {
         if(formI18nMnemonic == null) {
             formI18nMnemonic = createFormI18nMnemonic();
@@ -214,6 +221,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
     /** Overrides superclass method.
      * @param value sets the new value for this editor */
+    @Override
     public void setValue(Object object) {
         if(object instanceof FormI18nMnemonic)
             formI18nMnemonic = (FormI18nMnemonic)object;
@@ -271,7 +279,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
             throw new IOException ();
         }
         
-        FormI18nMnemonic formI18nMnemonic = createFormI18nMnemonic();
+        FormI18nMnemonic mnemonic = createFormI18nMnemonic();
 
         NamedNodeMap namedNodes = domNode.getAttributes ();
         
@@ -295,8 +303,8 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
                     if(fileObject != null) {
                         try {
                             DataObject dataObject = DataObject.find(fileObject);
-                            if(dataObject.getClass().equals(formI18nMnemonic.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
-                                formI18nMnemonic.getSupport().getResourceHolder().setResource(dataObject);
+                            if(dataObject.getClass().equals(mnemonic.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
+                                mnemonic.getSupport().getResourceHolder().setResource(dataObject);
                         } 
                         catch (IOException e) {
                         }
@@ -307,22 +315,22 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
             // Set the key property.
             if(key != null && key.length() > 0) {
-                formI18nMnemonic.setKey(key);
+                mnemonic.setKey(key);
                 
                 // Set value and comment.
-                formI18nMnemonic.setValue(formI18nMnemonic.getSupport().getResourceHolder().getValueForKey(key));
-                formI18nMnemonic.setComment(formI18nMnemonic.getSupport().getResourceHolder().getCommentForKey(key));
+                mnemonic.setValue(mnemonic.getSupport().getResourceHolder().getValueForKey(key));
+                mnemonic.setComment(mnemonic.getSupport().getResourceHolder().getCommentForKey(key));
             }
 
             // Try to get identifier value.
-            ((JavaI18nSupport)formI18nMnemonic.getSupport()).createIdentifier();            
+            ((JavaI18nSupport)mnemonic.getSupport()).createIdentifier();
             
             node = namedNodes.getNamedItem(ATTR_IDENTIFIER);
             if(node != null) {
                 String identifier = (node == null) ? null : node.getNodeValue();
                 
                 if(identifier != null)
-                    ((JavaI18nSupport)formI18nMnemonic.getSupport()).setIdentifier(identifier);
+                    ((JavaI18nSupport)mnemonic.getSupport()).setIdentifier(identifier);
             }
             
             // Try to get init format string value.
@@ -348,11 +356,11 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
                     
                     String newReplaceFormat = MapFormat.format(replaceFormat, map);
                     
-                    formI18nMnemonic.setReplaceFormat(newReplaceFormat);
+                    mnemonic.setReplaceFormat(newReplaceFormat);
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nMnemonic.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
+                mnemonic.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();
@@ -407,11 +415,11 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
                     parameters[i] = ""; // NOI18N
 
             // Set the parameters.
-            formI18nMnemonic.setArguments(parameters);
+            mnemonic.setArguments(parameters);
         }
 
         // Set the value for this editor.
-        setValue(formI18nMnemonic);
+        setValue(mnemonic);
     }
 
     /**

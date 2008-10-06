@@ -345,6 +345,70 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <!--test-dependency>
+                        <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency-->
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.visualweb.gravy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jemmy</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <!--test-dependency>
+                        <code-name-base>org.openide.awt</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency-->
+                    <test-dependency>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <!--test-dependency>
+                        <code-name-base>org.openide.loaders</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.filesystems</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.text</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.nodes</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency-->
+                </test-type>
+            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>

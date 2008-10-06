@@ -39,24 +39,24 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 
 /**
- *
+ * Run a non-interactive command. Output from the command will be available via the toString() method.
+ * 
  * @author gordonp
  */
 public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;
 
-    public int run(String hkey, String cmd) {
-        support = new RemoteCommandSupport(hkey, cmd);
-        return support.getExitStatus();
+    public int run(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteCommandSupport(hkey, cmd, env);
+        return support.run();
     }
     
-    @Override
-    public String toString() {
-        return support.toString();
+    public String getOutput() {
+        return support.getOutput();
     }
-
 }

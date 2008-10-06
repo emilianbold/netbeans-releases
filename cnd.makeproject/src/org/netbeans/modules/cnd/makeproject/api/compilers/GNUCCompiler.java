@@ -42,30 +42,17 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 
 public class GNUCCompiler extends GNUCCCCompiler {
 
-    private static final String[] DEVELOPMENT_MODE_OPTIONS = {
-        "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -O", // Performance Debug" // NOI18N
-        "-g", // Test Coverage // NOI18N
-        "-g -O2", // Dianosable Release // NOI18N
-        "-O2", // Release // NOI18N
-        "-O3", // Performance Release // NOI18N
-    };
-    
-    private static final String[] WARNING_LEVEL_OPTIONS = {
-        "-w", // No Warnings // NOI18N
-        "", // Default // NOI18N
-        "-Wall", // More Warnings // NOI18N
-        "-Werror", // Convert Warnings to Errors // NOI18N
-    }; // FIXUP: from Bundle
-    
     @Override
     public String getDevelopmentModeOptions(int value) {
-        return DEVELOPMENT_MODE_OPTIONS[value];
+        CompilerDescriptor compiler = getFlavor().getToolchainDescriptor().getC();
+        if (compiler != null && compiler.getDevelopmentModeFlags() != null && compiler.getDevelopmentModeFlags().length > value){
+            return compiler.getDevelopmentModeFlags()[value];
+        }
+        return ""; // NOI18N
     }
     
     /** Creates a new instance of GNUCCompiler */
@@ -81,42 +68,7 @@ public class GNUCCompiler extends GNUCCCCompiler {
     }
     
     @Override
-    public String getWarningLevelOptions(int value) {
-        if (value < WARNING_LEVEL_OPTIONS.length)
-            return WARNING_LEVEL_OPTIONS[value];
-        else
-            return ""; // NOI18N
-    }
-    
-    @Override
-    public String getSixtyfourBitsOption(int value) {
-        if (value == BasicCompilerConfiguration.BITS_DEFAULT)
-            return ""; // NOI18N
-        else if (value == BasicCompilerConfiguration.BITS_32)
-            return "-m32"; // NOI18N
-        else if (value == BasicCompilerConfiguration.BITS_64)
-            return "-m64"; // NOI18N
-        else
-            return ""; // NOI18N
-    }
-    
-    @Override
-    public String getStripOption(boolean value) {
-        return value ? "-s" : ""; // NOI18N
-    }
-
-    @Override
-    protected String getDefaultPath() {
-        return "gcc"; // NOI18N
-    }
-    
-    @Override
-    protected String getCompilerStderrCommand() {
-        return " -x c -v -E"; // NOI18N
-    }
-
-    @Override
-    protected String getCompilerStdoutCommand() {
-        return " -x c -dM -E"; // NOI18N
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getC();
     }
 }

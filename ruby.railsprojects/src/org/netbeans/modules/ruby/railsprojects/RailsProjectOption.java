@@ -93,7 +93,7 @@ public class RailsProjectOption extends AdvancedOption {
         }
 
         public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx(RailsProjectOption.class);
         }
 
         public void cancel() {

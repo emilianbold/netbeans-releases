@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
+import java.util.List;
+import org.openide.util.RequestProcessor;
+
 /**
  *
  * @author gordonp
@@ -52,4 +55,8 @@ public interface CompilerSetProvider {
     public boolean hasMoreCompilerSets();
     
     public String getNextCompilerSetData();
+
+    public String[] getCompilerSetData(String hkey, String path);
+
+    public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets);
 }

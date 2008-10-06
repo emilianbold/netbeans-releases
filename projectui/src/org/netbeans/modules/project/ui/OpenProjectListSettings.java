@@ -229,7 +229,7 @@ public class OpenProjectListSettings {
     }
     
     public boolean isOpenAsMain() {        
-        return getPreferences().getBoolean( OPEN_AS_MAIN, true);
+        return getPreferences().getBoolean(OPEN_AS_MAIN, false);
     }
     
     public void setOpenAsMain( boolean openAsMain ) {

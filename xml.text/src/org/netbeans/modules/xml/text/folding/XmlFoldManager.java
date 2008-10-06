@@ -42,12 +42,13 @@
 package org.netbeans.modules.xml.text.folding;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldType;
@@ -188,7 +189,11 @@ public class XmlFoldManager implements FoldManager {
                 //open new transaction
                 FoldHierarchyTransaction fht = getOperation().openTransaction();
                 try {
-                    removeAllFolds(getOperation(), fht, foldHierarchy.getRootFold());
+                    ArrayList<Fold> existingFolds = new ArrayList<Fold>();
+                    collectExistingFolds(foldHierarchy.getRootFold(), existingFolds);
+                    for(Fold f : existingFolds) {
+                        getOperation().removeFromHierarchy(f, fht);
+                    }
                     createFolds(fht);
                 } catch (Exception ex) {
 //                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
@@ -218,18 +223,18 @@ public class XmlFoldManager implements FoldManager {
     }
    
     /**
-     * Removes all folds from the fold hierarchy except the root fold.
-     * @param operation
-     * @param transaction
+     * Collects all folds from the hierarchy that were created by this manager
+     * and are not the root fold.
+     *
      * @param fold
+     * @param list 
      */
-    private void removeAllFolds(FoldOperation operation,
-            FoldHierarchyTransaction transaction, Fold fold) {
+    private void collectExistingFolds(Fold fold, List<Fold> list) {
         for(int i=0; i<fold.getFoldCount(); i++) {
-            removeAllFolds(operation, transaction, fold.getFold(i));
+            collectExistingFolds(fold.getFold(i), list);
         }
-        if(!FoldUtilities.isRootFold(fold)) {
-            operation.removeFromHierarchy(fold, transaction);
+        if(!FoldUtilities.isRootFold(fold) && getOperation().owns(fold)) {
+            list.add(fold);
         }
     }
    

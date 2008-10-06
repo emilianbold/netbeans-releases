@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.100</specification-version>
+                        <specification-version>1.102</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -28,8 +28,8 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>1.7.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

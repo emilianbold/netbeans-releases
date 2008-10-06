@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -51,6 +52,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,23 +65,24 @@ import org.openide.util.NbBundle;
 public class MethodBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.method"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private MethodBreakpoint            breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 tfClassName;
+    private JTextField                  tfClassName;
     
     
     private static MethodBreakpoint createBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String methodName;
         try {
-            methodName = EditorContextBridge.getContext().getCurrentMethodName();
+            methodName = EditorContextBridge.getMostRecentMethodName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             methodName = "";
         }
@@ -88,7 +91,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             methodName
         );
         try {
-            mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
+            mb.setMethodSignature(EditorContextBridge.getMostRecentMethodSignature());
         } catch (java.awt.IllegalComponentStateException icsex) {}
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 
@@ -112,11 +115,12 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         String className = "";
         String[] cf = b.getClassFilters ();
         className = ClassBreakpointPanel.concatClassFilters(cf);
-        tfClassName = new JEditorPane("text/x-java", className);
+        tfClassName = new JTextField(className);
         tfClassName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSN_Method_Breakpoint_ClassName"));
         tfClassName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_Method_Breakpoint_ClassName"));
         jLabel3.setLabelFor(tfClassName);
-        panelClassName.add(java.awt.BorderLayout.CENTER, WatchPanel.createScrollableLineEditor(tfClassName));
+        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
+        panelClassName.add(java.awt.BorderLayout.CENTER, tfClassName);
         if ("".equals (b.getMethodName ())) {
             tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             cbAllMethods.setSelected (true);
@@ -139,7 +143,8 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
@@ -152,7 +157,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.method"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
     

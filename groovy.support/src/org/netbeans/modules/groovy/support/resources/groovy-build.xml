@@ -14,10 +14,10 @@
             <sequential>
                 <taskdef name="groovyc" classpath="${javac.classpath}" classname="org.codehaus.groovy.ant.Groovyc"/>
                 <groovyc destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includes="@{includes}" sourcepath="@{sourcepath}" srcdir="@{srcdir}">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
                     <javac debug="@{debug}" deprecation="${javac.deprecation}" destdir="@{destdir}" encoding="${source.encoding}" excludes="@{excludes}" includeantruntime="false" includes="@{includes}" source="${javac.source}" sourcepath="@{sourcepath}" srcdir="@{srcdir}" target="${javac.target}">
-                        <classpath>
-                            <path path="@{classpath}"/>
-                        </classpath>
                         <compilerarg line="${javac.compilerargs} ${javac.compilerargs.jaxws}"/>
                         <customize/>
                     </javac>

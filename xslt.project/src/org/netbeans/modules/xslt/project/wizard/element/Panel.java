@@ -76,6 +76,8 @@ import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xslt.project.XsltproConstants;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -300,46 +302,75 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
       if (value instanceof PortType) {
         setText(((PortType) value).getName());
       }
+      // 142908
+      if (value instanceof PartnerRolePort) {
+        setText(((PartnerRolePort) value).getName());
+      }
       return this;
     }
   }
 
   // ----------------------------------
-//  public static class PartnerRolePort {
-//    public PartnerRolePort(PortType portType) {
-//      myPortType = portType;
-//    }
-//
-//    public PortType getPortType() {
-//      return myPortType;
-//    }
-//
-//    public String getName() {
-//      return
-//        myPortType.getName();
-//    }
-//
-//    /**{@inheritDoc}*/
-//    @Override
-//    public boolean equals(Object object)
-//    {
-//      if ( !(object instanceof PartnerRolePort)) {
-//        return false;
-//      }
-//      PartnerRolePort partnerRolePort = (PartnerRolePort) object;
-//
-//      return partnerRolePort.getPortType().equals(getPortType());
-//    }
-//
-//    /**{@inheritDoc}*/
-//    @Override
-//    public int hashCode()
-//    {
-//      return getPortType().hashCode();
-//    }
-//
-//    private PortType myPortType;
-//  }
+  // 142908
+  public static class PartnerRolePort {
+    public PartnerRolePort(
+      PartnerLinkType partnerLinkType,
+      Role role,
+      PortType portType)
+    {
+      myPartnerLinkType = partnerLinkType;
+      myRole = role;
+      myPortType = portType;
+    }
+
+    public PartnerLinkType getPartnerLinkType() {
+      return myPartnerLinkType;
+    }
+
+    public Role getRole() {
+      return myRole;
+    }
+
+    public PortType getPortType() {
+      return myPortType;
+    }
+
+    public String getName() {
+      return
+        myPortType.getName() + " (" + // NOI18N
+        myPartnerLinkType.getName() + "/" + // NOI18N
+        myRole.getName() + ")"; // NOI18N
+    }
+
+    /**{@inheritDoc}*/
+    @Override
+    public boolean equals(Object object)
+    {
+      if ( !(object instanceof PartnerRolePort)) {
+        return false;
+      }
+      PartnerRolePort partnerRolePort = (PartnerRolePort) object;
+
+      return
+        partnerRolePort.getPartnerLinkType().equals(getPartnerLinkType()) &&
+        partnerRolePort.getRole().equals(getRole()) &&
+        partnerRolePort.getPortType().equals(getPortType());
+    }
+
+    /**{@inheritDoc}*/
+    @Override
+    public int hashCode()
+    {
+      return
+        getPartnerLinkType().hashCode() *
+        getRole().hashCode() *
+        getPortType().hashCode();
+    }
+
+    private Role myRole;
+    private PortType myPortType;
+    private PartnerLinkType myPartnerLinkType;
+  }
 
   //-----------------------------------
   protected final JButton createBrowseButton(JTextField fileTextField) {
@@ -424,6 +455,12 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   public static final String INPUT_FILE = "input.file"; // NOI18N
   public static final String INPUT_OPERATION = "input.operation"; // NOI18N
   public static final String INPUT_PORT_TYPE = "input.porttype"; // NOI18N
+  // 142908
+  public static final String INPUT_PARTNER_ROLE_PORT =
+    "input.partner.role.port"; // NOI18N
+  public static final String OUTPUT_PARTNER_ROLE_PORT =
+    "output.partner.role.port"; // NOI18N
+
 
   public static final String OUTPUT_FILE = "output.file"; // NOI18N
   public static final String OUTPUT_OPERATION = "output.operation"; // NOI18N

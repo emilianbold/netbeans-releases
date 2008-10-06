@@ -1,9 +1,12 @@
 package test;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.rmi.PortableRemoteObject;
 
 /**
  * This is the bean class for the TestingSessionBean enterprise bean.
@@ -70,7 +73,7 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
             TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/TestingEntityBean");
             return rv;
         } catch (NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "exception caught", ne);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
             throw new RuntimeException(ne);
         }
     }
@@ -79,10 +82,10 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
         try {
             Context c = new InitialContext();
             Object remote = c.lookup("java:comp/env/ejb/MyTestingEntityBean");
-            TestingEntityRemoteHome rv = (TestingEntityRemoteHome) javax.rmi.PortableRemoteObject.narrow(remote, test.TestingEntityRemoteHome.class);
+            TestingEntityRemoteHome rv = (TestingEntityRemoteHome) PortableRemoteObject.narrow(remote, TestingEntityRemoteHome.class);
             return rv;
         } catch (NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "exception caught", ne);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
             throw new RuntimeException(ne);
         }
     }

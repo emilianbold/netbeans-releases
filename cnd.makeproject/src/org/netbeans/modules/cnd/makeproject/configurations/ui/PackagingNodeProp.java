@@ -44,14 +44,14 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
-import java.util.ArrayList;
-import javax.swing.JPanel;
+import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.NbBundle;
 
 public class PackagingNodeProp extends PropertySupport {
     private PackagingConfiguration packagingConfiguration;
@@ -75,7 +75,9 @@ public class PackagingNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        if (v != null) {
+            packagingConfiguration = (PackagingConfiguration) v; // FIXUP
+        }
     }
     
 //    public void restoreDefaultValue() {
@@ -93,7 +95,7 @@ public class PackagingNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new Editor((PackagingConfiguration)packagingConfiguration.clone());
+	return new Editor((PackagingConfiguration)packagingConfiguration);
     }
 
     @Override
@@ -119,22 +121,23 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public String getAsText() {
-            return packagingConfiguration.getDisplayName();
-//	    boolean addSep = false;
-//	    StringBuilder ret = new StringBuilder();
-//	    for (int i = 0; i < value.size(); i++) {
-//		if (addSep)
-//		    ret.append(", "); // NOI18N
-//		ret.append(value.get(i).toString());
-//		addSep = true;
-//	    }
-//	    return ret.toString();
+            int noFiles = packagingConfiguration.getFiles().getValue().size();
+            String val;
+            if (noFiles == 0) {
+                val = getString("FilesTextZero");
+            }
+            else if (noFiles == 1) {
+                val = getString("FilesTextOne", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo()); // NOI18N
+            }
+            else {
+                val = getString("FilesTextMany", "" + noFiles, ((PackagerFileElement)packagingConfiguration.getFiles().getValue().get(0)).getTo() + ", ..."); // NOI18N
+            }
+            return val;
         }
         
         @Override
         public java.awt.Component getCustomEditor() {
-            return new PackagingPanel(packagingConfiguration, this, env);
-//            return new LibrariesPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new PackagingPanel(packagingConfiguration, this, env, conf);
         }
         
         @Override
@@ -145,5 +148,17 @@ public class PackagingNodeProp extends PropertySupport {
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
+    }
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+	if (bundle == null) {
+	    bundle = NbBundle.getBundle(PackagingNodeProp.class);
+	}
+	return bundle.getString(s);
+    }
+    
+    private static String getString(String s, String a1, String a2) {
+        return NbBundle.getMessage(PackagingNodeProp.class, s, a1, a2);
     }
 }

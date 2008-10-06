@@ -171,6 +171,9 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     final Dimension getPreferredSize() {
         JComponent comp = getContentComponent();
+
+        if (comp == null)
+            return new Dimension(0, 0);
         
         int screenWidth = ScreenBoundsProvider.getScreenBounds(getEditorComponent()).width;
         
@@ -185,7 +188,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
         if(gap > 0) maxSize.width += gap;
 
         setMaxSize(comp, maxSize);
-        return (comp == null) ? new Dimension(0,0) : comp.getPreferredSize();
+        return comp.getPreferredSize();
     }
     
     /** 
@@ -361,6 +364,55 @@ abstract class CompletionLayoutPopup implements FocusListener {
         Rectangle bounds = findPopupBounds(occupiedBounds, aboveCaret);
         show(bounds, aboveCaret);
     }
+
+    /**
+     * Displays popup right, left of currently occupied bounds if possible,
+     * otherwise fallback to above/below
+     * @param occupiedBounds bounds of CC popup
+     * @param unionBounds bounds occupied by all popups
+     */
+    void showAlongOrNextOccupiedBounds(Rectangle occupiedBounds, Rectangle unionBounds) {
+        Rectangle screen = ScreenBoundsProvider.getScreenBounds(getEditorComponent());
+        Dimension prefSize = getPreferredSize();
+        Rectangle bounds = new Rectangle();
+        boolean aboveCaret;
+
+        if (isEnoughSpace(occupiedBounds, preferDisplayAboveCaret)) {
+            aboveCaret = preferDisplayAboveCaret;
+        } else
+            aboveCaret = false;
+
+        boolean left = false;
+        boolean right = false;
+
+        // Right of CC
+        if (occupiedBounds.x + occupiedBounds.width + prefSize.width < screen.width &&
+                occupiedBounds.y + prefSize.height < screen.height) {
+            bounds.x = occupiedBounds.x + occupiedBounds.width + CompletionLayout.POPUP_VERTICAL_GAP;
+            right = true;
+        }
+
+        // Left of CC
+        if (!right && occupiedBounds.x - prefSize.width > 0 && occupiedBounds.y + prefSize.height < screen.height) {
+            bounds.x = occupiedBounds.x - prefSize.width - CompletionLayout.POPUP_VERTICAL_GAP;
+            left = true;
+        }
+
+        if (right || left) {
+            bounds.width = prefSize.width;
+            bounds.height = Math.min(prefSize.height, screen.height);
+            if (aboveCaret) {
+                bounds.y = occupiedBounds.y + occupiedBounds.height - prefSize.height;
+            } else {
+                bounds.y = occupiedBounds.y;
+            }
+            show(bounds, aboveCaret);
+            return;
+        }
+
+        // Fallback to Above/Below
+        showAlongOccupiedBounds(unionBounds);
+    }
     
     void showAlongOccupiedBounds(Rectangle occupiedBounds, boolean aboveCaret) {
         Rectangle bounds = findPopupBounds(occupiedBounds, aboveCaret);
@@ -402,7 +454,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
         Dimension prefSize = getPreferredSize();
         return (prefSize.height < freeHeight);
     }
-    
+
     boolean isEnoughSpace(boolean aboveCaret) {
         return isEnoughSpace(getAnchorOffsetBounds(), aboveCaret);
     }

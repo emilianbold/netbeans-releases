@@ -87,7 +87,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
 	
         super(ast, file);
 	
-	if (container instanceof CsmIdentifiable) {
+	if (CsmKindUtilities.isIdentifiable(container)) {
 	    this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
 	    assert (containerUID != null || container == null);
 	    this.containerRef = null;
@@ -144,13 +144,13 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
         FileImpl file = (FileImpl) getContainingFile();
-        file.getProjectImpl().unregisterDeclaration(this);
+        file.getProjectImpl(true).unregisterDeclaration(this);
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-            // restore container from it's UID
-            this.containerRef = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
+            // restore container from it's UID when needed
+            this.containerRef = this.containerRef != null ? this.containerRef : UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
             assert (this.containerRef != null || this.containerUID == null) : "null object for UID " + this.containerUID;
         }
     }
@@ -233,7 +233,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         return type;
     }
 
-    private CsmObject _getContainer() {
+    private synchronized CsmObject _getContainer() {
         CsmObject container = this.containerRef;
         if (container == null) {
             container = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
@@ -255,8 +255,14 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         PersistentUtils.writeType(this.type, output);
 
         // not null
-        assert this.containerUID != null;
-        UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);        
+        if (this.containerUID == null) {
+            System.err.println("trying to write non-writable typedef:" + this.getContainingFile() + toString()); // NOI18N
+            if (this.containerRef == null) {
+                System.err.println("typedef doesn't have container at all"); // NOI18N
+            }
+        } else {
+            UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);
+        }
     }  
     
     public TypedefImpl(DataInput input) throws IOException {
@@ -268,8 +274,10 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         assert this.type != null;
         
         this.containerUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-        // not null UID
-        assert this.containerUID != null;
+        // should not be null UID
+        if (this.containerUID == null) {
+            System.err.println("non-writable object was read:" + this.getContainingFile() + toString()); // NOI18N
+        }
         this.containerRef = null;
     }       
 }

@@ -85,6 +85,28 @@ public final class FileUtils {
     
     // file/stream read/write ///////////////////////////////////////////////////////
     public static String readFile(
+            final File file, String charset) throws IOException {
+        FileInputStream fis   = new FileInputStream(file);
+        InputStreamReader isr = new InputStreamReader(fis, charset);            
+        final Reader reader = new BufferedReader(isr);
+        try {
+            final char[] buffer = new char[BUFFER_SIZE];
+            final StringBuilder stringBuilder = new StringBuilder();
+            int readLength;
+            while ((readLength = reader.read(buffer)) != -1) {
+                stringBuilder.append(buffer, 0, readLength);
+            }
+            return stringBuilder.toString();
+        } finally {
+            try {
+                reader.close();
+                isr.close();
+                fis.close();
+            } catch(IOException ignord) {            
+            }
+        }
+    }    
+    public static String readFile(
             final File file) throws IOException {
         final Reader reader = new BufferedReader(new FileReader(file));
         try {
@@ -207,7 +229,14 @@ public final class FileUtils {
             } catch (IOException ignord) {}
         }
     }
-    
+    public static List<String> readStringList(
+            final File file, String charset) throws IOException {
+        final List<String> list = new LinkedList<String>();
+        for (String line: StringUtils.splitByLines((readFile(file,charset)))) {
+            list.add(line);
+        }
+        return list;
+    }
     public static List<String> readStringList(
             final File file) throws IOException {
         final List<String> list = new LinkedList<String>();
@@ -569,7 +598,7 @@ public final class FileUtils {
             LogManager.log("... cannot get canonical file for " + file);
         }
         for (File root: roots) {
-            if (isParent(root, file)) {
+            if (isParent(root, file) || root.equals(file)) {
                 if(result == null ||
                         (result.getAbsolutePath().length() <
                         root.getAbsolutePath().length())) {

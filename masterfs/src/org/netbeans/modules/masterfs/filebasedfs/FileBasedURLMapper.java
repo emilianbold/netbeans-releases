@@ -125,6 +125,10 @@ public final class FileBasedURLMapper extends URLMapper {
             }            
             Exceptions.printStackTrace(iax);
             return null;
+        } catch (IllegalArgumentException iax) {
+            // catch possible IAE from File constructor and re-throw with URL
+            Exceptions.printStackTrace(Exceptions.attachMessage(iax, "URL="+url));  //NOI18N
+            return null;
         }
         
         retVal = FileBasedFileSystem.getFileObject(file, FileObjectFactory.Caller.ToFileObject);

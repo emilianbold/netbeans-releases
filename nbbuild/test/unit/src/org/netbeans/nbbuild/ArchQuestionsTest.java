@@ -192,7 +192,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             //"]>\n" +
 "\n" +
 "<api-answers\n" +
-  "question-version='1.25'\n" +
+  "question-version='1.22'\n" +
   "module='Input/Output System'\n" +
   "author='jglick@netbeans.org'\n" +
 ">\n" +
@@ -266,6 +266,13 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         if (s2.indexOf("question id=\"arch-overall\"") == -1) {
             fail ("There should be a answer template for arch-overall in html output: " + s2);
         }
+        if (s1.contains("1.22")) {
+            fail("Version has not been upgraded, still 1.22\n" + s1);
+        }
+        if (!s1.contains("question-version='1.25'")) {
+            fail("Version has not been upgraded, should be 1.25\n" + s1);
+        }
+
     }
     
     
@@ -479,19 +486,6 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         }
         
         assertEquals("Warnings are not included if defaultanswer is present: " + txt[0], -1, txt[0].indexOf("Default answer to this question"));
-        
-       
-        // the api tags are also included in comment
-        // like this one:
-        // <api type='import' group='java' category='private' name='org.openide.util' url='@org-openide-util@/overview-summary.html'></api>
-        Matcher m = Pattern.compile("<!--[^-\"']*<api *type..import. *group..java. *"
-            + "category=.private. *"
-            + "name=.org.openide.util.*url=..org-openide-util./overview-summary.*>"
-            + "[^-]*</api>"
-        ).matcher(txt[0]);
-        if (!m.find()) {
-            fail("<api/> should be in comment\n" + txt[0]);
-        }
     }
 
     public void testReadNbDepsFromProjectXMLWhenDefaultAnswerProhibited () throws Exception {
@@ -832,7 +826,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         assertTrue ("File is generated", output.exists ());
         
         String content = PublicPackagesInProjectizedXMLTest.readFile(output);
-        
+
         if (content.indexOf("My Lovely Profiler - NetBeans Architecture Questions") == -1) {
             fail(content);
         }

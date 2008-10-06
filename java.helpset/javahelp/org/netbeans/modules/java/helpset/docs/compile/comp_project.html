@@ -5,19 +5,38 @@
 -->
 <html>
 <head>
-<title>Building a Project</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Building a Java Project</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Building a Project</h2>
+<h2>Building a Java Project</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 <p>When you build a project, the IDE calls the corresponding target in the project's
 	Ant build script. The IDE compiles the source files and generates the packaged
-	build output, such as a JAR file or WAR file. You can build the main project and all of its required projects, or build any 
-  project individually.
+	build output, such as a JAR file or WAR file. You can build the main project 
+        and all of its required projects, or build any 
+  project individually.</p>
+  
+  <p>You do not need to build the project or compile individual classes to run the 
+  project in the IDE. By default, the IDE automatically compiles classes when you 
+save them. These incrementally compiled files are stored in a cache in your 
+user directory and are copied to your project's <tt>build</tt> folder 
+when you run or debug your project. This incremental compilation can save you 
+a lot of time when you are editing and testing your project.</p>
+
+<p>However, you need to build the project to generate distributable files 
+for the project, such as JAR files.</p>
+
+<p>By default, the Build Project command is not enabled since most of that command's 
+functions are handled by the incremental compilation. However, you can use the 
+Clean and Build command to create a fresh build. When you clean 
+and build a project, all previous build outputs are deleted and new versions 
+of the build outputs are created.</p>
+
 <p><b>To build the main project and its required projects:</b> 
 <ul>
-  <li>Choose Build  &gt; Build 
+  <li>Choose Run  &gt; Clean and Build 
     Main Project (F11).</li>
 	 <p>The IDE displays the Ant output and any compilation errors in the Output window.
 <ul class="note">
@@ -27,17 +46,13 @@
 </ul>
 <p><b>To build an individual project and its required projects:</b> 
 <ul>
-  <li>Right-click the project's node in the Projects window and choose Build Project. </li>
+  <li>Right-click the project's node in the Projects window and choose Clean and Build. </li>
   <p>The IDE displays the Ant output and any compilation errors in the Output window.
-<ul class="note">
-<li>You can double-click any error to go to the location in the source code where
-		the error occurred. 
-</ul>
 </ul>
 
 <p><b>To stop building a project:</b> 
 <ul>
-  <li>Choose Build &gt; Stop Build/Run from the main menu.</li>
+  <li>Choose Run &gt; Stop Build/Run from the main menu.</li>
 </ul>
 
         <ul class="note">
@@ -52,7 +67,7 @@
         <param name="textFontStyle" value="italic">
         <param name="textFontWeight" value="bold">
         <param name="textColor" value="blue">
-        </object> that have a main class is specified, the IDE automatically copies 
+        </object> that have a main class specified, the IDE automatically copies 
         any JAR files on the project's classpath to the <tt>dist/lib</tt> folder 
         when you build the project. The IDE also adds each of the JAR files 
         to the Class-Path element in the application JAR's <tt>manifest.mf</tt> 
@@ -60,6 +75,14 @@
         information, see <a href="comp_jar_deploy.html">Preparing 
         a JAR for Deployment Outside the IDE</a></li>
         </ul>
+
+<a name="disable-compileonsave"></a>
+<p><b>To turn off incremental compilation for a project:</b> 
+<ol>
+  <li>Right-click the project's node and choose Properties.</li>
+  <li>In the Project Properties dialog box, select the Compiling node and 
+  clear the Compile On Save checkbox.</li>
+</ol>
 
   <dl> 
       <dt><a name="seealso">See also</a></dt>

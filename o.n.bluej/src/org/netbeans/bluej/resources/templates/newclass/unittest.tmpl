@@ -1,0 +1,39 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+
+/**
+ * The test class ${name}.
+ *
+ * @author  ${user}
+ * @version (a version number or a date)
+ */
+public class ${name} extends junit.framework.TestCase {
+    /**
+     * Default constructor for test class ${name}
+     */
+    public ${name}() {
+    }
+
+    /**
+     * Sets up the test fixture.
+     *
+     * Called before every test case method.
+     */
+    protected void setUp() {
+    }
+
+    /**
+     * Tears down the test fixture.
+     *
+     * Called after every test case method.
+     */
+    protected void tearDown() {
+    }
+}

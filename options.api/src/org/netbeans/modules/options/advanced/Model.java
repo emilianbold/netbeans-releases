@@ -133,15 +133,18 @@ public final class Model extends TabbedPanelModel {
     public OptionsPanelController getController(String categoryID) {
         return categoryToController.get(getDisplayName(categoryID));
     }
-    
+
     public JComponent getPanel (String category) {
         init ();
         JComponent panel = categoryToPanel.get (category);        
         if (panel != null) return panel;
         AdvancedOption option = categoryToOption.get (category);
-        OptionsPanelController controller = new DelegatingController(option.create ());
+        OptionsPanelController controller = categoryToController.get(category);
+        if (controller==null) {
+            controller = new DelegatingController(option.create ());
+            categoryToController.put (category, controller);
+        }
         controller.addPropertyChangeListener(propertyChangeListener);
-        categoryToController.put (category, controller);
         panel = controller.getComponent (masterLookup);
         categoryToPanel.put (category, panel);
         Border b = panel.getBorder ();
@@ -306,7 +309,7 @@ public final class Model extends TabbedPanelModel {
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
             delegate.removePropertyChangeListener(l);
-        }        
+        }
     }            
 }
 

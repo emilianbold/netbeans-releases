@@ -41,18 +41,15 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
-import org.openide.windows.WindowManager;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.project.Project;
@@ -60,7 +57,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 
 import java.io.File;
 import java.util.*;
-import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 
 /**
  * Updates given project and all sources of
@@ -69,16 +66,16 @@ import java.awt.event.ActionEvent;
  *
  * @author Petr Kuzel
  */
-public final class UpdateWithDependenciesAction extends SystemAction {
+public final class UpdateWithDependenciesAction extends AbstractSystemAction {
 
     public UpdateWithDependenciesAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    protected void performCvsAction(final Node[] nodes) {
         setEnabled(false);
-        final Node nodes[] = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("CVS");
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 async(nodes);
@@ -114,7 +111,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
 
                 GlobalOptions gtx = CvsVersioningSystem.createGlobalOptions();
                 gtx.setExclusions((File[]) context.getExclusions().toArray(new File[0]));
-                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx, null));
+                group.addExecutors(UpdateExecutor.splitCommand(updateCommand, CvsVersioningSystem.getInstance(), gtx, getContextDisplayName(nodes)));
 
                 group.execute();
             }
@@ -123,8 +120,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
         }
     }
 
-    public boolean isEnabled() {
-        Node [] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+    protected boolean enable(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             if (Utils.isVersionedProject(node) == false) {
@@ -142,6 +138,10 @@ public final class UpdateWithDependenciesAction extends SystemAction {
         return NbBundle.getMessage(UpdateWithDependenciesAction.class, "CTL_MenuItem_UpdateWithDependencies");
     }
 
+    protected String getBaseName(Node[] activatedNodes) {
+        return null;    // getName() is overriden, this method is never called
+    }
+    
     public HelpCtx getHelpCtx() {
         return null;
     }
@@ -159,10 +159,12 @@ public final class UpdateWithDependenciesAction extends SystemAction {
         }
 
         SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
-        Iterator it = deps.getSubprojects().iterator();
-        while (it.hasNext()) {
-            Project subProject = (Project) it.next();
-            addUpdateContexts(contexts, subProject, updatedProjects);  // RESURSION
+        if(deps != null) {
+            Iterator it = deps.getSubprojects().iterator();
+            while (it.hasNext()) {
+                Project subProject = (Project) it.next();
+                addUpdateContexts(contexts, subProject, updatedProjects);  // RESURSION
+            }
         }
     }
 

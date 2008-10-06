@@ -3,7 +3,7 @@
 
 This document is a quick overview for the UML Bank App sample. The Java and UML 
 projects included in the sample are provided as a means of introducing you to the 
-Reverse Engineering feature of the NetBeans 6.0, UML Tools plugin. The sample Java
+Reverse Engineering feature of the NetBeans, UML Tools plugin. The sample Java
 project has a default name of UMLBankAppSample and the sample UML project has the 
 default name of UMLBankAppSample-Model. The sample Java project was reverse 
 engineered to generate the sample UML project and its elements.

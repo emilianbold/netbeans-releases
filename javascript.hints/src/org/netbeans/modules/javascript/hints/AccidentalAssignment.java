@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;

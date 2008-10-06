@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,17 +53,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataFolder;
@@ -81,6 +85,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
     static final Comparator<FileObject> FILE_OBJECT_COMAPARTOR = new BrowseFolders.FileObjectComparator();
     private static final JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
+    private static final String NB_PROJECT_DIR = "nbproject"; // NOI18N
 
     private final ExplorerManager manager;
     private final SourceGroup[] folders;
@@ -168,12 +173,15 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setLabelFor(folderPanel);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_Folders")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.jLabel1.AccessibleContext.accessibleName")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
 
         folderPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -183,6 +191,11 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(folderPanel, gridBagConstraints);
+        folderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.folderPanel.AccessibleContext.accessibleName")); // NOI18N
+        folderPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.folderPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "BrowseFolders.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -219,6 +232,15 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         dialog.setVisible(true);
 
         return optionsListener.getResult();
+    }
+
+    public static FileObject showDialog(FileObject[] folders, Class target, String preselectedFileName) {
+        SourceGroup[] groups = new SourceGroup[folders.length];
+        int i = 0;
+        for (FileObject fo : folders) {
+            groups[i++] = new FOSourceGroup(fo);
+        }
+        return showDialog(groups, target, preselectedFileName);
     }
 
     /** Children to be used to show FileObjects from given SourceGroups
@@ -281,7 +303,9 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 keys = new ArrayList<Key>(children.length);
                 if (BrowseFolders.this.target == org.openide.loaders.DataFolder.class) {
                     for (FileObject file : children) {
-                        if (file.isFolder() && group.contains(file)) {
+                        if (file.isFolder()
+                                && isVisible(file)
+                                && group.contains(file)) {
                             keys.add(new Key(file, group));
                         }
                     }
@@ -289,7 +313,8 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                     List<Key> dirs = new ArrayList<Key>(children.length);
                     List<Key> files = new ArrayList<Key>(children.length);
                     for (FileObject file : children) {
-                        if (!group.contains(file)) {
+                        if (!isVisible(file)
+                                || !group.contains(file)) {
                             continue;
                         }
                         if (file.isFolder()) {
@@ -303,6 +328,14 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 }
             }
             return keys;
+        }
+
+        private boolean isVisible(FileObject fo) {
+            assert fo != null;
+            if (fo.getNameExt().equals(NB_PROJECT_DIR)) {
+                return false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
 
         private final class Key {
@@ -342,9 +375,13 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 Node[] selection = browsePanel.getExplorerManager().getSelectedNodes();
 
                 if (selection != null && selection.length > 0) {
+                    // XXX hack because of GsfDataObject is not API
                     DataObject dobj = selection[0].getLookup().lookup(DataObject.class);
-                    if (dobj != null && dobj.getClass().isAssignableFrom(target)) {
+                    if (dobj != null && target.isInstance(dobj)) {
                         result = dobj.getPrimaryFile();
+                        if (DataObject.class == target && result.isFolder()) {
+                            result = null;
+                        }
                     }
                     /*if (dobj != null) {
                         FileObject fo = dobj.getPrimaryFile();
@@ -358,6 +395,41 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
         public FileObject getResult() {
             return result;
+        }
+    }
+
+    private static final class FOSourceGroup implements SourceGroup {
+        private final FileObject fo;
+
+        public FOSourceGroup(FileObject fo) {
+            assert fo.isFolder() : "Directory must be provided";
+            this.fo = fo;
+        }
+
+        public FileObject getRootFolder() {
+            return fo;
+        }
+
+        public String getName() {
+            return fo.getNameExt();
+        }
+
+        public String getDisplayName() {
+            return fo.getNameExt();
+        }
+
+        public Icon getIcon(boolean opened) {
+            return null;
+        }
+
+        public boolean contains(FileObject file) throws IllegalArgumentException {
+            return FileUtil.isParentOf(fo, file);
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
     }
 }

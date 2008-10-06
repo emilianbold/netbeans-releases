@@ -5,6 +5,20 @@
 
 var rjsSupport = {
 
+    proxy : "",
+    
+    getHttpProxy: function() {
+        return this.proxy;
+    },
+    
+    setHttpProxy: function(proxy_) {
+        this.proxy = proxy_;
+    },
+    
+    isSetHttpProxy: function() {
+        return this.getHttpProxy().length > 0;
+    },
+
     getHttpRequest: function() {
         var xmlHttpReq;
         try
@@ -31,11 +45,28 @@ var rjsSupport = {
         }
         return xmlHttpReq;
      },
+    
+     findUrl : function(url, method) {
+        var url2 = url;
+        if(this.isSetHttpProxy())
+            url2 = this.getHttpProxy()+"?method="+method+"&url="+url2;
+        return url2;
+     },
 
-     open : function(method, url2, mimeType, paramLen, async) {
+     findMethod : function(method) {
+        var method2 = method;
+        if(method != "GET" && this.isSetHttpProxy())
+            method2 = "POST";
+        return method2;
+     },
+
+     open : function(method2, url2, mimeType, paramLen, async) {
+
+        //Change url and method if using http proxy
+        var url = this.findUrl(url2, method2);
+        var method = this.findMethod(method2);
 
         //add timestamp to make url unique in case of IE7
-        var url = url2;
         var timestamp = new Date().getTime();
         if(url.indexOf("?") != -1)
             url = url+"&timestamp="+timestamp;
@@ -109,8 +140,8 @@ var rjsSupport = {
 
     get : function(url, mime) {
         var xmlHttpReq = this.open('GET', url, mime, 0, false);
-        xmlHttpReq.send(null);
         try {
+          xmlHttpReq.send(null);
           if (xmlHttpReq.readyState == 4) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
@@ -128,8 +159,8 @@ var rjsSupport = {
 
     post : function(url, mime, content) {
         var xmlHttpReq = this.open('POST', url, mime, content.length, false);
-        xmlHttpReq.send(content);
         try {
+            xmlHttpReq.send(content);
             if (xmlHttpReq.readyState == 4) {
                 var status = xmlHttpReq.status;
                 if(status == 201) {
@@ -146,8 +177,8 @@ var rjsSupport = {
 
     put : function(url, mime, content) {
         var xmlHttpReq = this.open('PUT', url, mime, content.length, false);
-        xmlHttpReq.send(content);
         try {
+          xmlHttpReq.send(content);
           if (xmlHttpReq.readyState == 4) {
               var status = xmlHttpReq.status;
               if(status == 204) {
@@ -164,8 +195,8 @@ var rjsSupport = {
 
     delete_ : function(url) {
         var xmlHttpReq = this.open('DELETE', url, 'application/xml', 0, false);
-        xmlHttpReq.send(null);
         try {
+          xmlHttpReq.send(null);
           if (xmlHttpReq.readyState == 4) {
               var status = xmlHttpReq.status;
               if(status == 204) {

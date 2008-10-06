@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.glassfish.common.ui;
 
-import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,6 +56,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
 
     private GlassfishModule commonSupport;
     private boolean cometEnabledChanged = false;
+    private boolean monitorEnabledChanged = false;
+    private boolean jdbcDriverDeployEnabledChanged = false;
+    private boolean sessionEnabledChanged = false;
     
     public InstanceCustomizer(GlassfishModule commonSupport) {
         this.commonSupport = commonSupport;
@@ -74,12 +80,34 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         }
         boolean cometEnabled = Boolean.parseBoolean(cometFlag);
         cometCheckBox.setSelected(cometEnabled);
-    }
+        String monitorFlag = ip.get(GlassfishModule.HTTP_MONITOR_FLAG);
+        boolean monitorEnabled = Boolean.parseBoolean(monitorFlag);
+        monitorCheckBox.setSelected(monitorEnabled);
+        String driverDeployFlag = ip.get(GlassfishModule.DRIVER_DEPLOY_FLAG);
+        boolean driverDeployEnabled = Boolean.parseBoolean(driverDeployFlag);
+        jdbcDriverDeployCheckBox.setSelected(driverDeployEnabled);
+
+        String sessionFlag = ip.get(GlassfishModule.SESSION_PRESERVATION_FLAG);
+        boolean sessionEnabled = Boolean.parseBoolean(sessionFlag);
+        enableSessionsCheckBox.setSelected(sessionEnabled);
+}
     
     private void persistFields() {
         if(cometEnabledChanged) {
             String cometEnabled = Boolean.toString(cometCheckBox.isSelected());
             commonSupport.setEnvironmentProperty(GlassfishModule.COMET_FLAG, cometEnabled, true);
+        }
+        if (monitorEnabledChanged) {
+            String monitorEnabled = Boolean.toString(monitorCheckBox.isSelected());
+            commonSupport.setEnvironmentProperty(GlassfishModule.HTTP_MONITOR_FLAG, monitorEnabled, true);
+        }
+        if (jdbcDriverDeployEnabledChanged) {
+            String driverDeployEnabled = Boolean.toString(jdbcDriverDeployCheckBox.isSelected());
+            commonSupport.setEnvironmentProperty(GlassfishModule.DRIVER_DEPLOY_FLAG, driverDeployEnabled, true);
+        }
+        if (sessionEnabledChanged) {
+            String sessionsEnabled = Boolean.toString(enableSessionsCheckBox.isSelected());
+            commonSupport.setEnvironmentProperty(GlassfishModule.SESSION_PRESERVATION_FLAG, sessionsEnabled, true);
         }
     }
     
@@ -111,6 +139,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         labelDomainName = new javax.swing.JLabel();
         textDomainName = new javax.swing.JTextField();
         cometCheckBox = new javax.swing.JCheckBox();
+        monitorCheckBox = new javax.swing.JCheckBox();
+        jdbcDriverDeployCheckBox = new javax.swing.JCheckBox();
+        enableSessionsCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_Common")); // NOI18N
 
@@ -133,6 +164,27 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(monitorCheckBox, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_EnableHttpMonitor")); // NOI18N
+        monitorCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                monitorCheckBoxActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jdbcDriverDeployCheckBox, org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_EnableJDBCDiverDeployment")); // NOI18N
+        jdbcDriverDeployCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jdbcDriverDeployCheckBoxActionPerformed(evt);
+            }
+        });
+
+        enableSessionsCheckBox.setText(org.openide.util.NbBundle.getMessage(InstanceCustomizer.class, "LBL_PreserverSessions")); // NOI18N
+        enableSessionsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableSessionsCheckBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -140,7 +192,9 @@ public class InstanceCustomizer extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cometCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                    .add(jdbcDriverDeployCheckBox)
+                    .add(monitorCheckBox)
+                    .add(cometCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(labelLocation)
@@ -150,7 +204,8 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(textLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                             .add(textDomainsFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
-                            .add(textDomainName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))))
+                            .add(textDomainName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))
+                    .add(enableSessionsCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -170,7 +225,13 @@ public class InstanceCustomizer extends javax.swing.JPanel {
                     .add(textDomainName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cometCheckBox)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(monitorCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jdbcDriverDeployCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(enableSessionsCheckBox)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -178,12 +239,46 @@ private void cometCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     cometEnabledChanged = true;
 }//GEN-LAST:event_cometCheckBoxActionPerformed
 
+private void monitorCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_monitorCheckBoxActionPerformed
+    monitorEnabledChanged = true;
+    if (monitorCheckBox.isSelected()) {
+        // open a message about the scary effects of HTTP monitoring
+        NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_ON"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+        if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+            monitorCheckBox.setSelected(false);
+            monitorEnabledChanged = false;
+        }
+    } else {
+        // open a message about the scary effects of HTTP monitoring
+        NotifyDescriptor dd = new NotifyDescriptor(NbBundle.getMessage(this.getClass(), "TXT_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                NbBundle.getMessage(this.getClass(), "TITLE_WARNING_HTTP_MONITOR_OFF"), // NOI18N
+                NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE, null, null);
+        if (DialogDisplayer.getDefault().notify(dd).equals(NotifyDescriptor.CANCEL_OPTION)) {
+            monitorCheckBox.setSelected(true);
+            monitorEnabledChanged = false;
+        }
+    }
+}//GEN-LAST:event_monitorCheckBoxActionPerformed
+
+private void jdbcDriverDeployCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jdbcDriverDeployCheckBoxActionPerformed
+    jdbcDriverDeployEnabledChanged = true;
+}//GEN-LAST:event_jdbcDriverDeployCheckBoxActionPerformed
+
+private void enableSessionsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableSessionsCheckBoxActionPerformed
+    sessionEnabledChanged = true;
+}//GEN-LAST:event_enableSessionsCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cometCheckBox;
+    private javax.swing.JCheckBox enableSessionsCheckBox;
+    private javax.swing.JCheckBox jdbcDriverDeployCheckBox;
     private javax.swing.JLabel labelDomainName;
     private javax.swing.JLabel labelDomainsFolder;
     private javax.swing.JLabel labelLocation;
+    private javax.swing.JCheckBox monitorCheckBox;
     private javax.swing.JTextField textDomainName;
     private javax.swing.JTextField textDomainsFolder;
     private javax.swing.JTextField textLocation;

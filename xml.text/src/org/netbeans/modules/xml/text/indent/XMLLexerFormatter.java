@@ -44,9 +44,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -222,48 +222,19 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    public void reformat(Context context, int startOffset, int endOffset)
+    public void reformat(Context context, final int startOffset, final int endOffset)
             throws BadLocationException {
-        int offset = -1;
-        int line = -1;
-        int col = -1;
-        BaseDocument doc = (BaseDocument) context.document();        
-        JTextComponent editor = Utilities.getFocusedComponent();
-        if(editor != null) {
-            try {
-                offset = editor.getCaretPosition();
-                line = Utilities.getLineOffset(doc, offset);
-                col = Utilities.getVisualColumn(doc, offset);
-             } catch (Exception ex) {
-                //invalid line/col found
-            }
-        }
-        BaseDocument formattedDoc = doReformat(doc, startOffset, endOffset);
-        doc.atomicLock();
-        try {
-            doc.replace(0, doc.getLength(),
-            formattedDoc.getText(0, formattedDoc.getLength()), null);
-            if(line != -1 && col != -1) {
-                //find new offset based on last valid line+col information
-                offset = Utilities.getRowStartFromLineOffset(doc, line) + col;
-                if(editor != null && offset >= 0 )
-                    editor.setCaretPosition(offset);
-            }
-        } catch(Exception ex) {
-            //cant find new position 
-            editor.setCaretPosition(0);
-        } finally {
-            doc.atomicUnlock();
-        }
+       final BaseDocument doc = (BaseDocument) context.document();
+       doc.render(new Runnable() {
+           public void run() {
+               doReformat(doc, startOffset, endOffset);            }
+       }); 
+        
     }
     
-    BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
-        BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
+    public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         spacesPerTab = IndentUtils.indentLevelSize(doc);
-        doc.atomicLock();
         try {
-            //buffer doc used as a worksheet
-            bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
             List<TokenElement> tags = getTags(doc, startOffset, endOffset);
             for (int i = tags.size() - 1; i >= 0; i--) {
                 TokenElement tag = tags.get(i);
@@ -286,29 +257,27 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         lineStr = lineStr.substring(0, ndx);
                         int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) );
                         if (ndx2 == -1) {//no start found in this line, so indent this tag
-                            changePrettyText(bufDoc, tag, so);
+                            changePrettyText(doc, tag, so);
                         } else {
                             lineStr = lineStr.substring(ndx2 + 1);
                             ndx2 = lineStr.indexOf("<");
                             if (ndx2 != -1) {//indent this tag if it contains another tag
-                                changePrettyText(bufDoc, tag, so);
+                                changePrettyText(doc, tag, so);
                             }
                         }
                     }
                 } else {
-                    changePrettyText(bufDoc, tag, so);
+                    changePrettyText(doc, tag, so);
                 }
-            }
-            //Now do the actual replacement in the document with the pretty text
-            doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
+            }            
         } catch (BadLocationException ble) {
             //ignore exception
         } catch (IOException iox) {
-            //ignore exception
+           //ignore exception
         } finally {
-            doc.atomicUnlock();
+           //((AbstractDocument)doc).readUnlock();
         }
-        return bufDoc;
+        return doc;
     }
 
     private void changePrettyText(BaseDocument doc, TokenElement tag, int so) throws BadLocationException {
@@ -350,6 +319,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             //are we formatting from the beginning of doc or a subsection
             int line = Utilities.getLineOffset(basedoc, startOffset);
             if(line > 0) {
+                boolean nested = isSubSectionToFormatNested(basedoc, startOffset);
                 //we are formatting a subsection
                 int precedingWordLoc = Utilities.getFirstNonWhiteBwd(basedoc, startOffset) ;
                 int previousLine = Utilities.getLineOffset(basedoc, precedingWordLoc);
@@ -364,12 +334,12 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 } else
                     previousLineIndentation = Utilities.getRowIndent(basedoc, startOffset);
                 //the section being formatted should be idented wrt to previous line's indentation
-                if(previousLineIndentation < spacesPerTab )
-                    incrIndentLevelBy =1;
-                else if(previousLineIndentation > spacesPerTab || previousLineIndentation == spacesPerTab){
+              
                     int div = previousLineIndentation / spacesPerTab;
-                    incrIndentLevelBy = div +1;
-                }
+                    if(nested)
+                       incrIndentLevelBy = div +1;
+                    else
+                        incrIndentLevelBy = div;
                 
             }
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
@@ -467,4 +437,31 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             return false;
         }
     }
+    
+       
+    private boolean isSubSectionToFormatNested(BaseDocument baseDoc, int startOffset){
+      AbstractDocument doc = (AbstractDocument)baseDoc;
+      doc.readLock();
+      try {
+          TokenHierarchy th = TokenHierarchy.get(doc);
+          TokenSequence ts = th.tokenSequence();
+          ts.move(startOffset);
+          while(ts.movePrevious()) {
+              Token t = ts.token();
+              if(t.id() == XMLTokenId.PI_END)
+                  return false;
+              String tagText = t.text().toString();
+              if(tagText.startsWith("</") || tagText.equals("/>"))
+                  return false;
+              if(tagText.startsWith("<"))
+                  return true;
+          }
+      } catch  (Exception ex) {
+          //return false anyway
+      } finally {
+          doc.readUnlock();
+      }
+      return false;
+  }
+   
 }

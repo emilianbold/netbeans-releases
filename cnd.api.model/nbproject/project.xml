@@ -40,6 +40,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.api.model</package>
                 <package>org.netbeans.modules.cnd.api.model.deep</package>
+                <package>org.netbeans.modules.cnd.api.model.services</package>
                 <package>org.netbeans.modules.cnd.api.model.util</package>
             </friend-packages>
         </data>

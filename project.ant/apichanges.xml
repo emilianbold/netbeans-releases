@@ -104,6 +104,73 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SourcesHelper-minimalSubfolders">
+            <api name="general"/>
+            <summary>Added method SourcesHelper.registerExternalRoots with minimalSubfolders parameter</summary>
+            <version major="1" minor="26"/>
+            <date day="30" month="9" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>SourcesHelper.registerExternalRoots</code> with additional parameter
+                    <code>minimalSubfolders</code> controlling how the roots having an explicit include
+                    list are registered. When <code>true</code> only those subfolders which are included 
+                    (or folders directly containing included files) will be registered, otherwise the 
+                    whole source root is registered.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="SourcesHelper"/>
+            <issue number="148185"/>
+        </change>
+        <change id="antartifact-enhancement">
+            <api name="general"/>
+            <summary>Enhance AntArtifact support with ability to specify build.xml location and name</summary>
+            <version major="1" minor="25"/>
+            <date day="27" month="8" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>AntProjectHelper.createSimpleAntArtifact</code> enhanced
+                    with new parameter: property name holding project relative location 
+                    and name of Ant build script to use.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <issue number="144273"/>
+        </change>
+
+        <change id="schema-validation">
+            <api name="general"/>
+            <summary>Project XML metadata automatically validated against schemas</summary>
+            <version major="1" minor="24"/>
+            <date day="11" month="7" year="2008"/>
+            <author login="jglick"/>
+            <compatibility modification="yes">
+                <p>
+                    Code which was previously trying to store primary configuration data,
+                    or auxiliary configuration fragments,
+                    which was invalid according to some schema will now fail,
+                    whereas before the invalid content would be quietly stored.
+                    Of course, it will only be known to be invalid according to that schema
+                    if the schema is now registered, and anyway such code was already broken.
+                </p>
+                <p>
+                    XML fragments for which no associated schema exists are unaffected.
+                    (The document-scope schemas use lax validation of fragments.)
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    XML schemas may now be registered in <code>ProjectXMLCatalog/**/*.xsd</code>.
+                    Any attempts to read or write <code>project.xml</code> or <code>private.xml</code>
+                    will first try to validate against the registered schemas.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <issue number="42686"/>
+        </change>
 
         <change id="libraries-for-ant">
             <api name="general"/>

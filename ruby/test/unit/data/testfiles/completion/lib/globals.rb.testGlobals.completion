@@ -1,0 +1,46 @@
+Code completion result for source line:
+$|m # input
+(QueryType=COMPLETION, NameKind=PREFIX)
+GLOBAL     $myglob                                    globals.rb
+GLOBAL     $myotherglob                               globals.rb
+------------------------------------
+KEYWORD    $! The exception information m             null
+KEYWORD    $" The array contains the modu             null
+KEYWORD    $$ The process number of the R             null
+KEYWORD    $& The string matched by the l             null
+KEYWORD    $' The string to the right of              null
+KEYWORD    $* Command line arguments give             null
+KEYWORD    $+ The last bracket matched by             null
+KEYWORD    $, The output field separator              null
+KEYWORD    $-0 The alias to $/.                       null
+KEYWORD    $-F The alias to $;.                       null
+KEYWORD    $-I The alias to $:.                       null
+KEYWORD    $-a True if option -a ("autosp             null
+KEYWORD    $-d The alias to $DEBUG.                   null
+KEYWORD    $-i If in-place-edit mode is s             null
+KEYWORD    $-l True if option -l is set (             null
+KEYWORD    $-p True if option -p is set (             null
+KEYWORD    $-v The alias to $VERBOSE.                 null
+KEYWORD    $-w True if option -w is set.              null
+KEYWORD    $. The current input line numb             null
+KEYWORD    $/ The input record separator,             null
+KEYWORD    $0 Contains the name of the sc             null
+KEYWORD    $: Load path for scripts and b             null
+KEYWORD    $; The default separator for S             null
+KEYWORD    $< The virtual concatenation f             null
+KEYWORD    $= The flag for case insensiti             null
+KEYWORD    $> The default output for prin             null
+KEYWORD    $? The status of the last exec             null
+KEYWORD    $@ Array of backtrace of the l             null
+KEYWORD    $DEBUG The status of the -d sw             null
+KEYWORD    $FILENAME Current input file f             null
+KEYWORD    $LOAD_PATH The alias to the $:             null
+KEYWORD    $VERBOSE The verbose flag, whi             null
+KEYWORD    $\ The output record separator             null
+KEYWORD    $_ The last input line of stri             null
+KEYWORD    $` The string to the left  of              null
+KEYWORD    $n The Nth group of the last s             null
+KEYWORD    $stderr The current standard e             null
+KEYWORD    $stdin The current standard in             null
+KEYWORD    $stdout The current standard o             null
+KEYWORD    $~ The information about the l             null

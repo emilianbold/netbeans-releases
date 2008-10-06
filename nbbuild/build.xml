@@ -76,8 +76,6 @@ made subject to such option by the copyright holder.
 
   <target name="-load-build-properties">
     <property file="build.properties"/>
-    <!-- We need absolute path to ${netbeans.dest} -->
-    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
   </target>
 
   <target name="bootstrap"
@@ -96,11 +94,23 @@ made subject to such option by the copyright holder.
         <classpath>
             <pathelement location="${ant.core.lib}"/>
         </classpath>
-        <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/HgExec.java"/>
+        <include name="org/netbeans/nbbuild/ValidateHgConfiguration.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DeregisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DownloadBinaries.java"/>
         <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
-    <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
-    <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
+    <taskdef name="validate-hg-configuration" classname="org.netbeans.nbbuild.ValidateHgConfiguration" classpath="build/antclasses"/>
+    <validate-hg-configuration root=".."/>
+    <taskdef name="deregisterexternalhook" classname="org.netbeans.nbbuild.extlibs.DeregisterExternalHook" classpath="build/antclasses"/>
+    <deregisterexternalhook root=".."/>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
 
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <path id="bootstrap-cp">
@@ -127,7 +137,7 @@ made subject to such option by the copyright holder.
             </not>
         </condition>
         You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating. Try: ant hg-clean
+        Probably you failed to clean your sources before updating. Try: ant clean
     </fail>
     <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
@@ -606,9 +616,10 @@ Branding:
 Branch:   trunk
 Tag:
 </echo>
-    <exec executable="hg" dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
+    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
+    <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
       <arg value="id"/>
-    </exec>
+    </hgexec>
     <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
       <equals arg1="${hg.id.exit}" arg2="0"/>
     </condition>
@@ -682,10 +693,13 @@ the ${netbeans.dest}/bin/ directory.
 
 
   <target name="-build-platform" depends="init">
-    <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
+      <delete file="${netbeans.dest.dir}/nb.cluster.platform.built"/>
+      <delete file="${netbeans.dest.dir}/nb.cluster.harness.built"/>
+      <run-depend-build clusters-to-build="nb.cluster.platform,nb.cluster.harness"/>
   </target>
   
-  <target name="build-platform">
+  <target name="build-platform" description="Build the NetBeans Platform (platform and harness clusters).">
+      <mkdir dir="${netbeans.dest.dir}"/>
       <ant dir="." target="-build-platform" inheritAll="false">
           <property name="cluster.config" value="platform"/>
       </ant>
@@ -1206,15 +1220,15 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes" timeout="600000">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes" timeout="600000">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
     </exec>
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest.abs}/bin/netbeans"/>
+    <exec osfamily="unix" dir="." executable="sh" failonerror="yes" timeout="600000">
+      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1289,7 +1303,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1297,8 +1311,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
     </exec>
-    <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/netbeans"/>
+    <exec osfamily="unix" dir="." executable="sh" failonerror="yes">
+      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1352,7 +1366,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+  <target name="clean" depends="bootstrap" description="Clean everything possible.">
+      <taskdef name="try-else" classname="org.netbeans.nbbuild.TryElse" classpath="nbantext.jar"/>
+      <try-else first="-hg-clean" second="-real-clean"/>
+  </target>
 
   <target name="-clean-external">
     <subant target="clean">
@@ -1361,9 +1378,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="contrib/*/external/build.xml"/>
       </fileset>
     </subant>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="nbantext.jar"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}" clean="true">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
   </target>
 
-  <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
   <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
@@ -1396,14 +1419,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="-hg-check-can-clean" unless="no.hg.clean">
-    <available property="can.hg.clean" type="dir" file="../.hg"/>
-  </target>
-  <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
-    <antcall target="-real-clean"/>
-  </target>
-  <target name="hg-clean" depends="-hg-clean-alternative" if="can.hg.clean"
-          description="Clean everything possible.">
+  <target name="-hg-clean">
+    <fail message="Not running in a Mercurial checkout.">
+      <condition>
+        <not>
+          <available type="dir" file="../.hg"/>
+        </not>
+      </condition>
+    </fail>
+    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
     <antcall target="-do-hg-clean">
       <!-- <include name="."/> does not seem to work in a dirset -->
       <param name="basedir" location=".."/>
@@ -1417,7 +1441,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   <target name="-do-hg-clean">
     <echo>Cleaning untracked files in ${basedir}...</echo>
-    <exec executable="hg" failonerror="yes" outputproperty="hg.unknown.files">
+    <hgexec failonerror="yes" outputproperty="hg.unknown.files">
       <arg value="--cwd"/>
       <arg file="."/>
       <arg value="--config"/>
@@ -1425,7 +1449,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="status"/>
       <arg value="--unknown"/>
       <arg value="--no-status"/>
-    </exec>
+    </hgexec>
     <fail message="Will not run clean; checkout contains unknown and not ignored files (did you forget to hg add?):&#10;${hg.unknown.files}">
         <condition>
             <not>
@@ -1433,18 +1457,17 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </not>
         </condition>
     </fail>
-    <exec executable="hg" failonerror="yes">
+    <hgexec failonerror="yes">
       <arg value="--cwd"/>
       <arg file="."/>
       <arg value="--config"/>
       <arg value="extensions.purge="/>
-      <arg value="--verbose"/>
       <arg value="clean"/>
       <arg value="--all"/>
       <arg value="--exclude"/>
       <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
       <arg value="glob:{*/nbproject/private/**,*/*/nbproject/private/**,**/user.build.properties,nbbuild/misc/build-site-local.sh}"/>
-    </exec>
+    </hgexec>
   </target>
 
   <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies ; takes e.g. '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">
@@ -1466,7 +1489,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <target name="localtest" depends="bootstrap">
         <mkdir dir="build/test/unit/classes"/>
         <path id="test.cp">
-            <pathelement path="../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
+            <pathelement path="../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
         </path>
         <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
             <classpath refid="test.cp"/>
@@ -1661,6 +1684,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
     <pathconvert property="failed.tests" pathsep="${line.separator}">
         <fileset dir="${build.test.results.dir}">
+            <include name="TEST-*.xml"/>
             <not>
                 <and>
                     <contains text='errors="0"'/>
@@ -1669,7 +1693,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </not>
         </fileset>
     </pathconvert>
-    <fail message="There were failed tests:${line.separator}${failed.tests}">
+    <junitreport todir="${build.test.results.dir}">
+            <fileset dir="${build.test.results.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${build.test.results.dir}/html"/>
+    </junitreport>
+    <fail message="There were failed tests:${line.separator}${failed.tests} ${line.separator}${line.separator}Test report html: ${build.test.results.dir}/html/index.html">
         <condition>
             <not>
                 <or>
@@ -1798,6 +1828,11 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <input name="java" >
         <jars dir="${netbeans.dest.dir}" >
           <include name="${nb.cluster.java.dir}/**/*.jar" />
+        </jars>
+      </input>
+      <input name="websvccommon" >
+        <jars dir="${netbeans.dest.dir}" >
+          <include name="${nb.cluster.websvccommon.dir}/**/*.jar" />
         </jars>
       </input>
       <input name="apisupport" >
@@ -1976,11 +2011,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <subant-junit buildpath="${modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
       <!-- copy templates -->
       <copy todir="${test.dist.dir}">
-          <fileset dir="templates/testdist"/>
+          <fileset dir="testdist/release"/>
       </copy>
-      <mkdir dir="${test.dist.dir}/nbbuild"/>
-      <!-- XXX really only need a handful of tasks from this, would be better to select them explicitly: -->
-      <copy file="nbantext.jar" todir="${test.dist.dir}/nbbuild"/>
+      <mkdir dir="build/testdistclasses"/>
+      <javac srcdir="testdist/src" destdir="build/testdistclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+          <classpath>
+              <pathelement location="${ant.core.lib}"/>
+          </classpath>
+          <compilerarg line="-Xlint -Xlint:-serial"/>
+      </javac>
+      <jar jarfile="${test.dist.dir}/tasks.jar">
+          <fileset dir="build/testdistclasses"/>
+      </jar>
       <zip basedir="${test.dist.dir}" destfile="build/testdist.zip"/>
   </target>      
 
@@ -2006,10 +2048,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   >
     <echo message="Generating signature files for ${cluster.config} modules"/>
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    <property name="sigtest.output.dir" location="build/sigtest/generate"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}" failonerror="false">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
       <property name="sigtest.basedir" value="${sigtest.basedir}"/>
+      <property name="sigtest.output.dir" location="${sigtest.output.dir}"/>
     </subant>
   </target>
 
@@ -2036,6 +2080,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Checking signature files of stable API modules"/>
     
     <property name="sigtest.output.dir" location="build/sigtest/check-release"/>
+    <property name="fail.on.error" value="true"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
     <pathconvert property="modules.fullpath" >
@@ -2044,7 +2089,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </path>
         <mapper type="identity" />
     </pathconvert>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="${fail.on.error}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
@@ -2055,7 +2100,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
     <antcall target="-do-check-sigtests">
         <param name="sigtest.check.type" value="strictcheck"/>
-        <param name="sigtest.fail.on.error" value="false"/>
         <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
     </antcall>
     <junitreport todir="${sigtest.output.dir}">
@@ -2069,7 +2113,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="-do-check-sigtests" depends="sigtests-init">
     <fail unless="sigtest.check.type"/>
-    <fail unless="sigtest.fail.on.error"/>
     <fail unless="sigtest.output.dir"/>
 
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
@@ -2077,7 +2120,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="false">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
         <property name="sigtest.basedir" value="${sigtest.basedir}"/>

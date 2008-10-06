@@ -128,7 +128,7 @@ public class WebProjectDDTest extends J2eeTestCase{
     public static Test suite() {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration();
-        conf = addServerTests(Server.ANY,conf,WebProjectDDTest.class,webprojectddtests);
+        conf = addServerTests(Server.GLASSFISH,conf,WebProjectDDTest.class,webprojectddtests);
         conf = addServerTests(Server.ANY,conf,PagesAndReferencesDDTest.class,pagesandreferencesddtests);
         conf = addServerTests(Server.ANY,conf,SecurityDDTest.class,securityddtests);
         conf = conf.enableModules(".*").clusters(".*");

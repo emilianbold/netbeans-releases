@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@ package org.netbeans.api.autoupdate;
 import java.util.List;
 import org.netbeans.Module;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.services.OperationsTestImpl;
 import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 
@@ -66,6 +67,8 @@ public class RequiredElementsForUninstallTest extends OperationsTestImpl {
         return available.get(idx);
 
     }
+
+    @RandomlyFails
     public void testSelf() throws Exception {
         OperationContainer<OperationSupport> installContainer = OperationContainer.createForDirectInstall();
         UpdateUnit engineUnit = getUpdateUnit("org.yourorghere.engine");

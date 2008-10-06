@@ -39,7 +39,6 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Dimension;
-import org.netbeans.modules.uml.diagrams.nodes.activity.*;
 import java.awt.Rectangle;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -47,14 +46,14 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
-import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.netbeans.modules.uml.drawingarea.widgets.ResizeToContentMarker;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author thuy
  */
-public class JoinForkWidget extends UMLLabelNodeWidget 
+public class JoinForkWidget extends UMLLabelNodeWidget implements ResizeToContentMarker
 {
     public  static final int DEFAULT_WIDTH = 90;
     public static final int DEFAULT_HEIGHT = 10;
@@ -117,14 +116,15 @@ public class JoinForkWidget extends UMLLabelNodeWidget
             
             //create a  join/fork node
             mainView = new CustomizableWidget(scene, 
-                    getWidgetID(), bundle.getString("LBL_body"));
+                    getResourcePath(), bundle.getString("LBL_body"));
     
-            mainView.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
+//            mainView.setCustomizableResourceTypes(
+//                    new ResourceType [] {ResourceType.BACKGROUND} );
             mainView.setBorder (BorderFactory.createLineBorder());
             mainView.setOpaque(true);
             setCurrentView(mainView);
         }
+        super.initializeNode(presentation);
     }
     
     public void rotate()

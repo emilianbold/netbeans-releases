@@ -47,6 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import com.sun.javadoc.*;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -62,7 +63,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
-/** Utility class for viewing Javdoc comments as HTML.
+/** Utility class for viewing Javadoc comments as HTML.
  *
  * @author Dusan Balek, Petr Hrebejk
  */
@@ -109,7 +110,7 @@ public class ElementJavadoc {
      * 
      * @param compilationInfo CompilationInfo
      * @param element Element the javadoc is required for
-     * @return ElementJavadoc describing the jaadoc
+     * @return ElementJavadoc describing the javadoc
      */
     public static final ElementJavadoc create(CompilationInfo compilationInfo, Element element) {
         return new ElementJavadoc(compilationInfo, element, null);
@@ -129,7 +130,7 @@ public class ElementJavadoc {
         return docURL;
     }
 
-    /** Resolves a link contained in the Javadoc comment to a n object 
+    /** Resolves a link contained in the Javadoc comment to an object 
      * describing the linked javadoc
      * @param link Link which has to be resolved
      * @return ElementJavadoc describing the javadoc of liked element
@@ -141,6 +142,16 @@ public class ElementJavadoc {
             FileObject fo = linkDoc != null ? SourceUtils.getFile(linkDoc, cpInfo) : null;
             if (fo != null && fo.isFolder() && linkDoc.getKind() == ElementKind.PACKAGE) {
                 fo = fo.getFileObject("package-info", "java"); //NOI18N
+            }
+            if (cpInfo == null && fo == null) {
+                //link cannot be resolved by this element
+                try {
+                    URL u = docURL != null ? new URL(docURL, link) : new URL(link);
+                    ret[0] = new ElementJavadoc(u);
+                } catch (MalformedURLException ex) {
+                    // ignore
+                }
+                return ret[0];
             }
             JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
             if (js != null) {
@@ -178,8 +189,15 @@ public class ElementJavadoc {
                                     ret[0] = new ElementJavadoc(controller, e, new URL(docURL, link));
                                 } else {
                                     //external URL
-                                    if( uri.isAbsolute() )
+                                    if( uri.isAbsolute() ) {
                                         ret[0] = new ElementJavadoc( uri.toURL() );
+                                    } else if (docURL != null) {
+                                        try {
+                                            ret[0] = new ElementJavadoc(new URL(docURL, link));
+                                        } catch (MalformedURLException ex) {
+                                            // ignore
+                                        }
+                                    }
                                 } 
                             }
                         }
@@ -434,7 +452,7 @@ public class ElementJavadoc {
                             ParamTag paramTag = inheritedParamTags.remove(pos);
                             List<Tag> tags = inheritedParamInlineTags.get(pos);
                             if (tags != null && !tags.isEmpty()) {
-                                List<Tag> inTags = paramTags.get(paramTag.parameterName());
+                                List<Tag> inTags = paramTags.get(pos);
                                 inTags.clear();
                                 for (Tag tag : paramTag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(tag.kind()))
@@ -1242,7 +1260,7 @@ public class ElementJavadoc {
                             tags.clear();
                             for(Tag t : throwsTags.get(param).inlineTags()) {
                                 if (INHERIT_DOC_TAG.equals(t.kind()))
-                                    tags.addAll(inheritedParamInlineTags.get(param));
+                                    tags.addAll(inheritedThrowsInlineTags.get(param));
                                 else
                                     tags.add(t);
                             }

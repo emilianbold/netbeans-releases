@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.java;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.ui.FmtOptions;
 import org.openide.modules.ModuleInfo;
@@ -372,7 +373,7 @@ public class JavaFormatterUnitTest extends JavaFormatterUnitTestCase {
      */
     public void testReformatArrayInitializerWithNewline() {
 //        Settings.setValue(JavaKit.class, JavaSettingsNames.JAVA_FORMAT_NEWLINE_BEFORE_BRACE, Boolean.TRUE);
-        Preferences prefs = FmtOptions.getPreferences(null);
+        Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
         String originalPlacement = prefs.get(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE.toString());
         assertTrue(!originalPlacement.equals(CodeStyle.BracePlacement.NEW_LINE.toString()));
         prefs.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE.toString());

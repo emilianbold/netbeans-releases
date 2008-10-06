@@ -48,6 +48,7 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.AbstractList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
@@ -61,10 +62,12 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.GsfDataObject;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -73,8 +76,10 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public final class Utils {
+    private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
+    // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
+    public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
@@ -85,34 +90,43 @@ public final class Utils {
         return URL_PATTERN.matcher(url).matches();
     }
 
-    public static String browseLocationAction(final Component parent, String path, String title) {
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(title);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (path != null && path.length() > 0) {
-            File f = new File(path);
-            if (f.exists()) {
-                chooser.setSelectedFile(f);
-            }
+        if (currentDirectory != null
+                && currentDirectory.exists()) {
+            chooser.setSelectedFile(currentDirectory);
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath();
+            return FileUtil.normalizeFile(chooser.getSelectedFile());
         }
         return null;
     }
 
-    public static void browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
-            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName, String title) {
-        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
-        String newLocation = browseLocationAction(parent, ls.getDocumentRoot(), title);
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, File preselected, String newSubfolderName, String title) {
+        if (preselected == null) {
+            LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+            if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
+                preselected = new File(ls.getDocumentRoot());
+            }
+        }
+        File newLocation = browseLocationAction(parent, preselected, title);
         if (newLocation == null) {
-            return;
+            return null;
         }
 
         File file = null;
         if (newSubfolderName == null) {
-            file = new File(newLocation);
+            file = newLocation;
         } else {
             file = new File(newLocation, newSubfolderName);
         }
@@ -121,12 +135,46 @@ public final class Utils {
             LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
             if (projectLocation.equals(element.getSrcRoot())) {
                 localServerComboBox.setSelectedIndex(i);
-                return;
+                break;
             }
         }
-        LocalServer localServer = new LocalServer(newLocation, projectLocation);
+        LocalServer localServer = new LocalServer(newLocation.getAbsolutePath(), projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
+        return newLocation;
+    }
+
+    public static void browsePhpInterpreter(Component parent, JTextField textField) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
+            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
+            textField.setText(phpInterpreter.getAbsolutePath());
+        }
+    }
+
+    // input can be with parameters e.g. "/usr/bin/php -q"
+    public static String validatePhpInterpreter(String command) {
+        assert command != null;
+        if (command.trim().length() == 0) {
+            return NbBundle.getMessage(Utils.class, "MSG_NoPhpInterpreter");
+        }
+
+        PhpInterpreter phpInterpreter = new PhpInterpreter(command);
+        File file = new File(phpInterpreter.getInterpreter());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpCannotRead");
+        }
+        return null;
     }
 
     public static List getAllItems(final JComboBox comboBox) {
@@ -248,7 +296,7 @@ public final class Utils {
         while (projLoc != null && !projLoc.exists()) {
             projLoc = projLoc.getParentFile();
         }
-        if (projLoc == null || !projLoc.canWrite()) {
+        if (projLoc == null || !isFolderWritable(projLoc)) {
             return NbBundle.getMessage(Utils.class, "MSG_" + type + "FolderReadOnly");
         }
 
@@ -340,26 +388,143 @@ public final class Utils {
         return ch >= 32 && ch < 127;
     }
 
+    public static boolean isWindowsVista() {
+        return (Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0;
+    }
+
+    // #144928
+    public static boolean isFolderWritable(File folder) {
+        assert folder.isDirectory() : "Not a directory: " + folder;
+
+        boolean windowsVista = isWindowsVista();
+        LOGGER.fine("On Windows Vista: " + windowsVista);
+
+        boolean canWrite = folder.canWrite();
+        LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
+        if (!canWrite || !windowsVista) {
+            return canWrite;
+        }
+
+        // vista and we "can" write
+        LOGGER.fine("Trying to create temp file");
+        try {
+            File tmpFile = File.createTempFile("netbeans", null, folder);
+            LOGGER.fine(String.format("Temp file %s created", tmpFile));
+            tmpFile.delete();
+            LOGGER.fine(String.format("Temp file %s deleted", tmpFile));
+        } catch (IOException exc) {
+            LOGGER.log(Level.FINE, "Temp file NOT created", exc);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Browse for a file from the given directory and update the content of the text field.
+     * @param folder folder to browse files from.
+     * @param textField textfield to update.
+     */
+    public static void browseFolderFile(FileObject folder, JTextField textField) {
+        String selected = browseFolderFile(folder, textField.getText());
+        if (selected != null) {
+            textField.setText(selected);
+        }
+    }
+
+    /**
+     * @see #browseFolderFile(org.openide.filesystems.FileObject, javax.swing.JTextField)
+     */
+    public static void browseFolderFile(File folder, JTextField textField) {
+        browseFolderFile(FileUtil.toFileObject(folder), textField);
+    }
+
+    /**
+     * Browse for a file from the given directory and return the relative path or <code>null</code> if nothing selected.
+     * @param folder folder to browse files from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseFolderFile(FileObject folder, String preselected) {
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
+        if (selected != null) {
+            return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
+        }
+        return null;
+    }
+
     /**
      * Browse for a file from sources of a project and update the content of the text field.
      * @param project project to get sources from.
      * @param textField textfield to update.
      */
     public static void browseSourceFile(Project project, JTextField textField) {
+        String selected = browseSource(project, textField.getText(), false);
+        if (selected != null) {
+            textField.setText(selected);
+        }
+    }
+
+    /**
+     * Browse for a file from sources of a project and return the relative path or <code>null</code> if nothing selected.
+     * @param project project to get sources from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseSourceFile(Project project, String preselected) {
+        return browseSource(project, preselected, false);
+    }
+
+    /**
+     * Browse for a directory from sources of a project and update the content of the text field.
+     * @param project project to get sources from.
+     * @param textField textfield to update.
+     */
+    public static void browseSourceFolder(Project project, JTextField textField) {
+        String selected = browseSource(project, textField.getText(), true);
+        if (selected != null) {
+            textField.setText(selected);
+        }
+    }
+
+    /**
+     * Browse for a directory from sources of a project and return the relative path or <code>null</code> if nothing selected.
+     * @param project project to get sources from.
+     * @param preselected the preselected value, can be null.
+     * @return the relative path to folder or <code>null</code> if nothing selected.
+     */
+    public static String browseSourceFolder(Project project, String preselected) {
+        return browseSource(project, preselected, true);
+    }
+
+    private static String browseSource(Project project, String preselected, boolean selectDirectory) {
         SourceGroup[] sourceGroups = org.netbeans.modules.php.project.Utils.getSourceGroups(project);
         assert sourceGroups.length == 1;
         assert sourceGroups[0] != null;
         File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
-        String preselected = textField.getText().replace(File.separatorChar, '/'); // NOI18N
-        if (preselected.length() > 0) {
-            // searching in nodes => no file extension can be there
-            preselected = preselected.substring(0, preselected.lastIndexOf(".")); // NOI18N
-        }
-        FileObject selected = BrowseFolders.showDialog(sourceGroups, GsfDataObject.class, preselected);
+        FileObject selected = BrowseFolders.showDialog(sourceGroups,
+                selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
-            String relPath = PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
-            textField.setText(relPath);
+            return PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
         }
+        return null;
+    }
+
+    private static String securePreselected(String preselected, boolean removeExtension) {
+        if (preselected == null) {
+            return null;
+        }
+        String secure = null;
+        if (preselected.length() > 0) {
+            secure = preselected.replace(File.separatorChar, '/'); // NOI18N
+            if (removeExtension) {
+                // e.g. searching in nodes => no file extension can be there
+                int idx = secure.lastIndexOf("."); // NOI18N
+                if (idx != -1) {
+                    secure = secure.substring(0, idx);
+                }
+            }
+        }
+        return secure;
     }
 
     public static class EncodingModel extends DefaultComboBoxModel {

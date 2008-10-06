@@ -119,7 +119,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.8</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -148,10 +148,13 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.fortress.platform</friend>
                 <friend>org.netbeans.modules.fortress.project</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
+                <friend>org.netbeans.modules.groovy.refactoring</friend>
                 <friend>org.netbeans.modules.groovy.support</friend>
                 <friend>org.netbeans.modules.gsf</friend>
                 <friend>org.netbeans.modules.gsf.tools</friend>
+                <friend>org.netbeans.modules.javascript.libraries</friend>
                 <friend>org.netbeans.modules.javascript.refactoring</friend>
+                <friend>org.netbeans.modules.maven.gsf</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
@@ -164,6 +167,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.scala.project</friend>
                 <friend>org.netbeans.modules.scala.stdplatform</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>net.java.dev.nbpython.project</friend>
                 <package>org.netbeans.modules.gsfpath.api.classpath</package>
                 <package>org.netbeans.modules.gsfpath.api.platform</package>
                 <package>org.netbeans.modules.gsfpath.api.queries</package>

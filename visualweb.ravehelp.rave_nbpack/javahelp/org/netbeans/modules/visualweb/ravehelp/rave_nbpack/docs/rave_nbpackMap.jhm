@@ -58,6 +58,7 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
+	<mapID target="framework_jsf_about" url="web/create/tag/framework/jsf/about_jsf_support.html"/>
 	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
@@ -69,6 +70,11 @@
         <mapID target="framework_spring_about" url="web/create/tag/framework/spring/about.html"/>
 	<mapID target="framework_spring_create" url="web/create/tag/framework/spring/create.html"/>
 	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
+        <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
+        <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
+        <mapID target="framework_hibernate_create" url="web/create/tag/framework/hibernate/hibernate-createweb.html"/>
+        <mapID target="framework_hibernate_addsupport" url="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/hibernate/hibernate_addsupport.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>
@@ -124,6 +130,12 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="projrave_a11y_navigation_editor_shortcuts" url="a11y/navigation_editor_shortcuts.html"/>
 	<mapID target="projrave_a11y_query_editor_shortcuts" url="a11y/query_editor_shortcuts.html"/>
 	<mapID target="projrave_components_about_complibs" url="components/about_complibs.html"/>
@@ -494,7 +506,8 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_link" url="ui_elements/palette/wdstk-jsf1_2/link.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_listbox" url="ui_elements/palette/wdstk-jsf1_2/listbox.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_markup" url="ui_elements/palette/wdstk-jsf1_2/markup.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_menu" url="ui_elements/palette/wdstk-jsf1_2/menu.html"/>
+ 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message_group" url="ui_elements/palette/wdstk-jsf1_2/message_group.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_meta" url="ui_elements/palette/wdstk-jsf1_2/meta.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_page_alert" url="ui_elements/palette/wdstk-jsf1_2/page_alert.html"/>
@@ -530,6 +543,7 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_link_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/link_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_listbox_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/listbox_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_markup_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/markup_props.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_menu_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/menu_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_group_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_meta_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/meta_props.html"/>
@@ -632,7 +646,6 @@
 	<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html"/>
 	<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html"/>
 	<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html"/>
-	<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html"/>
 	<mapID target="tld_create" url="web/create/tag/tld/tld_create.html"/>
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
 	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>

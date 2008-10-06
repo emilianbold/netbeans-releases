@@ -39,15 +39,17 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
+import org.netbeans.modules.uml.diagrams.nodes.MultiLineTaggedValueWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.util.NbBundle;
@@ -60,7 +62,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
 {
     protected LabelWidget stereotypeWidget = null;
     protected LabelWidget nameWidget = null;
-    protected LabelWidget taggedValueWidget = null;
+    protected MultiLineTaggedValueWidget taggedValueWidget = null;
     private String contextPaletteRes = "UML/context-palette/Activity";
     protected static ResourceBundle bundle = NbBundle.getBundle(EditableCompartmentWidget.class);
 
@@ -103,10 +105,12 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         if (stereotypeWidget == null)
         {
             stereotypeWidget = new UMLLabelWidget(getScene(),
-                                                  getWidgetID() + ".stereorype",  //NO I18N
+                                                  getResourcePath() + ".stereorype",  //NO I18N
                                                   bundle.getString("LBL_stereotype"));
             stereotypeWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+            stereotypeWidget.setForeground(null);
         }
+        stereotypeWidget.removeFromParent();
         return stereotypeWidget;
     }
 
@@ -137,6 +141,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                     bundle.getString("LBL_name"));
 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+            nameWidget.setForeground(null);
         }
         return nameWidget;
     }
@@ -185,32 +190,20 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         return (nameWidget != null && nameWidget.isEnabled() && nameWidget.isVisible());
     }
 
-    protected LabelWidget createTaggedValueWidget()
+    protected MultiLineTaggedValueWidget createTaggedValueWidget()
     {
         if (taggedValueWidget == null)
         {
-            taggedValueWidget = new UMLLabelWidget(this.getScene(),
+            taggedValueWidget = new MultiLineTaggedValueWidget(this.getScene(),
                                                    getWidgetID() + ".taggedValue", //NO I18N
                                                    bundle.getString("LBL_taggedValue"));
-            taggedValueWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         }
         return taggedValueWidget;
     }
 
     protected void enableTaggedValueWidget(IElement elem)
     {
-        String taggedValues = elem.getTaggedValuesAsString();
-
-        if (taggedValues.length() > 0 && taggedValueWidget != null)
-        {
-            taggedValueWidget.setVisible(true);
-            taggedValueWidget.setLabel("{" + taggedValues + "}");
-        }
-        else
-        {
-            taggedValueWidget.setLabel("");
-            taggedValueWidget.setVisible(false);
-        }
+        taggedValueWidget.updateTaggedValues(elem.getTaggedValuesAsList());
     }
 
     @Override
@@ -219,7 +212,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
 
-        if (element instanceof INamedElement)
+        if (element instanceof IActivityNode)
         {
             INamedElement elemNode = (INamedElement) element;
             if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()) ||
@@ -243,6 +236,17 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void load(NodeInfo nodeReader)
+    {
+        super.load(nodeReader);
+        if (nodeReader.getSize() != null)
+        {
+            setPreferredSize(nodeReader.getSize());
+            this.getScene().validate();
         }
     }
 }

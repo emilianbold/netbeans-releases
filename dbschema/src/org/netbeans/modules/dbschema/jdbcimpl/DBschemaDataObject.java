@@ -56,6 +56,7 @@ import org.netbeans.modules.dbschema.DBElementProvider;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.dbschema.SchemaElementUtil;
 import org.netbeans.modules.dbschema.nodes.SchemaRootChildren;
+import org.openide.util.Lookup;
 
 public class DBschemaDataObject extends MultiDataObject {
   
@@ -122,13 +123,6 @@ public class DBschemaDataObject extends MultiDataObject {
         addPropertyChangeListener(listener);
     }
 
-    public Node.Cookie getCookie (Class c) {
-        // Looks like a bug - why is it done this way? This inevitable leads to a ClassCastException
-        if (SchemaElement.class.isAssignableFrom(c))
-            return getCookie(DBElementProvider.class);
-        return super.getCookie(c);
-    }
-
     public SchemaElement getSchema() {
         if (schemaElement == null)
             setSchema(SchemaElementUtil.forName(getPrimaryFile()));
@@ -138,9 +132,11 @@ public class DBschemaDataObject extends MultiDataObject {
   
       public void setSchema(SchemaElement schema) {
         schemaElement = schema;
-        Node n = getNodeDelegate();
-        Children ch = n.getChildren();
-        ((SchemaRootChildren) ch).setElement(schemaElement);
+        if (isValid()) {
+            Node n = getNodeDelegate();
+            Children ch = n.getChildren();
+            ((SchemaRootChildren) ch).setElement(schemaElement);
+        }
       }
 
     public SchemaElementImpl getSchemaElementImpl() {
@@ -159,5 +155,10 @@ public class DBschemaDataObject extends MultiDataObject {
     	Node nodeDelegate = new DBschemaDataNode(this);
         
         return nodeDelegate;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
 }

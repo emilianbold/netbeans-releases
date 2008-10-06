@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -89,31 +90,36 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findOrigin() throws BadLocationException, InterruptedException {
-        int [] origin = BracesMatcherSupport.findChar(
-            context.getDocument(), 
-            context.getSearchOffset(), 
-            context.getLimitOffset(), 
-            PAIRS
-        );
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int [] origin = BracesMatcherSupport.findChar(
+                context.getDocument(), 
+                context.getSearchOffset(), 
+                context.getLimitOffset(), 
+                PAIRS
+            );
 
-        if (origin != null) {
-            originOffset = origin[0];
-            originChar = PAIRS[origin[1]];
-            matchingChar = PAIRS[origin[1] + origin[2]];
-            backward = origin[2] < 0;
-            // Filter out block and line comments
-            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-            sequences = th.embeddedTokenSequences(originOffset, backward);
-            if (!sequences.isEmpty()) {
-                // Check special tokens
-                TokenSequence<?> seq = getTokenSequence();
-                if (seq == null) {
-                    return null;
+            if (origin != null) {
+                originOffset = origin[0];
+                originChar = PAIRS[origin[1]];
+                matchingChar = PAIRS[origin[1] + origin[2]];
+                backward = origin[2] < 0;
+                // Filter out block and line comments
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                sequences = th.embeddedTokenSequences(originOffset, backward);
+                if (!sequences.isEmpty()) {
+                    // Check special tokens
+                    TokenSequence<?> seq = getTokenSequence();
+                    if (seq == null) {
+                        return null;
+                    }
                 }
+                return new int [] { originOffset, originOffset + 1 };
             }
-            return new int [] { originOffset, originOffset + 1 };
+            return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        return null;
     }
 
     private TokenSequence<?> getTokenSequence(){
@@ -145,59 +151,64 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
     }
     
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        TokenSequence<?> seq = getTokenSequence();
-        if (seq == null) {
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            TokenSequence<?> seq = getTokenSequence();
+            if (seq == null) {
+                return null;
+            }
+            // Check special tokens
+            seq.move(originOffset);
+            if (seq.moveNext()) {
+                if (seq.token().id() == CppTokenId.STRING_LITERAL) {
+                    int offset = BracesMatcherSupport.matchChar(
+                        context.getDocument(),
+                        backward ? originOffset : originOffset + 1,
+                        backward ? seq.offset() : seq.offset() + seq.token().length(),
+                        originChar,
+                        matchingChar);
+                    if (offset != -1) {
+                        return new int [] { offset, offset + 1 };
+                    } else {
+                        return null;
+                    }
+                }
+            }
+            // We are in plain c/c++
+            CppTokenId originId = getTokenId(originChar);
+            CppTokenId lookingForId = getTokenId(matchingChar);
+            seq.move(originOffset);
+            int counter = 0;
+            if (backward) {
+                while(seq.movePrevious()) {
+                    if (originId == seq.token().id()) {
+                        counter++;
+                    } else if (lookingForId == seq.token().id()) {
+                        if (counter == 0) {
+                            return new int [] { seq.offset(), seq.offset() + seq.token().length() };
+                        } else {
+                            counter--;
+                        }
+                    }
+                }
+            } else {
+                seq.moveNext();
+                while(seq.moveNext()) {
+                    if (originId == seq.token().id()) {
+                        counter++;
+                    } else if (lookingForId == seq.token().id()) {
+                        if (counter == 0) {
+                            return new int [] { seq.offset(), seq.offset() + seq.token().length() };
+                        } else {
+                            counter--;
+                        }
+                    }
+                }
+            }
             return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        // Check special tokens
-        seq.move(originOffset);
-        if (seq.moveNext()) {
-            if (seq.token().id() == CppTokenId.STRING_LITERAL) {
-                int offset = BracesMatcherSupport.matchChar(
-                    context.getDocument(), 
-                    backward ? originOffset : originOffset + 1, 
-                    backward ? seq.offset() : seq.offset() + seq.token().length(), 
-                    originChar,
-                    matchingChar);
-                if (offset != -1) {
-                    return new int [] { offset, offset + 1 };
-                } else {
-                    return null;
-                }
-            }
-        }
-        // We are in plain c/c++
-        CppTokenId originId = getTokenId(originChar);
-        CppTokenId lookingForId = getTokenId(matchingChar);
-        seq.move(originOffset);
-        int counter = 0;
-        if (backward) {
-            while(seq.movePrevious()) {
-                if (originId == seq.token().id()) {
-                    counter++;
-                } else if (lookingForId == seq.token().id()) {
-                    if (counter == 0) {
-                        return new int [] { seq.offset(), seq.offset() + seq.token().length() };
-                    } else {
-                        counter--;
-                    }
-                }
-            }
-        } else {
-            seq.moveNext();
-            while(seq.moveNext()) {
-                if (originId == seq.token().id()) {
-                    counter++;
-                } else if (lookingForId == seq.token().id()) {
-                    if (counter == 0) {
-                        return new int [] { seq.offset(), seq.offset() + seq.token().length() };
-                    } else {
-                        counter--;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private CppTokenId getTokenId(char ch) {

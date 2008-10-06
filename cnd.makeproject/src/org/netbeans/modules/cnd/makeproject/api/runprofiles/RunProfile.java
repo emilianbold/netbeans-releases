@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -72,7 +74,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
+public class RunProfile implements ConfigurationAuxObject {
     private static final boolean NO_EXEPTION = Boolean.getBoolean("org.netbeans.modules.cnd.makeproject.api.runprofiles");
 
     public static final String PROFILE_ID = "runprofile"; // NOI18N
@@ -176,7 +178,7 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
     }
     
     private boolean isWindows() {
-        return platform == PLATFORM_WINDOWS;
+        return platform == PlatformTypes.PLATFORM_WINDOWS;
     }
     
     private String[] setTerminalTypeNames() {
@@ -189,16 +191,16 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
         if (isWindows()) {
             String term = getString("TerminalType_CommandWindow"); // NOI18N
             list.add(term);
-            termPaths.put(term, "start"); // NOI18N
-            termPaths.put(def, "start"); // NOI18N
-            termOptions.put(term, "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
-            termOptions.put(def,  "sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
+            termPaths.put(term, "cmd.exe"); // NOI18N
+            termPaths.put(def, "cmd.exe"); // NOI18N
+            termOptions.put(term, "/c start sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
+            termOptions.put(def,  "/c start sh \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + " \" -f \"{0}\" {1} {2}"); // NOI18N
         } else {
             // Start with the user's $PATH. Append various other directories and look
             // for gnome-terminal, konsole, and xterm.
             String path = Path.getPathAsString() + 
                 ":/usr/X11/bin:/usr/X/bin:/usr/X11R6/bin:/opt/gnome/bin" + // NOI18N
-                ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin/usr/kde/bin:/usr/openwin/bin"; // NOI18N
+                ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin:/usr/kde/bin:/usr/openwin/bin"; // NOI18N
             
             termPath = searchPath(path, "gnome-terminal", "/usr/bin"); // NOI18N
             if (termPath != null) {
@@ -504,7 +506,7 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
         this.consoleType = consoleType;
     }
     
-    public int getDefaultConsoleType() {
+    public static int getDefaultConsoleType() {
         return CONSOLE_TYPE_EXTERNAL;
     }
     
@@ -651,13 +653,17 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
         return p;
     }
     
-    public Sheet getSheet() {
-        return createSheet();
+    public Sheet getSheet(boolean isRemote) {
+        return createSheet(isRemote);
     }
     
-    private Sheet createSheet() {
+    public Sheet getSheet() {
+        return createSheet(false);
+    }
+    
+    private Sheet createSheet(boolean isRemote) {
         Sheet sheet = new Sheet();
-        
+
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
@@ -666,13 +672,36 @@ public class RunProfile implements ConfigurationAuxObject, PlatformTypes {
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
-        set.put(new IntNodeProp(getConsoleType(), true, null,
-                getString("ConsoleType_LBL"), getString("ConsoleType_HINT"))); // NOI18N
-        set.put(new IntNodeProp(getTerminalType(), true, null,
-                getString("TerminalType_LBL"), getString("TerminalType_HINT"))); // NOI18N
+        ListenableIntNodeProp consoleTypeNP = new ListenableIntNodeProp(getConsoleType(), true, null,
+                getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
+        set.put(consoleTypeNP);
+        final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
+                getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
+        set.put(terminalTypeNP);
+        if (isRemote) {
+            terminalTypeNP.setCanWrite(false);
+            consoleTypeNP.setCanWrite(false);
+        } else {
+
+            consoleTypeNP.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String value = (String) evt.getNewValue();
+                    updateTerminalTypeState(terminalTypeNP, value);
+                }
+            });
+            // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
+            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
+        }
         sheet.put(set);
-        
+
+
         return sheet;
+    }
+
+    private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
+        terminalTypeNP.setCanWrite( consoleTypeNames[CONSOLE_TYPE_EXTERNAL].equals(value) ||
+                consoleTypeNames[CONSOLE_TYPE_DEFAULT].equals(value) && getDefaultConsoleType() == CONSOLE_TYPE_EXTERNAL) ;
     }
     
     private static String getString(String s) {

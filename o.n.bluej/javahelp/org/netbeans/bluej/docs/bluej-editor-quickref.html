@@ -1,0 +1,239 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Source Editor Tips</title>
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css"></TITLE>
+    </head>
+
+    <body>
+
+        <h2>Source Editor Tips</h2>
+
+        <p>The following table shows how to accomplish some common tasks 
+and gives you some tips for working in the IDE's Source Editor.</p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            task name. The right column lists the steps to perform.">
+            <tr valign="top"> 
+                <th scope="col" align="left">To perform this task</th>
+                <th scope="col" align="left">Follow these steps</th>
+
+            </tr>
+            <tr valign="top"> 
+                <td>Handle the automatic insertion of quotation marks, parentheses, and so on.</td>
+
+                <td> 
+                    <p>When you type a character that typically is used in pairs (such 
+                    as a quotation mark or a parenthesis, the IDE also automatically inserts 
+                    the closing character (such as another quotation mark or the 
+                    closing parenthesis). If you find this distracts your typing, 
+                    you can simply type the closing characters as you would normally. 
+                    The IDE will use the closing character that you type and delete the 
+                    character that it inserted.</p>
+                </td>
+            </tr> 
+            
+            <tr valign="top"> 
+                <td>Format code automatically with consistent indentation.</td>
+
+                <td> 
+                    <ul><li>Right-click in the Source Editor and choose Reformat Code. 
+                    <p>If any text is selected, only 
+                    that text will be reformatted. If no text is selected, then the whole file is reformatted.</p></li></ol>
+                </td>
+            </tr> 
+
+            <tr valign="top"> 
+                <td>Find the appropriate code element (class, method, or field) 
+                and insert it into your code.</td>
+
+                <td> 
+                    <ol>
+                    <li>When typing in the Source Editor, press Ctrl-Space to open 
+                    the 
+                    <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/codecompletion/intro.html">code completion</a> box.</li>
+                    </li>
+                    <li>Scroll the list of code elements provided, select the one you 
+                    want, and press Enter. </li></ol>
+                </td>
+            </tr>            
+            
+            <tr valign="top"> 
+                <td>Insert a commonly used code snippet.</td>
+                <td> 
+
+                    <ul>
+                        <li>Type the abbreviation for the code snippet and press Shift-Space.</li>
+                    </ul>
+                    <p>See <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/shortcuts/abbreviations-list.html">Code Template Abbreviations: Quick Reference</a>.</p>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Quickly insert a word that you have already typed elsewhere.</td>
+                <td> 
+                    <ol>
+                        <li>Type the beginning character of the word that you have 
+                        previously typed.</li>
+                        <li>Type Ctrl-K to insert the closest previous word that matches 
+                        those beginning characters.</li>
+                    </ol>
+                    
+                    <p>For example, consider the following code:
+                    <pre>BufferedReader br = new BufferedReader(<i>...</i>)</pre>
+                    <p>You can save yourself several keystrokes by doing the following:
+                    <ol>
+                        <li>Type 
+                        <pre>BufferedReader br = new B</pre></li>
+
+                        <li>Press Ctrl-K to insert <tt>ufferedReader</tt>
+
+                        </li>
+                    </ol>
+                    <p>See <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/wordmatch.html">Using the Word Match Feature</a> 
+                    for more information.</p>
+                </td>
+            </tr>            
+            <tr valign="top"> 
+                <td>Go to the Java source for the identifier the insertion point is on.</td>
+                <td> 
+                    <ul><li>Press Alt-O, or choose 
+                        Navigate &gt; Go to Source.
+                    </li></ul>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Go to a Java file via hyperlinks.</td>
+                <td> 
+                    <ul>
+                        <li>Hold down the Ctrl key and, at the same time, move your mouse over and click a
+                        Java identifier (package, class, method, variable).</li>
+                    </ul>
+
+                </td>
+            </tr>
+
+            <tr valign="top"> 
+                <td>Go to a Java class.</td>
+                <td> 
+                    <ul><li>Choose Edit&nbsp; &gt; Go To Class or press Alt-Shift-O.
+                    .
+                    <p>
+                    </p></li></ul>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Jump to the declaration for the Java method or field the insertion point is on.</td>
+                <td> 
+                    <ul><li>Press Alt-G, or right-click and choose 
+                        Go To  &gt; Declaration from 
+                        the pop-up menu.
+                    </li></ul>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Go to a specific method or field in the currently displayed Java class.</td>
+                <td> 
+                    <ul>
+                        <li>Double-click the method or field 
+                        in the Navigator window.</li>
+                    </ul>
+                </td>
+            </tr>
+
+            <tr valign="top"> 
+                <td>Jump back and forth among areas of code in which you 
+                have been working.</td>
+                <td> 
+                    <ul>
+                        <li>Use the Alt-K and Alt-L <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/jumplist.html">jump list</a> 
+                        keyboard shortcuts.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Bookmark a line of code.</td>
+                <td> 
+                    <ul>
+                        <li>Click anywhere in the line that you want to bookmark and press Ctrl-F2.
+                        <p>Press F2 to cycle through your bookmarks.</p>
+                        <p>Press Ctrl-F2 on a bookmarked line to remove the bookmark.</li>
+                    </ul>
+                </td>
+            </tr>
+            
+            <tr valign="top"> 
+                <td>Maximize the Source Editor.</td>
+                <td> 
+                    <p>Do one of the following:</p>
+                    <ul>
+                        <li>Double-click a file's tab in the Source Editor.
+                        </li>
+
+                        <li>Make sure that the Source Editor window has focus and then press Shift-Escape.</li>
+                        <li>Choose Window&nbsp; &gt; Maximize.</li>
+                    </ul>
+                </td>
+            </tr>
+            <td>Revert a maximized Source Editor to its previous size.</td>
+
+            <td> 
+                <p>Do one of the following:</p>
+                <ul>
+                    <li>Double-click a file's tab in the Source Editor.</li>
+                    <li>Press Shift-Escape.</li>
+                    <li>Choose Window&nbsp; &gt; Restore.
+                    </li>
+
+                </ul>
+            </td>
+            </tr>
+            <tr valign="top"> 
+                <td>Display line numbers.</td>
+                <td>Choose View
+                    &gt; Show Line Numbers.
+                </td>
+            </tr>
+
+            <tr valign="top"> 
+                <td>View two files simultaneously.</td>
+                <td> 
+                    <ol><li>Open two or more files.</li>
+                    <li>Click the tab of one of the files and drag it to the side of the window 
+                    where you want the file to be 
+                    placed. When a red preview box appears to show you where the window will be placed, 
+                    release the mouse button to drop the window.
+                    <p>The window can be split horizontally or vertically, depending on where you drag 
+                    the tab.</li></ol>
+                </td>
+            </tr> 
+            <tr valign="top"> 
+                <td>Split the view of a single file.</td>
+
+                <td> 
+                    <ol>
+                    <li>Right-click the document's tab in the Source Editor and choose 
+                        Clone Document.
+                    </li>
+                    <li>Click the tab of the cloned document and drag it to the part of the window 
+                    where you want the copy to be placed. </li></ol>
+                </td>
+            </tr>
+
+            
+
+
+            
+        </table>
+
+
+        <hr>
+
+        <small><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/credits.html">Legal Notices</a></small> 
+
+    </body>
+</html>

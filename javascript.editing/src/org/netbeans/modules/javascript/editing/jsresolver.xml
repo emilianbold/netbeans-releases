@@ -43,9 +43,12 @@ made subject to such option by the copyright holder.
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="json"/>
         <ext name="js"/>
         <ext name="sdoc"/>
         <resolver mime="text/javascript"/>
+    </file>
+    <file>
+        <ext name="json"/>
+        <resolver mime="text/x-json"/>
     </file>
 </MIME-resolver>

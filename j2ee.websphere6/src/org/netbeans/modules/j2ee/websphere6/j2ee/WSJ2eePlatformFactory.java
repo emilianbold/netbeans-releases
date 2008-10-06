@@ -150,7 +150,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
             // init the set
             Set result = new HashSet();
             
-            // add j2ee 1.4
+            result.add(J2eeModule.J2EE_13);
             result.add(J2eeModule.J2EE_14);
             
             // return
@@ -255,7 +255,7 @@ public class WSJ2eePlatformFactory extends J2eePlatformFactory {
          * @return the platform icon
          */
         public Image getIcon() {
-            return Utilities.loadImage(ICON);
+            return ImageUtilities.loadImage(ICON);
         }
         
         /**

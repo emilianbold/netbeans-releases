@@ -50,6 +50,7 @@ import org.netbeans.modules.loadgenerator.api.EngineManager;
 import org.netbeans.modules.loadgenerator.api.EngineManagerException;
 import org.netbeans.modules.loadgenerator.spi.ProcessInstance;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -74,7 +75,7 @@ public class StartAction extends AbstractAction {
   
   /** Creates a new instance of StopAction */
   public StartAction(final ProcessInstance provider) {
-    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Restart"), new ImageIcon(Utilities.loadImage(ICON)));
+    super(java.util.ResourceBundle.getBundle("org/netbeans/modules/loadgenerator/actions/Bundle").getString("Restart"), new ImageIcon(ImageUtilities.loadImage(ICON)));
     this.provider = provider;
     this.provider.addPropertyChangeListener(ProcessInstance.STATE, WeakListeners.propertyChange(listener, provider));
   }

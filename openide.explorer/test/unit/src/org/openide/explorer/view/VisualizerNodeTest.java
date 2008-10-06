@@ -47,11 +47,15 @@ import javax.swing.tree.TreeNode;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 
 /** VisualizerNode tests, mostly based on reported bugs.
  */
 public class VisualizerNodeTest extends NbTestCase {
+    {
+        System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
+    }
 
     public VisualizerNodeTest(String name) {
         super(name);
@@ -100,5 +104,97 @@ public class VisualizerNodeTest extends NbTestCase {
         Icon icon2 = v2.getIcon(false, false);
         
         assertSame("Icon instances should be same", icon1, icon2);
+    }
+    
+    public void testLazyVisGet() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        
+        TreeNode ta = Visualizer.findVisualizer(a);
+        
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+    }
+    
+    public void testLazyFilterGet() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+        FilterNode fnode = new FilterNode(a);
+        
+        TreeNode ta = Visualizer.findVisualizer(fnode);
+        
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+
+        VisualizerNode vn = (VisualizerNode)ta.getChildAt(2);
+        String msg = ((VisualizerNode)ta).getChildren().dumpIndexes(vn);
+        if (msg.indexOf("'c'") == -1) {
+            fail("Missing note about visualizer node 'c': " + msg);
+        }
+    }
+
+    public void testAddingJavaAndFormAtTheEndOfExistingFolder() throws Exception {
+        LazyChildren lch = new LazyChildren();
+        AbstractNode a = new AbstractNode(lch);
+
+        TreeNode ta = Visualizer.findVisualizer(a);
+
+        assertEquals("Child check", "c", ta.getChildAt(2).toString());
+        assertEquals("Counter should be 1", 1, lch.cnt);
+
+        assertEquals("Child check", "b", ta.getChildAt(1).toString());
+        assertEquals("Counter should be 2", 2, lch.cnt);
+
+        assertEquals("Child check", "a", ta.getChildAt(0).toString());
+        assertEquals("Counter should be all", 3, lch.cnt);
+
+        lch.keys("a", "b", "c", "x", "-x");
+        
+        assertEquals("Counter should still be 3", 3, lch.cnt);
+        assertEquals("Size is 5", 5, ta.getChildCount());
+        
+        lch.keys("a", "b", "c", "x", "-x");
+        
+        assertEquals("Counter should still be 3", 3, lch.cnt);
+        assertEquals("Size is 5", 5, ta.getChildCount());
+
+        assertTrue("Child is empty", isDummyNode(ta.getChildAt(4)));
+        assertEquals("We have still 5 children, no opportunity to update", 5, ta.getChildCount());
+        assertEquals("Three nodes created, still", 3, lch.cnt);
+        
+        assertEquals("x Child check", "x", ta.getChildAt(3).toString());
+        
+        lch.keys("a", "b", "c", "x", "-x", "-y", "y");
+
+        assertEquals("No time to update, should be 5", 5, ta.getChildCount());
+        assertTrue("Nothing removed, -x still present", isDummyNode(ta.getChildAt(4)));
+    }
+    
+    final boolean isDummyNode(TreeNode visNode) {
+        Node node = ((VisualizerNode)(visNode)).node;
+        return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
+    }
+    
+    static class LazyChildren extends Children.Keys<String> {
+        public LazyChildren() {
+            super(true);
+            setKeys(new String[] {"a", "b", "c"});
+        }
+        int cnt;
+        @Override
+        protected Node[] createNodes(String key) {
+            if (key.startsWith("-")) {
+                return null;
+            }
+
+            AbstractNode node = new AbstractNode(LEAF);
+            node.setName(key);
+            cnt++;
+            return new Node[] {node};
+        }
+
+        public void keys(String... arr) {
+            super.setKeys(arr);
+        }
     }
 }

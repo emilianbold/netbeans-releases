@@ -43,6 +43,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.ImageEditorElement;
@@ -73,6 +74,16 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
 
     public static PropertyEditorImage createInstance() {
         return new PropertyEditorImage();
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.clean(component);
+            radioButton = null;
+        }
+        customEditor = null;
     }
 
     private void initComponents() {
@@ -145,5 +156,11 @@ public class PropertyEditorImage extends PropertyEditorUserCode implements Prope
 
     private void saveValue(String text) {
         super.setValue(MidpTypes.createStringValue(text));
+    }
+
+    @Override
+    public void init(DesignComponent component) {
+        customEditor.init(component.getDocument());
+        super.init(component);
     }
 }

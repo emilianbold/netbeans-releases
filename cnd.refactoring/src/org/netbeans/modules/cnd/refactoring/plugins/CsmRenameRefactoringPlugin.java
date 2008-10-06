@@ -409,7 +409,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
         FileObject fo = CsmUtilities.getFileObject(csmFile);
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
         for (CsmObject obj : referencedObjects) {
-            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL);
+            Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, null);
             refs.addAll(curRefs);
         }
         if (refs.size() > 0) {

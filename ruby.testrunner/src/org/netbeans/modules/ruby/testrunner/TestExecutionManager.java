@@ -81,7 +81,10 @@ public final class TestExecutionManager {
     public static TestExecutionManager getInstance() {
         return INSTANCE;
     }
-    
+
+    synchronized void reset() {
+        this.finished = false;
+    }
     /**
      * Starts a RubyExecution with the given executionDescriptor and testRecognizer.
      * 
@@ -159,5 +162,12 @@ public final class TestExecutionManager {
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-    
+
+    /**
+     * Refreshes the current session, i.e. clears all currently
+     * computed test statuses.
+     */
+    public synchronized void refresh() {
+        recognizer.refreshSession();
+    }
 }

@@ -89,7 +89,7 @@ public class ClassDiagramTestCase extends UMLTestCase{
     
     public void tearDown() throws FileNotFoundException, IOException{
         
-        String workDir = System.getProperty("xtest.workdir");
+        String workDir = System.getProperty("nbjunit.workdir");
         
         try{
             JDialogOperator dlgError = new JDialogOperator("Unexpected Exception");

@@ -42,8 +42,8 @@ package org.netbeans.modules.web.client.tools.impl;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
@@ -149,7 +149,13 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
         }
 
         FileObject uriToFO(URI hostUri) {
-            String urlPath = externalFormWithoutQuery(hostUri);
+            String urlPath;
+            try {
+                urlPath = hostUri.toURL().toExternalForm();
+            } catch (MalformedURLException mue) {
+                Log.getLogger().log(Level.FINE, "URI mapping failed due to URI->URL conversion: " + hostUri.toString());
+                urlPath = null;
+            }
 
             if (urlPath != null && urlPath.startsWith(serverPrefix)) {
                 String relativePath = urlPath.substring(serverPrefix.length());
@@ -174,52 +180,35 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
                 return null;
             }
         }
-    
-        private String externalFormWithoutQuery(URI uri) {
-            try {
-                URL u = uri.toURL();
-
-                if (u == null) {
-                    return "";
-                // compute length of StringBuffer
-                }
-                int len = u.getProtocol().length() + 1;
-                if (u.getAuthority() != null && u.getAuthority().length() > 0) {
-                    len += 2 + u.getAuthority().length();
-                }
-                if (u.getPath() != null) {
-                    len += u.getPath().length();
-                }
-                if (u.getQuery() != null) {
-                    len += 1 + u.getQuery().length();
-                }
-                if (u.getRef() != null) {
-                    len += 1 + u.getRef().length();
-                }
-                StringBuffer result = new StringBuffer(len);
-                result.append(u.getProtocol());
-                result.append(":");
-                if (u.getAuthority() != null && u.getAuthority().length() > 0) {
-                    result.append("//");
-                    result.append(u.getAuthority());
-                }
-                if (u.getPath() != null) {
-                    result.append(u.getPath());
-                }
-
-                return result.toString();
-            } catch (MalformedURLException ex) {
-                return null;
-            }
-        }        
     }
     
     private static final class NbJSToJSLocationMapperImpl implements NbJSToJSLocationMapper {
         private final String serverPrefix;
         private final FileObject[] documentBases;
+        private FileObject welcomeFile;
         
         public NbJSToJSLocationMapperImpl(FileObject documentBase, URI applicationContext, Map<String,Object> extendedInfo) {
             this(new FileObject[] { documentBase }, applicationContext, extendedInfo);
+            
+            String welcomePath = null;
+            if (extendedInfo != null) {
+                Object r = extendedInfo.get("welcome-file"); // NOI18N
+                if (r instanceof String) {
+                    welcomePath = (String)r;
+                }
+            }
+            
+            if (welcomePath != null) {
+                this.welcomeFile = null;
+                for (FileObject base : this.documentBases) {
+                    FileObject testObj = base.getFileObject(welcomePath);
+                    if (testObj != null) {
+                        this.welcomeFile = testObj;
+                    }
+                }
+            } else {
+                this.welcomeFile = null;
+            }
         }
         
         public NbJSToJSLocationMapperImpl(FileObject[] documentBases, URI applicationContext, Map<String,Object> extendedInfo) {
@@ -243,7 +232,23 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
 
                 URI uri = fileObjectToUri(fo);
                 if (uri != null) {
-                    return new JSURILocation(uri, nbJSFileObjectLocation.getLineNumber(), nbJSFileObjectLocation.getColumnNumber());
+                    JSURILocation result = new JSURILocation(uri, nbJSFileObjectLocation.getLineNumber(), 
+                            nbJSFileObjectLocation.getColumnNumber());
+                    
+                    if (welcomeFile != null && fo.equals(welcomeFile)) {
+                        try {
+                            URI serverURI = new URI(serverPrefix);
+                            result.addEquivalentURI(serverURI);
+                            if (!serverPrefix.endsWith("/")) {
+                                URI altServerURI = new URI(serverPrefix + "/");
+                                result.addEquivalentURI(altServerURI);
+                            }
+                        } catch (URISyntaxException ex) {
+                            Log.getLogger().log(Level.INFO, "Could not transform create URI", ex);
+                        }
+                    }
+                    
+                    return result;
                 } else {
                     return null;
                 }

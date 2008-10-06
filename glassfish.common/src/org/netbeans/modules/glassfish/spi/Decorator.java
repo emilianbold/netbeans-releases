@@ -121,4 +121,13 @@ public abstract class Decorator {
         return false;
     }
     
+    /**
+     * Can the user edit details about this objects config on the server?
+     *
+     * @return true if the object has a customizer dialog
+     */
+    public boolean canEditDetails() {
+        return false;
+    }
+
 }

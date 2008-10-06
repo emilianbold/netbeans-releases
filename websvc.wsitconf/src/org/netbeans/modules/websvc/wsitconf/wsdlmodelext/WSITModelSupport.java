@@ -69,11 +69,17 @@ import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
+import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -158,8 +164,8 @@ public class WSITModelSupport {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) {
-                    logger.log(Level.INFO, "Implementation class is null");
+                if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
+                    logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
                     return null;
                 }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
@@ -359,7 +365,7 @@ public class WSITModelSupport {
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
         String wsdlLocation = service.getLocalWsdlFile();
-        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(File.separator + wsdlLocation);
+        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
     
@@ -379,7 +385,9 @@ public class WSITModelSupport {
                 public void run(CompilationController controller) throws java.io.IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    if (sourceUtils != null) {
+                        result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    }
                 }
             }, true);
             
@@ -390,8 +398,9 @@ public class WSITModelSupport {
         }
         
         // check whether config file already exists
-        if (supp.getWsdlFolder(true) != null) {
-            FileObject wsdlFO = supp.getWsdlFolder(true).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+        FileObject wsdlFolder = supp.getWsdlFolder(create);
+        if ((wsdlFolder != null) && (wsdlFolder.isValid())) {
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                 return getModelFromFO(wsdlFO, true);
             }
@@ -399,10 +408,9 @@ public class WSITModelSupport {
         
         if (create) {
             // config file doesn't exist - generate empty file
-            FileObject wsdlFolder = supp.getWsdlFolder(true).getParent();
-            FileObject wsdlFO = wsdlFolder.getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
             if ((wsdlFO == null) || !(FileUtil.toFile(wsdlFO).exists())) {
-                wsdlFO = wsdlFolder.createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+                wsdlFO = wsdlFolder.getParent().createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
                 if (createdFiles != null) {
                     createdFiles.add(wsdlFO);
                 }
@@ -709,6 +717,7 @@ public class WSITModelSupport {
         if (b == null) return;
         
         // First store the values
+        boolean addr = AddressingModelHelper.isAddressingEnabled(b);
 
         // Transport
         boolean mtom = TransportModelHelper.isMtomEnabled(b);
@@ -732,23 +741,50 @@ public class WSITModelSupport {
         
         // STS
         boolean sts = ProprietarySecurityPolicyModelHelper.isSTSEnabled(b);
+        List<ServiceProviderElement> sProviderElems = new ArrayList();
+        String issuer = null;
+        String contract = null;
+        String lifetime = null;
+        boolean encKey = false;
+        boolean encToken = false;
+        if (sts) {
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            List<ServiceProvider> sProviders = ProprietarySecurityPolicyModelHelper.getSTSServiceProviders(stsConfig);
+            for (ServiceProvider sP : sProviders) {
+                String spCertAlias = ProprietarySecurityPolicyModelHelper.getSPCertAlias(sP);
+                String spKeyType = ProprietarySecurityPolicyModelHelper.getSPKeyType(sP);
+                String spTokenType = ProprietarySecurityPolicyModelHelper.getSPTokenType(sP);
+                String endpoint = sP.getEndpoint();
+                ServiceProviderElement sElem = new ServiceProviderElement(endpoint, spCertAlias, spTokenType, spKeyType);
+                sProviderElems.add(sElem);
+            }
+            issuer = ProprietarySecurityPolicyModelHelper.getSTSIssuer(b);
+            lifetime = ProprietarySecurityPolicyModelHelper.getSTSLifeTime(b);
+            contract = ProprietarySecurityPolicyModelHelper.getSTSContractClass(b);
+            encKey = ProprietarySecurityPolicyModelHelper.getSTSEncryptKey(b);
+            encToken = ProprietarySecurityPolicyModelHelper.getSTSEncryptToken(b);
+        }
         
         PolicyModelHelper.removePolicyForElement(b);
         
         for (BindingOperation bo : b.getBindingOperations()) {
             BindingInput bi = bo.getBindingInput();
             BindingOutput bout = bo.getBindingOutput();
-            PolicyModelHelper.removePolicyForElement(bo);
-            PolicyModelHelper.removePolicyForElement(bi);
-            PolicyModelHelper.removePolicyForElement(bout);
+            if (bi != null) {
+                PolicyModelHelper.removePolicyForElement(bi);
+            }
+            if (bout != null) {
+                PolicyModelHelper.removePolicyForElement(bout);
+            }
             for (BindingFault bf : bo.getBindingFaults()) {
                 PolicyModelHelper.removePolicyForElement(bf);
             }
+            PolicyModelHelper.removePolicyForElement(bo);
         }
 
         // --------------------
         
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true);
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, addr);
         
         // Then apply them with the new values
 
@@ -771,16 +807,33 @@ public class WSITModelSupport {
         
         // Security
         if (security) {
-            ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
-            if (serviceDefaultsUsed) {
-                ProfilesModelHelper.setServiceDefaults(profile, b, project);
+            SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+            if ((p != null) && (!p.isProfileSupported(project, b, sts))) {
+                ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, ComboConstants.PROF_USERNAME, null, false);
+            } else {
+                ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
+                if (serviceDefaultsUsed) {
+                    ProfilesModelHelper.setServiceDefaults(profile, b, project);
+                }
             }
         }
         
         // STS 
-//        ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion).enableSTS(b, sts);
+        if (sts) {
+            ProprietarySecurityPolicyModelHelper psmh = ProprietarySecurityPolicyModelHelper.getInstance(targetCfgVersion);
+            psmh.enableSTS(b, sts);
+            ProprietarySecurityPolicyModelHelper.setSTSIssuer(b, issuer);
+            ProprietarySecurityPolicyModelHelper.setSTSContractClass(b, contract);
+            ProprietarySecurityPolicyModelHelper.setSTSLifeTime(b, lifetime);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptKey(b, encKey);
+            ProprietarySecurityPolicyModelHelper.setSTSEncryptToken(b, encToken);
+            STSConfiguration stsConfig = ProprietarySecurityPolicyModelHelper.getSTSConfiguration(b);
+            for (ServiceProviderElement spe : sProviderElems) {
+                ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe, targetCfgVersion);
+            }
+        }
 
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, false); // this is needed so that the values are not lost
         
     }
     

@@ -177,7 +177,6 @@ class OutWriter extends PrintWriter {
         if (checkError() || terminated) {
             return;
         }
-        lines.markDirty();
         closed = false;
         int start = -1;
         try {
@@ -224,33 +223,7 @@ class OutWriter extends PrintWriter {
         if (owner != null && owner.hasStreamClosed()) {
             owner.setStreamClosed(false);
             lines.fire();
-        }         
-        /*
-        if (completeLine) {
-            if (lineStart >= 0 && !terminated && lines != null) {
-                if (Controller.VERBOSE) Controller.log (this + ": Wrote " +
-                        ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
-                if (startedNow) {
-                    lines.lineWritten (lineStart, lineLength);
-                } else {
-                    lines.lineFinished(lineLength);
-                }
-                lineStart = -1;
-                lineLength = 0;
-                if (owner != null && owner.hasStreamClosed()) {
-                    owner.setStreamClosed(false);
-                    lines.fire();
-                }
-            }
-        } else {
-            if (startedNow && lineStart >= 0 && !terminated && lines != null) {
-                lines.lineStarted(lineStart, lineLength);
-                if (owner != null && owner.hasStreamClosed()) {
-                    owner.setStreamClosed(false);
-                    lines.fire();
-                }
-            }
-        }*/
+        }
     }
 
     /**
@@ -465,8 +438,8 @@ class OutWriter extends PrintWriter {
             }
         } catch (IOException ioe) {
             handleException(ioe);
-            return lineCount;
         }
+        lines.delayedFire();
         return lineCount;
     }
 

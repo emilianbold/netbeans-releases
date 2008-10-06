@@ -70,53 +70,58 @@ public class CodeCommentAction extends CommentAction {
         super(""); // NOI18N
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (!target.isEditable() || !target.isEnabled()) {
                 target.getToolkit().beep();
                 return;
             }
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            Caret caret = target.getCaret();
-            TokenHierarchy th = TokenHierarchy.get (doc);
+            final BaseDocument doc = (BaseDocument)target.getDocument();
+            final Caret caret = target.getCaret();
+            final TokenHierarchy th = TokenHierarchy.get (doc);
             if (th == null) {
                 return;
             }
-            TokenSequence ts = th.tokenSequence();
+            final TokenSequence ts = th.tokenSequence();
             try {
                 if (caret.isSelectionVisible()) {
-                    int startPos = Utilities.getRowStart(doc, target.getSelectionStart());
-                    int endPos = target.getSelectionEnd();
-                    doc.atomicLock();
-                    try {
-                        if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
-                            endPos--;
+                    final int startPos = Utilities.getRowStart(doc, target.getSelectionStart());
+                    final int endPos = target.getSelectionEnd();
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            try {
+                                int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                                    endPos-1 : endPos;
+                                int lineCnt = Utilities.getRowCount(doc, startPos, end);
+                                List mimeTypes = new ArrayList(lineCnt);
+                                int pos = startPos;
+                                for (int x = lineCnt ; x > 0; x--) {
+                                    mimeTypes.add(getRealMimeType(ts, pos));
+                                    pos = Utilities.getRowStart(doc, pos, 1);
+                                }
+
+                                pos = startPos;
+                                for (Iterator iter = mimeTypes.iterator(); iter.hasNext(); ) {
+                                    modifyLine(doc, (String)iter.next(), pos);
+                                    pos = Utilities.getRowStart(doc, pos, 1);
+                                }
+                            } catch (BadLocationException e) {
+                                target.getToolkit().beep();
+                            }
                         }
-                        int lineCnt = Utilities.getRowCount(doc, startPos, endPos);
-                        List mimeTypes = new ArrayList(lineCnt);
-                        int pos = startPos;
-                        for (int x = lineCnt ; x > 0; x--) {
-                            mimeTypes.add(getRealMimeType(ts, pos));
-                            pos = Utilities.getRowStart(doc, pos, 1);
-                        }
-                        
-                        pos = startPos;
-                        for (Iterator iter = mimeTypes.iterator(); iter.hasNext(); ) {
-                            modifyLine(doc, (String)iter.next(), pos);
-                            pos = Utilities.getRowStart(doc, pos, 1);
-                        }
-                    } finally {
-                        doc.atomicUnlock();
-                    }
+                    });
                 } else { // selection not visible
-                    int pos = Utilities.getRowStart(doc, target.getSelectionStart());
-                    String mt = getRealMimeType(ts, pos);
-                    doc.atomicLock();
-                    try {
-                        modifyLine(doc, mt, pos);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
+                    final int pos = Utilities.getRowStart(doc, target.getSelectionStart());
+                    final String mt = getRealMimeType(ts, pos);
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            try {
+                                modifyLine(doc, mt, pos);
+                            } catch (BadLocationException e) {
+                                target.getToolkit().beep();
+                            }
+                        }
+                    });
                 }
             } catch (BadLocationException e) {
                 target.getToolkit().beep();

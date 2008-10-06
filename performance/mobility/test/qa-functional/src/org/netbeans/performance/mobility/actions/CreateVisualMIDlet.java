@@ -40,6 +40,9 @@
  */
 package org.netbeans.performance.mobility.actions;
 
+import java.awt.Container;
+import javax.swing.JComponent;
+import junit.framework.Test;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
@@ -48,11 +51,14 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -75,7 +81,7 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
     public CreateVisualMIDlet(String testName) {
         super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 4000;
+        WAIT_AFTER_OPEN = 1000;
     }
 
     /**
@@ -86,13 +92,33 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
     public CreateVisualMIDlet(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN = 4000;
+        WAIT_AFTER_OPEN = 1000;
     }
 
     @Override
     public void initialize() {
         ProjectSupport.openProject(CommonUtilities.getProjectsDir() + testProjectName);
         new CloseAllDocumentsAction().performAPI();
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
+        repaintManager().addRegionFilter(new LoggingRepaintManager.RegionFilter() {
+
+            public boolean accept(JComponent c) {
+                Container cont = c;
+                do {
+                    if ("org.netbeans.modules.palette.ui.PalettePanel".equals(cont.getClass().getName())) {
+                        return false;
+                    }
+                    cont = cont.getParent();
+                } while (cont != null);
+                return true;
+            }
+
+            public String getFilterName() {
+                return "Filters out PalettePanel";
+            }
+        });
     }
 
     public void prepare() {
@@ -100,7 +126,10 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
 
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("Visual MIDlet"); //NOI18N
         wizard.next();
@@ -113,7 +142,7 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
 
     public ComponentOperator open() {
         location.finish();
-        return null;
+        return new TopComponentOperator(midletName + ".java");
     }
 
     @Override
@@ -140,7 +169,15 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
         ProjectSupport.closeProject(testProjectName);
     }
 
-//    public static void main(java.lang.String[] args) {
-//        junit.textui.TestRunner.run(new CreateVisualMIDlet("measureTime"));
-//    }
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(CreateVisualMIDlet.class)
+            .addTest("measureTime")
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );
+    }
 }

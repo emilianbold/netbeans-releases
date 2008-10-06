@@ -44,41 +44,4 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.woodstock.webui.jsf" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.woodstock.webui.jsf.</description>
     <import file="../nbbuild/templates/projectized.xml"/>
-  <property name="nbroot" location="../../.."/>
-  <property name="translated.src.dir" value="${nbroot}/translatedfiles/src/visualweb/woodstock/components/src"/>
-
-  <target name="check-run-mlbuild" depends="basic-init">
-    <available file="${nb_all}/translatedfiles/src/visualweb/woodstock/components" type="dir" property="translated.src.dir.exist"/>
-    <condition property="locjar.locales" value="${locales}">
-      <and>
-        <isset property="locales" />
-        <not>
-          <isset property="locjar.locales"/>
-        </not>
-      </and>
-    </condition>
-    <condition property="run.ml.build" value="true">
-      <and>
-        <isset property="translated.src.dir.exist"/>
-        <isset property="locjar.locales"/>
-        <length string="${locjar.locales}" when="greater" length="1"/>
-      </and>
-    </condition>
-  </target>
-
-  <target name="netbeans-extra-ml" depends="release-ml" if="locales"/>
-
-  <target name="release-ml" depends="basic-init,check-run-mlbuild" if="run.ml.build">
-      <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat"
-               classpath="${nbroot}/nbbuild/nbantext.jar"/>
-      <repeat target="release-one-locale" name="locale" values="${locales}"/>
-  </target>
-  
-  <target name="release-one-locale" if="locale">
-      <copy todir="${cluster}">
-          <fileset dir="${nb_all}/translatedfiles/src/visualweb/woodstock/components/release">
-              <include name="**/*_${locale}.jar"/>
-          </fileset>
-      </copy>
-  </target>
 </project>

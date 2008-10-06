@@ -907,12 +907,10 @@ public class NotifyDescriptor extends Object {
             JLabel textLabel = new JLabel();
             Mnemonics.setLocalizedText(textLabel, text);
 
-            textLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
             boolean longText = text.length () > 80;
             textField = new JTextField(25);
             textLabel.setLabelFor(textField);
             
-            textField.setBorder(new CompoundBorder(textField.getBorder(), new EmptyBorder(2, 0, 2, 0)));
             textField.requestFocus();
             
             GroupLayout layout = new GroupLayout(panel);
@@ -936,7 +934,8 @@ public class NotifyDescriptor extends Object {
                         .addContainerGap()
                         .add(textLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textField))
+                        .add(textField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addContainerGap())
                 );
             }
             if (longText) {
@@ -951,14 +950,14 @@ public class NotifyDescriptor extends Object {
                 );
             } else {
                 layout.setVerticalGroup(
-                    layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(textLabel)
-                            .add(textField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                );
+                            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(textLabel)
+                                    .add(textField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        );
             }
 
             javax.swing.KeyStroke enter = javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0);

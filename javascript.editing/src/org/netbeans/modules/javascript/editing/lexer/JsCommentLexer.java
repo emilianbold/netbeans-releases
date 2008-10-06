@@ -325,6 +325,33 @@ public class JsCommentLexer implements Lexer<JsCommentTokenId> {
         }
         return null;
     }
+
+    public static String getCompat(TokenSequence<? extends JsCommentTokenId> ts) {
+        // find next token which is not OTHER_TEXT
+        StringBuilder sb = new StringBuilder();
+        nextIdent(ts);
+        do {
+            Token<? extends JsCommentTokenId> t = ts.token();
+            if (t.id() == JsCommentTokenId.IDENT) {
+                sb.append(t.text());
+            } else {
+                break;
+            }
+            if (ts.moveNext()) {
+                t = ts.token();
+                if (t.id() == JsCommentTokenId.OTHER_TEXT && t.length() == 1 &&
+                        t.text().charAt(0) == '|') {
+                    sb.append('|');
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        } while (ts.moveNext());
+
+        return sb.toString();
+    }
     
     /** If you have something like "String[]" we want to rewrite it as Array<String>.
      * The StringBuilder may already contain "String" when we see []. At this point

@@ -50,17 +50,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.LoaderPoolNode;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataLoader;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -87,13 +85,28 @@ final class FileAssociationsModel {
     /** Maps MIME type to MimeItem object which holds display name. */
     private HashMap<String, MimeItem> mimeToItem = new HashMap<String, MimeItem>();
     private boolean initialized = false;
-    private LookupListener lookupListener = new LookupListenerImpl();
+    private final FileChangeListener mimeResolversListener = new FileChangeAdapter() {
+        public @Override void fileDeleted(FileEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileDataCreated(FileEvent fe) {
+            initialized = false;
+        }
+        public @Override void fileChanged(FileEvent fe) {
+            initialized = false;
+        }
+    };
     private FileObject userDefinedResolverFO;
 
     /** Creates new model. */
     FileAssociationsModel() {
-        Lookup lookup = Lookups.forPath(MIME_RESOLVERS_PATH);
-        lookup.lookupResult(MIMEResolver.class).addLookupListener(lookupListener);
+        FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource(MIME_RESOLVERS_PATH);
+        if (resolvers != null) {
+            resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
+        }
     }
 
     /** Returns true if model includes given extension. */
@@ -144,16 +157,18 @@ final class FileAssociationsModel {
         FileObject[] children = defaultFS.findResource("Loaders").getChildren();  //NOI18N
         for (int i = 0; i < children.length; i++) {
             FileObject child = children[i];
-            String mime1 = child.getName();
+            String mime1 = child.getNameExt();
             FileObject[] subchildren = child.getChildren();
             for (int j = 0; j < subchildren.length; j++) {
                 FileObject subchild = subchildren[j];
-                mimeTypes.add(mime1 + "/" + subchild.getName()); //NOI18N
+                FileObject factoriesFO = subchild.getFileObject("Factories");  //NOI18N
+                if(factoriesFO != null && factoriesFO.getChildren().length > 0) {
+                    // add only MIME types where some loader exists
+                    mimeTypes.add(mime1 + "/" + subchild.getNameExt()); //NOI18N
+                }
             }
         }
         mimeTypes.remove("content/unknown"); //NOI18N
-        mimeTypes.remove("folder/any"); //NOI18N
-        mimeTypes.remove("Languages/Actions"); //NOI18N
     }
 
     /** Returns MIME type corresponding to given extension. Cannot return null. */
@@ -203,18 +218,21 @@ final class FileAssociationsModel {
         return !extensionToMimeSystem.containsKey(extension);
     }
     
-    /** Returns display name of loader for given MIME type or null if not defined. */
+        /** Returns localized display name of loader for given MIME type or null if not defined. */
     private static String getLoaderDisplayName(String mimeType) {
-        String displayName = null;
-        DataLoader loader = Lookups.forPath("Loaders/" + mimeType + "/Factories").lookup(DataLoader.class);  //NOI18N
-        if (loader != null) {
-            try {
-                displayName = loader.getDisplayName();
-            } catch (Exception e) {
-                // ignore possible problems like issue 137723
+        FileSystem root = Repository.getDefault().getDefaultFileSystem();
+        FileObject factoriesFO = root.findResource("Loaders/" + mimeType + "/Factories");  //NOI18N
+        if(factoriesFO != null) {
+            FileObject[] children = factoriesFO.getChildren();
+            for (FileObject child : children) {
+                String childName = child.getNameExt();
+                String displayName = root.getStatus().annotateName(childName, Collections.singleton(child));
+                if(!childName.equals(displayName)) {
+                    return displayName;
+                }
             }
         }
-        return displayName;
+        return null;
     }
 
     /** Returns sorted list of MimeItem objects. */
@@ -242,37 +260,42 @@ final class FileAssociationsModel {
             return;
         }
 
-        Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.0//EN", "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd");  //NOI18N
-        for (String extension : extensionToMimeUser.keySet()) {
-            Element fileElement = document.createElement("file");  //NOI18N
-            Element extElement = document.createElement("ext");  //NOI18N
-            Element resolverElement = document.createElement("resolver");  //NOI18N
-            extElement.setAttribute("name", extension);  //NOI18N
-            resolverElement.setAttribute("mime", extensionToMimeUser.get(extension));  //NOI18N
-            fileElement.appendChild(extElement);
-            fileElement.appendChild(resolverElement);
-            document.getDocumentElement().appendChild(fileElement);
-        }
+        FileUtil.runAtomicAction(new Runnable() {
 
-        OutputStream os = null;
-        try {
-            FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-            userDefinedResolverFO = defaultFS.findResource(MIME_RESOLVERS_PATH).createData(USER_DEFINED + ".xml");  //NOI18N
-            userDefinedResolverFO.setAttribute(USER_DEFINED, Boolean.TRUE);
-            userDefinedResolverFO.setAttribute("position", USER_DEFINED_POSITION);  //NOI18N
-            os = userDefinedResolverFO.getOutputStream();
-            XMLUtil.write(document, os, "UTF-8"); //NOI18N
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Cannot write resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-        } finally {
-            if (os != null) {
+            public void run() {
+                Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.0//EN", "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd");  //NOI18N
+                for (String extension : extensionToMimeUser.keySet()) {
+                    Element fileElement = document.createElement("file");  //NOI18N
+                    Element extElement = document.createElement("ext");  //NOI18N
+                    Element resolverElement = document.createElement("resolver");  //NOI18N
+                    extElement.setAttribute("name", extension);  //NOI18N
+                    resolverElement.setAttribute("mime", extensionToMimeUser.get(extension));  //NOI18N
+                    fileElement.appendChild(extElement);
+                    fileElement.appendChild(resolverElement);
+                    document.getDocumentElement().appendChild(fileElement);
+                }
+
+                OutputStream os = null;
                 try {
-                    os.close();
+                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+                    userDefinedResolverFO = defaultFS.findResource(MIME_RESOLVERS_PATH).createData(USER_DEFINED + ".xml");  //NOI18N
+                    userDefinedResolverFO.setAttribute(USER_DEFINED, Boolean.TRUE);
+                    userDefinedResolverFO.setAttribute("position", USER_DEFINED_POSITION);  //NOI18N
+                    os = userDefinedResolverFO.getOutputStream();
+                    XMLUtil.write(document, os, "UTF-8"); //NOI18N
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Cannot close OutputStreamof file " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                    LOGGER.log(Level.SEVERE, "Cannot write resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                } finally {
+                    if (os != null) {
+                        try {
+                            os.close();
+                        } catch (IOException e) {
+                            LOGGER.log(Level.SEVERE, "Cannot close OutputStreamof file " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     private void init() {
@@ -303,7 +326,8 @@ final class FileAssociationsModel {
             if (userDefined) {
                 userDefinedResolverFO = mimeResolverFO;
             }
-            ArrayList<String[]> extAndMimePairs = LoaderPoolNode.getExtensionsAndMIMETypes(mimeResolverFO);
+            assert mimeResolverFO.getPath().startsWith("Services/MIMEResolver");  //NOI18N
+            List<String[]> extAndMimePairs = MIMEResolverImpl.getExtensionsAndMIMETypes(mimeResolverFO);
             Iterator<String[]> iter = extAndMimePairs.iterator();
             while (iter.hasNext()) {
                 String[] pair = iter.next();
@@ -328,12 +352,6 @@ final class FileAssociationsModel {
         }
         LOGGER.fine("extensionToMimeSystem=" + extensionToMimeSystem);  //NOI18N
         LOGGER.fine("extensionToMimeUser=" + extensionToMimeUser);  //NOI18N
-    }
-    
-    private class LookupListenerImpl implements LookupListener {
-        public void resultChanged(LookupEvent ev) {
-            initialized = false;
-        }
     }
     
     /** To store MIME type and its loader display name. It is used in combo box. */

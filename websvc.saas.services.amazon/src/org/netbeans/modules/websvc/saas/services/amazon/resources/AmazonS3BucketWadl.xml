@@ -124,10 +124,34 @@
                         <representation mediaType="*/*"/>
                     </response>
                 </method>
+                <method name="HEAD" id="headObject">
+                    <request>
+                        <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                    </request>
+                    <response>
+                        <representation mediaType="*/*"/>
+                    </response>
+                </method>
                 <method name="PUT" id="putObject">
                     <request>
                         <param name="Authorization" type="xsd:string" style="header" required="true"/>
                         <param name="Content-Type" type="xsd:string" style="header" required="true"/>
+                        <representation mediaType="*/*"/>
+                    </request>
+                    <response>
+                        <representation mediaType="*/*"/>
+                    </response>
+                </method>
+                <method name="PUT" id="copyObject">
+                    <request>
+                        <param name="Authorization" type="xsd:string" style="header" required="true"/>
+                        <param name="Content-Type" type="xsd:string" style="header" required="true"/>
+                        <param name="x-amz-copy-source" type="xsd:string" style="header" required="true"/>
+                        <param name="x-amz-metadata-directive" type="xsd:string" style="header"/>
+                        <param name="x-amz-copy-source-if-match" type="xsd:string" style="header"/>
+                        <param name="x-amz-copy-source-if-none-match" type="xsd:string" style="header"/>
+                        <param name="x-amz-copy-source-if-unmodified-since" type="xsd:string" style="header"/>
+                        <param name="x-amz-copy-source-if-modified-since" type="xsd:string" style="header"/>
                         <representation mediaType="*/*"/>
                     </request>
                     <response>

@@ -43,8 +43,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -70,8 +68,7 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         BaseDocument doc = getBaseDocument(testSourceFile);
         log("creating list of references:");
         MyTP tp = new MyTP(csmFile, doc);
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, 0);
-        CndTokenUtilities.processTokens(tp, cppTokenSequence, 0, doc.getLength());
+        CndTokenUtilities.processTokens(tp, doc, 0, doc.getLength());
         log("end of references list");
         log("start resolving referenced objects");
         for (ReferenceImpl ref : tp.references) {
@@ -109,13 +106,17 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         }
 
         @Override
-        public void token(Token<CppTokenId> token, int tokenOffset) {
+        public boolean token(Token<CppTokenId> token, int tokenOffset) {
+            if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                return true;
+            }
             if (supportReference(token.id())) {
-                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token);
+                ReferenceImpl ref = ReferencesSupport.createReferenceImpl(csmFile, doc, tokenOffset, token, null);
                 assertNotNull("reference must not be null for valid token " + token, ref);
                 references.add(ref);
                 log(ref.toString());
             }
+            return false;
         }
     }
 }

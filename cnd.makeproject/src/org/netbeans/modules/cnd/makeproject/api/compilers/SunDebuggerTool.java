@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.DebuggerDescriptor;
 
 public class SunDebuggerTool extends Tool {
     
@@ -56,4 +57,10 @@ public class SunDebuggerTool extends Tool {
         copy.setName(getName());
         return copy;
     }
+
+    @Override
+    public DebuggerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getDebugger();
+    }
+
 }

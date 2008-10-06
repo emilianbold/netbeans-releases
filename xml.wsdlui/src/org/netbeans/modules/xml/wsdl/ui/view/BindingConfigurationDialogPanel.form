@@ -19,7 +19,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="addBindingPanel" alignment="0" pref="395" max="32767" attributes="0"/>
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="10" pref="10" max="10" attributes="0"/>
               <Component id="commonMessagePanel" pref="385" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -28,9 +28,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="addBindingPanel" pref="285" max="32767" attributes="0"/>
+              <Component id="addBindingPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="commonMessagePanel" pref="82" max="32767" attributes="0"/>
+              <Component id="commonMessagePanel" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>

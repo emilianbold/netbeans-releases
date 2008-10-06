@@ -58,6 +58,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
     static final String ATTR_STATUS_MAP = "org.netbeans.modules.versioning.system.cvss.DiskMapTurboProvider.STATUS_MAP";  // NOI18N
 
+    private boolean storeCreated;
     private File    cacheStore;
     private int     storeSerial;
 
@@ -75,30 +76,32 @@ class DiskMapTurboProvider implements TurboProvider {
         if (cachedStoreSerial != storeSerial || cachedValues == null) {
             cachedValues = new HashMap<File, FileInformation>();
             File [] files = cacheStore.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                DataInputStream dis = null;
-                try {
-                    dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-                    for (;;) {
-                        int pathLen = dis.readInt();
-                        dis.readInt();
-                        String path = readChars(dis, pathLen);
-                        Map value = readValue(dis, path);
-                        for (Iterator j = value.keySet().iterator(); j.hasNext();) {
-                            File f = (File) j.next();
-                            FileInformation info = (FileInformation) value.get(f);
-                            if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                cachedValues.put(f, info);
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    File file = files[i];
+                    DataInputStream dis = null;
+                    try {
+                        dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+                        for (;;) {
+                            int pathLen = dis.readInt();
+                            dis.readInt();
+                            String path = readChars(dis, pathLen);
+                            Map value = readValue(dis, path);
+                            for (Iterator j = value.keySet().iterator(); j.hasNext();) {
+                                File f = (File) j.next();
+                                FileInformation info = (FileInformation) value.get(f);
+                                if ((info.getStatus() & STATUS_VALUABLE) != 0) {
+                                    cachedValues.put(f, info);
+                                }
                             }
                         }
+                    } catch (EOFException e) {
+                        // reached EOF, no entry for this key
+                    } catch (Exception e) {
+                        ErrorManager.getDefault().notify(e);
+                    } finally {
+                        if (dis != null) try { dis.close(); } catch (IOException e) {}
                     }
-                } catch (EOFException e) {
-                    // reached EOF, no entry for this key
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
-                } finally {
-                    if (dis != null) try { dis.close(); } catch (IOException e) {}
                 }
             }
             cachedStoreSerial = storeSerial;
@@ -173,6 +176,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
         if (value == null && !store.exists()) return true;
 
+        makeSureCacheStoreExists();
         File storeNew = new File(store.getParentFile(), store.getName() + ".new"); // NOI18N
 
         DataOutputStream oos = null;
@@ -300,7 +304,14 @@ class DiskMapTurboProvider implements TurboProvider {
             File cachedir = FileUtil.toFile(Repository.getDefault().getDefaultFileSystem().getRoot());
             cacheStore = new File(cachedir, "cvscache"); // NOI18N
         }
-        cacheStore.mkdirs();
+    }
+
+    private void makeSureCacheStoreExists() {
+        if (!storeCreated) {
+            assert Thread.holdsLock(this);
+            storeCreated = true;
+            cacheStore.mkdirs();        
+        }
     }
 
     private static void copyStreams(OutputStream out, InputStream in, int len) throws IOException {

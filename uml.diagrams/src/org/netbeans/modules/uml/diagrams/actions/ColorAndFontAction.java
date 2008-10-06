@@ -54,6 +54,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.ui.support.drawingproperties.FontChooser;
@@ -61,13 +62,12 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Sheryl Su
  */
-public class ColorAndFontAction extends NodeAction
+public class ColorAndFontAction extends SceneNodeAction
 {
 
     public static final int FONT = 0;
@@ -100,7 +100,7 @@ public class ColorAndFontAction extends NodeAction
     public JMenuItem getPopupPresenter()
     {
         popupMenu = new JMenu(NbBundle.getMessage(ColorAndFontAction.class, "ACT_ColorFont")); // NOI18N
-        popupMenu.setEnabled(scene != null);
+        popupMenu.setEnabled((scene != null && scene.isReadOnly() == false));
 
         ResourceBundle bundle = NbBundle.getBundle(ColorAndFontAction.class);
         JMenuItem font = new FontMenuItem(bundle.getString("CTL_Font"), FONT); // NOI18N
@@ -196,14 +196,19 @@ public class ColorAndFontAction extends NodeAction
             font = w.getFont();
         }
         Font f = FontChooser.selectFont(font);
-        for (IPresentationElement p : getSelectedElements())
+        for (IPresentationElement p : elements)
         {
+            w = scene.findWidget(p);
             if (w instanceof UMLNodeWidget)
             {
                 ((UMLNodeWidget) w).setNodeFont(f);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            
+            w.revalidate();
         }
+        
+        scene.validate();
     }
 
     private void setForeground()
@@ -214,6 +219,7 @@ public class ColorAndFontAction extends NodeAction
         Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), oldColor);
         for (IPresentationElement p : getSelectedElements())
         {
+            w=scene.findWidget(p);
             if (w instanceof UMLNodeWidget)
             {
                 ((UMLNodeWidget) w).setNodeForeground(color);
@@ -224,12 +230,23 @@ public class ColorAndFontAction extends NodeAction
                 ((ConnectionWidget) w).setLineColor(color);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            w.revalidate();
         }
+        w.revalidate();
+        scene.revalidate();
+        scene.validate();
     }
 
     private void setBackground()
     {
-        Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), Color.WHITE);
+        IPresentationElement[] elements = getSelectedElements();
+        Widget w1 = scene.findWidget(elements[0]);
+        Color oldColor = Color.WHITE;
+        if (w1 instanceof UMLNodeWidget)
+        {
+            oldColor = (Color) ((UMLNodeWidget)w1).getNodeBackground();
+        }
+        Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), oldColor);
         for (IPresentationElement p : getSelectedElements())
         {
             Widget w = scene.findWidget(p);
@@ -238,7 +255,10 @@ public class ColorAndFontAction extends NodeAction
                 ((UMLNodeWidget) w).setNodeBackground(color);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            w.revalidate();
         }
+        
+        scene.validate();
     }
 
     private void setBorder()
@@ -273,6 +293,11 @@ public class ColorAndFontAction extends NodeAction
 
     protected boolean enable(Node[] activatedNodes)
     {
+        if(super.enable(activatedNodes) == false)
+        {
+            return false;
+        }
+        
         for (Node node : activatedNodes)
         {
             IPresentationElement pe = node.getLookup().lookup(IPresentationElement.class);

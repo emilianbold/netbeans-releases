@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="versioning_output.wstcref" url="modes/output/versioning_output.wstcref">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="1600"/>
                 </file>
             </folder>
         </folder>

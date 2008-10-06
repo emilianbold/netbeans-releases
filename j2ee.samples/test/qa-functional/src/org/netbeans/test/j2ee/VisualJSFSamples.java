@@ -139,7 +139,7 @@ public class VisualJSFSamples extends JellyTestCase {
      */
     public void testNewCorporateTravelCenterSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Corporate Travel Center");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -150,7 +150,7 @@ public class VisualJSFSamples extends JellyTestCase {
 
     public void testNewSinglePageCrudWithTableSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Single Page CRUD With Table");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -161,7 +161,7 @@ public class VisualJSFSamples extends JellyTestCase {
 
     public void testNewSinglePageCrudWithFormSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Single Page CRUD With Form");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -172,7 +172,7 @@ public class VisualJSFSamples extends JellyTestCase {
 
     public void testNewTwoPageCrudWithTableSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Two Page CRUD With Table");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -183,7 +183,7 @@ public class VisualJSFSamples extends JellyTestCase {
 
     public void testNewMovieAdministrationSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Movie Administration");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -194,7 +194,7 @@ public class VisualJSFSamples extends JellyTestCase {
 
     public void testNewVIRASample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Web|Visual JSF");
+        projectWizard.selectCategory("Samples|Java Web (Visual JSF)"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Vehicle Incident Report Application");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();

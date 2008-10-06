@@ -50,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.spi.ProjectAccessor;
@@ -134,10 +133,12 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         
         // Listening to window events ------------------------------------------
                 
+        @Override
         public void windowClosed( WindowEvent e) {
             project2Dialog.remove( project );
         }    
         
+        @Override
         public void windowClosing (WindowEvent e) {
             //Dispose the dialog otherwsie the {@link WindowAdapter#windowClosed}
             //may not be called

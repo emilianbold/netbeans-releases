@@ -43,7 +43,6 @@ package org.netbeans.modules.junit.output;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -77,6 +76,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
     
     /**
      */
+    @Override
     protected void addNotify() {
         super.addNotify();
         
@@ -88,6 +88,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
     
     /**
      */
+    @Override
     protected void removeNotify() {
         super.removeNotify();
         

@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 /**
@@ -120,6 +121,13 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
         });
     }
     
+    @Override
+     public void addNotify() {
+        super.addNotify();
+        this.libraryNameTextField.requestFocus();
+        this.libraryNameTextField.selectAll();
+    }
+    
     public void apply() {
         libImpl.setName(libraryNameTextField.getText().trim());
         PersistenceLibrarySupport.getDefault().addLibrary(libImpl);
@@ -149,10 +157,10 @@ public class PersistenceLibraryPanel extends javax.swing.JPanel {
         errorMessage.setForeground(nbErrorForeground);
         if (msg != null && msg.trim().length() > 0 && canContinue != null) {
             if (canContinue.booleanValue()) {
-                errorMessage.setIcon(new ImageIcon(Utilities.loadImage(WARNING_GIF)));
+                errorMessage.setIcon(new ImageIcon(ImageUtilities.loadImage(WARNING_GIF)));
                 errorMessage.setForeground(nbWarningForeground);
             } else {
-                errorMessage.setIcon(new ImageIcon(Utilities.loadImage(ERROR_GIF)));
+                errorMessage.setIcon(new ImageIcon(ImageUtilities.loadImage(ERROR_GIF)));
             }
             errorMessage.setToolTipText(msg);
         } else {

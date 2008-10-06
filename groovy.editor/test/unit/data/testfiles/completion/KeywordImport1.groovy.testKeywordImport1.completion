@@ -2,11 +2,4 @@ Code completion result for source line:
 import java.lang.Ab|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-CLASS      AbstractCollection                         null
-CLASS      AbstractList                               null
-CLASS      AbstractMap                                null
 CLASS      AbstractMethodError                        null
-CLASS      AbstractQueue                              null
-CLASS      AbstractSequentialList                     null
-CLASS      AbstractSet                                null
-CLASS      AbstractStringBuilder                      null

@@ -41,11 +41,15 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -54,13 +58,15 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-//import javax.swing.text.html.parser.Element;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -126,23 +132,31 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            if (Utilities.isWindows()) {
+            String host = CompilerSetManager.getDefaultDevelopmentHost();
+            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(host);
+            int platform = compilerSetManager.getPlatform();
+            CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
+            String variant = MakeConfiguration.getVariant(compilerSet, platform);
+            if (platform == Platform.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
             }
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (platform == Platform.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dylib", "X-LIBSUFFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
             }
             else {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
             }
             //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);
@@ -242,7 +256,7 @@ public class MakeSampleProjectGenerator {
                     FileUtil.createFolder(f.getParentFile()); //f.getParentFile().mkdirs();
                     FileOutputStream out = new FileOutputStream(f);
                     try {
-                        FileUtil.copy(zip, out);
+                        copy(zip, out);
                     } finally {
                         out.close();
                     }
@@ -251,6 +265,27 @@ public class MakeSampleProjectGenerator {
         } finally {
             zip.close();
         }
+    }
+
+    /**
+     * Replacement for FileUtil.copy(). The problem with FU.c is that on Windows it terminates lines with
+     * <CRLF> rather than <LF>. Now that we do remote development, this means that if a remote project is
+     * created on Windows to be built by Sun Studio's dmake, then the <CRLF> breaks the build (this is
+     * probably true with Solaris "make" as well).
+     *
+     * @param is The InputStream
+     * @param os The Output Stream
+     * @throws java.io.IOException
+     */
+    private static void copy(InputStream is, OutputStream os) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        String line;
+
+        while ((line = br.readLine()) != null) {
+            bw.write(line + "\n"); // NOI18N
+        }
+        bw.flush();
     }
     
     private static void replaceText(Element parent, String name, String regex) {

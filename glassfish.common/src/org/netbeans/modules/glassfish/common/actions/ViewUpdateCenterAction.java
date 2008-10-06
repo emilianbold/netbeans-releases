@@ -71,7 +71,7 @@ public class ViewUpdateCenterAction extends NodeAction {
     private static final String SHOW_UPDATE_CENTER_ICONBASE = 
             "org/netbeans/modules/glassfish/common/resources/UpdateCenter.gif"; // NOI18N
 
-    private static WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
+    private static final WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
     
     @Override
     protected void performAction(Node[] nodes) {
@@ -84,9 +84,6 @@ public class ViewUpdateCenterAction extends NodeAction {
             Map<String, String> ip = commonSupport.getInstanceProperties();
             final String serverUrl = ip.get(GlassfishModule.URL_ATTR);
             final String serverName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-            final String installRoot = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR);
-            final File installDir = new File(installRoot);
-            final File launcher = getUpdateCenterLauncher(installDir);
 
             Process p = null;
             synchronized (taskMap) {
@@ -102,6 +99,10 @@ public class ViewUpdateCenterAction extends NodeAction {
                 return;
             } 
 
+            final String installRoot = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR);
+            final File installDir = new File(installRoot);
+            final File launcher = getUpdateCenterLauncher(installDir);
+            
             if(launcher != null) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -136,12 +137,18 @@ public class ViewUpdateCenterAction extends NodeAction {
         if(installRoot != null && installRoot.exists()) {
             File updateCenterBin = new File(installRoot, "bin"); // NOI18N
             if(updateCenterBin.exists()) {
-                String launcher = "updatetool"; // NOI18N
                 if(Utilities.isWindows()) {
-                    launcher += ".bat"; // NOI18N
+                    File launcherPath = new File(updateCenterBin, "updatetool.exe"); // NOI18N
+                    if(launcherPath.exists()) {
+                        result = launcherPath;
+                    } else {
+                        launcherPath = new File(updateCenterBin, "updatetool.bat"); // NOI18N
+                        result = (launcherPath.exists()) ? launcherPath : null;
+                    }
+                } else {
+                    File launcherPath = new File(updateCenterBin, "updatetool"); // NOI18N
+                    result = (launcherPath.exists()) ? launcherPath : null;
                 }
-                File launcherPath = new File(updateCenterBin, launcher);
-                result = (launcherPath.exists()) ? launcherPath : null;
             }
         }
         return result;
@@ -150,6 +157,15 @@ public class ViewUpdateCenterAction extends NodeAction {
     private boolean isUCInstalled(String serverName, String serverUrl, File installRoot, File launcher) {
         if(new File(installRoot, "updatetool/bin").exists()) {
             return true;
+        }
+        
+        if(!installRoot.canWrite()) {
+            String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+                    "MSG_UpdateCenterNoPermission", serverName, installRoot);
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return false;
         }
         
         String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
@@ -170,6 +186,7 @@ public class ViewUpdateCenterAction extends NodeAction {
                 ucIO.readInputStreams(process.getInputStream(), process.getErrorStream());
                 writer = new OutputStreamWriter(process.getOutputStream());
                 writer.write("y\n");
+                writeProxyInfo(writer);
                 writer.flush();
                 int exitCode = process.waitFor();
                 Logger.getLogger("glassfish").log(Level.FINEST, "UC exit code = " + exitCode);
@@ -226,6 +243,11 @@ public class ViewUpdateCenterAction extends NodeAction {
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    private void writeProxyInfo(Writer writer) throws IOException {
+        // TODO - add code to write proxy info to the output stream.
+        writer.write("n\n");
     }
     
 }

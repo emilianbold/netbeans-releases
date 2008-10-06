@@ -16,6 +16,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -30,15 +31,15 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="scrollPlaceHolder" alignment="0" pref="385" max="32767" attributes="0"/>
-                  <Component id="templatesLabel" alignment="0" pref="385" max="32767" attributes="0"/>
-                  <Component id="statusLabel" alignment="1" pref="385" max="32767" attributes="0"/>
+                  <Component id="scrollPlaceHolder" alignment="0" pref="404" max="32767" attributes="0"/>
+                  <Component id="templatesLabel" alignment="0" pref="404" max="32767" attributes="0"/>
+                  <Component id="statusLabel" alignment="1" pref="404" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="showDialogCheckBox" alignment="0" pref="302" max="32767" attributes="0"/>
-                          <Component id="addMarkersCheck" alignment="0" pref="302" max="32767" attributes="2"/>
-                          <Component id="generateMarkersCheck" alignment="0" pref="302" max="32767" attributes="2"/>
-                          <Component id="backupSourcesCheck" alignment="0" pref="302" max="32767" attributes="0"/>
+                          <Component id="showDialogCheckBox" alignment="0" pref="321" max="32767" attributes="0"/>
+                          <Component id="addMarkersCheck" alignment="0" pref="321" max="32767" attributes="2"/>
+                          <Component id="generateMarkersCheck" alignment="0" pref="321" max="32767" attributes="2"/>
+                          <Component id="backupSourcesCheck" alignment="0" pref="321" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="srcFolder" alignment="0" max="32767" attributes="1"/>
@@ -97,11 +98,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_BackupSourcesCheckBox" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
@@ -123,11 +119,6 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_GenerateMarkersCheckBox" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
@@ -153,11 +144,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_AddMergeMarkers" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
@@ -179,11 +165,6 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="LBL_GenCodeShowDialog" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
@@ -249,6 +230,11 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="targetProjectCombo">
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/uml/codegen/action/ui/Bundle.properties" key="ACSD_TargetProject_Desc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="targetProjectComboItemStateChanged"/>
       </Events>

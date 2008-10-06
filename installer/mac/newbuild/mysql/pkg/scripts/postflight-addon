@@ -1,0 +1,31 @@
+
+script_dir=`dirname "$0"`
+DIR=`pwd -P`
+echo "DIR  : $DIR"
+cp -p -f  "$script_dir"/license_mysql.txt "$DIR/${mysql_license.name}"
+cp -p -f  "$script_dir"/readme_mysql.txt  "$DIR/${mysql_readme.name}"
+if [ -d "${glassfish.install.dir}" ] ; then
+    cp -RPf "$script_dir"/${mysql_connector.name}.jar "${glassfish.install.dir}/lib/"
+fi
+
+cd "$DIR" 
+cp -p -f "$script_dir"/mysql-admin.server ./support-files/mysql-admin.server 
+
+escape() {
+	echo "$1" | sed -e "s/\//\\\\\//g"
+}
+
+cp -p -f ./support-files/mysql-admin.server ./support-files/mysql-admin.server.tmp
+
+initial_str=`escape /usr/local/mysql`
+replace_str=`escape "$DIR"`
+sed -e "s/$initial_str/$replace_str/g" ./support-files/mysql-admin.server > ./support-files/mysql-admin.server.tmp
+mv ./support-files/mysql-admin.server.tmp  ./support-files/mysql-admin.server
+
+cp ./support-files/mysql.server ./support-files/mysql.server.tmp
+sed -e "s/^basedir=/basedir=$replace_str/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp
+mv ./support-files/mysql.server.tmp ./support-files/mysql.server
+
+. "$script_dir"/env.sh
+
+"$script_dir"/add_mysql.sh "$NETBEANS_INSTALL_DIR" "$DIR"

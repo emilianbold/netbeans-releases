@@ -22,8 +22,8 @@ End cursor position = 706
 < c:validateDoubleRange >
 < c:validateLength >
 < c:validateLongRange >
-< c:validator />
-< c:valueChangeListener />
+< c:validator / >
+< c:valueChangeListener / >
 < c:verbatim >
 < c:view >
 End cursor position = 816

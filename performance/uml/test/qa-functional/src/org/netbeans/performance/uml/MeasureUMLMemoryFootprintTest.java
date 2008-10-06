@@ -44,6 +44,7 @@ package org.netbeans.performance.uml;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.uml.footprint.UMLWorkflow;
 
 /**
@@ -54,7 +55,11 @@ import org.netbeans.performance.uml.footprint.UMLWorkflow;
 public class MeasureUMLMemoryFootprintTest  {
 
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UML Memory Footprint suite");
+        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLMemoryFootprintTest");
+
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(UMLWorkflow.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));

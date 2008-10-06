@@ -63,6 +63,7 @@ import org.netbeans.modules.clearcase.client.CheckinCommand;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -109,6 +110,8 @@ public class CheckinAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        LifecycleManager.getDefault().saveAll();
+        Utils.logVCSActionEvent("CC");
         String contextTitle = Utils.getContextDisplayName(context);
         final JButton checkinButton = new JButton(); 
         checkinButton.setToolTipText(NbBundle.getMessage(CheckinAction.class, "TT_CheckinAction"));

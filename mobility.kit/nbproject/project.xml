@@ -156,11 +156,27 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.insane</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.mobility.project</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.vmd.midp</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                 </test-type>

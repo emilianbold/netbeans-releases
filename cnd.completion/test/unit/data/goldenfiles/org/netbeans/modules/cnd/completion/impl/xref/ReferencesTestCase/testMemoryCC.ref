@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION Memory(int,int,int)  [44:1/2126-47:6/2303] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'Memory', tokenID=identifier, offset=2134 [44:9/2134-44:15/2140]
 --OWNER:
@@ -68,7 +68,7 @@
 --OWNER:
     FUNCTION_DEFINITION ComputeSupportMetric()  [56:1/2483-71:2/2803] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=2496 [56:14/2496-56:34/2516]
 --OWNER:
@@ -134,7 +134,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetType() const  [73:1/2809-87:2/3146] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'GetType', tokenID=identifier, offset=2829 [73:21/2829-73:28/2836]
 --OWNER:
@@ -170,7 +170,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategory() const  [89:1/3148-102:2/3462] ReferencesTestCase/memory.cc
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'GetCategory', tokenID=identifier, offset=3168 [89:21/3168-89:32/3179]
 --OWNER:

@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright � 2008 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Hibernate Mapping Files and POJOs Wizard: Generation of Code</title> 
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Hibernate Mapping Files and POJOs Wizard: Generation of Code</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The Hibernate Mapping Files and POJOs from Database wizard enables you
+        to specify tables in a database and generate mapping files and POJOs based on the database tables.
+        If you do not want to use the Hibernate mapping files, 
+        the wizard gives you the option of creating classes that use annotations for the mapping information.
+        You can also choose to generate only the Hibernate mapping files.</p>
+
+        <p>The Generation of Code page of the wizard enables you to specify the options
+        for generating the mapping files and POJOs.</p>
+        
+        <p>In this page you can specify the following options:</p>
+        <ul>
+            <li><strong>General Settings.</strong>
+            The General Settings apply to the code of the generated POJOs.
+                <ul>
+                    <li><strong>JDK 5 Language Features.</strong> When selected the generated code will take advantage of
+                    Java language features such as generics and static imports that are supported by JDK 5.</li>
+                    <li><strong>EJB 3 Annotations.</strong> When selected the generated POJOs use
+                    annotations for mapping information.</li>
+                </ul>
+            </li>
+            <li><strong>Code Generation Settings.</strong>
+            The Code Generation Settings determine which files are generated.
+                <ul>
+                    <li><strong>Domain Code (.java).</strong> When selected the IDE generates a POJO for each of the
+                    tables you specified in the wizard. 
+                    When deselected no POJOs are generated.</li>
+                    <li><strong>Hibernate XML Mappings (.hbm.xml).</strong> When selected the IDE generates a mapping file
+                    (<tt>.hbm.xml</tt>) for each of the tables you specified in the wizard. 
+                    When deselected no mapping files are generated.</li>
+                </ul>
+                <ul class="note">
+                    <li>If you deselect both options the IDE will only generate the <tt>hibernate.reveng</tt> file.
+                </ul>
+            </li>
+            <li><strong>Project.</strong> Specifies the name of the project. (read only)</li>
+            <li><strong>Location.</strong> Specifies the location of the package containing the generated mapping files and POJOs.</li>
+            <li><strong>Package.</strong> Specified the name of the package where the mapping files and POJOs are created.
+            Select an existing package from the drop down list or type the name of a new package.</li>
+        </ul>
+            
+            
+        
+        <p>When you click Finish, the IDE generates the files you selected in the Code Generation Settings.
+        The IDE also generates the <tt>hibernate.reveng</tt> reverse engineering file
+        in the location you specified in the first page of the wizard.
+        The <tt>hibernate.reveng</tt> is not necessary for compiling your project and can be deleted if desired.
+        </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../hibernate_fromdb.html">Generating Hibernate Mapping Files and POJOs from a Database</a> </dd>
+            <dd><a href="../hibernate_workingwith.html">Working with Hibernate</a> </dd>
+            <dd><a href="../hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="../hibernate_about.html">About Hibernate Support</a> </dd>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>

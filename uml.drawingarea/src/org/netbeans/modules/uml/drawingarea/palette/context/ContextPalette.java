@@ -48,7 +48,6 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -67,7 +66,7 @@ import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteModel;
 public class ContextPalette extends JPanel
 {
     
-    private static final int PULLOUT_MARGIN = 2;
+    private static final int PULLOUT_MARGIN = 3;
         
     private ContextPaletteModel model = null;
     private Dimension collapsedSize = null;
@@ -116,6 +115,7 @@ public class ContextPalette extends JPanel
         container.setBorder(RIGHT_BORDER);
         
         collapsedSize = getPreferredSize();
+        
     }
 
     public int getExpandedWidth()
@@ -202,6 +202,23 @@ public class ContextPalette extends JPanel
         return retVal;
     }    
     
+    public boolean requestFocusInWindow()
+    {
+        boolean retVal = super.requestFocusInWindow();
+        
+        if(retVal == true)
+        {
+            JPanel panel = (JPanel) getComponent(0);
+            if(panel != null)
+            {
+                // get the first button
+                retVal = panel.getComponent(0).requestFocusInWindow();
+            }
+        }
+        
+        return retVal;
+    }
+    
     ///////////////////////////////////////////////////////////////
     // Data Access Methods
     
@@ -275,7 +292,7 @@ public class ContextPalette extends JPanel
             
             // Popout
             int popoutStartX = left + barWidth;
-            int popoutEndX = left + popoutWidth;
+            int popoutEndX = left + popoutWidth + 1;
             
             // First Paint the pullout margin
             g.setColor(BACKGROUND);
@@ -283,7 +300,7 @@ public class ContextPalette extends JPanel
             g.fillRect(popoutStartX, popoutStartY, width, PULLOUT_MARGIN);
             g.fillRect(popoutStartX, popoutEndY - PULLOUT_MARGIN, width, PULLOUT_MARGIN + 1);
 
-            // Now paint the porder.
+            // Now paint the border.
             g.setColor(BORDER_COLOR);
             
             g.drawArc(popoutStartX, popoutStartY - 5, 5, 5, 180, 90);
@@ -410,18 +427,7 @@ public class ContextPalette extends JPanel
             Point location = widget.getPreferredLocation();
             location = widget.getParentWidget().convertLocalToScene(location);
             Point viewLocaton = scene.convertSceneToView(location);
-//            Rectangle bnd=widget.getBounds();
-//            bnd=widget.convertLocalToScene(bnd);
-//            Rectangle viewRect=scene.convertSceneToView(bnd);
-
-            // Center the palette on the widget.
-//            int width = getPreferredSize().width;
             int xPos = viewLocaton.x - SwingPaletteManager.SPACE_FROM_WIDGET - width;
-//            int xPos = viewRect.x - SwingPaletteManager.SPACE_FROM_WIDGET - width;
-            
-//            int expandBuffer = (expanded == true ? 2: -2);
-//            setLocation(xPos - expandBuffer, getY());
-            System.out.println("WIDGET: "+widget+"; XPOS:"+xPos);
             setLocation(xPos, getY());
         }
     }

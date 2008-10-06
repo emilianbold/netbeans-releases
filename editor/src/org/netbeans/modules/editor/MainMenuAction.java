@@ -66,6 +66,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -79,7 +80,7 @@ import org.openide.util.actions.Presenter;
  */
 public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
 
-    public static final Icon BLANK_ICON = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
+    public static final Icon BLANK_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
     public boolean menuInitialized = false;
     /** icon of the action, null means no icon */
     private final Icon forcedIcon;
@@ -122,7 +123,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     }
 
     /** Returns the action by given name */
-    private static Action getActionByName(String actionName){
+    protected static Action getActionByName(String actionName){
         BaseKit bKit = getKit();
         if (bKit!=null){
             Action action = bKit.getActionByName(actionName);
@@ -250,13 +251,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     public static class ShowToolBarAction extends MainMenuAction{
 
-        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU;
+        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU = null;
         private Action delegate = null;
         
         public ShowToolBarAction(){
             super(false, null);
-            SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
-            setMenu();
         }
 
         protected @Override void setMenu(){
@@ -267,8 +266,12 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
             boolean visible = prefs.getBoolean(SimpleValueNames.TOOLBAR_VISIBLE_PROP, EditorPreferencesDefaults.defaultToolbarVisible);
             SHOW_TOOLBAR_MENU.setState(visible);
         }
-        
+
         public JMenuItem getMenuPresenter() {
+            if (SHOW_TOOLBAR_MENU == null) {
+                SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText());
+                setMenu();
+            }
             return SHOW_TOOLBAR_MENU;
         }
 
@@ -292,13 +295,11 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
     
     public static class ShowLineNumbersAction extends MainMenuAction{
 
-        private JCheckBoxMenuItem SHOW_LINE_MENU;
+        private static JCheckBoxMenuItem SHOW_LINE_MENU = null;
         private Action delegate = null;
         
         public ShowLineNumbersAction(){
             super(false, null);
-            SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
-            setMenu();
         }
         
         protected @Override void setMenu(){
@@ -320,6 +321,10 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }   
         
         public javax.swing.JMenuItem getMenuPresenter() {
+            if (SHOW_LINE_MENU == null) {
+                SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText());
+                setMenu();
+            }
             return SHOW_LINE_MENU;
         }
         

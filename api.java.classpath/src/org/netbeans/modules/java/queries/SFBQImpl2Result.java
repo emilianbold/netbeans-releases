@@ -62,6 +62,10 @@ public class SFBQImpl2Result implements SourceForBinaryQueryImplementation2.Resu
         //Preserve the old behavior from 4.0 to 6.1, ignore sources inside archives
         final FileObject[] roots = this.delegate.getRoots();
         for (FileObject root : roots) {
+            if (root == null) {
+                //Issue #139894: SQBQ.Result.getRoots() contains null
+                throw new NullPointerException("SFBQ.Result: "+delegate.getClass().getName() +" returned null in roots.");
+            }
             if (FileUtil.getArchiveFile(root) != null) {
                 return false;
             }

@@ -41,16 +41,19 @@
 
 package org.netbeans.performance.enterprise.actions;
 
+import java.awt.Container;
+import javax.swing.JComponent;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -66,8 +69,6 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     private NewProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name;
-    
-    private int index;
     
     public void testCreateCompositeApplication() {
         measureTime();
@@ -98,27 +99,17 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     public void initialize(){
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = "Composite Application"; // NOI18N
-        index=1;
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
         
-        MainWindowOperator.getDefault().maximize();
+        closeAllModal();
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard; 
-        for(int attempt = 1; ; attempt++) {
-            log("Attempt " + attempt + " to open New Project Wizard");
-            new EventTool().waitNoEvent(3000);
-            try {
-                wizard = NewProjectWizardOperator.invoke();
-                break;
-            } catch (Exception exc) {
-                if (attempt < 5) {
-                    log("Attempt failed with exception: " + exc);
-                    continue;
-                }
-                throw new Error(exc);
-            }
-        }   
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
@@ -130,7 +121,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
         
-        project_name = "CompositeApp_" + (index++);
+        project_name = "CompositeApp_" + System.currentTimeMillis();
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);
@@ -145,7 +136,6 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     @Override
     public void close(){
         ProjectSupport.closeProject(project_name);
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static Test suite() {
@@ -154,6 +144,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

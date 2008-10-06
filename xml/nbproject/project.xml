@@ -65,6 +65,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.27</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -229,7 +238,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -252,6 +261,14 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                         <test/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
+                        <recursive/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
@@ -269,6 +286,10 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.jemmy</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -278,7 +299,21 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.xml.schema</friend>
+                <friend>org.netbeans.modules.xml.tax</friend>
+                <friend>org.netbeans.modules.xml.tools</friend>
+                <friend>org.netbeans.modules.xml.tools.java</friend>
+                <friend>org.netbeans.modules.xsl</friend>
+                <friend>org.netbeans.modules.xslt.core</friend>
+                <package>org.netbeans.modules.xml</package>
+                <package>org.netbeans.modules.xml.actions</package>
+                <package>org.netbeans.modules.xml.cookies</package>
+                <package>org.netbeans.modules.xml.lib</package>
+                <package>org.netbeans.modules.xml.sync</package>
+                <package>org.netbeans.modules.xml.text</package>
+                <package>org.netbeans.modules.xml.wizard</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

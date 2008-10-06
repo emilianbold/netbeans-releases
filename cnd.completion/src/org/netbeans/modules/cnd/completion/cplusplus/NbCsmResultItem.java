@@ -155,8 +155,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
 
     public final static class NbFileLocalFunctionResultItem extends FileLocalFunctionResultItem {
         
-        public NbFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority) {
-            super(fun, substituteExp, priority);
+        public NbFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(fun, substituteExp, priority, isDeclaration);
         }        
 
         @Override
@@ -168,8 +168,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbGlobalFunctionResultItem extends GlobalFunctionResultItem {
         
-        public NbGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority) {
-            super(fun, substituteExp, priority);
+        public NbGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(fun, substituteExp, priority, isDeclaration);
         }        
 
         @Override
@@ -181,8 +181,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbMethodResultItem extends MethodResultItem{
         
-        public NbMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, int priority) {
-            super(mtd, substituteExp, priority);
+        public NbMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(mtd, substituteExp, priority, isDeclaration);
         }        
 
         @Override
@@ -194,8 +194,8 @@ public abstract class NbCsmResultItem extends CsmResultItem{
     
     public final static class NbConstructorResultItem extends ConstructorResultItem{
         
-        public NbConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, int priority) {
-            super(ctr, substituteExp, priority);
+        public NbConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(ctr, substituteExp, priority, isDeclaration);
         }
 
         @Override

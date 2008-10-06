@@ -43,7 +43,7 @@ package org.netbeans.modules.websvc.manager.api;
 
 import java.io.File;
 import java.net.URL;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 
 /**
@@ -54,7 +54,7 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor
  */
 public class WebServiceDescriptor extends WsdlServiceProxyDescriptor {
 
-    public WebServiceDescriptor(String name, String packageName, int wsType, URL wsdl, File xmlDescriptor, WsdlService model) {
+    public WebServiceDescriptor(String name, String packageName, int wsType, URL wsdl, File xmlDescriptor, WSService model) {
         super(name, packageName, wsType, wsdl, xmlDescriptor, model);
     }
 

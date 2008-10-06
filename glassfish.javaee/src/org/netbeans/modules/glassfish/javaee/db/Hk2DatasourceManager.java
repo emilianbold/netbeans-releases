@@ -79,6 +79,8 @@ import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+
 /**
  *
  * @author Peter Williams
@@ -88,7 +90,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
     private static final TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     private static final int TIMEOUT = 1000;
     
-    private static final String DEFAULT_DOMAIN_DIR = "domains/domain1";
     private static final String DOMAIN_XML_PATH = "config/domain.xml";
     
     private Hk2DeploymentManager dm;
@@ -106,10 +107,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     public Set<Datasource> getDatasources() throws ConfigurationException {
         GlassfishModule commonSupport = dm.getCommonServerSupport();
-        String installRoot = commonSupport.getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-
+        String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+        String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
         // XXX Fix to work with current server domain, not just default domain.
-        File domainXml = new File(installRoot, DEFAULT_DOMAIN_DIR + File.separatorChar + DOMAIN_XML_PATH);
+        File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
         return readDatasources(domainXml, "/domain/", null);
     }
 
@@ -168,15 +169,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
     
     private static final class AddResourcesCommand extends ServerCommand {
 
-        private final String sunResourcesXmlPath;
-        
         public AddResourcesCommand(String sunResourcesXmlPath) {
-            this.sunResourcesXmlPath = sunResourcesXmlPath;
-        }
-        
-        @Override
-        public String getCommand() {
-            return "add-resources?DEFAULT=" + sunResourcesXmlPath;
+            super("add-resources"); // NOI18N
+            query = "xml_file_name=" + sunResourcesXmlPath; // NOI18N
         }
         
     }
@@ -449,7 +444,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             }
 
             // Is there a connection pool we can reuse, or do we need to create one?
-            String defaultPoolName = vendorName + "Pool";
+            String defaultPoolName = computePoolName(url, vendorName, username);
             Map<String, CPool> pools = cpFinder.getPoolData();
             CPool defaultPool = pools.get(defaultPoolName);
             
@@ -617,6 +612,29 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
         return dsClassName;
+    }
+    
+    private static String computePoolName(String url, String vendorName, String username){
+        UrlData urlData = new UrlData(url);
+        StringBuilder poolName = new StringBuilder(vendorName);
+        String dbName = getDatabaseName(urlData);
+        if (dbName != null) {
+            poolName.append("_" + dbName); //NOI18N
+        }
+        if (username != null) {
+            poolName.append("_" + username); //NOI18N
+        }
+        poolName.append("Pool"); //NOI18N
+        return poolName.toString(); 
+    }
+
+    private static String getDatabaseName(UrlData urlData) {
+        String databaseName = urlData.getDatabaseName();
+        if (databaseName == null) {
+            databaseName = urlData.getAlternateDBName();
+        }
+
+        return databaseName;
     }
     
     private static final String JDBC_TAG_1 = 

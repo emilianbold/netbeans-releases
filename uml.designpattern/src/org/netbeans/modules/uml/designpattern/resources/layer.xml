@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
 -->
             <folder name="explorer">
                 <file name="designpattern.wstcref" url="windowmanager/designpattern/designpattern.wstcref">
-                <attr name="position" intvalue="2000"/>
+                <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>

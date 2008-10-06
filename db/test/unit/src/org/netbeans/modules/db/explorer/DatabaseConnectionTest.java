@@ -43,13 +43,13 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class DatabaseConnectionTest extends TestBase {
+public class DatabaseConnectionTest extends DBTestBase {
 
     public DatabaseConnectionTest(String testName) {
         super(testName);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.  
 
 Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGWaitScreenCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGImageCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGMenuCD.instance"/>
-            <file name="org-netbeans-modules-vmd-midpnb-components-svg-SVGFormCD.instance"/>
+            
 
             <file name="org-netbeans-modules-vmd-midpnb-components-items-TableItemCD.instance"/>
             
@@ -97,8 +97,9 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midpnb-components-handlers-SVGMenuEventHandlerCD.instance"/>
 
             <!-- svg form components -->
-            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGFormComponentCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGComponentCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGButtonCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGButtonEventSourceCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGCheckBoxCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGComboBoxCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGLabelCD.instance"/>
@@ -107,6 +108,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSliderCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGSpinnerCD.instance"/>
             <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGTextFieldCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midpnb-components-svg-form-SVGFormCD.instance"/>
         </folder>
         
         <folder name="producers">

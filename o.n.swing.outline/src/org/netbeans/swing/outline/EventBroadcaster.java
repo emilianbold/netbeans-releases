@@ -220,13 +220,12 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     }
     
     /** Convenience method to fire a single table change to all listeners */
-    private void fireTableChange (TableModelEvent e) {
+    void fireTableChange (TableModelEvent e) {
         //Event may be null for offscreen info, etc.
         if (e == null) {
             return;
         }
         inMultiEvent = false;
-        TableModelListener[] listeners = getTableModelListeners();
         fireTableChange(e, getTableModelListeners());
     }
     

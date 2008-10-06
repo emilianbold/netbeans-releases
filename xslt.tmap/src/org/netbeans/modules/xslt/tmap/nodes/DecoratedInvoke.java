@@ -38,9 +38,13 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
     public String getHtmlDisplayName() {
         Invoke ref = getOriginal();
         String pltName = null;
+        String roleName = null;
         String opName = null;
         if (ref != null) {
-            pltName = Util.getReferenceLocalName(ref.getPortType());
+            // 142908
+            pltName = Util.getReferenceLocalName(ref.getPartnerLinkType());
+            roleName = Util.getReferenceLocalName(ref.getRole());
+//142908            pltName = Util.getReferenceLocalName(ref.getPortType());
             opName = Util.getReferenceLocalName(ref.getOperation());
         }
         String addon = null;
@@ -48,6 +52,11 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
             addon = TMapComponentNode.WHITE_SPACE+pltName; // NOI18N
         }
         
+        // 142908
+        if (roleName != null) {
+            addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + roleName; // NOI18N
+        }
+
         if (opName != null) {
             addon = (addon == null ? TMapComponentNode.EMPTY_STRING : addon+TMapComponentNode.WHITE_SPACE) + opName; // NOI18N
         }
@@ -65,8 +74,17 @@ public class DecoratedInvoke extends DecoratedTMapComponentAbstract<Invoke>{
                     , Invoke.NAME_PROPERTY));
 
             attributesTooltip.append(
-                    Util.getLocalizedAttribute(ref.getPortType()
-                    , Invoke.PORT_TYPE));
+                    Util.getLocalizedAttribute(ref.getPartnerLinkType()
+                    , Invoke.PARTNER_LINK_TYPE));
+
+            attributesTooltip.append(
+                    Util.getLocalizedAttribute(ref.getRole()
+                    , Invoke.ROLE_NAME));
+
+// 142908            
+//            attributesTooltip.append(
+//                    Util.getLocalizedAttribute(ref.getPortType()
+//                    , Invoke.PORT_TYPE));
 
             attributesTooltip.append(
                     Util.getLocalizedAttribute(ref.getOperation()

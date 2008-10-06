@@ -58,6 +58,7 @@ class DomainListEntry {
         this.location = location;
     }
     
+    @Override
     public String toString() {
         String abbrevDomainDir = stripCommonPrefix(location,domainDir);
         return  NbBundle.getMessage(DomainListEntry.class,
@@ -69,7 +70,6 @@ class DomainListEntry {
     }
 
     private String stripCommonPrefix(File pattern, File value) {
-        String retVal;
         String cpath1;
         String cpath2;
         try {

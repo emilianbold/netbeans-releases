@@ -43,12 +43,19 @@
 package org.openide.text;
 
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
@@ -57,8 +64,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import org.openide.awt.UndoRedo;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.actions.CallbackSystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -80,8 +93,9 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     private boolean valid = true;
     private boolean modified = false;
     private java.util.Date date = new java.util.Date ();
-    private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
+    private java.util.List<java.beans.PropertyChangeListener> propL = new java.util.ArrayList<java.beans.PropertyChangeListener>();
     private java.beans.VetoableChangeListener vetoL;
+    private FindActionCheck find;
     
     
     /** Creates new UndoRedoTest */
@@ -97,8 +111,13 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     @Override
     protected void setUp() throws Exception {
         support = new CES(this, Lookup.EMPTY);
+        find = new FindActionCheck();
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        find.assertAction();
+    }
     
 
     public void testInitializeOnBackground() throws Exception {
@@ -290,6 +309,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             return "ToolTip";
         }        
 
+        @Override
         protected javax.swing.text.EditorKit createEditorKit() {
             return new K();
         }
@@ -303,7 +323,42 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         
         
     } // end of CES
-    private static final class K extends NbLikeEditorKit {
+
+    private static final class MyAction extends CallbackSystemAction {
+        @Override
+        public String getName() {
+            return "MyAction";
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+    }
+
+    static final class K extends NbLikeEditorKit  {
+        @Override
+        public javax.swing.text.Document createDefaultDocument() {
+            return new EdDoc();
+        }
+
+        @Override
+        public Action[] getActions() {
+            List<Action> arr = new ArrayList<Action>(Arrays.asList(super.getActions()));
+            Action a = MyAction.get(MyAction.class);
+            arr.add(a);
+            return arr.toArray(new Action[0]);
+        }
+
+        private final class EdDoc extends Doc implements NbDocument.CustomEditor {
+            public Component createEditor(JEditorPane j) {
+                j.getActionMap().put("MyAction", MyAction.get(MyAction.class));
+                return j;
+            }
+
+        }
+
 /* Uncomment this code to simulate the deadlock with mimelookup that uses two locks
         @Override
         public synchronized Document createDefaultDocument() {
@@ -317,5 +372,38 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
             return super.call();
         }
  */
+
+    }
+
+    static final class FindActionCheck implements LookupListener {
+        private Result<ActionMap> res;
+
+        private Action last;
+
+        FindActionCheck() {
+            res = Utilities.actionsGlobalContext().lookupResult(ActionMap.class);
+            resultChanged(null);
+            res.addLookupListener(this);
+
+            TopComponent tc =new TopComponent();
+            tc.open();
+            tc.requestActive();
+
+            assertEquals("No action provided now", null, last);
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            if (!res.allItems().isEmpty()) {
+                ActionMap m = res.allInstances().iterator().next();
+                last = m.get("MyAction");
+            } else {
+                last = null;
+            }
+        }
+
+        public void assertAction() {
+            res.removeLookupListener(this);
+            assertNotNull("Result found", last);
+        }
     }
 }

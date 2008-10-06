@@ -4,7 +4,7 @@
     <welcome file="Welcome.html"></welcome>
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
-    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
+    <options allow-external-scripts="no" customize="allow" rootVolumeOnly="false"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
     <script>

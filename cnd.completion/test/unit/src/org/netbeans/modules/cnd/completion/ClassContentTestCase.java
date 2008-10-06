@@ -91,4 +91,19 @@ public class ClassContentTestCase extends CompletionBaseTestCase {
         // IZ 138291 : Completion does not work for unfinished constructor
         super.performTest("file.h", 18, 5, "E(const E)", -1);
     }
+
+    public void testDefaultConstructorWithNew() throws Exception {
+        // IZ 108191 : Code Completion and Hyperlinks work wrong with class methods in some cases
+        super.performTest("file.h", 6, 5, "new F().");
+    }
+
+    public void testDefaultConstructorWithoutNew() throws Exception {
+        // IZ 108191 : Code Completion and Hyperlinks work wrong with class methods in some cases
+        super.performTest("file.h", 6, 5, "F().");
+    }
+
+    public void testConstructorDefinition() throws Exception {
+        // IZ 108191 : Code Completion and Hyperlinks work wrong with class methods in some cases
+        super.performTest("file.cc", 10, 4);
+    }
 }

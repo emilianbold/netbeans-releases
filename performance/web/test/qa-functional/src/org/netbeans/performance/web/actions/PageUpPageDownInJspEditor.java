@@ -91,8 +91,20 @@ public class PageUpPageDownInJspEditor extends PerformanceTestCase {
     private int statusBarCaretDelay;
     private boolean codeFoldindEnabled;
     
-   public void testPageUpPageDownInJspEditor() {
-        doMeasurement();
+    public void testPageDownInJspEditor() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public void testPageDownInJspEditorWithLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public void testPageUpInJspEditor() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    public void testPageUpInJspEditorWithLargeFile() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
     
     protected void initialize() {

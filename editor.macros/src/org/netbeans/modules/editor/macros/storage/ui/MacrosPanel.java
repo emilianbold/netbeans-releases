@@ -77,17 +77,12 @@ import org.openide.util.NbBundle;
 public class MacrosPanel extends JPanel {
 
     private final MacrosModel model = MacrosModel.get();
-    private final Lookup lookup;
     
     /** 
      * Creates new form MacrosPanel.
      */
     public MacrosPanel(Lookup lookup) {
-        this.lookup = lookup;
-        
         initComponents();
-
-        setName(loc("Macro_Tab")); //NOI18N
 
         // 1) init components
         tMacros.getAccessibleContext().setAccessibleName(loc("AN_Macros_Table")); //NOI18N
@@ -256,7 +251,7 @@ public class MacrosPanel extends JPanel {
     }//GEN-LAST:event_bNewActionPerformed
 
     private void bSetShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSetShortcutActionPerformed
-        ShortcutsFinder shortcutsFinder = lookup.lookup(ShortcutsFinder.class);
+        ShortcutsFinder shortcutsFinder = Lookup.getDefault().lookup(ShortcutsFinder.class);
         assert shortcutsFinder != null : "Can't find ShortcutsFinder"; //NOI18N
         
 	int selectedRow = tMacros.getSelectedRow();
@@ -296,7 +291,7 @@ public class MacrosPanel extends JPanel {
     }//GEN-LAST:event_bSetShortcutActionPerformed
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
-	ShortcutsFinder shortcutsFinder = lookup.lookup(ShortcutsFinder.class);
+	ShortcutsFinder shortcutsFinder = Lookup.getDefault().lookup(ShortcutsFinder.class);
 	shortcutsFinder.setShortcuts(model.getMacroByIndex(tMacros.getSelectedRow()), Collections.<String>emptySet());
         model.deleteMacro(tMacros.getSelectedRow());
     }//GEN-LAST:event_bRemoveActionPerformed

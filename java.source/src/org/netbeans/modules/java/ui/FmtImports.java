@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.util.prefs.Preferences;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 /**
  *
@@ -55,8 +55,8 @@ public class FmtImports extends javax.swing.JPanel {
         initComponents();
     }
     
-    public static FormatingOptionsPanel.Category getController(Preferences preferences) {
-        return new CategorySupport(preferences, "LBL_Imports", new FmtImports(), null); // NOI18N
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("imports", FmtImports.class, null);
     }
     
     /** This method is called from within the constructor to
@@ -79,8 +79,7 @@ public class FmtImports extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
 
-        setMinimumSize(new java.awt.Dimension(0, 0));
-        setPreferredSize(new java.awt.Dimension(0, 0));
+        setName(org.openide.util.NbBundle.getMessage(FmtImports.class, "LBL_Imports")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, "jCheckBox1");

@@ -46,7 +46,12 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Window">
             <folder name="Debug">
-                <file name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance"/>
+                <file name="org-netbeans-modules-debugger-jpda-heapwalk-actions-ClassesCountsViewAction.instance">
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.debugger.jpda.heapwalk.actions.ClassesCountsViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/classesView/Classes.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.jpda.heapwalk.actions.Bundle#CTL_ClassesAction"/>
+                </file>
             </folder>
         </folder>
     </folder>
@@ -76,9 +81,9 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="Modes">
-            <folder name="debugger">
+            <folder name="output">
                 <file name="classes.wstcref" url="classesCounts.wstcref">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="500"/>
                 </file>
                 </folder>
             <folder name="editor">

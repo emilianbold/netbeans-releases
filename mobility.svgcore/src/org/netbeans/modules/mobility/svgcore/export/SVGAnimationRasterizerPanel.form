@@ -19,6 +19,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -55,7 +56,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="optionsPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="timeLinePanel" min="-2" pref="183" max="-2" attributes="0"/>
+                      <Component id="timeLinePanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="exportPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -107,7 +108,7 @@
                           <Component id="keepRatio" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="134" max="32767" attributes="0"/>
+                  <EmptySpace pref="151" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -216,7 +217,7 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_keepRation_name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_spinnerHeight_descritpion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_keepRation_description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
           <Events>
@@ -265,7 +266,7 @@
                       </Group>
                       <Group type="102" attributes="0">
                           <Component id="progressiveCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="152" max="32767" attributes="0"/>
+                          <EmptySpace pref="169" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
@@ -282,14 +283,14 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="transparentCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="149" max="32767" attributes="0"/>
+                          <EmptySpace pref="165" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
                               <Component id="reductionCombo" alignment="0" max="32767" attributes="1"/>
                               <Component id="reductionLabel" alignment="0" max="32767" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="92" max="32767" attributes="0"/>
+                          <EmptySpace pref="130" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -553,7 +554,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace min="12" pref="12" max="12" attributes="0"/>
                           <Component id="framesPerSecLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="70" max="32767" attributes="0"/>
+                          <EmptySpace pref="97" max="32767" attributes="0"/>
                           <Component id="framesPerSecSpinner" min="-2" pref="46" max="-2" attributes="0"/>
                       </Group>
                       <Component id="startTimeSlider" alignment="0" pref="246" max="32767" attributes="0"/>
@@ -563,12 +564,12 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="stopTimeLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="80" max="32767" attributes="0"/>
+                                  <EmptySpace pref="105" max="32767" attributes="0"/>
                                   <Component id="stopTimeSpinner" min="-2" pref="84" max="-2" attributes="1"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="startTimeLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="79" max="32767" attributes="0"/>
+                                  <EmptySpace pref="104" max="32767" attributes="0"/>
                                   <Component id="startTimeSpinner" min="-2" pref="83" max="-2" attributes="1"/>
                               </Group>
                           </Group>
@@ -758,7 +759,7 @@
                       <Component id="allFramesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="radioExportCurrent" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="46" max="32767" attributes="0"/>
+                  <EmptySpace pref="89" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -886,7 +887,7 @@
                           <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="previewMaxFrameText" min="-2" pref="35" max="-2" attributes="0"/>
-                          <EmptySpace pref="88" max="32767" attributes="0"/>
+                          <EmptySpace pref="155" max="32767" attributes="0"/>
                           <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="previewCurrentTimeText" min="-2" pref="56" max="-2" attributes="0"/>
@@ -965,7 +966,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="previewAnimationSizeText" min="-2" pref="162" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="previewFileText" alignment="0" pref="349" max="32767" attributes="0"/>
+                          <Component id="previewFileText" alignment="0" pref="379" max="32767" attributes="0"/>
                           <Component id="previewFormatText" alignment="0" min="-2" pref="55" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1015,6 +1016,9 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_jlabel3_descritpion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
@@ -1033,6 +1037,9 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_previewSizelabel_description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel4">
               <Properties>
@@ -1051,6 +1058,9 @@
                   <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_previewFileLabel_description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="previewFormatText">
               <Properties>
@@ -1165,6 +1175,7 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableLocal" type="java.lang.Boolean" value="true"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="previewFrameSpinner">
@@ -1209,6 +1220,9 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_LBL_Time_description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JTextField" name="previewCurrentTimeText">
           <Properties>

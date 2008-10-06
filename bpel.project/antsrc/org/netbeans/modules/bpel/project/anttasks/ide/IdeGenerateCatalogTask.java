@@ -56,12 +56,15 @@ public class IdeGenerateCatalogTask extends Task {
     @Override
     public void execute() throws BuildException {
         if (this.mSourceDirectory == null) {
-            throw new BuildException("No directory is set for source files.");
+            throw new BuildException(
+                    "No directory is set for source files."); // NOI18N
         }
-        File sourceDirectory = new File(this.mSourceDirectory);
-        File buildDirectory = new File(this.mBuildDirectory);
         
-        CommandlineBpelProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
+        final File sourceDirectory = new File(this.mSourceDirectory);
+        final File buildDirectory = new File(this.mBuildDirectory);
+        
+        //CommandlineBpelProjectXmlCatalogProvider.
+        //        getInstance().setSourceDirectory(this.mSourceDirectory);
         
         new PackageCatalogArtifacts().doCopy(sourceDirectory, buildDirectory);
     }
@@ -85,7 +88,7 @@ public class IdeGenerateCatalogTask extends Task {
     
     public void setProjectClassPath(String projectClassPath) {
     }
-
+    
     private String mSourceDirectory = null;
     private String mBuildDirectory = null;
 }

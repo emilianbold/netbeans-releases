@@ -78,7 +78,7 @@ public class DerbyServerNode extends AbstractNode implements Comparable {
     @Override
     public String getDisplayName() {
        // Product name - no need to internationalize
-       return "Java DB"; // NOI8N
+       return "Java DB"; // NOI18N
     }
    
     @Override

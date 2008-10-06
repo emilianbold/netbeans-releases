@@ -45,11 +45,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Arrays;
 import java.util.Vector;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -65,6 +65,8 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class BreakpointsTreeModel implements TreeModel {
     
+    private static Logger logger = Logger.getLogger(BreakpointsTreeModel.class.getName());
+
     private Listener listener;
     private Vector listeners = new Vector ();
     
@@ -100,10 +102,15 @@ public class BreakpointsTreeModel implements TreeModel {
             }
             if (listener == null)
                 listener = new Listener (this);
-            if (to == 0)
+            if (to == 0) {
+                logger.fine("getChildren("+from+", "+to+"): RETURNING "+l.toArray ());
                 return l.toArray ();
+            }
             to = Math.min(l.size(), to);
             from = Math.min(l.size(), from);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("getChildren("+from+", "+to+"): Breakpoints: "+Arrays.asList(bs)+";  RETURNING: "+l.subList (from, to));
+            }
             return l.subList (from, to).toArray ();
         } else
         if (parent instanceof String) {
@@ -137,6 +144,8 @@ public class BreakpointsTreeModel implements TreeModel {
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this);
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return getChildren (node, 0, 0).length;

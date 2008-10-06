@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midp.propertyeditors.eventhandler;
 
 import java.util.Collection;
@@ -57,46 +56,67 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  *
  * @author Anton Chechel
  */
-public class SwitchToDisplayableElement extends JPanel implements PropertyEditorEventHandlerElement {
+public class SwitchToDisplayableElement extends JPanel implements PropertyEditorEventHandlerElement, CleanUp {
+
     private DefaultComboBoxModel displayablesModel;
     private DefaultComboBoxModel displayablesWithoutAlertModel;
     private JRadioButton radioButton;
     private ListCellRenderer cellRenderer;
-    
+
     private SwitchToDisplayableElement() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(SwitchToDisplayableElement.class, "LBL_SWITCH_TO_DISPL")); // NOI18N
+
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(SwitchToDisplayableElement.class,
+                "ACSN_SWITCH_TO_DISPL")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SwitchToDisplayableElement.class,
+                "ACSD_SWITCH_TO_DISPL")); // NOI18N
+
         displayablesModel = new DefaultComboBoxModel();
         displayablesWithoutAlertModel = new DefaultComboBoxModel();
         cellRenderer = new ListCellRenderer();
-        
+
         initComponents();
     }
-    
-    public void setTextForPropertyValue (String text) {
+
+    public void clean(DesignComponent component) {
+        displayablesComboBox = null;
+        displayablesWithoutAlertsComboBox = null;
+        thenGoToCheckBox = null;
+        displayablesModel = null;
+        displayablesWithoutAlertModel = null;
+        radioButton = null;
+        cellRenderer = null;
+        this.removeAll();
     }
-    
+
+    public void setTextForPropertyValue(String text) {
+    }
+
     public JComponent getCustomEditorComponent() {
         return this;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return false;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     public void createEventHandler(DesignComponent eventSource) {
         if (!radioButton.isSelected()) {
             return;
@@ -111,7 +131,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
             MidpDocumentSupport.updateSwitchDisplayableEventHandler(eventHandler, null, displayable);
         }
     }
-    
+
     public void updateModel(List<DesignComponent> components, int modelType) {
         if (modelType == MODEL_TYPE_DISPLAYABLES) {
             displayablesModel.removeAllElements();
@@ -119,7 +139,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
                 displayablesModel.addElement(component);
             }
         }
-        
+
         if (modelType == MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS) {
             displayablesWithoutAlertModel.removeAllElements();
             for (DesignComponent component : components) {
@@ -127,17 +147,17 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
             }
         }
     }
-    
-    public String getTextForPropertyValue () {
+
+    public String getTextForPropertyValue() {
         return null;
     }
-    
+
     public void updateState(PropertyValue value) {
         if (value != null) {
             DesignComponent eventHandler = value.getComponent();
             if (SwitchDisplayableEventHandlerCD.TYPEID.equals(eventHandler.getType())) {
                 radioButton.setSelected(true);
-                
+
                 DesignComponent displayable = eventHandler.readProperty(SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE).getComponent();
                 DesignComponent displayable2 = eventHandler.readProperty(SwitchDisplayableEventHandlerCD.PROP_ALERT).getComponent();
                 if (displayable2 != null) {
@@ -157,32 +177,33 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
             clearAlertCheckBox();
         }
     }
-    
+
     private void clearAlertCheckBox() {
         thenGoToCheckBox.setSelected(false);
         thenGoToCheckBox.setEnabled(false);
         displayablesWithoutAlertsComboBox.setEnabled(false);
     }
-    
+
     public void setElementEnabled(boolean enabled) {
     }
-    
-   public Collection<TypeID> getTypes() {
+
+    public Collection<TypeID> getTypes() {
         return Collections.singleton(SwitchDisplayableEventHandlerCD.TYPEID);
     }
-    
+
     public static class SwitchToDisplayableElementFactory implements PropertyEditorElementFactory {
+
         public PropertyEditorEventHandlerElement createElement() {
             return new SwitchToDisplayableElement();
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         displayablesComboBox = new javax.swing.JComboBox();
@@ -230,23 +251,28 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(displayablesWithoutAlertsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        displayablesComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSN_FirstDisplayable")); // NOI18N
+        displayablesComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSD_FirstDisplayable")); // NOI18N
+        thenGoToCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSN_ForwardTo")); // NOI18N
+        thenGoToCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSD_ForwardTo")); // NOI18N
+        displayablesWithoutAlertsComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSN_SecondDisplayable")); // NOI18N
+        displayablesWithoutAlertsComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SwitchToDisplayableElement.class, "ACSD_SecondDisplayable")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void displayablesComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayablesComboBoxActionPerformed
-        DesignComponent component = (DesignComponent) displayablesComboBox.getSelectedItem();
+        DesignComponent component = (DesignComponent) displayablesComboBox.getSelectedItem();//GEN-LAST:event_displayablesComboBoxActionPerformed
         if (component == null) {
             return;
         }
         radioButton.setSelected(true);
         displayablesWithoutAlertsComboBox.setEnabled(AlertCD.TYPEID.equals(component.getType()));
         thenGoToCheckBox.setEnabled(AlertCD.TYPEID.equals(component.getType()));
-    }//GEN-LAST:event_displayablesComboBoxActionPerformed
-    
+    }
+
     private void thenGoToCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_thenGoToCheckBoxActionPerformed
-        displayablesWithoutAlertsComboBox.setEnabled(thenGoToCheckBox.isSelected());
-}//GEN-LAST:event_thenGoToCheckBoxActionPerformed
-    
-    
+        displayablesWithoutAlertsComboBox.setEnabled(thenGoToCheckBox.isSelected());//GEN-LAST:event_thenGoToCheckBoxActionPerformed
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox displayablesComboBox;
     private javax.swing.JComboBox displayablesWithoutAlertsComboBox;

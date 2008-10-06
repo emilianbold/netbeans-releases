@@ -49,11 +49,14 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JToolTip;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -64,8 +67,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -76,12 +77,15 @@ import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Registry;
-import org.netbeans.modules.gsf.GsfHtmlFormatter;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
-import org.netbeans.spi.editor.completion.*;
+import org.netbeans.modules.gsf.api.GsfLanguage;
+import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
@@ -113,14 +117,23 @@ public class GsfCompletionProvider implements CompletionProvider {
             return null;
         }
     }
-    
-    static CodeCompletionHandler getCompletable(Document doc, int offset) {
+
+    private static Language getCompletableLanguage(Document doc, int offset) {
         BaseDocument baseDoc = (BaseDocument)doc;
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
         for (Language l : list) {
             if (l.getCompletionProvider() != null) {
-                return l.getCompletionProvider();
+                return l;
             }
+        }
+
+        return null;
+    }
+    
+    static CodeCompletionHandler getCompletable(Document doc, int offset) {
+        Language l = getCompletableLanguage(doc, offset);
+        if (l != null) {
+            return l.getCompletionProvider();
         }
 
         return null;
@@ -213,7 +226,8 @@ public class GsfCompletionProvider implements CompletionProvider {
         JavaCompletionQuery query = new JavaCompletionQuery(DOCUMENTATION_QUERY_TYPE, -1);
         query.element = element;
 
-        return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        //return new AsyncCompletionTask(query, Registry.getMostActiveComponent());
+        return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
 
     static final class JavaCompletionQuery extends AsyncCompletionQuery implements CancellableTask<CompilationController> {
@@ -243,8 +257,9 @@ public class GsfCompletionProvider implements CompletionProvider {
 
             if (newCaretOffset >= caretOffset) {
                 try {
-                    if (isJavaIdentifierPart(component.getDocument()
-                                                          .getText(caretOffset,
+                    Document doc = component.getDocument();
+                    Language language = getCompletableLanguage(doc, caretOffset);
+                    if (isJavaIdentifierPart(language, doc.getText(caretOffset,
                                     newCaretOffset - caretOffset))) {
                         return;
                     }
@@ -300,6 +315,11 @@ public class GsfCompletionProvider implements CompletionProvider {
                             if (documentation != null)
                                 resultSet.setDocumentation(documentation);
                         }
+
+                        if (results != null && results.size() == 0) {
+                            isFilterable = false;
+                        }
+
                         if (anchorOffset > -1)
                             resultSet.setAnchorOffset(anchorOffset);
                     }
@@ -314,30 +334,28 @@ public class GsfCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             filterPrefix = null;
-
             int newOffset = component.getSelectionStart();
-
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                 if (isTruncated || !isFilterable) {
                     return false;
                 }
-                
-                if (newOffset >= caretOffset) {
-                    if (anchorOffset > -1) {
+                int offset = Math.min(anchorOffset, caretOffset);
+                if (offset > -1) {
+                    if (newOffset < offset)
+                        return true;
+                    if (newOffset >= caretOffset) {
                         try {
-                            String prefix =
-                                component.getDocument()
-                                         .getText(anchorOffset, newOffset - anchorOffset);
-
-                            if (isJavaIdentifierPart(prefix)) {
-                                filterPrefix = prefix;
-                            }
-                        } catch (BadLocationException e) {
-                        }
+                            Document doc = component.getDocument();
+                            Language language = getCompletableLanguage(doc, caretOffset);
+                            String prefix = doc.getText(offset, newOffset - offset);
+                            filterPrefix = isJavaIdentifierPart(language, prefix) ? prefix : null;
+                            if (filterPrefix != null && filterPrefix.length() == 0)
+                                anchorOffset = newOffset;
+                        } catch (BadLocationException e) {}
+                        return true;
                     }
                 }
-
-                return filterPrefix != null;
+                return false;
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 try {
                     if (newOffset == caretOffset)
@@ -345,12 +363,12 @@ public class GsfCompletionProvider implements CompletionProvider {
                     else if (newOffset - caretOffset > 0)
                         filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
+                        //filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
                         filterPrefix = component.getDocument().getText(newOffset, caretOffset - newOffset);
                 } catch (BadLocationException ex) {}
                 return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
             }
-
-            return false;
+            return false;            
         }
 
         @Override
@@ -437,6 +455,9 @@ public class GsfCompletionProvider implements CompletionProvider {
             
                     int index = info.getCurrentIndex();
                     anchorOffset = info.getAnchorOffset();
+                    if (anchorOffset == -1) {
+                        anchorOffset = offset;
+                    }
                     toolTip = new MethodParamsTipPaintComponent(parameterList, index, component);
                     //startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
                     //String text = controller.getText().substring(startPos, offset);
@@ -456,15 +477,13 @@ public class GsfCompletionProvider implements CompletionProvider {
             private final String prefix;
             private final NameKind kind;
             private final QueryType queryType;
-            private final HtmlFormatter formatter;
 
-            public CodeCompletionContextImpl(int caretOffset, CompilationInfo info, String prefix, NameKind kind, QueryType queryType, HtmlFormatter formatter) {
+            public CodeCompletionContextImpl(int caretOffset, CompilationInfo info, String prefix, NameKind kind, QueryType queryType) {
                 this.caretOffset = caretOffset;
                 this.info = info;
                 this.prefix = prefix;
                 this.kind = kind;
                 this.queryType = queryType;
-                this.formatter = formatter;
             }
 
             @Override
@@ -496,12 +515,6 @@ public class GsfCompletionProvider implements CompletionProvider {
             public boolean isCaseSensitive() {
                 return GsfCompletionProvider.isCaseSensitive();
             }
-
-            @Override
-            public HtmlFormatter getFormatter() {
-                return formatter;
-            }
-            
         }
 
         private void resolveDocumentation(CompilationController controller)
@@ -522,9 +535,12 @@ public class GsfCompletionProvider implements CompletionProvider {
                 CodeCompletionHandler completer = env.getCompletable();
 
                 if (completer != null) {
-                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION, new CompletionFormatter());
+                    CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, NameKind.EXACT_NAME, QueryType.DOCUMENTATION);
                     CodeCompletionResult result = completer.complete(context);
-                    assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+                    if (result == null) {
+                        Logger.getLogger(this.getClass().getName()).log(Level.WARNING, completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null");
+                        result = CodeCompletionResult.NONE;
+                    }
 
                     if (result != CodeCompletionResult.NONE) {
                         for (CompletionProposal proposal : result.getItems()) {
@@ -569,9 +585,13 @@ public class GsfCompletionProvider implements CompletionProvider {
         private void addCodeCompletionItems(CompilationController controller, CodeCompletionHandler completer, int offset, String prefix) {
             CodeCompletionContext context = new CodeCompletionContextImpl(offset, controller, prefix, 
                     isCaseSensitive() ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX,
-                    QueryType.COMPLETION, new CompletionFormatter());
+                    QueryType.COMPLETION);
             CodeCompletionResult result = completer.complete(context);
-            assert result != null : completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null";
+
+            if (result == null) {
+                Logger.getLogger(this.getClass().getName()).log(Level.WARNING, completer.getClass().getName() + " should return CodeCompletionResult.NONE rather than null");
+                result = CodeCompletionResult.NONE;
+            }
 
             if (result != CodeCompletionResult.NONE) {
                 if (result.isTruncated()) {
@@ -605,10 +625,15 @@ public class GsfCompletionProvider implements CompletionProvider {
             }
         }
 
-        // TODO - delegate to language support!
-        private boolean isJavaIdentifierPart(String text) {
+        private boolean isJavaIdentifierPart(Language language, String text) {
+            GsfLanguage gsfLanguage = language != null ? language.getGsfLanguage() : null;
             for (int i = 0; i < text.length(); i++) {
-                if (!(Character.isJavaIdentifierPart(text.charAt(i)))) {
+                char c = text.charAt(i);
+                if (gsfLanguage == null) {
+                    if (!Character.isJavaIdentifierPart(c)) {
+                        return false;
+                    }
+                } else if (!gsfLanguage.isIdentifierChar(c)) {
                     return false;
                 }
             }
@@ -732,94 +757,6 @@ public class GsfCompletionProvider implements CompletionProvider {
                 return completable;
             }
         }
-    }
-    
-    /** Format parameters in orange etc. */
-    private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
-        private static final String END_COLOR = "</font>"; // NOI18N
-        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
-        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String KEYWORD_COLOR = "<font color=#000099>"; //NOI18N
-        private static final String FIELD_COLOR = "<font color=#008618>"; //NOI18N
-        private static final String VARIABLE_COLOR = "<font color=#00007c>"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = "<font color=#b28b00>"; //NOI18N
-        private static final String INTERFACE_COLOR = "<font color=#404040>"; //NOI18N
-        private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
-
-        @Override
-        public void parameters(boolean start) {
-            assert start != isParameter;
-            isParameter = start;
-
-            if (isParameter) {
-                sb.append(PARAMETER_NAME_COLOR);
-            } else {
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void active(boolean start) {
-            if (start) {
-                sb.append(ACTIVE_PARAMETER_COLOR);
-                sb.append("<b>");
-            } else {
-                sb.append("</b>");
-                sb.append(END_COLOR);
-            }
-        }
-        
-        @Override
-        public void name(ElementKind kind, boolean start) {
-            assert start != isName;
-            isName = start;
-
-            if (isName) {
-                switch (kind) {
-                case CONSTRUCTOR:
-                    sb.append(CONSTRUCTOR_COLOR);
-                    break;
-                case CALL:
-                    sb.append(PARAMETERS_COLOR);
-                    break;
-                case DB:
-                case METHOD:
-                    sb.append(METHOD_COLOR);
-                     break;
-                case CLASS:
-                    sb.append(CLASS_COLOR);
-                    break;
-                case FIELD:
-                    sb.append(FIELD_COLOR);
-                    break;
-                case MODULE:
-                    sb.append(PKG_COLOR);
-                    break;
-                case KEYWORD:
-                    sb.append(KEYWORD_COLOR);
-                    sb.append("<b>");
-                    break;
-                case VARIABLE:
-                    sb.append(VARIABLE_COLOR);
-                    sb.append("<b>");
-                    break;
-                default:
-                    sb.append("<font>");
-                }
-            } else {
-                switch (kind) {
-                case KEYWORD:
-                case VARIABLE:
-                    sb.append("</b>");
-                    break;
-                }
-                sb.append(END_COLOR);
-            }
-        }
-        
     }
     
     // From Utilities

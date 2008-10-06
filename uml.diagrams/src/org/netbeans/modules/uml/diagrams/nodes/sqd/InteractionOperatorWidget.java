@@ -53,6 +53,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -74,7 +75,8 @@ public class InteractionOperatorWidget extends Widget {
     public InteractionOperatorWidget(Scene scene,String text)
     {
         super(scene);
-        operator=new UMLLabelWidget(scene,text, ID, "interaction operator");
+        operator=new UMLLabelWidget(scene,text, ID, 
+                                    NbBundle.getMessage(InteractionOperatorWidget.class, "LBL_Interaction_Operator"));
         operator.setMinimumSize(new Dimension(30,5));
         setLayout(LayoutFactory.createHorizontalFlowLayout());
         addChild(operator);

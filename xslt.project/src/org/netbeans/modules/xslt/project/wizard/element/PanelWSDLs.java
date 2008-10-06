@@ -97,7 +97,7 @@ final class PanelWSDLs<T> extends Panel<T> {
 
     c.gridy++;
     c.insets = new Insets(
-      TINY_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
+      TINY_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
     myWebServiceImplement.createPanel(panel, c);
 
     // we call
@@ -107,7 +107,7 @@ final class PanelWSDLs<T> extends Panel<T> {
 
     c.gridy++;
     c.insets = new Insets(
-      TINY_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET, TINY_INSET, 0);
+      TINY_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE, TINY_SIZE, 0);
     myWebServiceCall.createPanel(panel, c);
 
     mainPanel.add(panel, cc);

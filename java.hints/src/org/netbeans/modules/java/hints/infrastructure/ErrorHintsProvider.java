@@ -168,7 +168,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             
             if (range[0] == null || range[1] == null)
                 continue;
-            
+
             descs.add(ErrorDescriptionFactory.createErrorDescription(errorKind2Severity.get(d.getKind()), desc, ehm, doc, range[0], range[1]));
         }
         
@@ -286,11 +286,11 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                     
                     a = mit.getArguments().get(index[0]);
                 }
+
+                int start = info.getPositionConverter().getOriginalPosition((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), a));
+                int end = info.getPositionConverter().getOriginalPosition((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), a));
             
-                return new int[] {
-                    (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), a),
-                    (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), a)
-                };
+                return new int[] {start, end};
             }
         }
         
@@ -371,14 +371,18 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             
             int column = 0;
             int length = text.length();
-            
+
             while (column < text.length() && Character.isWhitespace(text.charAt(column)))
                 column++;
-            
+
             while (length > 0 && Character.isWhitespace(text.charAt(length - 1)))
                 length--;
-            
-            startOffset = lineOffset + column;
+
+            if(length == 0) //whitespace only
+                startOffset = lineOffset;
+            else
+                startOffset = lineOffset + column;
+
             endOffset = lineOffset + length;
         }
         

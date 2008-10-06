@@ -40,13 +40,20 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.io.File;
 import java.io.IOException;
 
+import java.util.EnumSet;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -103,7 +110,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
 
     public void testAddFirst() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
@@ -129,7 +136,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                       node, 
+                       node,
                        make.Import(make.Identifier("java.io.IOException"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -141,10 +148,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddFirstAgain() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
@@ -169,7 +176,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                        node, 
+                        node,
                         make.Import(make.Identifier("java.io.IOException"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -181,14 +188,14 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddFirstToExisting() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.lang.NullPointerException;\n" +
-            "\n" + 
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -199,7 +206,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
             "\n" +
             "import java.io.IOException;\n" +
             "import java.lang.NullPointerException;\n" +
-            "\n" + 
+            "\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -213,7 +220,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.insertCompUnitImport(
-                        node, 
+                        node,
                         0,
                         make.Import(make.Identifier("java.io.IOException"), false)
                 );
@@ -226,10 +233,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddFirstTwo() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "public class Test {\n" +
             "    public void taragui() {\n" +
@@ -257,7 +264,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                         make.Import(make.Identifier("java.io.IOException"), false)
                 );
                 copy = make.addCompUnitImport(
-                        copy, 
+                        copy,
                         make.Import(make.Identifier("java.util.List"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -269,10 +276,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddFirstTwoAgain() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "/** javadoc comment */\n" +
             "public class Test {\n" +
@@ -302,7 +309,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                         make.Import(make.Identifier("java.io.IOException"), false)
                 );
                 copy = make.addCompUnitImport(
-                        copy, 
+                        copy,
                         make.Import(make.Identifier("java.util.List"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -314,10 +321,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddSecondImport() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.IOException;\n" +
@@ -344,7 +351,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                        node, 
+                        node,
                         make.Import(make.Identifier("java.util.List"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -355,10 +362,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
     }
-    
+
     public void testAddSecondImportWithEndLineCmt() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "import java.io.IOException; // aa\n\n" +
             "public class Test {\n" +
@@ -383,7 +390,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                        node, 
+                        node,
                         make.Import(make.Identifier("java.util.List"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -395,10 +402,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddTwoImportsOrigWithComment() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "import java.io.IOException; // yerba mate\n\n" +
             "public class Test {\n" +
@@ -424,11 +431,11 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                        node, 
+                        node,
                         make.Import(make.Identifier("java.util.List"), false)
                 );
                 copy = make.addCompUnitImport(
-                        copy, 
+                        copy,
                         make.Import(make.Identifier("java.util.Collections"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -440,10 +447,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddBetweenImports() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.io.IOException; // yerba mate\n" +
@@ -492,10 +499,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveBetweenImportsWithLineEndComment() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "import java.io.IOException;\n" +
             "import java.util.ArrayList; // polovy seznam\n" +
@@ -534,10 +541,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveInnerImport() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n\n" +
             "import java.io.IOException;\n" +
             "import java.util.ArrayList;\n" +
@@ -576,10 +583,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveAllImports() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.util.ArrayList; // polovy seznam\n" +
@@ -617,10 +624,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveAllImports2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.util.ArrayList; // polovy seznam\n" +
@@ -664,10 +671,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testUnformatted() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;" +
             "import java.util.ArrayList; // polovy seznam\n" +
             "import java.util.List; // yerba mate\n" +
@@ -704,10 +711,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void XtestEmptyLines() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "package hierbas.del.litoral;\n" +
             "\n" +
             "import java.util.ArrayList;\n" +
@@ -751,10 +758,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testIndentedImport() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "    import java.util.ArrayList;\n" +
             "\n" +
             "import java.util.List;\n" +
@@ -791,10 +798,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testIndentedImport2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "    import java.util.ArrayList;\n" +
             "import java.util.Collections;\n" +
@@ -829,10 +836,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testMissingNewLine() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;import java.util.Collections;\n" +
             "\n" +
@@ -866,10 +873,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveAllInDefault() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;\n" +
             "import java.util.Collections;\n" +
@@ -904,10 +911,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveAllInDefault2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;\n" +
             "import java.util.Collections; // test\n" +
@@ -942,10 +949,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveAfterEmpty() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "\n" +
             "import java.util.ArrayList;\n" +
@@ -982,10 +989,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRemoveBeforeEmpty() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;\n" +
             "\n" +
@@ -1022,10 +1029,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRenameIdentifier() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;\n" +
             "\n" +
@@ -1064,10 +1071,10 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testRenameIdentifier2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "import java.util.List;\n" +
             "import java.util.ArrayList;\n" +
             "\n" +
@@ -1113,7 +1120,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
      */
     public void testAtVeryBeginning() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "public class Test {\n" +
             "    public void taragui() {\n" +
             "    }\n" +
@@ -1136,7 +1143,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                       node, 
+                       node,
                        make.Import(make.Identifier("java.io.IOException"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -1148,13 +1155,13 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     /**
      * http://www.netbeans.org/issues/show_bug.cgi?id=103429
      */
     public void testPackageInfo() throws Exception {
         testFile = new File(getWorkDir(), "package-info.java");
-        TestUtilities.copyStringToFile(testFile, 
+        TestUtilities.copyStringToFile(testFile,
             "@XmlSchema(namespace = \"urn:aaa\")\n" +
             "package javaapplication2;\n"
             );
@@ -1173,7 +1180,7 @@ public class ImportsTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree node = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.addCompUnitImport(
-                       node, 
+                       node,
                        make.Import(make.Identifier("javax.xml.bind.annotation.XmlSchema"), false)
                 );
                 workingCopy.rewrite(node, copy);
@@ -1185,7 +1192,97 @@ public class ImportsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-        
+
+    public void test138100() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "public class Test {\n" +
+            "    public void test1() {\n" +
+            "    }\n" +
+            "    public void test2() {\n" +
+            "    }\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = "\n" +
+            "import java.util.LinkedList;\n" +
+            "import java.util.List;\n\n" +
+            "public class Test {\n" +
+            "    public void test1() {\n" +
+            "        List test;\n" +
+            "    }\n" +
+            "    public void test2() {\n" +
+            "        LinkedList test;\n" +
+            "    }\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                TypeElement juList = workingCopy.getElements().getTypeElement("java.util.List");
+                BlockTree block1 = ((MethodTree) ((ClassTree) node.getTypeDecls().get(0)).getMembers().get(0)).getBody();
+                VariableTree var1 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", make.QualIdent(juList), null);
+                BlockTree nueBlock1 = workingCopy.getTreeMaker().addBlockStatement(block1, var1);
+                workingCopy.rewrite(block1, nueBlock1);
+                TypeElement juLinkedList = workingCopy.getElements().getTypeElement("java.util.LinkedList");
+                BlockTree block2 = ((MethodTree) ((ClassTree) node.getTypeDecls().get(0)).getMembers().get(1)).getBody();
+                VariableTree var2 = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test", make.QualIdent(juLinkedList), null);
+                BlockTree nueBlock2 = workingCopy.getTreeMaker().addBlockStatement(block2, var2);
+                workingCopy.rewrite(block2, nueBlock2);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test137771() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "import java.util.LinkedList;\n" +
+            "import java.util.List;//tttt\n" +
+            "/*asdf\n" +
+            " */\n" +
+            "/**\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n"
+            );
+        String golden = 
+            "import java.util.LinkedList;\n" +
+            "/*asdf\n" +
+            " */\n" +
+            "/**\n" +
+            " */\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree node = workingCopy.getCompilationUnit();
+                workingCopy.rewrite(node, make.removeCompUnitImport(node, 1));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

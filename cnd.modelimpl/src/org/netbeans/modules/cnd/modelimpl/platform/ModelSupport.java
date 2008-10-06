@@ -60,7 +60,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -317,25 +317,33 @@ public class ModelSupport implements PropertyChangeListener {
         return sb.toString();
     }
     
-    private void addProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
-        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+    private void addProject(final Project project) {
+        if (TraceFlags.DEBUG) {
+            Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
+        }
+
+        final NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
-	    
-	    CsmModelAccessor.getModel(); // just to ensure it's created
-	    ModelImpl model = theModel;
-	    if( model == null ) {
-		return;
-	    }
-	    
+
+            CsmModelAccessor.getModel(); // just to ensure it's created
+            final ModelImpl model = theModel;
+            if (model == null) {
+                return;
+            }
+
             openedProjects.add(project);
-            if( TraceFlags.DEBUG ) {
+            if (TraceFlags.DEBUG) {
                 dumpProjectFiles(nativeProject);
             }
-            
-            boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
-            
-            model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+
+            nativeProject.runOnCodeModelReadiness(new Runnable() {
+
+                public void run() {
+                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
+
+                    model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+                }
+            });
         }
     }
     
@@ -381,19 +389,6 @@ public class ModelSupport implements PropertyChangeListener {
         }
         openedProjects.remove(project);
     }    
-    
-    private void removeProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
-	ModelImpl model = theModel;
-	if( model == null ) {
-	    return;
-	}
-        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
-        if (nativeProject != null) {
-            model.removeProject(nativeProject);
-        }
-        openedProjects.remove(project);
-    }
     
     public static FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
@@ -673,7 +668,7 @@ public class ModelSupport implements PropertyChangeListener {
                     CsmFile[] files = CsmUtilities.getCsmFiles(fo);
                     for (int i = 0; i < files.length; i++) {
                         FileImpl file = (FileImpl) files[i];
-                        file.getProjectImpl().onFileExternalChange(file);
+                        file.getProjectImpl(true).onFileExternalChange(file);
                     }
                 }
             }

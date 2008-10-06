@@ -166,8 +166,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmAckRequestLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmResendField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmResendLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        rmInactTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        rmInactTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        rmInactTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        rmInactTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         maxClockSkewField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -179,7 +179,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         addImmediateModifier(rmAckRequestField);
         addImmediateModifier(rmCloseTimeoutField);
         addImmediateModifier(rmResendField);
-        addImmediateModifier(rmInactTimeoutField);
+//        addImmediateModifier(rmInactTimeoutField);
         addImmediateModifier(lifeTimeTextField);
         addImmediateModifier(renewExpiredChBox);
         addImmediateModifier(requireCancelChBox);
@@ -221,14 +221,14 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             rmResendField.setText(rmResendInterval);
         }
 
-        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
-        String rmInactInterval = RMModelHelper.getInstance(configVersion).getInactivityTimeout(binding);
-        if (rmInactInterval == null) {
-            rmInactTimeoutField.setText(RMModelHelper.DEFAULT_INACT_TIMEOUT);
-        } else {
-            rmInactTimeoutField.setText(rmInactInterval);
-        }
-
+//        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+//        String rmInactInterval = RMModelHelper.getInstance(configVersion).getInactivityTimeout(binding);
+//        if (rmInactInterval == null) {
+//            rmInactTimeoutField.setText(RMModelHelper.DEFAULT_INACT_TIMEOUT);
+//        } else {
+//            rmInactTimeoutField.setText(rmInactInterval);
+//        }
+//
         String rmCloseTimeout = RMModelHelper.getCloseTimeout(binding);
         if (rmCloseTimeout == null) {
             rmCloseTimeoutField.setText(DEFAULT_RMCLOSETIMEOUT);
@@ -260,68 +260,75 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
             RMModelHelper rmh = RMModelHelper.getInstance(configVersion);
             if (source.equals(lifeTimeTextField)) {
-                String lifeTime = ((Integer) lifeTimeTextField.getValue()).toString();
-                if ((lifeTime == null) || (lifeTime.length() == 0) || (DEFAULT_LIFETIME.equals(lifeTime))) {
+                Integer lifeTime = (Integer) lifeTimeTextField.getValue();
+                String lifetimeStr = (lifeTime == null) ? null : lifeTime.toString();
+                if ((lifetimeStr == null) || (lifetimeStr.length() == 0) || (DEFAULT_LIFETIME.equals(lifetimeStr))) {
                     ProprietarySecurityPolicyModelHelper.setLifeTime(binding, null, true);
                 } else {
-                    ProprietarySecurityPolicyModelHelper.setLifeTime(binding, lifeTime, true);
+                    ProprietarySecurityPolicyModelHelper.setLifeTime(binding, lifetimeStr, true);
                 }
             }
 
             if (source.equals(maxClockSkewField)) {
-                String skew = ((Integer) maxClockSkewField.getValue()).toString();
-                if ((skew == null) || (skew.length() == 0) ||
-                    (ProprietarySecurityPolicyModelHelper.DEFAULT_MAXCLOCKSKEW.equals(skew))) {
+                Integer skew = (Integer) maxClockSkewField.getValue();
+                String skewStr = (skew == null) ? null : skew.toString();
+                if ((skewStr == null) || (skewStr.length() == 0) ||
+                    (ProprietarySecurityPolicyModelHelper.DEFAULT_MAXCLOCKSKEW.equals(skewStr))) {
                         ProprietarySecurityPolicyModelHelper.setMaxClockSkew(binding, null, true);
                 } else {
-                    ProprietarySecurityPolicyModelHelper.setMaxClockSkew(binding, skew, true);
+                    ProprietarySecurityPolicyModelHelper.setMaxClockSkew(binding, skewStr, true);
                 }
             }
 
             if (source.equals(freshnessField)) {
-                String freshness = ((Integer) freshnessField.getValue()).toString();
-                if ((freshness == null) || (freshness.length() == 0) ||
-                    (ProprietarySecurityPolicyModelHelper.DEFAULT_TIMESTAMPFRESHNESS.equals(freshness))) {
+                Integer freshness = (Integer) freshnessField.getValue();
+                String freshnessStr = (freshness == null) ? null : freshness.toString();
+                if ((freshnessStr == null) || (freshnessStr.length() == 0) ||
+                    (ProprietarySecurityPolicyModelHelper.DEFAULT_TIMESTAMPFRESHNESS.equals(freshnessStr))) {
                         ProprietarySecurityPolicyModelHelper.setTimestampFreshness(binding, null, true);
                 } else {
-                    ProprietarySecurityPolicyModelHelper.setTimestampFreshness(binding, freshness, true);
+                    ProprietarySecurityPolicyModelHelper.setTimestampFreshness(binding, freshnessStr, true);
                 }
             }
 
-            if (source.equals(rmInactTimeoutField)) {
-                String inactInt = ((Integer)rmInactTimeoutField.getValue()).toString();
-                if ((inactInt == null) || (inactInt.length() == 0) ||
-                    (RMModelHelper.DEFAULT_INACT_TIMEOUT.equals(inactInt))) {
-                    rmh.enableRM(binding, false);
-                } else {
-                    rmh.setInactivityTimeout(binding, inactInt);
-                }
-            }
+//            if (source.equals(rmInactTimeoutField)) {
+//                Integer inactInt = (Integer)rmInactTimeoutField.getValue();
+//                String inactIntStr = (inactInt == null) ? null : inactInt.toString();
+//                if ((inactIntStr == null) || (inactIntStr.length() == 0) ||
+//                    (RMModelHelper.DEFAULT_INACT_TIMEOUT.equals(inactIntStr))) {
+//                    rmh.enableRM(binding, false);
+//                } else {
+//                    rmh.setInactivityTimeout(binding, inactIntStr);
+//                }
+//            }
 
             if (source.equals(rmResendField)) {
-                String resendInt = ((Integer)rmResendField.getValue()).toString();
-                if ((resendInt == null) || (resendInt.length() == 0) || (DEFAULT_RMRESENDINTERVAL.equals(resendInt))) {
+                Integer resendInt = (Integer)rmResendField.getValue();
+                String resendIntStr = (resendInt == null) ? null : resendInt.toString();
+                if ((resendIntStr == null) || (resendIntStr.length() == 0) || (DEFAULT_RMRESENDINTERVAL.equals(resendIntStr))) {
                     rmh.setResendInterval(binding, null);
                 } else {
-                    rmh.setResendInterval(binding, resendInt);
+                    rmh.setResendInterval(binding, resendIntStr);
                 }
             }
 
             if (source.equals(rmCloseTimeoutField)) {
-                String closeTimeout = ((Integer)rmCloseTimeoutField.getValue()).toString();
-                if ((closeTimeout == null) || (closeTimeout.length() == 0) || (DEFAULT_RMCLOSETIMEOUT.equals(closeTimeout))) {
+                Integer closeTimeout = (Integer)rmCloseTimeoutField.getValue();
+                String closeTimeoutStr = (closeTimeout == null) ? null : closeTimeout.toString();
+                if ((closeTimeoutStr == null) || (closeTimeoutStr.length() == 0) || (DEFAULT_RMCLOSETIMEOUT.equals(closeTimeoutStr))) {
                     rmh.setCloseTimeout(binding, null);
                 } else {
-                    rmh.setCloseTimeout(binding, closeTimeout);
+                    rmh.setCloseTimeout(binding, closeTimeoutStr);
                 }
             }
 
             if (source.equals(rmAckRequestField)) {
-                String ackRequestInt = ((Integer)rmAckRequestField.getValue()).toString();
-                if ((ackRequestInt == null) || (ackRequestInt.length() == 0) || (DEFAULT_RMREQUESTACKINTERVAL.equals(ackRequestInt))) {
+                Integer ackRequestInt = (Integer)rmAckRequestField.getValue();
+                String ackRequestStr = (ackRequestInt == null) ? null : ackRequestInt.toString();
+                if ((ackRequestStr == null) || (ackRequestStr.length() == 0) || (DEFAULT_RMREQUESTACKINTERVAL.equals(ackRequestStr))) {
                     rmh.setAckRequestInterval(binding, null);
                 } else {
-                    rmh.setAckRequestInterval(binding, ackRequestInt);
+                    rmh.setAckRequestInterval(binding, ackRequestStr);
                 }
             }
 
@@ -349,8 +356,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmAckRequestField.setEnabled(rmEnabled);
         rmResendLabel.setEnabled(rmEnabled);
         rmResendField.setEnabled(rmEnabled);
-        rmInactTimeoutField.setEnabled(rmEnabled);
-        rmInactTimeoutLabel.setEnabled(rmEnabled);
+//        rmInactTimeoutField.setEnabled(rmEnabled);
+//        rmInactTimeoutLabel.setEnabled(rmEnabled);
         rmCloseTimeoutField.setEnabled(rmEnabled);
         rmCloseTimeoutLabel.setEnabled(rmEnabled);
 
@@ -417,8 +424,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         revocationChBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
-        rmInactTimeoutLabel = new javax.swing.JLabel();
-        rmInactTimeoutField = new javax.swing.JFormattedTextField();
 
         lifeTimeLabel.setLabelFor(lifeTimeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(lifeTimeLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
@@ -459,11 +464,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         org.openide.awt.Mnemonics.setLocalizedText(revocationChBox, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_Revocation")); // NOI18N
         revocationChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        rmInactTimeoutLabel.setLabelFor(rmCloseTimeoutField);
-        org.openide.awt.Mnemonics.setLocalizedText(rmInactTimeoutLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_CloseTimeout")); // NOI18N
-
-        rmInactTimeoutField.setFormatterFactory(closeTimeoutDff);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -475,11 +475,9 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rmResendLabel)
                             .add(rmCloseTimeoutLabel)
-                            .add(rmAckRequestLabel)
-                            .add(rmInactTimeoutLabel))
+                            .add(rmAckRequestLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(rmInactTimeoutField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                             .add(rmResendField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                             .add(rmCloseTimeoutField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, rmAckRequestField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)))
@@ -517,10 +515,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rmAckRequestLabel)
                     .add(rmAckRequestField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(3, 3, 3)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rmInactTimeoutLabel)
-                    .add(rmInactTimeoutField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -546,7 +540,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {freshnessField, lifeTimeTextField, maxClockSkewField, rmAckRequestField, rmCloseTimeoutField, rmInactTimeoutField, rmResendField}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {freshnessField, lifeTimeTextField, maxClockSkewField, rmAckRequestField, rmCloseTimeoutField, rmResendField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         lifeTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSN_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
         lifeTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
@@ -579,8 +573,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private javax.swing.JLabel rmAckRequestLabel;
     private javax.swing.JFormattedTextField rmCloseTimeoutField;
     private javax.swing.JLabel rmCloseTimeoutLabel;
-    private javax.swing.JFormattedTextField rmInactTimeoutField;
-    private javax.swing.JLabel rmInactTimeoutLabel;
     private javax.swing.JFormattedTextField rmResendField;
     private javax.swing.JLabel rmResendLabel;
     // End of variables declaration//GEN-END:variables

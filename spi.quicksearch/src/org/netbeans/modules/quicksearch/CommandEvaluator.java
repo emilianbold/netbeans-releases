@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
@@ -56,17 +57,24 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class CommandEvaluator {
     
-    private final static String RECENT = "Recent";
+    final static String RECENT = "Recent";
     
     /**
      * command pattern is:
      * "command arguments"
      */
     private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
+
+    /** Narrow evaluation only to specified category if non null.
+     * Evaluate all categories otherwise
+     */
+    private static ProviderModel.Category evalCat;
+
+    /** Temporary narrow evaluation to only specified category **/
+    private static boolean isCatTemporary;
     
     /**
-     * if command is in form "command arguments" then only providers registered 
-     * for given command are called. Otherwise all providers are called.
+     * Runs evaluation.
      *
      * @param command text to evauate, to search for
      *
@@ -75,51 +83,21 @@ public class CommandEvaluator {
      * runs and when it actually will finish.
      */
     public static org.openide.util.Task evaluate (String command, ResultsModel model) {
-        
         List<CategoryResult> l = new ArrayList<CategoryResult>();
-        Matcher m = COMMAND_PATTERN.matcher(command);
-        String commandString = null;
-        String text = null;
-        if (m.matches()) {
-            commandString = m.group(1);
-            if (ProviderRegistry.getInstance().getProviders().isKnownCommand(commandString)) {
-                text = m.group(3);
-            } else {
-                commandString = null;
-                text = command;
-            }
-        } else {
-            text = command;
-        }
-        
-        boolean onlyRecent = text == null || text.trim().equals("");
-        
-        SearchRequest sRequest = Accessor.DEFAULT.createRequest(text, null);
-
+        String[] commands = parseCommand(command);
+        SearchRequest sRequest = Accessor.DEFAULT.createRequest(commands[1], null);
         List<Task> tasks = new ArrayList<Task>();
-        
-        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
-            // skip all but recent if empty string came
-            if (onlyRecent && !RECENT.equals(cat.getName())) {
-                continue;
-            }
-            
-            CategoryResult catResult = new CategoryResult(cat);
+
+        List<Category> provCats = new ArrayList<Category>();
+        boolean allResults = getProviderCategories(commands, provCats);
+
+        for (ProviderModel.Category curCat : provCats) {
+            CategoryResult catResult = new CategoryResult(curCat, allResults);
             SearchResponse sResponse = Accessor.DEFAULT.createResponse(catResult, sRequest);
-            for (SearchProvider provider : cat.getProviders()) {
-                if (commandString != null) {
-                    String commandPrefix = cat.getCommandPrefix();
-                    if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commandString)) {
-                        Task t = runEvaluation(provider, sRequest, sResponse, cat);
-                        if (t != null) {
-                            tasks.add(t);
-                        }
-                    }
-                } else {
-                    Task t = runEvaluation(provider, sRequest, sResponse, cat);
-                    if (t != null) {
-                        tasks.add(t);
-                    }
+            for (SearchProvider provider : curCat.getProviders()) {
+                Task t = runEvaluation(provider, sRequest, sResponse, curCat);
+                if (t != null) {
+                    tasks.add(t);
                 }
             }
             l.add(catResult);
@@ -127,13 +105,89 @@ public class CommandEvaluator {
 
         model.setContent(l);
 
-        Wait4AllTask wt = new Wait4AllTask(tasks);
-        // start waiting on all providers execution
-        RequestProcessor.getDefault().post(wt);
-
-        return wt;
+        return new Wait4AllTask(tasks);
     }
-    
+
+    public static Category getEvalCat () {
+        return evalCat;
+    }
+
+    public static void setEvalCat (Category cat) {
+        CommandEvaluator.evalCat = cat;
+    }
+
+    public static boolean isCatTemporary () {
+        return isCatTemporary;
+    }
+
+    public static void setCatTemporary (boolean isCatTemporary) {
+        CommandEvaluator.isCatTemporary = isCatTemporary;
+    }
+
+    private static String[] parseCommand (String command) {
+        String[] results = new String[2];
+
+        Matcher m = COMMAND_PATTERN.matcher(command);
+
+        if (m.matches()) {
+            results[0] = m.group(1);
+            if (ProviderModel.getInstance().isKnownCommand(results[0])) {
+                results[1] = m.group(3);
+            } else {
+                results[0] = null;
+                results[1] = command;
+            }
+        } else {
+            results[1] = command;
+        }
+                
+        return results;
+    }
+
+    /** Returns array of providers to ask for evaluation according to
+     * current evaluation rules.
+     *
+     * @return true if providers are expected to return all results, false otherwise
+     */
+    private static boolean getProviderCategories (String[] commands, List<Category> result) {
+        List<Category> cats = ProviderModel.getInstance().getCategories();
+
+        // always include recent searches
+        for (Category cat : cats) {
+            if (RECENT.equals(cat.getName())) {
+                result.add(cat);
+            }
+        }
+
+        // skip all but recent if empty string came
+        if (commands[1] == null || commands[1].trim().equals("")) {
+            return false;
+        }
+
+        // command string has biggest priority for narrow evaluation to category
+        if (commands[0] != null) {
+            for (Category curCat : cats) {
+                String commandPrefix = curCat.getCommandPrefix();
+                if (commandPrefix != null && commandPrefix.equalsIgnoreCase(commands[0])) {
+                    result.add(curCat);
+                    return true;
+                }
+            }
+        }
+
+        // evaluation narrowed to category perhaps?
+        if (evalCat != null) {
+            result.add(evalCat);
+            return true;
+        }
+
+        // no narrowing
+        result.clear();
+        result.addAll(cats);
+
+        return false;
+    }
+
     private static Task runEvaluation (final SearchProvider provider, final SearchRequest request,
                                 final SearchResponse response, final ProviderModel.Category cat) {
         // actions are not happy outside EQ at all
@@ -153,6 +207,9 @@ public class CommandEvaluator {
      * for all given RequestProcessor tasks to finish and then it finishes as well.
      */
     private static class Wait4AllTask extends org.openide.util.Task implements Runnable {
+
+        private static final long TIMEOUT = 60000;
+
         private List<Task> tasks;
 
         private Wait4AllTask (List<Task> tasks) {
@@ -165,7 +222,12 @@ public class CommandEvaluator {
             try {
                 notifyRunning();
                 for (Task task : tasks) {
-                    task.waitFinished();
+                    try {
+                        // wait no longer then one minute
+                        task.waitFinished(TIMEOUT);
+                    } catch (InterruptedException ex) {
+                        // ignore, we are not interested
+                    }
                 }
             } finally {
                 notifyFinished();

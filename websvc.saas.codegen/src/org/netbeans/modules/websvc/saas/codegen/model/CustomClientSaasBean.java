@@ -48,7 +48,7 @@ import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.saas.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
-import org.netbeans.modules.websvc.saas.codegen.java.support.Inflector;
+import org.netbeans.modules.websvc.saas.codegen.util.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.jaxb.Artifact;
 import org.netbeans.modules.websvc.saas.model.jaxb.Artifacts;

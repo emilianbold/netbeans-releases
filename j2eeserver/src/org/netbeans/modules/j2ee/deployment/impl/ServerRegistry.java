@@ -42,10 +42,7 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
 import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -56,28 +53,26 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.modules.InstalledFileLocator;
-
-//import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
 
@@ -105,7 +100,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public synchronized static boolean wasInitialized () {
         return instance != null && instance.servers != null && instance.instances != null;
     }
-    private transient Map servers = null;
+    private transient Map<String, Server> servers = null;
     private transient Map instances = null;
     private transient Collection pluginListeners = new HashSet();
     private transient Collection instanceListeners = new ArrayList();
@@ -134,6 +129,7 @@ public final class ServerRegistry implements java.io.Serializable {
             for (int i = 0; i < ch.length; i++) {
                 addPlugin(ch[i]);
             }
+
             LOGGER.log(Level.FINE, "Loading server instances"); // NOI18N
             dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
             dir.addFileChangeListener(new InstanceInstallListener());
@@ -141,12 +137,30 @@ public final class ServerRegistry implements java.io.Serializable {
             for (int i = 0; i < ch.length; i++) {
                 addInstance(ch[i]);
             }
+
+            LOGGER.log(Level.FINE, "Finish initializing plugins"); // NOI18N
+            List<String> notInitialized = new LinkedList<String>();
+            for (Map.Entry<String, Server> entry : serversMap().entrySet()) {
+                OptionalDeploymentManagerFactory odmf = entry.getValue().getOptionalFactory();
+                if (null != odmf) {
+                    try {
+                        odmf.finishServerInitialization();
+                    } catch (ServerInitializationException sie) {
+                        LOGGER.log(Level.INFO, "Server plugin not initialized", sie);
+                        notInitialized.add(entry.getKey());                        
+                    } catch (RuntimeException ex) {
+                        LOGGER.log(Level.WARNING, "Plugin implementation BUG -- Unexpected Exception from finishServerInitialization", ex);
+                        notInitialized.add(entry.getKey());
+                    }
+                }
+            }
+            serversMap().keySet().removeAll(notInitialized);
         } else {
             LOGGER.log(Level.WARNING, "No DIR_JSR88_PLUGINS folder found, no server plugins will be availabe"); // NOI18N
         }
     }
 
-    private Map serversMap() {
+    private Map<String,Server> serversMap() {
         init();
         return servers;
     }
@@ -254,7 +268,7 @@ public final class ServerRegistry implements java.io.Serializable {
 
     }
 
-    public Collection getServers() {
+    public Collection<Server> getServers() {
         return serversMap().values();
     }
 

@@ -39,15 +39,27 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
 import javax.swing.JPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class CustomizerPhpIncludePath extends JPanel {
-    private static final long serialVersionUID = -8749295793091117024L;
+public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = -8749295793687117024L;
 
     private final Category category;
 
@@ -75,75 +87,145 @@ public class CustomizerPhpIncludePath extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        includePathScrollPane = new javax.swing.JScrollPane();
-        includePathList = new javax.swing.JList();
-        addFolderButton = new javax.swing.JButton();
-        removeButton = new javax.swing.JButton();
-        moveUpButton = new javax.swing.JButton();
-        moveDownButton = new javax.swing.JButton();
-        includePathLabel = new javax.swing.JLabel();
+        includePathScrollPane = new JScrollPane();
+        includePathList = new JList();
+        addFolderButton = new JButton();
+        removeButton = new JButton();
+        moveUpButton = new JButton();
+        moveDownButton = new JButton();
+        includePathLabel = new JLabel();
+
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return includePathList;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return includePathList;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return moveDownButton;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  includePathList){
+                    return addFolderButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return moveDownButton;
+                }
+                if(aComponent ==  removeButton){
+                    return moveUpButton;
+                }
+                if(aComponent ==  addFolderButton){
+                    return removeButton;
+                }
+                return includePathList;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  addFolderButton){
+                    return includePathList;
+                }
+                if(aComponent ==  moveDownButton){
+                    return moveUpButton;
+                }
+                if(aComponent ==  moveUpButton){
+                    return removeButton;
+                }
+                if(aComponent ==  removeButton){
+                    return addFolderButton;
+                }
+                return moveDownButton;//end getComponentBefore
+
+            }}
+        
+        );
 
         includePathScrollPane.setViewportView(includePathList);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addFolderButton, org.openide.util.NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_AddFolder")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_Remove")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, org.openide.util.NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveUp")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, org.openide.util.NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveDown")); // NOI18N
 
+        includePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathList.AccessibleContext.accessibleDescription")); // NOI18N
+        Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_AddFolder")); // NOI18N
+        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_Remove"));
+        Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveUp"));
+        Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveDown"));
         includePathLabel.setLabelFor(includePathList);
-        org.openide.awt.Mnemonics.setLocalizedText(includePathLabel, org.openide.util.NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        Mnemonics.setLocalizedText(includePathLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath"));
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(moveDownButton)
                             .add(moveUpButton)
                             .add(removeButton)
                             .add(addFolderButton)))
                     .add(includePathLabel))
-                .addContainerGap())
+                .add(0, 0, 0))
+        
         );
 
-        layout.linkSize(new java.awt.Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(includePathLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(addFolderButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(removeButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .addPreferredGap(LayoutStyle.UNRELATED)
                         .add(moveUpButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(moveDownButton))
-                    .add(includePathScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
+                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
                 .addContainerGap())
+        
         );
+
+        includePathScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        includePathScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        addFolderButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.addFolderButton.AccessibleContext.accessibleName")); // NOI18N
+        addFolderButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.addFolderButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.removeButton.AccessibleContext.accessibleName")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveUpButton.AccessibleContext.accessibleName")); // NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveUpButton.AccessibleContext.accessibleDescription")); // NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveDownButton.AccessibleContext.accessibleName")); // NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.moveDownButton.AccessibleContext.accessibleDescription")); // NOI18N
+        includePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleName")); // NOI18N
+        includePathLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addFolderButton;
-    private javax.swing.JLabel includePathLabel;
-    private javax.swing.JList includePathList;
-    private javax.swing.JScrollPane includePathScrollPane;
-    private javax.swing.JButton moveDownButton;
-    private javax.swing.JButton moveUpButton;
-    private javax.swing.JButton removeButton;
+    private JButton addFolderButton;
+    private JLabel includePathLabel;
+    private JList includePathList;
+    private JScrollPane includePathScrollPane;
+    private JButton moveDownButton;
+    private JButton moveUpButton;
+    private JButton removeButton;
     // End of variables declaration//GEN-END:variables
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerPhpIncludePath.class);
+    }
 
 }

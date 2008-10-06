@@ -85,6 +85,7 @@ public abstract class AbstractSystemAction extends NodeAction {
      */
     protected void performAction(Node[] nodes) {
         LifecycleManager.getDefault().saveAll();
+        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("CVS");
         performCvsAction(nodes);
     }
 

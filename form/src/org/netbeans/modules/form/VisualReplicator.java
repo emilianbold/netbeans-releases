@@ -264,13 +264,15 @@ public class VisualReplicator {
 
         for (int i = 0; i < metacomps.length; i++) {
             RADVisualComponent metacomp = metacomps[i];
+            if (metacont.getContainerMenu() == metacomp) {
+                continue;
+            }
 
             Component comp = (Component) getClonedComponent(metacomp);
-            if (comp == null)
+            if (comp == null) {
                 comp = (Component) createClone(metacomp);
-            else {
-                if (comp.getParent() != null)
-                    comp.getParent().remove(comp);
+            } else if (comp.getParent() != null) {
+                comp.getParent().remove(comp);
             }
 
             // make the component visible according to the explicitly set property
@@ -321,7 +323,7 @@ public class VisualReplicator {
                     FakePeerSupport.attachFakePeerRecursively((Container)comps[i]);
             }
 
-            setupContainerLayout(layoutBuilder, comps, compIds);
+            setupContainerLayout(metacont, comps, compIds);
         }
     }
 
@@ -340,6 +342,8 @@ public class VisualReplicator {
                     container = visualMetaCont.getContainerDelegate((Container)contClone);
                 }
                 else container = (Container)contClone;
+            } else {
+                return;
             }
         }
 
@@ -740,7 +744,7 @@ public class VisualReplicator {
                     laysup.arrangeContainer(cont, contDelegate);
                 }
                 else { // new layout support
-                    setupContainerLayout(getLayoutBuilder(metacont.getId()), comps, compIds);
+                    setupContainerLayout(metacont, comps, compIds);
                 }
             }
         }
@@ -804,10 +808,13 @@ public class VisualReplicator {
         return comp != null && !metacomp.getBeanClass().isAssignableFrom(comp.getClass());
     }
 
-    private void setupContainerLayout(SwingLayoutBuilder layoutBuilder, Component[] comps, String[] compIds) {
+    private void setupContainerLayout(RADVisualContainer metacont, Component[] comps, String[] compIds) {
+        SwingLayoutBuilder layoutBuilder = getLayoutBuilder(metacont.getId());
         Throwable th = null;
         try {
             layoutBuilder.setupContainerLayout(comps, compIds);
+            Component comp = (Component)getClonedComponent(metacont);
+            ((Component)metacont.getBeanInstance()).setPreferredSize(comp.getPreferredSize());
         } catch (Exception ex) {
             th = ex;
         } catch (Error err) {

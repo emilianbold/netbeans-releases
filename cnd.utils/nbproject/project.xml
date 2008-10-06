@@ -4,20 +4,46 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.cnd.utils</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.17</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.model</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.completion</friend>
+                <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
+                <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
+                <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.model.services</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
+                <friend>org.netbeans.modules.cnd.navigation</friend>
+                <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
                 <package>org.netbeans.modules.cnd.utils</package>
                 <package>org.netbeans.modules.cnd.utils.cache</package>
+                <package>org.netbeans.modules.cnd.utils.ui</package>
             </friend-packages>
         </data>
     </configuration>

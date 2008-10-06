@@ -218,6 +218,10 @@ public class ExecutionService {
             argvList.addAll(Arrays.asList(descriptor.getInitialArgs()));
         }
 
+        if (descriptor.getScriptPrefix() != null) {
+            argvList.add(descriptor.getScriptPrefix());
+        }
+        
         if (descriptor.script != null) {
             argvList.add(descriptor.script);
         }
@@ -342,7 +346,7 @@ public class ExecutionService {
                             }
                         }
                         runIO(stopAction, process, io, descriptor.getFileLocator(),
-                                descriptor.outputRecognizers);
+                                descriptor.outputRecognizers, descriptor.getEncoding(), descriptor.getReadMaxWaitTime());
                         
                         process.waitFor();
                     } catch (IOException ex) {
@@ -415,7 +419,10 @@ public class ExecutionService {
                     }
 
                     stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
+
+                    if (descriptor.isRerun()) {
+                        rerunAction.setEnabled(true);
+                    }
 
                     if (stopAction.process != null) {
                         stopAction.process.destroy();
@@ -428,13 +435,13 @@ public class ExecutionService {
     }
 
     private static void runIO(final StopAction sa, Process process, InputOutput ioput,
-        FileLocator fileLocator, List<OutputRecognizer> recognizers) {
+        FileLocator fileLocator, List<OutputRecognizer> recognizers, String encoding, int readWaitTime) {
         try {
             InputForwarder in = new InputForwarder(process.getOutputStream(), ioput.getIn());
             OutputForwarder out =
-                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getInputStream(), ioput.getOut(), fileLocator, recognizers, sa, encoding, readWaitTime, true);
             OutputForwarder err =
-                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa);
+                new OutputForwarder(process.getErrorStream(), ioput.getErr(), fileLocator, recognizers, sa, encoding, readWaitTime);
 
             RequestProcessor PROCESSOR =
                 new RequestProcessor("Process Execution Stream Handler", 3, true); // NOI18N

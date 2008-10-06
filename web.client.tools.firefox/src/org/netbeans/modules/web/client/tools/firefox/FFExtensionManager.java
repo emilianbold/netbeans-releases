@@ -38,47 +38,40 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
+import org.netbeans.modules.web.client.tools.api.FirefoxBrowserUtils;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.execution.NbProcessDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.awt.Mnemonics;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -93,265 +86,325 @@ import org.w3c.dom.NodeList;
  * @author quynguyen
  */
 public class FFExtensionManager {
-    private static long BUTTON_DELAY = 8000L; // 8 seconds seems to work better
+    private static final long BUTTON_DELAY = 10000L; // 10 second delay
+    private static final long FIREFOX_CHECK_PERIOD = 700L; // 700ms delay
     
-    private static final int EXTENSION_ALREADY_INSTALLED = 0;
-    private static final int EXTENSION_INSTALL = 1;
-    private static final int EXTENSION_NOT_INSTALLED = 2;
+    private static final String PROFILE_LOCK_WINDOWS = "parent.lock";
+    private static final String PROFILE_LOCK = "lock";
     
-    private static final String FIREBUG_MIN_VERSION = "1.1.0b12";
+    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.1";
     
     private static final String EXTENSION_CACHE = "extensions.cache";
     private static final String UNINSTALL_KEYWORD = "needs-uninstall";
+    private static final String INSTALL_KEYWORD = "needs-install";
     
-    private static final String DEV_PROP = "netbeans.javascript.debugger.dev";
-    private static final String FIREBUG_URI_PROP = "firebug.xpi.uri";
-
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_XPI_URI = "http://www.getfirebug.com/releases/firebug/1.1/firebug-1.1.0b12.xpi"; // NOI18N
-            
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.1-fx.xpi"; // NOI18N
+               
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
     private static final String FIREFOX_EXTENSION_PATH = "modules/ext/netbeans-firefox-extension.xpi"; // NOI18N
-
-    private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
-
-    private static final String[] WIN32_PROFILES_LOCATIONS = {
-        "\\Mozilla\\Firefox\\" // NOI18N
-    };
-    private static final String[] LINUX_PROFILES_LOCATIONS = {
-        "/.mozilla/firefox/" // NOI18N
-
-    };
-    private static final String[] MACOSX_PROFILES_LOCATIONS = {
-        "/Library/Application Support/Firefox/", // NOI18N
-        "/Library/Mozilla/Firefox/" // NOI18N
-
-    };
-
-
-    private static boolean extensionInstalled = false;
-
+    
+    private static final String CHECKSUM_FILENAME = "netbeans-firefox-extension.jar.MD5"; // NOI18N
+    
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
+        File customProfile = FirefoxBrowserUtils.getProfileFromPreferences();
+        File defaultProfile = customProfile != null ? customProfile : FirefoxBrowserUtils.getDefaultProfile();
+        
+        if (defaultProfile == null) {
+            Log.getLogger().severe("Could not find Firefox default profile.  Firefox debugging not available.");
+            return false;
+        }
+
         File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH,
-                "org.netbeans.modules.web.client.tools.firefox", // NOI18N 
+                "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N
                 false);
         if (nbExtensionFile == null) {
             Log.getLogger().severe("Could not find firefox extension in installation directory");
             return false;
         }
         
-        File defaultProfile = getDefaultProfile();
-        if (defaultProfile == null) {
-            Log.getLogger().severe("Could not find Firefox default profile");
+        File firebugExtensionFile = InstalledFileLocator.getDefault().locate(FIREBUG_EXTENSION_PATH,
+                "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N 
+                false);
+        if (firebugExtensionFile == null) {
+            Log.getLogger().severe("Could not find firebug extension in installation directory");
             return false;
-        }        
+        }
         
-        URI firebugURI = null;
+        boolean nbExtInstall = extensionRequiresInstall(browser, FIREFOX_EXTENSION_ID, 
+                null, nbExtensionFile, defaultProfile, true);
         
-        try {
-            String firebugURIString = System.getProperty(FIREBUG_URI_PROP);
-            if (firebugURIString != null && firebugURIString.length() > 0) {
-                try {
-                    firebugURI = new URI(firebugURIString);
-                }catch (Exception ex) {
-                    firebugURI = null;
+        boolean firebugInstall = extensionRequiresInstall(browser, FIREBUG_EXTENSION_ID,
+                    FIREBUG_1_2_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
+        
+        if (!nbExtInstall || !firebugInstall) {
+            List<String> extensionIds = new LinkedList<String>();
+            
+            if (!nbExtInstall) {
+                extensionIds.add(FIREFOX_EXTENSION_ID);
+            }
+            if (!firebugInstall) {
+                extensionIds.add(FIREBUG_EXTENSION_ID);
+            }
+            
+            boolean extensionsInitialized = checkExtensionInstall(extensionIds, defaultProfile);
+            if (!extensionsInitialized) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_NOT_RESTARTED_MSG"),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                
+                nd.setTitle(NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_NOT_RESTARTED_TITLE"));
+                DialogDisplayer.getDefault().notify(nd);
+                return false;
+            }
+        }
+        
+        boolean installSuccess = true;
+
+        if (nbExtInstall || firebugInstall) {
+            // Ask the user if they want to install the extensions
+            String dialogMsg = Utilities.isMac() ? NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG_MACOS") :
+                NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG");
+            
+            NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
+                    dialogMsg,
+                    NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_TITLE"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(installDesc);
+            if (result != NotifyDescriptor.OK_OPTION) {
+                return false;
+            }
+            
+            if (isFirefoxRunning(defaultProfile)) {
+                boolean cancelled = !displayFirefoxRunningDialog(defaultProfile);
+                if (cancelled) {
+                    return false;
                 }
             }
-            
-            if (firebugURI == null) {
-                firebugURI = new URI(FIREBUG_XPI_URI);
-            }
-        }catch (Exception ex) {
-            firebugURI = null;
         }
-
-        URI nbExtensionURI = nbExtensionFile.toURI();
         
-        int nbExtInstall = checkFirefoxExtension(browser, FIREFOX_EXTENSION_ID, 
-                null, nbExtensionURI, defaultProfile, false);
+        if (nbExtInstall) {
+            installSuccess &= installExtension(defaultProfile, nbExtensionFile, FIREFOX_EXTENSION_ID);
+        }
         
-        int firebugInstall = checkFirefoxExtension(browser, FIREBUG_EXTENSION_ID, 
-                FIREBUG_MIN_VERSION, firebugURI, defaultProfile, true);
+        if (firebugInstall) {
+            installSuccess &= installExtension(defaultProfile, firebugExtensionFile, FIREBUG_EXTENSION_ID);
+        }
         
+        // HACK
+        // If the extensions installed successfully and make sure Firefox notices them
+        if (installSuccess && (nbExtInstall || firebugInstall)) {
+            File extensionsDotRdf = new File(defaultProfile, "extensions.rdf"); // NOI18N
+            if (extensionsDotRdf.exists()) {
+                extensionsDotRdf.delete();
+            }
+        }
+        
+        return installSuccess;
+    }
+    
+    public static boolean extensionRequiresInstall(HtmlBrowser.Factory browser, String extensionId, 
+            String minExtVersion, File extensionFile, File defaultProfile, boolean isNbExtension) {
+        
+        File extensionDir = new File(defaultProfile, "extensions" + File.separator + extensionId);
+        String extensionVersion = getVersion(extensionDir);
+        
+        boolean isInstalling = checkExtensionCache(extensionId, extensionDir, INSTALL_KEYWORD);
+        
+        // if the user did not restart before the check was made (user presses 'Continue'
+        // without waiting for Firefox to restart)
+        if (isInstalling) {
+            return false;
+        }
+        
+        if ( extensionUpdateRequired(extensionVersion, minExtVersion) || 
+                (isNbExtension && !checkExtensionChecksum(extensionFile, defaultProfile, extensionId))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private static boolean installExtension(File profileDir, File extensionXPI, String extensionId) {
+        File extensionDir = new File(profileDir, "extensions" + File.separator + extensionId); // NOI18N
+        
+        // keep a backup of an existing extension just in case
+        File backupFolder = null;
+        if (extensionDir.exists()) {
+            String tmp = extensionId + "-tmp"; // NOI18N
+            
+            do {
+                tmp += "0";
+                backupFolder = new File(extensionDir.getParentFile(), tmp);
+            } while (backupFolder.exists());
+            
+            if (!extensionDir.renameTo(backupFolder)) {
+                Log.getLogger().warning("Could not create backup for existing extension: " + extensionId);
+                rmDir(extensionDir);
+                backupFolder = null;
+            }
+        }
+        
+        // copy the archive
+        boolean copySuccessful = false;
         try {
-            launchBrowser(browser, firebugInstall, firebugURI, nbExtInstall, nbExtensionURI);
-        }catch (IOException ex) {
-            Log.getLogger().log(Level.FINE, "Unexpected exception while launching browser", ex);
+            extractFiles(extensionXPI, extensionDir);
+            copySuccessful = true;
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Could not copy extension: " + extensionId, ex);
             return false;
-        }
-        
-        extensionInstalled = true;
-        
-        if (nbExtInstall == EXTENSION_NOT_INSTALLED) {
-            return false;
-        }
-        
-        displayInstallDialog(firebugInstall, nbExtInstall, false);
-        
-        boolean continueCheck = true;
-        
-        do {
-            nbExtInstall = checkFirefoxExtension(browser, FIREFOX_EXTENSION_ID, 
-                null, nbExtensionURI, defaultProfile, false);
-            firebugInstall = checkFirefoxExtension(browser, FIREBUG_EXTENSION_ID, 
-                FIREBUG_MIN_VERSION, firebugURI, defaultProfile, true);
-            
-            if (nbExtInstall != EXTENSION_ALREADY_INSTALLED || firebugInstall != EXTENSION_ALREADY_INSTALLED) {
-                try {
-                    launchBrowser(browser, firebugInstall, firebugURI, nbExtInstall, nbExtensionURI);
-                } catch (IOException ex) {
-                    Log.getLogger().log(Level.FINE, "Unexpected exception while launching browser", ex);
-                    return false;
-                }                
-                
-                continueCheck = displayInstallDialog(firebugInstall, nbExtInstall, true);
+        } finally {
+            if (backupFolder != null) {
+                if (copySuccessful) {
+                    rmDir(backupFolder);
+                } else {
+                    rmDir(extensionDir);
+                    boolean movedBack = backupFolder.renameTo(extensionDir);
+                    if (!movedBack) {
+                        Log.getLogger().warning("Could not restore old extension: " + extensionId);
+                    }
+                }
             }
-        }while ( (nbExtInstall != EXTENSION_ALREADY_INSTALLED || firebugInstall != EXTENSION_ALREADY_INSTALLED) && continueCheck);
-        
-        
+        }
         
         return true;
     }
     
-    public static int checkFirefoxExtension(HtmlBrowser.Factory browser, String extensionId, 
-            String minExtVersion, URI xpiURI, File defaultProfile, boolean httpCheck) {
-        
-        File extensionDir = new File(defaultProfile, "extensions" + File.separator + extensionId);
-        
-        String extensionVersion = getVersion(extensionDir);
-        File extensionFile = null;
-        
-        if (xpiURI != null && xpiURI.getScheme().equals("file")) {
-            extensionFile = new File(xpiURI);
+    private static void rmDir(File folder) {
+        if (!folder.exists()) {
+            return;
         }
         
-        if (    extensionUpdateRequired(extensionVersion, minExtVersion) || 
-                checkExtensionTimestamps(extensionFile, defaultProfile, extensionId) || 
-                installDevExtension()) {
-            
-            if (xpiURI != null) {
-                if (httpCheck) {
+        File[] children = folder.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                rmDir(child);
+            }
+        }
+        folder.delete();
+    }
+    
+    private static void extractFiles(File zipFile, File destDir) throws IOException {
+        ZipFile zip = new ZipFile(zipFile);
+        try {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String fileName = entry.getName();
+                
+                if (entry.isDirectory()) {
+                    File newFolder = new File(destDir, fileName);
+                    newFolder.mkdirs();
+                } else {
+                    File file = new File(destDir, fileName);
+                    if (file.exists() && file.isDirectory()) {
+                        throw new IOException("Cannot write normal file to existing directory with the same path");
+                    }
+                    
+                    BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+                    InputStream input = zip.getInputStream(entry);
+                    
                     try {
-                        if (xpiURI.getScheme().equals("http") && !isHttpURLValid(xpiURI.toURL())) {
-                            return EXTENSION_NOT_INSTALLED;
+                        final byte[] buffer = new byte[4096];
+                        int len;
+                        while ((len = input.read(buffer)) >= 0) {
+                            output.write(buffer, 0, len);
                         }
-                    }catch (MalformedURLException mue) {
-                        Log.getLogger().log(Level.SEVERE, "Unexpected exception while processing URI", mue);
-                        return EXTENSION_NOT_INSTALLED;
+                    } finally {
+                        output.close();
+                        input.close();
                     }
                 }
-                
-                return EXTENSION_INSTALL;
             }
-            
-            return EXTENSION_NOT_INSTALLED;
+        } finally {
+            zip.close();
         }
-        
-        return EXTENSION_ALREADY_INSTALLED;
     }
     
-    
-    private static void launchBrowser(HtmlBrowser.Factory browser, int firebugInstall, URI firebugURI, int nbExtInstall, URI nbExtensionURI) throws IOException {
-
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable(browser));
-        List<String> uriList = new ArrayList<String>();
-        
-        if (firebugInstall == EXTENSION_INSTALL) {
-            uriList.add(firebugURI.toString());
-        }
-        
-        if (nbExtInstall == EXTENSION_INSTALL) {
-            uriList.add(nbExtensionURI.toString());
-        }
-        
-        if (uriList.size() > 0) {
-            launchDescriptor.setURI(uriList);
-            Launcher.launch(launchDescriptor);
-        }        
-    }
-    
-    private static boolean displayInstallDialog(int firebugInstall, int nbExtInstall, boolean useCancel) {
-        
-        String dialogText = null;
-        String dialogTitle = null;
-        
-        if (firebugInstall == EXTENSION_INSTALL && nbExtInstall == EXTENSION_INSTALL) {
-            dialogText = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_ALL_EXTENSIONS_URL_MSG");
-            dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_TITLE");
-        }else if (firebugInstall == EXTENSION_INSTALL && nbExtInstall == EXTENSION_ALREADY_INSTALLED) {
-            dialogText = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_FIREBUG_URL_MSG");
-            dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_FIREBUG_TITLE");
-        }else if (firebugInstall == EXTENSION_NOT_INSTALLED && nbExtInstall == EXTENSION_INSTALL) {
-            dialogText = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_ALL_EXTENSIONS_NOURL_MSG");
-            dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_TITLE");
-        }else if (firebugInstall == EXTENSION_NOT_INSTALLED && nbExtInstall == EXTENSION_ALREADY_INSTALLED) {
-            dialogText = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_FIREBUG_NOURL_MSG");
-            dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_FIREBUG_TITLE");
-        }else if (firebugInstall == EXTENSION_ALREADY_INSTALLED && nbExtInstall == EXTENSION_INSTALL) {
-            dialogText = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSION_MSG");
-            dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSION_TITLE");
-        }
-        
-        if (dialogText == null || dialogTitle == null) {
-            return true;
-        }
-        
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(dialogTitle);
-
-        JLabel progressLabel = ProgressHandleFactory.createDetailLabelComponent(handle);
-        JComponent progressBar = ProgressHandleFactory.createProgressComponent(handle);
+    private static boolean displayFirefoxRunningDialog(final File profileDir) {
+        String dialogText = NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_RUNNING_MSG");
+        String dialogTitle = NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_RUNNING_TITLE");
 
         final JButton ok = new JButton();
-        ok.setText(NbBundle.getMessage(FFExtensionManager.class, "OK_MSG"));
+        Mnemonics.setLocalizedText(ok, NbBundle.getMessage(FFExtensionManager.class, "INSTALL_BUTTON"));
         ok.setEnabled(false);
-        
-        Object[] options = null;
-        JButton cancel = null;
-        
-        if (useCancel) {
-            cancel = new JButton();
-            cancel.setText(NbBundle.getMessage(FFExtensionManager.class, "CANCEL_MSG"));
-            
-            options = new Object[] { ok, cancel };
-        }else {
-            options = new Object[] { ok };
-        }
-        
-        
-        
-        NotifyDescriptor nd = new NotifyDescriptor(
-                new Object[]{dialogText,
-                    progressLabel,
-                    progressBar
-                },
-                dialogTitle,
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE, options,
-                NotifyDescriptor.OK_OPTION);
 
-        // Start the progressbar animation
-        SwingUtilities.invokeLater(new Runnable() {
+        JButton cancel = new JButton();
+        Mnemonics.setLocalizedText(cancel, NbBundle.getMessage(FFExtensionManager.class, "CANCEL_BUTTON"));
 
+        Object[] options = new Object[]{ok, cancel};
+        DialogDescriptor dd = new DialogDescriptor(dialogText, dialogTitle, true, 
+                options, cancel, DialogDescriptor.BOTTOM_ALIGN, null, null);
+
+        dd.setClosingOptions(new Object[] { cancel });
+        
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+        final boolean[] cancelled = { true };
+        
+        final TimerTask runningCheck = new TimerTask() {
+            @Override
             public void run() {
-                handle.start();
-                handle.switchToIndeterminate();
+                if (dialog.isVisible() && !isFirefoxRunning(profileDir)) {
+                    cancelled[0] = false;
+                    dialog.setVisible(false);
+                    this.cancel();
+                }
             }
+        };
+        
+        ok.addActionListener(new ActionListener() {
+            
+            public void actionPerformed(ActionEvent e) {
+                cancelled[0] = false;
+                dialog.setVisible(false);
+            }
+            
         });
 
         // enable button after BUTTON_DELAY seconds
         TimerTask enableButton = new TimerTask() {
-
             public void run() {
                 ok.setEnabled(true);
             }
         };
         Timer timer = new Timer();
         timer.schedule(enableButton, BUTTON_DELAY);
-
-        Object result = DialogDisplayer.getDefault().notify(nd);
-        return (cancel != null && result != cancel);
+        
+        Timer profileCheckTimer = new Timer();
+        profileCheckTimer.schedule(runningCheck, FIREFOX_CHECK_PERIOD, FIREFOX_CHECK_PERIOD);
+        
+        try {
+            dialog.setVisible(true);
+        } finally {
+            dialog.dispose();
+            timer.cancel();
+            profileCheckTimer.cancel();
+        }
+        
+        return !cancelled[0];
+    }
+    
+    private static boolean isFirefoxRunning(File profileDir) {
+        if (Utilities.isWindows()) {
+            return new File(profileDir, PROFILE_LOCK_WINDOWS).exists();
+        } else if (Utilities.isMac()) {
+            // XXX TODO Figure out how to detect if FF is running on MacOS
+            return false;
+        } else {
+            String[] fileNames = profileDir.list();
+            if (fileNames != null) {
+                for (String fileName : fileNames) {
+                    if (fileName.equals(PROFILE_LOCK)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
     }
     
     private static boolean extensionUpdateRequired(String extVersion, String minVersion) {
@@ -370,6 +423,8 @@ public class FFExtensionManager {
             
             if (extValue < minValue) {
                 return true;
+            } else if (extValue > minValue) {
+                return false;
             }
         }
         
@@ -382,18 +437,33 @@ public class FFExtensionManager {
         StringTokenizer tokens = new StringTokenizer(version, ".");
         while (tokens.hasMoreTokens()) {
             String nextToken = tokens.nextToken();
-            if (nextToken.contains("b")) {
-                int index = nextToken.indexOf("b");
-                
-                String first = nextToken.substring(0, index);
-                String second = nextToken.substring(index+1, nextToken.length());
-                
-                // version xxbyy is greater than any version xx-1 without a beta
-                // but less than version xx without a beta
-                result.add(new Integer(Integer.valueOf(first).intValue() - 1));
-                result.add(Integer.valueOf(second));
-            }else {
-                result.add(Integer.valueOf(nextToken));
+            try {
+                if (nextToken.contains("a")) {
+                    int index = nextToken.indexOf("a");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(new Integer(Integer.valueOf(first).intValue() - 1));
+                    result.add(Integer.valueOf(-1));
+                    result.add(Integer.valueOf(second));
+                } else if (nextToken.contains("b")) {
+                    int index = nextToken.indexOf("b");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(new Integer(Integer.valueOf(first).intValue() - 1));
+                    result.add(Integer.valueOf(second));
+                } else {
+                    result.add(Integer.valueOf(nextToken));
+                }
+            } catch (NumberFormatException ex) {
+                // skip values that are not numbers
             }
         }
         
@@ -401,34 +471,71 @@ public class FFExtensionManager {
     }
     
     
-    // TODO remove this when real versioning is implemented
-    private static boolean checkExtensionTimestamps(File extensionXpi, File profileDir, String extensionId) {
-        if (extensionXpi == null) return false;
+    /**
+     * 
+     * @param extensionXpi
+     * @param profileDir
+     * @param extensionId
+     * @return true if the checksums match
+     */
+    private static boolean checkExtensionChecksum(File extensionXpi, File profileDir, String extensionId) {
+        if (extensionXpi == null) return true;
         
-        File extensionDir = new File(new File(profileDir, "extensions"), extensionId);
+        File extensionDir = new File(new File(profileDir, "extensions"), extensionId); // NOI18N
+        File checksumFile = new File(extensionDir, CHECKSUM_FILENAME);
         
-        if (extensionDir.exists() && extensionDir.isDirectory()) {
-            FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(extensionDir));
-            FileObject xpiFO = FileUtil.toFileObject(FileUtil.normalizeFile(extensionXpi));
-            
-            Date extensionDate = xpiFO.lastModified();
-            Date profileDate = dirFO.lastModified();
-            
-            return extensionDate.after(profileDate);
+        if (checksumFile.exists() && checksumFile.isFile()) {
+            ZipFile extensionZip = null;
+            try {
+                extensionZip = new ZipFile(extensionXpi);
+                ZipEntry entry = extensionZip.getEntry(CHECKSUM_FILENAME);
+                
+                if (entry != null) {                    
+                    BufferedInputStream profileInput  = new BufferedInputStream(new FileInputStream(checksumFile));
+                    InputStream xpiInput = extensionZip.getInputStream(entry);
+                    
+                    try {
+                        final byte[] profileBuffer = new byte[512];
+                        final byte[] xpiBuffer = new byte[512];
+                        int profileLen, xpiLen;
+                        
+                        do {
+                            profileLen = profileInput.read(profileBuffer);
+                            xpiLen = xpiInput.read(xpiBuffer);
+                            
+                            if (profileLen != xpiLen) {
+                                return false;
+                            }
+                            
+                            for (int i = 0; i < profileLen; i++) {
+                                if (profileBuffer[i] != xpiBuffer[i]) {
+                                    return false;
+                                }
+                            }
+                            
+                        } while (profileLen >= 0);
+                        
+                        return true;
+                    } finally {
+                        profileInput.close();
+                        xpiInput.close();
+                    }
+                    
+                }
+            } catch (IOException ex) {
+                Log.getLogger().log(Level.SEVERE, "Error checking extension XPI", ex);
+            } finally {
+                if (extensionZip != null) {
+                    try {
+                        extensionZip.close();
+                    }catch (IOException ex) {
+                        Log.getLogger().log(Level.SEVERE, "Error closing zip file", ex);
+                    }
+                }
+            }
         }
         
         return false;
-    }
-
-    
-    // TODO remove this when versioning is implemented
-    private static boolean installDevExtension() {
-        String val = System.getProperty(DEV_PROP);
-        if (val != null && val.length() > 0) {
-            return !extensionInstalled;
-        }else {
-            return false;
-        }
     }
     
     private static String getVersion(File extensionDir) {
@@ -497,14 +604,52 @@ public class FFExtensionManager {
         return null;
     }
     
+    private static boolean checkExtensionInstall(List<String> extensionIDs, File profileDir) {
+        File extensionCache = new File(profileDir, EXTENSION_CACHE);
+        if (extensionCache.exists() && extensionCache.isFile()) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(extensionCache));
+                
+                while (br.ready() && extensionIDs.size() > 0) {
+                    String nextLine = br.readLine();
+                    if (nextLine != null) {
+                        String[] words = nextLine.split("\\s");
+                        for (String element : words) {
+                            if (extensionIDs.contains(element)) {
+                                extensionIDs.remove(element);
+                            }
+                        }
+                    }
+                }
+                
+                return extensionIDs.isEmpty();
+            }catch (IOException ex) {
+                Log.getLogger().log(Level.WARNING, "Error reading " + extensionCache.getAbsolutePath(), ex);
+            }finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    }catch (IOException ex) {
+                        Log.getLogger().log(Level.WARNING, "Unexpected exception", ex);
+                    }
+                }
+            }
+        }
+        
+        return true;
+    }    
+    
     /**
      * Checks extension.cache to determine if the extension has been scheduled for removal
      * 
-     * @param extensionID
-     * @param profileDir
-     * @return true if the extension will be uninstalled when Firefox restarts
+     * @param extensionID the Firefox extension ID to check
+     * @param profileDir the profile directory
+     * @param keywords the keyword in the extension.cache to check
+     * 
+     * @return true if the keyword was found for the given extension
      */
-    private static boolean isUninstallingExtension(String extensionID, File profileDir) {
+    private static boolean checkExtensionCache(String extensionID, File profileDir, String keyword) {
         File extensionCache = new File(profileDir, EXTENSION_CACHE);
         if (extensionCache.exists() && extensionCache.isFile()) {
             BufferedReader br = null;
@@ -515,14 +660,11 @@ public class FFExtensionManager {
                 while (br.ready() && !foundExtension) {
                     String nextLine = br.readLine();
                     if (nextLine != null) {
-                        StringTokenizer tokens = new StringTokenizer(nextLine);
-                        
-                        while (tokens.hasMoreTokens()) {
-                            String element = tokens.nextToken();
-                            
+                        String[] words = nextLine.split("\\s");
+                        for (String element : words) {
                             if (element.equals(extensionID)) {
                                 foundExtension = true;
-                            }else if (foundExtension == true && element.equals(UNINSTALL_KEYWORD)) {
+                            } else if (foundExtension == true && element.equals(keyword)) {
                                 return true;
                             }
                         }
@@ -544,348 +686,46 @@ public class FFExtensionManager {
         return false;
     }
     
-    
-    private static String[] getLocationsForOS() {
-        if (Utilities.isWindows()) { // NOI18N
-            return getUserPaths(WIN32_PROFILES_LOCATIONS);
-        } else if (Utilities.isMac()) {
-            return getUserPaths(MACOSX_PROFILES_LOCATIONS);
-        } else {
-            // assuming that linux/unix/sunos firefox paths are equivalent
-            return getUserPaths(LINUX_PROFILES_LOCATIONS);
-        }
-
-    }
-
-    private static String[] getUserPaths(String[] paths) {
-        String[] result = new String[paths.length];
-        String appRoot = getUserHome();
-
-        if (appRoot == null) {
-            return null;
-        }
-        for (int i = 0; i < paths.length; i++) {
-            result[i] = appRoot + paths[i];
-        }
-
-        return result;
-    }
-
-    /**
-     *
-     * @return user home, %AppData% on Windows
-     */
-    private static String getUserHome() {
-        String userHome = System.getProperty("user.home"); // NOI18N
-
-        if (!Utilities.isWindows()) {
-            return userHome;
-        } else {
-            String appData = userHome + File.separator + NbBundle.getMessage(FFExtensionManager.class, "WIN32_APPDATA_FOLDER");
-
-            BufferedReader br = null;
-            try {
-                Process process = Runtime.getRuntime().exec(APPDATA_CMD);
-                process.waitFor();
-
-                InputStream input = process.getInputStream();
-                br = new BufferedReader(new InputStreamReader(input));
-
-                while (br.ready()) {
-                    String nextLine = br.readLine();
-
-                    if (nextLine.trim().length() == 0) continue;
-
-                    File f = new File(nextLine.trim());
-                    if (f.exists() && f.isDirectory()) {
-                        return f.getAbsolutePath();
-                    }
-                }
-            }catch (Exception ex) {
-                Log.getLogger().info("Unable to run process: " + APPDATA_CMD);
-            }finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    }catch (IOException ex) {
-                    }
-                }
-            }
-
-            return appData;
-        }
-    }
-
-    private static File getDefaultProfile() {
-        String[] firefoxDirs = getLocationsForOS();
-        
-        if (firefoxDirs != null) {
-            for (String firefoxUserDir : firefoxDirs) {
-                File dir = new File(firefoxUserDir);
-                if (dir.isDirectory() && dir.exists()) {
-                    List<FirefoxProfile> profiles = getAllProfiles(dir);
-                    
-                    if (profiles == null || profiles.size() == 0) {
-                        // guess the default profile
-                        File profilesDir = new File(dir, "Profiles"); // NOI18N
-                        
-                        if (profilesDir.isDirectory()) {
-                            File[] childrenFiles = profilesDir.listFiles();
-                            for (int i = 0; childrenFiles != null && i < childrenFiles.length; i++) {
-                                File childFile = childrenFiles[i];
-                                
-                                if (childFile.isDirectory() && childFile.getAbsolutePath().endsWith(".default")) { // NOI18N
-                                    return childFile;
-                                }
-                            }
-                        }
-                    }else {
-                        // find a "default" profile
-                        for (FirefoxProfile profile : profiles) {
-                            if (profile.isDefaultProfile()) {
-                                File profileDir = null;
-                                
-                                if (profile.isRelative()) {
-                                    profileDir = new File(dir, profile.getPath());
-                                }else {
-                                    profileDir = new File(profile.getPath());
-                                }
-                                
-                                if (profileDir.isDirectory()) {
-                                    return profileDir;
-                                }
-                            }
-                        }
-                        
-                        // otherwise pick the first valid profile
-                        for (FirefoxProfile profile : profiles) {
-                            File profileDir = null;
-
-                            if (profile.isRelative()) {
-                                profileDir = new File(dir, profile.getPath());
-                            } else {
-                                profileDir = new File(profile.getPath());
-                            }
-
-                            if (profileDir.isDirectory()) {
-                                return profileDir;
-                            }                            
-                        }
-                    }
-                }
-            }
-        }
-        
-        return null;
-    }
-    
-    /**
-     * readProfiles
-     *
-     * @param file
-     * @return File[]
-     */
-    private static File[] readProfiles(File dir) {
-        List<File> list = new ArrayList<File>();
-        File profilesIni = new File(dir, "profiles.ini"); // NOI18N
-
-        if (profilesIni.exists()) {
-            LineNumberReader r = null;
-            try {
-                r = new LineNumberReader(new FileReader(profilesIni));
-                String line;
-                Map<String, Map<String, String>> sections = new HashMap<String, Map<String, String>>();
-                Map<String, String> last = null;
-                Pattern sectionPattern = Pattern.compile("^\\x5B(.*)\\x5D$"); // NOI18N
-
-                Pattern valuePattern = Pattern.compile("^(.[^=]*)=(.*)$"); // NOI18N
-
-                while ((line = r.readLine()) != null) {
-                    Matcher matcher = sectionPattern.matcher(line);
-                    if (matcher.find()) {
-                        last = new HashMap<String, String>();
-                        sections.put(matcher.group(1), last);
-                        continue;
-                    } else if (last == null) {
-                        continue;
-                    }
-                    matcher = valuePattern.matcher(line);
-                    if (matcher.find()) {
-                        last.put(matcher.group(1), matcher.group(2));
-                    }
-                }
-                for (Iterator i = sections.keySet().iterator(); i.hasNext();) {
-                    String section = (String) i.next();
-                    if (section.startsWith("Profile")) { // NOI18N
-
-                        Map properties = (Map) sections.get(section);
-                        String path = (String) properties.get("Path"); // NOI18N
-
-                        String isRelative = (String) properties.get("IsRelative"); // NOI18N
-
-                        File profile;
-                        if (isRelative != null && "1".equals(isRelative)) { // NOI18N
-
-                            profile = new File(dir, path);
-                        } else {
-                            profile = new File(path); // TODO: base64 decode ?
-
-                        }
-                        boolean def = properties.containsKey("Default"); // NOI18N
-
-                        if (def) {
-                            list.add(0, profile);
-                        } else {
-                            list.add(profile);
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                Log.getLogger().log(Level.SEVERE, "Could not read Firefox profiles", e);
-            } finally {
-                if (r != null) {
-                    try {
-                        r.close();
-                    } catch (IOException ignore) {
-                    }
-                }
-            }
-        }
-        return (File[]) list.toArray(new File[list.size()]);
-    }
-
-    // XXX Copied from JSAbstractDebugger
-    protected static String getBrowserExecutable(HtmlBrowser.Factory browser) {
-        if (browser != null) {
-            try {
-                Method method = browser.getClass().getMethod("getBrowserExecutable");
-                NbProcessDescriptor processDescriptor = (NbProcessDescriptor) method.invoke(browser);
-                return processDescriptor.getProcessName();
-            } catch (SecurityException e) {
-            } catch (NoSuchMethodException e) {
-            } catch (IllegalArgumentException e) {
-            } catch (IllegalAccessException e) {
-            } catch (InvocationTargetException e) {
-            }
-        }
-        return "firefox"; // NOI18N
-
-    }
-
-    private static boolean isHttpURLValid(URL url) {
+    private static boolean isHttpURLValid(String urlString) {
         try {
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             int response = connection.getResponseCode();
-            
+
             return response == HttpURLConnection.HTTP_OK;
-        }catch (Exception ex) {
+
+        } catch (Exception ex) {
             return false;
         }
     }
-    
-    private static List<FirefoxProfile> getAllProfiles(File dir) {
-        File profileCfg = new File(dir, "profiles.ini"); // NOI18N
+
+    private static File getURLResource(String urlString) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(profileCfg));
-            List<List<String>> profileData = new ArrayList<List<String>>();
+            URL url = new URL(urlString);
+            URLConnection connection = url.openConnection();
+            connection.setReadTimeout(5000);
+
+            File f = File.createTempFile("firebug-1.2.0b9", "xpi"); // NOI18N
+            BufferedInputStream input = new BufferedInputStream(connection.getInputStream());
+            BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(f));
             
-            List<String> currentProfile = null;
-            while(reader.ready()) {
-                String line = reader.readLine().trim();
-                
-                if (line.startsWith("[") && line.endsWith("]")) { // NOI18N
-                    if (currentProfile != null) {
-                        profileData.add(currentProfile);
-                    }
-                    
-                    currentProfile = new ArrayList<String>();
-                    currentProfile.add(line);
-                }else if (line.indexOf('=') > 0) { // NOI18N
-                    currentProfile.add(line);
+            try {
+                final byte[] buffer = new byte[4096];
+                int len;
+                while ((len = input.read(buffer)) >= 0) {
+                    output.write(buffer, 0, len);
                 }
+            } finally {
+                output.close();
+                input.close();
             }
             
-            if (currentProfile != null && !profileData.contains(currentProfile)) {
-                profileData.add(currentProfile);
-            }
-            
-            List<FirefoxProfile> allProfiles = new ArrayList<FirefoxProfile>();            
-            
-            for (List<String> profileText : profileData) {
-                if (profileText.size() == 0) {
-                    continue;
-                }else if (!profileText.get(0).startsWith("[")) {
-                    continue;
-                }
-                
-                FirefoxProfile profile = new FirefoxProfile();
-                boolean isValidProfile = false;
-                for (String line : profileText) {
-                    int index = line.indexOf('='); // NOI18N
-                    
-                    if (index > 0 && index < line.length()-1) {
-                        String var = line.substring(0, index);
-                        String val = line.substring(index+1, line.length());
-                        
-                        if (var.equals("Name")) { // NOI18N
-                            isValidProfile = true;
-                        }else if (var.equals("IsRelative")) { // NOI18N
-                            if (val.equals("1")) { // NOI18N
-                                profile.setRelative(true);
-                            }
-                        }else if (var.equals("Path")) { // NOI18N
-                            profile.setPath(val);
-                        }else if (var.equals("Default")) { // NOI18N
-                            if (val.equals("1")) { // NOI18N
-                                profile.setDefaultProfile(true);
-                            }
-                        }
-                    }
-                }
-                
-                if (isValidProfile) {
-                    allProfiles.add(profile);
-                }
-            }
-            
-            return allProfiles;
-        }catch (IOException ex) {
-            Log.getLogger().log(Level.WARNING, "Could not read Firefox profiles", ex);
+            return f;
+        } catch (Exception ex) {
+            Log.getLogger().log(Level.INFO, "Unable to get Firebug 1.2.0b9 from http://www.getfirebug.com", ex);
         }
         
         return null;
     }
     
-    private static final class FirefoxProfile {
-        private boolean relative = false;
-        private boolean defaultProfile = false;
-        private String path = "";
-        
-        public FirefoxProfile() {
-        }
-
-        public boolean isDefaultProfile() {
-            return defaultProfile;
-        }
-
-        public void setDefaultProfile(boolean defaultProfile) {
-            this.defaultProfile = defaultProfile;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        public boolean isRelative() {
-            return relative;
-        }
-
-        public void setRelative(boolean relative) {
-            this.relative = relative;
-        }
-    }
 }

@@ -54,10 +54,10 @@ made subject to such option by the copyright holder.
     <target name="set-appserver-path" unless="j2ee.appserver.path">
         <!-- Load private.properties where user can set own j2ee.appserver.path. -->
         <property file="../nbproject/private/private.properties"/>
-        <condition property="j2ee.appserver.path" value="E:\\space\\Sun\\SDK">
+        <condition property="j2ee.appserver.path" value="D:\\space\\SDK">
             <os family="windows"/>
         </condition>
-        <condition property="j2ee.appserver.path" value="/space/SDK">
+        <condition property="j2ee.appserver.path" value="/space/hudson/SDK">
             <os family="unix"/>
         </condition>
         <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>

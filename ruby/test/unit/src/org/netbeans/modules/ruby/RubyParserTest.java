@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.ruby;
 
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -112,7 +112,7 @@ public class RubyParserTest extends RubyTestBase {
     }
 
     public void testPartial2() throws Exception {
-        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNode");
+        checkParseTree("testfiles/broken2.rb", "Foo.new.^", "CallNoArgNode");
     }
 
     public void testPartial3() throws Exception {
@@ -151,4 +151,31 @@ public class RubyParserTest extends RubyTestBase {
         checkParseTree("testfiles/broken12.rb", " File.exists?(^)", "ArrayNode");
     }
 
+    public void testErrors1() throws Exception {
+        checkErrors("testfiles/colors.rb");
+    }
+
+    public void testErrors2() throws Exception {
+        checkErrors("testfiles/broken1.rb");
+    }
+
+    public void testErrors3() throws Exception {
+        checkErrors("testfiles/broken2.rb");
+    }
+
+    public void testErrors4() throws Exception {
+        checkErrors("testfiles/broken3.rb");
+    }
+
+    public void testErrors5() throws Exception {
+        checkErrors("testfiles/broken4.rb");
+    }
+
+    public void testErrors6() throws Exception {
+        checkErrors("testfiles/broken5.rb");
+    }
+
+    public void testErrors7() throws Exception {
+        checkErrors("testfiles/broken6.rb");
+    }
 }

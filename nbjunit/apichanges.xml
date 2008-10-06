@@ -55,6 +55,21 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Log.assertInstancesWithNames">
+        <api name="nbjunit"/>
+        <summary>Log.assertInstances can take list of names one is searching for</summary>
+        <version major="1" minor="53"/>
+        <date day="8" month="8" year="2008"/>
+        <author login="mrkam"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>Enhanced version of
+            <a href="@TOP@/org/netbeans/junit/Log.html#assertInstances(java.lang.String,%20java.lang.String...)">
+            assertInstances(String msg, String... types)</a> added.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="NbModuleSuite"/>
+    </change>
     <change id="NbModuleSuite.Configuration.reuseUserDir">
         <api name="nbjunit"/>
         <summary>NbModuleSuite.Configuration.reuseUserDir(boolean reuse)</summary>
@@ -110,7 +125,7 @@ made subject to such option by the copyright holder.
         <compatibility addition="yes"/>
         <description>
             <p>NbModuleSuite.Configuration now has 
-            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class,%20hg java.lang.String...)">addTest(clazz, tests)</a>
+            <a href="@TOP@/org/netbeans/junit/NbModuleSuite.Configuration.html#addTest(java.lang.Class,%20java.lang.String...)">addTest(clazz, tests)</a>
             method which allows to add multiple test classes into single configuration
             and execution of the NbModuleSuite.
             </p>

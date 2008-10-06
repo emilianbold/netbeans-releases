@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
@@ -155,6 +156,7 @@ public class ServerRegistry implements VetoableChangeListener {
                 return existing;
             }
             RubyServerFactory result = new RubyServerFactory(platform);
+            result.initGlassFish();
             result.initWEBrick();
             result.initMongrel();
             platform.addPropertyChangeListener(result);
@@ -164,6 +166,33 @@ public class ServerRegistry implements VetoableChangeListener {
 
         public List<RubyServer> getServers() {
             return new ArrayList<RubyServer>(servers);
+        }
+        
+        private void initGlassFish() {
+            if(platform.isJRuby()) {
+                GemManager gemManager = platform.getGemManager();
+                if (gemManager == null) {
+                    return;
+                }
+
+                List<GemInfo> versions = gemManager.getVersions(GlassFishGem.GEM_NAME);
+                GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
+                if (glassFishGemInfo == null) {
+                    // remove all glassfish from gems
+                    for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
+                        if (it.next() instanceof GlassFishGem) {
+                            it.remove();
+                        }
+                    }
+                    return;
+
+                }
+
+                GlassFishGem candidate = new GlassFishGem(platform, glassFishGemInfo);
+                if (!servers.contains(candidate)) {
+                    servers.add(candidate);
+                }
+            }
         }
 
         private void initMongrel() {
@@ -198,6 +227,7 @@ public class ServerRegistry implements VetoableChangeListener {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals("gems")) { //NOI18N
+                initGlassFish();
                 initMongrel();
                 initWEBrick();
                 ServerInstanceProviderImpl.getInstance().fireServersChanged();

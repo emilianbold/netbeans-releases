@@ -218,8 +218,9 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         ren.setIcon(icon);
 
         if (target instanceof TreeTable.TreeTableCellRenderer) {
-            TreeTable tt = ((TreeTable.TreeTableCellRenderer) target).getTreeTable();
-            ren.setParentFocused(tt.hasFocus() || tt.isEditing());
+            TreeTable.TreeTableCellRenderer ttRen = (TreeTable.TreeTableCellRenderer) target;
+            TreeTable tt = ttRen.getTreeTable();
+            ren.setParentFocused(ttRen.treeTableHasFocus() || tt.isEditing());
         }
 
         return (icon.getIconWidth() == 0) ? 24 : icon.getIconWidth();

@@ -109,6 +109,10 @@ public final class EditorBridge extends KeymapManager {
                     actions.put(category, a);
                 }
                 a.add(action);
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Action='" + action.getId() + "' -> Category='" + category + "'"); //NOI18N
+                }
             }
             actions.remove("Hidden"); // NOI18N
         }
@@ -241,9 +245,13 @@ public final class EditorBridge extends KeymapManager {
         }
         if (editorKit == null) {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning("EditorKit not found for: " + mimeType); //NOI18N
+                LOG.fine("EditorKit not found for: " + mimeType); //NOI18N
             }
             return;
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Loading actions for '" + (mimeType == null ? "" : mimeType) + "' using " + editorKit); //NOI18N
         }
 
         // 2) copy actions from EditorKit to actionMap
@@ -251,6 +259,9 @@ public final class EditorBridge extends KeymapManager {
         for (int i = 0; i < as.length; i++) {
             Object isHidden = as[i].getValue(BaseAction.NO_KEYBINDING);
             if (isHidden instanceof Boolean && ((Boolean) isHidden).booleanValue()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("! Action '" + as[i].getValue(Action.NAME) + "' is hidden, ignoring"); //NOI18N
+                }
                 continue; // ignore hidden actions
             }
             
@@ -259,16 +270,27 @@ public final class EditorBridge extends KeymapManager {
 
             // filter out actions inherited from an empty mime path (all editors actions)
             if (emptyMimePathActions != null && emptyMimePathActions.containsKey(id)) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest("Action '" + id + "' was already listed among all alnguages actions, skipping"); //NOI18N
+                }
                 continue;
             }
             
             editorActionsMap.put(id, action);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Action '" + id + "' loaded for '" + (mimeType == null ? "" : mimeType) + "'"); //NOI18N
+            }
+
             Set<String> s = actionNameToMimeTypes.get(id);
             if (s == null) {
                 s = new HashSet<String>();
                 actionNameToMimeTypes.put(id, s);
             }
             s.add(mimeType);
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Actions for '" + (mimeType == null ? "" : mimeType) + "' loaded successfully"); //NOI18N
         }
     }
 
@@ -472,7 +494,13 @@ public final class EditorBridge extends KeymapManager {
 
         public String getDisplayName() {
             if (name == null) {
-                name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                try {
+                    name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                } catch (MissingResourceException mre) {
+                    Throwable t = new Throwable("The action " + action + " crashed when accessing its short description.", mre); //NOI18N
+                    LOG.log(Level.WARNING, null, t);
+                    name = null;
+                }
                 if (name == null) {
                     LOG.warning("The action " + action + " doesn't provide short description, using its name."); //NOI18N
                     name = getId();

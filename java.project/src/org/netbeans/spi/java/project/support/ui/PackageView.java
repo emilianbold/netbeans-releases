@@ -73,6 +73,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -137,7 +138,8 @@ public class PackageView {
      * @since org.netbeans.modules.java.project/1 1.3 
      */
     
-    public static ComboBoxModel createListView(SourceGroup group) {        
+    public static ComboBoxModel createListView(SourceGroup group) {
+        Parameters.notNull("group", group); //NOI18N
         SortedSet<PackageItem> data = new TreeSet<PackageItem>();
         findNonExcludedPackages(null, data, group.getRootFolder(), group, false);
         return new DefaultComboBoxModel(data.toArray(new PackageItem[data.size()]));

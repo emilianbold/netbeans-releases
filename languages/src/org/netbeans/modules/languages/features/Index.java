@@ -62,11 +62,9 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Language;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.LanguagesManager;
-import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.modules.languages.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,7 +76,7 @@ import org.openide.util.Exceptions;
  */
 public class Index {
     
-    private static Map<Project,ProjectCache> projectToCache = new WeakHashMap<Project,ProjectCache> ();
+    private static Map<FileObject,ProjectCache> projectToCache = new WeakHashMap<FileObject,ProjectCache> ();
 
     
     public static Map<FileObject,List<DatabaseDefinition>> getGlobalItems (
@@ -86,9 +84,9 @@ public class Index {
         boolean parse
     ) throws FileNotParsedException {
         Map<FileObject,List<DatabaseDefinition>> result = new HashMap<FileObject,List<DatabaseDefinition>> ();
-        Project project = FileOwnerQuery.getOwner (fo);
-        if (project == null) return result;
-        getProjectCache (project, parse).add (result, null);
+        FileObject projectDir = Utils.getProjectRoot(fo);
+        if (projectDir == null) return result;
+        getProjectCache (projectDir, parse).add (result, null);
         return result;
     }
     
@@ -98,32 +96,32 @@ public class Index {
         boolean     parse
     ) throws FileNotParsedException {
         Map<FileObject,List<DatabaseDefinition>> result = new HashMap<FileObject,List<DatabaseDefinition>> ();
-        Project project = FileOwnerQuery.getOwner (fo);
-        if (project == null) return result;
-        getProjectCache (project, parse).add (result, name);
+        FileObject projectDir = Utils.getProjectRoot(fo);
+        if (projectDir == null) return result;
+        getProjectCache (projectDir, parse).add (result, name);
         return result;
     }
     
     private static ProjectCache getProjectCache (
-        Project project, 
+        FileObject projectDir,
         boolean parse
     ) throws FileNotParsedException {
-        ProjectCache cache = projectToCache.get (project);
+        ProjectCache cache = projectToCache.get (projectDir);
         if (cache == null)
-            cache = readProjectCache (project);
+            cache = readProjectCache (projectDir);
         if (cache == null) {
             if (!parse) throw new FileNotParsedException ();
-            cache = new ProjectCache (project);
-            projectToCache.put (project, cache);
+            cache = new ProjectCache (projectDir);
+            projectToCache.put (projectDir, cache);
         }
         return cache;
     }
     
-    private static ProjectCache readProjectCache (Project project) {
+    private static ProjectCache readProjectCache (FileObject projectDir) {
         try {
-            File f = getProjectCacheFile (project);
+            File f = getProjectCacheFile (projectDir);
             if (f == null) return null;
-            return ProjectCache.load (project, f);
+            return ProjectCache.load (projectDir, f);
         } catch (IOException e) {
             e.printStackTrace ();
             return null;
@@ -132,8 +130,7 @@ public class Index {
     
     private static List<FileObject> roots;
     
-    private static File getProjectCacheFile (Project project) {
-        FileObject projectDir = project.getProjectDirectory ();
+    private static File getProjectCacheFile (FileObject projectDir) {
         File cacheFolder = getCacheFolder ();
         if (roots != null) {
             int i = roots.indexOf (projectDir);
@@ -179,13 +176,13 @@ public class Index {
         BufferedWriter writer = new BufferedWriter (new FileWriter (segments));
         try {
             int i = 1;
-            Iterator<Project> it = projectToCache.keySet ().iterator ();
+            Iterator<FileObject> it = projectToCache.keySet ().iterator ();
             while (it.hasNext ()) {
-                Project p = it.next ();
-                ProjectCache cache = projectToCache.get (p);
+                FileObject fo = it.next ();
+                ProjectCache cache = projectToCache.get (fo);
                 File s = new File (dir, "s" + i);
                 cache.save (s);
-                writer.write (p.getProjectDirectory ().getPath ());
+                writer.write (fo.getPath ());
                 writer.newLine ();
             }
         } finally {
@@ -220,12 +217,12 @@ public class Index {
         private FileObject                  root;
         private Map<FileObject,FileCache>   cache;
         
-        ProjectCache (Project project) {
-            root = project.getProjectDirectory ();
+        ProjectCache (FileObject root) {
+            this.root = root;
         }
         
-        ProjectCache (Project project, Map<FileObject,FileCache> cache) {
-            root = project.getProjectDirectory ();
+        ProjectCache (FileObject root, Map<FileObject,FileCache> cache) {
+            this.root = root;
             this.cache = cache;
         }
 
@@ -260,7 +257,7 @@ public class Index {
             }
         }
         
-       private static ProjectCache load (Project project, File f) throws IOException {
+       private static ProjectCache load (FileObject root, File f) throws IOException {
             DataInputStream is = new DataInputStream (new FileInputStream (f));
             try {
                 Map<FileObject,FileCache> cache = new HashMap<FileObject, Index.FileCache> ();
@@ -274,7 +271,7 @@ public class Index {
                     cache.put (fo, fc);
                     i--;
                 }
-                return new ProjectCache (project, cache);
+                return new ProjectCache (root, cache);
             } finally {
                 is.close ();
             }

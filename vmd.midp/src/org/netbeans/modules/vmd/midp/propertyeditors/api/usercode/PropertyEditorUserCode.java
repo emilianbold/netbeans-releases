@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertyEditorSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import javax.swing.*;
@@ -67,6 +68,7 @@ import javax.swing.text.Keymap;
 import javax.swing.undo.UndoManager;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 
 /**
  * This class allows create PropertyEditor which supports User Code.
@@ -82,14 +84,26 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     public static final PropertyValue NULL_VALUE = PropertyValue.createNull();
     public static final String NULL_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_NULL"); // NOI18N
     public static final String USER_CODE_TEXT = NbBundle.getMessage(PropertyEditorUserCode.class, "LBL_STRING_USER_CODE"); // NOI18N
-    private static final Icon ICON_WARNING = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
-    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
-    private final CustomEditor customEditor;
+    private static final Icon ICON_WARNING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/warning.gif")); // NOI18N
+    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private CustomEditor customEditor;
     private JRadioButton userCodeRadioButton;
-    private final JLabel messageLabel;
+    private JLabel messageLabel;
     private String userCodeLabel;
     private String userCode = ""; // NOI18N
     protected WeakReference<DesignComponent> component;
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        userCodeRadioButton = null;
+        messageLabel = null;
+        this.component = null;
+    }
 
     protected PropertyEditorUserCode(String userCodeLabel) {
         this.userCodeLabel = userCodeLabel;
@@ -113,7 +127,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      * This method should be invoked from subclass to init elements. Develpers can controll position of 
      * the Elements by seting index as a Integer value in the elements map. 
      */
-    protected void initElements(Map<PropertyEditorElement, Integer> elements) {
+    protected void initElements(LinkedHashMap<PropertyEditorElement, Integer> elements) {
         customEditor.init(elements);
     }
 
@@ -137,9 +151,10 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
 
     /**
      * Updates state of custom editor and returns it to edit property value.
+     * If you averide this method CALL super.getCustomEditor!!!!!
      */
     @Override
-    public final Component getCustomEditor() {
+    public Component getCustomEditor() {
         initCustomEditor();
         return customEditor;
     }
@@ -207,6 +222,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     @Override
     public void customEditorOKButtonPressed() {
         if (userCodeRadioButton.isSelected()) {
+            customEditor.setNewValue();
             PropertyEditorUserCode.super.setValue(PropertyValue.createUserCode(userCode));
         }
     }
@@ -312,6 +328,26 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             initComponents();
         }
 
+        void cleanUp() {
+            if (elementsMap != null) {
+                for (PropertyEditorElement pee : elementsMap.keySet()) {
+                    if (pee instanceof CleanUp) {
+                        ((CleanUp) pee).clean(null);
+                    }
+                 }
+                elementsMap.clear();
+                elementsMap = null;
+            }
+            if (elements != null) {
+                elements = null;
+            }
+            if (userCodeEditorPane != null && userCodeEditorPane.getDocument() != null) {
+                userCodeEditorPane.getDocument().removeDocumentListener(this);
+                userCodeEditorPane = null;
+            }
+            this.removeAll();
+        }
+
         private void initComponents() {
             setLayout(new GridBagLayout());
             ButtonGroup buttonGroup = new ButtonGroup();
@@ -365,6 +401,10 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
             add(userCodeRadioButton, constraints);
             JScrollPane jsp = new JScrollPane();
             userCodeEditorPane = new JEditorPane();
+            userCodeEditorPane.getAccessibleContext().setAccessibleName(
+                    userCodeRadioButton.getAccessibleContext().getAccessibleName());
+            userCodeEditorPane.getAccessibleContext().setAccessibleDescription(
+                    userCodeRadioButton.getAccessibleContext().getAccessibleDescription());
             userCodeEditorPane.addFocusListener(this);
             //userCodeEditorPane.setFont(userCodeRadioButton.getFont());
             SwingUtilities.invokeLater(new Runnable() {

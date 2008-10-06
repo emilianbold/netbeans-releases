@@ -1,0 +1,4 @@
+
+struct OuterStruct {
+    void outerFunction();
+};

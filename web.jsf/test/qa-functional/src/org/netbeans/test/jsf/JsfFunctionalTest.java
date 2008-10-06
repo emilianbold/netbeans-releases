@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.test.jsf;
 
+import org.netbeans.test.web.*;
 import java.awt.Container;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
+import javax.swing.JComboBox;
 import junit.framework.Test;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.form.ComponentPaletteOperator;
-import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
-import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.openide.util.Exceptions;
 
 /** Test JSF support.
  *
  * @author Lukasz Grela
  * @author Jiri Skrivanek
+ * @author Jindrich Sedek
  */
-public class JsfFunctionalTest extends J2eeTestCase{
-    
-    public static final String PROJECT_NAME = "myjsfproject";
+public class JsfFunctionalTest extends WebProjectValidationEE5 {
+
     public static final String WELCOME_JSP = "welcomeJSF.jsp";
     public static final String INDEX_JSP = "index.jsp";
     public static final String FROM_ACTION1 = "FromAction1";
@@ -90,14 +98,36 @@ public class JsfFunctionalTest extends J2eeTestCase{
     public static final String DESCRIPTION_RULE = "DescriptionRule";
     public static final String DESCRIPTION_CASE1 = "DescriptionCase1";
     public static final String DESCRIPTION_CASE2 = "DescriptionCase2";
-    
+
+    static {
+        PROJECT_NAME = "WebJSFProject";
+    }
+
+    protected static String URL_PATTERN_NULL = "The URL Pattern has to be entered.";
+    protected static String URL_PATTERN_INVALID = "The URL Pattern is not valid.";
+    // folder of sample project
+
+    /** Need to be defined because of JUnit */
     public JsfFunctionalTest(String name) {
         super(name);
     }
-    
+
+    /** Need to be defined because of JUnit */
+    public JsfFunctionalTest() {
+        super();
+    }
+
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JsfFunctionalTest.class),
-                "testCreateWebProjectWithJSF",
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JsfFunctionalTest.class);
+        conf = addServerTests(Server.GLASSFISH, conf,
+                "testPreconditions",
+                "testNewJSFWebProject",
+                "testRedeployProject",
+                "testCleanAndBuildProject",
+                "testCompileAllJSP",
+                "testCleanAndBuildProject",
+                "testCompileAllJSP",
+                "testStopServer",
                 "testManagedBeanWizard",
                 "testManagedBeanDelete",
                 "testAddManagedBean",
@@ -105,47 +135,64 @@ public class JsfFunctionalTest extends J2eeTestCase{
                 "testAddNavigationCase",
                 "testAddNavigationCaseWithNewRule",
                 "testAddJSFToProject",
-                "testJSFPalette"
-                ).enableModules(".*").clusters(".*")); 
+                "testJSFPalette",
+                "testCreateEntityClassAndPU",
+                "testShutdownDb"
+                );
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
     }
-    
-    @Override
-    public void setUp() {
-        System.out.println("### "+getName()+" ###");
-    }
-    
-    public void testCreateWebProjectWithJSF() throws IOException {
-        // "Web"
-        String web = Bundle.getStringTrimmed(
+    /** Test creation of web project.
+     * - open New Project wizard from main menu (File|New Project)
+     * - select Web|Web Application
+     * - in the next panel type project name and project location
+     * - in next panel set server to Glassfish and J2EE version to Java EE 5
+     * - in Frameworks panel set JSF framework
+     * - finish the wizard
+     * - wait until scanning of java files is finished
+     * - check index.jsp is opened
+     */
+    public void testNewJSFWebProject() throws IOException {
+        final String serverNodeName = getServerNode(Server.ANY).getText();
+        NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
+        String category = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",
-                "OpenIDE-Module-Display-Category");
-        // "Web Application"
-        String webApplication = Bundle.getStringTrimmed(
-                "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                "Templates/Project/Web/emptyWeb.xml");
-        NewProjectWizardOperator nop = NewProjectWizardOperator.invoke();
-        nop.selectCategory(web);
-        nop.selectProject(webApplication);
-        nop.next();
-        NewWebProjectNameLocationStepOperator lop = new NewWebProjectNameLocationStepOperator();
-        lop.setProjectName(PROJECT_NAME);
-        lop.setProjectLocation(getDataDir().getCanonicalPath());
-        lop.next();
-        lop.next();
-        NewProjectWizardOperator frameworkStep = new NewProjectWizardOperator();
-        // select JavaServer Faces
-        JTableOperator tableOper = new JTableOperator(frameworkStep);
-        boolean found = false;
-        for(int i=0; i<tableOper.getRowCount(); i++) {
-            if(tableOper.getValueAt(i, 1).toString().startsWith("org.netbeans.modules.web.jsf.JSFFrameworkProvider")) { // NOI18N
-                tableOper.selectCell(i, 0);
-                found = true;
-                break;
-            }
-        }
-        assertTrue("JavaServer Faces framework not found.", found);
+                "Templates/JSP_Servlet");
+        projectWizard.selectCategory(category);
+        projectWizard.next();
+        NewWebProjectNameLocationStepOperator nameStep = new NewWebProjectNameLocationStepOperator();
+        nameStep.txtProjectName().setText("");
+        nameStep.txtProjectName().typeText(PROJECT_NAME);
+        nameStep.txtProjectLocation().setText("");
+        String sFolder = getProjectFolder(PROJECT_NAME);
+        nameStep.txtProjectLocation().typeText(sFolder);
+        nameStep.next();
+        NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
+        serverStep.selectServer(serverNodeName);
+        serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "JavaEESpecLevel_50"));
+        serverStep.next();
+
+        NewWebProjectJSFFrameworkStepOperator frameworkStep = new NewWebProjectJSFFrameworkStepOperator();
+        assertTrue("JSF framework not present!", frameworkStep.setJSFFrameworkCheckbox());
+        frameworkStep.txtServletURLMapping().setText("");
+        assertEquals(URL_PATTERN_NULL, frameworkStep.lblTheURLPatternHasToBeEntered().getText());
+        frameworkStep.txtServletURLMapping().typeText("hhhhhh*");
+        assertEquals(URL_PATTERN_INVALID, frameworkStep.lblTheURLPatternIsNotValid().getText());
+        frameworkStep.txtServletURLMapping().setText("");
+        frameworkStep.txtServletURLMapping().typeText("/faces/*");
+        frameworkStep.selectPageLibraries();
+        frameworkStep.rbCreateNewLibrary().push();
+        assertEquals("\"\" is not valid path for a folder.", frameworkStep.lblIsNotValidPathForAFolder().getText());
+        frameworkStep.rbRegisteredLibraries().push();
+        frameworkStep.rbDoNotAppendAnyLibrary().push();
+
         frameworkStep.finish();
+        sleep(5000);
         ProjectSupport.waitScanFinished();
+        verifyWebPagesNode("welcomeJSF.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|faces-config.xml");//NOI18N
         // Check project contains all needed files.
         WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
         Node welcomeJSF = new Node(webPages, "welcomeJSF.jsp");
@@ -155,6 +202,17 @@ public class JsfFunctionalTest extends J2eeTestCase{
         new OpenAction().perform(facesconfig);
         // open faces-config.xml is used in next test cases
         getFacesConfig();
+    }
+
+    @Override
+    protected File getProjectFolder() {
+        try {
+            File dataDir = new JsfFunctionalTest().getWorkDir();
+            return Manager.normalizeFile(dataDir);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
     /** Test JSF Managed Bean Wizard. */
@@ -192,8 +250,8 @@ public class JsfFunctionalTest extends J2eeTestCase{
     /** Test that delete safely bean removes record from faces-config.xml. */
     public void testManagedBeanDelete() {
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "mypackage|MyManagedBean.java");
-        new ActionNoBlock(null, "Refactor|Safe Delete...").perform(node);
-        NbDialogOperator safeDeleteDialog = new NbDialogOperator("Safe Delete");
+        new ActionNoBlock(null, "Refactor|Safely Delete...").perform(node);
+        NbDialogOperator safeDeleteDialog = new NbDialogOperator("Safely Delete");
         new JButtonOperator(safeDeleteDialog, "Refactor").push();
         node.waitNotPresent();
         // verify
@@ -395,11 +453,43 @@ public class JsfFunctionalTest extends J2eeTestCase{
         expected = "</h:dataTable>";
         assertTrue("index.jsp should contain "+expected+".", editorOper.contains(expected));
     }
-    
+
+        /** Create Entity class and persistence unit. */
+    public void testCreateEntityClassAndPU(){
+        NewFileWizardOperator entity = NewFileWizardOperator.invoke();
+        entity.selectProject(PROJECT_NAME);
+        entity.selectCategory("Persistence");
+        entity.selectFileType("Entity Class");
+        entity.next();
+        NewFileNameLocationStepOperator locationOper = new NewFileNameLocationStepOperator();
+        locationOper.setPackage("mypackage");
+        new JButtonOperator(locationOper, "Create Persistence Unit").pushNoBlock();
+        
+        NbDialogOperator persistenceDialog = new NbDialogOperator("Create Persistence Unit");
+        new JComboBoxOperator(
+                (JComboBox)new JLabelOperator(persistenceDialog, "Data Source").getLabelFor()).selectItem("jdbc/sample");
+        new JButtonOperator(persistenceDialog, "Create").push();
+        
+        locationOper.finish();
+    }
+
+    /** Shutdown databases */
+    public void testShutdownDb(){
+        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes();
+        for (DatabaseRuntime runtime : runtimes) {
+            if (runtime.isRunning()) {
+                runtime.stop();
+            }
+        }
+    }
+
     /** If installed visualweb cluster in IDE, switch from PageFlow to XML view of faces-config.xml. 
      * @return EditorOperator instance of faces-config.xml
      */
     public static EditorOperator getFacesConfig() {
+        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
+        Node facesconfig = new Node(webPages, "WEB-INF|faces-config.xml");
+        new OpenAction().perform(facesconfig);
         TopComponentOperator tco = new TopComponentOperator("faces-config.xml");
         if(JToggleButtonOperator.findJToggleButton((Container)tco.getSource(), ComponentSearcher.getTrueChooser("Toggle button")) != null) {
             // "XML"

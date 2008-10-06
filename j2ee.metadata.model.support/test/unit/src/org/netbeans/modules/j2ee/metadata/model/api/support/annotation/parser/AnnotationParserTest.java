@@ -257,13 +257,13 @@ public class AnnotationParserTest extends JavaSourceTestCase {
 
     public void testAnnotationArray() throws Exception {
         TestUtilities.copyStringToFileObject(srcFO, "Annotated.java",
-                "import java.lang.annotation.*" +
+                "import java.lang.annotation.*;" +
                 "@interface Annotation {" +
                 "   SuppressWarnings[] annotationValue();" +
                 "   SuppressWarnings[] annotationValue2();" +
-                "   SuppressWarnings]] annotationValue3();" +
+                "   SuppressWarnings[] annotationValue3();" +
                 "}" +
-                "@Annotation(annotationValue = { @SuppressWarnings(\"foo\"), @SuppressWarnings({\"bar\", \"baz\"}) }, annotationValue2 = @Retention(RetentionPolicy.SOURCE)" +
+                "@Annotation(annotationValue = { @SuppressWarnings(\"foo\"), @SuppressWarnings({\"bar\", \"baz\"}) }, annotationValue2 = @Retention(RetentionPolicy.SOURCE), annotationValue3 = null)" +
                 "public class Annotated {" +
                 "}");
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(srcFO, srcFO).await();

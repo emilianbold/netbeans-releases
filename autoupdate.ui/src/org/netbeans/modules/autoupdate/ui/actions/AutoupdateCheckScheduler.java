@@ -50,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -105,7 +106,7 @@ public class AutoupdateCheckScheduler {
     }
     
     public static void signOn () {
-        AutoupdateSettings.getIdeIdentity ();
+        AutoupdateSettings.generateIdentity ();
         
         if (timeToCheck ()) {
             // schedule refresh providers
@@ -203,48 +204,96 @@ public class AutoupdateCheckScheduler {
             err.log (Level.FINE, "findUpdateElements(" + type + ") doesn't find any elements.");
             return null;
         }
+        // 1. try to install all available updates
         Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
+        boolean somePendingElements = false;
+        boolean someBrokenDependencies = false;
+        OperationContainer<InstallSupport> container = handleUpdates ?
+            OperationContainer.createForUpdate () :
+            OperationContainer.createForInstall ();
         for (UnitCategory cat : cats) {
             for (Unit u : cat.getUnits ()) {
-                OperationContainer<InstallSupport> oc = handleUpdates ?
-                    OperationContainer.createForUpdate () :
-                    OperationContainer.createForInstall ();
                 UpdateElement element = handleUpdates ?
                     ((Unit.Update) u).getRelevantElement () :
                     ((Unit.Available) u).getRelevantElement ();
-                UpdateUnit unit = element.getUpdateUnit ();
-                if (oc.canBeAdded (unit, element)) {
-                    OperationInfo<InstallSupport> operationInfo = oc.add (element);
+                if (container.canBeAdded (element.getUpdateUnit (), element) && ! somePendingElements) {
+                    OperationInfo<InstallSupport> operationInfo = container.add (element);
                     if (operationInfo == null) {
+                        updates.add (element);
                         continue;
                     }
-                    boolean skip = false;
                     Collection<UpdateElement> reqs = new HashSet<UpdateElement> (operationInfo.getRequiredElements ());
+                    Collection<String> brokenDeps = operationInfo.getBrokenDependencies ();
+                    if (! brokenDeps.isEmpty ()) {
+                        err.log (Level.WARNING, "Plugin " + operationInfo + // NOI18N
+                                " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
+                        someBrokenDependencies = true;
+                        break;
+                    }
                     for (UpdateElement tmpEl : reqs) {
                        if (tmpEl.getUpdateUnit ().isPending ()) {
-                           err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                           err.log (Level.WARNING, "Plugin " + operationInfo.getUpdateElement () + // NOI18N
                                    " depends on " + tmpEl + " in pending state.");                           
-                           skip = true;
+                           somePendingElements = true;
+                           updates = Collections.emptySet ();
+                           break;
                        } 
                     }
-                    if (skip) {
-                        continue;
-                    }
-                    oc.add (reqs);
-                    Collection<String> brokenDeps = new HashSet<String> ();
-                    for (OperationInfo<InstallSupport> info : oc.listAll ()) {
-                        brokenDeps.addAll (info.getBrokenDependencies ());
-                    }
-                    if (brokenDeps.isEmpty () && oc.listInvalid ().isEmpty ()) {
-                        updates.add (element);
-                    } else {
-                        oc.removeAll ();
-                        if (! brokenDeps.isEmpty ()) {
-                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
-                                    " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
+                    container.add (reqs);
+                    updates.add (element);
+                }
+            }
+        }
+        if (! somePendingElements && ! container.listInvalid ().isEmpty ()) {
+            err.log (Level.WARNING, "Plugins " + updates + // NOI18N
+                    " cannot be installed, Install Container contains invalid elements " + container.listInvalid ()); // NOI18N
+        }
+        if (! somePendingElements && someBrokenDependencies) {
+            // 2. if some problem then try one by one
+            updates = new HashSet<UpdateElement> ();
+            for (UnitCategory cat : cats) {
+                for (Unit u : cat.getUnits ()) {
+                    OperationContainer<InstallSupport> oc = handleUpdates ?
+                        OperationContainer.createForUpdate () :
+                        OperationContainer.createForInstall ();
+                    UpdateElement element = handleUpdates ?
+                        ((Unit.Update) u).getRelevantElement () :
+                        ((Unit.Available) u).getRelevantElement ();
+                    UpdateUnit unit = element.getUpdateUnit ();
+                    if (oc.canBeAdded (unit, element)) {
+                        OperationInfo<InstallSupport> operationInfo = oc.add (element);
+                        if (operationInfo == null) {
+                            updates.add (element);
+                            continue;
+                        }
+                        boolean skip = false;
+                        Collection<UpdateElement> reqs = new HashSet<UpdateElement> (operationInfo.getRequiredElements ());
+                        for (UpdateElement tmpEl : reqs) {
+                           if (tmpEl.getUpdateUnit ().isPending ()) {
+                               err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                       " depends on " + tmpEl + " in pending state.");                           
+                               skip = true;
+                           } 
+                        }
+                        if (skip) {
+                            continue;
+                        }
+                        oc.add (reqs);
+                        Collection<String> brokenDeps = new HashSet<String> ();
+                        for (OperationInfo<InstallSupport> info : oc.listAll ()) {
+                            brokenDeps.addAll (info.getBrokenDependencies ());
+                        }
+                        if (brokenDeps.isEmpty () && oc.listInvalid ().isEmpty ()) {
+                            updates.add (element);
                         } else {
-                            err.log (Level.WARNING, "Plugin " + element + // NOI18N
-                                    " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
+                            oc.removeAll ();
+                            if (! brokenDeps.isEmpty ()) {
+                                err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                        " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
+                            } else {
+                                err.log (Level.WARNING, "Plugin " + element + // NOI18N
+                                        " cannot be installed, Install Container contains invalid elements " + oc.listInvalid ()); // NOI18N
+                            }
                         }
                     }
                 }
@@ -469,7 +518,6 @@ public class AutoupdateCheckScheduler {
                         t = RP.post (new Runnable () {
                             public void run () {
                                 showBalloon.run ();
-                                BalloonManager.stopDismissSlowly ();
                             }
                         }, ToolTipManager.sharedInstance ().getInitialDelay ());
                     }
@@ -479,7 +527,7 @@ public class AutoupdateCheckScheduler {
                         if( null != t ) {
                             t.cancel ();
                             t = null;
-                            BalloonManager.dismissSlowly ();
+                            BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
                         }
                     }
             });

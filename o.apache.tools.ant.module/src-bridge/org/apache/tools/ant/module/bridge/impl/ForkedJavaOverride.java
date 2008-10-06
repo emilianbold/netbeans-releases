@@ -54,13 +54,9 @@ public class ForkedJavaOverride extends Java {
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor(ForkedJavaOverride.class.getName(), Integer.MAX_VALUE);
 
+    // should be consistent with java.project.JavaAntLogger.STACK_TRACE
     private static final Pattern STACK_TRACE = Pattern.compile(
-    "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)\r?\n"); // NOI18N
-
-    private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
-    // #42894: JRockit uses "Main Thread" not "main"
-    "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)+)([a-zA-Z_$][a-zA-Z0-9_$]*(?:: .+)?)\r?\n"); // NOI18N
-      
+    "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
     
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
@@ -204,30 +200,27 @@ public class ForkedJavaOverride extends Java {
                 try {
                     int c;
                     while ((c = in.read()) != -1) {
-                        synchronized (this) {
-                            if (logLevel == null) {
-                                // Input gets sent immediately.
-                                out.write(c);
-                                out.flush();
-                            } else {
-                                currentLine.write(c);
+                        if (logLevel == null) {
+                            // Input gets sent immediately.
+                            out.write(c);
+                            out.flush();
+                        } else {
+                            synchronized (this) {
                                 if (c == '\n') {
-                                    String s = currentLine.toString(encoding);
-                                    if (logLevel == Project.MSG_WARN && (STACK_TRACE.matcher(s).matches() || EXCEPTION_MESSAGE.matcher(s).matches())) {
-                                        int len = s.length();
-                                        log(s.substring(0, len - (s.charAt(len - 2) == '\r' ? 2 : 1)), logLevel);
-                                    } else {
-                                        ow.write(s);
+                                    String str = currentLine.toString(encoding);
+                                    int len = str.length();
+                                    if (len > 0 && str.charAt(len - 1) == '\r') {
+                                        str = str.substring(0, len - 1);
                                     }
+                                    // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
+                                    if (!STACK_TRACE.matcher(str).matches()) {
+                                        ow.println(str);
+                                    }
+                                    log(str, logLevel);
                                     currentLine.reset();
                                 } else {
-                                    if (currentLine.size() >= 4096) {
-                                        String s = currentLine.toString(encoding);
-                                        ow.write(s);
-                                        currentLine.reset();
-                                    } else {
-                                        flusher.schedule(250);
-                                    }
+                                    currentLine.write(c);
+                                    flusher.schedule(250);
                                 }
                             }
                         }
@@ -249,9 +242,10 @@ public class ForkedJavaOverride extends Java {
         private synchronized void maybeFlush() {
             try {
                 if (currentLine.size() > 0) {
-                    String s = currentLine.toString(encoding);
-                    ow.write(s);
-                    currentLine.reset();
+                    currentLine.writeTo(out);
+                    out.flush();
+                    String str = currentLine.toString(encoding);
+                    ow.write(str);
                 }
             } catch (IOException x) {
                 // probably safe to ignore

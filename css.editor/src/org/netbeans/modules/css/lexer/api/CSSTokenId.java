@@ -133,7 +133,7 @@ public enum CSSTokenId implements TokenId {
     DIMEN("number"),
     PERCENTAGE("number"),
     NUMBER("number"),
-    RGB("rgb"),
+    RGB("default"),
     FUNCTION("function"),
     IDENT("identifier"),
     NAME("default"),
@@ -158,7 +158,7 @@ public enum CSSTokenId implements TokenId {
     UNICODE("default"),
     HNUM("default"),
     H("default"),
-    UNKNOWN("unknown");
+    UNKNOWN("unknown"); //NOI18N 
     
     
     private final String primaryCategory;

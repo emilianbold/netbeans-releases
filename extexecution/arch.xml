@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -47,7 +47,22 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+   The External Execution module provides the
+   <api group="java" name="ExternalExecutionAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/package-summary.html"/>
+   that contains support for execution of external processes in the IDE. It also
+   provide support class for the actual creation of the external process.
+  </p>
+  <p>
+   Another exported API
+   <api group="java" name="ExternalExecutionInputAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/input/package-summary.html"/>
+   define interfaces for input processing (character or line based)
+   and provides common implementations of these with factory methods.
+  </p>
+  <p>
+   Natural extension to input processing API is printing API
+   <api group="java" name="ExternalExecutionInputPrintingAPI" type="export" category="devel" url="@TOP@org/netbeans/modules/extexecution/api/print/package-summary.html"/>
+   that defines interfaces transforming lines to lines printed to
+   <code>org.openide.windows.OutputWriter</code>. API provides common implementations too.
   </p>
  </answer>
 
@@ -68,7 +83,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-quality">
   <p>
-   XXX no answer for arch-quality
+   Most of the API functionality is covered by unit tests. Same applies to
+   future enhancements.
   </p>
  </answer>
 
@@ -87,7 +103,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   Written and functional. Compatible changes can occur in future.
   </p>
  </answer>
 
@@ -110,9 +126,80 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+  <usecase id="execute-process" name="Execution of an external process">
+   <p>
+    Client needs to execute an external process and handle process streams and
+    display the output in the output tab.
+   </p>
+   <p>
+    In order to achieve this client creates the
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionDescriptor.html">ExecutionDescriptor</a>.
+    Via this object client configures all the UI behaviour of the subsequent
+    execution. As a next step client creates the
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExecutionService.html">ExecutionService</a>
+    itself and calls run to execute the job. Run can be called multiple times.
+    The output and input streams are presented in output tab. Additional
+    processing and printing conversion can be configured in descriptor through
+    interfaces described in following usecases.
+   </p>
+   <p>
+    The creation of the external process is supported by
+    <a href="@TOP@org/netbeans/modules/extexecution/api/ExternalProcessBuilder.html">ExternalProcessBuilder</a>
+    to make things easier.
+   </p>
+  </usecase>
+  <usecase id="handle-input" name="Processing the input">
+   <p>
+    Client needs to process character data coming from stream, file or other
+    source.
+   </p>
+   <p>
+    To abstract the source of the data client must implement
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReader.html">InputReader</a>.
+    To abstract the data processing client must implement
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessor.html">InputProcessor</a> or
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessor.html">LineProcessor</a>.
+    For all three interfaces there are prepared common implementations (and bridge
+    from character based to line based processing) at these three factory classes:
+   </p>
+   <ul>
+    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaders.html">InputReaders</a></li>
+    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessors.html">InputProcessors</a></li>
+    <li><a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessors.html">LineProcessors</a></li>
+   </ul>
+   <p>
+    To configure additional functionality specific to <code>org.openide.windows.OutputWriter</code>
+    see the next usecase.
+   </p>
+   <p>
+    Once the data source and processing objects are prepared client creates
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaderTask.html">InputReaderTask</a>.
+    Factory methods of the <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputReaderTask.html">InputReaderTask</a>
+    can create either common task exiting on interruption or cancellation
+    or draining task which is trying to drain out all available data before exiting.
+   </p>
+  </usecase>
+  <usecase id="print-input" name="Printing the input">
+   <p>
+    Client intends to process input lines and print them to <code>org.openide.windows.OutputWriter</code>.
+    In addition printed lines should be transformed (converted) somehow
+    and enriched by line listeners.
+   </p>
+   <p>
+    The both default printing processors provide factory method accepting
+    <a href="@TOP@org/netbeans/modules/extexecution/api/print/LineConvertor.html">LineConvertor</a>.
+    Namely
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/InputProcessors.html#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)">
+     InputProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>
+    and
+    <a href="@TOP@org/netbeans/modules/extexecution/api/input/LineProcessors.html#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)">
+     LineProcessors.printing(org.openide.windows.OutputWriter out, LineConvertor convertor, boolean resetEnabled)</a>.
+
+    Convertor is then used to convert received lines to printed ones.
+    Common convertors (file, http) are provided in factory class
+    <a href="@TOP@org/netbeans/modules/extexecution/api/print/LineConvertors.html">LineConvertors</a>.
+   </p>
+  </usecase>
  </answer>
 
 
@@ -129,7 +216,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   XXX no answer for arch-what
+   Provides common APIs to execute external process in the IDE to handle its
+   streams and present the output to the user. Input/line processing can be used
+   as separate part.
   </p>
  </answer>
 
@@ -164,7 +253,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   The module languages.execution should be removed as it provides not well
+   stabilized subset of the same functionality.
   </p>
  </answer>
 
@@ -182,7 +272,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   Yes.
   </p>
  </answer>
 
@@ -196,7 +286,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No.
   </p>
  </answer>
 
@@ -218,7 +308,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   Yes. No settings stored.
   </p>
  </answer>
 
@@ -236,7 +326,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   1.5
   </p>
  </answer>
 
@@ -249,7 +339,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JRE is enough.
   </p>
  </answer>
 
@@ -302,7 +392,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   None.
   </p>
  </answer>
 
@@ -330,7 +420,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   No known platform dependencies. In future there could be need for native code
+   in order to terminate the whole process tree created by execution of external
+   process.
   </p>
  </answer>
 
@@ -354,7 +446,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   Nothing.
   </p>
  </answer>
 
@@ -382,7 +474,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   Just the single JAR file.
   </p>
  </answer>
 
@@ -398,7 +490,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -419,7 +511,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Only API packages are exported.
   </p>
  </answer>
 
@@ -437,7 +529,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   Anywhere.
   </p>
  </answer>
 
@@ -457,7 +549,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-ant-tasks">
   <p>
-   XXX no answer for exec-ant-tasks
+   No.
   </p>
  </answer>
 
@@ -473,7 +565,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-classloader">
   <p>
-   XXX no answer for exec-classloader
+   No.
   </p>
  </answer>
 
@@ -496,7 +588,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   XXX no answer for exec-component
+   No.
   </p>
  </answer>
 
@@ -516,7 +608,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-introspection">
   <p>
-   XXX no answer for exec-introspection
+   No.
   </p>
  </answer>
 
@@ -534,7 +626,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-privateaccess">
   <p>
-   XXX no answer for exec-privateaccess
+   No.
   </p>
  </answer>
 
@@ -552,7 +644,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-process">
   <p>
-   XXX no answer for exec-process
+   Yes. The API provides support to do so. The result code, input and
+   output stream content does not define API as this is forwarded to the client
+   of this module.
   </p>
  </answer>
 
@@ -580,7 +674,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-   XXX no answer for exec-property
+   No.
   </p>
  </answer>
 
@@ -598,7 +692,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   XXX no answer for exec-reflection
+   No.
   </p>
  </answer>
 
@@ -630,7 +724,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   XXX no answer for exec-threading
+   Each class and factory method defines the thread safety of the class.
+   If this is missing by accident method can be called from any thread.
   </p>
  </answer>
 
@@ -649,7 +744,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-clipboard">
   <p>
-   XXX no answer for format-clipboard
+   None.
   </p>
  </answer>
 
@@ -667,7 +762,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-dnd">
   <p>
-   XXX no answer for format-dnd
+   None.
   </p>
  </answer>
 
@@ -698,7 +793,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="format-types">
   <p>
-   XXX no answer for format-types
+   None.
   </p>
  </answer>
 
@@ -730,7 +825,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-lookup">
   <p>
-   XXX no answer for lookup-lookup
+   No.
   </p>
  </answer>
 
@@ -747,7 +842,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   XXX no answer for lookup-register
+   No.
   </p>
  </answer>
 
@@ -764,7 +859,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-remove">
   <p>
-   XXX no answer for lookup-remove
+   No.
   </p>
  </answer>
 
@@ -777,7 +872,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   XXX no answer for perf-exit
+   On JVM shutdown module tries to terminate any running process executed
+   through the API.
   </p>
  </answer>
 
@@ -791,7 +887,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   XXX no answer for perf-huge_dialogs
+   No.
   </p>
  </answer>
 
@@ -818,7 +914,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   XXX no answer for perf-limit
+   Any spwaned process needs 4 threads (the worst case). One as the process
+   handler, one for the standard input, one for the standard output and one for
+   the standard error output. The minimal number of threads to handle a process
+   is 2 (process handler and standard output handler - standard error output
+   is redirected to the output, no thread for the standard input).
+  </p>
+  <p>
+   Typically the IDE should not run more 10 external processes concurrently.
   </p>
  </answer>
 
@@ -832,7 +935,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   XXX no answer for perf-mem
+   The small amount of the memory is consumed by caching data structures like
+   available output tabs and currently executed processes.
   </p>
  </answer>
 
@@ -854,7 +958,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   XXX no answer for perf-menus
+   No.
   </p>
  </answer>
 
@@ -878,7 +982,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-progress">
   <p>
-   XXX no answer for perf-progress
+   Executing external processes. Always scheduled to dedicated thread.
   </p>
  </answer>
 
@@ -897,7 +1001,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   XXX no answer for perf-scale
+   Number of threads depending on number of spawned processes (n) increases
+   lineary (4n the worst case, 2n the best case).
   </p>
  </answer>
 
@@ -915,7 +1020,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   XXX no answer for perf-spi
+   No SPI way to plug in foreign code.
   </p>
  </answer>
 
@@ -928,7 +1033,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   XXX no answer for perf-startup
+   No.
   </p>
  </answer>
 
@@ -942,7 +1047,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-wakeup">
   <p>
-   XXX no answer for perf-wakeup
+   No.
   </p>
  </answer>
 
@@ -963,7 +1068,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   XXX no answer for resources-file
+   Yes.
   </p>
  </answer>
 
@@ -986,7 +1091,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   XXX no answer for resources-layer
+   No.
   </p>
  </answer>
 
@@ -1007,7 +1112,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   XXX no answer for resources-mask
+   No.
   </p>
  </answer>
 
@@ -1032,7 +1137,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-preferences">
   <p>
-   XXX no answer for resources-preferences
+   No.
   </p>
  </answer>
 
@@ -1052,7 +1157,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-read">
   <p>
-   XXX no answer for resources-read
+   No.
   </p>
  </answer>
 
@@ -1070,7 +1175,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-grant">
   <p>
-   XXX no answer for security-grant
+   No.
   </p>
  </answer>
 
@@ -1087,7 +1192,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="security-policy">
   <p>
-   XXX no answer for security-policy
+   No.
   </p>
  </answer>
 

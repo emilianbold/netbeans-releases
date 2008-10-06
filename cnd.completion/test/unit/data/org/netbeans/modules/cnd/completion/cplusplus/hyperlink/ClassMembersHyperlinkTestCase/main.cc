@@ -42,8 +42,8 @@ int main(int argc, char** argv) {
  
 void castChecks() {
     void* a;
-    ((ClassB)*a).*myPtr;
-    ((ClassB*)a)->*myPtr;
+    ((ClassB)*a).myPtr;
+    ((ClassB*)a)->myPtr;
     ((ClassB)*a).myVal;
     ((ClassB*)a)->myVal;
 }
@@ -75,4 +75,20 @@ void iz136894(ehci_state* state, int i){
 void iz137483(int param_postfix, int param){
     int i = param;
     int j = param_postfix;
+    ehci_state* state;
+    state->ehci_itd_pool_addr[sizeof(param)/sizeof(char) - 1].itd_state;
+}
+
+struct entryplus3_info {
+    int attr;
+    int fh;
+    int res;
+};
+typedef struct entryplus3_info entryplus3_info;
+
+int* iz145828(entryplus3_info *infop, int i)
+{
+    int* j = &infop[i].attr; //
+    &infop[i].fh; //
+    return &infop[i].res; // 
 }

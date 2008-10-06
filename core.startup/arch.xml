@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- -*- sgml-indent-step: 1 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -580,13 +580,21 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="nb.backup.javax.xml.parsers.SAXParserFactory" category="private" group="property" type="export">
-          Holds on a private copy of the name of original parser factory, before it
-          was replaced by NetBeans own one.
-      </api>
-      <api name="nb.backup.javax.xml.parsers.DocumentBuilderFactory" category="private" group="property" type="export">
-          Holds on a private copy of the name of original parser factory, before it
-          was replaced by NetBeans own one.
+      <api name="org.netbeans.log.startup" category="friend" group="property" type="export">
+          <p>
+          If started with <code>-J-Dorg.netbeans.log.startup=print</code> parameter, then
+          times of various start operations are printed to console. If the value is
+          <code>-J-Dorg.netbeans.log.startup=file</code> then the values are printed into
+          file specified by <code>-J-Dorg.netbeans.log.startup.logfile=filename</code>.
+          </p>
+          
+          <p>
+          Moreover if any module logs data to <code>Logger.getLogger("org.netbeans.log.startup")</code>
+          with calls like <code>log(Level.FINE, "start", "msg")</code> and
+          <code>log(Level.FINE, "end", "msg")</code> or
+          <code>log(Level.FINE, "progress", "msg")</code>, then these messages
+          are collected into the start log as well.
+          </p>
       </api>
   </p>
  </answer>

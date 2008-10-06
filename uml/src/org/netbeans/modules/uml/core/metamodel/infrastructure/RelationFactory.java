@@ -1035,16 +1035,18 @@ public class RelationFactory extends Object implements IRelationFactory
         
         private void addToElementMap(ETList<IElement> els)
         {
-        	if (els != null)
-        	{
-				for (int i = els.size() - 1; i >= 0; --i)
-				{
-					IElement el = els.get(i);
-					String xmiID = el.getXMIID();
-//					  if (isInMemory(el))
-						m_Elements.put(xmiID, el);
-				}
-        	}
+            if (els != null)
+            {
+                for (int i = els.size() - 1; i >= 0; --i)
+                {
+                    IElement el = els.get(i);
+                    if(el != null)
+                    {
+                        String xmiID = el.getXMIID();
+                        m_Elements.put(xmiID, el);
+                    }
+                }
+            }
         }
         
         private boolean isInMemory(IElement el)
@@ -1222,7 +1224,18 @@ public class RelationFactory extends Object implements IRelationFactory
 
                     IElement elM = m_Elements.get(URILocator.retrieveRawID(otherClassifier.getXMIID()));
                     if (elM != null)
-                        addRelation(firstClassifier, otherClassifier, other.getAssociation());
+                    {
+                        if(end.getAssociation().getEnds().indexOf(end)==0)
+                        {
+                            //end is first in ednds lis and we have asocation fromelement
+                            addRelation(firstClassifier, otherClassifier, other.getAssociation());
+                        }
+                        else
+                        {
+                            //we  have association to element
+                            addRelation( otherClassifier,firstClassifier, other.getAssociation());
+                        }
+                    }
                 }
             }
         }

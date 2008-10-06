@@ -50,17 +50,17 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -99,7 +99,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("GSF Task Provider");
-    
+
     //private static final GsfTaskProvider INSTANCE = new GsfTaskProvider(LanguageRegistry.getInstance().getLanguagesDisplayName());
     //public static GsfTaskProvider getInstance() {
     //    return INSTANCE;
@@ -138,10 +138,17 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
-            // TODO - find out which subgroups to use
-            
-            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                enqueue(new Work(sg.getRootFolder(), callback));
+            // Performance: Only do project scanning for GSF-enabled projects! (See issue 141514)
+            ClassPathProvider provider = p.getLookup().lookup(ClassPathProvider.class);
+            if (provider == null) {
+                continue;
+            }
+
+            ClassPath cp = provider.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+            if (cp != null) {
+                for (FileObject root : cp.getRoots()) {
+                    enqueue(new Work(root, callback));
+                }
             }
         }
     }
@@ -241,12 +248,21 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         private void refreshFile(final FileObject file) {
+            if (!file.isValid()) {
+                return;
+            }
             if (file.isFolder()) {
-                // HACK Bypass all the libraries in Rails projects
-                // TODO FIXME The hints providers need to pass in relevant directories
-                if (file.getName().equals("vendor") && file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                if (!VisibilityQuery.getDefault().isVisible(file)) {
                     return;
                 }
+                final String name = file.getName();
+                if (name.equals("vendor")) { // NOI18N
+                    if (file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                        return;
+                    }
+                }
+
+                // TODO FIXME The hints providers need to pass in relevant directories
                 for (FileObject child : file.getChildren()) {
                     refreshFile(child);
                 }
@@ -259,6 +275,11 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 HintsProvider provider = language.getHintsProvider();
                 if (provider != null) {
                     applicable = true;
+                    break;
+                }
+                if (language.getParser() != null) {
+                    applicable = true;
+                    break;
                 }
             }
             if (!applicable) {
@@ -266,6 +287,19 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 return;
             }
 
+            // Make sure we're not dealing with a huge file!
+            // Causes issues like 132306
+            // openide.loaders/src/org/openide/text/DataEditorSupport.java
+            // has an Env#inputStream method which posts a warning to the user
+            // if the file is greater than 1Mb...
+            //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
+            //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
+            // I don't want to try indexing these files... (you get an interactive
+            // warning during indexing
+            if (file.getSize () > 1024 * 1024) {
+                return;
+            }
+            
             final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
             
             Source source = Source.forFileObject(file);
@@ -281,7 +315,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
                 public void run(CompilationController info) throws Exception {
                     // Ensure document is forced open
-                    UiUtils.getDocument(info.getFileObject(), true);
+                    GsfUtilities.getDocument(info.getFileObject(), true);
 
                     info.toPhase(Phase.RESOLVED);
 
@@ -290,19 +324,38 @@ public class GsfTaskProvider extends PushTaskScanner  {
                         for (ParserResult parserResult : embeddedResults) {
                             Language language = registry.getLanguageByMimeType(mimeType);
                             HintsProvider provider = language.getHintsProvider();
+                            List<Error> errors = new ArrayList<Error>();
+
                             if (provider == null) {
-                                continue;
+                                // Just parser errors, no hints
+                                List<Error> parserErrors = parserResult.getDiagnostics();
+                                if (parserErrors != null) {
+                                    errors.addAll(parserErrors);
+                                }
+                            } else {
+                                GsfHintsManager manager = language.getHintsManager();
+                                if (manager == null) {
+                                    continue;
+                                }
+                                RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+                                if (ruleContext == null) {
+                                    continue;
+                                }
+                                final List<Hint> hints = new ArrayList<Hint>();
+                                provider.computeErrors(manager, ruleContext, hints, errors);
+                                provider.computeHints(manager, ruleContext, hints);
+
+                                if (!file.isValid()) {
+                                    continue;
+                                }
+                                for (Hint desc : hints) {
+                                    ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
+                                    if (errorDesc != null) {
+                                        result.add(errorDesc);
+                                    }
+                                }
                             }
 
-                            List<Error> errors = new ArrayList<Error>();
-                            GsfHintsManager manager = language.getHintsManager();
-                            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
-                            if (ruleContext == null) {
-                                continue;
-                            }
-                            final List<Hint> hints = new ArrayList<Hint>();
-                            provider.computeErrors(manager, ruleContext, hints, errors);
-                            provider.computeHints(manager, ruleContext, hints);
                             for (Error error : errors) {
                                 StyledDocument doc = (StyledDocument) info.getDocument();
                                 if (doc == null) {
@@ -326,10 +379,6 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                         error.getDisplayName(),
                                         lineno);
                                 tasks.add(task);
-                            }
-                            for (Hint desc : hints) {
-                                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
-                                result.add(errorDesc);
                             }
                         }
                     }

@@ -47,18 +47,18 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -290,6 +291,9 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
     
     //@Override
     protected Problem fastCheckParameters(CompilationController info) {
+        if (targetName == null) {
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
+        }
         if (searchHandle.getKind() == ElementKind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
@@ -358,7 +362,8 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             if (root == null) {
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
-                if (compiler.getText().indexOf(targetName) != -1) {
+                String sourceText = compiler.getText();
+                if (sourceText != null && sourceText.indexOf(targetName) != -1) {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 
@@ -430,7 +435,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 // Look in these files for the given classes
                 //findSubClass(root);
                 for (IndexedClass clz : subclasses) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(clz, compiler);
+                    RubyElementCtx matchCtx = new RubyElementCtx(clz);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
             } else if (isFindUsages()) {
@@ -485,9 +490,14 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     String primaryCategory = id.primaryCategory();
                     if ("comment".equals(primaryCategory) || "block-comment".equals(primaryCategory)) { // NOI18N
                         // search this comment
-                        String text = token.text().toString();
-                        int index = text.indexOf(targetName);
+                        assert targetName != null;
+                        CharSequence tokenText = token.text();
+                        if (tokenText == null || targetName == null) {
+                            continue;
+                        }
+                        int index = TokenUtilities.indexOf(tokenText, targetName);
                         if (index != -1) {
+                            String text = tokenText.toString();
                             // TODO make sure it's its own word. Technically I could
                             // look at identifier chars like "_" here but since they are
                             // used for other purposes in comments, consider letters
@@ -526,6 +536,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
          *  (but I also have to search for methods that are OVERRIDING the class... so I've gotta work a little harder!)
          * @todo Arity matching on the methods to preclude methods that aren't overriding or aliasing!
          */
+        @SuppressWarnings("fallthrough")
         private void find(AstPath path, RubyElementCtx searchCtx, RubyElementCtx fileCtx, Node node, String name, boolean upperCase) {
             /*if (node instanceof ArgumentNode) {
                 if (((ArgumentNode)node).getName().equals(name)) {
@@ -639,6 +650,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
                 case CONSTNODE:
                 case CONSTDECLNODE:
@@ -646,6 +658,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
             }
 

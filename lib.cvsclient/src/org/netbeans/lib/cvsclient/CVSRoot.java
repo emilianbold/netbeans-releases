@@ -240,7 +240,6 @@ public class CVSRoot {
                     //#67504 it looks like windows drive  => local
                     method = METHOD_LOCAL;
                     repository = cvsroot;
-                    normalize();
                     return;
                 }                
                 colonPosition = cvsroot.indexOf(':');
@@ -407,21 +406,8 @@ public class CVSRoot {
                 this.repository = cvsroot.substring(pathBegin);
             }
         }
-        normalize();
     }
     
-    /**
-     * Removes trailing slashes from repository.
-     */ 
-    private void normalize() {
-        int i = repository.length();
-        int n = i - 1;
-        while (i > 0 && repository.charAt(--i) == '/');
-        if (i < n) {
-            repository = repository.substring(0, i + 1);
-        }
-    }
-
     /**
      * Test whether this cvsroot describes a local connection or remote connection.
      * The connection is local if and only if the host name is <code>null</code>.

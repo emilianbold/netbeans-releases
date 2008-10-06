@@ -64,7 +64,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     
     // fields
     /** Activated top component */
-    private TopComponent activatedTopComponent;
+    private WeakReference<TopComponent> activatedTopComponent = new WeakReference<TopComponent>(null);
     /** Previouly activated top component */
     private WeakReference<TopComponent> previousActivated;
     /** Set of opened TopComponents */
@@ -96,7 +96,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      * @return the selected top component, or <CODE>null</CODE> if there is none
      */
     public TopComponent getActivated() {
-        return activatedTopComponent;
+        return activatedTopComponent.get();
     }
     
     /** Getter for the currently selected nodes.
@@ -137,16 +137,16 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      * @param ev TopComponentChangedEvent
      */
     void topComponentActivated(TopComponent tc) {
-        if(activatedTopComponent == tc
+        if(activatedTopComponent.get() == tc
         && activatedNodes != null) { // When null it means were not inited yet.
             return;
         }
         
-        final TopComponent old = activatedTopComponent;
+        final TopComponent old = activatedTopComponent.get();
         if (old != null && old.getActivatedNodes() != null) {
             previousActivated = new WeakReference<TopComponent>(old);
         }
-        activatedTopComponent = tc;
+        activatedTopComponent = new WeakReference<TopComponent>(tc);
         
         Window w = tc == null ? null : SwingUtilities.windowForComponent(tc);
         cancelMenu(w);
@@ -161,14 +161,14 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
      ProxyLookup, but this fix will have some responsiveness benefits 
      even if that is fixed
 */ 
+        final TopComponent tmp = this.activatedTopComponent.get();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                doFirePropertyChange(PROP_ACTIVATED, old, activatedTopComponent);
+                doFirePropertyChange(PROP_ACTIVATED, old, tmp);
             }
         });
 
-        selectedNodesChanged(activatedTopComponent,
-            activatedTopComponent == null ? null : activatedTopComponent.getActivatedNodes());
+        selectedNodesChanged(tmp, tmp == null ? null : tmp.getActivatedNodes());
     }
     
     
@@ -213,7 +213,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         //Selected nodes event was processed for other than activated component.
         //Check if activatedTopComponent is the same as event source top component
         //If not ignore event
-        if(tc != activatedTopComponent
+        if(tc != activatedTopComponent.get()
         && activatedNodes != null) { // When null it means were not inited yet.
             // #82319: update activated nodes from previously active TopComponent 
             // under special conditions
@@ -246,8 +246,9 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         if (previousTC == null || !previousTC.equals(tc)) {
             return false;
         }
-        
-        return activatedTopComponent != null && activatedTopComponent.getActivatedNodes() == null;
+
+        TopComponent tmp = activatedTopComponent.get();
+        return tmp != null && tmp.getActivatedNodes() == null;
     }
     
     /// notifications of changes from window manager <<<<<
@@ -322,7 +323,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     }
     
     void clear() {
-        activatedTopComponent = null;
+        activatedTopComponent.clear();
         openSet.clear();
         currentNodes = null;
         activatedNodes = null;

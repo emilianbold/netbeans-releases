@@ -39,160 +39,169 @@
 
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
+
 public class ConvertIfToUnlessTest extends HintTestBase {
     public ConvertIfToUnlessTest(String testName) {
         super(testName);
     }            
     
+    private RubyAstRule createRule() {
+        return new ConvertIfToUnless();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
+    }
     public void testNoHint1() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", null);
+        checkHints(this, createRule(), "testfiles/reverseif.rb", null);
     }
 
     public void testNoHint2() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", 
+        checkHints(this, createRule(), "testfiles/conditionals2.rb",
                 "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
     }
 
     public void testNoHint3() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", 
+        checkHints(this, createRule(), "testfiles/conditionals2.rb",
                 "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
 
     public void testNoHint4() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
+        checkHints(this, createRule(), "testfiles/conditionals2.rb", "uri = env_pr^oxy ? URI.parse(env_proxy) : nil");
     }
 
     public void testNoHint5() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
+        checkHints(this, createRule(), "testfiles/conditionals2.rb", "(uri =~ /.(https?|ftp|file):/) ? u^ri : \"http://#{uri}\"");
     }
     
     public void testNoHint6() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/emptycondition.rb", "if (^)");
+        checkHints(this, createRule(), "testfiles/emptycondition.rb", "if (^)");
     }
     
     public void testNoHint7() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "elsi^f !str.blank?");
     }
 
     public void testNoHint8() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "elsif !str.bla^nk?");
     }
 
     public void testNoHint9() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+        checkHints(this, createRule(), "testfiles/elsif.rb",
                 "if st^r != 'something'");
     }
 
 //    public void testNoHint10() throws Exception {
-//        checkHints(this, new ConvertIfToUnless(), "testfiles/emptybody.rb", 
+//        checkHints(this, createRule(), "testfiles/emptybody.rb",
 //                "if !^x");
 //    }
 //
 //    public void testNoHint11() throws Exception {
-//        checkHints(this, new ConvertIfToUnless(), "testfiles/emptybody.rb", 
+//        checkHints(this, createRule(), "testfiles/emptybody.rb",
 //                "if !^y");
 //    }
 
     public void testHint2() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "if !tr^ue");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "if !tr^ue");
     }
 
     public void testHint3() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "i^f x != 5");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "i^f x != 5");
     }
     
     public void testHint4() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "i^f (x != 6)");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "i^f (x != 6)");
     }
 
     public void testHint5() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "unl^ess !x");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "unl^ess !x");
     }
 
     public void testHint6() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "i^f !(x < 8)");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "i^f !(x < 8)");
     }
 
     public void testHint7() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "i^f (x != 9)");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "i^f (x != 9)");
     }
     
     public void testHint8() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "^x != 11");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "^x != 11");
     }
     
     public void testHint10() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "un^less (x != 6)");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "un^less (x != 6)");
     }
     
     public void testHint11() throws Exception {
-        checkHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "^x != 12");
+        checkHints(this, createRule(), "testfiles/reverseif.rb", "^x != 12");
     }
     
     public void testFix1() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "if !tr^ue", "Change if into an unless statement and reverse condition logic");
     }
     
     public void testFix2() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "i^f x != 5", "Change if into an unless statement and reverse condition logic");
     }
 
     public void testFix3() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "i^f (x != 6)", "Change if into an unless statement and reverse condition logic");
     }
 
     public void testFix4() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "unless^ !x", "Change unless into an if statement and reverse condition logic");
     }
 
     public void testFix5() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "i^f !(x < 8)", "Change if into an unless statement and reverse condition logic");
     }
 
     public void testFix6() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "i^f (x != 9)", "Change if into an unless statement and reverse condition logic");
     }
 
     public void testFix7() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "^x != 11", "Change if into an unless statement and reverse condition logic");
     }
     
     public void testFix8() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "un^less (x != 6)", "Change unless into an if statement and reverse condition logic");
     }
     
     public void testFix9() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "^x != 12", "Change unless into an if statement and reverse condition logic");
     }
 
     public void testFix10() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "^x != 13", "Change unless into an if statement and reverse condition logic");
     }
     
     public void testFix11() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif.rb",
                 "^x != 14", "Change if into an unless statement and reverse condition logic");
     }
 
     public void testFix12() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif2.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif2.rb",
                 "if (final_^path", "Change unless into an if statement and reverse condition logic");
     }
 
     public void testFix13() throws Exception {
-        applyHint(this, new ConvertIfToUnless(), "testfiles/reverseif2.rb", 
+        applyHint(this, createRule(), "testfiles/reverseif2.rb",
                 "if (no^t params[:recipients].empty?)", "Change unless into an if statement and reverse condition logic");
     }
     
@@ -204,7 +213,7 @@ public class ConvertIfToUnlessTest extends HintTestBase {
 ////            // Known exceptions
 //            exceptions.add("remote_fetcher.rb");
 //        
-//            assertNoJRubyMatches(new ConvertIfToUnless(), exceptions);
+//            assertNoJRubyMatches(createRule(), exceptions);
 //            
 //        } finally {
 //            parseErrorsOk = false;

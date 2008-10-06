@@ -54,9 +54,10 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.jws.WebParam.Mode;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -97,6 +98,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -111,170 +113,172 @@ public class Utils {
     
     public static void populateModel(final FileObject implClass, final ServiceModel serviceModel) {
         JavaSource javaSource = JavaSource.forFileObject(implClass);
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                //CompilationUnitTree cut = controller.getCompilationUnit();
-                
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                if (classEl !=null) {
-                    //ClassTree javaClass = srcUtils.getClassTree();
-                    // find if class is Injection Target
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (wsElement!=null) {
-                        List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                        AnnotationMirror webServiceAn=null;
-                        for (AnnotationMirror anMirror : annotations) {
-                            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                                webServiceAn = anMirror;
-                                break;
+        if (javaSource != null) {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    //CompilationUnitTree cut = controller.getCompilationUnit();
+
+                    TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                    if (classEl !=null) {
+                        //ClassTree javaClass = srcUtils.getClassTree();
+                        // find if class is Injection Target
+                        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                        if (wsElement!=null) {
+                            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+                            AnnotationMirror webServiceAn=null;
+                            for (AnnotationMirror anMirror : annotations) {
+                                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                    webServiceAn = anMirror;
+                                    break;
+                                }
                             }
-                        }
-                        if (webServiceAn==null) {
-                            serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
-                            return;
-                        }
-                        
-                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
-                        boolean nameFound=false;
-                        boolean serviceNameFound=false;
-                        boolean portNameFound=false;
-                        boolean tnsFound = false;
-                        for(ExecutableElement ex:expressions.keySet()) {
-                            if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
-                                serviceModel.serviceName = (String)expressions.get(ex).getValue();
-                                serviceNameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                                serviceModel.name = (String)expressions.get(ex).getValue();
-                                nameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
-                                serviceModel.portName = (String)expressions.get(ex).getValue();
-                                portNameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                                serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
-                                tnsFound = true;
-                            } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
-                                serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
-                            } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
+                            if (webServiceAn==null) {
+                                serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
+                                return;
                             }
+
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
+                            boolean nameFound=false;
+                            boolean serviceNameFound=false;
+                            boolean portNameFound=false;
+                            boolean tnsFound = false;
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
+                                    serviceModel.serviceName = (String)expressions.get(ex).getValue();
+                                    serviceNameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
+                                    serviceModel.name = (String)expressions.get(ex).getValue();
+                                    nameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
+                                    serviceModel.portName = (String)expressions.get(ex).getValue();
+                                    portNameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
+                                    serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
+                                    tnsFound = true;
+                                } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
+                                    serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
+                                } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                                    serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
+                                }
+                            }
+                            // set default names
+                            if (!nameFound) serviceModel.name=implClass.getName();
+                            if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
+                            if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
+                            if (!tnsFound) {
+                                String qualifName = classEl.getQualifiedName().toString();
+                                int ind = qualifName.lastIndexOf(".");
+                                serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+                            }
+
+                            //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
                         }
-                        // set default names
-                        if (!nameFound) serviceModel.name=implClass.getName();
-                        if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
-                        if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
-                        if (!tnsFound) {
-                            String qualifName = classEl.getQualifiedName().toString();
-                            int ind = qualifName.lastIndexOf(".");
-                            serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+
+
+                        // use SEI class annotations if endpointInterface annotation is specified
+                        TypeElement seiClassEl = null;
+                        if (serviceModel.endpointInterface!=null) {
+                            seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
+                            if (seiClassEl != null) classEl = seiClassEl;
                         }
-                        
-                        //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
-                    }
-                    
-                    
-                    // use SEI class annotations if endpointInterface annotation is specified
-                    TypeElement seiClassEl = null;
-                    if (serviceModel.endpointInterface!=null) {
-                        seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
-                        if (seiClassEl != null) classEl = seiClassEl;
-                    }
-                    
-                    boolean foundWebMethodAnnotation=false;
-                    TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                    List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-                    for (Element member : classEl.getEnclosedElements()) {
-                        if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
-                            ExecutableElement methodEl = (ExecutableElement) member;
-                            if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
-                                List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
-                                if (foundWebMethodAnnotation) {
-                                    for (AnnotationMirror anMirror : methodAnnotations) {
-                                        if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                                            methods.add(methodEl);
-                                            break;
+
+                        boolean foundWebMethodAnnotation=false;
+                        TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+                        for (Element member : classEl.getEnclosedElements()) {
+                            if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
+                                ExecutableElement methodEl = (ExecutableElement) member;
+                                if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
+                                    List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
+                                    if (foundWebMethodAnnotation) {
+                                        for (AnnotationMirror anMirror : methodAnnotations) {
+                                            if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+                                                methods.add(methodEl);
+                                                break;
+                                            }
                                         }
-                                    }
-                                } else { // until now no @WebMethod annotations
-                                    for (AnnotationMirror anMirror : methodAnnotations) {
-                                        if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                                            // found first @WebMethod annotation
-                                            // need to remove all, previously found, public methods
-                                            methods.clear();
-                                            foundWebMethodAnnotation=true;
-                                            methods.add(methodEl);
-                                            break;
+                                    } else { // until now no @WebMethod annotations
+                                        for (AnnotationMirror anMirror : methodAnnotations) {
+                                            if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+                                                // found first @WebMethod annotation
+                                                // need to remove all, previously found, public methods
+                                                methods.clear();
+                                                foundWebMethodAnnotation=true;
+                                                methods.add(methodEl);
+                                                break;
+                                            }
                                         }
-                                    }
-                                    if (!foundWebMethodAnnotation) {
-                                        // all methods are supposed to be web methods when missing @WebMethod annotation
-                                        methods.add(methodEl);
+                                        if (!foundWebMethodAnnotation) {
+                                            // all methods are supposed to be web methods when missing @WebMethod annotation
+                                            methods.add(methodEl);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    // populate methods
-                    
-                    List<MethodModel> operations = new ArrayList<MethodModel>();
-                    if (methods.size()==0) {
-                        serviceModel.operations=operations;
-                        serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
-                        return;
-                    }
-                    
-                    boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
-                    
-                    // search for SEI class
-                    FileObject seiClass = null;
-                    if(hasEndpointInterfaceAttr){
-                        // first look for SEI class in src hierarchy (SEI exists but : WS from Java case)
-                        ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
-                        FileObject[] srcRoots = classPath.getRoots();
-                        for (FileObject srcRoot:srcRoots) {
-                            String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
-                            seiClass = srcRoot.getFileObject(seiClassResource);
-                            if (seiClass != null) {
-                                break;
-                            }
-                        }                        
-                        if (seiClass == null) { // looking for SEI class under build/generated directory
-                            final Project project = FileOwnerQuery.getOwner(implClass);
-                            String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
-                            seiClass = project.getProjectDirectory().getFileObject(seiPath);
-                            if(seiClass == null){
-                                invokeWsImport(project, serviceModel.getName());
+                        // populate methods
+
+                        List<MethodModel> operations = new ArrayList<MethodModel>();
+                        if (methods.size()==0) {
+                            serviceModel.operations=operations;
+                            serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
+                            return;
+                        }
+
+                        boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
+
+                        // search for SEI class
+                        FileObject seiClass = null;
+                        if(hasEndpointInterfaceAttr){
+                            // first look for SEI class in src hierarchy (SEI exists but : WS from Java case)
+                            ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+                            FileObject[] srcRoots = classPath.getRoots();
+                            for (FileObject srcRoot:srcRoots) {
+                                String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
+                                seiClass = srcRoot.getFileObject(seiClassResource);
+                                if (seiClass != null) {
+                                    break;
+                                }
+                            }                        
+                            if (seiClass == null) { // looking for SEI class under build/generated directory
+                                final Project project = FileOwnerQuery.getOwner(implClass);
+                                String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
                                 seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                                if(seiClass == null){
+                                    invokeWsImport(project, serviceModel.getName());
+                                    seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                                }
                             }
+
                         }
-                        
-                    }
-                    
-                    // populate methods
-                    for (int i=0;i<methods.size();i++) {
-                        MethodModel operation = new MethodModel();
-                        if (hasEndpointInterfaceAttr && seiClass != null) {
-                            operation.setImplementationClass(seiClass);
-                        } else {
-                            operation.setImplementationClass(implClass);
+
+                        // populate methods
+                        for (int i=0;i<methods.size();i++) {
+                            MethodModel operation = new MethodModel();
+                            if (hasEndpointInterfaceAttr && seiClass != null) {
+                                operation.setImplementationClass(seiClass);
+                            } else {
+                                operation.setImplementationClass(implClass);
+                            }
+                            ElementHandle methodHandle = ElementHandle.create(methods.get(i));
+                            operation.setMethodHandle(methodHandle);
+                            Utils.populateOperation(controller, methods.get(i), methodHandle, operation, serviceModel.getTargetNamespace());
+                            operations.add(operation);
                         }
-                        ElementHandle methodHandle = ElementHandle.create(methods.get(i));
-                        operation.setMethodHandle(methodHandle);
-                        Utils.populateOperation(controller, methods.get(i), methodHandle, operation, serviceModel.getTargetNamespace());
-                        operations.add(operation);
+                        serviceModel.operations=operations;
+                    } else {
+                        serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                     }
-                    serviceModel.operations=operations;
-                } else {
-                    serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                 }
+                public void cancel() {}
+            };
+
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            public void cancel() {}
-        };
-        
-        try {
-            javaSource.runUserActionTask(task, true);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
         }
     }
     
@@ -458,122 +462,136 @@ public class Utils {
     }
     
     private static void setSoapRequest(MethodModel methodModel, String tns) {
-        
+        MessageFactory messageFactory = null;
         try {
             // create a sample SOAP request using SAAJ API
-            MessageFactory messageFactory = MessageFactory.newInstance();
-            
-            SOAPMessage request = messageFactory.createMessage();
-            MimeHeaders headers = request.getMimeHeaders();
-            String action = methodModel.getAction();
-            headers.addHeader("SOAPAction", action==null? "\"\"":action); //NOI18N
-            SOAPPart part = request.getSOAPPart();
-            SOAPEnvelope envelope = part.getEnvelope();
-            String prefix = envelope.getPrefix();
-            if (!"soap".equals(prefix)) { //NOI18N
-                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
-                envelope.setPrefix("soap"); //NOI18N
-            }
-            SOAPBody body = envelope.getBody();
-            body.setPrefix("soap"); //NOI18N
-            
-            // removing soap header
-            SOAPHeader header = envelope.getHeader();
-            envelope.removeChild(header);
-            
-            // implementing body
-            Name methodName = envelope.createName(methodModel.getOperationName());
-            SOAPElement methodElement = body.addBodyElement(methodName);
-            methodElement.setPrefix("ns0"); //NOI18N
-            methodElement.addNamespaceDeclaration("ns0",tns); //NOI18N
-            
-            // params
-            List<ParamModel> params = methodModel.getParams();
-            int i=0;
-            for (ParamModel param:params) {
-                String paramNs = param.getTargetNamespace();
-                Name paramName = null;
-                if (paramNs!=null && paramNs.length()>0) {
-                    String pref = "ns"+String.valueOf(++i); //NOI18N
-                    paramName = envelope.createName(param.getName(), pref, paramNs);
-                    methodElement.addNamespaceDeclaration(pref,paramNs);
-                } else {
-                    paramName = envelope.createName(param.getName());
-                }
-                
-                SOAPElement paramElement = methodElement.addChildElement(paramName);
-                
-                String paramType = param.getParamType();
-                if ("javax.xml.namespace.QName".equals(paramType)) {
-                    paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
-                    paramElement.addTextNode("sampleNs:sampleQName");
-                } else {
-                    paramElement.addTextNode(getSampleValue(paramType));
-                }
-            }
-            
-            methodModel.setSoapRequest(request);
-            
+            messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Utils.class.getName()).log(Level.FINE, 
+                    NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
+                    ex);
+        }
+        if (messageFactory != null) {
+            try {
+                SOAPMessage request = messageFactory.createMessage();
+                MimeHeaders headers = request.getMimeHeaders();
+                String action = methodModel.getAction();
+                headers.addHeader("SOAPAction", action==null? "\"\"":action); //NOI18N
+                SOAPPart part = request.getSOAPPart();
+                SOAPEnvelope envelope = part.getEnvelope();
+                String prefix = envelope.getPrefix();
+                if (!"soap".equals(prefix)) { //NOI18N
+                    envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                    envelope.setPrefix("soap"); //NOI18N
+                }
+                SOAPBody body = envelope.getBody();
+                body.setPrefix("soap"); //NOI18N
+
+                // removing soap header
+                SOAPHeader header = envelope.getHeader();
+                envelope.removeChild(header);
+
+                // implementing body
+                Name methodName = envelope.createName(methodModel.getOperationName());
+                SOAPElement methodElement = body.addBodyElement(methodName);
+                methodElement.setPrefix("ns0"); //NOI18N
+                methodElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+
+                // params
+                List<ParamModel> params = methodModel.getParams();
+                int i=0;
+                for (ParamModel param:params) {
+                    String paramNs = param.getTargetNamespace();
+                    Name paramName = null;
+                    if (paramNs!=null && paramNs.length()>0) {
+                        String pref = "ns"+String.valueOf(++i); //NOI18N
+                        paramName = envelope.createName(param.getName(), pref, paramNs);
+                        methodElement.addNamespaceDeclaration(pref,paramNs);
+                    } else {
+                        paramName = envelope.createName(param.getName());
+                    }
+
+                    SOAPElement paramElement = methodElement.addChildElement(paramName);
+
+                    String paramType = param.getParamType();
+                    if ("javax.xml.namespace.QName".equals(paramType)) {
+                        paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                        paramElement.addTextNode("sampleNs:sampleQName");
+                    } else {
+                        paramElement.addTextNode(getSampleValue(paramType));
+                    }
+                }
+
+                methodModel.setSoapRequest(request);
+
+            } catch (SOAPException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
     
     private static void setSoapResponse(MethodModel methodModel, String tns) {
         if (methodModel.isOneWay()) return;
-        
+        MessageFactory messageFactory = null;
         try {
             // create a sample SOAP request using SAAJ API
-            MessageFactory messageFactory = MessageFactory.newInstance();
-            
-            SOAPMessage response = messageFactory.createMessage();
-            SOAPPart part = response.getSOAPPart();
-            SOAPEnvelope envelope = part.getEnvelope();
-            String prefix = envelope.getPrefix();
-            if (!"soap".equals(prefix)) { //NOI18N
-                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
-                envelope.setPrefix("soap"); //NOI18N
-            }
-            SOAPBody body = envelope.getBody();
-            body.setPrefix("soap"); //NOI18N
-            
-            // removing soap header
-            SOAPHeader header = envelope.getHeader();
-            envelope.removeChild(header);
-            
-            // implementing body
-            Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
-            SOAPElement responseElement = body.addBodyElement(responseName);
-            responseElement.setPrefix("ns0"); //NOI18N
-            responseElement.addNamespaceDeclaration("ns0",tns); //NOI18N
-            
-            // return
-            
-            ResultModel resultModel = methodModel.getResult();
-            String resultNs = resultModel.getTargetNamespace();
-            
-            Name resultName = null;
-            if (resultNs!=null && resultNs.length()>0) {
-                responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
-                resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
-            } else {
-                resultName = envelope.createName(resultModel.getName()); //NOI18N
-            }
-            
-            String resultType = resultModel.getResultType();
-            if ("javax.xml.namespace.QName".equals(resultType)) {
-                SOAPElement resultElement = responseElement.addChildElement(resultName);
-                resultElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
-                resultElement.addTextNode("sampleNs:sampleQName");
-            } else if (!"void".equals(resultType)) { //NOI18N
-                SOAPElement resultElement = responseElement.addChildElement(resultName);
-                resultElement.addTextNode(getSampleValue(resultType));
-            }
-            
-            methodModel.setSoapResponse(response);
-            
+            messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Utils.class.getName()).log(Level.FINE, 
+                    NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
+                    ex);
+        }
+        if (messageFactory != null) {
+            try {
+                SOAPMessage response = messageFactory.createMessage();
+                SOAPPart part = response.getSOAPPart();
+                SOAPEnvelope envelope = part.getEnvelope();
+                String prefix = envelope.getPrefix();
+                if (!"soap".equals(prefix)) { //NOI18N
+                    envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                    envelope.setPrefix("soap"); //NOI18N
+                }
+                SOAPBody body = envelope.getBody();
+                body.setPrefix("soap"); //NOI18N
+
+                // removing soap header
+                SOAPHeader header = envelope.getHeader();
+                envelope.removeChild(header);
+
+                // implementing body
+                Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
+                SOAPElement responseElement = body.addBodyElement(responseName);
+                responseElement.setPrefix("ns0"); //NOI18N
+                responseElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+
+                // return
+
+                ResultModel resultModel = methodModel.getResult();
+                String resultNs = resultModel.getTargetNamespace();
+
+                Name resultName = null;
+                if (resultNs!=null && resultNs.length()>0) {
+                    responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
+                    resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
+                } else {
+                    resultName = envelope.createName(resultModel.getName()); //NOI18N
+                }
+
+                String resultType = resultModel.getResultType();
+                if ("javax.xml.namespace.QName".equals(resultType)) {
+                    SOAPElement resultElement = responseElement.addChildElement(resultName);
+                    resultElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                    resultElement.addTextNode("sampleNs:sampleQName");
+                } else if (!"void".equals(resultType)) { //NOI18N
+                    SOAPElement resultElement = responseElement.addChildElement(resultName);
+                    resultElement.addTextNode(getSampleValue(resultType));
+                }
+
+                methodModel.setSoapResponse(response);
+
+            } catch (SOAPException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
     

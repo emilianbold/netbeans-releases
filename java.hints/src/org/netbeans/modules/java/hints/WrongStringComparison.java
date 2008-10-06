@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,21 +23,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -56,6 +61,8 @@ public class WrongStringComparison extends AbstractHint {
     
     private static final Set<Tree.Kind> TREE_KINDS = 
             EnumSet.<Tree.Kind>of( Tree.Kind.EQUAL_TO, Tree.Kind.NOT_EQUAL_TO );
+
+    private AtomicBoolean cancel = new AtomicBoolean();
     
     public WrongStringComparison() {
         super( true, true, AbstractHint.HintSeverity.WARNING);
@@ -67,7 +74,8 @@ public class WrongStringComparison extends AbstractHint {
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-                
+        cancel.set(false);
+        
         Tree t = treePath.getLeaf();
         
         if ( t.getKind() != Tree.Kind.EQUAL_TO && 
@@ -83,10 +91,15 @@ public class WrongStringComparison extends AbstractHint {
         Trees trees = info.getTrees(); 
         TypeMirror leftType = left == null ? null : trees.getTypeMirror(left);
         TypeMirror rightType = right == null ? null : trees.getTypeMirror(right);
-                
+
         if ( leftType != null && rightType != null && 
              STRING_TYPE.equals(leftType.toString()) && 
              STRING_TYPE.equals(rightType.toString())) {
+            
+            if (checkInsideGeneratedEquals(info, treePath, left.getLeaf(), right.getLeaf())) {
+                return null;
+            }
+
             return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 
@@ -103,7 +116,7 @@ public class WrongStringComparison extends AbstractHint {
     }
 
     public void cancel() {
-        // Does nothing
+        cancel.set(true);
     }
     
     public String getId() {
@@ -116,6 +129,35 @@ public class WrongStringComparison extends AbstractHint {
 
     public String getDescription() {
         return NbBundle.getMessage(WrongStringComparison.class, "DSC_WrongStringComparison");
+    }
+
+    private boolean checkInsideGeneratedEquals(CompilationInfo info, TreePath treePath, Tree left, Tree right) {
+        TreePath sourcePathParent = treePath.getParentPath();
+
+        if (sourcePathParent.getLeaf().getKind() != Kind.CONDITIONAL_AND) { //performance
+            return false;
+        }
+        
+        SourcePositions sp = info.getTrees().getSourcePositions();
+        Scope s = info.getTrees().getScope(sourcePathParent);
+        
+        String leftText = info.getText().substring((int) sp.getStartPosition(info.getCompilationUnit(), left), (int) sp.getEndPosition(info.getCompilationUnit(), left) + 1);
+        String rightText = info.getText().substring((int) sp.getStartPosition(info.getCompilationUnit(), right), (int) sp.getEndPosition(info.getCompilationUnit(), right) + 1);
+        String code = leftText + " != " + rightText + " && (" + leftText + "== null || !" + leftText + ".equals(" + rightText + "))";
+        ExpressionTree correct = info.getTreeUtilities().parseExpression(code, new SourcePositions[1]);
+
+        info.getTreeUtilities().attributeTree(correct, s);
+
+        TreePath correctPath = new TreePath(sourcePathParent.getParentPath(), correct);
+        
+        String originalCode = info.getText().substring((int) sp.getStartPosition(info.getCompilationUnit(), sourcePathParent.getLeaf()), (int) sp.getEndPosition(info.getCompilationUnit(), sourcePathParent.getLeaf()) + 1);
+        ExpressionTree original = info.getTreeUtilities().parseExpression(originalCode, new SourcePositions[1]);
+        
+        info.getTreeUtilities().attributeTree(original, s);
+
+        TreePath originalPath = new TreePath(sourcePathParent.getParentPath(), original);
+
+        return CopyFinder.isDuplicate(info, originalPath, correctPath, cancel);
     }
 
 }

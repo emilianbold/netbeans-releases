@@ -305,7 +305,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         String toString = null;
         try {
             java.lang.reflect.Method toStringMethod =
-                    v.getClass().getMethod("getToStringValue",  // NOI8N
+                    v.getClass().getMethod("getToStringValue",  // NOI18N
                                            new Class[] { Integer.TYPE });
             toStringMethod.setAccessible(true);
             toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);

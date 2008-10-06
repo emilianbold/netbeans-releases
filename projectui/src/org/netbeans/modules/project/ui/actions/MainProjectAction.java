@@ -42,17 +42,20 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
@@ -61,54 +64,68 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Actions;
 import org.openide.awt.MouseUtils;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /** Invokes command on the main project.
- * 
- * @author Pet Hrebejk 
+ *
+ * @author Pet Hrebejk
  */
-public class MainProjectAction extends BasicAction implements PropertyChangeListener {
-    
+public class MainProjectAction extends LookupSensitiveAction implements PropertyChangeListener {
+
     private String command;
     private ProjectActionPerformer performer;
     private String name;
-        
+
     public MainProjectAction(ProjectActionPerformer performer, String name, Icon icon) {
         this( null, performer, name, icon );
     }
-    
+
     public MainProjectAction(String command, String name, Icon icon) {
         this( command, null, name, icon );
     }
-    
+
     public MainProjectAction(String command, ProjectActionPerformer performer, String name, Icon icon) {
-            
+
+        super(icon, null, new Class[] { Project.class, DataObject.class });
         this.command = command;
         this.performer = performer;
         this.name = name;
-        
-        setDisplayName( name );
+
+        String presenterName = "";
+        if (name != null) {
+            presenterName = MessageFormat.format(name, new Object[] { 0 });
+        }
+        setDisplayName(presenterName);
         if ( icon != null ) {
             setSmallIcon( icon );
         }
-        
-        refreshView();                
+
+        refreshView(null);
         // Start listening on open projects list to correctly enable the action
         OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         // XXX #47160: listen to changes in supported commands on current project, when that becomes possible
     }
 
-    public void actionPerformed( ActionEvent e ) {
-    
+    public void actionPerformed(Lookup context) {
+
         Project p = OpenProjectList.getDefault().getMainProject();
-        
+
+        if (p == null) {
+            Project[] projects = ActionsUtil.getProjectsFromLookup(context, command);
+            if (projects.length == 1) {
+                p = projects[0];
+            }
+        }
+
         // if no main project than show warning and allow choose a main project
         if (p == null) {
             // show warning, if cancel then return
-            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), name)) {
+            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), 
+                    getPresenterName(name, OpenProjectList.getDefault().getMainProject(), p))) {
                 return ;
             }
             p = OpenProjectList.getDefault().getMainProject();
@@ -122,7 +139,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
                 } else {
                     // #47160: was a supported command (e.g. on a freeform project) but was then removed.
                     Toolkit.getDefaultToolkit().beep();
-                    refreshView();
+                    refreshView(null);
                 }
             }
         }
@@ -130,49 +147,100 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             performer.perform( p );
         }
     }
-        
-       
+
+
     // Private methods ---------------------------------------------------------
-    
+
     // Implementation of PropertyChangeListener --------------------------------
-    
+
     public void propertyChange( PropertyChangeEvent evt ) {
-        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT || 
+        if ( evt.getPropertyName() == OpenProjectList.PROPERTY_MAIN_PROJECT ||
              evt.getPropertyName() == OpenProjectList.PROPERTY_OPEN_PROJECTS ) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
-                    refreshView();
+                    refreshView(null);
                 }
             });
         }
-    }   
-    
-    private void refreshView() {
-        
+    }
+
+    private void refreshView(Lookup context) {
+
         Project p = OpenProjectList.getDefault().getMainProject();
+        Lookup theContext = context;
+
+        if (p == null) {
+            if (theContext == null) {
+                theContext = LastActivatedWindowLookup.INSTANCE;
+            }
+            if (theContext != null) {
+                Project[] projects = ActionsUtil.getProjectsFromLookup(theContext, command);
+                if (projects.length == 1) {
+                    p = projects[0];
+                }
+            }
+        }
+
         boolean noOpenProject = OpenProjectList.getDefault ().getOpenProjects ().length == 0;
-        
+
         if ( command == null ) {
-            setEnabled( performer.enable( p ) );
+            enable( performer.enable( p ) );
         }
         else {
             if ( p == null ) {
-                setEnabled( !noOpenProject );
+                enable(false);
             }
             else if ( ActionsUtil.commandSupported ( p, command, Lookup.EMPTY ) ) {
-                setEnabled( !noOpenProject );
+                enable( !noOpenProject );
             }
             else {
-                setEnabled( false );
+                enable( false );
             }
-        }        
+        }
+
+        Project mainProject = OpenProjectList.getDefault().getMainProject();
+
+        String presenterName = getPresenterName(name, mainProject, p);
+        putValue("menuText", presenterName);
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+
     }
-    
+
+    private String getPresenterName(String name, Project mPrj, Project cPrj) {
+        String toReturn = "";
+        Object[] formatterArgs;
+        if (mPrj == null) {
+            if (cPrj == null) {
+                formatterArgs = new Object[] { 0 };
+            } else {
+                formatterArgs = new Object[] { 1, ProjectUtils.getInformation(cPrj).getDisplayName() };
+            }
+        } else {
+            formatterArgs = new Object[] { -1 };
+        }
+        if (name != null) {
+            toReturn = MessageFormat.format(name, formatterArgs);
+        }
+        return toReturn;
+    }
+
+    private void enable(final boolean enable) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    setEnabled(enable);
+                }
+            });
+        } else {
+            setEnabled(enable);
+        }
+    }
+
     private boolean showNoMainProjectWarning(Project[] projects, String action) {
         boolean canceled;
-        final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N        
+        final JButton okButton = new JButton (NbBundle.getMessage (NoMainProjectWarning.class, "LBL_NoMainClassWarning_ChooseMainProject_OK")); // NOI18N
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (NoMainProjectWarning.class, "AD_NoMainClassWarning_ChooseMainProject_OK"));
-        
+
         // no main project set => warning
         final NoMainProjectWarning panel = new NoMainProjectWarning (projects);
 
@@ -180,7 +248,7 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             okButton,
             DialogDescriptor.CANCEL_OPTION
         };
-        
+
         panel.addChangeListener (new ChangeListener () {
            public void stateChanged (ChangeEvent e) {
                if (e.getSource () instanceof MouseEvent && MouseUtils.isDoubleClick (((MouseEvent)e.getSource ()))) {
@@ -193,9 +261,9 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
                }
            }
         });
-        
+
         okButton.setEnabled (panel.getSelectedProject () != null);
-        
+
         DialogDescriptor desc = new DialogDescriptor (panel,
                 action == null ?
                     NbBundle.getMessage(NoMainProjectWarning.class, "CTL_NoMainProjectWarning_Title") :
@@ -211,9 +279,14 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
             OpenProjectList.getDefault ().setMainProject (mainProject);
             canceled = false;
         }
-        dlg.dispose();            
+        dlg.dispose();
 
         return canceled;
+    }
+
+    @Override
+    protected void refresh(Lookup context) {
+        refreshView(context);
     }
 
     /* Backed out; see issue #105664 for discussion:

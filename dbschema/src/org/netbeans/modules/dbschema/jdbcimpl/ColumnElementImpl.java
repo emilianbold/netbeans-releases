@@ -50,6 +50,7 @@ public class ColumnElementImpl extends DBMemberElementImpl implements ColumnElem
     protected Integer _length;
     protected Integer _precision;
     protected Integer _scale;
+    protected boolean _isAutoIncrement;
 
     /** Creates new ColumnElementImpl */
     public ColumnElementImpl() {
@@ -61,12 +62,14 @@ public class ColumnElementImpl extends DBMemberElementImpl implements ColumnElem
 	}
 
     /** Creates new ColumnElementImpl */
-    public ColumnElementImpl(String name, String type, String isNullable, String size, String decimal) {
+    public ColumnElementImpl(String name, String type, String isNullable, boolean isAutoIncrement, String size, String decimal) {
         super(name);
         
         _type = new Integer(type).intValue();
-        int nullable = new Integer(isNullable).intValue();
+        _isAutoIncrement = isAutoIncrement;
 
+        int nullable = new Integer(isNullable).intValue();
+ 
 /*
         if (isNullable.trim().equals("YES")) //NOI18N
             _isNullable = true;
@@ -172,5 +175,9 @@ public class ColumnElementImpl extends DBMemberElementImpl implements ColumnElem
      */
     public void setScale(Integer scale) throws DBException {
         _scale = scale;
+    }
+
+    public boolean isAutoIncrement() {
+        return _isAutoIncrement;
     }
 }

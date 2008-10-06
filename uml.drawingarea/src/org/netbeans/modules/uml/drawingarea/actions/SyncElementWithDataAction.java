@@ -52,7 +52,7 @@ public class SyncElementWithDataAction extends CookieAction
             Widget w = scene.findWidget(pe);
             if (w instanceof UMLWidget)
             {
-                ((UMLWidget) w).refresh();
+                ((UMLWidget) w).refresh(false);
             }
         }
     }
@@ -78,4 +78,20 @@ public class SyncElementWithDataAction extends CookieAction
         return CookieAction.MODE_ALL;
     }
 
+    protected boolean enable(Node[] activatedNodes)
+    {
+        boolean retVal = false;
+        
+        if(scene.isReadOnly() == false)
+        {
+            retVal = super.enable(activatedNodes);
+        }
+        
+        return retVal;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

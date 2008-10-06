@@ -110,13 +110,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
         return rootFos;
     }
     
-    public String getSourceName (final String binaryName) {
-        try {
-            return index.getSourceName(binaryName);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return null;
-        }
+    public String getSourceName (final String binaryName) throws IOException {
+        return index.getSourceName(binaryName);        
     }
     
 
@@ -128,67 +123,52 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
+    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
             this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
             return;
         }
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException, InterruptedException {
-                    usages(binaryName, usageType, convertor, result);
-                    return null;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException, InterruptedException {
+                usages(binaryName, usageType, convertor, result);
+                return null;
+            }
+        });        
     }
     
     
                
     
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
+    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException, InterruptedException {
-                    index.getDeclaredTypes (simpleName,kind, convertor, result);
-                    return null;
-                }                    
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException, InterruptedException {
+                index.getDeclaredTypes (simpleName,kind, convertor, result);
+                return null;
+            }                    
+        });
     }
     
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException {
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run () throws IOException, InterruptedException {
-                    index.getDeclaredElements(ident, kind, convertor, result);
-                    return null;
-                }
-            });                    
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run () throws IOException, InterruptedException {
+                index.getDeclaredElements(ident, kind, convertor, result);
+                return null;
+            }
+        });                            
     }
     
     
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException {
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run () throws IOException, InterruptedException {
-                    index.getPackageNames(prefix, directOnly, result);
-                    return null;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run () throws IOException, InterruptedException {
+                index.getPackageNames(prefix, directOnly, result);
+                return null;
+            }
+        });        
     }
     
     public synchronized void setDirty (final JavaSource js) {        

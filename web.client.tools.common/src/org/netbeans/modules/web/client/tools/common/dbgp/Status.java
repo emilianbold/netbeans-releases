@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.client.tools.common.dbgp;
 
+import java.util.logging.Level;
 import org.w3c.dom.Node;
 
 /**
@@ -57,7 +58,9 @@ public class Status {
         FIRST_LINE, // firts line of javascript executed
         BREAKPOINT,     // Breakpoint
         STEP,      // Stopped due to Step 
-        DEBUGGER;  // debugger keyword encountered
+        DEBUGGER,  // debugger keyword encountered
+        EXCEPTION, // exception encountered
+        UNKNOWN; // when status is not set
 
         public String getState() {
             return name().toLowerCase();
@@ -68,7 +71,8 @@ public class Status {
         OK,
         ERROR,
         ABORTED,
-        EXCEPTION;
+        EXCEPTION,
+        UNKNOWN;
 
         public String getReason() {
             return name().toLowerCase();
@@ -91,12 +95,22 @@ public class Status {
 
         public State getState() {
             String status = getAttribute(getNode(), STATUS);
-            return State.valueOf(status.toUpperCase());
+            try {
+                return State.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                Log.getLogger().log(Level.FINE, "Unknown status: " + status);
+                return State.UNKNOWN;
+            }
         }
 
         public Reason getReason() {
             String reason = getAttribute(getNode(), REASON);
-            return Reason.valueOf(reason.toUpperCase());
+            try {
+                return Reason.valueOf(reason.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                Log.getLogger().log(Level.FINE, "Unknown reason: " + reason);
+                return Reason.UNKNOWN;
+            }
         }
 
         public DebugMessage getDebugMessage(){

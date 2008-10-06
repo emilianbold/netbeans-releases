@@ -63,6 +63,7 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(ConnectionGeneratorPanel.class, "MSG_SelectConnection"));
         panel.initialize(desc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionGeneratorPanel.class, "ACSD_SelectConnection"));
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -73,7 +74,6 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
 
     private ConnectionGeneratorPanel() {
         initComponents();
-        errorLabel.setForeground(UIUtils.getErrorForeground());
     }
 
     private void initialize(DialogDescriptor descriptor) {
@@ -108,7 +108,7 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
     }
 
     private void setErrorMessage(String message) {
-        errorLabel.setText(message != null ? message : " "); // NOI18N
+        errorLabel.setText(message);
         descriptor.setValid(message == null);
     }
 
@@ -123,7 +123,7 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
 
         dbconnLabel = new javax.swing.JLabel();
         dbconnComboBox = new javax.swing.JComboBox();
-        errorLabel = new javax.swing.JLabel();
+        errorLabel = new ErrorLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(dbconnLabel, org.openide.util.NbBundle.getMessage(ConnectionGeneratorPanel.class, "ConnectionGeneratorPanel.dbconnLabel.text")); // NOI18N
 
@@ -143,7 +143,7 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(dbconnLabel)
-                    .add(dbconnComboBox, 0, 301, Short.MAX_VALUE)
+                    .add(dbconnComboBox, 0, 518, Short.MAX_VALUE)
                     .add(errorLabel))
                 .addContainerGap())
         );

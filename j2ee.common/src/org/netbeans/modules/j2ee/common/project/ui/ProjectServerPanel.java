@@ -87,7 +87,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
     private static final String J2EE_SPEC_14_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "J2EESpecLevel_14"); //NOI18N
     private static final String JAVA_EE_SPEC_50_LABEL = NbBundle.getMessage(ProjectServerPanel.class, "JavaEESpecLevel_50"); //NOI18N
 
-    private List earProjects;
+    private List<Project> earProjects;
     private Object j2eeModuleType;
     private File projectLocation;
     
@@ -165,13 +165,11 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         mainClassTextFieldWithinEar = new javax.swing.JTextField();
         serverLibraryCheckbox = new javax.swing.JCheckBox();
 
-        jLabelEnterprise.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ProjectServerPanel.class).getString("LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
         jLabelEnterprise.setLabelFor(jComboBoxEnterprise);
-        jLabelEnterprise.setText(NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_AddToEnterprise_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelEnterprise, NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_AddToEnterprise_Label")); // NOI18N
 
-        serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_Server_LabelMnemonic").charAt(0));
         serverInstanceLabel.setLabelFor(serverInstanceComboBox);
-        serverInstanceLabel.setText(NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serverInstanceLabel, NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_Server")); // NOI18N
 
         serverInstanceComboBox.setModel(serversModel);
         serverInstanceComboBox.setPrototypeDisplayValue("The Gr8est Marvelous Nr. 1 Server");
@@ -188,9 +186,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             }
         });
 
-        j2eeSpecLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic").charAt(0));
         j2eeSpecLabel.setLabelFor(j2eeSpecComboBox);
-        j2eeSpecLabel.setText(NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(j2eeSpecLabel, NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_J2EESpecLevel_Label")); // NOI18N
 
         j2eeSpecComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -198,9 +195,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             }
         });
 
-        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_ContextPath_Label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelContextPath, NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_ContextPath_Label")); // NOI18N
 
         warningPlaceHolderPanel.setBackground(new java.awt.Color(0, 153, 102));
         warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
@@ -211,6 +207,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             }
         });
 
+        mainClassLabel.setLabelFor(mainClassTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mainClassLabel, org.openide.util.NbBundle.getBundle(ProjectServerPanel.class).getString("LBL_NWP1_MainClass_Label")); // NOI18N
         mainClassLabel.setAlignmentX(0.5F);
 
@@ -241,11 +238,12 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
 
         jTextFieldCarName.setEnabled(false);
 
+        mainClassLabel1.setLabelFor(mainClassTextFieldWithinEar);
         org.openide.awt.Mnemonics.setLocalizedText(mainClassLabel1, org.openide.util.NbBundle.getBundle(ProjectServerPanel.class).getString("LBL_NWP1_MainClass_Label")); // NOI18N
 
         mainClassTextFieldWithinEar.setEnabled(false);
 
-        serverLibraryCheckbox.setText(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "PanelSharabilityVisual.serverLibraryCheckbox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serverLibraryCheckbox, org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "PanelSharabilityVisual.serverLibraryCheckbox.text")); // NOI18N
         serverLibraryCheckbox.setMargin(new java.awt.Insets(2, 0, 2, 2));
         serverLibraryCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -265,24 +263,24 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
-                        .add(serverInstanceComboBox, 0, 264, Short.MAX_VALUE)
+                        .add(serverInstanceComboBox, 0, 324, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addServerButton))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                         .add(74, 74, 74))
                     .add(layout.createSequentialGroup()
                         .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())))
             .add(layout.createSequentialGroup()
-                .add(mainClassLabel)
-                .addContainerGap(365, Short.MAX_VALUE))
+                .add(mainClassLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(423, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -292,16 +290,16 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .add(mainClassLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                    .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE)
-                    .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 156, Short.MAX_VALUE))
+                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                    .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                    .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE))
                 .add(74, 74, 74))
-            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
+            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jLabelEnterprise)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxEnterprise, 0, 272, Short.MAX_VALUE))
+                .add(jComboBoxEnterprise, 0, 330, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -350,13 +348,35 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .add(67, 67, 67))
         );
 
-        jLabelEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectServerPanel.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
-        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectServerPanel.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
-        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACS_NWP1_Server_ComboBox_A11YDesc")); // NOI18N
+        jLabelEnterprise.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        serverInstanceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        serverInstanceComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
         addServerButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ASCN_AddServer")); // NOI18N
-        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ASCD_AddServer")); // NOI18N
-        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACS_LBL_NPW1_J2EESpecLevel_A11YDesc")); // NOI18N
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACS_LBL_NWP1_ContextPath_A11YDesc")); // NOI18N
+        addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        j2eeSpecLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        j2eeSpecComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jLabelContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        warningPlaceHolderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        warningPlaceHolderPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        mainClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        createEjbCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NEAP_CreateEjbModule")); // NOI18N
+        jTextFieldEjbModuleName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        createWARCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jTextFieldWebAppName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NEAP_CreatWebAppModule")); // NOI18N
+        jTextFieldWebAppName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        createCarCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        jTextFieldCarName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "LBL_NEAP_CreateCarModule")); // NOI18N
+        jTextFieldCarName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        mainClassLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        mainClassTextFieldWithinEar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        serverLibraryCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void addServerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServerButtonActionPerformed
@@ -700,7 +720,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
 
     private Project getSelectedEarApplication() {
         int idx = jComboBoxEnterprise.getSelectedIndex();
-        return (idx <= 0) ? null : (Project) earProjects.get(idx - 1);
+        return (idx <= 0) ? null : earProjects.get(idx - 1);
     }
     
     private void initEnterpriseApplications() {
@@ -708,7 +728,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         jComboBoxEnterprise.setSelectedIndex(0);
         
         Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
-        earProjects = new ArrayList();
+        earProjects = new ArrayList<Project>();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeApplicationProvider j2eeAppProvider = allProjects[i].getLookup().lookup(J2eeApplicationProvider.class);
             if (j2eeAppProvider == null) {

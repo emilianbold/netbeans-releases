@@ -96,10 +96,19 @@ public class WebSetupTest extends JellyTestCase  {
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
     }
+    
+    public void testAddAppServer() {
+        
+        CommonUtilities.addApplicationServer();
+    }    
         
     public void testOpenVisualWebProject() {
-        openProject("VisualWebProject");
+        //openProject("VisualWebProject");
         
+        String projectsDir = workdir + File.separator+ "VisualWebProject";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();        
 //        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"VisualWebProject");
 //        VWPUtilities.waitForPendingBackgroundTasks();
 //        VWPUtilities.verifyAndResolveMissingWebServer("VisualWebProject", "GlassFish V2");
@@ -108,8 +117,12 @@ public class WebSetupTest extends JellyTestCase  {
     }
     
     public void testOpenLargeVisualWebProject() {
-        openProject("UltraLargeWA");
+        //openProject("UltraLargeWA");
         
+        String projectsDir = workdir + File.separator+ "UltraLargeWA";
+        Object prj=ProjectSupport.openProject(projectsDir);
+        assertNotNull(prj);
+        CommonUtilities.waitProjectTasksFinished();        
 //        VWPUtilities.waitProjectOpenedScanFinished(workdir+ java.io.File.separator +"UltraLargeWA");
 //        VWPUtilities.waitForPendingBackgroundTasks();
 //        VWPUtilities.verifyAndResolveMissingWebServer("UltraLargeWA", "GlassFish V2");
@@ -125,8 +138,12 @@ public class WebSetupTest extends JellyTestCase  {
         String projectsDir = workdir + File.separator+projectName;
         Object prj=ProjectSupport.openProject(projectsDir);
         assertNotNull(prj);
-        VWPUtilities.verifyAndResolveMissingWebServer(projectName, "GlassFish V2");
+//        VWPUtilities.verifyAndResolveMissingWebServer(projectName, "GlassFish V2");
         CommonUtilities.waitProjectTasksFinished();        
+    }
+    
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
     }
     
     public void setupAppServer() {

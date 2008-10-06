@@ -114,7 +114,7 @@ public class Utilities {
         if (prefix == null || prefix.length() == 0)
             return true;
         return isCaseSensitive() ? theString.startsWith(prefix) :
-            theString.toLowerCase().startsWith(prefix.toLowerCase());
+            theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
     }
     
     public static boolean startsWithCamelCase(String theString, String prefix) {
@@ -168,11 +168,6 @@ public class Utilities {
     public static boolean guessMethodArguments() {
       Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
       return prefs.getBoolean("guessMethodArguments", false); //NOI18N
-    }
-
-    public static boolean pairCharactersCompletion() {
-      Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
-      return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
     }
 
     private static void lazyInit() {
@@ -335,9 +330,9 @@ public class Utilities {
             boolean isPrimitive = type.getKind().isPrimitive();
             if (prefix != null && prefix.length() > 0) {
                 if (isConst) {
-                    name = prefix.toUpperCase() + '_' + name;
+                    name = prefix.toUpperCase(Locale.ENGLISH) + '_' + name;
                 } else {
-                    name = prefix + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+                    name = prefix + name.toUpperCase(Locale.ENGLISH).charAt(0) + name.substring(1);
                 }
             }
             int cnt = 1;
@@ -387,11 +382,11 @@ public class Utilities {
             case SHORT:
                 return Collections.<String>singletonList(type.toString().substring(0, 1));
             case TYPEVAR:
-                return Collections.<String>singletonList(type.toString().toLowerCase());
+                return Collections.<String>singletonList(type.toString().toLowerCase(Locale.ENGLISH));
             case ERROR:
                 String tn = ((ErrorType)type).asElement().getSimpleName().toString();
-                if (tn.toUpperCase().contentEquals(tn))
-                    return Collections.<String>singletonList(tn.toLowerCase());
+                if (tn.toUpperCase(Locale.ENGLISH).contentEquals(tn))
+                    return Collections.<String>singletonList(tn.toLowerCase(Locale.ENGLISH));
                 StringBuilder sb = new StringBuilder();
                 ArrayList<String> al = new ArrayList<String>();
                 if ("Iterator".equals(tn)) //NOI18N
@@ -407,8 +402,8 @@ public class Utilities {
                 iterableTE = elements.getTypeElement("java.lang.Iterable"); //NOI18N
                 iterable = iterableTE != null ? types.getDeclaredType(iterableTE) : null;
                 tn = ((DeclaredType)type).asElement().getSimpleName().toString();
-                if (tn.toUpperCase().contentEquals(tn))
-                    return Collections.<String>singletonList(tn.toLowerCase());
+                if (tn.toUpperCase(Locale.ENGLISH).contentEquals(tn))
+                    return Collections.<String>singletonList(tn.toLowerCase(Locale.ENGLISH));
                 sb = new StringBuilder();
                 al = new ArrayList<String>();
                 if ("Iterator".equals(tn)) //NOI18N
@@ -694,6 +689,8 @@ public class Utilities {
         
         OUTER:
         for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
+            if (!info.getTypes().isSubtype(on, ((TypeElement) ee.getEnclosingElement()).asType())) //XXX: fix for #132627, a clearer fix may exist
+                continue;
             if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
                 TypeMirror innerCandidate = null;
                 int innerIndex = -1;

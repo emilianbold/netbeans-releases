@@ -42,13 +42,10 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -59,7 +56,9 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
+import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -79,20 +78,25 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String WEB_ROOT = "web.root"; // NOI18N
     public static final String URL = "url"; // NOI18N
     public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
+    public static final String INTERPRETER = "interpreter"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
     public static final String REMOTE_UPLOAD = "remote.upload"; // NOI18N
+    public static final String SHORT_TAGS = "tags.short"; // NOI18N
+    public static final String ASP_TAGS = "tags.asp"; // NOI18N
 
     public static final String[] CFG_PROPS = new String[] {
         URL,
         INDEX_FILE,
         ARGS,
+        INTERPRETER,
         RUN_AS,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
@@ -107,8 +111,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public static enum UploadFiles {
         MANUALLY ("LBL_UploadFilesManually", "TXT_UploadFilesManually"), // NOI18N
-        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"), // NOI18N
-        ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
+        ON_RUN ("LBL_UploadFilesOnRun", "TXT_UploadFilesOnRun"); // NOI18N
+        // disabled because of lack of time for NB 6.5
+        //ON_SAVE ("LBL_UploadFilesOnSave", "TXT_UploadFilesOnSave"); // NOI18N
 
         private final String label;
         private final String description;
@@ -137,9 +142,12 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     private String srcDir;
     private String copySrcFiles;
     private String copySrcTarget;
+    private String webRoot;
     private String url;
     private String indexFile;
     private String encoding;
+    private String shortTags;
+    private String aspTags;
 
     // CustomizerRun
     Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -156,7 +164,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.project = project;
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
-        activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
+        activeConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
     }
 
     public String[] getConfigProperties() {
@@ -177,7 +185,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getCopySrcFiles() {
         if (copySrcFiles == null) {
-            copySrcFiles = project.getEvaluator().getProperty(COPY_SRC_FILES);
+            copySrcFiles = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(COPY_SRC_FILES);
         }
         return copySrcFiles;
     }
@@ -188,7 +196,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getCopySrcTarget() {
         if (copySrcTarget == null) {
-            copySrcTarget = project.getEvaluator().getProperty(COPY_SRC_TARGET);
+            copySrcTarget = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(COPY_SRC_TARGET);
         }
         return copySrcTarget;
     }
@@ -197,9 +205,48 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.copySrcTarget = copySrcTarget;
     }
 
+    public String getShortTags() {
+        if (shortTags == null) {
+            shortTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SHORT_TAGS);
+        }
+        return shortTags;
+    }
+
+    public void setShortTags(String shortTags) {
+        this.shortTags = shortTags;
+    }
+
+    public String getAspTags() {
+        if (aspTags == null) {
+            aspTags = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(ASP_TAGS);
+        }
+        return aspTags;
+    }
+
+    public void setAspTags(String aspTags) {
+        this.aspTags = aspTags;
+    }
+
+    /**
+     * @return the webRoot, which is relative path to srcDir.
+     */
+    public String getWebRoot() {
+        if (webRoot == null) {
+            webRoot = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(WEB_ROOT);
+        }
+        return webRoot != null ? webRoot : ""; // NOI18N
+    }
+
+    /**
+     * @param webRoot the webRoot to set
+     */
+    public void setWebRoot(String webRoot) {
+        this.webRoot = webRoot;
+    }
+
     public String getEncoding() {
         if (encoding == null) {
-            encoding = project.getEvaluator().getProperty(SOURCE_ENCODING);
+            encoding = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SOURCE_ENCODING);
         }
         return encoding;
     }
@@ -210,18 +257,14 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getSrcDir() {
         if (srcDir == null) {
-            srcDir = project.getEvaluator().getProperty(SRC_DIR);
+            srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SRC_DIR);
         }
         return srcDir;
     }
 
-    public void setSrcDir(String srcDir) {
-        this.srcDir = srcDir;
-    }
-
     public String getUrl() {
         if (url == null) {
-            url = project.getEvaluator().getProperty(URL);
+            url = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(URL);
         }
         return url;
     }
@@ -232,7 +275,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getIndexFile() {
         if (indexFile == null) {
-            indexFile = project.getEvaluator().getProperty(INDEX_FILE);
+            indexFile = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(INDEX_FILE);
         }
         return indexFile;
     }
@@ -252,7 +295,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public ListCellRenderer getIncludePathListRenderer() {
         if (includePathListRenderer == null) {
-            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(project.getEvaluator(),
+            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getProjectDirectory());
         }
         return includePathListRenderer;
@@ -289,17 +332,23 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
-        if (srcDir != null) {
-            projectProperties.setProperty(SRC_DIR, srcDir);
-        }
         if (copySrcFiles != null) {
-            projectProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
+            privateProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
         if (copySrcTarget != null) {
-            projectProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
+            privateProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
+        }
+        if (webRoot != null) {
+            projectProperties.setProperty(WEB_ROOT, webRoot);
+        }
+        if (shortTags != null) {
+            projectProperties.setProperty(SHORT_TAGS, shortTags);
+        }
+        if (aspTags != null) {
+            projectProperties.setProperty(ASP_TAGS, aspTags);
         }
 
         // php include path
@@ -331,53 +380,50 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             }
         }
 
-        // check whether src directory exists - if not, create it (can happen using customizer)
-        FileObject srcDirectory = null;
-        File srcFolder = helper.resolveFile(srcDir);
-        if (srcDir != null) {
-            if (!srcFolder.exists()) {
-                srcDirectory = FileUtil.createFolder(srcFolder);
-            }
-        }
+        // reset timestamp of the last upload
+        RemoteSettings.resetLastUpload(project);
 
         // UI log
-        if (srcDirectory == null) {
-            srcDirectory = FileUtil.toFileObject(srcFolder);
-        }
-        logUI(helper.getProjectDirectory(), srcDirectory, getRunAsTypes(), Boolean.valueOf(getCopySrcFiles()));
+        logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
+                getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
-    private List<RunAsType> getRunAsTypes() {
-        List<RunAsType> runAsTypes = new ArrayList<RunAsType>(runConfigs.size());
+    private String getActiveRunAsType() {
+        if (activeConfig == null) {
+            return ""; // NOI18N
+        }
+        Map<String, String> c = runConfigs.get(activeConfig);
+        return c.get(RUN_AS);
+    }
+
+    private int getNumOfRunConfigs() {
+        int n = 0;
+        // removed configs may be null, do not count them
         for (Map.Entry<String, Map<String, String>> entry : runConfigs.entrySet()) {
             Map<String, String> c = entry.getValue();
             if (c == null) {
                 // removed config
                 continue;
             }
-            runAsTypes.add(RunAsType.valueOf(c.get(RUN_AS)));
+            n++;
         }
-        return runAsTypes;
+        return n;
     }
 
-    // http://wiki.netbeans.org/UILoggingInPHP
-    private void logUI(FileObject projectDir, FileObject sourceDir, List<RunAsType> configs, boolean copyFiles) {
+    // http://wiki.netbeans.org/UsageLoggingSpecification
+    private void logUsage(FileObject projectDir, FileObject sourceDir, String activeRunAsType, int numOfConfigs, boolean copyFiles) {
         StringBuilder sb = new StringBuilder(200);
-        for (RunAsType runAs : configs) {
-            if (sb.toString().length() != 0) {
-                sb.append(";");
-            }
-            sb.append(runAs.name());
-        }
-        LogRecord logRecord = new LogRecord(Level.INFO, "UI_PHP_PROJECT_CUSTOMIZED"); //NOI18N
-        logRecord.setLoggerName(PhpProject.UI_LOGGER_NAME);
+        LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CONFIG_PHP"); // NOI18N
+        logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(PhpProjectProperties.class));
+        logRecord.setResourceBundleName(PhpProjectProperties.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir),
-            sb.toString(),
-            copyFiles
+            FileUtil.isParentOf(projectDir, sourceDir) ? "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
+            activeRunAsType,
+            Integer.toString(numOfConfigs),
+            copyFiles ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
         });
-        Logger.getLogger(PhpProject.UI_LOGGER_NAME).log(logRecord);
+        Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }
 
     public PhpProject getProject() {
@@ -441,7 +487,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         Map<String, String> def = configs.get(null);
         for (String prop : CFG_PROPS) {
             String v = def.get(prop);
-            EditableProperties ep = prop.equals(ARGS) ? privateProperties : projectProperties;
+            EditableProperties ep = isPrivateProperty(prop) ? privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
                     ep.setProperty(prop, v);
@@ -455,8 +501,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             if (config == null) {
                 continue;
             }
-            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
 
+            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
             String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
 
             Map<String, String> c = entry.getValue();
@@ -468,7 +514,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             for (Map.Entry<String, String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(ARGS)) ? privatePath : sharedPath;
+                String path = isPrivateProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = getProject().getHelper().getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                     if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
@@ -482,5 +528,10 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             // Make sure the definition file is always created, even if it is empty.
             getProject().getHelper().putProperties(sharedPath, getProject().getHelper().getProperties(sharedPath));
         }
+    }
+
+    private boolean isPrivateProperty(String property) {
+        // #145477 - all the config properties are stored in private properties because we don't want them to be versioned
+        return true;
     }
 }

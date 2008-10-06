@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml.actions;
 
+import org.netbeans.modules.xml.util.Util;
 import org.openide.util.HelpCtx;
 
 /**
@@ -60,7 +61,7 @@ public class CollectXMLAction extends CollectSystemAction {
     /* Getter for name
     */
     public String getName () {
-        return Util.THIS.getString ("NAME_CollectXMLAction");
+        return Util.THIS.getString (CollectXMLAction.class, "NAME_CollectXMLAction");
     }
 
     /* Getter for help.

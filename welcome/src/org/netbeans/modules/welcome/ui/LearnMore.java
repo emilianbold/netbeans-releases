@@ -51,6 +51,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ActionButton;
+import org.netbeans.modules.welcome.content.BackgroundPanel;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Utils;
 import org.netbeans.modules.welcome.content.WebLink;
@@ -65,12 +66,11 @@ import org.openide.loaders.DataObject;
  *
  * @author S. Aubrecht
  */
-class LearnMore extends JPanel implements Constants {
+class LearnMore extends BackgroundPanel implements Constants {
 
     /** Creates a new instance of RecentProjects */
     public LearnMore() {
         super( new GridBagLayout() );
-        setOpaque( false );
         buildContent();
     }
     
@@ -102,8 +102,7 @@ class LearnMore extends JPanel implements Constants {
             lb.getAccessibleContext().setAccessibleName( lb.getText() );
             lb.getAccessibleContext().setAccessibleDescription( 
                     BundleSupport.getAccessibilityDescription( "LearnMore", lb.getText() ) ); //NOI18N
-            JPanel inner = new JPanel( new GridBagLayout() );
-            inner.setOpaque(false);
+            JPanel inner = new BackgroundPanel( new GridBagLayout() );
             inner.add( lb, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
                 GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
             inner.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,

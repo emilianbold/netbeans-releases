@@ -256,7 +256,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8.12</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -346,6 +346,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.jellytools</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+		    <test-dependency>
+                        <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

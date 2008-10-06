@@ -90,7 +90,7 @@ public class FriendTestCase extends TraceModelTestBase {
         performModelTest(testFile, System.out, System.err);
         checkFriend();
         for(FileImpl file : getProject().getAllFileImpls()){
-            file.stateChanged(true);
+            file.markReparseNeeded(true);
             file.scheduleParsing(true);
         }
         checkFriend();

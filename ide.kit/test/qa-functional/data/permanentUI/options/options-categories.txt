@@ -1,0 +1,21 @@
+General
+Editor
+Fonts & Colors
+Keymap
+PHP
+C/C++
+Miscellaneous
+    Ant
+    Appearance
+    Diff
+    Files
+    Groovy
+    GUI Builder
+    Java ME
+    JavaScript
+    Profiler
+    Ruby
+    SVG
+    Tasks
+    Versioning
+    Visual Web

@@ -43,6 +43,7 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -79,20 +80,20 @@ public final class ModuleSelector extends BaseExtendSelector {
     public boolean isSelected(File dir, String filename, File file) throws BuildException {
         validate();
      
-        Boolean check = checkSelected(dir, filename, file);
+        Boolean check = checkSelected(dir, file);
         if (check == null) {
             return false;
         }
         
         if (acceptExcluded) {
             log("Reverting the accepted state", Project.MSG_VERBOSE);
-            return !check.booleanValue();
+            return !check;
         } else {
-            return check.booleanValue();
+            return check;
         }
     }
     
-    private Boolean checkSelected(File dir, String filename, File file) throws BuildException {
+    private Boolean checkSelected(File dir, File file) throws BuildException {
         if (file.isDirectory()) {
             log("Skipping directory: " + file, Project.MSG_VERBOSE);
             return null;
@@ -108,7 +109,7 @@ public final class ModuleSelector extends BaseExtendSelector {
                 }
                 jar.close();
             } catch (IOException ex) {
-                throw new BuildException("Problem with file: " + file, ex);
+                throw new BuildException("Problem with " + file + ": " + ex, ex, getLocation());
             }
         }
 
@@ -119,7 +120,7 @@ public final class ModuleSelector extends BaseExtendSelector {
             if (new File(p, "update_tracking").isDirectory()) { // else includeClusters does not work
                 String cluster = p.getName();
                 
-                if (!includeClusters.isEmpty() && !includeClusters.contains(cluster)) {
+                if (!includeClusters.isEmpty() && !clusterMatch(includeClusters, cluster)) {
                     log("Not included cluster: " + cluster + " for " + file, Project.MSG_VERBOSE);
                     return null;
                 }
@@ -152,13 +153,27 @@ public final class ModuleSelector extends BaseExtendSelector {
         
         if (excludeModules.contains(module)) {
             log("Excluded module: " + file, Project.MSG_VERBOSE);
-            return Boolean.FALSE;
+            return false;
         }
 
         log("Accepted file: " + file, Project.MSG_VERBOSE);
-        return Boolean.TRUE;
+        return true;
+    }
+    // Copied from apisupport.project.ui.customizer.SingleModuleProperties:
+    static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
+        String baseName = clusterBaseName(clusterName);
+        for (String c : enabledClusters) {
+            if (clusterBaseName(c).equals(baseName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    static String clusterBaseName(String clusterName) {
+        return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
 
+    @Override
     public void verifySettings() {
         if (includeClusters != null) {
             return;
@@ -231,6 +246,7 @@ public final class ModuleSelector extends BaseExtendSelector {
             public File where;
             public String module;
             
+            @Override
             public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
                 if (qName.equals("file")) {
                     String file = attributes.getValue("name");

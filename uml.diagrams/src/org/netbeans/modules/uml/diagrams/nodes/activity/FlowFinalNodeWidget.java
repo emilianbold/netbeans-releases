@@ -41,7 +41,6 @@ package org.netbeans.modules.uml.diagrams.nodes.activity;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.nodes.OvalWidget;
@@ -53,11 +52,11 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceType;
  * @author thuy
  */
 public class FlowFinalNodeWidget extends ControlNodeWidget
-{
-    
-    public FlowFinalNodeWidget(Scene scene)
+{    
+    public FlowFinalNodeWidget(Scene scene, String path)
     {
-        super(scene, "UML/context-palette/ActivityFinal");
+        super(scene, path);
+        setResizable(false);
     }
 
     @Override
@@ -66,18 +65,15 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
         Scene scene = getScene();
         if ( presentation != null ) 
         {
-            //IFinalNode element = (IFinalNode) presentation.getFirstSubject();
-
             // create a circle of default radius (15)
             FlowFinalWidget flowFinalCircle = new FlowFinalWidget(scene, 
-                     DEFAULT_OUTER_RADIUS, getWidgetID(), 
+                     DEFAULT_OUTER_RADIUS, getResourcePath(), 
                     bundle.getString("LBL_body")); 
             flowFinalCircle.setUseGradient(useGradient);
-            flowFinalCircle.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
             flowFinalCircle.setOpaque(true);
             setCurrentView(flowFinalCircle);
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()
@@ -85,11 +81,6 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
         return UMLWidgetIDString.FLOWFINALNODEWIDGET.toString();
     }
     
-     @Override
-    protected void notifyStateChanged(ObjectState previousState, ObjectState state)
-    {
-         processStateChange(previousState, state);
-    }
      
     private class FlowFinalWidget extends OvalWidget
     {   
@@ -97,26 +88,7 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
         {
             super(scene, r, propID, propDisplayName);
         }
-
-//         @Override
-//        protected Rectangle calculateClientArea()
-//        {
-//            Rectangle  bounds = getBounds();
-//            if (bounds == null)  
-//            {
-//                int width = getWidth();
-//                int height = getHeight();
-//                return new Rectangle( -width/2, -height/2, width, height);
-//            }
-//            if (bounds.width != bounds.height)
-//            {
-//                int cx = GeomUtil.centerX(bounds);
-//                int adjustedLen = Math.min(bounds.width, bounds.height);
-//               return  new Rectangle( cx-(adjustedLen/2), bounds.y, adjustedLen, adjustedLen);
-//            }
-//            return bounds;
-//        }
-//         
+ 
         @Override
         protected void paintWidget()
         {

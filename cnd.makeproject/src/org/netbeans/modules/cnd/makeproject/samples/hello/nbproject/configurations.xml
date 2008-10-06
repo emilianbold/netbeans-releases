@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="47">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>bar.f</itemPath>
+      <itemPath>foo.f</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <defaultConf>0</defaultConf>
+  <confs>
+    <conf name="Debug" type="1">
+      <compileType>
+        <cCompilerTool>
+        </cCompilerTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="bar.f">
+        <itemTool>2</itemTool>
+      </item>
+      <item path="foo.f">
+        <itemTool>2</itemTool>
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>5</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>5</developmentMode>
+        </ccCompilerTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="bar.f">
+        <itemTool>2</itemTool>
+      </item>
+      <item path="foo.f">
+        <itemTool>2</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

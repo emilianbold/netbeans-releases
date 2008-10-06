@@ -55,7 +55,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -126,6 +130,7 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         } else if (J2eeModule.J2EE_14.equals(j2eeVersion)) {
             jTextFieldVersion.setText(EarProjectProperties.J2EE_SPEC_14_LABEL);
         }
+        setDeployOnSaveState();
         handleWebModuleRelated();
         initialized = true;
     }
@@ -355,14 +360,15 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
 private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
-    handleWebModuleRelated();
-}//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
+    handleWebModuleRelated();//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
+}                                                       
     
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
-//        if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)
+//        if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)//GEN-LAST:event_jComboBoxServerActionPerformed
 //            return;
 //        String newCtxPath = null ; // wm.getContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()]);
-    }//GEN-LAST:event_jComboBoxServerActionPerformed
+        setDeployOnSaveState();
+    }                                               
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel clientInfoPanel;
@@ -394,7 +400,25 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CustomizerRun.class);
     }
-    
+
+    private void setDeployOnSaveState() {
+        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
+            String serverInstanceID = J2eePlatformUiSupport.getServerInstanceID(
+                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
+
+            J2eeModule module = uiProperties.getProject().getAppModule().getJ2eeModule();
+            ServerInstance instance = Deployment.getDefault().getServerInstance(serverInstanceID);
+
+            try {
+                jCheckBoxDeployOnSave.setEnabled(instance.isDeployOnSaveSupported(module));
+            } catch (InstanceRemovedException ex) {
+                jCheckBoxDeployOnSave.setEnabled(false);
+            }
+        } else {
+            jCheckBoxDeployOnSave.setEnabled(false);
+        }
+    }
+
     public static ApplicationUrisComboBoxModel createApplicationUrisComboBoxModel(EarProject project) {
         return new ApplicationUrisComboBoxModel(project);
     }

@@ -7,15 +7,10 @@ package ${PACKAGENAME};
 
 import junit.framework.TestCase;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 public class ${PREFIX}DataObjectTest extends TestCase {
-    static {
-        initalizationForTestPurposesOnly();
-    }
-    
     public ${PREFIX}DataObjectTest(String testName) {
         super(testName);
     }            
@@ -27,10 +22,5 @@ public class ${PREFIX}DataObjectTest extends TestCase {
         
         DataObject obj = DataObject.find(template);
         assertEquals("It is our data object", ${PREFIX}DataObject.class, obj.getClass());
-    }
-
-    @SuppressWarnings("deprecation")
-    private static void initalizationForTestPurposesOnly() {
-        FileUtil.setMIMEType("${EXTENSION}", "${MIMETYPE}");
     }
 }

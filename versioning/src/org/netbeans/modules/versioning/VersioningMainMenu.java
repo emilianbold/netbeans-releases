@@ -92,11 +92,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             items.add(Utils.createJSeparator());
         }
         
-        Collections.sort(systems, new Comparator<VersioningSystem>() {
-            public int compare(VersioningSystem a, VersioningSystem b) {
-                return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
-            }
-        });
+        Collections.sort(systems, new ByDisplayNameComparator());
 
         VersioningSystem localHistory = null;
         for (final VersioningSystem system : systems) {
@@ -160,5 +156,11 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             }
         }
         return items;
+    }
+
+    static final class ByDisplayNameComparator implements Comparator<VersioningSystem> {
+        public int compare(VersioningSystem a, VersioningSystem b) {
+            return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
+        }
     }
 }

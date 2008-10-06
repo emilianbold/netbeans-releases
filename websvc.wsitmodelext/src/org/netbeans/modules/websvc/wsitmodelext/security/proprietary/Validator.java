@@ -52,7 +52,7 @@ public interface Validator extends ExtensibilityElement{
     public static final String USERNAME_VALIDATOR = "usernameValidator"; //NOI18N
     public static final String TIMESTAMP_VALIDATOR = "timestampValidator"; //NOI18N
     public static final String CERTIFICATE_VALIDATOR = "certificateValidator"; //NOI18N
-    public static final String SAML_VALIDATOR = "samlValidator"; //NOI18N
+    public static final String SAML_VALIDATOR = "samlAssertionValidator"; //NOI18N
 
     public static final String NAME = "name";     //NOI18N
     public static final String CLASSNAME = "classname";     //NOI18N

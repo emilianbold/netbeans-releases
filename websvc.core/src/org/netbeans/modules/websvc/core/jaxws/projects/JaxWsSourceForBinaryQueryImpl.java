@@ -39,17 +39,28 @@
 
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 
 /** SourceForBinaryQueryImplementation for JAX-WS Clients
@@ -59,24 +70,44 @@ import org.openide.filesystems.FileUtil;
 public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
     private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
+    private Project project;
+    private boolean jarArtifactsSetCreated;
+    private Set<URI> jarArtifacts = new HashSet<URI>();
     
+    JaxWsSourceForBinaryQueryImpl(Project project) {
+        this.project = project;
+    }
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-   
-        URL archiveFile = FileUtil.getArchiveFile(binaryRoot);
-
-        if (archiveFile != null) {
-            SourceForBinaryQuery.Result result = cache.get(archiveFile);
-            if (result == null) {
-                try {
-                    Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
-                    if (prj != null && prj.getLookup().lookup(JAXWSClientSupport.class) != null) {
-                        result = new Result(prj);
-                        cache.put(archiveFile, result);
-                    }
-                } catch (URISyntaxException ex) {}
+        File archiveFile = FileUtil.archiveOrDirForURL(binaryRoot);
+        if (archiveFile != null ) {
+            boolean projectJar = false;
+            try {
+                if (!jarArtifactsSetCreated) {
+                    createJarArtifactsSet();
+                    jarArtifactsSetCreated = true;
+                }
+                if (jarArtifacts.contains(archiveFile.toURL().toURI())) {
+                    projectJar = true;
+                }
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO, "Cannot resolve JAR Artifact file",ex); //NOI18N
+            } catch (IOException ex) {
+                Logger.getLogger(JaxWsSourceForBinaryQueryImpl.class.getName()).log(Level.INFO, "Cannot resolve JAR Artifact file",ex); //NOI18N
             }
-            
-            return result;
+            if (projectJar) {
+                SourceForBinaryQuery.Result result = cache.get(binaryRoot);
+                if (result == null) {
+                    Project prj = FileOwnerQuery.getOwner(archiveFile.toURI());
+                    if (prj != null) {
+                        JAXWSClientSupport jaxWSCS = JAXWSClientSupport.getJaxWsClientSupport(prj.getProjectDirectory());
+                        if (jaxWSCS != null) {
+                            result = new Result(prj);
+                            cache.put(binaryRoot, result);
+                        }
+                    }
+                }
+                return result;
+            }
         }
         return null;
     }
@@ -102,4 +133,19 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
 
     }
+
+    private void createJarArtifactsSet() throws FileStateInvalidException, URISyntaxException {
+        AntArtifactProvider provider = project.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifact[] arts = provider.getBuildArtifacts();
+        for(AntArtifact art:arts) {
+            if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(art.getType())) {
+                File scriptLocation = art.getScriptLocation();
+                for (URI artifactLocation:art.getArtifactLocations()) {
+                    URI artifactUri = scriptLocation.toURI().resolve(artifactLocation).normalize();
+                    jarArtifacts.add(artifactUri);
+                }
+            }
+        }
+    }
+
 }

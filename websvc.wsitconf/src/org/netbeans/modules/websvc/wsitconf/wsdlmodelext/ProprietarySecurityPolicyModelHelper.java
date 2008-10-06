@@ -91,7 +91,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
-    public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
+    public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
@@ -509,6 +509,17 @@ public class ProprietarySecurityPolicyModelHelper {
         }
         return null;
     }
+
+    public static boolean isAnyValidatorSet(WSDLComponent c) {
+        if (c == null) return false;
+        Policy p = PolicyModelHelper.getPolicyForElement(c);
+        if (p == null) return false;
+        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class,false);
+        if (vc != null) {
+            return true;
+        }
+        return false;
+    }
     
     private static Validator getValidator(String type, ValidatorConfiguration vc) {
         if (vc == null) return null;
@@ -859,6 +870,26 @@ public class ProprietarySecurityPolicyModelHelper {
         } finally {
             if (!isTransaction) {
                 model.endTransaction();
+            }
+        }
+    }
+
+    public static void clearValidators(WSDLComponent c) {
+        WSDLModel model = c.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(c);
+        if (p == null) return;
+        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class,false);
+        if (vc != null) {
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+            try {
+                vc.getParent().removeExtensibilityElement(vc);
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
             }
         }
     }

@@ -94,7 +94,7 @@ public class SQDSyncMessageContextMenuTests  extends UMLTestCase {
     private String OK_BTN = "Ok";
     private String CANCEL_BTN = "Cancel";
     private String CONSTRUCTOR_NAME_DLG = "Constructor Name Change";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     /********************************************************/
     
     

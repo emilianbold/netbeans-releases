@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,12 +48,12 @@ import java.util.Map;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
-import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 
 import org.openide.DialogDescriptor;
@@ -68,16 +67,19 @@ import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
     
     private final ProjectCustomizer.Category category;
     private WebProject project;
     private WebProjectProperties uiProperties;
-    private List newExtenders = new LinkedList();
-    private List usedFrameworks = new LinkedList();
+    private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
+    private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
+    private boolean initialized = false;
     
     /** Creates new form CustomizerFrameworks */
     public CustomizerFrameworks(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
@@ -86,34 +88,48 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         initComponents();
         
         project = uiProperties.getProject();
-        initFrameworksList(project.getAPIWebModule());        
+        jListFrameworks.setModel(new DefaultListModel());
+        ((DefaultListModel) jListFrameworks.getModel()).addElement(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_CustomizerFrameworks_Loading"));
+        // do not load frameworks again but use list from uiProperties; list is being loaded in background thread:
+        uiProperties.getLoadingFrameworksTask().addTaskListener(new TaskListener() {
+            public void taskFinished(Task task) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initFrameworksList(project.getAPIWebModule());
+                    }
+                });
+            }
+        });
+        if (uiProperties.getLoadingFrameworksTask().isFinished()) {
+            initFrameworksList(project.getAPIWebModule());
+        }
     }
     
     private void initFrameworksList(WebModule webModule) {
-        String j2eeVersion = (String)uiProperties.get(WebProjectProperties.J2EE_PLATFORM);
-        String serverInstanceID = (String)uiProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        String j2eeVersion = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM);
+        String serverInstanceID = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         Properties properties = controller.getProperties();
         properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
         properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N
         
         jListFrameworks.setModel(new DefaultListModel());
-        List frameworks = WebFrameworks.getFrameworks();
-        for (int i = 0; i < frameworks.size(); i++) {
-            WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-            if (framework.isInWebModule(webModule)) {
+        for (WebFrameworkProvider framework : uiProperties.getCurrentFrameworks()) {
                 usedFrameworks.add(framework);
                 ((DefaultListModel) jListFrameworks.getModel()).addElement(framework.getName());
                 WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
                 extenders.put(framework, extender);
                 extender.addChangeListener(new ExtenderListener(extender));
-            }                
         }
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jListFrameworks.addListSelectionListener(this);
         if (usedFrameworks.size() > 0)
             jListFrameworks.setSelectedIndex(0);
         
-        if (frameworks.size() == jListFrameworks.getModel().getSize())
+        if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize())
             jButtonAdd.setEnabled(false);
     }
     
@@ -273,7 +289,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         String frameworkName = (String) jListFrameworks.getSelectedValue();
 	int selectedIndex = jListFrameworks.getSelectedIndex();
-	if (selectedIndex != -1) {	
+	if (selectedIndex != -1 && selectedIndex < usedFrameworks.size()) {	
 	    WebFrameworkProvider framework = (WebFrameworkProvider) usedFrameworks.get(selectedIndex);
 	    if (framework.getName().equals(frameworkName)) {
                 WebModuleExtender extender = extenders.get(framework);

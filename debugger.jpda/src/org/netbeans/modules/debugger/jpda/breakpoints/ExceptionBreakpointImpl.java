@@ -116,11 +116,19 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
         }
     }
 
+    public boolean processCondition(Event event) {
+        if (event instanceof ExceptionEvent) {
+            return processCondition(event, breakpoint.getCondition (),
+                    ((ExceptionEvent) event).thread(), null);
+        } else {
+            return true; // Empty condition, always satisfied.
+        }
+    }
+
     public boolean exec (Event event) {
         if (event instanceof ExceptionEvent)
             return perform (
                 event,
-                breakpoint.getCondition (),
                 ((ExceptionEvent) event).thread (),
                 ((ExceptionEvent) event).location().declaringType(),
                 ((ExceptionEvent) event).exception ()

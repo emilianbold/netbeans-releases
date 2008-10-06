@@ -55,9 +55,7 @@ import org.openide.util.NbBundle;
 public class DriverListUtil {
 
     private static List<JdbcUrl> urls = new LinkedList<JdbcUrl>();
-    
-    private static JdbcUrl jdbcurl;
-    
+        
     private static String getMessage(String key, String ... params) {
         return NbBundle.getMessage(DriverListUtil.class, key, params);
     }
@@ -72,11 +70,11 @@ public class DriverListUtil {
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate) {
-        urls.add(new JdbcUrl(name, driverClassName, type, urlTemplate));
+        urls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate));
     }
     
     private static void add(String name, String type, String driverClassName, String urlTemplate, boolean parseUrl) {
-        urls.add(new JdbcUrl(name, driverClassName, type, urlTemplate, parseUrl));
+        urls.add(new JdbcUrl(name, name, driverClassName, type, urlTemplate, parseUrl));
     }
         
     private  static void add(String name, String driverClassName, String urlTemplate) {
@@ -250,11 +248,11 @@ public class DriverListUtil {
         
         add(getMessage("DRIVERNAME_MySQL"),
                 "com.mysql.jdbc.Driver", 
-                "jdbc:mysql://[<HOST>[:<PORT>]]/[<DB>][?<ADDITIONAL>]", true); // NOI18N
+                "jdbc:mysql://[<HOST>[:<PORT>]]/<DB>[?<ADDITIONAL>]", true); // NOI18N
         
         add("MySQL (MM.MySQL driver)",
         "org.gjt.mm.mysql.Driver",
-        "jdbc:mysql://<HOST>[:<PORT>][/<DB>]");
+        "jdbc:mysql://<HOST>[:<PORT>]/<DB>");
         
         add(getMessage("DRIVERNAME_OracleThin"), 
                 getMessage("TYPE_SID"), "oracle.jdbc.OracleDriver", 
@@ -347,24 +345,36 @@ public class DriverListUtil {
     
     public static List<JdbcUrl> getJdbcUrls(JDBCDriver driver) {
         ArrayList<JdbcUrl> driverUrls = new ArrayList<JdbcUrl>();
+        JdbcUrl newurl = null;
+        
         for (JdbcUrl url : urls) {
             if (url.getClassName().equals(driver.getClassName())) {
-                url.setDriver(driver);
-                
-                // Clear out any properties that may be set
-                url.clear();
-                
-                driverUrls.add(url);
+                if (url.getDriver() == null) {
+                    url.setDriver(driver);
+                    // Clear out any properties that may be set
+                    url.clear();
+
+                    driverUrls.add(url);
+                } else {
+                    // We already have one driver registered for this class name.
+                    // This is a new driver for the same driver class.  That means
+                    // it should be on the list with its own entry, but with the
+                    // same URL tempate
+                    newurl = new JdbcUrl(driver, url.getUrlTemplate(), url.isParseUrl());
+                    driverUrls.add(newurl);
+                }
             }
         }
-        
-        if (driverUrls.isEmpty()) {
-            JdbcUrl url = new JdbcUrl(driver, null, "");
-            
-            add(url);
-            driverUrls.add(url);
+
+        // Have to do this out of the loop or we get a ConcurrentModificationException
+        if (newurl != null) {
+            add(newurl);
         }
-        
+
+        if (driverUrls.isEmpty()) {
+            driverUrls.add(new JdbcUrl(driver));
+        }
+
         return driverUrls;
     }
     

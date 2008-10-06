@@ -74,6 +74,7 @@ public class EntityResourceModelBuilder {
             try {
                 EntityClassInfo info = null;
                 JavaSource js = SourceGroupSupport.getJavaSourceFromClassName(entity.getClass2(), project);
+             
                 if (js != null) {
                     info = new EntityClassInfo(entity, project, this, js);
                 } else if (entity instanceof RuntimeJpaEntity) {

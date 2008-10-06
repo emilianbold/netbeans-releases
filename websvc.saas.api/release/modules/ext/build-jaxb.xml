@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${jaxb.base}/build"/>
         <mkdir dir="${jaxb.base}/src"/>
         <taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
-            <classpath path="${platform.home}/lib/tools.jar:${libs.jaxws21.classpath}"/>
+            <classpath path="${platform.home}/lib/tools.jar:${netbeans.dest.dir}/${nb.cluster.ide.dir}/modules/ext/jaxb/jaxb-xjc.jar:${libs.jaxb.classpath}"/>
         </taskdef>
     </target>
     
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="${jaxb.base}/build"/>
         <javac srcdir="${jaxb.base}/src" 
                destdir="${jaxb.base}/build" 
-               classpath="${platform.home}/lib/tools.jar:${libs.jaxws21.classpath}" 
+               classpath="${platform.home}/lib/tools.jar:${libs.jaxb.classpath}" 
                executable="${platform.javac}"
                debug="on" source="1.5" fork="true" verbose="true">               
         </javac>
@@ -97,7 +97,9 @@ made subject to such option by the copyright holder.
         </jar>
         
         <jar jarfile="${jaxb.base}/${jaxb.jar}"
-             basedir="${jaxb.base}/build"/>
+             basedir="${jaxb.base}/build">
+            <metainf dir="${jaxb.base}/.." includes="*.xsd"/>
+        </jar>
         
         <delete failonerror="false" dir="${jaxb.base}/build"/>
         <delete failonerror="false" dir="${jaxb.base}/src"/>

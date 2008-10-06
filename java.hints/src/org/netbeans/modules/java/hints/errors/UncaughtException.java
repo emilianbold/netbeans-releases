@@ -174,7 +174,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                     el = info.getTrees().getElement(path);
 		    
 		    //IZ 95535 -- dont't offer surround with T-C for fields
-		    if(!isInsideMethod(path))
+		    if(!isInsideMethodOrInitializer(path))
 			disableSurroundWithTryCatch = true;
 		    
 		    if(isThisParameter(path)) {
@@ -299,7 +299,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                         magic = ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
                     }
                     if(magic)
-                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, method != null ? ElementHandle.create(method) : null, fqns));
                 }
             }
         }
@@ -334,9 +334,10 @@ public final class UncaughtException implements ErrorRule<Void> {
 	return false;
     }
     
-    private static boolean isInsideMethod(TreePath tp) {
+    private static boolean isInsideMethodOrInitializer(TreePath tp) {
         while (tp != null) {
-            if (tp.getLeaf().getKind() == Kind.METHOD)
+            if (tp.getLeaf().getKind() == Kind.METHOD || 
+                    (tp.getLeaf().getKind() == Kind.BLOCK && tp.getParentPath().getLeaf().getKind() == Kind.CLASS))
                 return true;
             
             tp = tp.getParentPath();
@@ -344,7 +345,7 @@ public final class UncaughtException implements ErrorRule<Void> {
         
         return false;
     }
-    
+
     public void cancel() {
         //XXX: not done yet
     }

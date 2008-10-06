@@ -150,6 +150,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
         collectionTypeLabel = new javax.swing.JLabel();
         collectionTypeComboBox = new javax.swing.JComboBox();
 
+        setName(org.openide.util.NbBundle.getMessage(MappingOptionsPanel.class, "LBL_MappingOptions")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
         fetchLabel.setLabelFor(fetchComboBox);
@@ -257,6 +258,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 

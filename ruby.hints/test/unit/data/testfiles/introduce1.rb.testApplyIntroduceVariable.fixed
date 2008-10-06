@@ -8,8 +8,8 @@ class FooBar
   def good_method
     good_symbol = 50
     x = 50
-    myvar = 50+30
-    callmethod(callmethod2(myvar))
+    new_name = 50+30
+    callmethod(callmethod2(new_name))
     callmethod3(callmethod4(x+30))
     puts good_symbol
     a = 25

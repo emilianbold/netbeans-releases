@@ -50,14 +50,18 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.accessibility.AccessibleRole;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.Border;
@@ -71,9 +75,13 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeAction;
 import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
@@ -85,8 +93,12 @@ import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.SwitchableWidget.SwitchableViewManger;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerNode;
+import org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler;
 import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -102,7 +114,8 @@ public abstract class UMLNodeWidget extends Widget
     private static final int RESIZE_SIZE = 5;
     private boolean resizedManually=false;
     private boolean initialized;
-        
+    private boolean resizable = true;    
+    
     protected enum ButtonLocation {Left, op, Right, Bottom};
     public enum RESIZEMODE{PREFERREDBOUNDS,PREFERREDSIZE,MINIMUMSIZE};
     private static final String RESIZEMODEPROPERTY = "ResizeMode";
@@ -126,6 +139,19 @@ public abstract class UMLNodeWidget extends Widget
     public final String PSK_RESIZE_UNLESSMANUAL = "PSK_RESIZE_UNLESSMANUAL";
     public final String PSK_RESIZE_NEVER = "PSK_RESIZE_NEVER";   
     public final String VIEW_NAME = "ViewName";
+    
+    public static final String EXPAND_ALL = "ExpandAll";
+    public static final String COLLAPSE_ALL = "CollapseAll";
+    public static final String ATTRIBUTES_COMPARTMENT = "AttributesCompartment";
+    public static final String OPERATIONS_COMPARTMENT = "OperationsCompartment";
+    public static final String REDEFINED_ATTR_COMPARTMENT = "RedefinedAttrCompartment";
+    public static final String REDEFINED_OPER_COMPARTMENT = "RedefinedOperCompartment";
+    public static final String LITERALS_COMPARTMENT = "LiteralsCompartment";
+    public static final String LOCATION = "LOCATION";
+    public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
+    public static final String SIZE = "SIZE";
+    public static final String WIDGET_INDEX = "WIDGET_INDEX";
+    public static final String COLLAPSED = "COLLAPSED";
 
     
     public UMLNodeWidget(Scene scene)
@@ -142,7 +168,8 @@ public abstract class UMLNodeWidget extends Widget
         
         if (useDefaultNodeResource)
         {
-            childLayer = new CustomizableWidget(scene, getResourcePath(), "Default");
+            childLayer = new CustomizableNodeViewContainer(scene, getResourcePath(), 
+                                                           NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"));
 //            childLayer.setOpaque(true);
             childLayer.setForeground((Color) null);
             childLayer.setLayout(LayoutFactory.createOverlayLayout());
@@ -160,7 +187,11 @@ public abstract class UMLNodeWidget extends Widget
         
         localResourceTable = new ResourceTable(scene.getResourceTable());
         ResourceValue.initResources(getResourcePath(), childLayer);
+        if(childLayer.getFont()!=null)setFont(childLayer.getFont());//notify/set to handle possible changes, it's not possible to override or easy add handler to chld layer, so pass to main node layer
         
+        addToLookup(new ObjectSelectable());
+
+        setAccessibleContext(new UMLNodeWidgetAccessibleContext(this));
     }
     
     public ResizeStrategyProvider getResizeStrategyProvider()
@@ -290,6 +321,17 @@ public abstract class UMLNodeWidget extends Widget
         };
     }
     
+    
+    public void setResizable(boolean resizable)
+    {
+        this.resizable = resizable;
+    }
+    
+    public boolean isResizable()
+    {
+        return resizable;
+    }
+    
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
@@ -298,10 +340,14 @@ public abstract class UMLNodeWidget extends Widget
 
         if (select && !wasSelected)
         {
+            if (!isResizable())
+            {
+                setBorder(UMLWidget.NON_RESIZABLE_BORDER);
+                return;
+            }
             // Allow subclasses to change the resize strategy and provider.
             ResizeStrategyProvider stratProv=getResizeStrategyProvider();
-            //getActions().addAction(0, ActionFactory.createResizeAction(stratProv, stratProv));
-            getActions().addAction(0, new ResizeAction(stratProv));
+            createActions(DesignerTools.SELECT).addAction(0, new ResizeAction(stratProv));
             //setBorder(BorderFactory.createResizeBorder(RESIZE_SIZE));
             setBorder(new ResizeBorder(RESIZE_SIZE, Color.BLACK, getResizeControlPoints()));
             if (getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
@@ -334,11 +380,16 @@ public abstract class UMLNodeWidget extends Widget
         }
         else if (!select && wasSelected)
         {
+            if (!resizable)
+            {
+                setBorder(BorderFactory.createEmptyBorder());
+                return;
+            }
             //Do not have access to the class to recheck, will consider if was selected is here
             //TBD add some additional possibility to check
             //if(getActions().getActions().get(0) instanceof ResizeAction)
             {
-                getActions().removeAction(0);
+                createActions(DesignerTools.SELECT).removeAction(0);
                 setBorder(BorderFactory.createEmptyBorder());
                 if (lastResMode==lastResMode.PREFERREDBOUNDS)
                 {
@@ -382,6 +433,31 @@ public abstract class UMLNodeWidget extends Widget
     public void save(NodeWriter nodeWriter) {
         nodeWriter.getProperties().put(RESIZEMODEPROPERTY, getResizeMode().toString());
         setNodeWriterValues(nodeWriter, this);
+        //save the widet index for layering
+        int index = -1;
+        Widget parent = this.getParentWidget();
+        if (parent != null)
+        {
+            index = parent.getChildren().indexOf(this);
+        }
+        HashMap map = nodeWriter.getProperties();
+        map.put(WIDGET_INDEX, index);
+        
+        //save the "collapsed" state of compartments
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] collapWidetMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(collapWidetMgrs); 
+        for (CollapsibleWidgetManager mgr : collapWidetMgrs)
+        {
+            if (mgr.isCompartmentCollapsed())
+            {
+                String name = mgr.getCollapsibleCompartmentName();
+                map.put(name, COLLAPSED);
+            }            
+        }
+        
+        nodeWriter.setProperties(map);
+        
         nodeWriter.beginGraphNodeWithModelBridge();
         nodeWriter.beginContained();
         //write contained
@@ -465,9 +541,11 @@ public abstract class UMLNodeWidget extends Widget
     
     
     
-    protected IPresentationElement getObject()
+    public IPresentationElement getObject()
     {
-        return (IPresentationElement)scene.findObject(this);
+        if (pe == null)          
+            pe = (IPresentationElement)scene.findObject(this);
+        return pe;
     }
     
     public void load(NodeInfo nodeReader)
@@ -509,7 +587,7 @@ public abstract class UMLNodeWidget extends Widget
                 manager.switchViewTo(viewName);
             }
         }
-        //now process color/font properties
+        //now process color/font and other properties
         for (Enumeration<String> e = props.keys(); e.hasMoreElements(); ) {
             String key = e.nextElement();
             
@@ -523,8 +601,44 @@ public abstract class UMLNodeWidget extends Widget
                 Font font = parseFont(props.get(key));
                 this.getResourceTable().addProperty(key, font);
                 continue;
-            }           
+            }  
+            if (key.equalsIgnoreCase(WIDGET_INDEX))
+            {
+                String val = props.get(key);
+                int widgetIndex = Integer.parseInt(val);
+                if (widgetIndex >= 0) 
+                {
+                    Widget parent = this.getParentWidget();
+                    List<Widget> children = parent.getChildren();
+                    if (children != null && children.size() > 1  
+                            && children.indexOf(this) > widgetIndex) {
+                        this.removeFromParent();
+                        parent.addChild(widgetIndex, this);
+//                    scene.validate();
+                    }
+                }
+            }
         }
+        //now process collapsed compartments
+        if (props.containsValue(COLLAPSED)) 
+        {
+            Collection<? extends CollapsibleWidgetManager> mgrList = this.getLookup().lookupAll(CollapsibleWidgetManager.class);
+            for (Enumeration<String> e = props.keys(); e.hasMoreElements();) 
+            {
+                String key = e.nextElement();
+                if (props.get(key).equalsIgnoreCase(COLLAPSED)) 
+                {                    
+                    for (CollapsibleWidgetManager mgr : mgrList)
+                    {
+                        if (mgr != null && (mgr.getCollapsibleCompartmentName().equalsIgnoreCase(key)))
+                        {
+                            mgr.collapseWidget(key);
+                            break;
+                        }
+                    }
+                }
+            }
+        }        
     }
     
     private Color parseColor(String color)
@@ -621,7 +735,12 @@ public abstract class UMLNodeWidget extends Widget
                 {
                     if (nodeLabel.getPosition() != null)
                     {
-                        label.setPreferredLocation(nodeLabel.getPosition());
+                        if (label instanceof UMLLabelWidget)
+                        {
+                            ((UMLLabelWidget)label).addPersistenceProperty(LOCATION, nodeLabel.getPosition());
+                            ((UMLLabelWidget)label).addPersistenceProperty(SIZE, nodeLabel.getSize());
+                            label.setPreferredLocation(nodeLabel.getPosition());
+                        }
                     }
 //                if (nodeLabel.getSize() != null)
 //                {
@@ -629,7 +748,7 @@ public abstract class UMLNodeWidget extends Widget
 //                }
                     if (label instanceof UMLWidget)
                     {
-                        ((UMLWidget) label).refresh();
+                        ((UMLWidget) label).refresh(false);
                     }
                 }
             }
@@ -655,34 +774,91 @@ public abstract class UMLNodeWidget extends Widget
             PropertyChangeListener listener = (PropertyChangeListener) view;
             listener.propertyChange(event);
         }
-
+        
+        String propName = event.getPropertyName();
+        if(propName.equals(ModelElementChangedKind.ELEMENTADDEDTONAMESPACE.toString()))
+        {
+            // If a nested link is present, and it is not connected to the 
+            // correct owner, remove it.
+            
+            if (getScene() instanceof GraphScene)
+            {
+                IPresentationElement node = (IPresentationElement) scene.findObject(this);
+                INamedElement modelElement = (INamedElement) node.getFirstSubject();
+                
+                Collection < Object > inEdges = scene.findNodeEdges(node, false, true);
+                for(Object edge : inEdges)
+                {
+                    if (edge instanceof IPresentationElement)
+                    {
+                        IPresentationElement presentation = (IPresentationElement) edge;
+                        if("NestedLink".equals(presentation.getFirstSubjectsType()) == true)
+                        {
+                            IPresentationElement target = (IPresentationElement) scene.getEdgeSource(edge);
+                            if(target != null)
+                            {
+                                IElement subject = target.getFirstSubject();
+                                if(subject.equals(modelElement.getNamespace()) == false) 
+                                {
+                                    scene.removeEdge(edge);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     
     public void duplicate(boolean setBounds, Widget target)
     {
-        //todo
-//        if (target instanceof UMLNodeWidget)
-//        {
-//            ((UMLNodeWidget) target).setNodeBackground(getNodeBackground());
-//            ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
-//            ((UMLNodeWidget) target).setNodeFont(getNodeFont());
-
-            if (setBounds)
+        assert target instanceof UMLNodeWidget;
+        
+        ((UMLNodeWidget) target).setNodeBackground(getNodeBackground());
+        ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
+        ((UMLNodeWidget) target).setNodeFont(getNodeFont());
+        
+        
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] originalMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(originalMgrs); 
+        
+        mgrList = target.getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] clonedMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(clonedMgrs); 
+        
+        for (CollapsibleWidgetManager mgr : originalMgrs)
+        {
+            String name = mgr.getCollapsibleCompartmentName();
+            for (CollapsibleWidgetManager cloned : clonedMgrs)
             {
-                //target.setPreferredBounds(this.getBounds());
-                if(getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
+                if (name.equals(cloned.getCollapsibleCompartmentName()))
                 {
-                    target.setPreferredBounds(getPreferredBounds());
+                    if (mgr.isCompartmentCollapsed())
+                        cloned.collapseWidget(UMLNodeWidget.COLLAPSE_ALL);
+                    break;
                 }
-                else if(getResizeMode()==RESIZEMODE.PREFERREDSIZE)
-                {
-                    target.setPreferredSize(getPreferredSize());
-                }
-                else target.setMinimumSize(this.getMinimumSize());
-                if(target instanceof UMLNodeWidget)((UMLNodeWidget)target).setResizeMode(getResizeMode());
             }
-//        }
+        }
+        
+        if (setBounds)
+        {
+            Insets insets = getBorder().getInsets();
+            if(getResizeMode()==RESIZEMODE.PREFERREDBOUNDS)
+            {
+                target.setPreferredBounds(new Rectangle(
+                        getPreferredBounds().x + insets.left,  getPreferredBounds().y + insets.top,
+                        getPreferredBounds().width - insets.left - insets.right,
+                        getPreferredBounds().height - insets.top - insets.bottom));
+            }
+            else if(getResizeMode()==RESIZEMODE.PREFERREDSIZE)
+            {
+                target.setPreferredSize(getPreferredSize());
+            }
+            else target.setMinimumSize(this.getMinimumSize());
+            if(target instanceof UMLNodeWidget)((UMLNodeWidget)target).setResizeMode(getResizeMode());
+        }
     }
     
     @Override
@@ -690,7 +866,7 @@ public abstract class UMLNodeWidget extends Widget
     protected Cursor getCursorAt(Point location)
     {
         Border border = getBorder();
-        if (! (border instanceof ResizeBorder))
+        if (! (border instanceof ResizeBorder) || !resizable)
             return getCursor();
         
         Rectangle bounds = getBounds();
@@ -787,9 +963,8 @@ public abstract class UMLNodeWidget extends Widget
     }
 
     
-    public void refresh()
+    public void refresh(boolean resizetocontent)
     {
-        IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
         {
             //Rectangle bounds = getBounds();
@@ -800,36 +975,108 @@ public abstract class UMLNodeWidget extends Widget
             remove();
         }
         
+        if(resizetocontent)Util.resizeNodeToContents(this);
         scene.validate();
-        Util.resizeNodeToContents(this);
+        //Util.resizeNodeToContents(this);
     }
     
     public void remove()
     {
+        //Before we remove, we need see if this widget is contained in a container widget
+       UMLNodeWidget parent = PersistenceUtil.getParentUMLNodeWidget(this);
+        
         // remove all node object that are associated with child widget 
-        for (Object o : getAllChildren(new ArrayList<Object>(), this))
+        for (Object o : Util.getAllNodeChildren(this)) 
         {
-            if (scene.isNode(o))
+            if (scene.isNode(o)) 
+            {   
+                Widget childW = scene.findWidget(o);
+                Collection <Object> edges = scene.findNodeEdges (o, true, true);
+//                scene.removeNodeWithEdges(o);
+                
+                // Fixed iz #139489 and 148365
+                // find the entries that attached to the edges of the removed node
+                // and delete these entries from both source and target nodes
+               for (Object edge : edges)
+               {
+                    if (scene.isEdge (edge))
+                    {
+                        Widget edgeWidget = scene.findWidget(edge);
+                        if (edgeWidget instanceof ConnectionWidget)
+                        {
+                            ConnectionWidget connectionW = (ConnectionWidget) edgeWidget;
+                            Widget sourceWidget = connectionW.getSourceAnchor().getRelatedWidget();
+                            Widget targetWidget = connectionW.getTargetAnchor().getRelatedWidget();
+                            
+                            if (sourceWidget != null && sourceWidget instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget)sourceWidget).removeAttachedEntries(connectionW);
+                            }
+                             if (targetWidget != null && targetWidget instanceof UMLNodeWidget)
+                            {
+                                ((UMLNodeWidget)targetWidget).removeAttachedEntries(connectionW);
+                            }
+                        }
+                    }
+               }
+               // remove the node and its input an output edges
                 scene.removeNodeWithEdges(o);
+            }
+        } 
+        //notify the container
+        if (parent != null && parent instanceof ContainerNode) {
+            parent.notifyElementDeleted();
         }
-            
     }
     
-    private List<Object> getAllChildren(List<Object> list, Widget widget)         
+    public void removeAttachedEntries (ConnectionWidget connectionWidget) 
     {
-        for (Widget child : widget.getChildren())
+        if (connectionWidget != null)
         {
-          Object pe = scene.findObject(widget);
-          if (scene.isNode(pe))
-          {
-              list.add(pe);
-          }
-          list = getAllChildren(list, child);
+            Collection<Widget.Dependency> deps = this.getDependencies();
+            ArrayList<Anchor.Entry> removedEntryList=new ArrayList<Anchor.Entry>();
+            if (deps.size() > 0)
+            {
+                Widget.Dependency[] depArray = new Widget.Dependency[deps.size()];
+                deps.toArray(depArray);
+
+                for(Widget.Dependency dep: depArray)
+                {
+                    if (dep instanceof Anchor)
+                    {
+                        Anchor anchor = ((Anchor) dep);
+                        List<Anchor.Entry> entries = anchor.getEntries();
+                        if (entries != null && entries.size() > 0)
+                        {
+                            // find the entry(ies) attached to this ConectionWidget
+                            // and save them to a list of entries to be removed.
+                            for (Anchor.Entry entry : entries)
+                            {
+                                ConnectionWidget connectionW = entry.getAttachedConnectionWidget();
+                            
+                                if (connectionWidget.equals(connectionW) || 
+                                        connectionWidget == connectionW)
+                                {
+                                    removedEntryList.add(entry);
+                                }
+                            }
+                            // removed all the entries attached to this connection widget
+                            if (removedEntryList.size() > 0)
+                            {
+                                anchor.removeEntries(removedEntryList);
+                            }
+                        }
+                    }
+                }
+            }
         }
-        return list;
     }
     
-   
+    protected void notifyElementDeleted()
+    {
+        //Interested subclasses need to implement the logic
+    }
+    
     protected String getResourcePath()
     {
         return getWidgetID() + "." + DEFAULT;
@@ -903,56 +1150,91 @@ public abstract class UMLNodeWidget extends Widget
     public void updateSizeWithOptions()
     {
         //resize only for already loaded/initialized nodes
-            if(isInitialized())new AfterValidationExecutor(new ActionProvider() {
-                public void perfomeAction() {
-                String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
-                if(handeNeverCases())
-                {
-                    //handled
+         //separate from event dispatch thread, resizing is often called from events handler or different actions
+            new Thread()
+            {
+            @Override
+                public void run() {
+               try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                            updateSize1();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+           }
+        }.start();
+    }
+    
+    private void updateSize1()
+    {
+        if(isInitialized())
+        {
+            new AfterValidationExecutor(new ActionProvider() {
+                public void perfomeAction() 
                 {
-                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                    setPreferredBounds(null);
-                    setPreferredSize(null);
-                    setMinimumSize(null);
-                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                    {
-                        case MINIMUMSIZE:
-                            setMinimumSize(getBounds().getSize());
-                            break;
-//                        case PREFERREDBOUNDS:
-//                            setPreferredBounds(new Rectangle(new Point(),getBounds().getSize()));
-//                            break;
-//                        case PREFERREDSIZE:
-//                            setPreferredSize(getBounds().getSize());
-//                            break;
-                    }
+                    updateSize2();
                 }
-                else if(PSK_RESIZE_ASNEEDED.equals(resOption))
-                {
-                    setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
-                    setPreferredBounds(null);
-                    setPreferredSize(null);
-                    setMinimumSize(null);
-                    switch(getResizeMode())//get mode, it may be different from one we attempt to set
-                    {
-                        case MINIMUMSIZE:
-                            setMinimumSize(getDefaultMinimumSize());
-                            break;
-//                        case PREFERREDBOUNDS:
-//                            setPreferredBounds(new Rectangle(new Point(),getDefaultMinimumSize()));
-//                            break;
-//                        case PREFERREDSIZE:
-//                            setPreferredSize(getPreferredSize());
-//                            break;
-                    }
-                }
-                         }
-                    }, getScene());
+            }, getScene());
             revalidate();
             getScene().validate();
-   }
+        }
+    }
+    
+    private void updateSize2()
+    {
+            new Thread()
+            {
+            @Override
+                public void run() {
+               try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        public void run() {
+                    String resOption=NbPreferences.forModule(DummyCorePreference.class).get("UML_Automatically_Size_Elements", PSK_RESIZE_ASNEEDED);
+                    if(handeNeverCases())
+                    {
+                        //handled
+                    }
+                    else if(PSK_RESIZE_EXPANDONLY.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                        {
+                            case MINIMUMSIZE:
+                                setMinimumSize(getBounds().getSize());
+                                break;
+                        }
+                    }
+                    else if(PSK_RESIZE_ASNEEDED.equals(resOption))
+                    {
+                        setResizeMode(UMLNodeWidget.RESIZEMODE.MINIMUMSIZE);
+                        setPreferredBounds(null);
+                        setPreferredSize(null);
+                        setMinimumSize(null);
+                        switch(getResizeMode())//get mode, it may be different from one we attempt to set
+                        {
+                            case MINIMUMSIZE:
+                                setMinimumSize(getDefaultMinimumSize());
+                                break;
+                        }
+                    }
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+           }
+        }.start();
+    }
     
     protected void handleNeverAfterValidation()
     {
@@ -979,4 +1261,45 @@ public abstract class UMLNodeWidget extends Widget
         }
         return false;
     }
+
+    @Override
+    protected void notifyFontChanged(Font font) {
+        super.notifyFontChanged(font);
+        //default is to find name widget and set font
+        //may need to be overriden for perfomance reasons or umlnodewidget need api to provide name access
+        if(getCurrentView()!=null)
+        {
+            NameFontHandler nw=findNameWidget(getCurrentView());
+            if(nw!=null && font!=null)nw.setNameFont(font);//check for null, but if it's null most likely overriding is required
+        }
+        revalidate();//usually  font changes require relayout because of changes in text sizes
+    }
+    protected NameFontHandler findNameWidget(Widget level) {
+        for(Widget w:level.getChildren())
+        {
+            if(w instanceof NameFontHandler)return (NameFontHandler) w;
+            else if(w.getChildren().size()>0)return findNameWidget(w);
+        }
+        return null;
+    }
+
+    ///////////// 
+    // Accessible
+    /////////////
+
+
+    public class UMLNodeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLNodeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return AccessibleRole.PANEL;
+        }
+        
+    }
+
+
 }

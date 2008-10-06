@@ -60,6 +60,7 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
+import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -85,13 +86,13 @@ public class DesignPatternWidget extends UMLNodeWidget
     private UMLNameWidget nameWidget = null;
     private TemplateWidget parameterWidget = null;
     private TemplateContainerWidget parameterContainerWidget = null;
-    private CustomizableWidget bodyWidget = null;
+    private DesignPatternBodyWidget bodyWidget = null;
     private String bodyWidgetID = "DesignPatternWidgetBody";
     private String parameterContainerWidgetID = "DesignPatternParameterContainerWidget";
 
     public DesignPatternWidget(Scene scene)
     {
-        super(scene);        
+        super(scene,true);        
         addToLookup(initializeContextPalette());
     }
     
@@ -106,9 +107,24 @@ public class DesignPatternWidget extends UMLNodeWidget
     {
         ICollaboration c = (ICollaboration) presentation.getFirstSubject();
         setCurrentView(createView(c));
+        setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
         getScene().validate();
     }
 
+    @Override
+    public void initializeNode(IPresentationElement presentation, boolean show) {
+        //isShowWidget=show;
+        if(show)
+        {
+            ICollaboration c = (ICollaboration) presentation.getFirstSubject();
+            IParameterableElement parameter = (IParameterableElement) FactoryRetriever.instance()
+                .createType("ParameterableElement", null); // NOI18N
+            c.addTemplateParameter(parameter);
+        }
+        initializeNode(presentation);
+    }
+    
     private DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
@@ -136,7 +152,8 @@ public class DesignPatternWidget extends UMLNodeWidget
 
         bodyWidget.addChild(nameWidget);
         
-        Widget retVal = bodyWidget;
+        Widget retVal = new Widget(getScene());
+        retVal.addChild(bodyWidget);
         
         if (element instanceof IClassifier) 
         {
@@ -158,30 +175,15 @@ public class DesignPatternWidget extends UMLNodeWidget
                 parameterContainerWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
 
 
-                retVal = new Widget(getScene());
                 retVal.setLayout(new TemplateWidgetLayout());
                 retVal.setBackground((Paint)null);
 
-                addChild(retVal);
-                retVal.addChild(bodyWidget);
                 retVal.addChild(parameterContainerWidget);
                 parameterContainerWidget.addChild(parameterWidget);
 
-                if (getGraphics() != null)
-                { 
-                    if (parameterWidget.getBounds() == null) 
-                    {
-                        parameterWidget.resolveBounds(null, null);
-                    }
-                    if (parameterContainerWidget.getBounds() == null) 
-                    {
-                        parameterContainerWidget.resolveBounds(null, null);
-                    }
-                }
             }
         }
         setMinSize();
-
         return retVal;
     }
 
@@ -376,11 +378,11 @@ public class DesignPatternWidget extends UMLNodeWidget
         }
     }
 
-    public class DesignPatternBodyWidget extends CustomizableWidget {
+    public class DesignPatternBodyWidget extends Widget {
 
         public DesignPatternBodyWidget(Scene scene, String id, String name)
         {
-            super(scene, id, name);
+            super(scene);
         }
         
         protected void paintBorder()
@@ -410,7 +412,7 @@ public class DesignPatternWidget extends UMLNodeWidget
                 float midX = bounds.width / 2;
                 
                 Color bgColor = (Color)bg;
-                GradientPaint paint = new GradientPaint(midX, 0, LIGHT_FILL_COLOR,
+                GradientPaint paint = new GradientPaint(midX, 0, Color.WHITE,
                                                         midX, bounds.height, 
                                                         bgColor);
                 g.setPaint(paint);

@@ -41,7 +41,6 @@
 package org.netbeans.modules.websvc.saas.codegen.ui;
 
 import org.netbeans.modules.websvc.saas.codegen.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
@@ -54,9 +53,6 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -119,27 +115,9 @@ public class CustomClientEditorDrop implements ActiveEditorDrop {
                     CustomClientSaasBean bean = (CustomClientSaasBean) codegen.getBean();
                     List<ParameterInfo> allParams = bean.filterParametersByAuth(
                             bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-                    if(!allParams.isEmpty()) {
-                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
-           
-                        DialogDescriptor desc = new DialogDescriptor(panel, 
-                                NbBundle.getMessage(CustomClientEditorDrop.class,
-                                "LBL_CustomizeSaasService", displayName));
-                        Object response = DialogDisplayer.getDefault().notify(desc);
-
-                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
-                            // cancel
-                            return;
-                        }
-                    }
-
-                    try {
-                        codegen.initProgressReporting(dialog.getProgressHandle());
-                        codegen.generate();
-                    } catch(IOException ex) {
-                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
-                            errors.add(ex);
-                    }
+                    boolean response = Util.showDialog(displayName, allParams, targetDoc);
+                    if(response)
+                        Util.doGenerateCode(codegen, dialog, errors);
                 } catch (Exception ioe) {
                     errors.add(ioe);
                 } finally {

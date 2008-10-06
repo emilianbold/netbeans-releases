@@ -9,7 +9,7 @@
     <folder name="Templates">
         <folder name="Project">
             <folder name="J2ME">
-                <file name="CustomComponentProject.zip" url="nbresloc:/org/netbeans/modules/vmd/componentssupport/templates/CustomComponentProject.zip">
+                <file name="CustomComponentProject">
                     <attr name="position" intvalue="900"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/vmd/componentssupport/ui/resources/module.png"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.componentssupport.Bundle"/>
@@ -39,6 +39,9 @@
             <file name="libdescriptemplate.xml" url="templates/libdescriptemplate.xml"/>
             <file name="CustomComponentCD.java" url="templates/CustomComponentCD.template"/>
             <file name="CustomComponentProducer.java" url="templates/CustomComponentProducer.template"/>
+            <file name="CustomComponentProject_standalone.zip" url="templates/CustomComponentProject_standalone.zip"/>
+            <file name="CustomComponentProject_netbeansorg.zip" url="templates/CustomComponentProject_netbeansorg.zip"/>
+            <file name="CustomComponentProject_suitecomponent.zip" url="templates/CustomComponentProject_suitecomponent.zip"/>
             <file name="layer.xml" url="templates/layer.xml"/>
         </folder>
     </folder>

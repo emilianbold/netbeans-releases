@@ -402,6 +402,12 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             if (tm.getKind().isPrimitive() || tm.getKind() == TypeKind.DECLARED && ((DeclaredType)tm).asElement().getKind() == ElementKind.ENUM) {
                 //if (this.<var> != other.<var>) return false;                
                 statements.add(make.If(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.MemberSelect(make.Identifier("other"), ve.getSimpleName())), make.Return(make.Identifier("false")), null)); //NOI18N
+            } else if (tm.getKind().equals(TypeKind.DECLARED) && ((DeclaredType)tm).asElement().getKind().isClass() && ((TypeElement) ((DeclaredType) tm).asElement()).getQualifiedName().contentEquals("java.lang.String")) {
+                //if ((this.<var> == null) ? (other.<var> != null) : !this.<var>.equals(other.<var>)) return false;
+                ExpressionTree exp1 = make.Parenthesized(make.Binary(Tree.Kind.EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier("null"))); //NOI18N
+                ExpressionTree exp2 = make.Parenthesized(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("other"), ve.getSimpleName()), make.Identifier("null"))); //NOI18N
+                ExpressionTree exp3 = make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), "equals"), Collections.singletonList(make.MemberSelect(make.Identifier("other"), ve.getSimpleName())))); //NOI18N
+                statements.add(make.If(make.ConditionalExpression(exp1, exp2, exp3), make.Return(make.Identifier("false")), null)); //NOI18N
             } else {
                 //if (this.<var> != other.<var> && (this.<var> == null || !this.<var>.equals(other.<var>))) return false;                
                 ExpressionTree exp1 = make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.MemberSelect(make.Identifier("other"), ve.getSimpleName())); //NOI18N

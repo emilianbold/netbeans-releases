@@ -248,6 +248,8 @@ public class ETable extends JTable {
      */
     private boolean popupUsedFromTheCorner;
     
+    private boolean columnHidingAllowed = true;
+    
     /**
      * Constructs a default <code>JTable</code> that is initialized with a default
      * data model, a default column model, and a default selection
@@ -421,7 +423,7 @@ public class ETable extends JTable {
      * @param   fullyEditable   true if the table is meant to be fully editable.
      *                          false if the table is meant to take the defalut
      *                          state for editing.
-     * @see #getFullyEditable()
+     * @see #isFullyEditable()
      */
     public void setFullyEditable(boolean fullyEditable) {
         if (fullyEditable) {
@@ -458,10 +460,10 @@ public class ETable extends JTable {
      * If <code>fullyNonEditable</code> is false, sets the table cells into
      * their default state as in <code>JTable</code>.
      *
-     * @param   fullyEditable   true if the table is meant to be fully non-editable.
+     * @param fullyNonEditable  true if the table is meant to be fully non-editable.
      *                          false if the table is meant to take the defalut
      *                          state for editing.
-     * @see #getFullyNonEditable
+     * @see #isFullyNonEditable
      */
     public void setFullyNonEditable(boolean fullyNonEditable) {
         if (fullyNonEditable) {
@@ -632,7 +634,12 @@ public class ETable extends JTable {
      */
     @Override
     public Object getValueAt(int row, int column) {
-        int modelRow = convertRowIndexToModel(row);
+        int modelRow = row;
+        //#144502: in 1.6 JTable adds method convertRowIndexToModel which is called in
+        //its getValueAt, otherwise we have translate the index
+        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N //NOI18N
+            modelRow = convertRowIndexToModel(row);
+        }
         return super.getValueAt(modelRow, column);
     }
 
@@ -729,6 +736,25 @@ public class ETable extends JTable {
             return super.getToolTipText(event);
         } finally {
             putClientProperty(COMPUTING_TOOLTIP, Boolean.FALSE);
+        }
+    }
+    
+    /**
+     * 
+     * @return True if column hiding is allowed.
+     */
+    public boolean isColumnHidingAllowed() {
+        return columnHidingAllowed;
+    }
+    
+    /**
+     * Turn column hiding on/off
+     * @param allowColumnHiding false to turn column hiding off
+     */
+    public void setColumnHidingAllowed( boolean allowColumnHiding ) {
+        if( allowColumnHiding != this.columnHidingAllowed ) {
+            this.columnHidingAllowed = allowColumnHiding;
+            configureEnclosingScrollPane();
         }
     }
     
@@ -884,27 +910,33 @@ public class ETable extends JTable {
                 if (viewport == null || viewport.getView() != this) {
                     return;
                 }
-                Icon ii = UIManager.getIcon("Table.columnSelection");
-                if (ii == null) {
-                    ii = new ImageIcon(ETable.class.getResource(DEFAULT_COLUMNS_ICON));
-                }
-                final JButton b = new JButton(ii);
-                b.setToolTipText(selectVisibleColumnsLabel);
-                b.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
+                if( isColumnHidingAllowed() ) {
+                    Icon ii = UIManager.getIcon("Table.columnSelection");
+                    if (ii == null) {
+                        ii = new ImageIcon(ETable.class.getResource(DEFAULT_COLUMNS_ICON));
                     }
-                });
-                b.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                        if (me.getButton() == MouseEvent.BUTTON3) {
-                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                    final JButton b = new JButton(ii);
+                    b.setToolTipText(selectVisibleColumnsLabel);
+                    b.getAccessibleContext().setAccessibleName(selectVisibleColumnsLabel);
+                    b.getAccessibleContext().setAccessibleDescription(selectVisibleColumnsLabel);
+                    b.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent evt) {
+                            ColumnSelectionPanel.showColumnSelectionPopup(b, ETable.this);
                         }
-                    }
-                });
+                    });
+                    b.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent me) {
+                            if (me.getButton() == MouseEvent.BUTTON3) {
+                            ColumnSelectionPanel.showColumnSelectionDialog(ETable.this);
+                            }
+                        }
+                    });
                 b.setFocusable(false);
-                scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, b);
+                    scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, b);
+                } else {
+                    scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, null);
+                }
             }
         }
         updateColumnSelectionMouseListener();

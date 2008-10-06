@@ -108,7 +108,7 @@ public class FileCommandActionTest extends NbTestCase {
         return true;
     }
     
-    public void testCommandEnablement() {
+    public void testCommandEnablement() throws Exception {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup();
         FileCommandAction action = new FileCommandAction( "COMMAND", "TestFileCommandAction", (Icon)null, lookup );
         

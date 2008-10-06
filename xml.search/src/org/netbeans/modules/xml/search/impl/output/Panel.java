@@ -50,7 +50,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.print.api.PrintManager;
+import org.netbeans.api.print.PrintManager;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -152,7 +152,7 @@ final class Panel extends JPanel {
     toolBar.add(button);
 
     // vlv: print
-    button = createButton(PrintManager.printPreviewAction());
+    button = createButton(PrintManager.printAction(this));
     toolBar.add(button);
 
     // export

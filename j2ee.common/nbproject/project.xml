@@ -329,7 +329,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.6</specification-version>
+                        <specification-version>7.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -402,6 +402,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
+                <package>org.netbeans.modules.j2ee.common.project</package>
                 <package>org.netbeans.modules.j2ee.common.project.classpath</package>
                 <package>org.netbeans.modules.j2ee.common.project.ui</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>

@@ -72,7 +72,7 @@ public class CLD_InterfaceElementTests extends ClassDiagramTestCase {
 
     private static String prName = "UMLProjectForInterface";
     private static String dpdName = "ClassDiagramForInterface";
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

@@ -208,7 +208,7 @@ public class MappingStrategy {
 						(count > 1) || hasFieldsToUnmap)
 					{
 						return I18NHelper.getMessage(getMessages(),
-							"table.all_mapping_lost");				// NOI8N
+							"table.all_mapping_lost");				// NOI18N
 					}
 				}
 				// removed secondary table(s) with fields mapped to it (them)
@@ -219,14 +219,14 @@ public class MappingStrategy {
 					if (hasSchemaChange)
 					{
 						return I18NHelper.getMessage(getMessages(),
-							"table.secondary_mapping_lost");	// NOI8N
+							"table.secondary_mapping_lost");	// NOI18N
 					}
 					else if (hasFieldsToUnmap)
 					{
 						return I18NHelper.getMessage(getMessages(), 
 							((count == 1) ?
-							"table.fields_mapping_lost_one" : // NOI8N
-							"table.fields_mapping_lost_many")); // NOI8N
+							"table.fields_mapping_lost_one" : // NOI18N
+							"table.fields_mapping_lost_many")); // NOI18N
 					}
 				}
 			}
@@ -250,7 +250,7 @@ public class MappingStrategy {
                 if (fieldState.hasInvalidMapping())
                 {
                     return I18NHelper.getMessage(getMessages(),
-                        "table.relationship_mapping_lost"); // NOI8N
+                        "table.relationship_mapping_lost"); // NOI18N
                 }
             }
         }

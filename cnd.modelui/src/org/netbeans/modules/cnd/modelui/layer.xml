@@ -68,6 +68,10 @@ Contributor(s):
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getTestReparseAction"/>
                 <attr name="position" intvalue="1600"/>
             </file>
+            <file name="TestErrorHighlightingAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestErrorHighlightingAction.getInstance"/>
+                <attr name="position" intvalue="1700"/>
+            </file>
         </folder>
         <folder name="Menu">
             <file name="org.netbeans.modules.cnd.modelui.switcher.CodeAssistanceSubmenuAction.shadow">

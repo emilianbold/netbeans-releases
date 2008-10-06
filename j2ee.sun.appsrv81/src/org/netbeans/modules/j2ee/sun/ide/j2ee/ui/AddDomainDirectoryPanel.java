@@ -43,8 +43,6 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 import java.awt.Component;
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -89,91 +87,73 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
     
     public HelpCtx getHelp() {
         if (creatingPersonalInstance)
-            return new HelpCtx("AS_RegServ_EnterPIDir"); //NOI18N
+            return new HelpCtx("AS_RegServ_EnterPIDir");  //NOI18N
         else 
-            return new HelpCtx("AS_RegServ_EnterDomainDir");
+            return new HelpCtx("AS_RegServ_EnterDomainDir");  //NOI18N
     }
         
     /** Is the directory usable.
      *
      * see Util.rootOfUsableDomain(File)
-     * 
      */
     public boolean isValid() {
         if (null == wiz) {
             return false;
         }
-        File domainDir = new File(((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory());
+        
+        String domainDirStr = component.getInstanceDirectory().trim();
+        
+        if (domainDirStr.length() < 1) {
+            setInfoMsg("Msg_EnterSomeDomainDir");  //NOI18N
+            return false;
+        }
+        
+        File domainDir = new File(domainDirStr);
         if (!domainDir.isAbsolute()) {
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                    "Msg_EneterValidDomainDir",                                 //NOI18N
-                    ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
-            ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");
+            setErrorMsg("Msg_EneterValidDomainDir");  //NOI18N
+            component.setAdminPort("");  //NOI18N
             return false;                
         }
+        
         if (!creatingPersonalInstance) {
-            if (((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory().length() < 1) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_EneterValidDomainDir",                                 //NOI18N
-                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
-                ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");
+            if (domainDirStr.length() < 1) {
+                setErrorMsg("Msg_EneterValidDomainDir");  //NOI18N
+                component.setAdminPort("");  //NOI18N
                 return false;                
             }
             String mess = Util.rootOfUsableDomain(domainDir);
             if (null != mess) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        mess);
-                ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort("");                                     // NOI18N
+                setErrorMsgLiteral(mess);
+                component.setAdminPort("");  //NOI18N
                 return false;
             }
             Util.fillDescriptorFromDomainXml(wiz, domainDir);
             String port = (String)wiz.getProperty(AddDomainWizardIterator.PORT);
-            ((AddInstanceVisualDirectoryPanel)getComponent()).setAdminPort(port);
+            component.setAdminPort(port);
             if ("".equals(port)) {                                              // NOI18N
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_UnsupportedDomain",                                 //NOI18N
-                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));   
+                setErrorMsg("Msg_UnsupportedDomain");  //NOI18N
                 return false;
             }
             return true;
         } else {
             File parent = domainDir.getParentFile();
             if (domainDir.exists()) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_ExistingDomainDir",                                //NOI18N
-                        domainDir.getAbsolutePath()));
+                setErrorMsg("Msg_ExistingDomainDir", domainDir.getAbsolutePath());  //NOI18N
                 return false;                
             }
             if (null == parent) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_InValidDomainDir",                                 //NOI18N
-                        ((AddInstanceVisualDirectoryPanel)getComponent()).getInstanceDirectory()));
+                setErrorMsg("Msg_InValidDomainDir", domainDirStr);  //NOI18N
                 return false;
             }
-            if (!parent.exists()) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_InValidDomainDirParent",                           //NOI18N
-                        parent.getAbsolutePath()));
-                return false;
-            }
-            if (!Utils.canWrite(parent)) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_InValidDomainDirParent",                                 //NOI18N
-                        parent.getAbsolutePath()));
+            if (!parent.exists() || !Utils.canWrite(parent)) {
+                setErrorMsg("Msg_InValidDomainDirParent", parent.getAbsolutePath());  //NOI18N
                 return false;
             }
             String path = domainDir.getAbsolutePath();
             byte bytes[] = path.getBytes();
             byte utf8[] = bytes;
             try {
-                utf8 = path.getBytes("UTF-8");
+                utf8 = path.getBytes("UTF-8");  //NOI18N
             } catch (java.io.UnsupportedEncodingException uee) {
                 // if we get to here... creating a domain will be the least
                 // of the users worries.  A Java VM has to support UTF-8 encoding.
@@ -181,23 +161,41 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
                         null, uee);
             }
             if (bytes.length != utf8.length) {
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainDirectoryPanel.class,
-                        "Msg_Utf8Required"));                                 //NOI18N
+                setErrorMsg("Msg_Utf8Required");  //NOI18N
                 return false;
             }
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,domainDir.getName());
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN, domainDir.getName());
             wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,
                     domainDir.getParentFile().getAbsolutePath());
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+            wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
             return true;
         }
     }
     
+    private void setErrorMsgLiteral(String msg) {
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+    }
+
+    private void setErrorMsg(String msg) {
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(AddDomainDirectoryPanel.class, msg));
+    }
+
+    private void setErrorMsg(String msg, Object arg1) {
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(AddDomainDirectoryPanel.class, msg, arg1));
+    }
+    
+    private void setInfoMsg(String msg) {
+        wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                NbBundle.getMessage(AddDomainDirectoryPanel.class, msg));
+    }
+    
     // Event handling
     //
-    private final Set/*<ChangeListener>*/ listeners = 
-            new HashSet/*<ChangeListener>*/(1);
+    private final Set<ChangeListener> listeners = 
+            new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -209,13 +207,13 @@ class AddDomainDirectoryPanel implements WizardDescriptor.FinishablePanel,
         }
     }
     protected final void fireChangeEvent() {
-        Iterator/*<ChangeListener>*/ it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet/*<ChangeListener>*/(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.xml.catalog;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -52,16 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JFileChooser;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import org.netbeans.modules.xml.catalog.spi.CatalogWriter;
-import org.openide.actions.CopyAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.RenameAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -72,18 +64,9 @@ import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -154,6 +137,10 @@ public class CatalogPanel extends TopComponent implements ExplorerManager.Provid
                 int i = 0;
                 while (res && i < nodes.length) {
                     Node n = nodes [i++];
+                    if(n instanceof CatalogNode && ((CatalogNode)n).isRemovable()) {
+                        res = true;
+                        break;
+                    }                    
                     Object node = n.getCookie(CatalogEntryNode.class);
                     res = node instanceof CatalogEntryNode && ((CatalogEntryNode)node).isCatalogWriter();
                 }

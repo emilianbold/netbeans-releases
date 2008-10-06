@@ -87,6 +87,23 @@ public class ActivityEdgeLabelManager extends BasicUMLLabelManager
         return retVal;
     }
 
+    public void createInitialLabels()
+    {
+        super.createInitialLabels();
+        
+        IElement pElement = getModelElement();
+
+        IActivityEdge pActivityEdge = pElement instanceof IActivityEdge ? (IActivityEdge) pElement : null;
+        if (pActivityEdge != null)
+        {
+            IValueSpecification pGuard = pActivityEdge.getGuard();
+            if(pGuard != null)
+            {
+                showLabel(GUARD_CONDITION);
+            }
+        }
+    }
+    
     public Widget createGuardLabel()
     {
         Widget retVal = null;
@@ -216,7 +233,7 @@ public class ActivityEdgeLabelManager extends BasicUMLLabelManager
                                                                                    labelType,
                                                                                    bundle.getString(messageKey));
             visible =  isVisible(NAME, type);
-            messageKey = visible ? "LBL_HIDE_ACTIVITYEDGE_NAME" : "LBL_SHOW_ACTIVITYEDGE_NAME";
+            messageKey = visible ? "LBL_HIDE_EDGE_NAME" : "LBL_SHOW_EDGE_NAME";
             ToggleLabelAction showHideNameAction = new ToggleLabelAction(this,
                                                                          NAME,
                                                                          labelType,

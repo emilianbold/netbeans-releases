@@ -99,7 +99,7 @@ public abstract class DiagramLayout extends UMLTestCase {
     private Node lastDiagramNode=null;
     private String lastTestCase=null;
     private JTreeOperator prTree=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private static long elCount=0;
 
     private static ElementTypes centerElement=null;

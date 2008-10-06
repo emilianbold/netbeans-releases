@@ -39,15 +39,12 @@
 package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.util.Utils;
-import org.netbeans.modules.db.mysql.actions.AdministerAction;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils.ConnectStatus;
+import org.netbeans.modules.db.mysql.impl.StopManager;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -81,13 +78,15 @@ public class StopAction extends CookieAction {
         }
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-        
-        return server != null && server.isConnected();
+
+        // Don't be too picky about when to enable stop, as we really don't have
+        // 100% certainty about what exactly is up with the server
+        return server != null && !StopManager.getDefault().isStopRequested();
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        final DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         String path = server.getStopPath();
         String message = Utils.getMessage(
                 "MSG_NoStopPath");
@@ -104,16 +103,10 @@ public class StopAction extends CookieAction {
                 return;
             }
             
-            path = server.getAdminPath();
+            path = server.getStopPath();
         }
 
-        try {
-            server.stop();                
-        } catch ( DatabaseException dbe ) {
-            Utils.displayError(Utils.getMessage(
-                        "MSG_UnableToStopServer"), 
-                    dbe);
-        }
+            StopManager.getDefault().stop(server);
     }
     
     @Override

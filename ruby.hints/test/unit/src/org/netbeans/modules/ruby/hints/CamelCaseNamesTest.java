@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.List;
+import org.netbeans.modules.ruby.hints.infrastructure.RubyAstRule;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -54,14 +55,31 @@ public class CamelCaseNamesTest extends HintTestBase {
         super(testName);
     }
 
-    public void testHint1() throws Exception {
-        checkHints(this, new CamelCaseNames(), "testfiles/camelcasenames.rb", null);
+    private RubyAstRule createRule() {
+        return new CamelCaseNames();
+    }
+
+    public void testRegistered() throws Exception {
+        ensureRegistered(createRule());
     }
     
+    public void testHint1() throws Exception {
+        checkHints(this, createRule(), "testfiles/camelcasenames.rb", null);
+    }
+
+    public void testHint2() throws Exception {
+        checkHints(this, createRule(), "testfiles/nb_descriptions.rb", null);
+    }
+
+    public void testFix1() throws Exception {
+        String caretLine = "argL^ist = \"(pattern)\";";
+        applyHint(this, createRule(), "testfiles/nb_descriptions.rb", caretLine, "arg_list");
+    }
+
     public void testCamelCase() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {
-            findHints(this, new CamelCaseNames(), f, null);
+            findHints(this, createRule(), f, null);
         }
     }
 }

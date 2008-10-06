@@ -1,9 +1,5 @@
 /*
- *  CI1CClass
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -14,9 +10,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.POST;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Consumes;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
@@ -29,7 +25,7 @@ import org.codehaus.jettison.json.JSONObject;
 public class CI1CClass {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of CI1CClass */
     public CI1CClass() {
     }
@@ -39,7 +35,7 @@ public class CI1CClass {
      * @return an instance of org.codehaus.jettison.json.JSONObject
      */
     @GET
-    @ProduceMime("application/json")
+    @Produces("application/json")
     public JSONObject getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -51,8 +47,8 @@ public class CI1CClass {
      * @return an HTTP response with content of the created resource
      */
     @POST
-    @ConsumeMime("application/json")
-    @ProduceMime("application/json")
+    @Consumes("application/json")
+    @Produces("application/json")
     public Response postJson(JSONObject content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();

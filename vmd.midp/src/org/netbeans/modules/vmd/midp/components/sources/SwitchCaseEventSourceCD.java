@@ -56,6 +56,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowSwitchPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -144,7 +145,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
                     // TODO
                 }
                 public Image getIcon (DesignComponent component, InfoPresenter.IconType iconType) {
-                    return Utilities.loadImage (ICON_PATH);
+                    return ImageUtilities.loadImage (ICON_PATH);
                 }
             }),
             // flow

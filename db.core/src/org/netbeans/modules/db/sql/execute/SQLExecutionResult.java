@@ -41,10 +41,8 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Collection;
+import org.netbeans.modules.db.dataview.api.DataView;
 
 /**
  * Encapsulates the result of the execution of a single SQL statement.
@@ -57,90 +55,47 @@ public class SQLExecutionResult {
      * The info about the executed statement.
      */
     private final StatementInfo statementInfo;
-    
-    /**
-     * The executed statement.
-     */
-    private final Statement statement;
-
+        
     /**
      * The ResultSet returned by the statement execution.
      */
-    private final ResultSet resultSet;
-
-    /**
-     * The exception (if any) which occurred while executing the statement.
-     */
-    private final SQLException exception;
+    private final DataView dataView;
     
-    /**
-     * The execution time in milliseconds.
-     */
-    private final long executionTime;
     
-    /**
-     * The number of the rows affected by the statement execution.
-     */
-    private final int rowCount;
-    
-    public SQLExecutionResult(StatementInfo info, Statement statement, ResultSet resultSet, long executionTime) {
-        this(info, statement, resultSet, -1, null, executionTime);
-    }
-    
-    public SQLExecutionResult(StatementInfo info, Statement statement, int rowCount, long executionTime) {
-        this(info, statement, null, rowCount, null, executionTime);
-    }
-    
-    public SQLExecutionResult(StatementInfo info, Statement statement, SQLException exception) {
-        this(info, statement, null, -1, exception, 0);
-    }
-    
-    private SQLExecutionResult(StatementInfo info, Statement statement, ResultSet resultSet, int rowCount, SQLException exception, long executionTime) {
+    public SQLExecutionResult(StatementInfo info, DataView dataView) {
         this.statementInfo = info;
-        this.statement = statement;
-        this.resultSet = resultSet;
-        this.rowCount = rowCount;
-        this.exception = exception;
-        this.executionTime = executionTime;
+        this.dataView = dataView;
     }
     
     public StatementInfo getStatementInfo() {
         return statementInfo;
     }
     
-    public ResultSet getResultSet() {
-        return resultSet;
+    public DataView getDataView() {
+        return dataView;
+    }
+
+    public boolean hasResults() {
+        return dataView.hasResultSet();
+    }
+
+    public boolean hasExceptions() {
+        return dataView.hasExceptions();
     }
     
-    public int getRowCount() {
-        return rowCount;
+    public int getUpdateCount() {
+        return dataView.getUpdateCount();
     }
     
-    public SQLException getException() {
-        return exception;
+    public Collection<Throwable> getExceptions() {
+        return dataView.getExceptions();
     }
     
     public long getExecutionTime() {
-        return executionTime;
-    }
-    
-    public DatabaseMetaData getDatabaseMetaData() throws SQLException {
-        return statement.getConnection().getMetaData();
-    }
-    
-    public void close() throws SQLException {
-        try {
-            if (resultSet != null) {
-                resultSet.close();
-            }
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-        }
+        return dataView.getExecutionTime();
     }
     
     public String toString() {
-        return "SQLExecutionResult[resultSet=" + resultSet + ",rowCount=" + rowCount + ",exception=" + exception + ",executionTime=" + executionTime + "]";
+        return "SQLExecutionResult[dataView=" + dataView + ",rowCount=" + getUpdateCount() + ",exception=" + getExceptions() + ",executionTime=" + getExecutionTime() + "]";
     }
 }

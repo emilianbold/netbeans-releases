@@ -48,9 +48,12 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.actions.GrailsCommandAction;
+import org.netbeans.modules.groovy.grailsproject.actions.CreateWarFileAction;
+import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.groovy.grailsproject.actions.ManagePluginsAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -60,6 +63,7 @@ import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -107,7 +111,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Image getIcon(int type) {
-            return Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
+            return ImageUtilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
         }
 
         public Image getOpenedIcon(int type) {
@@ -126,13 +130,27 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             List<Action> actions = new ArrayList<Action>();
-            actions.add(new GrailsCommandAction(project));
+            actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
+            actions.add(new ManagePluginsAction(project));
+            actions.add(new CreateWarFileAction(project));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_COMPILE,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Compile_Name"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_STATS,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Stats_Name"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_UPGRADE,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_Upgrade_Name"), null));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));
+
+            if (WebClientToolsSessionStarterService.isAvailable()) {
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG,
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_DebugAction_Name"), null));
+            }
+
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
             actions.add(null);

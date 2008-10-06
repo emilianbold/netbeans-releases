@@ -129,7 +129,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
 
     private void createLookup() {
-        Lookup noEncodingLookup = super.getLookup();
+        Lookup noEncodingLookup = getCookieSet().getLookup();
 
         org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
 

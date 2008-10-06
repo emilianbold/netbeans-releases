@@ -16,16 +16,22 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  * @author peter
  */
 public class RevertAction extends ActionNoBlock{
-    
+
+    /** "Versioning" menu item. */
+    public static final String VERSIONING_MENU_ITEM = "Versioning";
+
     /** "Subversion" menu item. */
     public static final String SVN_ITEM = "Subversion";
-            
-    /** "Revert" menu item. */
-    public static final String REVERT_ITEM = "Revert";
+
+    /** "Revert" popup menu item. */
+    public static final String REVERT_MENU_ITEM = "Revert...";
+
+    /** "Revert" popup menu item. */
+    public static final String REVERT_POPUP_ITEM = "Revert Modifications";
     
     /** Creates a new instance of RevertAction */
     public RevertAction() {
-        super(SVN_ITEM + "|" + REVERT_ITEM, SVN_ITEM + "|" + REVERT_ITEM);
+        super(VERSIONING_MENU_ITEM + "|" + SVN_ITEM + "|" + REVERT_MENU_ITEM, SVN_ITEM + "|" + REVERT_POPUP_ITEM);
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,6 +62,8 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -78,7 +80,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
-import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetDecoder;
 import org.netbeans.modules.properties.PropertiesEncoding.PropCharsetEncoder;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
@@ -104,6 +105,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -277,11 +279,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     @Override
     protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
     throws IOException, BadLocationException {
-        final PropCharsetDecoder decoder
-                = new PropCharsetDecoder(new PropCharset(),
-                                         myEntry.getFile().getSize());
+        final Charset charset = new PropCharset(myEntry.getFile());
         final Reader reader
-                = new BufferedReader(new InputStreamReader(inputStream, decoder));
+                = new BufferedReader(new InputStreamReader(inputStream, charset));
         
         try {
             editorKit.read(reader, document, 0);
@@ -304,7 +304,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
     throws IOException, BadLocationException {
         final PropCharsetEncoder encoder
-                = new PropCharsetEncoder(new PropCharset());
+                = new PropCharsetEncoder();
         final Writer writer
                 = new BufferedWriter(new OutputStreamWriter(outputStream, encoder));
         
@@ -384,12 +384,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpening() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
-        
         return NbBundle.getMessage(
             PropertiesEditorSupport.class,
             "LBL_ObjectOpen", // NOI18N
-            name
+            getFileLabel()
         );
     }
     
@@ -399,20 +397,18 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpened() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
-        
         return NbBundle.getMessage(
             PropertiesEditorSupport.class,
             "LBL_ObjectOpened", // NOI18N
-            name
+            getFileLabel()
        );
     }
     
-    /**
-     */
-    private String getRawMessageName() {
-        return myEntry.getDataObject().getName()        
-               + '(' + Util.getLocaleLabel(myEntry) + ')';
+    private String getFileLabel() {
+        PropertiesDataObject propDO = (PropertiesDataObject) myEntry.getDataObject();
+        return propDO.isMultiLocale()
+                ? (propDO.getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")") // NOI18N
+                : propDO.getPrimaryFile().getNameExt();
     }
     
     /**
@@ -436,7 +432,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return "";                                                  //NOI18N       
         }
         
-        return addModifiedInfo(getRawMessageName());
+        return addModifiedInfo(getFileLabel());
     }
 
     /** */
@@ -446,7 +442,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return null;
         }
 
-        String rawName = getRawMessageName();
+        String rawName = getFileLabel();
         
         String annotatedName = null;
         final FileObject entry = myEntry.getFile();
@@ -484,12 +480,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return text to show to the user
      */
     protected String messageSave () {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
-        
         return NbBundle.getMessage (
             PropertiesEditorSupport.class,
             "MSG_SaveFile", // NOI18N
-            name
+            getFileLabel()
         );
     }
     
@@ -1122,7 +1116,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Overrides superclass method. Gets <code>Icon</code>. */
         @Override
         public Image getIcon () {
-            return Utilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif"); // NOI18N
+            PropertiesDataObject propDO = (PropertiesDataObject) entry.getDataObject();
+            return ImageUtilities.loadImage(
+                    propDO.isMultiLocale()
+                    ? "org/netbeans/modules/properties/propertiesLocale.gif" // NOI18N
+                    : "org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
         }
         
         /** Overrides superclass method. Gets help context. */

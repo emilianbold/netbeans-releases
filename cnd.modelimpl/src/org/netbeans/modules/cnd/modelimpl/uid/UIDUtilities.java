@@ -150,6 +150,22 @@ public class UIDUtilities {
         return null;
     }
 
+    public static CharSequence getFileName(CsmUID<CsmFile> uid) {
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
+    }
+    
+    public static CharSequence getProjectName(CsmUID<CsmProject> uid) {
+        if (uid instanceof KeyBasedUID) {
+            Key key = ((KeyBasedUID)uid).getKey();
+            return KeyUtilities.getKeyName(key);
+        }
+        return null;
+    }
+    
     public static CharSequence getName(CsmUID<CsmOffsetableDeclaration> uid){
         if (uid instanceof KeyBasedUID) {
             Key key = ((KeyBasedUID)uid).getKey();

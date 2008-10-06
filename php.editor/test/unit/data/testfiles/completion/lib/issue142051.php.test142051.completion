@@ -1,0 +1,4 @@
+Code completion result for source line:
+echo "Name1: ".$user1->|;
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     getName()                       [PUBLIC]   User

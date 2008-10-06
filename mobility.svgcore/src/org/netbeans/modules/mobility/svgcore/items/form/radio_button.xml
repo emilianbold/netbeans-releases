@@ -3,50 +3,7 @@
  "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
  <editor_palette_item version="1.0">
-     <body>
-         <![CDATA[ <g transform="translate(20,190)">
-        <rect x="0" y="0" rx="5" ry="5" width="200" height="60" fill="none" stroke="#85a6cf" stroke-width="2"/>
-        <g id="radio_male" transform="translate(7,5)">
-	    <!-- Metadata information. Please don't edit. -->
-	    <text display="none">type=radio</text>
-
-            <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" 
-                        stroke-width="2" visibility="hidden">
-                <set attributeName="visibility" attributeType="XML" begin="radio_male.focusin" 
-                         fill="freeze" to="visible"/>
-                <set attributeName="visibility" attributeType="XML" begin="radio_male.focusout" 
-                         fill="freeze" to="hidden"/>
-            </rect>
-            <circle cx="11" cy="12" r="8" fill="white" stroke="black" stroke-width="2"/>
-	    <g>
-		    <text display="none">type=dot</text>
-		    <circle cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
-	    </g>
-            <text x="24" y="17" stroke="gray" font-size="15">Male</text>
-        </g>
-
-        <g id="radio_female" transform="translate(7,33)">
-	    <!-- Metadata information. Please don't edit. -->
-	    <text display="none">type=radio</text>
-
-            <rect x="0" y="0" rx="5" ry="5" width="185" height="24" fill="none" stroke="rgb(255,165,0)" 
-                               stroke-width="2" visibility="hidden">
-                <set attributeName="visibility" attributeType="XML" begin="radio_female.focusin" 
-                          fill="freeze" to="visible"/>
-                <set attributeName="visibility" attributeType="XML" begin="radio_female.focusout" 
-                          fill="freeze" to="hidden"/>
-            </rect>
-            <circle transform="translate(11, 12)" cx="0" cy="0" r="8" fill="white" stroke="black" stroke-width="2"/>
-	    <g>
-	    	<!-- Metadata information. Please don't edit. -->
-		<text display="none">type=dot</text>
-
-		<circle  cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
-	    </g>
-            <text x="24" y="17" stroke="gray" font-size="15">Female</text>
-        </g>
-    </g>]]>
-     </body>
+     <class name="org.netbeans.modules.mobility.svgcore.items.form.RadioButton" />
      <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/radio_button_16.png"/>
      <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/form/radio_button_32.png"/>
      

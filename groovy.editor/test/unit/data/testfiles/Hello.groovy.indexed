@@ -2,6 +2,15 @@
 
 Document 0
 Searchable Keys:
+  class : FourthClass
+  class-ig : fourthclass
+  fqn : foo.FourthClass
+
+Not Searchable Keys:
+
+
+Document 1
+Searchable Keys:
   class : Hello
   class-ig : hello
   fqn : foo.Hello
@@ -9,7 +18,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 1
+Document 2
 Searchable Keys:
   class : Hello1
   class-ig : hello1
@@ -26,7 +35,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 2
+Document 3
 Searchable Keys:
   class : SecondTestClass
   class-ig : secondtestclass
@@ -35,7 +44,7 @@ Searchable Keys:
 Not Searchable Keys:
 
 
-Document 3
+Document 4
 Searchable Keys:
   class : ThirdTestClass
   class-ig : thirdtestclass

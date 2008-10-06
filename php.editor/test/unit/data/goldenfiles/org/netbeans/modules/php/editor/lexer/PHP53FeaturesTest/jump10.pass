@@ -32,5 +32,5 @@ token #30 PHP_SEMICOLON ;
 token #31 WHITESPACE \n
 token #32 PHP_CURLY_CLOSE }
 token #33 WHITESPACE \n
-token #34 PHP_CLOSETAG ?>\n
-token #35 T_INLINE_HTML --EXPECTF--\nFatal error: 'goto' into loop or switch statement is disallowed in %sjump10.php on line 2\n
+token #34 PHP_CLOSETAG ?>
+token #35 T_INLINE_HTML \n--EXPECTF--\nFatal error: 'goto' into loop or switch statement is disallowed in %sjump10.php on line 2\n

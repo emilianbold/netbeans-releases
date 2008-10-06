@@ -149,7 +149,7 @@ public class CompilationInfo {
     
     /**
      * Returns the javac tree representing the source file.
-     * @return {@link CompilationUnitTree} the compilation unit cantaining the top level classes contained in the,
+     * @return {@link CompilationUnitTree} the compilation unit containing the top level classes contained in the,
      * java source file. 
      * @throws java.lang.IllegalStateException  when the phase is less than {@link JavaSource.Phase#PARSED}
      */
@@ -292,7 +292,7 @@ public class CompilationInfo {
     
     /**Return {@link PositionConverter} binding virtual Java source and the real source.
      * Please note that this method is needed only for clients that need to work
-     * in non-Java files (eg. JSP files) or in dialogs, like code completion.
+     * in non-Java files (e.g. JSP files) or in dialogs, like code completion.
      * Most clients do not need to use {@link PositionConverter}.
      * 
      * @return PositionConverter binding the virtual Java source and the real source.

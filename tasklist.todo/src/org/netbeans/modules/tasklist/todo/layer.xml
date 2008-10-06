@@ -30,7 +30,13 @@
         <folder name="Advanced">
             <attr name="position" intvalue="0"/>
             <file name="ToDo.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.tasklist.todo.settings.ToDoOptions"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
+
+                <attr name="controller" newvalue="org.netbeans.modules.tasklist.todo.settings.ToDoOptionsController"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.tasklist.todo.settings.Bundle#LBL_Options"/>
+                <attr name="toolTip" bundlevalue="org.netbeans.modules.tasklist.todo.settings.Bundle#HINT_Options"/>
+                <attr name="keywords" bundlevalue="org.netbeans.modules.tasklist.todo.settings.Bundle#KW_ToDo"/>
+                <attr name="keywordsCategory" stringvalue="Advanced/ToDo"/>
             </file>
         </folder>
    </folder>

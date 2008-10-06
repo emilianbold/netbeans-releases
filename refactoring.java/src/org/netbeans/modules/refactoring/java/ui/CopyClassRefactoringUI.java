@@ -57,7 +57,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
@@ -115,12 +117,18 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     
     private void setupRefactoring() {
         refactoring.setNewName(panel.getNewName());
-        URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
-        try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.','/')))); // NOI18N
-        } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+        FileObject rootFolder = panel.getRootFolder();
+        Lookup target = Lookup.EMPTY;
+        if (rootFolder != null) {
+            try {
+                URL url = URLMapper.findURL(rootFolder, URLMapper.EXTERNAL);
+                URL targetURL = new URL(url.toExternalForm() + "/" + panel.getPackageName().replace('.', '/')); // NOI18N
+                target = Lookups.singleton(targetURL);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
+        refactoring.setTarget(target);
     }
 
     public AbstractRefactoring getRefactoring() {

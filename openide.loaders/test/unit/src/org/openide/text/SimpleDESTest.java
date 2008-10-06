@@ -42,15 +42,12 @@
 package org.openide.text;
 
 import java.io.PrintStream;
-import javax.swing.Action;
-import junit.textui.TestRunner;
+import java.util.logging.Level;
 import org.netbeans.junit.*;
-import org.openide.DialogDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
-import org.openide.util.actions.SystemAction;
 
 /** DefaultDataObject is supposed to have open operation that shows the text
  * editor or invokes a dialog with questions.
@@ -69,7 +66,13 @@ public final class SimpleDESTest extends NbTestCase {
     public SimpleDESTest(String name) {
         super(name);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
         
@@ -86,7 +89,8 @@ public final class SimpleDESTest extends NbTestCase {
         
         assertEquals ("The right class", obj.getClass (), SO.class);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1210
     public void testHasEditorCookieForResonableContentOfFiles () throws Exception {
         doCookieCheck (true);
     }

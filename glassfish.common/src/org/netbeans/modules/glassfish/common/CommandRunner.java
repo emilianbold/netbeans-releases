@@ -45,17 +45,18 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,6 +69,8 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
+import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 
 
 /** 
@@ -153,6 +156,65 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
     
+    public Map<String, String> getResourceData(String name) {
+        try {
+            GetPropertyCommand cmd;
+            if (null != name) {
+                cmd = new ServerCommand.GetPropertyCommand("resources.*."+name+".*"); // NOI18N
+            } else {
+                cmd = new ServerCommand.GetPropertyCommand("resources.*"); // NOI18N
+            }
+            serverCmd = cmd;
+            Future<OperationState> task = executor().submit(this);
+            OperationState state = task.get();
+            if (state == OperationState.COMPLETED) {
+                return cmd.getData();
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        }
+        return new HashMap<String,String>();
+    }
+    
+    public void putResourceData(Map<String, String> data) throws PartialCompletionException {
+        Set<String> keys = data.keySet();
+        String itemsNotUpdated = null;
+        Throwable lastEx = null;
+        for (String k : keys) {
+            String compName = k;
+            String compValue = data.get(k);
+
+            try {
+                SetPropertyCommand cmd = new ServerCommand.SetPropertyCommand(compName, compValue);
+                serverCmd = cmd;
+                Future<OperationState> task = executor().submit(this);
+                OperationState state = task.get();
+                if (state == OperationState.COMPLETED) {
+                    cmd.processResponse();
+                //return cmd.getData();
+                }
+            } catch (InterruptedException ex) {
+                lastEx = ex;
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                itemsNotUpdated = addName(compName, itemsNotUpdated);
+            } catch (ExecutionException ex) {
+                lastEx = ex;
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                itemsNotUpdated = addName(compName, itemsNotUpdated);
+            }
+        //return new HashMap<String,String>();
+        }
+        if (null != itemsNotUpdated) {
+            PartialCompletionException pce = new PartialCompletionException(itemsNotUpdated);
+            if (null != lastEx) {
+                pce.initCause(lastEx);
+            }
+            throw pce;
+        }
+    }
+
     public Future<OperationState> deploy(File dir) {
         return deploy(dir, dir.getParentFile().getName(), null);
     }
@@ -162,19 +224,32 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, contextRoot));
+        return execute(new Commands.DeployCommand(dir.getAbsolutePath(), moduleName, 
+                contextRoot, computePreserveSessions(ip)));
     }
     
     public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
-        return execute(new Commands.RedeployCommand(moduleName, contextRoot));
+        return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
+                computePreserveSessions(ip)));
+    }
+
+    private static Boolean computePreserveSessions(Map<String,String> ip) {
+        // prefer the value stored in the instance properties for a domain.
+        String sessionPreservationFlag = ip.get(GlassfishModule.SESSION_PRESERVATION_FLAG);
+        if (null == sessionPreservationFlag) {
+            // if there isn't a value stored for the instance, use the value of
+            // the command-line flag.
+            sessionPreservationFlag = System.getProperty("glassfish.session.preservation.enabled","false"); // NOI18N
+        }
+        return Boolean.parseBoolean(sessionPreservationFlag);
     }
     
     public Future<OperationState> undeploy(String moduleName) {
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
-    public Future<OperationState> unregister(String resourceName, String suffix) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix));
+    public Future<OperationState> unregister(String resourceName, String suffix, String cmdPropName, boolean cascade) {
+        return execute(new Commands.UnregisterCommand(resourceName, suffix, cmdPropName, cascade));
     }
 
     /**
@@ -183,6 +258,16 @@ public class CommandRunner extends BasicTask<OperationState> {
     public Future<OperationState> execute(ServerCommand command) {
         return execute(command, null);
     }
+
+    private String addName(final String compName, final String itemsNotUpdated) {
+        String retVal = itemsNotUpdated;
+        if (null != itemsNotUpdated) {
+            retVal += ", "+compName;
+        } else {
+            retVal = compName;
+        }
+        return retVal;
+    }
     
     private Future<OperationState> execute(ServerCommand command, String msgResId) {
         serverCmd = command;
@@ -190,25 +275,6 @@ public class CommandRunner extends BasicTask<OperationState> {
             fireOperationStateChanged(OperationState.RUNNING, msgResId, instanceName);
         }
         return executor().submit(this);
-    }
-    
-    /**
-     * Translates a context path string into <code>application/x-www-form-urlencoded</code> format.
-     */
-    private static String encodePath(String str) {
-        try {
-            StringTokenizer st = new StringTokenizer(str, "/"); // NOI18N
-            if (!st.hasMoreTokens()) {
-                return str;
-            }
-            StringBuilder result = new StringBuilder();
-            while (st.hasMoreTokens()) {
-                result.append("/").append(URLEncoder.encode(st.nextToken(), "UTF-8")); // NOI18N
-            }
-            return result.toString();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e); // this should never happen
-        }
     }
     
     /** Executes one management task. 
@@ -222,10 +288,16 @@ public class CommandRunner extends BasicTask<OperationState> {
         boolean commandSucceeded = false;
         URL urlToConnectTo = null;
         URLConnection conn = null;
-        String cmd = serverCmd.getCommand();
-        String commandUrl = constructCommandUrl(cmd, true);
-        int retries = ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
+        String commandUrl;
         
+        try {
+            commandUrl = constructCommandUrl(serverCmd.getCommand(), serverCmd.getQuery());
+        } catch (URISyntaxException ex) {
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",
+                    serverCmd.toString(), instanceName, ex.getLocalizedMessage());
+        }
+
+        int retries = 1; // disable ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CommandRunner.call(" + commandUrl + ") called on thread \"" + 
                 Thread.currentThread().getName() + "\"");
@@ -321,20 +393,12 @@ public class CommandRunner extends BasicTask<OperationState> {
         }
     }
     
-    private String constructCommandUrl(final String cmd, final boolean encodeSpaces) {
-        StringBuilder builder = new StringBuilder(256);
-        builder.append("http://"); // NOI18N
-        builder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
-        builder.append(":"); // NOI18N
-        if("true".equals(System.getProperty("glassfish.useadminport"))) {
-            builder.append(ip.get(GlassfishModule.ADMINPORT_ATTR));
-        } else {
-            builder.append(ip.get(GlassfishModule.HTTPPORT_ATTR));
-        }
-        builder.append("/__asadmin/");
-        builder.append(cmd);
-        String commandUrl = builder.toString();
-        return encodeSpaces ? commandUrl.replaceAll(" ", "%20") : commandUrl;
+    private String constructCommandUrl(final String cmd, final String query) throws URISyntaxException {
+        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
+        boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
+        int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
+        URI uri = new URI("http", null, host, port, "/__asadmin/" + cmd, query, null); // NOI18N
+        return uri.toASCIIString();
     }
     
     private void handleSend(HttpURLConnection hconn) throws IOException {

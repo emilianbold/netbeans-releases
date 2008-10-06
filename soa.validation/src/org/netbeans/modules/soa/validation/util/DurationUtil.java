@@ -51,6 +51,10 @@ public final class DurationUtil {
   private DurationUtil() {}
 
   public static Duration parseDuration(String value, boolean throwException) {
+      return parseDuration(value, throwException, true);
+  }
+
+  public static Duration parseDuration(String value, boolean throwException, boolean checkQuote) {
 //out();
 //out("PARSE duration: " + value);
     boolean hasMinus = false;
@@ -65,20 +69,22 @@ public final class DurationUtil {
       return throwException("FIX_Empty_Value", throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
     }
 //out("2");
-    if ( !value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
-      if (throwException) {
-        return null;
+    if (checkQuote) {
+      if ( !value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+        if (throwException) {
+          return null;
+        }
+        return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
       }
-      return new Duration(hasMinus, years, months, days, hours, minutes, seconds);
-    }
-    if (value.length() == 1 && value.startsWith(QUOTE)) {
-      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
-    }
-    if (value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
-      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
-    }
-    if (!value.startsWith(QUOTE) && value.endsWith(QUOTE)) {
-      return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      if (value.length() == 1 && value.startsWith(QUOTE)) {
+        return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      }
+      if (value.startsWith(QUOTE) && !value.endsWith(QUOTE)) {
+        return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      }
+      if ( !value.startsWith(QUOTE) && value.endsWith(QUOTE)) {
+        return throwException("FIX_Invalid_Value", value, throwException, hasMinus, years, months, days, hours, minutes, seconds); // NOI18N
+      }
     }
     value = removeQuotes(value);
 

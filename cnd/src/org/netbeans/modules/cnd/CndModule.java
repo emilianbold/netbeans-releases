@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.shell.ShellKit;
 import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
@@ -69,30 +71,52 @@ public class CndModule extends ModuleInstall {
 //	ps.addOption ((SystemOption) SystemOption.findObject(ShellPrintOptions.class, true));
         
         if (Utilities.isUnix()) {
-            setExecutionPermission("bin/dorun.sh"); // NOI18N
-            setExecutionPermission("bin/stdouterr.sh"); // NOI18N
+            // TODO: why not set permissions for bin/* ?
+            List<String> files = new ArrayList<String>();
+            addFile(files, "bin/dorun.sh"); // NOI18N
+            //addFile(files, "bin/stdouterr.sh"); // NOI18N
             if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                if (System.getProperty("os.arch").equals("sparc")) {
-                    setExecutionPermission("bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+                if (System.getProperty("os.arch").equals("sparc")) { // NOI18N
+                    //addFile(files, "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-sparc_64.so"); // NOI18N
                 } else {
-                    setExecutionPermission("bin/GdbHelper-SunOS-x86.so"); // NOI18N
+                    //addFile(files, "bin/GdbHelper-SunOS-x86.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-x86.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-x86_64.so"); // NOI18N
                 }
             } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-                setExecutionPermission("bin/GdbHelper-Linux-x86.so"); // NOI18N
+                //addFile(files, "bin/GdbHelper-Linux-x86.so"); // NOI18N
+                addFile(files, "bin/unbuffer-Linux-x86.so"); // NOI18N
+                addFile(files, "bin/unbuffer-Linux-x86_64.so"); // NOI18N
             } else if (Utilities.isMac()) {
-                setExecutionPermission("bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
+                //addFile(files, "bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
+                addFile(files, "bin/unbuffer-Mac_OS_X-x86.dylib"); // NOI18N
+                addFile(files, "bin/unbuffer-Mac_OS_X-x86_64.dylib"); // NOI18N
             }
+            setPermissions(files);
         }
     }
-    
-    private void setExecutionPermission(String relpath) {
+
+    private static void addFile(List<String> files, String relpath) {
         File file = InstalledFileLocator.getDefault().locate(relpath, null, false);
         if (file != null && file.exists()) {
-            ProcessBuilder pb = new ProcessBuilder("/bin/chmod", "755", file.getAbsolutePath()); // NOI18N
-            try {
-                pb.start();
-            } catch (IOException ex) {
-            }
+            files.add(file.getAbsolutePath());
+        }
+    }
+
+    private static void setPermissions(List<String> files) {
+        if (files.isEmpty()) {
+            return;
+        }
+        List<String> commands = new ArrayList<String>();
+        commands.add("/bin/chmod"); // NOI18N
+        commands.add("755"); // NOI18N
+        commands.addAll(files);
+        ProcessBuilder pb = new ProcessBuilder(commands);
+        try {
+            pb.start();
+        } catch (IOException ex) {
         }
     }
 }

@@ -41,8 +41,8 @@
 package org.netbeans.modules.html.editor;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -52,24 +52,18 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsfret.source.SourceAccessor;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,74 +75,83 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
     private LanguagePath htmlLanguagePath;
-    private FileObject fileObject;
     private static final String BLOCK_COMMENT_START = "<!--"; //NOI18N
     private static final String BLOCK_COMMENT_END = "-->"; //NOI18N
 
+    static boolean testMode = false;
+    
     public HTMLBracesMatching() {
-        this(null, null, null);
+        this(null, null);
     }
 
-    private HTMLBracesMatching(MatcherContext context, FileObject fileObject, LanguagePath htmlLanguagePath) {
+    private HTMLBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
         this.context = context;
-        this.fileObject = fileObject;
         this.htmlLanguagePath = htmlLanguagePath;
     }
 
     public int[] findOrigin() throws InterruptedException, BadLocationException {
-        if (MatcherContext.isTaskCanceled()) {
-            return null;
-        }
-        TokenHierarchy th = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence> tsl = th.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
-        for (TokenSequence ts : tsl) {
-            if (ts.language() == HTMLTokenId.language()) {
-                ts.move(context.getSearchOffset());
-                //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
-                if(ts.moveNext()) {
-                    if (context.isSearchingBackward() && ts.offset() + ts.token().length() < context.getSearchOffset()) {
-                        //check whether the searched position doesn't overlap the token boundaries 
-                        return null;
-                    }
-                    Token t = ts.token();
-                    if (tokenInTag(t)) {
-                        //find the tag beginning
-                        do {
-                            Token t2 = ts.token();
-                            if (!tokenInTag(t2)) {
-                                return null;
-                            } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                                //find end
-                                while (ts.moveNext()) {
-                                    Token t3 = ts.token();
-                                    if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-                                        return null;
-                                    } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-                                        if("/>".equals(t3.text().toString())) {
-                                            //do no match empty tags
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            if (!testMode && MatcherContext.isTaskCanceled()) {
+                return null;
+            }
+                TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(context.getDocument());
+                TokenHierarchy th = TokenHierarchy.get(context.getDocument());
+                
+                if (ts.language() == HTMLTokenId.language()) {
+                    ts.move(context.getSearchOffset());
+                    //if (context.isSearchingBackward() ? ts.movePrevious() : ts.moveNext()) {
+                    if(ts.moveNext()) {
+                        if (context.isSearchingBackward() && ts.offset() + ts.token().length() < context.getSearchOffset()) {
+                            //check whether the searched position doesn't overlap the token boundaries 
+                            return null;
+                        }
+                        Token t = ts.token();
+                        if (tokenInTag(t)) {
+                            //find the tag beginning
+                            do {
+                                Token t2 = ts.token();
+                                if (!tokenInTag(t2)) {
+                                    return null;
+                                } else if (t2.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                                    //find end
+                                    int tagNameEnd = -1;
+                                    while (ts.moveNext()) {
+                                        Token t3 = ts.token();
+                                        if (!tokenInTag(t3) || t3.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
                                             return null;
-                                        } else {
-                                            return new int[]{t2.offset(th), t3.offset(th) + t3.length()};
+                                        } else if (t3.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+                                            if("/>".equals(t3.text().toString())) {
+                                                //do no match empty tags
+                                                return null;
+                                            } else {
+                                                int from = t2.offset(th);
+                                                int to = t3.offset(th) + t3.length();
+                                                return new int[]{from, to, 
+                                                                 from, tagNameEnd,
+                                                                 to - 1, to};
+                                            }
+                                        } else if(t3.id() == HTMLTokenId.TAG_OPEN || t3.id() == HTMLTokenId.TAG_CLOSE) {
+                                            tagNameEnd = t3.offset(th) + t3.length();
                                         }
                                     }
-                                } 
-                                break;
+                                    break;
+                                }
+                            } while (ts.movePrevious());
+                        } else if (t.id() == HTMLTokenId.BLOCK_COMMENT) {
+                            String tokenImage = t.text().toString();
+                            if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < (t.offset(th)) + BLOCK_COMMENT_START.length()) {
+                                return new int[]{t.offset(th), t.offset(th) + BLOCK_COMMENT_START.length()};
+                            } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= (t.offset(th)) + tokenImage.length() - BLOCK_COMMENT_END.length())) {
+                                return new int[]{t.offset(th) + t.length() - BLOCK_COMMENT_END.length(), t.offset(th) + t.length()};
                             }
-                        } while (ts.movePrevious());
-                    } else if (t.id() == HTMLTokenId.BLOCK_COMMENT) {
-                        String tokenImage = t.text().toString();
-                        if (tokenImage.startsWith(BLOCK_COMMENT_START) && context.getSearchOffset() < (t.offset(th)) + BLOCK_COMMENT_START.length()) {
-                            return new int[]{t.offset(th), t.offset(th) + BLOCK_COMMENT_START.length()};
-                        } else if (tokenImage.endsWith(BLOCK_COMMENT_END) && (context.getSearchOffset() >= (t.offset(th)) + tokenImage.length() - BLOCK_COMMENT_END.length())) {
-                            return new int[]{t.offset(th) + t.length() - BLOCK_COMMENT_END.length(), t.offset(th) + t.length()};
                         }
                     }
                 }
-            }
+            return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-
-        return null;
-
     }
 
     private boolean tokenInTag(Token t) {
@@ -156,127 +159,130 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
 
     public int[] findMatches() throws InterruptedException, BadLocationException {
-        if (MatcherContext.isTaskCanceled()) {
+        if (!testMode && MatcherContext.isTaskCanceled()) {
             return null;
         }
+
+        Source source = Source.forDocument(context.getDocument());
+        if (source == null) {
+            return null;
+        }
+
+        final int [][] ret = new int [1][];
         try {
-            Source source = Source.forDocument(context.getDocument());
-            if (source == null) {
-                return null;
-            }
-
-            final List<HtmlParserResult> l = new ArrayList<HtmlParserResult>(1);
-
-            //workaround of issue #131060 - Deadlock when editing simple html
-            //the findMatches() is always called under document readlock so 
-            //accessing the source lock breaks the rule lock source then document
-            if(SourceAccessor.getINSTANCE().isParserLocked()) {
-                return null;
-            }
-            
             source.runUserActionTask(new CancellableTask<CompilationController>() {
 
                 public void cancel() {
                 }
 
                 public void run(CompilationController parameter) throws Exception {
-                    if (MatcherContext.isTaskCanceled()) {
+                    if (!testMode && MatcherContext.isTaskCanceled()) {
                         return;
                     }
+                    
+                    parameter.toPhase(Phase.PARSED);
+                    
                     HtmlParserResult result = (HtmlParserResult) parameter.getEmbeddedResult(HTMLKit.HTML_MIME_TYPE, context.getSearchOffset());
-                    l.add(0, result);
+                    if(result == null) {
+                        ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
+                        return;
+                    }
+                    AstNode root = result.root();
+
+                    int searched =  result.getTranslatedSource() == null
+                            ? context.getSearchOffset()
+                            : result.getTranslatedSource().getAstOffset(context.getSearchOffset());
+                    AstNode origin = AstNodeUtils.findDescendant(root, searched);
+                    if (origin != null) {
+                        if (origin.type() == AstNode.NodeType.OPEN_TAG) {
+                            AstNode parent = origin.parent();
+                            if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                                Element element = result.dtd().getElement(origin.name().toUpperCase());
+                                if(element != null && (element.hasOptionalEnd() || element.isEmpty())) {
+                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
+                                } else {
+                                    ret[0] = null; //no match
+                                }
+                            } else {
+                                //last element must be the matching tag
+                                AstNode endTag = parent.children().get(parent.children().size() - 1);
+                                ret[0] = translate(new int[]{endTag.startOffset(), endTag.endOffset()}, result.getTranslatedSource());
+                            }
+                        } else if (origin.type() == AstNode.NodeType.ENDTAG) {
+                            AstNode parent = origin.parent();
+                            if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
+                                Element element = result.dtd().getElement(origin.name().toUpperCase());
+                                if(element != null && element.hasOptionalStart()) {
+                                    ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()}; //match nothing, origin will be yellow  - workaround
+                                } else {
+                                    ret[0] = null; //no match
+                                }
+                            } else {
+                                //first element must be the matching tag
+                                AstNode openTag = parent.children().get(0);
+                                ret[0] = translate(new int[]{openTag.startOffset(), openTag.startOffset() + openTag.name().length() + 1 /* open tag symbol '<' length */, openTag.endOffset() - 1, openTag.endOffset() }, result.getTranslatedSource());
+                            }
+                        } else if (origin.type() == AstNode.NodeType.COMMENT) {
+                            int so = origin.startOffset();
+                            if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {
+                                //complete end of comment
+                                ret[0] = translate(new int[]{origin.endOffset() - BLOCK_COMMENT_END.length(), origin.endOffset()}, result.getTranslatedSource());
+                            } else if (searched >= origin.endOffset() - BLOCK_COMMENT_END.length() && searched <= origin.endOffset()) {
+                                //complete start of comment
+                                ret[0] = translate(new int[]{origin.startOffset(), origin.startOffset() + BLOCK_COMMENT_START.length()}, result.getTranslatedSource());
+                            }
+                        }
+                    }
                 }
             }, true);
-
-            if (l.size() > 0) {
-                HtmlParserResult result = l.get(0);
-                if(result == null) {
-                    return new int[]{context.getSearchOffset(), context.getSearchOffset()};
-                }
-                AstNode root = result.root();
-                
-                int searched =  result.getTranslatedSource() == null 
-                        ? context.getSearchOffset() 
-                        : result.getTranslatedSource().getAstOffset(context.getSearchOffset());
-                AstNode origin = AstNodeUtils.findDescendant(root, searched);
-                if (origin != null) {
-                    if (origin.type() == AstNode.NodeType.OPEN_TAG) {
-                        AstNode parent = origin.parent();
-                        if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                            Element element = result.dtd().getElement(origin.name().toUpperCase());
-                            if(element != null && element.hasOptionalEnd()) {
-                                return new int[]{context.getSearchOffset(), context.getSearchOffset()};
-                            } else {
-                                return null;
-                            }
-                        } else {
-                            //last element must be the matching tag
-                            AstNode endTag = parent.children().get(parent.children().size() - 1);
-                            return translate(new int[]{endTag.startOffset(), endTag.endOffset()}, result.getTranslatedSource());
-                        }
-                    } else if (origin.type() == AstNode.NodeType.ENDTAG) {
-                        AstNode parent = origin.parent();
-                        if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
-                            Element element = result.dtd().getElement(origin.name().toUpperCase());
-                            if(element != null && element.hasOptionalStart()) {
-                                return new int[]{context.getSearchOffset(), context.getSearchOffset()};
-                            } else {
-                                return null;
-                            }
-                        } else {
-                            //first element must be the matching tag
-                            AstNode openTag = parent.children().get(0);
-                            return translate(new int[]{openTag.startOffset(), openTag.endOffset()}, result.getTranslatedSource());
-                        }
-                    } else if (origin.type() == AstNode.NodeType.COMMENT) {
-                        int so = origin.startOffset();
-                        if (searched >= origin.startOffset() && searched <= origin.startOffset() + BLOCK_COMMENT_START.length()) {
-                            //complete end of comment
-                            return translate(new int[]{origin.endOffset() - BLOCK_COMMENT_END.length(), origin.endOffset()}, result.getTranslatedSource());
-                        } else if (searched >= origin.endOffset() - BLOCK_COMMENT_END.length() && searched <= origin.endOffset()) {
-                            //complete start of comment
-                            return translate(new int[]{origin.startOffset(), origin.startOffset() + BLOCK_COMMENT_START.length()}, result.getTranslatedSource());
-                        }
-
-                    } 
-                }
-            }
-
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        return null;
+        return ret[0];
     }
 
     private int[] translate(int[] match, TranslatedSource source) {
         if(source == null) {
             return match;
         } else {
-            return new int[]{source.getLexicalOffset(match[0]), source.getLexicalOffset(match[1] - 1) + 1};
+            int [] translation = new int[match.length];
+            for(int i = 0; i < match.length; i++) {
+                translation[i] = source.getLexicalOffset(match[i]);
+            }
+            return translation;
         }
     }
             
 
     
     //BracesMatcherFactory implementation
-    public BracesMatcher createMatcher(MatcherContext context) {
-        TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
-        for (TokenSequence ts : ets) {
-            Language language = ts.language();
-            if (language == HTMLTokenId.language()) {
-                DataObject od = NbEditorUtilities.getDataObject(context.getDocument());
-                if (od != null) {
-                    return new HTMLBracesMatching(context, od.getPrimaryFile(), ts.languagePath());
-                } else {
-                    break;
+    public BracesMatcher createMatcher(final MatcherContext context) {
+        final HTMLBracesMatching[] ret = { null };
+        context.getDocument().render(new Runnable() {
+            public void run() {
+                TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
+                
+                //test if the html sequence is the top level one
+                if(hierarchy.tokenSequence().language() == HTMLTokenId.language()) {
+                    ret[0] = new HTMLBracesMatching(context, hierarchy.tokenSequence().languagePath());
+                    return ;
                 }
+                
+                //test for embeedded html 
+                List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
+                for (TokenSequence ts : ets) {
+                    Language language = ts.language();
+                    if (language == HTMLTokenId.language()) {
+                        ret[0] = new HTMLBracesMatching(context, ts.languagePath());
+                        return ;
+                    }
+                }
+                // We might be trying to search at the end or beginning of a document. In which
+                // case there is nothing to find and/or search through, so don't create a matcher.
+                //        throw new IllegalStateException("No text/html language found on the MatcherContext's search offset! This should never happen!");
             }
-        }
-        return null;
-// We might be trying to search at the end or beginning of a document. In which
-// case there is nothing to find and/or search through, so don't create a matcher.
-//        throw new IllegalStateException("No text/html language found on the MatcherContext's search offset! This should never happen!");
+        });
+        return ret[0];
     }
 }

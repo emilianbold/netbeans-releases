@@ -468,8 +468,10 @@ public class ToolbarConstraints {
         int nextPos;
         while (it.hasNext()) {
             tc = (ToolbarConstraints)it.next();
-            nextBeg = Math.min (nextBeg, nextPos = tc.getPosition());
-            nextEnd = Math.min (nextEnd, nextPos + tc.getWidth());
+            if (!tc.isAlwaysRight()) {
+                nextBeg = Math.min (nextBeg, nextPos = tc.getPosition());
+                nextEnd = Math.min (nextEnd, nextPos + tc.getWidth());
+            }
         }
         updateBounds();
     }

@@ -51,7 +51,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,6 +138,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         );
     }
 
+    private void assertNoErrors(String message, Collection<String> warnings) {
+        if (warnings.isEmpty()) {
+            return;
+        }
+        StringBuilder b = new StringBuilder(message);
+        for (String warning : new TreeSet<String>(warnings)) {
+            b.append('\n').append(warning);
+        }
+        fail(b.toString());
+    }
+
     /* Causes mysterious failure in otherwise OK-looking UI/Runtime/org-netbeans-modules-db-explorer-nodes-RootNode.instance: 
     @Override
     protected Level logLevel() {
@@ -174,14 +184,12 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 String name = attrs.nextElement();
                 
                 if (fo.getAttribute(name) == null) {
-                    errors.add ("\n    File " + fo + " attribute name " + name);
+                    errors.add ("File: " + fo + " attribute name: " + name);
                 }
             }
         }
         
-        if (!errors.isEmpty()) {
-            fail ("Some attributes in files are unreadable" + errors);
-        }
+        assertNoErrors("Some attributes in files are unreadable", errors);
     }
     
     public void testValidShadows () {
@@ -218,21 +226,19 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (ds != null) {
                     Object o = ds.getOriginal();
                     if (o == null) {
-                        errors.add("\nFile " + fo + " has no original.");
+                        errors.add("File " + fo + " has no original.");
                     }
                 }
                 else if ("shadow".equals(fo.getExt())) {
-                    errors.add("\nFile " + fo + " is not a valid DataShadow.");
+                    errors.add("File " + fo + " is not a valid DataShadow.");
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                errors.add ("\n    File " + fo + " thrown exception " + ex);
+                errors.add ("File " + fo + " threw " + ex);
             }
         }
         
-        if (!errors.isEmpty()) {
-            fail ("Some shadow files in NetBeans profile are broken:" + errors);
-        }
+        assertNoErrors("Some shadow files in NetBeans profile are broken", errors);
         
         if (ValidateLayerConsistencyTest.class.getClassLoader() == ClassLoader.getSystemClassLoader()) {
             // do not check the count as this probably means we are running
@@ -278,13 +284,12 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
                 
             } catch (IOException ex) {
-                errors.add ("\n    File " + fo + " cannot be read " + ex);
+                ex.printStackTrace();
+                errors.add ("File " + fo + " cannot be read: " + ex);
             }
         }
         
-        if (!errors.isEmpty()) {
-            fail ("Some files are unreadable" + errors);
-        }
+        assertNoErrors("Some files are unreadable", errors);
     }
     
     public void testInstantiateAllInstances () {
@@ -306,13 +311,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                errors.add ("\n    File " + fo.getPath() + " threw " + ex);
+                errors.add ("File " + fo.getPath() + " threw " + ex);
             }
         }
         
-        if (!errors.isEmpty()) {
-            fail ("Some instances cannot be created " + errors);
-        }
+        assertNoErrors("Some instances cannot be created", errors);
     }
     
     public void testIfOneFileIsDefinedTwiceByDifferentModulesTheyNeedToHaveMutualDependency() throws Exception {
@@ -553,7 +556,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         err.addHandler(h);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         bcm.store(bcm.createEmptyFileSystem(), urls, os);
-        assertEquals("No errors or warnings during layer parsing: "+h.errors().toString(), 0, h.errors().size());
+        assertNoErrors("No errors or warnings during layer parsing", h.errors);
     }
     
     private static class LayerParseHandler extends Handler {
@@ -604,7 +607,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
         }
-        assertEquals("No warnings relating to folder ordering", Collections.emptySet(), new TreeSet<String>(h.errors()));
+        assertNoErrors("No warnings relating to folder ordering; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
         for (List<String> multiPath : editorMultiFolders) {
             List<FileSystem> layers = new ArrayList<FileSystem>(3);
             for (final String path : multiPath) {
@@ -619,7 +622,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
             }
             loadChildren(new MultiFileSystem(layers.toArray(new FileSystem[layers.size()])).getRoot());
-            assertEquals("No warnings relating to folder ordering in " + multiPath, Collections.emptySet(), new TreeSet<String>(h.errors()));
+            assertNoErrors("No warnings relating to folder ordering in " + multiPath + "; cf: http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt", h.errors());
         }
     }
     private static void loadChildren(FileObject folder) {

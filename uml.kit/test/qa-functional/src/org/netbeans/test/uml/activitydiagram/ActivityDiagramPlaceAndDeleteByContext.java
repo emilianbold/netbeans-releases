@@ -97,7 +97,7 @@ public class ActivityDiagramPlaceAndDeleteByContext extends UMLTestCase {
     private Node lastDiagramNode=null;
     private String lastTestCase=null;
     private JTreeOperator prTree=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     //--
      private static String activityDiagramName1 = "acD1";
     private static String workPkg1 = "pkg1";

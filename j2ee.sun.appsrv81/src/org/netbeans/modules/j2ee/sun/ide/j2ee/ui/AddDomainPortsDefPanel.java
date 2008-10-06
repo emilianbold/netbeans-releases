@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -82,7 +81,6 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-//            targetData.setHost("localhost"); //NOI18N
             component = new CreateServerVisualPanel();
             component.addChangeListener(this);
         }
@@ -94,7 +92,6 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     }
     
     public boolean isValid() {
-        //msgLabel.setText(""); //NOI18N
         // make sure the values are unique
         Set portsUsed = new HashSet(7);
         portsUsed.add(component.getAdminPort());
@@ -105,13 +102,11 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
         if (isPortReused(portsUsed, component.getInstanceHttpPort(), "ERR_InstancePort"))   // NOI18N
             return false;
         
-        
         if (isPortReused(portsUsed, component.getJmsPort(), "ERR_JmsPort"))     // NOI18N
             return false;
         
         if (isPortReused(portsUsed,component.getOrbPort(), "ERR_OrbListenerPort"))  // NOI18N
             return false;
-        
         
         if (isPortReused(portsUsed,component.getHttpSslPort(), "ERR_HttpSslPort"))  // NOI18N
             return false;
@@ -165,8 +160,8 @@ public class AddDomainPortsDefPanel implements WizardDescriptor.Panel,
     private boolean isPortReused(Set portsUsed, Object newVal, String id) {
         if (portsUsed.contains(newVal)) {
             // create the error message
-                wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainPortsDefPanel.class, id));
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(AddDomainPortsDefPanel.class, id));
             return true;
         } else {
             portsUsed.add(newVal);

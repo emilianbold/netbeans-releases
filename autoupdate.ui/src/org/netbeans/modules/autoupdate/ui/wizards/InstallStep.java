@@ -42,6 +42,9 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,11 +60,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -80,6 +86,7 @@ import org.netbeans.modules.autoupdate.ui.NetworkProblemPanel;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.netbeans.modules.autoupdate.ui.actions.BalloonManager;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
@@ -88,6 +95,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -259,11 +268,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean tryPerformDownload () {
         validator = null;
         final InstallSupport support = model.getInstallSupport ();
+        JLabel detailLabel = null;
         try {
             ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"));
             JComponent progressComponent = ProgressHandleFactory.createProgressComponent (handle);
             JLabel mainLabel = ProgressHandleFactory.createMainLabelComponent (handle);
-            JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
+            detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
             if (runInBackground ()) {
                 systemHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"),
                         new Cancellable () {
@@ -313,24 +323,32 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 spareHandleStarted = false;
             }
         } catch (OperationException ex) {
-            assert OperationException.ERROR_TYPE.PROXY.equals (ex.getErrorType ());
             log.log (Level.INFO, ex.getMessage (), ex);
-            if (runInBackground ()) {
-                handleCancel ();
-                notifyNetworkProblem (ex);
-            } else {
-                JButton tryAgain = new JButton ();
-                Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
-                NetworkProblemPanel problem = new NetworkProblemPanel (
-                        getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
-                        new JButton [] { tryAgain, model.getCancelButton (wd) });
-                Object ret = problem.showNetworkProblemDialog ();
-                if (tryAgain.equals(ret)) {
-                    // try again
-                    return false;
-                } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+            if (OperationException.ERROR_TYPE.PROXY == ex.getErrorType ()) {
+                if (runInBackground ()) {
                     handleCancel ();
+                    notifyNetworkProblem (ex);
+                } else {
+                    JButton tryAgain = new JButton ();
+                    Mnemonics.setLocalizedText (tryAgain, getBundle ("InstallStep_NetworkProblem_Continue")); // NOI18N
+                    NetworkProblemPanel problem = new NetworkProblemPanel (
+                            getBundle ("InstallStep_NetworkProblem_Text", ex.getLocalizedMessage ()), // NOI18N
+                            new JButton [] { tryAgain, model.getCancelButton (wd) });
+                    Object ret = problem.showNetworkProblemDialog ();
+                    if (tryAgain.equals(ret)) {
+                        // try again
+                        return false;
+                    } else if (DialogDescriptor.CLOSED_OPTION.equals (ret)) {
+                        handleCancel ();
+                    }
                 }
+            } else {
+                // general problem, show more
+                String pluginName = detailLabel == null || detailLabel.getText ().length () == 0 ? getBundle ("InstallStep_DownloadProblem_SomePlugins") : detailLabel.getText ();
+                String message = getBundle ("InstallStep_DownloadProblem", pluginName, ex.getLocalizedMessage ());
+                Exceptions.attachLocalizedMessage (ex, message);                
+                log.log (Level.SEVERE, null, ex);
+                handleCancel ();
             }
         }
         return true;
@@ -558,6 +576,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         panel.hideRunInBackground ();
         if (runInBackground ()) {
             InstallSupport support = model.getInstallSupport ();
+            resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
             support.doRestartLater (restarter);
             try {
                 model.doCleanup (false);
@@ -606,8 +625,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         flasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
             public void run () {
-                JLabel balloon = new JLabel (tooltip);
-                BalloonManager.show (flasher, balloon, new AbstractAction () {
+                BalloonManager.show (flasher, createBalloonContent (tooltip), new AbstractAction () {
                     public void actionPerformed (ActionEvent e) {
                         confirmOnClick.run ();
                     }
@@ -618,9 +636,25 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             SwingUtilities.invokeLater (showBalloon);
         }
         flasher.addMouseListener (new MouseAdapter () {
+            RequestProcessor.Task t = null;
+            private RequestProcessor RP = new RequestProcessor ("balloon-manager"); // NOI18N
+
             @Override
-            public void mouseEntered (MouseEvent e) {
-                showBalloon.run ();
+            public void mouseEntered(MouseEvent e) {
+                t = RP.post (new Runnable () {
+                    public void run () {
+                        showBalloon.run ();
+                    }
+                }, ToolTipManager.sharedInstance ().getInitialDelay ());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if( null != t ) {
+                    t.cancel ();
+                    t = null;
+                    BalloonManager.dismissSlowly (ToolTipManager.sharedInstance ().getDismissDelay ());
+                }
             }
         });
     }
@@ -644,11 +678,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         nwProblemFlasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
             public void run () {
-                JLabel balloon = new JLabel (getBundle ("InstallSupport_InBackground_NetworkError")); // NOI18N
-                BalloonManager.show (nwProblemFlasher, balloon, new AbstractAction () {
-                    public void actionPerformed (ActionEvent e) {
-                        onMouseClick.run ();
-                    }
+                BalloonManager.show (nwProblemFlasher,
+                        createBalloonContent (getBundle ("InstallSupport_InBackground_NetworkError")), // NOI18N
+                        new AbstractAction () {
+                            public void actionPerformed (ActionEvent e) {
+                                onMouseClick.run ();
+                            }
                 }, 0);
             }
         };
@@ -659,6 +694,16 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 showBalloon.run ();
             }
         });
+    }
+
+    private static JComponent createBalloonContent (String msg) {
+        JPanel panel = new JPanel (new GridBagLayout ());
+        panel.setOpaque (false);
+        JLabel top = new JLabel (msg);
+        top.setIcon (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/autoupdate/ui/resources/info_icon.png"))); //NOI18N
+        top.setIconTextGap (10);
+        panel.add (top, new GridBagConstraints (0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets (0, 0, 0, 0), 0, 0));
+        return panel;
     }
 
     public HelpCtx getHelp() {
@@ -687,6 +732,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
+                resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 handleLazyUnits (clearLazyUnits, false);
                 try {
                     support.doRestart (restarter, null);
@@ -695,6 +741,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 }
                 
             } else {
+                resetLastCheckWhenUpdatingFirstClassModules (model.getAllUpdateElements ());
                 support.doRestartLater (restarter);
                 handleLazyUnits (clearLazyUnits, true);
                 try {
@@ -765,5 +812,18 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
 
     private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (InstallStep.class, key, params);
+    }
+    
+    private static void resetLastCheckWhenUpdatingFirstClassModules (Collection<UpdateElement> toUpdate) {
+        boolean resetChecking = false;
+        for (UpdateElement el : toUpdate) {
+            if (Utilities.getFirstClassModules ().contains (el.getCodeName ())) {
+                resetChecking = true;
+                break;
+            }
+        }
+        if (resetChecking) {
+            AutoupdateSettings.setLastCheck (null);
+        }
     }
 }

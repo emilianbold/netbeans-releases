@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
     <folder name="WarmUp">
@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Actions">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-        
+
         <folder name="Edit">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-ui-sysopen-SystemOpenAction.instance"/>
@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-ReplaceAction.instance"/>
             <file name="org-openide-actions-UndoAction.instance"/>
         </folder>
-        
+
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-EditAction.instance"/>
@@ -95,38 +95,49 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-NewTemplateAction.instance"/>
             <file name="org-netbeans-core-actions-JumpNextAction.instance"/>
             <file name="org-netbeans-core-actions-JumpPrevAction.instance"/>
-            
+
         </folder>
-        
+
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
-            <file name="org-netbeans-core-actions-LogAction.instance"/>	 
+            <file name="org-netbeans-core-actions-LogAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.core.actions.LogAction"/>
+                <attr name="noIconInMenu" boolvalue="true"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/resources/log-file.gif"/>
+                <attr name="displayName" bundlevalue="org.netbeans.core.actions.Bundle#MSG_LogTab_name"/>
+            </file>
         </folder>        
         
         <folder name="Tools">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </folder>
-        
+
         <folder name="Window">
-            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.core.actions.GlobalPropertiesAction"/>
+                <attr name="iconBase" stringvalue="org/netbeans/core/resources/frames/globalProperties.gif"/>
+                <attr name="displayName" bundlevalue="org.netbeans.core.actions.Bundle#GlobalProperties"/>
+            </file>
             <file name="org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             <file name="org-netbeans-core-actions-NextViewCallbackAction.instance"/>
         </folder>
-        
+
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
         </folder>
-        
+
        <folder name="Other">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-        </folder> 
-        
+        </folder>
+
     </folder>
-    
-    
+
+
     <folder name="Menu">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         <folder name="File">
@@ -200,17 +211,18 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2100"/>
             </file>
         </folder>
-        
+
         <folder name="View">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-netbeans-core-actions-HTMLViewAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
-            <file name="org-netbeans-core-actions-LogAction.instance">
+            <file name="org-netbeans-core-actions-LogAction.shadow">
                 <attr name="position" intvalue="500"/>
+                <attr name="originalFile" stringvalue="Actions/View/org-netbeans-core-actions-LogAction.instance"/>
             </file>	 
         </folder>
-        
+
         <folder name="GoTo">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="400"/>
@@ -223,7 +235,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1800"/>
             </file>
             </folder>
-        
+
         <folder name="Tools">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="position" intvalue="1000"/>
@@ -240,8 +252,8 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1300"/>
             </file>
             <file name="org-netbeans-core-actions-OptionsAction.instance"/>
-        </folder> 
-        
+        </folder>
+
         <folder name="Window">
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
@@ -257,16 +269,16 @@ made subject to such option by the copyright holder.
             </file>
             <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
             <file name="org-netbeans-core-actions-AboutAction.instance">
-                <attr name="position" intvalue="1300"/>
+                <attr name="position" intvalue="1500"/>
             </file>
         </folder>
-        
+
     </folder>
-    
+
     <folder name="Toolbars">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/toolbarsOption.gif"/>
-        <!-- 
+        <!--
         Specifying the file Standard.xml in this place in your layer will
         override the default toolbar configuration.
         The file should contain a description of a toolbar configuration; for syntax
@@ -274,7 +286,8 @@ made subject to such option by the copyright holder.
         Adding actions into subfolders of this folder in the XML layer
         of your module will customize the main window toolbars.
         -->
-        <folder name="Edit">
+        <folder name="Clipboard">
+            <attr name="position" intvalue="200"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-CutAction.instance">
                 <attr name="position" intvalue="100"/>
@@ -285,50 +298,55 @@ made subject to such option by the copyright holder.
             <file name="org-openide-actions-PasteAction.instance">
                 <attr name="position" intvalue="300"/>
             </file>
+        </folder>
+        <folder name="UndoRedo">
+            <attr name="position" intvalue="300"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-UndoAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
             <file name="org-openide-actions-RedoAction.instance">
                 <attr name="position" intvalue="500"/>
             </file>
-            <!-- #100902: Find action removed upon usability expert request -->
         </folder>
         <folder name="File">
+            <attr name="position" intvalue="100"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-SaveAllAction.instance">
                 <attr name="position" intvalue="400"/>
             </file>
         </folder>
         <folder name="Memory">
+            <attr name="position" intvalue="600"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <file name="org-openide-actions-GarbageCollectAction.instance">
                 <attr name="position" intvalue="100"/>
             </file>
         </folder>
-        
+
         <!-- specify toolbar configuration for platform ui. -->
         <file name="Standard.xml" url="Standard.xml">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
         </file>
     </folder> <!-- Toolbars -->
-    
+
     <folder name="Templates">
         <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$Templates"/>
-        
+
         <folder name="Services">
             <attr name="simple" boolvalue="false"/>
             <attr name="position" intvalue="0"/>
             <attr name="helpID" stringvalue="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices"/>
-            
+
             <folder name="Browsers">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             </folder>
-            
-        </folder>    
-        
+
+        </folder>
+
         <!-- XXX these two should be elsewhere, probably (core/favorites?): -->
-        
+
         <!-- folder for all privileged templates -->
         <folder name="Privileged">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
@@ -336,7 +354,7 @@ made subject to such option by the copyright holder.
             <attr name="simple" boolvalue="false"/>
             <attr name="position" intvalue="0"/>
         </folder>
-        
+
         <!-- folder for all recent templates -->
         <folder name="Recent">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
@@ -344,9 +362,9 @@ made subject to such option by the copyright holder.
             <attr name="simple" boolvalue="false"/>
             <attr name="position" intvalue="0"/>
         </folder>
-        
+
     </folder>
-    
+
     <folder name="Services">
         <folder name="Browsers">
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/webbrowsercateg.gif"/>
@@ -359,25 +377,16 @@ made subject to such option by the copyright holder.
             <attr name="helpID" stringvalue="org.netbeans.core.services.Browsers"/>
         </folder>
     </folder>
-    
+
     <folder name="UI">
-        <!-- settings categories UI presentation -->
+        <!-- Advanced Options UI presentation - Not used in NetBeans IDE but kept here for possible platform users. -->
         <folder name="Services">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
-            
-            <folder name="IDEConfiguration"> <!-- PENDING rename to somethink like APP Settings or so -->
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-                
-                <folder name="ServerAndExternalToolSettings">
-
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-
-                </folder> <!-- ServerAndExternalToolSettings -->
-            </folder> <!-- IDEConfiguration -->
-            
         </folder> <!-- Services -->
+        <folder name="Roots">
+        </folder>
     </folder>  <!-- UI -->
 
     <folder name="Windows2">
@@ -385,29 +394,29 @@ made subject to such option by the copyright holder.
         <file name="WindowManager.wswmgr" url="windowmanager/windowmanager.wswmgr" />
         -->
     <folder name="Modes">
-    
+
     <!-- Note, editor mode defined directly in core/windows, to allow
             winsys run correctly in platform use, without core/ui -->
-            
+
     <file name="explorer.wsmode" url="windowmanager/explorer.wsmode"/>
     <folder name="explorer"/>
-    
+
     <file name="properties.wsmode" url="windowmanager/properties.wsmode"/>
     <folder name="properties">
         <file name="properties.wstcref" url="properties.wstcref"/>
     </folder>
-    
+
     <file name="leftSlidingSide.wsmode" url="windowmanager/leftside.wsmode"/>
     <folder name="leftSlidingSide"/>
-    
+
     <file name="rightSlidingSide.wsmode" url="windowmanager/rightside.wsmode"/>
     <folder name="rightSlidingSide"/>
-        
+
         <file name="bottomSlidingSide.wsmode" url="windowmanager/bottomside.wsmode"/>
         <folder name="bottomSlidingSide"/>
-            
+
         </folder>
-        
+
         <folder name="Groups">
             <folder name="form">
                 <file name="properties.wstcgrp" url="properties.wstcgrp"/>
@@ -416,14 +425,14 @@ made subject to such option by the copyright holder.
                 <file name="properties.wstcgrp" url="properties.wstcgrp"/>
             </folder>
         </folder>
-        
+
         <folder name="Components">
             <file name="properties.settings" url="properties.xml"/>
         </folder>
-        
+
     </folder>
-    
-    
+
+
     <folder name="Loaders">
         <folder name="folder">
             <folder name="any">
@@ -482,12 +491,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                         <attr name="position" intvalue="1700"/>
                     </file>
-                    
+
                 </folder>
             </folder>
         </folder>
-        
-        
+
+
         <folder name="content">
             <folder name="unknown">
                 <folder name="Actions">
@@ -558,7 +567,7 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-        
+
         <folder name="application">
             <folder name="x-nbsettings">
                 <folder name="Actions">
@@ -614,12 +623,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="org.openide.actions.PropertiesAction"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    
+
                 </folder>
             </folder>
         </folder>
-        
-        
+
+
         <folder name="text">
             <folder name="xml">
                 <folder name="Actions">
@@ -682,17 +691,26 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
-        
+
     </folder>
-    
+
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-core-ui-options-filetypes-FileAssociationsAdvancedOption.instance"/>
         </folder>
         <file name="General.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.core.ui.options.general.GeneralOptions"/>
+            <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.OptionsCategory.createCategory"/>
+
+            <attr name="title" bundlevalue="org.netbeans.core.ui.options.general.Bundle#CTL_General_Options_Title"/>
+            <attr name="categoryName" bundlevalue="org.netbeans.core.ui.options.general.Bundle#CTL_General_Options"/>
+            <attr name="iconBase" stringvalue="org/netbeans/modules/options/resources/generalOptions.png"/>
+            <attr name="controller" newvalue="org.netbeans.core.ui.options.general.GeneralOptionsPanelController"/>
+            <attr name="keywords" bundlevalue="org.netbeans.core.ui.options.general.Bundle#KW_General"/>
+            <attr name="keywordsCategory" stringvalue="General"/>
+            <attr name="description" bundlevalue="org.netbeans.core.ui.options.general.Bundle#CTL_General_Options_Description"/>
+
             <attr name="position" intvalue="100"/>
         </file>
     </folder>
-    
+
 </filesystem>

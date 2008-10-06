@@ -100,7 +100,7 @@ public final class EditorRegistry {
      * losing the focus {@link FocusEvent#getOppositeComponent()}.
      * The {@link java.beans.PropertyChangeEvent#getNewValue()} will be the text component gaining the focus.
      */
-    public static final String FOCUS_GAINED_PROPERTY = "focusGained";
+    public static final String FOCUS_GAINED_PROPERTY = "focusGained"; //NOI18N
     
     /**
      * Fired when a registered focused component has lost the focus.
@@ -111,7 +111,7 @@ public final class EditorRegistry {
      * losing the focus and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the component gaining the focus {@link FocusEvent#getOppositeComponent()}.
      */
-    public static final String FOCUS_LOST_PROPERTY = "focusLost";
+    public static final String FOCUS_LOST_PROPERTY = "focusLost"; //NOI18N
     
     /**
      * Fired when document property of the focused component changes
@@ -121,7 +121,7 @@ public final class EditorRegistry {
      * of the focused text component and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the new document set to the focused text component.
      */
-    public static final String FOCUSED_DOCUMENT_PROPERTY = "focusedDocument";
+    public static final String FOCUSED_DOCUMENT_PROPERTY = "focusedDocument"; //NOI18N
 
     /**
      * Fired when the last focused component (returned previously from {@link #lastFocusedComponent()})
@@ -140,7 +140,7 @@ public final class EditorRegistry {
      * ({@link #componentList()} would return empty list). If the client
      * holds per-last-focused-component data it should clear them.
      */
-    public static final String LAST_FOCUSED_REMOVED_PROPERTY = "lastFocusedRemoved";
+    public static final String LAST_FOCUSED_REMOVED_PROPERTY = "lastFocusedRemoved"; //NOI18N
 
     /**
      * Double linked list of weak references to text components.
@@ -235,53 +235,67 @@ public final class EditorRegistry {
      * 
      * @param c non-null text component to be registered.
      */
-    static synchronized void register(JTextComponent c) {
-        assert (c != null);
-        if (item(c) == null) { // Not registered yet
-            Item item = new Item(c);
-            c.putClientProperty(Item.class, item);
-            c.addFocusListener(FocusL.INSTANCE);
-            c.addAncestorListener(AncestorL.INSTANCE);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "EditorRegistry.register(): " + dumpComponent(c) + '\n');
-            }
-            // By default do not add the component to be last in the item list
-            // at this point since e.g. the component from warmup task(s) would show up
-            // in the item list and they would never be removed
-            // since they have no ancestor and they do not become focused ever.
-            if (c.isFocusOwner()) { // If the focus owner then simulate the focus was gained
-                focusGained(c, null); // opposite could eventually be got from Focus Manager
-            } else if (c.isDisplayable()) { // Simulate that addNotify() was called
-                itemMadeDisplayable(item);
+    static void register(JTextComponent c) {
+        ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+        synchronized (EditorRegistry.class) {
+            assert (c != null);
+            if (item(c) == null) { // Not registered yet
+                Item item = new Item(c);
+                c.putClientProperty(Item.class, item);
+                c.addFocusListener(FocusL.INSTANCE);
+                c.addAncestorListener(AncestorL.INSTANCE);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "EditorRegistry.register(): " + dumpComponent(c) + '\n'); //NOI18N
+                }
+                // By default do not add the component to be last in the item list
+                // at this point since e.g. the component from warmup task(s) would show up
+                // in the item list and they would never be removed
+                // since they have no ancestor and they do not become focused ever.
+                if (c.isFocusOwner()) { // If the focus owner then simulate the focus was gained
+                    _focusGained(c, null, events); // opposite could eventually be got from Focus Manager
+                } else if (c.isDisplayable()) { // Simulate that addNotify() was called
+                    itemMadeDisplayable(item);
+                }
             }
         }
+        fireEvents(events);
     }
     
     static synchronized void setIgnoredAncestorClass(Class ignoredAncestorClass) {
         EditorRegistry.ignoredAncestorClass = ignoredAncestorClass;
     }
 
-    static synchronized void notifyClose(JComponent c) {
-        // Go through the present items and remove those that have the "c" as parent.
-        Item item = items;
-        while (item != null) {
-            JTextComponent textComponent = item.get();
-            if (textComponent == null || (item.ignoreAncestorChange && c.isAncestorOf(textComponent))) {
-                // Explicitly call focusLost() before physical removal from the registry.
-                // In practice this notification happens first before focusLost() from focus listener.
-                if (textComponent != null) {
-                    focusLost(textComponent, null); // Checks if the component is focused and does nothing otherwise
-                    item = removeFromRegistry(item);
-                } else { // Null text component - just remove the item
-                    item = removeFromItemList(item);
+    static void notifyClose(JComponent c) {
+        ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+        synchronized (EditorRegistry.class) {
+            // Go through the present items and remove those that have the "c" as parent.
+            Item item = items;
+            while (item != null) {
+                JTextComponent textComponent = item.get();
+                if (textComponent == null || (item.ignoreAncestorChange && c.isAncestorOf(textComponent))) {
+                    // Explicitly call focusLost() before physical removal from the registry.
+                    // In practice this notification happens first before focusLost() from focus listener.
+                    if (textComponent != null) {
+                        _focusLost(textComponent, null, events); // Checks if the component is focused and does nothing otherwise
+                        item = removeFromRegistry(item, events);
+                    } else { // Null text component - just remove the item
+                        item = removeFromItemList(item);
+                    }
+                } else {
+                    item = item.next;
                 }
-            } else {
-                item = item.next;
             }
         }
+        fireEvents(events);
     }
 
-    static synchronized void focusGained(JTextComponent c, Component origFocused) {
+    static void focusGained(JTextComponent c, Component origFocused) {
+        ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+        EditorRegistry._focusGained(c, origFocused, events);
+        fireEvents(events);
+    }
+
+    private synchronized static void _focusGained(JTextComponent c, Component origFocused, List<PropertyChangeEvent> events) {
         Item item = item(c);
         assert (item != null) : "Not registered!"; // NOI18N
 
@@ -292,27 +306,33 @@ public final class EditorRegistry {
 
         c.addPropertyChangeListener(PropertyDocL.INSTANCE);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, FOCUS_GAINED_PROPERTY + ": " + dumpComponent(c) + '\n');
+            LOG.log(Level.FINE, FOCUS_GAINED_PROPERTY + ": " + dumpComponent(c) + '\n'); //NOI18N
             logItemListFinest();
         }
-        firePropertyChange(FOCUS_GAINED_PROPERTY, origFocused, c);
+        events.add(new PropertyChangeEvent(EditorRegistry.class, FOCUS_GAINED_PROPERTY, origFocused, c));
     }
     
     static void focusLost(JTextComponent c, Component newFocused) {
+        ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+        EditorRegistry._focusLost(c, newFocused, events);
+        fireEvents(events);
+    }
+
+    private static synchronized void _focusLost(JTextComponent c, Component newFocused, List<PropertyChangeEvent> events) {
         Item item = item(c);
         assert (item != null) : "Not registered!"; // NOI18N
         // For explicit close notifications: in practice the closing comes first before focus lost.
         if (item.focused) {
             item.focused = false;
             if (!item.ignoreAncestorChange && firstValidComponent() != c) {
-                throw new IllegalStateException("Invalid ordering of focusLost()");
+                throw new IllegalStateException("Invalid ordering of focusLost()"); //NOI18N
             }
             c.removePropertyChangeListener(PropertyDocL.INSTANCE);
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, FOCUS_LOST_PROPERTY + ": " + dumpComponent(c) + '\n');
+                LOG.log(Level.FINE, FOCUS_LOST_PROPERTY + ": " + dumpComponent(c) + '\n'); //NOI18N
                 logItemListFinest();
             }
-            firePropertyChange(FOCUS_LOST_PROPERTY, c, newFocused);
+            events.add(new PropertyChangeEvent(EditorRegistry.class, FOCUS_LOST_PROPERTY, c, newFocused));
         }
     }
     
@@ -323,22 +343,22 @@ public final class EditorRegistry {
         addToItemListAsLast(item);
         JTextComponent c = item.get();
         if (c == null)
-            throw new IllegalStateException("Component should be non-null");
+            throw new IllegalStateException("Component should be non-null"); //NOI18N
         
         // Remember whether component should not be removed from registry upon removeNotify()
         item.ignoreAncestorChange = (SwingUtilities.getAncestorOfClass(ignoredAncestorClass, c) != null);
         if (LOG.isLoggable(Level.FINER)) {
-            LOG.fine("ancestorAdded: " + dumpComponent(item.get()) + '\n');
+            LOG.fine("ancestorAdded: " + dumpComponent(item.get()) + '\n'); //NOI18N
             logItemListFinest();
         }
     }
     
     static void focusedDocumentChange(JTextComponent c, Document oldDoc, Document newDoc) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, FOCUSED_DOCUMENT_PROPERTY + ": " + dumpComponent(c)
-                    + "\n    OLDDoc=" + oldDoc + "\n    NEWDoc=" + newDoc + '\n');
+            LOG.log(Level.FINE, FOCUSED_DOCUMENT_PROPERTY + ": " + dumpComponent(c) //NOI18N
+                    + "\n    OLDDoc=" + oldDoc + "\n    NEWDoc=" + newDoc + '\n'); //NOI18N
         }
-        firePropertyChange(FOCUSED_DOCUMENT_PROPERTY, oldDoc, newDoc);
+        pcs.firePropertyChange(FOCUSED_DOCUMENT_PROPERTY, oldDoc, newDoc);
     }
     
     private static JTextComponent firstValidComponent() {
@@ -415,20 +435,20 @@ public final class EditorRegistry {
      * @param item item to remove.
      * @return next item in registry.
      */
-    static Item removeFromRegistry(Item item) {
+    static Item removeFromRegistry(Item item, List<PropertyChangeEvent> events) {
         boolean lastFocused = (items == item);
         // Remove component from item chain
         JTextComponent component = item.get();
         item = removeFromItemList(item);
         if (component != null) {
             if (LOG.isLoggable(Level.FINEST)) {
-                LOG.fine("Component removed: " + dumpComponent(component) + '\n');
+                LOG.fine("Component removed: " + dumpComponent(component) + '\n'); //NOI18N
                 logItemListFinest();
             }
             if (lastFocused) {
-                firePropertyChange(LAST_FOCUSED_REMOVED_PROPERTY, component, lastFocusedComponent());
+                events.add(new PropertyChangeEvent(EditorRegistry.class, LAST_FOCUSED_REMOVED_PROPERTY, component, lastFocusedComponent()));
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Fired LAST_FOCUSED_REMOVED_PROPERTY for " + dumpComponent(component) + '\n');
+                    LOG.fine("Fired LAST_FOCUSED_REMOVED_PROPERTY for " + dumpComponent(component) + '\n'); //NOI18N
                 }
             }
         }
@@ -440,21 +460,23 @@ public final class EditorRegistry {
         Item previous = null;
         while (item != null) {
             if (!item.linked)
-                throw new IllegalStateException("item=" + item + " is in list but item.linked is false.");
+                throw new IllegalStateException("item=" + item + " is in list but item.linked is false."); //NOI18N
             if (item.previous != previous)
-                throw new IllegalStateException("Invalid previous of item=" + item);
+                throw new IllegalStateException("Invalid previous of item=" + item); //NOI18N
             if (item.ignoreAncestorChange && (item.runningTimer != null))
-                throw new IllegalStateException("item=" + item + " has running timer.");
+                throw new IllegalStateException("item=" + item + " has running timer."); //NOI18N
             if (item.focused && item != items)
-                throw new IllegalStateException("Non-first component has focused flag.");
+                throw new IllegalStateException("Non-first component has focused flag."); //NOI18N
 
             previous = item;
             item = item.next;
         }
     }
 
-    static void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        pcs.firePropertyChange(propertyName, oldValue, newValue);
+    static void fireEvents(List<PropertyChangeEvent> events) {
+        for(PropertyChangeEvent e : events) {
+            pcs.firePropertyChange(e);
+        }
     }
     
     static void logItemListFinest() {
@@ -465,22 +487,22 @@ public final class EditorRegistry {
     
     private static String dumpItemList() {
         StringBuilder sb = new StringBuilder(256);
-        sb.append("---------- EditorRegistry Dump START ----------\n");
+        sb.append("---------- EditorRegistry Dump START ----------\n"); //NOI18N
         int i = 0;
         Item item = items;
         while (item != null) {
             ArrayUtilities.appendBracketedIndex(sb, i, 1);
-            sb.append(' ');
+            sb.append(' '); //NOI18N
             if (item.focused)
-                sb.append("Focused, ");
+                sb.append("Focused, "); //NOI18N
             if (item.ignoreAncestorChange)
-                sb.append("IgnoreAncestorChange, ");
+                sb.append("IgnoreAncestorChange, "); //NOI18N
             sb.append(dumpComponent(item.get()));
-            sb.append('\n');
+            sb.append('\n'); //NOI18N
             item = item.next;
             i++;
         }
-        sb.append("---------- EditorRegistry Dump END ----------\n");
+        sb.append("---------- EditorRegistry Dump END ----------\n"); //NOI18N
         return sb.toString();
     }
     
@@ -492,8 +514,8 @@ public final class EditorRegistry {
                 streamDesc = doc.getProperty(Document.StreamDescriptionProperty);
             }
         }
-        return "component[IHC=" + System.identityHashCode(c)
-                + "]:" + ((streamDesc != null) ? streamDesc : c);
+        return "component[IHC=" + System.identityHashCode(c) //NOI18N
+                + "]:" + ((streamDesc != null) ? streamDesc : c); //NOI18N
     }
     
     /**
@@ -539,10 +561,10 @@ public final class EditorRegistry {
 
         @Override
         public String toString() {
-            return "component=" + get() + ", linked=" + linked +
-                    ", hasPrevious=" + (previous != null) + ", hasNext=" + (next != null) +
-                    ", ignoreAncestorChange=" + ignoreAncestorChange +
-                    ", hasTimer=" + (runningTimer != null);
+            return "component=" + get() + ", linked=" + linked + //NOI18N
+                    ", hasPrevious=" + (previous != null) + ", hasNext=" + (next != null) + //NOI18N
+                    ", ignoreAncestorChange=" + ignoreAncestorChange + //NOI18N
+                    ", hasTimer=" + (runningTimer != null); //NOI18N
         }
 
     }
@@ -553,7 +575,7 @@ public final class EditorRegistry {
 
         public void focusGained(FocusEvent e) {
             EditorRegistry.focusGained((JTextComponent)e.getSource(), e.getOppositeComponent());
-            
+
         }
 
         public void focusLost(FocusEvent e) {
@@ -567,7 +589,7 @@ public final class EditorRegistry {
         static final PropertyDocL INSTANCE = new PropertyDocL();
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("document".equals(evt.getPropertyName())) {
+            if ("document".equals(evt.getPropertyName())) { //NOI18N
                 focusedDocumentChange((JTextComponent)evt.getSource(),
                         (Document)evt.getOldValue(), (Document)evt.getNewValue());
             }
@@ -600,18 +622,22 @@ public final class EditorRegistry {
             // the ancestor removal is not significant and the registry expects
             // that the closing of the component will be notified explicitly.
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.fine("ancestorRemoved for " + dumpComponent(component) +
-                        "; ignoreAncestorChange=" + item.ignoreAncestorChange + '\n');
+                LOG.fine("ancestorRemoved for " + dumpComponent(component) + //NOI18N
+                        "; ignoreAncestorChange=" + item.ignoreAncestorChange + '\n'); //NOI18N
             }
             if (!item.ignoreAncestorChange) {
                 // Only start timer when ancestor changes are not ignored.
                 item.runningTimer = new Timer(BEFORE_REMOVE_DELAY,
                     new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            Item item = item(component);
-                            item.runningTimer.stop();
-                            item.runningTimer = null;
-                            removeFromRegistry(item);
+                            ArrayList<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
+                            synchronized (EditorRegistry.class) {
+                                Item item = item(component);
+                                item.runningTimer.stop();
+                                item.runningTimer = null;
+                                removeFromRegistry(item, events);
+                            }
+                            fireEvents(events);
                         }
                     }
                 );

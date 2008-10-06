@@ -72,6 +72,7 @@ import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -125,7 +126,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private Component customComponent;
 
     
-    static Image PACKAGE_BADGE = Utilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
+    static Image PACKAGE_BADGE = ImageUtilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
     
     public RefactoringPanel(RefactoringUI ui) {
         this(ui,null);
@@ -213,7 +214,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private JToolBar getToolBar() {
         checkEventThread();
         refreshButton = new JButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/refresh.png")) // NOI18N
         );
         Dimension dim = new Dimension(24, 24);
@@ -229,11 +230,11 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         refreshButton.addActionListener(getButtonListener());
         // expand button settings
         expandButton = new JToggleButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/expandTree.png")) // NOI18N
         );
         expandButton.setSelectedIcon(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/colapseTree.png")) // NOI18N
         );
         expandButton.setMaximumSize(dim);
@@ -252,7 +253,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         toolBar.setFloatable(false); 
         
         logicalViewButton = new JToggleButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/logical_view.png")) // NOI18N
         );
         
@@ -269,7 +270,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         logicalViewButton.addActionListener(getButtonListener());
 
         physicalViewButton = new JToggleButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/file_view.png")) // NOI18N
         );
         
@@ -297,7 +298,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         }
         
         nextMatch = new JButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/nextmatch.png")) // NOI18N
         );
         
@@ -310,7 +311,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         nextMatch.addActionListener(getButtonListener());
 
         prevMatch = new JButton(
-            new ImageIcon(Utilities.loadImage(
+            new ImageIcon(ImageUtilities.loadImage(
             "org/netbeans/modules/refactoring/api/resources/prevmatch.png")) // NOI18N
         );
         
@@ -667,7 +668,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         errorsDesc.append("</font>"); // NOI18N
                     }
                     errorsDesc.append(']');
-                    final CheckNode root = new CheckNode(null, description + errorsDesc.toString(), new ImageIcon(Utilities.loadImage("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"))));
+                    final CheckNode root = new CheckNode(null, description + errorsDesc.toString(), new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"))));
                     HashMap nodes = new HashMap();
                     
                     final Cursor old = getCursor();

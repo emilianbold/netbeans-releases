@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<HTML>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<TITLE>New Mobile Designer Component Wizard</TITLE>
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</HEAD>
+<BODY>
+
+<h2>New Mobile Designer Component Wizard</h2>
+<p> <small><a href="#seealso">See Also</a></small></p>
+<p>Use the New Mobile Designer Component Wizard to create all of the necessary elements for adding a new custom component to the Visual Mobile Designer Palatte such as a branded splashscreen component. ge is the last page of this wizard.</p>
+<p>In this page, you specify the: </p>
+<ul>
+  <li>Name and location of the client to be created.</li>
+  <li>Types of code to be generated for the client.</li>
+</ul>
+<ul class="note"><li>If you want to re-generate the client and servlet files with different options, you do not have to re-create them in this wizard. You can click on the Settings file to change the options and regenerate the files.</li></ul>
+<p>To specify the name and location of the generated servlet, enter information 
+  in the following fields: </p>
+<ul>
+  <li><strong>Client Name.</strong> Name for the client file to be generated. 
+  </li>
+  <li><strong>Package.</strong> Package where the class will be located. </li>
+</ul>
+<p>Then choose from the following options. </p>
+    
+<ul>
+  <li><strong>Generate stubs. </strong>Generates stub (client-side proxy) methods 
+    on the client for each exported service. Method names are incorporated in 
+    the class name. Using<tt> HelloService</tt> for example, the <tt>sayHello()</tt> 
+    method is exported. The generated stub method creates a method on the client 
+    called <tt>example_HelloService_sayHello().</tt> If this option is not selected, 
+    only one method is generated on the client.</li>
+  <li><strong>Generate grouped calls. </strong>Generates additional code to support 
+    making multiple calls to server-side services in a single HTTP request and 
+    response. When turned on with the Generate Stub Methods option also turned 
+    on, a generated method is created on the client for each exported service 
+    with the stub method name ending in <tt>Grouped</tt>. Using <tt>HelloService</tt> 
+    for example, the <tt>sayHello()</tt> method is exported. The generated stub 
+    method<br>
+    creates a method on the client called <tt>example_HelloService_sayHelloGrouped()</tt>. 
+    <p> When the option is selected, the server is called only after several 
+      grouped calls are made and the <tt>getGroupedResults() </tt>method on the 
+      client class is called. All the method calls are invoked in a single HTTP 
+      request and response. Methods are invoked in the order they were called. 
+      Results are returned in an enumeration object. </p>
+    <p>If a server call causes an exception, the exception is thrown when <tt>getGroupedResults()</tt> 
+      is called. When an exception is thrown in a sequence of grouped calls, the 
+      calls following the exception are not processed. </p>
+  </li>
+  <li><strong>Allow floating point.</strong> Activates support for float and double 
+    data types.</li>
+  <li><strong>Generate tracing code.</strong> Generates tracing code that provides 
+    runtime information during the execution of remote calls. Client tracing output 
+    goes to the MIDP implementation standard output. Server tracing output goes 
+    to the server log file. Turn this option on to generate versions of client 
+    and server tracing code to help you if connection problems occur between the 
+    client and the server. </li>
+  <li>Optionally, choose Create sample MIDlet to create a sample MIDlet that can 
+    connect to the Web service. </li>
+</ul>
+<p>Clicking Finish generates:</p>
+<ul>
+  <li>A Java ME client class</li>
+  <li>A servlet and supporting classes</li>
+  <li>A settings file in xml format that can be used to regenerate the server 
+    and Java ME client classes.</li>
+  <li>Optionally, a MIDlet you can examine and modify. </li>
+</ul>
+<p><a name="seealso">See Also</a></p>
+<dl>
+  <dd><a href="mvd_about.html">About Visually Designing MIDP Applications</a></dd>
+<hr>
+<small><a href="../getstarted/credits.html">Legal Notices</a></small>
+</body>
+</html>

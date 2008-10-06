@@ -44,6 +44,7 @@ package org.netbeans.performance.mobility;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.mobility.window.*;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -53,8 +54,12 @@ import org.netbeans.junit.NbTestSuite;
 public class MeasureMobilityDialogsTest  {
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Dialogs suite");
+        PerformanceTestCase.prepareForMeasurements();
 
+        NbTestSuite suite = new NbTestSuite("UI Responsiveness Mobility Dialogs suite");
+        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilityDialogsTest");
+
+        // TODO add some test cases
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MobilityDeploymentManagerDialog.class)
                 .addTest(MobilityDeploymentManagerDialog.class, "measureTime")
                 .addTest(NewConfigurationDialog.class, "measureTime")
@@ -65,16 +70,6 @@ public class MeasureMobilityDialogsTest  {
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;
-//        NbTestSuite suite = new NbTestSuite();
-//
-//        // TODO add some test cases
-//        suite.addTest(new MobilityDeploymentManagerDialog("measureTime","Mobility Deployment Manager dialog open"));
-//        suite.addTest(new NewConfigurationDialog("measureTime","New Project Configuration dialog open"));
-//        suite.addTest(new SecurityManagerDialog("measureTime","Security Manager dialog open"));
-//        suite.addTest(new QuickRunDialog("measureTime","Quick Run dialog open"));
-//        suite.addTest(new ProjectPropertiesDialog("measureTime","Mobility project properties dialog open"));
-//        suite.addTest(new CloseProjectProperty("measureTime","Close Project Property Dialog"));
-//        return suite;
     }
     
 }

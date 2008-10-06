@@ -6,7 +6,7 @@
  * Use is subject to license terms.
 -->
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <title>JSF 1.2 Checkbox Group Component Properties Window</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
@@ -88,7 +88,7 @@ The object that represents the data that is sent when the page is submitted.
     <li>There is no usable way to bind this component to  database data. </li>
   </ul>
   <p>A common way to process the values chosen by the user is to bind this component to an <code>Object</code> array and check the array values when the user submits the page. The <code>selected</code> property must be a value binding expression that is evaluated to read and write an <code>Object</code>. An <code>Object</code> value read from the value binding expression identifies the selected checkbox. The <code>Object</code> value must be equal to the <code>value</code> attribute of at least one <code>Option</code> instance specified in the array obtained from the value binding expression assigned to the <code>items</code> property. </p>
-	<p>The write method of the <code>selected</code> property's value binding expression is called during the <code>UPDATE_MODEL_PHASE</code> of the JavaServer Faces lifecyle. If a checkbox is selected, an <code>Object</code> value is passed as an argument to the <code>write</code> method. The <ccode><code>Object</code> value is the value of the selected radio button. </p>
+	<p>The write method of the <code>selected</code> property's value binding expression is called during the <code>UPDATE_MODEL_PHASE</code> of the JavaServer Faces lifecyle. If a checkbox is selected, an <code>Object</code> value is passed as an argument to the <code>write</code> method. The <code>Object</code> value is the value of the selected radio button. </p>
     <p>See the link to the Listbox Components tutorial at the end of the page for more information. </p>
 	</li>
     <li><b>validatorExpression.</b><code> Type: MethodExpression</code><br>

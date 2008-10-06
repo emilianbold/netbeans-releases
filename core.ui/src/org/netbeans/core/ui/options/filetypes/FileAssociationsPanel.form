@@ -17,69 +17,66 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="lblFileAssociations" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sepFileAssociations" pref="461" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="lblExtension" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblType" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="lblFileAssociations" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblAssociatedAlso" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="sepFileAssociations" pref="461" max="32767" attributes="0"/>
+                              <Component id="lblAssociatedAlsoExt" pref="281" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="10" pref="10" max="10" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="lblExtension" min="-2" max="-2" attributes="0"/>
-                                  <Component id="lblType" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="lblAssociatedAlso" min="-2" max="-2" attributes="0"/>
+                                      <Component id="cbExtension" pref="236" max="32767" attributes="1"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="lblAssociatedAlsoExt" pref="281" max="32767" attributes="0"/>
                                   </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="cbExtension" pref="212" max="32767" attributes="1"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="cbType" alignment="0" pref="212" max="32767" attributes="1"/>
-                                      </Group>
-                                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Group type="102" alignment="0" attributes="0">
-                                              <Component id="btnNew" min="-2" pref="80" max="-2" attributes="1"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="btnRemove" min="-2" pref="80" max="-2" attributes="0"/>
-                                          </Group>
-                                          <Component id="btnDefault" min="-2" pref="80" max="-2" attributes="1"/>
-                                      </Group>
-                                  </Group>
+                                  <Component id="cbType" alignment="0" pref="236" max="32767" attributes="1"/>
                               </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="lblFilesIgnored" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="setFilesIgnored" pref="423" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                              <Component id="lblPattern" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                              <Component id="jScrollPane1" pref="301" max="32767" attributes="0"/>
-                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                              <Component id="btnDefaultIgnored" min="-2" pref="80" max="-2" attributes="1"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="btnNew" min="-2" max="-2" attributes="1"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnRemove" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Component id="btnDefault" min="-2" max="-2" attributes="1"/>
+                              </Group>
                           </Group>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="-2" pref="162" max="-2" attributes="0"/>
-                      <Component id="txtPatternError" pref="391" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="lblFilesIgnored" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="setFilesIgnored" pref="423" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                      <Component id="lblPattern" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="txtPatternError" alignment="0" pref="387" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jScrollPane1" pref="310" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="btnDefaultIgnored" min="-2" max="-2" attributes="1"/>
+                          </Group>
+                      </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -118,7 +115,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="lblPattern" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="btnDefaultIgnored" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" alignment="0" min="-2" pref="45" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" min="-2" pref="45" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="txtPatternError" pref="123" max="32767" attributes="0"/>
@@ -336,7 +333,10 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="txtPattern">
+        <Component class="javax.swing.JTextArea" name="txtPattern">
+          <Properties>
+            <Property name="lineWrap" type="boolean" value="true"/>
+          </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.RADVisualComponent$AccessibleParentEditor">
               <ComponentRef name="Form"/>
@@ -345,13 +345,13 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JTextPane" name="txtPatternError">
+    <Component class="javax.swing.JLabel" name="txtPatternError">
       <Properties>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="red" palette="1" red="ff" type="palette"/>
         </Property>
+        <Property name="verticalAlignment" type="int" value="1"/>
         <Property name="focusable" type="boolean" value="false"/>
-        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

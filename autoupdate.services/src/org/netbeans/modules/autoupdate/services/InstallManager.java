@@ -73,6 +73,7 @@ public class InstallManager extends InstalledFileLocator{
     // special directories in NB files layout
     static final String NBM_LIB = "lib"; // NOI18N
     static final String NBM_CORE = "core"; // NOI18N
+    static final String NETBEANS_DIRS = "netbeans.dirs"; // NOI18N
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
     private static List<File> clusters = new ArrayList<File>();
@@ -108,30 +109,21 @@ public class InstallManager extends InstalledFileLocator{
                 // target cluster still not found
                 if (res == null) {
                     
+                    // create UpdateTracking.EXTRA_CLUSTER_NAME
                     res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
                     res = checkTargetCluster(update, UpdateTracking.EXTRA_CLUSTER_NAME);
+                    
                     // no new cluster was created => use userdir
                     res = res == null? getUserDir () : res;
                     
-                    // create UpdateTracking.EXTRA_CLUSTER_NAME
-                    if (ERR.isLoggable (Level.INFO)) {
-                        if (targetCluster != null) {
-                            ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
-                                    " in " + update.getUpdateElement () + " wasn't found. Will be used " + res);
-                        }
+                    if (targetCluster != null) {
+                        ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
+                                " in " + update.getUpdateElement () + " wasn't found or was read only. Will be used " + res);
+                    } else {
+                        ERR.log (Level.INFO, res + " will be used as target cluster");
                     }
                     
                 }
-                
-                // if no writable => getUserDir()
-                if (ERR.isLoggable (Level.INFO)) {
-                    if (res == null || ! Utilities.canWriteInCluster (res)) {
-                        ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
-                                " in " + update.getUpdateElement () + " is not writable. Will be used " + res);
-                    }
-                }
-                res = res == null || ! Utilities.canWriteInCluster (res) ? getUserDir () : res;
-
                 
             } else {
                 // is local
@@ -143,21 +135,25 @@ public class InstallManager extends InstalledFileLocator{
     }
 
     private static File checkTargetCluster(UpdateElementImpl update, String targetCluster) {
+        if (targetCluster == null || targetCluster.length () == 0) {
+            return null;
+        }
         File res = null;
         // is global or
         // does have a target cluster?
-        for (File cluster : UpdateTracking.clusters(true)) {
-            if (targetCluster != null && targetCluster.equals(cluster.getName())) {
-                if (!cluster.exists()) {
-                    cluster.mkdirs();
-                    extendSystemFileSystem(cluster);
-                }
+        for (File cluster : UpdateTracking.clusters (true)) {
+            if (targetCluster.equals (cluster.getName ())) {
+                boolean wasNew = ! cluster.exists ();
                 if (Utilities.canWriteInCluster (cluster)) {
+                    if (wasNew) {
+                        cluster.mkdirs ();
+                        extendSystemFileSystem (cluster);
+                    }
                     res = cluster;
-                    break;
                 } else {
-                    ERR.log(Level.WARNING, "It's forbidden to write in target cluster " + targetCluster + " for " + update.getUpdateElement());
+                    ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
                 }
+                break;
             }
         }
 
@@ -184,8 +180,8 @@ public class InstallManager extends InstalledFileLocator{
                         sep = File.pathSeparator;
                     }
 
-                    System.setProperty("netbeans.dirs", sb.toString ()); // NOI18N
-                    File f = new File(new File(getUserDir(), InstallSupportImpl.DOWNLOAD_DIR), "netbeans.dirs");//NOI18N
+                    System.setProperty(NETBEANS_DIRS, sb.toString ());
+                    File f = new File(new File(getUserDir(), Utilities.DOWNLOAD_DIR), NETBEANS_DIRS);
                     if (!f.exists()) {
                         f.getParentFile().mkdirs();
                         f.createNewFile();
@@ -272,7 +268,7 @@ public class InstallManager extends InstalledFileLocator{
 
         if (res == null || ! Utilities.canWriteInCluster (res)) {
             // go to userdir if no writable cluster is known
-            ERR.log (Level.WARNING, "It's forbidden to write in target cluster " + res + 
+            ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + res + 
                     " for " + update.getUpdateElement ());
             res = UpdateTracking.getUserDir ();
         }

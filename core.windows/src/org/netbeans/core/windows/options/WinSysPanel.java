@@ -86,11 +86,6 @@ final class WinSysPanel extends javax.swing.JPanel {
                 isDragImageActionPerformed(evt);
             }
         });
-        isDragImage.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                isDragImageStateChanged(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -103,11 +98,6 @@ final class WinSysPanel extends javax.swing.JPanel {
                 isAlphaFloatingActionPerformed(evt);
             }
         });
-        isAlphaFloating.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                isAlphaFloatingStateChanged(evt);
-            }
-        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -117,9 +107,9 @@ final class WinSysPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(isSnapping, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapFloatingWindows")); // NOI18N
         isSnapping.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsSnappingTooltip")); // NOI18N
-        isSnapping.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                isSnappingStateChanged(evt);
+        isSnapping.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isSnappingActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -160,27 +150,18 @@ final class WinSysPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
-        
-}//GEN-LAST:event_isDragImageActionPerformed
-
-    private void isDragImageStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_isDragImageStateChanged
         updateDragSection();
         controller.changed();
-}//GEN-LAST:event_isDragImageStateChanged
-
-    private void isSnappingStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_isSnappingStateChanged
-        updateSnapSection();
-        controller.changed();
-    }//GEN-LAST:event_isSnappingStateChanged
+}//GEN-LAST:event_isDragImageActionPerformed
 
 private void isAlphaFloatingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isAlphaFloatingActionPerformed
-
+    controller.changed();
 }//GEN-LAST:event_isAlphaFloatingActionPerformed
 
-private void isAlphaFloatingStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_isAlphaFloatingStateChanged
-
-        controller.changed();
-}//GEN-LAST:event_isAlphaFloatingStateChanged
+private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isSnappingActionPerformed
+    updateSnapSection();
+    controller.changed();
+}//GEN-LAST:event_isSnappingActionPerformed
 
     void load() {
         boolean isNotSolaris = Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;

@@ -1,5 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
 <xsd:schema attributeFormDefault="unqualified"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="unqualified">
@@ -17,47 +57,101 @@
             <xsd:sequence>
                 <xsd:element name="direct_message" minOccurs="0" maxOccurs="unbounded" type="directMessageType"/>
             </xsd:sequence>
+            <xsd:attribute name="type" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="direct_message" type="directMessageType"/>
     <xsd:element name="user" type="userType"/>
     <xsd:element name="authorized" type="xsd:boolean"/>
+    <xsd:element name="nil-classes">
+        <xsd:complexType>
+            <xsd:attribute name="type" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="hash">
+        <xsd:complexType>
+            <xsd:all>
+                <xsd:element name="remaining-hits" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:int">
+                                <xsd:attribute name="type" type="xsd:string"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="hourly-limit" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:int">
+                                <xsd:attribute name="type" type="xsd:string"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="reset-time-in-seconds" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:int">
+                                <xsd:attribute name="type" type="xsd:string"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="reset-time" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:dateTime">
+                                <xsd:attribute name="type" type="xsd:string"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="error" nillable="true" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="request" minOccurs="0" type="xsd:string"/>
+            </xsd:all>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="authenticated" type="xsd:boolean"/>
+    <xsd:element name="ok" type="xsd:boolean"/>
+    <xsd:element name="friends" type="xsd:boolean"/>
     <xsd:complexType name="statusType">
-        <xsd:sequence>
-            <xsd:element name="created_at" type="xsd:string"/>
-            <xsd:element name="id" type="xsd:string"/>
-            <xsd:element name="text" type="xsd:string"/>
-            <xsd:element name="source" type="xsd:string"/>
-            <xsd:element name="truncated" type="xsd:boolean"/>
-            <xsd:element name="in_reply_to" type="xsd:string"/>
-            <xsd:element name="in_reply_to_user_id" type="xsd:string"/>
+        <xsd:all>
+            <xsd:element name="created_at" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="text" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="source" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="truncated" type="xsd:boolean" minOccurs="0"/>
+            <xsd:element name="in_reply_to_user_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="in_reply_to_status_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="favorited" type="xsd:string" minOccurs="0"/>
             <xsd:element name="user" type="userType" minOccurs="0"/>
-        </xsd:sequence>
+        </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="directMessageType">
-        <xsd:sequence>
-            <xsd:element name="id" type="xsd:string"/>
-            <xsd:element name="text" type="xsd:string"/>
-            <xsd:element name="sender_id" type="xsd:string"/>
-            <xsd:element name="recipient_id" type="xsd:string"/>
-            <xsd:element name="created_at" type="xsd:string"/>
-            <xsd:element name="sender_screen_name" type="xsd:string"/>
-            <xsd:element name="recipient_screen_name" type="xsd:string"/>
-            <xsd:element name="sender" type="userType"/>
-            <xsd:element name="recipient" type="userType"/>
-        </xsd:sequence>
+        <xsd:all>
+            <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="text" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="sender_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="recipient_id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="created_at" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="sender_screen_name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="recipient_screen_name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="sender" type="userType" minOccurs="0"/>
+            <xsd:element name="recipient" type="userType" minOccurs="0"/>
+        </xsd:all>
     </xsd:complexType>
     <xsd:complexType name="userType">
-        <xsd:sequence>
-            <xsd:element name="id" type="xsd:string"/>
-            <xsd:element name="name" type="xsd:string"/>
-            <xsd:element name="screen_name" type="xsd:string"/>
-            <xsd:element name="location" type="xsd:string"/>
-            <xsd:element name="description" type="xsd:string"/>
-            <xsd:element name="profile_image_url" type="xsd:anyURI"/>
-            <xsd:element name="url" type="xsd:anyURI"/>
-            <xsd:element name="protected" type="xsd:boolean"/>
-            <xsd:element name="followers_count" type="xsd:int"/>
+        <xsd:all>
+            <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="screen_name" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="location" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="profile_image_url" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="url" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="protected" type="xsd:boolean" minOccurs="0"/>
+            <xsd:element name="followers_count" type="xsd:int" minOccurs="0"/>
             <xsd:element name="profile_background_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_text_color" minOccurs="0" type="xsd:hexBinary"/>
             <xsd:element name="profile_link_color" minOccurs="0" type="xsd:hexBinary"/>
@@ -71,6 +165,6 @@
             <xsd:element name="statuses_count" minOccurs="0" type="xsd:int"/>
             <xsd:element name="status" minOccurs="0" type="statusType"/>
             <xsd:element name="created_at" minOccurs="0" type="xsd:string"/>
-        </xsd:sequence>
+        </xsd:all>
     </xsd:complexType>
 </xsd:schema>

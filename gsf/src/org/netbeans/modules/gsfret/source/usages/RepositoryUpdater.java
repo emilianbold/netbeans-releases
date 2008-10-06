@@ -52,6 +52,7 @@ import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +60,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.RandomAccess;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -71,8 +71,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.apache.lucene.document.DateTools;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
@@ -83,7 +81,6 @@ import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.queries.SourceLevelQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -147,7 +144,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());
     private static final Logger BUG_LOGGER = Logger.getLogger("ruby.indexerbug");
-    private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
+    private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn .hg"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
     //private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
@@ -185,14 +182,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Work currentWork;
     private boolean dirty;
     private int noSubmited;
+    private final AtomicBoolean closed;
     
     //Preprocessor support
     //private final Map<URL, JavaFileFilterImplementation> filters = Collections.synchronizedMap(new HashMap<URL, JavaFileFilterImplementation>());
-    private final FilterListener filterListener = new FilterListener ();    
+    //private final FilterListener filterListener = new FilterListener ();
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {
         try {
+            this.closed = new AtomicBoolean (false);
             this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
             this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
             this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -223,6 +222,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public void close () {                
+        this.closed.set(true);
         this.cp.removePropertyChangeListener(this);
         this.unregisterFileSystemListener();
         this.delay.cancel();
@@ -464,7 +464,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         if (fo == null) {
             return null;
         }
-        List<URL> clone = new ArrayList (this.scannedRoots);
+        List<URL> clone = new ArrayList<URL>(this.scannedRoots);
         for (URL root : clone) {
             FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo != null && FileUtil.isParentOf(rootFo,fo)) {
@@ -695,6 +695,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 }
                                 state = Utilities.topologicalSort(roots, depGraph);                                                                             
                                 for (java.util.ListIterator<URL> it = state.listIterator(state.size()); it.hasPrevious(); ) {                
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = it.previous();
                                     it.remove();
                                     updateFolder (rootURL,rootURL, true, handle);
@@ -730,11 +733,35 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                         newBinaries.add (binRoot);
                                     }
                                 }
+
                                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                 for (ClassPath.Entry entry : entries) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = entry.getURL();
                                     findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                 }                                
+                                
+                                if (PREINDEXING && depGraph.size() > 0) {
+                                    for (Language language : LanguageRegistry.getInstance()) {
+                                        Collection<FileObject> coreLibraries = language.getGsfLanguage().getCoreLibraries();
+                                        Indexer indexer = language.getIndexer();
+                                        if (indexer == null) {
+                                            continue;
+                                        }
+                                        if (coreLibraries != null) {
+                                            for (FileObject libFo : coreLibraries) {
+                                                URL binRoot = libFo.getURL();
+                                                if (indexer.acceptQueryPath(binRoot.toExternalForm())) {
+                                                    //newBinaries.add(binRoot);
+                                                    depGraph.put(binRoot, Collections.<URL>emptyList());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                
                                 CompileWorker.this.state = Utilities.topologicalSort(depGraph.keySet(), depGraph);
                                 deps.putAll(depGraph);
                                 completed = true;
@@ -769,6 +796,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     return null;
                                 }
                                 while (isDirty()) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     assert CompileWorker.this.state.isEmpty();                                    
                                     final List<ClassPath.Entry> entries = new LinkedList<ClassPath.Entry>();
                                     entries.addAll (cp.entries());
@@ -786,6 +816,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     }
                                     final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                     for (ClassPath.Entry entry : entries) {
+                                        if (closed.get()) {
+                                            return null;
+                                        }
                                         final URL rootURL = entry.getURL();
                                         findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                     }
@@ -981,7 +1014,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 return;
             }
             
-            // BEGIN TOR MODIFICATIONS
             // I don't want to start asking for the ClassPath of directories in the libraries
             // since these start yielding Java jars etc.
             if (true) {
@@ -995,7 +1027,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 //}
                 return;
             }
-            // END TOR MODIFICATIONS
             
             cycleDetector.push (rootURL);
             final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
@@ -1044,6 +1075,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
                 }
+                if (closed.get()) {
+                    return true;
+                }
                 final URL rootURL = it.next();
                 try {
                     it.remove();
@@ -1083,6 +1117,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             for (java.util.ListIterator<URL> it = this.state.listIterator(this.state.size()); it.hasPrevious(); ) {
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
+                }
+                if (closed.get()) {
+                    return true;
                 }
                 try {
                     final URL rootURL = it.previous();
@@ -1124,6 +1161,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             }
             return true;
         }
+
+        private boolean isBoot(ClassPath bootPath, FileObject rootFo) {
+            for (FileObject fo : bootPath.getRoots()) {
+                if (fo == rootFo) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         
         private void updateFolder(final URL folder, final URL root, boolean clean, final ProgressHandle handle) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -1152,7 +1199,8 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     compilePath = cp;
                 }
             }            
-            boolean isBoot = isInitialCompilation && ClassIndexManager.isBootRoot(root);
+            //boolean isBoot = isInitialCompilation && ClassIndexManager.isBootRoot(root);
+            boolean isBoot = isInitialCompilation && isBoot(bootPath, rootFo);
             if (!isBoot) {
                 String urlString = root.toExternalForm();
                 if (urlString.indexOf("/vendor/") != -1) {
@@ -1181,13 +1229,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     }
                 }
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
-                if (handle != null) {
-                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
-                    handle.setDisplayName(message);
-if (BUG_LOGGER.isLoggable(Level.FINE)) {
-    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder - updating handle " + handle + " to " + message + " + folderFile");
-}
-                }
+                
 //                //Preprocessor support
                 Object filter = null;
 //                JavaFileFilterImplementation filter = filters.get(root);
@@ -1244,6 +1286,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         } else { //if (!isBoot) {
                             final ClassIndexImpl ci = ClassIndexManager.get(language).getUsagesQuery(root);   
                             if (ci != null) {
+                                // I should only do this if allUpToDate is false!
                                 Map<String,String> ts = ci.getTimeStamps();
                                 if (ts != null && ts.size() > 0) {
                                     timeStamps.put(language, ts);
@@ -1256,6 +1299,14 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 if (allUpToDate) {
                     return;
                 }
+                
+                if (handle != null) {
+                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
+                    handle.setDisplayName(message);
+if (BUG_LOGGER.isLoggable(Level.FINE)) {
+    BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker.updateFolder - updating handle " + handle + " to " + message + " + folderFile");
+}
+                }
 
                 if (timeStamps.size() == 0) {
                     timeStamps = null;
@@ -1267,10 +1318,10 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 final ClasspathInfo cpInfo;
                 if (!this.ignoreExcludes.contains(root)) {
                     entry = getClassPathEntry(sourcePath, root);
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,false);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,false);
                 }
                 else {
-                    cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath, filter, true,true);
+                    cpInfo = ClasspathInfoAccessor.getInstance().create(bootPath,compilePath,sourcePath, filter, true,true);
                 }
                 
 //                Set<ElementHandle<TypeElement>> removed = isInitialCompilation ? null : new HashSet<ElementHandle<TypeElement>> ();
@@ -1334,7 +1385,6 @@ Set added = null;
                 }
                 if (!toCompile.isEmpty()) {
                     if (handle != null) {
-                        // BEGIN TOR MODIFICATIONS
                         // Show message for "indexing" rather than compiling since I'm not keeping trees around etc - it's
                         // all used to populate Lucene at this point.
                         //final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
@@ -1348,8 +1398,14 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     }
 
                     CachingIndexer cachingIndexer = CachingIndexer.get(root, toCompile.size());
+                    
+                    Map<Language,List<File>> seenTimestampedFiles = new HashMap<Language, List<File>>();
 
-                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, timeStamps);
+                    batchCompile(toCompile, rootFo, cpInfo, cachingIndexer, root, dirtyCrossFiles, added, timeStamps, seenTimestampedFiles);
+
+                    if (timeStamps != null) {
+                        deleteRemovedFiles(cachingIndexer, timeStamps, seenTimestampedFiles);
+                    }
 
                     if (cachingIndexer != null) {
                         cachingIndexer.flush();
@@ -1372,6 +1428,75 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             } finally {
                 if (!clean && isInitialCompilation) {
                     RepositoryUpdater.this.scannedRoots.add(root);
+                }
+            }
+        }
+
+        /** Delete any files from the index that we no longer see on disk. */
+        private void deleteRemovedFiles(CachingIndexer cachingIndexer, Map<Language, Map<String, String>> timeStamps, Map<Language, List<File>> seenTimestampedFiles) {
+            for (Language language : timeStamps.keySet()) {
+                List<File> seen = seenTimestampedFiles.get(language);
+                int seenCount = seen != null ? seen.size() : 0;
+                Map<String,String> stamps = timeStamps.get(language);
+                // TODO - do I really need to pull out the keySet() here?
+                int indexedCount = stamps != null ? stamps.keySet().size() : 0;
+                if (seenCount != indexedCount) {
+                    // Special case: We generate some extra index entries for things
+                    // in jar files -- those shouldn't count
+                    int jarFileCount = 0;
+                    for (String url : stamps.keySet()) {
+                        if (url.startsWith("jar:")) { // NOI18N
+                            jarFileCount++;
+                        }
+                    }
+
+                    if (seenCount+jarFileCount == indexedCount) {
+                        // Yes, the discrepancy was just because of files in jar files
+                        continue;
+                    }
+
+                    // We only count files that we've timestamped, thus we can
+                    // never get a greater seen count than the number of files in
+                    // the index.
+                    if (seenCount > indexedCount) {
+                        LOGGER.warning("Unexpectedly encountered more timestamped files (" + seenCount + ") than indexed (" + indexedCount + ")"); // NOI18N
+                        if (seenCount < 50) {
+                            LOGGER.warning(" Details: seen=" + seen + "; stamps=" + stamps);
+                        }
+                    }
+
+                    // Now we have to figure out which files were deleted. Those
+                    // are the files we have in the index that weren't encountered
+                    // on disk.
+
+                    // First translate the files into URLs such that we can do proper
+                    // comparisons
+                    //List<String> seenUrls = new ArrayList<String>(seenCount);
+                    Set<String> seenUrls = new HashSet<String>(2*seenCount);
+                    if (seen != null) {
+                        assert stamps != null;
+                        for (File f : seen) {
+                            Indexer indexer = language.getIndexer();
+                            assert indexer != null;
+                            String url = indexer.getPersistentUrl(f);
+                            seenUrls.add(url);
+                        }
+
+                    }
+
+                    Set<String> removed = new HashSet<String>(stamps.keySet());
+                    removed.removeAll(seenUrls);
+
+                    for (String url : removed) {
+                        try {
+                            if (url.startsWith("jar:")) { // NOI18N
+                                continue;
+                            }
+                            cachingIndexer.remove(language, url);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
                 }
             }
         }
@@ -1404,10 +1529,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             final File fileFile = FileUtil.toFile(fo);
             ParserFile active = FileObjects.fileFileObject(fileFile, rootFile, false, null/*filter*/);
             ParserFile[] activeList = new ParserFile[]{active};
-            ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, null/*filter*/, true, false);
+            ClasspathInfo cpInfo = ClasspathInfoAccessor.getInstance().create (fo, null/*filter*/, true, false);
             ClassPath.Entry entry = getClassPathEntry (cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),root);
             boolean scan = (entry == null || entry.includes(fo));
-            String sourceLevel = scan ? SourceLevelQuery.getSourceLevel(fo) : null;
             String rootString = root.toExternalForm();
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
         for (Language language : languages) {
@@ -1448,10 +1572,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                }
                 if (scan) {
                     final CompilerListener listener = new CompilerListener ();
-                    //final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                    //final JavaFileManager fm = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);                
                     //JavaFileObject active = FileObjects.fileFileObject(fileFile, rootFile, filter);
-                    //JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
-                    ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo, sourceLevel);
+                    ParserTaskImpl jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo);
                     //jt.setTaskListener(listener);
                     jt.setParseListener(listener);
                     //Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
@@ -1594,85 +1717,54 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
         private class It implements Iterator<File> {
 
-            private final List<File> toDo = new LinkedList<File> ();
+            private final LinkedList<File> toDo = new LinkedList<File>();
 
-            public It (File root) {
-                
-                
-//                // Special case: Rails on some systems (such as debian)
-//                // creates symbolic links in the vendor directory back into Rails;
-//                // I don't want to visit these links. 
-//                // Arguably I should do this for all dirs - but it's a performance issue,
-//                // and one I want to investigate more closely before making large changes;
-//                // this specific fix addresses a serious recorded issue (93019)
-//                if (root.getName().equals("vendor")) { // NOI18N
-//                    ArrayList<File> list = new ArrayList<File>();
-//                    for (File f : root.listFiles()) {
-//                        
-//                        // Skip vendor/rails - this is really a library which should
-//                        // be matching other installations.
-//                        // Ugh... I shouldn't skip it if I don't have it in the gems!
-//                        if (skipVendorRails && f.getName().equals("rails")) { // NOI18N
-//                            continue;
-//                        }
-//
-//                        try {
-//                            // See JDK issue 4042001 - need symbolic link support.
-//                            // Workaround which will work in this scenario is a
-//                            // to compare canonical paths with absolute paths
-//                            if (f.getAbsolutePath().equals(f.getCanonicalPath())) {
-//                                list.add(f);
-//                            }
-//                        } catch (IOException ioe) {
-//                            Exceptions.printStackTrace(ioe);
-//                        }
-//                    }
-//                    this.toDo.addAll(list);
-//                } else {
-                    // Normal path
-                    
-                    this.toDo.addAll (java.util.Arrays.asList(root.listFiles()));
-//                }
+            public It(File root) {
+                File[] files = root.listFiles();
+                if (files != null && files.length > 0) {
+                    this.toDo.addAll(java.util.Arrays.asList(files));
+                }
             }
 
             public boolean hasNext() {
                 while (!toDo.isEmpty()) {
-                    File f = toDo.remove (0);   
+                    File f = toDo.peek();
                     final String name = f.getName();
-                    if (f.isDirectory() && !ignoredDirectories.contains(name)/* && Utilities.isJavaIdentifier(name)*/) {
+                    if (f.isDirectory() && !ignoredDirectories.contains(name)) {
+                        f = toDo.removeFirst();
+                        assert f.isDirectory();
                         File[] content = f.listFiles();
-                            for (int i=0,j=0;i<content.length;i++) {
+                        if (content != null) {
+                            for (int i = 0; i < content.length; i++) {
                                 f = content[i];
-                                if (f.isFile()) {
-                                    this.toDo.add(j++,f);
+                                if (f == null) {
+                                    continue;
                                 }
-                                else {
-                                    this.toDo.add(f);
+                                if (f.isFile()) {
+                                    this.toDo.addFirst(f);
+                                } else {
+                                    this.toDo.addLast(f);
                                 }
                             }
-                    }                    
-                    else { // XXX How do I decide if it's a reasonable name?
-//                        System.out.println("Should we scan " + name + "?");
-//                    else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION) && !PACKAGE_INFO.equals(name) && f.length()>0) { //NOI18N
-                        toDo.add(0,f);
+                        }
+                    } else {
                         return true;
-                    }                                        
+                    }
                 }
                 return false;
             }
 
             public File next() {
-                return toDo.remove (0);
+                return toDo.removeFirst();
             }
 
             public void remove() {
 if (BUG_LOGGER.isLoggable(Level.FINE)) {
     BUG_LOGGER.log(Level.FINE, getElapsedTime() +"CompilerWorker throwing exception 1 ");
 }
-                throw new UnsupportedOperationException ();
+                throw new UnsupportedOperationException();
             }
-
-        }            
+        }
     }
     
     
@@ -1831,30 +1923,34 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     public static void batchCompile (final List<ParserFile> toCompile, final FileObject rootFo, 
              ClasspathInfo cpInfo, CachingIndexer cachingIndexer, URL root,
         final Set<URI> dirtyFiles, final Set/*<? super ElementHandle<TypeElement>>*/ added,
-                        Map<Language,Map<String,String>> timeStamps) throws IOException {
+                        Map<Language,Map<String,String>> timeStamps, Map<Language,List<File>> seenTimestampedFiles) throws IOException {
         assert toCompile != null;
         assert rootFo != null;
         assert cpInfo != null;
         ParserFile active = null;
-        //final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+        //final JavaFileManager fileManager = ClasspathInfoAccessor.getInstance().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();        
+
+        // Compute applicable indexers: Reduce the number of indexers to be queried during file interrogation
+        List<IndexerEntry> applicableIndexers = new ArrayList<IndexerEntry>(indexers.size());
+        String urlString = root.toExternalForm();
+        for (IndexerEntry entry : getIndexers()) {
+            if (!entry.indexer.acceptQueryPath(urlString)) {
+                continue;
+            }
+            applicableIndexers.add(entry);
+        }
+        
         LowMemoryNotifier.getDefault().addLowMemoryListener(listener);
         try {
-            ParserTaskImpl jt = null;
-            
             try {
                 List<ParserFile> bigFiles = new LinkedList<ParserFile>();
                 int state = 0; // TODO: Document what these states mean
                 boolean isBigFile = false;
-                final String sourceLevel = SourceLevelQuery.getSourceLevel(rootFo);
           allFiles:
                 while (!toCompile.isEmpty() || !bigFiles.isEmpty() || active != null) {
                     try {
                         if (listener.lowMemory.getAndSet(false)) {
-                            if (jt != null) {
-                                jt.finish();
-                            }
-                            jt = null;
                             if (state == 1) {
                                 break;
                             } else {
@@ -1887,22 +1983,16 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                         // We could have many language implementations that want to index this root;
                         // we need to iterate through them and let each one of them index if they
                         // want to.
-                        List<IndexerEntry> indexers = getIndexers();
-                        assert indexers instanceof RandomAccess;
                         // We're gonna do this for every file in the filesystem - do cheaper iteration
                         // using indices rather than iterators
-                        Language language = null;
-                        for (int in = 0; in < indexers.size(); in++) {
-                            IndexerEntry entry = indexers.get(in);
+                        for (int in = 0; in < applicableIndexers.size(); in++) {
+                            IndexerEntry entry = applicableIndexers.get(in);
                             Indexer indexer = entry.getIndexer();
                             if (!indexer.isIndexable(active)) {
                                 continue;
                             }
 
-                            if (!entry.indexer.acceptQueryPath(root.toExternalForm())) {
-                                continue;
-                            }
-                            language = entry.getLanguage();
+                            Language language = entry.getLanguage();
                             if (timeStamps != null) {
                                 Map<String,String> ts = timeStamps.get(language);
                                 if (ts != null) {
@@ -1910,13 +2000,21 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     String url = indexer.getPersistentUrl(file);
                                     String timeStampString = ts.get(url);
                                     if (timeStampString != null) {
+
+                                        // Keep track of timestamped files we've seen such
+                                        // that I can delete entries that have been deleted
+                                        // outside of the IDE.
+                                        List<File> list = seenTimestampedFiles.get(language);
+                                        if (list == null) {
+                                            list = new ArrayList<File>(toCompile.size());
+                                            seenTimestampedFiles.put(language, list);
+                                        }
+                                        list.add(file);
+
                                         try {
                                             long timeStamp = DateTools.stringToTime(timeStampString);
                                             if (file.lastModified() <= timeStamp) {
-                                                state  = 0;
-                                                active = null;
-                                                listener.cleanDiagnostics();
-                                                continue allFiles;
+                                                continue;
                                             }
                                         } catch (ParseException ex) {
                                             Exceptions.printStackTrace(ex);
@@ -1925,31 +2023,24 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 }
                             }
 
-                            // Cache parser tasks per indexer
-                            jt = entry.getParserTask();
-
-                            if (jt == null) {
-                                jt = SourceAccessor.getINSTANCE().createParserTask(language, cpInfo/*, listener*/, sourceLevel);
-                                jt.setParseListener(listener);
-                                entry.setParserTask(jt);
-                                LOGGER.fine("Created new ParserTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
+                            ParserTaskImpl jt = new ParserTaskImpl(language);
+                            jt.setParseListener(listener);
+                            Iterable<ParserResult> trees = jt.parse(new ParserFile[] { active });
+                            if (trees != null) {
+                                if (cachingIndexer != null) {
+                                    cachingIndexer.index(language, active.getFile(), trees);
+                                } else {
+                                    ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
+                                    assert uqImpl != null;
+                                    SourceAnalyser sa = uqImpl.getSourceAnalyser();
+                                    if (sa != null) {
+                                        sa.analyse(language, trees);
+                                    }
+                                }
                             }
-                        }   
-                        
-                        // Not an interesting source - such as a .zip file, a .gif file etc.
-                        if (language == null) {
-                            state  = 0;
-                            active = null;
-                            listener.cleanDiagnostics();
-                            continue;
                         }
-                        
-                        Iterable<ParserResult> trees = jt.parse(new ParserFile[] { active });
                         if (listener.lowMemory.getAndSet(false)) {
-                            jt.finish();
-                            jt = null;
                             listener.cleanDiagnostics();
-                            trees = null;
                             if (state == 1) {
                                 if (isBigFile) {
                                     break;
@@ -1963,18 +2054,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             }
                             System.gc();
                             continue;
-                        }
-                        if (trees != null) {
-                            if (cachingIndexer != null) {
-                                cachingIndexer.index(language, active.getFile(), trees);
-                            } else {
-                                ClassIndexImpl uqImpl = ClassIndexManager.get(language).createUsagesQuery(root, true);
-                                assert uqImpl != null;
-                                SourceAnalyser sa = uqImpl.getSourceAnalyser();
-                                if (sa != null) {
-                                    sa.analyse(language, trees);
-                                }
-                            }
                         }
                         if (!listener.errors.isEmpty()) {
                             //Log.instance(jt.getContext()).nerrors = 0;
@@ -1996,16 +2075,12 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                             throw (ThreadDeath) t;
                         }
                         else {
-                            if (jt != null) {
-                                jt.finish();
-                            }
                             String activeURI;
                             if (active != null) {
                                 activeURI = active.getNameExt();
                             } else {
                                 activeURI = "unknown";
                             }
-                            jt = null;
                             active = null;                            
                             listener.cleanDiagnostics();
                             //if (!(t instanceof Abort)) { // a javac Throwable                                
@@ -2028,12 +2103,8 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.warning("Not enough memory to compile folder: " + FileUtil.getFileDisplayName(rootFo));    // NOI18N
                 }
             } finally {
-                if (jt != null) {
-                    jt.finish();
-                }
             }
         } finally {
-            clearIndexerParserTasks();
             LowMemoryNotifier.getDefault().removeLowMemoryListener(listener);
         }
     }
@@ -2060,9 +2131,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     }
     
     
-    private class FilterListener implements ChangeListener {
-            
-        public void stateChanged(ChangeEvent event) {
+//    private class FilterListener implements ChangeListener {
+//
+//        public void stateChanged(ChangeEvent event) {
 //            Object source = event.getSource();
 //            if (source instanceof JavaFileFilterImplementation) {
 //                List<URL> dirtyRoots = new LinkedList<URL> ();
@@ -2075,8 +2146,8 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                }
 //                submit(Work.filterChange(dirtyRoots));
 //            }
-        }
-    }
+//        }
+//    }
     
     public static synchronized RepositoryUpdater getDefault () {
         if (instance == null) {
@@ -2085,7 +2156,6 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
         return instance;
     }        
   
-    // BEGIN TOR MODIFICATIONS
     // There could be multiple indexers (for different languages) that want
     // to index a given file. I will iterate over the indexers and let each
     // indexer have a chance to index every file. To do this I compute
@@ -2109,16 +2179,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
         return indexers;
     }
     
-    private static void clearIndexerParserTasks() {
-        for (IndexerEntry entry : getIndexers()) {
-            entry.setParserTask(null);
-        }
-    }
-    
     private static class IndexerEntry {
         private Language language;
         private Indexer indexer;
-        private ParserTaskImpl task;
         
         IndexerEntry(Language language, Indexer indexer) {
             this.language = language;
@@ -2132,15 +2195,5 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
         Language getLanguage() {
             return language;
         }
-        
-        ParserTaskImpl getParserTask() {
-            return task;
-        }
-        
-        void setParserTask(ParserTaskImpl task) {
-            this.task = task;
-        }
     } 
-    
-    // END TOR MODIFICATIONS
 }

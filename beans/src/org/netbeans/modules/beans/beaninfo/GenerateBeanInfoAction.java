@@ -42,13 +42,17 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.util.concurrent.Future;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.beans.PatternAnalyser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -56,6 +60,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -125,12 +130,26 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
 
         FileObject javaFile = findFileObject(nodes[0]);
         final BeanInfoWorker performer = new BeanInfoWorker(javaFile, biPanel);
-        performer.analyzePatterns();
+        
+        class Task implements TaskListener, Runnable {
 
-        performer.waitFinished();
-        if (performer.bia != null) {
-            performer.bia.openSource();
+            public void taskFinished(org.openide.util.Task task) {
+                EventQueue.invokeLater(this);
+            }
+
+            public void run() {
+                if (performer.error != null) {
+                    DialogDisplayer.getDefault().notify(performer.error);
+                }
+                if (performer.bia != null) {
+                    performer.bia.openSource();
+                }
+            }
+            
         }
+
+        performer.analyzePatterns().addTaskListener(new Task());
+
     }
 
     @Override
@@ -160,6 +179,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         private BiAnalyser bia;
         private Task task;
         private int state = 0;
+        private NotifyDescriptor error;
 
         public BeanInfoWorker(FileObject javaFile, BiPanel biPanel) {
             this.javaFile = javaFile;
@@ -176,7 +196,8 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             waitFinished();
             checkState(1);
             state = 2;
-            fillBiPanel();
+//            fillBiPanel();
+            EventQueue.invokeLater(this);
         }
         
         public void generateSources() {
@@ -246,7 +267,19 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
                 }
             }
             
-            PatternAnalyser pa = new PatternAnalyser(javaFile, null);
+            if (clselm == null) {
+                isCancelled = true;
+                error = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(
+                                GenerateBeanInfoAction.class,
+                                "MSG_FileWitoutTopLevelClass",
+                                clsname, FileUtil.getFileDisplayName(javaFile)
+                                ),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                return;
+            }
+            
+            PatternAnalyser pa = new PatternAnalyser(javaFile, null, true);
             pa.analyzeAll(javac, clselm);
             // XXX analyze also superclasses here
             try {
@@ -275,7 +308,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         }
         
         private void fillBiPanel() {
-            biNode = BiNode.createBiNode( bia );
+            biNode = BiNode.createBiNode(bia, error);
             biPanel.setContext( biNode );
             biPanel.expandAll();
         }

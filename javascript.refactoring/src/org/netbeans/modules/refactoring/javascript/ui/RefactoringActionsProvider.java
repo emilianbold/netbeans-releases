@@ -152,7 +152,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     
     private boolean isOutsideJs(Lookup lookup, FileObject fo) {
-        if (!JsUtils.isJsFile(fo)) {
+        if (!(JsUtils.isJsFile(fo) || JsUtils.isJsonFile(fo))) {
             // We're attempting to refactor in an embedded scenario...
             // Make sure it's actually in a JavaScript section.
             EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -162,10 +162,16 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 if (!(d instanceof BaseDocument)) {
                     return true;
                 }
-                int caret = textC.getCaretPosition();
-                if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
-                    // Not in JavaScript code!
-                    return true;
+                BaseDocument bd = (BaseDocument)d;
+                bd.readLock();
+                try {
+                    int caret = textC.getCaretPosition();
+                    if (LexUtilities.getToken((BaseDocument)d, caret) == null) {
+                        // Not in JavaScript code!
+                        return true;
+                    }
+                } finally {
+                    bd.readUnlock();
                 }
                 
             }
@@ -275,7 +281,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(cc);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?
                 System.out.println("FAILURE - can't refactor uncompileable sources");
@@ -340,7 +346,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 Element element = AstElement.getElement(info, root);
                 JsElementCtx fileCtx = new JsElementCtx(root, root, element, info.getFileObject(), info);
@@ -380,7 +386,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 JsParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
@@ -391,7 +397,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         // In Java, we look for a class with the name corresponding to the file.
                         // It's not as simple in Ruby.
                         AstElement element = els.get(0);
-                        org.mozilla.javascript.Node node = element.getNode();
+                        org.mozilla.nb.javascript.Node node = element.getNode();
                         JsElementCtx representedObject = new JsElementCtx(root, node, element, info.getFileObject(), info);
                         representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);

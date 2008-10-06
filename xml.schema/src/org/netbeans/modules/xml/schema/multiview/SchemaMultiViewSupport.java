@@ -165,7 +165,7 @@ public class SchemaMultiViewSupport implements ViewComponentCookie, ShowCookie {
      *
      * @param  id      identifier of the multiview element.
      */
-    private static void requestMultiviewActive(String id) {
+    public static void requestMultiviewActive(String id) {
         TopComponent activeTC = TopComponent.getRegistry().getActivated();
         MultiViewHandler handler = MultiViews.findMultiViewHandler(activeTC);
         if (handler != null) {

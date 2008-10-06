@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -104,6 +104,28 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="test-single-method">
+            <api name="general"/>
+            <summary>Added class <code>SingleMethod</code></summary>
+            <version major="1" minor="19"/>
+            <date day="9" month="7" year="2008"/>
+            <author login="mpetras"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                    Added class <code>SingleMethod</code>,
+                    which represents identification of a single method/function
+                    in a file. The new class also contains new constants
+                    (<code>COMMAND_RUN_SINGLE_TEST_METHOD</code> and
+                    <code>COMMAND_DEBUG_SINGLE_TEST_METHOD</code>) corresponding
+                    to commands for running debugging test methods.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="SingleMethod"/>
+            <issue number="137191"/>
+        </change>
+
         <change id="ProjectUtils.getAuxiliaryConfiguration">
             <api name="general"/>
             <summary>Added <code>ProjectUtils.getAuxiliaryConfiguration</code></summary>

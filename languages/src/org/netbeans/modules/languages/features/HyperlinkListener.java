@@ -241,7 +241,7 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
 //                                        } catch (IOException ex) {
 //                                            ex.printStackTrace();
 //                                        }
-//                                    }
+//                                   }
 //
 //                                }
 //                            }
@@ -260,38 +260,40 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
 //                }
 //                if (item == null) {
 //                    FileObject fileObject = NbEditorUtilities.getFileObject (document);
-//                    ASTItem leaf = path.getLeaf ();
-//                    if (!(leaf instanceof ASTToken)) return;
-//                    String name = ((ASTToken) leaf).getIdentifier ();
-//                    try {
-//                        Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name, false);
-//                        if (!map.isEmpty ()) {
-//                            final FileObject fo = map.keySet ().iterator ().next ();
-//                            final DatabaseDefinition definition = map.get (fo).iterator ().next ();
-//                            highlight = Highlighting.getHighlighting (document).highlight (
-//                                path.getLeaf ().getOffset (),
-//                                path.getLeaf ().getEndOffset (),
-//                                getHyperlinkAS ()
-//                            );
-//                            runnable = new Runnable () {
-//                                public void run () {
-//                                    int definitionOffset = definition.getOffset ();
-//                                    try {
-//                                        DataObject dobj = DataObject.find (fo);
-//                                        EditorCookie ec = dobj.getCookie (EditorCookie.class);
-//                                        StyledDocument doc2 = ec.openDocument ();
-//                                        LineCookie lc = dobj.getCookie (LineCookie.class);
-//                                        Line.Set lineSet = lc.getLineSet ();
-//                                        Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
-//                                        int column = NbDocument.findLineColumn (doc2, definitionOffset);
-//                                        line.show (Line.SHOW_GOTO, column);
-//                                    } catch (IOException ex) {
-//                                        ex.printStackTrace ();
+//                    if (fileObject != null) {
+//                        ASTItem leaf = path.getLeaf ();
+//                        if (!(leaf instanceof ASTToken)) return;
+//                        String name = ((ASTToken) leaf).getIdentifier ();
+//                        try {
+//                            Map<FileObject,List<DatabaseDefinition>> map = Index.getGlobalItem (fileObject, name, false);
+//                            if (!map.isEmpty ()) {
+//                                final FileObject fo = map.keySet ().iterator ().next ();
+//                                final DatabaseDefinition definition = map.get (fo).iterator ().next ();
+//                                highlight = Highlighting.getHighlighting (document).highlight (
+//                                    path.getLeaf ().getOffset (),
+//                                    path.getLeaf ().getEndOffset (),
+//                                    getHyperlinkAS ()
+//                                );
+//                                runnable = new Runnable () {
+//                                    public void run () {
+//                                        int definitionOffset = definition.getOffset ();
+//                                        try {
+//                                            DataObject dobj = DataObject.find (fo);
+//                                            EditorCookie ec = dobj.getCookie (EditorCookie.class);
+//                                            StyledDocument doc2 = ec.openDocument ();
+//                                            LineCookie lc = dobj.getCookie (LineCookie.class);
+//                                            Line.Set lineSet = lc.getLineSet ();
+//                                            Line line = lineSet.getCurrent (NbDocument.findLineNumber (doc2, definitionOffset));
+//                                            int column = NbDocument.findLineColumn (doc2, definitionOffset);
+//                                            line.show (Line.SHOW_GOTO, column);
+//                                        } catch (IOException ex) {
+//                                            ex.printStackTrace ();
+//                                        }
 //                                    }
-//                                }
-//                            };
+//                                };
+//                            }
+//                        } catch (FileNotParsedException ex) {
 //                        }
-//                    } catch (FileNotParsedException ex) {
 //                    }
 //                }
 //            }

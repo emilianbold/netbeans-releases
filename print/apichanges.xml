@@ -94,7 +94,7 @@ is the proper place.
 
     <changes>
         <change id="print-initial-version">
-            <api name="general"/>
+            <api name="PrintAPI"/>
             <summary>Initial version of the Print API</summary>
             <version major="1" minor="1.1"/>
             <date day="14" month="6" year="2008"/>
@@ -129,7 +129,8 @@ is the proper place.
     </head>
     <body>
       <p class="overviewlink"><a href="overview-summary.html">Overview</a></p>
-      <h1>No changes</h1>
+      <standard-changelists module-code-name="org.netbeans.modules.print"/>
+      <hr/><p>@FOOTER@</p>
     </body>
   </htmlcontents>
 </apichanges>

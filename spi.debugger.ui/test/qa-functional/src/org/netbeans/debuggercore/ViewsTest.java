@@ -44,7 +44,6 @@
 package org.netbeans.debuggercore;
 
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -58,9 +57,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 
 
 public class ViewsTest extends JellyTestCase {
@@ -78,9 +75,9 @@ public class ViewsTest extends JellyTestCase {
         if (vers.startsWith("1.6")) {
             return NbModuleSuite.create(
                NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+                    "testViewsDefaultOpen",
                     "testViewsCallStack",
                     "testViewsHeapWalker1",
-                    "testViewsClasses",
                     "testViewsThreads",
                     "testViewsSessions",
                     "testViewsSources",
@@ -92,7 +89,9 @@ public class ViewsTest extends JellyTestCase {
         } else {
             return NbModuleSuite.create(
                NbModuleSuite.createConfiguration(ViewsTest.class).addTest(
+                    "testViewsDefaultOpen",
                     "testViewsCallStack",
+                    "testViewsClasses",
                     "testViewsThreads",
                     "testViewsSessions",
                     "testViewsSources",
@@ -108,16 +107,7 @@ public class ViewsTest extends JellyTestCase {
     public void setUp() throws IOException {
         openDataProjects(Utilities.testProjectName);
         new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-        System.out.println("########  " + getName() + "  #######");
-        if ("testViewsDefaultOpen".equals(getName())) {
-            //open source
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            EditorOperator op = new EditorOperator("MemoryView.java");
-            Utilities.toggleBreakpoint(op, 92);
-            Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", 0);
-        }
+        System.out.println("########  " + getName() + "  #######");        
     }
     
     public void tearDown() {
@@ -129,9 +119,17 @@ public class ViewsTest extends JellyTestCase {
     }
     
     public void testViewsDefaultOpen() throws Throwable {
+        //open source
+        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+        new OpenAction().performAPI(beanNode); // NOI18N
+        EditorOperator op = new EditorOperator("MemoryView.java");
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(op, 92);
+        Utilities.startDebugger();
+        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         try {
             assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
-            assertNotNull("Call stack view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.callStackViewTitle, 0));
+            assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));
             assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -139,7 +137,7 @@ public class ViewsTest extends JellyTestCase {
         }
     }
     
-    public void testViewsCallStack() throws Throwable {
+    public void testViewsCallStack() throws Throwable {                
         try {
             Utilities.showDebuggerView(Utilities.callStackViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));

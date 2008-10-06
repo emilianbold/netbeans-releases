@@ -39,11 +39,15 @@
 
 package org.netbeans.modules.web.client.javascript.debugger.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerEngineProvider;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSContextProviderWrapper;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
@@ -52,6 +56,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerE
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerState;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -61,7 +66,10 @@ import org.openide.util.WeakListeners;
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
-public class NbJSDebuggerActionsProvider extends ActionsProviderSupport {
+public class NbJSDebuggerActionsProvider extends ActionsProviderSupport 
+                                         implements PropertyChangeListener{
+    static final String JAVASCRIPT_MIMETYPE = "text/javascript";
+    static final String HTML_MIMETYPE = "text/html";    
 
     // Supported Actions
     private static final Set<Object> ACTIONS =
@@ -127,6 +135,7 @@ public class NbJSDebuggerActionsProvider extends ActionsProviderSupport {
                 setEnabled(ActionsManager.ACTION_STEP_OUT, false);
                 break;
             }
+            handleRunToCursor();
         }
     }
 
@@ -138,6 +147,7 @@ public class NbJSDebuggerActionsProvider extends ActionsProviderSupport {
 
         // Initially enabled actions - ACTION_START
         setEnabled(ActionsManager.ACTION_START, true);
+        setEnabled(ActionsManager.ACTION_KILL, true);
 
         // Add listener to JSDebugger
         debuggerListener = new JSDebuggerEventListenerImpl();
@@ -145,6 +155,8 @@ public class NbJSDebuggerActionsProvider extends ActionsProviderSupport {
                 JSDebuggerEventListener.class,
                 debuggerListener,
                 debugger));
+        EditorContextDispatcher ctxtDispatcher = EditorContextDispatcher.getDefault();
+        ctxtDispatcher.addPropertyChangeListener(WeakListeners.propertyChange(this, ctxtDispatcher));
     }
 
     @Override
@@ -178,4 +190,27 @@ public class NbJSDebuggerActionsProvider extends ActionsProviderSupport {
         }
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        handleRunToCursor();
+    }
+
+    private void handleRunToCursor() {
+        JEditorPane editorPane = EditorContextDispatcher.getDefault().getCurrentEditor();
+        setEnabled (
+            ActionsManager.ACTION_RUN_TO_CURSOR,
+            editorPane != null &&
+            getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
+            EditorContextDispatcher.getDefault().getCurrentLineNumber () >= 0 && 
+            ( editorPane.getContentType().equals(JAVASCRIPT_MIMETYPE) || 
+              editorPane.getContentType().equals(HTML_MIMETYPE) )
+        );
+    }
+    
+    static ActionsManager getActionsManager () {
+        return DebuggerManager.getDebuggerManager ().
+            getCurrentEngine () == null ? 
+            DebuggerManager.getDebuggerManager ().getActionsManager () :
+            DebuggerManager.getDebuggerManager ().getCurrentEngine ().
+                getActionsManager ();
+    }
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.hibernate.service.api;
 import org.netbeans.modules.hibernate.service.*;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.spi.hibernate.HibernateFileLocationProvider;
@@ -53,6 +54,32 @@ import org.openide.filesystems.FileObject;
  */
 public interface HibernateEnvironment extends HibernateFileLocationProvider {
 
+    /**
+     * Returns the list of names of Java classes (POJOs) that are defined in
+     * this configuration through mapping files or directly using annotation.
+     *
+     * @param configFileObject the configuration FileObject.
+     * @return List of Strings with names of the Java classes.
+     */
+    public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject);
+
+    /**
+     * Returns list of annotated POJO (FQN) classnames (String) found in this 
+     * Hibernate configuration.
+     * 
+     * @param configurationFO hibernate configuration FleObject.
+     * @return List of classnames (FQN) (String) of all annotated POJO classes found in this configuration or an empty list.
+     */
+    public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO);
+
+    /**
+     * Registers the selected DB Driver with the project.
+     * @param driver the driver classname.
+     * @param primaryFile a file in the project. Used to extend the classpath.
+     * @return true if sucessfully registered the given driver or false, if there's problem with registering.
+     */
+    public boolean registerDBDriver(String driver, FileObject primaryFile);
+    
     /**
      * Registers Hibernate Library in this project.
      *
@@ -82,6 +109,13 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
      */
     List<FileObject> getAllHibernateConfigFileObjects();
+    
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    List<FileObject> getDefaultHibernateConfigFileObjects();
+    
 
     /**
      * Returns the list of 'HibernateConfiguration' (schema2beans bean) for
@@ -130,7 +164,16 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
 
     List<String> getDatabaseTables(FileObject mappingFile);
 
-    FileObject getLocation();
+    FileObject getSourceLocation();
+    
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    ClassLoader getProjectClassLoader(URL[] classpaths);
 
     /**
      * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
@@ -147,6 +190,14 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     List<URL> getProjectClassPath(FileObject projectFile);
+    
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    List<URL> getProjectClassPath();
 
     /**
      * Tries to load the JDBC driver read from the configuration.The classpath

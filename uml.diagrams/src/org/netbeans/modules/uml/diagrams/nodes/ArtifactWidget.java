@@ -96,6 +96,8 @@ public class ArtifactWidget extends UMLNodeWidget implements PropertyChangeListe
         setCurrentView(createArtifactView(type));
         setOpaque(true);
         ResourceValue.initResources(getResourcePath(), this);
+        setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     public Widget createArtifactView(IArtifact type)

@@ -41,15 +41,14 @@
 
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
-import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
@@ -57,6 +56,7 @@ import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,16 +69,17 @@ import org.openide.util.NbBundle;
 public class ClassBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
+    private static final String         HELP_ID = "debug.add.breakpoint.java.class"; // NOI18N
     private ConditionsPanel             conditionsPanel;
     private ActionsPanel                actionsPanel; 
     private ClassLoadUnloadBreakpoint   breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 epClassName;
+    private JTextField                  tfClassName;
     
     private static ClassLoadUnloadBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
@@ -112,10 +113,12 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
 
         ResourceBundle bundle = NbBundle.getBundle(ClassBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Class_Breakpoint_Class_Name");
-        epClassName = addClassNameEditor(pSettings, className, tooltipText);
-        epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
-        jLabel3.setLabelFor(epClassName);
+
+        tfClassName = addClassNameEditor(pSettings, className, tooltipText);
+        tfClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        tfClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
+        jLabel3.setLabelFor(tfClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Class_Breakpoint_Type_Prepare"));
         cbBreakpointType.addItem (bundle.getString("LBL_Class_Breakpoint_Type_Unload"));
@@ -132,7 +135,8 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
                 break;
         }
         
-        conditionsPanel = new ConditionsPanel();
+        conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         cPanel.add(conditionsPanel, "Center");
         conditionsPanel.showExclusionClassFilter(true);
         conditionsPanel.showCondition(false);
@@ -146,14 +150,14 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         // The help IDs for the AddBreakpointPanel panels have to be different from the
         // values returned by getHelpCtx() because they provide different help
         // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
-        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.class"); // NOI18N
+        putClientProperty("HelpID_AddBreakpointPanel", HELP_ID); // NOI18N
         // </RAVE>
     }
 
     // <RAVE>
     // Implement getHelpCtx() with the correct helpID
-    public org.openide.util.HelpCtx getHelpCtx() {
-       return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointClassJPDA"); // NOI18N
+    public HelpCtx getHelpCtx() {
+       return new HelpCtx("NetbeansDebuggerBreakpointClassJPDA"); // NOI18N
     }
     // </RAVE>
     
@@ -255,8 +259,8 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         }
         actionsPanel.ok ();
         
-        String className = epClassName.getText ().trim ();
-        breakpoint.setClassFilters(parseClassFilters(className));
+        String className = tfClassName.getText ().trim ();
+        breakpoint.setClassFilters(ConditionsPanel.getFilter(className));
         breakpoint.setClassExclusionFilters(conditionsPanel.getClassExcludeFilter());//parseClassFilters(className));
         
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -298,7 +302,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
     }
     
     private String valiadateMsg () {
-        if (epClassName.getText().trim ().length() == 0) {
+        if (tfClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ClassBreakpointPanel.class, "MSG_No_Class_Name_Spec");
         }
         return null;
@@ -316,35 +320,9 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
             return "";
         }
     }
-    
-    static String[] parseClassFilters(String classFilter) {
-        int numFilters = 1;
-        int length = classFilter.length();
-        if (length == 0) {
-            return new String[0];
-        }
-        for (int i = 0; i < length; i++) {
-            if (classFilter.charAt(i) == ',') numFilters++;
-        }
-        String[] classFilters = new String[numFilters];
-        if (numFilters == 1) {
-            classFilters[0] = classFilter;
-        } else {
-            int i = 0;
-            int pos = 0;
-            while (pos < length) {
-                int end = classFilter.indexOf(",");
-                if (end < 0) end = length;
-                classFilters[i] = classFilter.substring(pos, end).trim();
-                i++;
-                pos = end + 1;
-            }
-        }
-        return classFilters;
-    }
 
-    static JEditorPane addClassNameEditor(JComponent comp, String className, String tooltipText) {
-        JEditorPane editorPane = new JEditorPane("text/x-java", className); // NOI18N
+    static JTextField addClassNameEditor(JComponent comp, String className, String tooltipText) {
+        JTextField textField = new JTextField(className); // NOI18N
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -352,10 +330,9 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        JScrollPane scrollableLineEditor = WatchPanel.createScrollableLineEditor(editorPane);
-        comp.add(scrollableLineEditor, gridBagConstraints);
-        scrollableLineEditor.setToolTipText(tooltipText);
-        return editorPane;
+        comp.add(textField, gridBagConstraints);
+        textField.setToolTipText(tooltipText);
+        return textField;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

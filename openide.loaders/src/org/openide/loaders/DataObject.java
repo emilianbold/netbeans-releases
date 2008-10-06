@@ -101,11 +101,13 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      */
     static final String EA_ASSIGNED_LOADER_MODULE = "NetBeansAttrAssignedLoaderModule"; // NOI18N
 
+    private static final Logger OBJ_LOG = Logger.getLogger(DataObject.class.getName());
+
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
     private static ModifiedRegistry modified = new ModifiedRegistry();
     /** sync modified data (for modification operations) */
-    private static Set<DataObject> syncModified = Collections.synchronizedSet(modified);
+    private static final Set<DataObject> syncModified = Collections.synchronizedSet(modified);
 
     /** Modified flag */
     private boolean modif = false;
@@ -129,7 +131,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     private static final Object listenersMethodLock = new Object();
     
     /** Lock used for ensuring there will be just one node delegate */
-    private Object nodeCreationLock = new Object();
+    private final Object nodeCreationLock = new Object();
     
     /** Lock for copy/move/rename/etc. operations */
     private static Object synchObject = new Object ();
@@ -162,6 +164,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param loader loader that created the data object
     */
     private DataObject (FileObject pf, DataObjectPool.Item item, DataLoader loader) {
+        OBJ_LOG.log(Level.FINE, "created {0}", pf); // NOI18N
         this.item = item;
         this.loader = loader;
         item.setDataObject (this);
@@ -180,11 +183,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * the original data object, it is protected.
     */
     protected void dispose () {
-        DataObjectPool.Item item = this.item;
+        DataObjectPool.Item i = item;
         
-        if (item != null) {
-            item.deregister (true);
-            item.setDataObject(null);
+        if (i != null) {
+            i.deregister (true);
+            i.setDataObject(null);
             firePropertyChange (PROP_VALID, Boolean.TRUE, Boolean.FALSE);
         }
     }
@@ -518,6 +521,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
         return getPrimaryFile ().getName ();
     }
 
+    @Override
     public String toString () {
         return super.toString () + '[' + getPrimaryFile () + ']';
     }

@@ -63,17 +63,17 @@ public class WsdlAddOperationProvider implements AddOperationActionProvider {
             String packageName = getPackageName(fileObject);
             if (packageName != null) {
                 Service service = getService(support, packageName);
-                if (service != null && service.getWsdlUrl() != null) return new AddOperationAction(service, fileObject);
+                if (service != null && service.getWsdlUrl() != null && !service.isUseProvider()) return new AddOperationAction(service, fileObject);
             }
         }
         return null;
     }
         
     private Service getService(JAXWSSupport support, String packageName) {
-        List<Service> services = support.getServices();
-        for (Service service:services) {
-            if (packageName.equals(service.getImplementationClass())) {
-                return service;
+        List services = support.getServices();
+        for (Object service:services) {
+            if (packageName.equals(((Service)service).getImplementationClass())) {
+                return (Service)service;
             } 
         }
         return null;

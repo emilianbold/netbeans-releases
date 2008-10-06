@@ -182,15 +182,26 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         boolean changes = false;
         Ini nbServers = new Ini();   
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
-        if(url.getProtocol().startsWith("https")) {
-            changes = setSSLCert(url, nbGlobalSection);
+
+        changes = recentUrlsChanged;
+        ProxySettings ps = new ProxySettings();
+        if(proxySettings != null && ps.equals(proxySettings)) {
+            // do nothing
+        } else {
+            proxySettings = ps;
+            changes = true;
         }
-        changes = changes || setProxy(url, nbGlobalSection);
-        if(changes) storeIni(nbServers, "servers");                    // NOI18N
+
+        if(changes) {
+            if(url.getProtocol().startsWith("https")) {
+                setSSLCert(url, nbGlobalSection);
+            }
+            setProxy(url, nbGlobalSection);
+            storeIni(nbServers, "servers");                    // NOI18N
+        }
     }        
 
     private boolean setSSLCert(SVNUrl url, Ini.Section nbGlobalSection) {
-        if(!recentUrlsChanged) return false;
         recentUrlsChanged = false;
         RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
         if(rc == null) {
@@ -210,14 +221,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     }
 
     private boolean setProxy(SVNUrl url, Ini.Section nbGlobalSection) {
-        String host =  SvnUtils.ripUserFromHost(url.getHost());
-        ProxySettings ps = new ProxySettings();
-        if(proxySettings != null && ps.equals(proxySettings)) {
-            return false; // no changes
-        } else {
-            proxySettings = ps;
-        }
-
+        String host =  SvnUtils.ripUserFromHost(url.getHost());        
         Ini.Section svnGlobalSection = svnServers.get(GLOBAL_SECTION);
         if(!proxySettings.isDirect()) {
             String proxyHost = "";

@@ -48,16 +48,12 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.mercurial.Mercurial;
-import java.io.File;
 import java.util.*;
-import java.util.logging.Level;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import java.util.logging.Level;
-import org.netbeans.api.queries.SharabilityQuery;
 
 
 /**
@@ -166,8 +162,8 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        File fileRoot = hg.getTopmostManagedParent(file);
-                        File rootRoot = hg.getTopmostManagedParent(root);
+                        File fileRoot = hg.getRepositoryRoot(file);
+                        File rootRoot = hg.getRepositoryRoot(root);
                         // Make sure that file is in same repository as root
                         if (rootRoot != null && rootRoot.equals(fileRoot)) {
                             bContainsFile = true;
@@ -221,8 +217,8 @@ public class FileStatusCache {
                     }
                 } else {
                     if (Utils.isAncestorOrEqual(root, file)) {
-                        File fileRoot = hg.getTopmostManagedParent(file);
-                        File rootRoot = hg.getTopmostManagedParent(root);
+                        File fileRoot = hg.getRepositoryRoot(file);
+                        File rootRoot = hg.getRepositoryRoot(root);
                         // Make sure that file is in same repository as root
                         if (rootRoot != null && rootRoot.equals(fileRoot)) {
                             set.add(file);
@@ -317,7 +313,7 @@ public class FileStatusCache {
      * @return give file's status or null if the file's status is not in cache
      */
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
-    FileInformation getCachedStatus(File file, boolean bCheckSharability) {
+    public FileInformation getCachedStatus(File file) {
         File parent = file.getParentFile();
         if (parent == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
 
@@ -391,7 +387,7 @@ public class FileStatusCache {
         if (hg.isAdministrative(file))
             return FILE_INFORMATION_EXCLUDED_DIRECTORY; // Excluded
 
-        File rootManagedFolder = hg.getTopmostManagedParent(file);        
+        File rootManagedFolder = hg.getRepositoryRoot(file);
         if (rootManagedFolder == null)
             return FILE_INFORMATION_UNKNOWN; // Avoiding returning NOT_MANAGED dir or file
         
@@ -454,15 +450,15 @@ public class FileStatusCache {
         files = scanFolder(dir, interestingFiles);
         assert files.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, files.size() == 0 ? null : files);
-        if(interestingFiles != null) {
-            for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                FileInformation info = files.get(file);
-                if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
-                    fireFileStatusChanged(file, null, info);
-                }
+        //if(interestingFiles != null) {
+        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation info = files.get(file);
+            if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
+                fireFileStatusChanged(file, null, info);
             }
         }
+        //}
         return files;
     }
 
@@ -573,7 +569,7 @@ public class FileStatusCache {
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public void refreshAll(File root) {
         if (root.isDirectory()) {
-            File repository = Mercurial.getInstance().getTopmostManagedParent(root);
+            File repository = Mercurial.getInstance().getRepositoryRoot(root);
             if (repository == null) {
                 return;
             }
@@ -622,7 +618,7 @@ public class FileStatusCache {
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
     public void refreshCached(File root) {
         if (root.isDirectory()) {
-            File repository = Mercurial.getInstance().getTopmostManagedParent(root);
+            File repository = Mercurial.getInstance().getRepositoryRoot(root);
             if (repository == null) {
                 return;
             }
@@ -644,9 +640,13 @@ public class FileStatusCache {
                         File parent = file.getParentFile();
                         
                         Map<File, FileInformation> oldFiles = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
-                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
-                        newFiles.remove(file);
-                        turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        if(oldFiles != null) {
+                            Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(oldFiles);
+                            newFiles.remove(file);
+                            turbo.writeEntry(parent, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+                        } else {
+                            turbo.writeEntry(parent, FILE_STATUS_MAP, null);
+                        }
                         fi = oldFiles != null ? oldFiles.get(file) : null;
                         fireFileStatusChanged(file, fi, FILE_INFORMATION_UNKNOWN);
                     } else {
@@ -699,10 +699,6 @@ public class FileStatusCache {
     
     Map<File, FileInformation>  getAllModifiedFiles() {
         return cacheProvider.getAllModifiedValues();
-    }
-    
-    boolean modifiedFilesChanged() {
-        return cacheProvider.modifiedFilesChanged();
     }
 
     /**
@@ -769,11 +765,11 @@ public class FileStatusCache {
             return folderFiles;
         }
         
-        File rootManagedFolder = hg.getTopmostManagedParent(dir);
+        File rootManagedFolder = hg.getRepositoryRoot(dir);
         if (rootManagedFolder == null){
             // Only interested in looking for Hg managed dirs
             for (File file : files) {
-                if (file.isDirectory() && hg.getTopmostManagedParent(file) != null){
+                if (file.isDirectory() && hg.getRepositoryRoot(file) != null){
                     if (hg.isAdministrative(file) || HgUtils.isIgnored(file)){
                         Mercurial.LOG.log(Level.FINE, "scanFolder NotMng Ignored Dir {0}: exclude SubDir: {1}", // NOI18N
                             new Object[]{dir.getAbsolutePath(), file.getName()});

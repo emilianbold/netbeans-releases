@@ -208,6 +208,14 @@ made subject to such option by the copyright holder.
     <code>nbinst:/modules/ext/bundled-driver.jar</code>.
    </p>
   </usecase>
+  <usecase id="get-jdbc-driver" name="Get the underlying JDBC Driver instance for a JDBCDriver">
+   <p>
+      You can use the <a href="@TOP@org/netbeans/api/db/explorer/JDBCDriver.html#getDriver()">JDBCDriver.getDriver()</a>
+      method to obtain a reference to the underlying JDBC Driver instance.  This is useful if you want to use the registered
+      drivers but create your own JDBC connections independent of the Database Explorer.
+
+   </p>
+  </usecase>
   <usecase id="retrieve-drivers" name="Retrieving the list of JDBC ../db.drivers">
    <p>
     When creating a new connection the JDBC driver which it should use can be specified.
@@ -324,6 +332,21 @@ made subject to such option by the copyright holder.
     method and the <code>java.sql.Connection</code> instance can be retrieved using the 
     <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#getJDBCConnection()">getJDBCConnection()</a>
     method.
+   </p>
+   <p>
+     If you want to connect to the database without showing a dialog or any kind of UI, you can use the
+     <a href="@TOP@org/netbeans/api/db/explorer/ConnectionManager.html#connect(org.netbeans.api.db.explorer.DatabaseConnection)">DatabaseConnection.connect()</a>
+     method.
+   </p>
+  </usecase>
+ <usecase id="test-connection" name="Test a database connection for validity">
+   <p>
+    You may want to test to make sure the underlying physical JDBC connection
+    obtained from a DatabaseConnection is either valid or null.  This is done using the
+    <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html#getJDBCConnection(boolean)">
+        DatabaseConnection.getJDBCConnection(boolean test)</a>
+    method, which validates the underlying connection before returning it.  If the
+    connection is invalid, it marks the DatabaseConnection as disconnected and returns null.
    </p>
   </usecase>
   <usecase id="connections-combo-box" name="Displaying the database connections in the UI">

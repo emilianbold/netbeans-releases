@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/javascript/libraries/jquery/Bundle</localizing-bundle>
     <volume>
         <type>scriptpath</type>
-	<resource>jar:nbinst:///modules/ext/javascript/jquery-1.2.3.zip!/</resource>
+	<resource>jar:nbinst:///modules/ext/javascript/jquery-1.2.6.zip!/</resource>
     </volume>
     <!-- volume>
         <type>javadoc</type>

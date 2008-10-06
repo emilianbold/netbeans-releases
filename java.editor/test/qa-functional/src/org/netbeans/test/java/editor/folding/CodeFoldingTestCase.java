@@ -78,10 +78,13 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     protected static String foldToStringChildren(Fold fold, int indent) {
         indent += 4;
         StringBuffer sb = new StringBuffer();
-        String foldTxt = fold.toString();        
-        foldTxt = foldTxt.replace("E1", "E0");
-        foldTxt = foldTxt.replace("C1", "C0");
-        sb.append(foldTxt);
+        String foldTxt = fold.toString();
+
+        //removing hash from the string
+        int startOfHash = foldTxt.indexOf("hash=0x");
+        int endOfHash = foldTxt.indexOf(",", startOfHash);
+        String foldTxtCorrected = foldTxt.substring(0,startOfHash)+foldTxt.substring(endOfHash);
+        sb.append(foldTxtCorrected);
         sb.append('\n');
         int foldCount = fold.getFoldCount();
         for (int i = 0; i < foldCount; i++) {

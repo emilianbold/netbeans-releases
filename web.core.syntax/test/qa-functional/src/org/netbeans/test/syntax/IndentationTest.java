@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.web.FileObjectFilter;
@@ -94,6 +95,18 @@ public class IndentationTest extends CompletionTest {
     }
 
     @Override
+    public File getProjectsDir(){
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "IndentationTestProjects");
+    }
+
+    @Override
+    protected void finalizeProjectsOpening() {
+        IndentCasesTest.setIndent(2);
+        IndentCasesTest.setIndent(4);
+    }
+
+    @Override
     public void runTest() throws Exception {
         try {
             BaseDocument doc = openFile(testFileObj);
@@ -105,12 +118,17 @@ public class IndentationTest extends CompletionTest {
                 eOperator = new EditorOperator(testFileObj.getName());
                 eOperator.txtEditorPane().getCaret().setDot(actualPossition.start);
                 eOperator.save();
+                CompletionJListOperator.hideAll();
+                int invocationPossition = eOperator.txtEditorPane().getCaret().getDot();
                 eOperator.pushKey(KeyEvent.VK_ENTER);
                 eOperator.waitModified(true);
-                int shift = eOperator.txtEditorPane().getCaretPosition() - actualPossition.start;
+                Thread.sleep(1000);
+                CompletionJListOperator.hideAll();
+                int shift = eOperator.txtEditorPane().getCaret().getDot() - invocationPossition;
                 ref("line " + eOperator.getLineNumber() + ": " + shift);
                 if (debugMode) {
-                    doc.insertString(eOperator.txtEditorPane().getCaretPosition(), "|", null);
+                    doc.insertString(eOperator.txtEditorPane().getCaret().getDot(), "|", null);
+                    ref(actualPossition.start + " -> " + eOperator.txtEditorPane().getCaretPosition());
                     Thread.sleep(2000);
                 }
                 actualPossition = getNextPossition(eOperator.getText(), actualPossition.start + 1);
@@ -149,11 +167,6 @@ public class IndentationTest extends CompletionTest {
         Possition(int start, int len) {
             this.start = start;
             this.len = len;
-        }
-
-        @Override
-        public String toString() {
-            return "Od " + start + " a delky " + len;
         }
     }
 }

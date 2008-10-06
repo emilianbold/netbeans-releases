@@ -57,12 +57,14 @@ import javax.swing.Action;
 import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /** Check what can be done when registering loaders in layer.
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class DataLoaderInLayerTest extends NbTestCase {
 
     public DataLoaderInLayerTest(String name) {
@@ -148,6 +150,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals("One object", 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemoveLoader(l, false);
         }
@@ -163,6 +176,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals("One object", 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemove("text/plain", SimpleFactory.class, false);
         }
@@ -203,6 +227,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             arr = df.getChildren();
             assertEquals("One object", 1, arr.length);
             assertEquals("Object is the same", dob, arr[0]);
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemove("text/plain", f, false);
         }
@@ -217,7 +252,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         instance.setAttribute("SystemFileSystem.icon", u);
         
         
-        Image img = Utilities.loadImage("org/openide/loaders/saveAll.gif");
+        Image img = ImageUtilities.loadImage("org/openide/loaders/saveAll.gif");
         
         DataObject.Factory f = DataLoaderPool.factory(instance);
         

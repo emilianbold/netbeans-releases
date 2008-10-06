@@ -55,9 +55,6 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -118,27 +115,9 @@ public class RestClientEditorDrop implements ActiveEditorDrop {
                     RestClientSaasBean bean = (RestClientSaasBean) codegen.getBean();
                     List<ParameterInfo> allParams = bean.filterParametersByAuth(
                             bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
-                    if(!allParams.isEmpty()) {
-                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
-                 
-                        DialogDescriptor desc = new DialogDescriptor(panel, 
-                                NbBundle.getMessage(RestClientEditorDrop.class,
-                                "LBL_CustomizeSaasService", displayName));
-                        Object response = DialogDisplayer.getDefault().notify(desc);
-
-                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
-                            // cancel
-                            return;
-                        }
-                    }
-
-                    try {
-                        codegen.initProgressReporting(dialog.getProgressHandle());
-                        codegen.generate();
-                    } catch(IOException ex) {
-                        if(!ex.getMessage().equals(Util.SCANNING_IN_PROGRESS))
-                            errors.add(ex);
-                    }
+                    boolean response = Util.showDialog(displayName, allParams, targetDoc);
+                    if(response)
+                        Util.doGenerateCode(codegen, dialog, errors);
                 } catch (Exception ioe) {
                     if(ioe.getMessage().equals(Constants.UNSUPPORTED_DROP)) {
                         Util.showUnsupportedDropMessage(new Object[] {

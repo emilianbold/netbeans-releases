@@ -55,7 +55,9 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -74,26 +76,33 @@ import org.openide.windows.OutputWriter;
 
 
 public class OutputWindowWriter extends Writer {
-    
-    private OutputWriter delegate;
-    private StringBuffer buffer;
-    private boolean parseOutputForErrors;
+
+    private final String hkey;
+    private final OutputWriter delegate;
+    private final StringBuffer buffer;
+    private final boolean parseOutputForErrors;
 //    private FileObject relativeTo;
     
     private static final String LINE_SEPARATOR_QUOTED = System.getProperty("line.separator");  // NOI18N
     
     private final ErrorParser[] parsers;
     
-    public OutputWindowWriter(OutputWriter delegate, FileObject relativeTo, boolean parseOutputForErrors) {
+    private static final Pattern SS_OF_1 = Pattern.compile("::\\(.*\\)");// NOI18N
+    private static final Pattern SS_OF_2 = Pattern.compile(":\\(.*\\).*");// NOI18N
+    private static final Pattern SS_OF_3 = Pattern.compile("\\(.*\\).*:");// NOI18N
+    private static final Pattern[] SunStudioOutputFilters = new Pattern[] {SS_OF_1, SS_OF_2, SS_OF_3};
+    
+    public OutputWindowWriter(String hkey, OutputWriter delegate, FileObject relativeTo, boolean parseOutputForErrors) {
+        this.hkey = hkey;
         this.delegate = delegate;
 //        this.relativeTo = relativeTo;
         this.parseOutputForErrors = parseOutputForErrors;
         this.buffer = new StringBuffer();
         this.parsers = new ErrorParser[] {
-            new GCCErrorParser(relativeTo),
-            new SUNErrorParser(relativeTo),
-            new MSVCErrorParser(relativeTo),
-            new CWErrorParser( relativeTo ),
+            new GCCErrorParser(hkey, relativeTo),
+            new SUNErrorParser(hkey, relativeTo),
+            new MSVCErrorParser(hkey, relativeTo),
+            new CWErrorParser(hkey, relativeTo),
         };
         
         ErrorAnnotation.getInstance().detach(null);
@@ -118,88 +127,6 @@ public class OutputWindowWriter extends Writer {
         delegate.close();
     }
 
-    private static FileObject resolveFile(String fileName) {
-        if (Utilities.isWindows()) {
-            //replace /cygdrive/<something> prefix with <something>:/ prefix:
-            if (fileName.startsWith("/cygdrive/")) { // NOI18N
-                fileName = fileName.substring("/cygdrive/".length()); // NOI18N
-                fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
-                fileName = fileName.replace('/', File.separatorChar);
-            }
-        }
-        
-	File directory = FileUtil.normalizeFile(new File(fileName));
-        
-        return FileUtil.toFileObject(directory);
-    }
-
-    private static FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
-        if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
-            if (Utilities.isWindows()) {
-                // See IZ 106841 for details.
-                // On Windows the file path for system header files comes in as /usr/lib/abc/def.h
-                // but the real path is something like D:/cygwin/lib/abc/def.h (for Cygwin installed
-                // on D: drive). We need the exact compiler that produced this output to safely 
-                // convert the path but the compiler has been lost at this point. To work-around this problem
-                // iterate over all defined compiler sets and test whether the file existst in a set.
-                // If it does, convert it to a FileObject and return it.
-                // FIXUP: pass exact compiler used to this method (would require API changes we
-                // don't want to do now). Error/warning regular expressions should also be moved into
-                // the compiler(set) and the output should only be scanned for those patterns.
-                String absPath1 = relativePath;
-                String absPath2 = null;
-                if (absPath1.startsWith("/usr/lib")) // NOI18N
-                    absPath2 = absPath1.substring(4);
-                List<CompilerSet> compilerSets = CompilerSetManager.getDefault().getCompilerSets();
-                for (CompilerSet set : compilerSets) {
-                    Tool cCompiler = set.getTool(Tool.CCompiler);
-                    if (cCompiler != null) {
-                        String includePrefix = cCompiler.getIncludeFilePathPrefix();
-                        File file = new File(includePrefix + absPath1);
-                        if (!file.exists() && absPath2 != null)
-                            file = new File(includePrefix + absPath2);
-                        if (file.exists()) {
-                            FileObject fo = FileUtil.toFileObject(file);
-                            return fo;
-                        }
-                    }
-                }
-            }
-            if (relativePath.startsWith(File.separator)){ // NOI18N
-                relativePath = relativePath.substring(1);
-            }
-            try {
-                FileSystem fs = relativeDir.getFileSystem();
-                FileObject myObj = fs.findResource(relativePath);
-                if (myObj != null) {
-                    return myObj;
-                }
-                myObj = fs.getRoot();
-                if (myObj != null) {
-                    relativeDir = myObj;
-                }
-            } catch (FileStateInvalidException ex) {
-                //ex.printStackTrace();
-            }
-        }
-        
-        FileObject myObj = relativeDir;
-        StringTokenizer st = new StringTokenizer(relativePath, File.separator); // NOI18N
-        
-        while ((myObj != null) && st.hasMoreTokens()) {
-            String nameExt = st.nextToken();
-            if ("..".equals(nameExt)){ // NOI18N
-                myObj = myObj.getParent();
-            } else if (".".equals(nameExt)){ // NOI18N
-                // current
-            } else {
-                myObj = myObj.getFileObject(nameExt, null);
-            }
-        }
-        
-        return myObj;
-    }
-    
     private static final int LENGTH_TRESHOLD = 2048;
     
     private void handleLine(String line) throws IOException {
@@ -223,9 +150,16 @@ public class OutputWindowWriter extends Writer {
                     }
                 }
             }
+            
             // Remove lines extra lines from Sun Compiler output
-            if (line.equals("::(build)")) { // NOI18N
-                return;
+            for (int i = 0; i < SunStudioOutputFilters.length; i++) {
+                Matcher m = SunStudioOutputFilters[i].matcher(line);
+                boolean found = m.find();
+//                System.out.println("  " + found);
+//                if (found)
+//                    System.out.println("  " + m.start());
+                if (found && m.start() == 0)
+                    return;
             }
         }
         
@@ -269,7 +203,7 @@ public class OutputWindowWriter extends Writer {
                         Line l = lc.getLineSet().getOriginal(line);
 
                         if (!l.isDeleted()) {
-                            l.show(Line.SHOW_GOTO);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS); // instead of deprecated l.show(Line.SHOW_GOTO);
                             ErrorAnnotation.getInstance().attach(l);
                         }
                     } catch (IndexOutOfBoundsException ex) {
@@ -283,23 +217,114 @@ public class OutputWindowWriter extends Writer {
         }
     }
     
-    private static interface ErrorParser {
+    private static abstract class ErrorParser {
+
+        protected FileObject relativeTo;
+        protected final String hkey;
+
+        public ErrorParser(String hkey, FileObject relativeTo) {
+            this.relativeTo = relativeTo;
+            this.hkey = hkey;
+        }
         
-        public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException;
+        public abstract boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException;
         
-        public Pattern[] getPattern();
+        public abstract Pattern[] getPattern();
         
+        protected FileObject resolveFile(String fileName) {
+            if (Utilities.isWindows()) {
+                //replace /cygdrive/<something> prefix with <something>:/ prefix:
+                if (fileName.startsWith("/cygdrive/")) { // NOI18N
+                    fileName = fileName.substring("/cygdrive/".length()); // NOI18N
+                    fileName = "" + fileName.charAt(0) + ':' + fileName.substring(1); // NOI18N
+                    fileName = fileName.replace('/', '\\');
+                }
+            }
+
+            fileName = HostInfoProvider.getDefault().getMapper(hkey).getLocalPath(fileName);
+
+            File directory = FileUtil.normalizeFile(new File(fileName));
+
+            return FileUtil.toFileObject(directory);
+        }
+
+        protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
+            if (IpeUtils.isPathAbsolute(relativePath)){ // NOI18N
+                if (!RemoteUtils.isLocalhost(hkey) || Utilities.isWindows()) {
+                    // See IZ 106841 for details.
+                    // On Windows the file path for system header files comes in as /usr/lib/abc/def.h
+                    // but the real path is something like D:/cygwin/lib/abc/def.h (for Cygwin installed
+                    // on D: drive). We need the exact compiler that produced this output to safely
+                    // convert the path but the compiler has been lost at this point. To work-around this problem
+                    // iterate over all defined compiler sets and test whether the file existst in a set.
+                    // If it does, convert it to a FileObject and return it.
+                    // FIXUP: pass exact compiler used to this method (would require API changes we
+                    // don't want to do now). Error/warning regular expressions should also be moved into
+                    // the compiler(set) and the output should only be scanned for those patterns.
+                    String absPath1 = relativePath;
+                    String absPath2 = null;
+                    if (absPath1.startsWith("/usr/lib")) // NOI18N
+                        absPath2 = absPath1.substring(4);
+                    List<CompilerSet> compilerSets = CompilerSetManager.getDefault(hkey).getCompilerSets();
+                    for (CompilerSet set : compilerSets) {
+                        Tool cCompiler = set.getTool(Tool.CCompiler);
+                        if (cCompiler != null) {
+                            String includePrefix = cCompiler.getIncludeFilePathPrefix();
+                            File file = new File(includePrefix + absPath1);
+                            if (!file.exists() && absPath2 != null)
+                                file = new File(includePrefix + absPath2);
+                            if (file.exists()) {
+                                FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+                                return fo;
+                            }
+                        }
+                    }
+                }
+                if (relativePath.startsWith(File.separator)){ // NOI18N
+                    relativePath = relativePath.substring(1);
+                }
+                try {
+                    FileSystem fs = relativeDir.getFileSystem();
+                    FileObject myObj = fs.findResource(relativePath);
+                    if (myObj != null) {
+                        return myObj;
+                    }
+                    myObj = fs.getRoot();
+                    if (myObj != null) {
+                        relativeDir = myObj;
+                    }
+                } catch (FileStateInvalidException ex) {
+                    //ex.printStackTrace();
+                }
+            }
+
+            FileObject myObj = relativeDir;
+            String delims = Utilities.isWindows()? File.separator + '/' : File.separator; // NOI18N
+            StringTokenizer st = new StringTokenizer(relativePath, delims);
+
+            while ((myObj != null) && st.hasMoreTokens()) {
+                String nameExt = st.nextToken();
+                if ("..".equals(nameExt)){ // NOI18N
+                    myObj = myObj.getParent();
+                } else if (".".equals(nameExt)){ // NOI18N
+                    // current
+                } else {
+                    myObj = myObj.getFileObject(nameExt, null);
+                }
+            }
+
+            return myObj;
+        }
     }
 
     private static final Pattern CW_ERROR_SCANNER = Pattern.compile("([^:\n]*):([0-9]+): .*"); // NOI18N
         
-    private static final class CWErrorParser implements ErrorParser {
+    private static final class CWErrorParser extends ErrorParser {
         
-        private FileObject relativeTo;
         private boolean failed;
         
-        public CWErrorParser( FileObject relativeTo ) {
-            this.relativeTo = relativeTo;
+        public CWErrorParser( String hkey, FileObject relativeTo ) {
+            super(hkey, relativeTo);
         }
         
         public boolean handleLine( OutputWriter delegate, String line, Matcher m ) throws IOException {
@@ -337,13 +362,12 @@ public class OutputWindowWriter extends Writer {
     private static final Pattern MSVC_WARNING_SCANNER = Pattern.compile( "([a-zA-Z0-0\\\\._]+)\\(([0-9]+)\\) : warning ([a-zA-Z0-9]+): .*" ); // NOI18N
     private static final Pattern MSVC_ERROR_SCANNER = Pattern.compile( "([a-zA-Z0-0\\\\._]+)\\(([0-9]+)\\) : error ([a-zA-Z0-9]+): .*" ); // NOI18N
 
-    private static final class MSVCErrorParser implements ErrorParser {
+    private static final class MSVCErrorParser extends ErrorParser {
 
-        private FileObject relativeTo;
         private boolean failed;
 
-        public MSVCErrorParser( FileObject relativeTo ) {
-            this.relativeTo = relativeTo;
+        public MSVCErrorParser( String hkey, FileObject relativeTo ) {
+            super(hkey, relativeTo);
         }
 
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {
@@ -386,7 +410,8 @@ public class OutputWindowWriter extends Writer {
     }
 
     private static final Pattern GCC_ERROR_SCANNER = Pattern.compile("([a-zA-Z]:[^:\n]*|[^:\n]*):([^:\n]*):([^:\n]*):([^\n]*)"); // NOI18N
-    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N    
+    private static final Pattern GCC_ERROR_SCANNER_ANOTHER = Pattern.compile("([^:\n]*):([0-9]+): ([a-zA-Z]*):*.*"); // NOI18N
+    private static final Pattern GCC_ERROR_SCANNER_INTEL = Pattern.compile("([^\\(\n]*)\\(([0-9]+)\\): ([^:\n]*): ([^\n]*)"); // NOI18N
     private static final Pattern GCC_DIRECTORY_ENTER = Pattern.compile("[gd]?make\\[([0-9]+)\\]: Entering[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_LEAVE = Pattern.compile("[gd]?make\\[([0-9]+)\\]: Leaving[\\w+\\s+]+`([^']*)'"); // NOI18N
     private static final Pattern GCC_DIRECTORY_CD    = Pattern.compile("cd\\s+([\\S]+)[\\s;]");// NOI18N
@@ -394,7 +419,7 @@ public class OutputWindowWriter extends Writer {
     private static final Pattern GCC_STACK_NEXT =   Pattern.compile("                 from ([A-Z]:[^:\n]*|[^:\n]*):([^:^,]*)"); // NOI18N
     
     
-    private static final class GCCErrorParser implements ErrorParser {
+    private static final class GCCErrorParser extends ErrorParser {
         
         private static class StackIncludeItem {
             private FileObject fo;
@@ -408,31 +433,30 @@ public class OutputWindowWriter extends Writer {
             }
         }
         
-        private Stack<FileObject> relativeTo = new Stack<FileObject>();
-        private Stack<Integer> relativeLevel = new Stack<Integer>();
+        private Stack<FileObject> relativesTo = new Stack<FileObject>();
+        private Stack<Integer> relativesLevel = new Stack<Integer>();
         private ArrayList<StackIncludeItem> errorInludes =new ArrayList<StackIncludeItem>();
-        private FileObject relativeToFO;
         private boolean failed;
         private boolean isEntered;
         
-        public GCCErrorParser(FileObject relativeToFO) {
-            this.relativeToFO = relativeToFO;
-            this.relativeTo.push(relativeToFO);
-            this.relativeLevel.push(0);
+        public GCCErrorParser( String hkey, FileObject relativeTo ) {
+            super(hkey, relativeTo);
+            this.relativesTo.push(relativeTo);
+            this.relativesLevel.push(0);
             this.isEntered = false;
         }
         
         // FIXUP IZ#115960 and all other about EmptyStackException
         // - make Stack.pop() and peek() safe.
         private void popPath(){
-            if (relativeTo.size()>1) {
-                relativeTo.pop();
+            if (relativesTo.size()>1) {
+                relativesTo.pop();
             }
         }
         
         private void popLevel(){
-           if (relativeLevel.size()>1) {
-               relativeLevel.pop();
+           if (relativesLevel.size()>1) {
+               relativesLevel.pop();
            }
         }
         
@@ -440,12 +464,12 @@ public class OutputWindowWriter extends Writer {
             
             if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
                 int level = Integer.valueOf((m.group(1)));
-                int baseLavel = relativeLevel.peek().intValue();
+                int baseLavel = relativesLevel.peek().intValue();
                 String directory = m.group(2);
                 
                 if (level > baseLavel) {
                     isEntered = true;
-                    relativeLevel.push(level);
+                    relativesLevel.push(level);
                     isEntered = true;
                 } else if (level == baseLavel) {
                     isEntered = !this.isEntered;
@@ -456,9 +480,9 @@ public class OutputWindowWriter extends Writer {
                 
                 if (isEntered) {
                     if (!IpeUtils.isPathAbsolute(directory)) { 
-                        if (relativeToFO != null) {
-                            if (relativeToFO.isFolder()) {
-                                directory = relativeToFO.getURL().getPath() + File.separator + directory;
+                        if (relativeTo != null) {
+                            if (relativeTo.isFolder()) {
+                                directory = relativeTo.getURL().getPath() + File.separator + directory;
                             }
                         }
                     }
@@ -466,7 +490,7 @@ public class OutputWindowWriter extends Writer {
                     FileObject relativeDir = resolveFile(directory);
 
                     if (relativeDir != null) {
-                        relativeTo.push(relativeDir);
+                        relativesTo.push(relativeDir);
                     }
                     return false;
                 } else {
@@ -478,17 +502,16 @@ public class OutputWindowWriter extends Writer {
             if (m.pattern() == GCC_DIRECTORY_CD) {
                 String directory = m.group(1);
                 if (!IpeUtils.isPathAbsolute(directory)) { 
-                    if (relativeToFO != null) {
-                        if (relativeToFO.isFolder()) {
-                            directory = relativeToFO.getURL().getPath() + File.separator + directory;
+                    if (relativeTo != null) {
+                        if (relativeTo.isFolder()) {
+                            directory = relativeTo.getURL().getPath() + File.separator + directory;
                         }
                     }
                 }
                 
                 FileObject relativeDir = resolveFile(directory);
                 if (relativeDir != null) {
-                    
-                    relativeTo.push(relativeDir);
+                    relativesTo.push(relativeDir);
                 }
                 
                 return false;
@@ -504,7 +527,7 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = relativeTo.peek();
+                    FileObject relativeDir = relativesTo.peek();
                     if (relativeDir != null) {
                         FileObject fo = resolveRelativePath(relativeDir, file);
                         if (fo != null) {
@@ -523,7 +546,7 @@ public class OutputWindowWriter extends Writer {
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = relativeTo.peek();
+                    FileObject relativeDir = relativesTo.peek();
                     if (relativeDir != null) {
                         FileObject fo = resolveRelativePath(relativeDir, file);
                         if (fo != null) {
@@ -539,11 +562,12 @@ public class OutputWindowWriter extends Writer {
             }
             
             if ((m.pattern() == GCC_ERROR_SCANNER) ||
-                (m.pattern() == GCC_ERROR_SCANNER_ANOTHER)){
+                (m.pattern() == GCC_ERROR_SCANNER_ANOTHER) ||
+                (m.pattern() == GCC_ERROR_SCANNER_INTEL)){
                 try {
                     String file = m.group(1);
                     Integer lineNumber = Integer.valueOf(m.group(2));
-                    FileObject relativeDir = relativeTo.peek();
+                    FileObject relativeDir = relativesTo.peek();
                     if (relativeDir != null){
                         //FileObject fo = relativeDir.getFileObject(file);
                         FileObject fo = resolveRelativePath(relativeDir, file);
@@ -585,7 +609,7 @@ public class OutputWindowWriter extends Writer {
 
         
         public Pattern[] getPattern() {
-            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER};
+            return new Pattern[] {GCC_DIRECTORY_ENTER, GCC_DIRECTORY_LEAVE, GCC_DIRECTORY_CD, GCC_STACK_HEADER, GCC_STACK_NEXT, GCC_ERROR_SCANNER, GCC_ERROR_SCANNER_ANOTHER, GCC_ERROR_SCANNER_INTEL};
         }
         
     }
@@ -598,12 +622,10 @@ public class OutputWindowWriter extends Writer {
     private static final Pattern SUN_ERROR_SCANNER_FORTRAN_WARNING = Pattern.compile("^\"(.*)\", Line = ([0-9]+), Column = ([0-9]+): WARNING:"); // NOI18N
     private static final Pattern SUN_DIRECTORY_ENTER = Pattern.compile("\\(([^)]*)\\)[^:]*:"); // NOI18N
 
-    private static final class SUNErrorParser implements ErrorParser {
+    private static final class SUNErrorParser extends ErrorParser {
         
-        private FileObject relativeTo;
-        
-        public SUNErrorParser(FileObject relativeTo) {
-            this.relativeTo = relativeTo;
+        public SUNErrorParser( String hkey, FileObject relativeTo ) {
+            super(hkey, relativeTo);
         }
         
         public boolean handleLine(OutputWriter delegate, String line, Matcher m) throws IOException {

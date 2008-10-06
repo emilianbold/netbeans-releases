@@ -61,7 +61,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -134,9 +133,6 @@ public class TransformerUtils {
                 if(!isJAXWS21(projectDirectory)) {
                     t.setParameter(JAXWS_VERSION, JAXWS_20_LIB );
                 }
-                if (!isXnocompile(projectDirectory)) {
-                    t.setParameter("xnocompile", "false"); //NOI18N
-                }
             }
             File jaxws_xml_F = FileUtil.toFile(jaxws_xml);
             assert jaxws_xml_F != null;
@@ -187,26 +183,15 @@ public class TransformerUtils {
         Project project = FileOwnerQuery.getOwner(projectDirectory);
         if(project != null){
             JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
-            if(jvp != null &&
-                    !isVersionOK(jvp.getJAXWSVersion(), "2.1")) { //NOI18N
-                return false;
+            if (jvp != null) {
+                String version = jvp.getJAXWSVersion();
+                if (version != null && !isVersionOK(version, "2.1")) { //NOI18N
+                    return false;
+                }
             }
         }
         // By default return true
         return true;
-    }
-    
-    private static boolean isXnocompile(FileObject projectDirectory){
-        Project project = FileOwnerQuery.getOwner(projectDirectory);
-        if(project != null){
-            JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
-            if(jvp != null &&
-                    isVersionOK(jvp.getJAXWSVersion(), "2.1.3")) { //NOI18N
-                return true;
-            }
-        }
-        // Defaultly return true
-        return false;
     }
     
     /** Find (maybe cached) CRC for a URL, using a preexisting input stream (not closed by this method). */

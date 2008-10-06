@@ -45,8 +45,10 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
@@ -66,6 +68,9 @@ public class SyncDiagramAction extends AbstractAction
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("sync-diagrams.png"));
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SyncDiagramAction.class, "LBL_SyncDiagramAction"));
+        
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift R"));
+        putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift R"));
     }
 
     public void actionPerformed(ActionEvent e)
@@ -87,9 +92,21 @@ public class SyncDiagramAction extends AbstractAction
                 Widget w = scene.findWidget(pe);
                 if (w instanceof UMLWidget)
                 {
-                    ((UMLWidget) w).refresh();
+                    ((UMLWidget) w).refresh(false);
                 }
             }
         }
+        
+        DiscoverRelationshipAction action = new DiscoverRelationshipAction(scene);
+        action.actionPerformed(e);
+        scene.validate();
     }
+    
+
+    @Override
+    public boolean isEnabled()
+    {
+        return scene.isReadOnly() == false;
+    }
+    
 }

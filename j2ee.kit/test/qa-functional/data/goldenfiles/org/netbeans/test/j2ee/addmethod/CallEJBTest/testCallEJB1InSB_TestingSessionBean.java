@@ -1,5 +1,7 @@
 package test;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -70,7 +72,7 @@ public class TestingSessionBean implements javax.ejb.SessionBean, test.TestingSe
             TestingEntityLocalHome rv = (TestingEntityLocalHome) c.lookup("java:comp/env/TestingEntityBean");
             return rv;
         } catch (NamingException ne) {
-            java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "exception caught", ne);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "exception caught", ne);
             throw new RuntimeException(ne);
         }
     }

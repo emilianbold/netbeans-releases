@@ -208,7 +208,27 @@ public abstract class JavaSourceAccessor {
      * @return {@link JavacTaskImpl} never returns null
      */
     public abstract JavacTaskImpl getJavacTask (CompilationInfo compilationInfo);
-           
+    
+    /**
+     * Returns a cached compilation info when available or null
+     * Expert: Violates confinement
+     * @param js {@link JavaSource} which {@CompilationInfo} should be returned
+     * @param phase to which the compilation info should be moved
+     * Can be called only from the dispatch thread!
+     * @return {@link CompilationInfo} or null
+     */
+    public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js, JavaSource.Phase phase) throws IOException;
+
+    /**
+     * Expert: Private API for indentation engine only!
+     */
+    public abstract CompilationController createCompilationController (JavaSource js) throws IOException;
+    
+    
+    public abstract long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException;
+
+    public abstract void revalidate(JavaSource js); 
+    
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;
     
     public abstract PositionConverter create(final FileObject fo, int offset, int length, final JTextComponent component);

@@ -53,6 +53,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -78,6 +79,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.lexer.LanguageEmbedding;
@@ -204,7 +206,12 @@ public class HintsTestBase extends NbTestCase {
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         
         assertNotNull(testSource);
-        
+
+        //XXX: takes a long time
+        //re-index, in order to find classes-living-elsewhere
+        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
+        latch.await();
+
         js = JavaSource.forFileObject(testSource);
         
         assertNotNull(js);

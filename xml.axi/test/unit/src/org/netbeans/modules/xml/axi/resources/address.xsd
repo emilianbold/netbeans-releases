@@ -58,6 +58,20 @@
         <xsd:attribute name="testAttr" type="xsd:string"/>
         <xsd:attribute name="language" type="xsd:string" fixed="EN"/>
     </xsd:attributeGroup>
+    
+    <!-- issue 84575 -->
+    <xsd:complexType name="CT1">
+        <xsd:sequence>
+            <xsd:element name="E1"/>
+        </xsd:sequence>
+        <xsd:attribute name="A1" type="xsd:string"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="CT2">
+        <xsd:sequence>
+            <xsd:element name="E2"/>
+        </xsd:sequence>
+    </xsd:complexType>
         
 </xsd:schema>
 

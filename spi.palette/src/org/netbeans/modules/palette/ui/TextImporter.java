@@ -91,7 +91,11 @@ public class TextImporter implements Runnable {
         
         //ask user to provide name and tooltip for the new item
         JButton btnOk = new JButton( NbBundle.getMessage(TextImporter.class, "Btn_AddToPalette") );//NOI18N
+        btnOk.getAccessibleContext().setAccessibleName(btnOk.getText());
+        btnOk.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TextImporter.class, "ACD_Btn_AddToPalette") );//NOI18N
         JButton btnCancel = new JButton( NbBundle.getMessage(TextImporter.class, "Btn_Cancel") );//NOI18N
+        btnCancel.getAccessibleContext().setAccessibleName(btnCancel.getText());
+        btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TextImporter.class, "ACD_Btn_Cancel") );//NOI18N
         final TextImporterUI panel = new TextImporterUI( text, btnOk );
         DialogDescriptor dd = new DialogDescriptor(panel, 
                 NbBundle.getMessage(TextImporter.class, "Btn_AddToPalette"), true, //NOI18N
@@ -99,6 +103,7 @@ public class TextImporter implements Runnable {
                 new HelpCtx( TextImporter.class ), 
                 DialogDescriptor.DEFAULT_ALIGN, null, null );
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+        btnCancel.setDefaultCapable(false);
         btnCancel.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dlg.dispose();
@@ -157,6 +162,8 @@ public class TextImporter implements Runnable {
     private void storeItem( PrintWriter w, TextImporterUI panel ) throws IOException {
         String name = panel.getItemName();
         String tooltip = panel.getItemTooltip();
+        if( null == tooltip || tooltip.trim().length() == 0 )
+            tooltip = name;
         String content = panel.getItemContent();
         String smallIconPath = panel.getItemSmallIconPath();
         ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );

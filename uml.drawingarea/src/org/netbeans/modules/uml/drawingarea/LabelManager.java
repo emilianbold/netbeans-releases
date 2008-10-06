@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea;
 
+import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import javax.swing.Action;
@@ -90,6 +91,14 @@ public interface LabelManager extends PropertyChangeListener
      */
     public void showLabel(String name, LabelType type);
     
+    /**
+     * Shows the label with the specified name and type at the location specified.
+     * @param name
+     * @param type
+     * @param location
+     */
+    public void showLabel(String name, LabelType type, Point location);
+
    /**
      * select and focus on labvel if it's shown
      * @param name
@@ -101,6 +110,11 @@ public interface LabelManager extends PropertyChangeListener
      * @param type
      */
     public void selectLabel(final String name, final LabelType type);
+    
+    /**
+     * Returns true if the label is currently selected
+     */
+    public boolean isLabelSelected(final String name, final LabelType type);
     
     /**
      * Hides the label with the specified name.  The label will have the 

@@ -41,20 +41,16 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.autoupdate.UpdateUnitProvider;
+import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.autoupdate.services.Trampoline;
+import org.netbeans.modules.autoupdate.services.UpdateUnitProviderImpl;
+import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -67,85 +63,128 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
     }
     
     private URL URL_TO_TEST_CATALOG = null;
-    private int COUNT_OF_SIMPLE_ITEMS = 317;
-    private int COUNT_OF_UPDATE_ITEMS = 285;
-    private int COUNT_OF_LICENSES = 32;
-    
+    private Map<String, UpdateItem> updateItems;
+    private URL BASE = AutoupdateCatalogParserTest.class.getResource ("data");
+
     @Override
     protected void setUp () throws Exception {
         URL_TO_TEST_CATALOG = AutoupdateCatalogParserTest.class.getResource ("data/catalog.xml");
+        updateItems = AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, null);
     }
     
-    public void testGetDocument () throws IOException, SAXException {
-        assertNotNull ("Document in URL " + URL_TO_TEST_CATALOG + "  is not null.", AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null));
+    public void testGetItems () {        
+        assertNotNull ("UpdateItems found " + URL_TO_TEST_CATALOG, updateItems);
+        assertEquals ("3 items found.", 3, updateItems.keySet ().size ());
     }
     
-    public void testCreateSimpleItems () throws IOException, SAXException {
-        Document d = AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null);
-        List<SimpleItem> items = AutoupdateCatalogParser.createSimpleItems (d);
-        assertFalse ("Items not empty.", items.isEmpty ());
-        assertEquals("All x items are read.", COUNT_OF_SIMPLE_ITEMS, items.size ());
-        
-        SimpleItem item = items.get (0);
-        assertTrue ("Item " + item + " instanceof SimpleItem.Feature", item instanceof SimpleItem.Feature);
-        SimpleItem.Feature f = (SimpleItem.Feature) item;
-        assertEquals ("Correct mapping to Collaboration", "collaboration-feature_1.0", f.getId());
-    }
-    
-    public void testRelativeUrlPath () {
-        Map<String, UpdateItem> items = AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, URL_TO_TEST_CATALOG);
-        assertFalse ("Items not empty.", items.isEmpty());
-        assertEquals("All x items are read.", COUNT_OF_UPDATE_ITEMS, items.size());
-        
-        UpdateItem item = items.get ("org.myorg.relative.module_1.0");
-        assertNotNull ("Test module found.", item);
-    }
-    
-    public void testGetLicenses () {
-        Map<String, String> licenses = AutoupdateCatalogParser.getLicenses (URL_TO_TEST_CATALOG, null);
-        assertFalse ("Items not empty.", licenses.isEmpty());
-        assertEquals("All x items are read.", COUNT_OF_LICENSES, licenses.size ());
-        
-        assertNotNull ("no-license.txt found.", licenses.get ("no-license.txt"));
-        assertEquals ("Right content of no-license.txt", "[NO LICENSE SPECIFIED]", licenses.get ("no-license.txt"));
-    }
-    
-    public void testReleasedDomDocumentAfterItems () throws Exception {
-        Document d = AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null);
-        Map<String, UpdateItem> items = AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, URL_TO_TEST_CATALOG);
-
-        assertFalse (SimpleItem.declaratingNodes.isEmpty ());
-
-        assertNotNull (d);
-        Reference<Document> ref = new WeakReference<Document> (d);
-        assertNotNull (ref.get ());
-
-        d = null;
-        assertGC ("Reference to org.w3c.Document is empty.", ref);
-
-        assertTrue (SimpleItem.declaratingNodes.isEmpty ());
-
-        assertNotNull (ref);
-        assertNull (ref.get ());
-    }
-
-    public void testReleasedDomDocumentAfterUnits () throws Exception {
-        Document d = AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null);
-        Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits ();
-
-        assertFalse (SimpleItem.declaratingNodes.isEmpty ());
-
-        assertNotNull (d);
-        Reference<Document> ref = new WeakReference<Document> (d);
-        assertNotNull (ref.get ());
-
-        d = null;
-        assertGC ("Reference to org.w3c.Document is empty.", ref);
-        for (Node node : SimpleItem.declaratingNodes) {
-            assertNull ("All declaratingNodes in SimpleItem are null.", node);
+    public void testLicenses () {
+        for (UpdateItem item : updateItems.values ()) {
+            UpdateItemImpl impl = Trampoline.SPI.impl (item);
+            assertTrue ("UpdateItemImpl " + impl + " instanceof ModuleItem.", impl instanceof ModuleItem);
+            ModuleItem mi = (ModuleItem) impl;
+            assertNotNull (mi + " has license.", mi.getAgreement ());
+            assertFalse (mi + " has non-empty license.", mi.getAgreement ().length () == 0);
         }
-
-        assertNotNull (ref);
-        assertNull (ref.get ());
-    }    
+    }
+    
+    public void testVisiblePlugin () {
+        UpdateItem item = updateItems.get ("org.netbeans.test.visible_1.0");
+        assertNotNull ("org.netbeans.test.visible_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.visible_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.visible_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertTrue ("org.netbeans.test.visible_1.0 is visible.", Utilities.isKitModule (mi.getModuleInfo ()));
+        assertFalse ("org.netbeans.test.visible is not eager", mi.isEager ());
+        assertEquals ("Both has 1.0 spec. version", mi.getSpecificationVersion (), mi.getModuleInfo ().getSpecificationVersion ().toString ());
+        assertEquals ("org.netbeans.test.eager is in Debugging category", "Debugging", mi.getCategory ());
+    }
+    
+    public void testHiddenPlugin () {
+        UpdateItem item = updateItems.get ("org.netbeans.test.hidden_1.0");
+        assertNotNull ("org.netbeans.test.hidden_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.hidden_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.hidden_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertFalse ("org.netbeans.test.hidden is not eager", mi.isEager ());
+        assertFalse ("org.netbeans.test.hidden is hidden.", Utilities.isKitModule (mi.getModuleInfo ()));
+        assertEquals ("Both has 1.0 spec. version", mi.getSpecificationVersion (), mi.getModuleInfo ().getSpecificationVersion ().toString ());
+        assertEquals ("org.netbeans.test.eager is in Debugging category", "Debugging", mi.getCategory ());
+    }
+    
+    public void testEagerPlugin () {
+        UpdateItem item = updateItems.get ("org.netbeans.test.eager_1.0");
+        assertNotNull ("org.netbeans.test.eager_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.eager_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.eager_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertFalse ("org.netbeans.test.eager is hidden.", Utilities.isKitModule (mi.getModuleInfo ()));
+        assertTrue ("org.netbeans.test.eager is eager", mi.isEager ());
+        assertEquals ("Both has 1.0 spec. version", mi.getSpecificationVersion (), mi.getModuleInfo ().getSpecificationVersion ().toString ());
+        assertEquals ("org.netbeans.test.eager is in Base IDE category", "Base IDE", mi.getCategory ());
+    }
+    
+    public void testCatalogNotification () {
+        UpdateUnitProvider p = UpdateUnitProviderFactory.getDefault ().create ("test-provider", "test-provider", URL_TO_TEST_CATALOG);
+        UpdateUnitProviderImpl i = Trampoline.API.impl (p);
+        AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, (AutoupdateCatalogProvider) i.getUpdateProvider ());
+        assertTrue (p + " has notification Important thing!", p.getDescription ().indexOf ("Important thing!") != -1);
+        assertTrue (p + " has notification with url http://plugins.netbeans.org/tests", p.getDescription ().indexOf ("http://plugins.netbeans.org/tests") != -1);
+    }
+    
+    public void testRelativeUrl () throws URISyntaxException {
+        UpdateItem item = updateItems.get ("org.netbeans.test.visible_1.0");
+        assertNotNull ("org.netbeans.test.visible_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.visible_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.visible_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertTrue ("mi.getDistribution () isAbsolute.", mi.getDistribution ().toURI ().isAbsolute ());
+        assertTrue (mi.getDistribution () + " starts with " + BASE.toExternalForm (),
+                mi.getDistribution ().toExternalForm ().startsWith (BASE.toExternalForm ()));
+    }
+    
+    public void testAbsoluteUrl () throws URISyntaxException {
+        UpdateItem item = updateItems.get ("org.netbeans.test.eager_1.0");
+        assertNotNull ("org.netbeans.test.eager_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.eager_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.eager_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertTrue ("mi.getDistribution () isAbsolute.", mi.getDistribution ().toURI ().isAbsolute ());
+        assertFalse (mi.getDistribution () + " doesn't start with " + BASE.toExternalForm (),
+                mi.getDistribution ().toExternalForm ().startsWith (BASE.toExternalForm ()));
+        assertEquals (mi.getDistribution () + " is http://www.netbeans.org/updates/org-netbeans-test-eager.nbm",
+                "http://www.netbeans.org/updates/org-netbeans-test-eager.nbm",
+                mi.getDistribution ().toExternalForm ());
+    }
+    
+    public void testCatalogDate () {
+        UpdateItem item = updateItems.get ("org.netbeans.test.eager_1.0");
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        ModuleItem mi = (ModuleItem) impl;
+        assertEquals ("Eager has own date 2008/01/01", "2008/01/01", mi.getDate ());
+        item = updateItems.get ("org.netbeans.test.visible_1.0");
+        impl = Trampoline.SPI.impl (item);
+        mi = (ModuleItem) impl;
+        assertEquals ("Eager has not own date. Give date from catalog. It's 2008/08/08", "2008/08/08", mi.getDate ());
+    }
+    
+    public void testModuleNotification () {
+        UpdateItem item = updateItems.get ("org.netbeans.test.hidden_1.0");
+        assertNotNull ("org.netbeans.test.hidden_1.0 found", item);
+        UpdateItemImpl impl = Trampoline.SPI.impl (item);
+        assertNotNull ("Impl org.netbeans.test.hidden_1.0 found", item);
+        assertTrue ("Impl org.netbeans.test.hidden_1.0 instanceof ModuleItem", impl instanceof ModuleItem);
+        ModuleItem mi = (ModuleItem) impl;
+        assertNotNull ("Hidden has own non-null module notification.", mi.getModuleNotification ());
+        assertEquals ("Hidden has own module notification.", "Don't play with hidden modules!", mi.getModuleNotification ());
+        item = updateItems.get ("org.netbeans.test.visible_1.0");
+        impl = Trampoline.SPI.impl (item);
+        mi = (ModuleItem) impl;
+        assertTrue ("Visible has no module notification.", mi.getModuleNotification () == null);
+    }
+    
 }

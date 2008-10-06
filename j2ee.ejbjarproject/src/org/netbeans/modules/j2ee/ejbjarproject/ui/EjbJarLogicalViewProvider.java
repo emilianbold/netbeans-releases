@@ -259,14 +259,14 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public Image getIcon(int type) {
             Image original = super.getIcon( type );                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
+                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                     : original;
         }
 
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);                
             return broken || brokenServerAction.isEnabled() 
-                    ? Utilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0) 
+                    ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
                     : original;
         }            
 
@@ -311,14 +311,9 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.newFileAction());
             actions.add(null);
             
-            boolean cos = Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE));
-            if (!cos) {
-                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
-            }
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null )); // NOI18N
-            if (!cos) {
-                actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
-            }
+            actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null )); // NOI18N
             if (provider != null && provider.hasVerifierSupport()) {
                 actions.add(ProjectSensitiveActions.projectCommandAction( "verify", bundle.getString( "LBL_VerifyAction_Name" ), null )); // NOI18N
             }
@@ -400,8 +395,6 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
                     fireIconChange();
                     fireOpenedIconChange();
                     fireDisplayNameChange(null, null);
-                    //to refresh library references in private.properties
-                    new EjbJarProjectProperties (project, updateHelper, evaluator, resolver).save();
                 }
             }
             
@@ -434,10 +427,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             }
 
             public void actionPerformed(ActionEvent e) {
-                String j2eeSpec = EjbJarProjectProperties.getProperty(
-                        EjbJarProjectProperties.J2EE_PLATFORM,
-                        helper,
-                        AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String j2eeSpec = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
                     j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(EjbJarLogicalViewProvider.class.getName()).warning(
@@ -487,7 +477,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
             private void checkMissingServer() {
                 boolean old = brokenServer;
-                String servInstID = EjbJarProjectProperties.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE, helper, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                String servInstID = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
                     fireIconChange();

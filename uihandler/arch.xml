@@ -1263,6 +1263,17 @@ made subject to such option by the copyright holder.
                 version 1.30 of this module.
             </api>
         </p>
+        <api type="export" group="property"  name="nb.show.statistics.ui" category="private">
+            System property "nb.show.statistics.ui" controls if UI for Usage statistics is displayed in General panel.
+            If this property is non null (for IDE) UI is shown. This property contains key of preference used
+            to save status - true if usage statistics are collected and uploaded, false if not.
+            Key is "usageStatisticsEnabled" and is described below.
+        </api>
+        <api type="import" group="preferences"  name="org.netbeans.core.usageStatisticsEnabled" category="private">
+            Key "usageStatisticsEnabled" is read and controls if metrics logging is enabled or disabled.
+            Installer has also similar UI to set this and stores it into NetBeans install dir
+            <code>nb6.5/config/Preferences/org/netbeans/core.properties</code>
+        </api>
     </answer>
     
 </api-answers>

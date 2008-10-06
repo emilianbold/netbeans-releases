@@ -883,7 +883,7 @@ No.
             Editor kit registration by using <i>EditorKit.instance</i>:
             <pre>
 &lt;file name="EditorKit.instance"&gt;
-    &lt;attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/&gt;
+    &lt;attr name="instanceClass" stringvalue="org.netbeans.modules.html.editor.HTMLKit"/&gt;
 &lt;/file&gt;
             </pre>
 

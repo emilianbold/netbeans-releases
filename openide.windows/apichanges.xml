@@ -48,6 +48,18 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+<change id="tc.open">
+    <api name="winsys"/>
+    <summary>TopComponent.openAction</summary>
+    <version major="6" minor="24"/>
+    <date day="8" month="7" year="2008"/>
+    <author login="jtulach"/>
+    <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        Adding new factory method that creates an action to open a <code>TopComponent</code>.
+    </description>
+    <issue number="136636"/>
+</change>
 <change id="winsys_customizations">
     <api name="winsys"/>
     <summary>Added a group of resource bundle properties for customization

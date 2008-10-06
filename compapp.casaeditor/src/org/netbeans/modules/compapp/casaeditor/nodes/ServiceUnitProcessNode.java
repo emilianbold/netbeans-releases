@@ -54,6 +54,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -76,7 +77,7 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 // we use the endpoint instead. 
 public class ServiceUnitProcessNode extends CasaNode {
     
-    public static final Image DEFAULT_ICON = Utilities.loadImage(
+    public static final Image DEFAULT_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceUnitNode.png");     // NOI18N
     
     private static final String CHILD_ID_PROVIDES_LIST = "ProvidesList";        // NOI18N

@@ -48,10 +48,10 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="xml-find-usages.wstcref" url="xml-find-usages.wstcref">
-                    <attr name="position" intvalue="1200"/>
+                    <attr name="position" intvalue="2150"/>
                 </file>
                 <file name="xml-refactoring-preview.wstcref" url="xml-refactoring-preview.wstcref">
-                    <attr name="position" intvalue="1600"/>
+                    <attr name="position" intvalue="2050"/>
                 </file>
             </folder>
         </folder>

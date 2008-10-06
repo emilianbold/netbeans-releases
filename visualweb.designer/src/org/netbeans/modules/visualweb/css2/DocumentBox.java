@@ -882,7 +882,7 @@ public abstract class DocumentBox extends ContainerBox {
                 // dynamically within them).
 //                while ((element != null) &&
 //                        (CssLookup.getValue(element, XhtmlCss.DISPLAY_INDEX) != CssValueConstants.TABLE_VALUE)) {
-                while (element != null && parent != null
+                while (element != null && parent instanceof Element
                 && !CssProvider.getValueService().isTableValue(CssProvider.getEngineService().getComputedValueForElement(element, XhtmlCss.DISPLAY_INDEX))) {
                     element = (Element)parent;
                     parent = element.getParentNode();

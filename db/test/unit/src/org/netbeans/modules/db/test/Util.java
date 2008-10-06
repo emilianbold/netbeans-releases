@@ -60,7 +60,7 @@ public class Util {
     private Util() {
     }
     
-    public static void deleteConnectionFiles() throws IOException {
+    public static void clearConnections() throws IOException {
         deleteFileObjects(getConnectionsFolder().getChildren());
     }
     
